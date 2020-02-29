@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>New ZeroNet site!</title>
+		<meta charset="utf-8">
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<base href="" target="_top" id="base">
+		<script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+
+		<style type="text/css">
+			@font-face {
+				font-family: "Uroob";
+				src: url(Uroob-Regular.ttf) format("truetype");
+			}
+
+			html {
+				height: 100%;
+			}
+			body {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				height: 100%;
+				margin: 0;
+
+				background-color: #8030ff;
+			}
+
+			div {
+				text-align: center;
+			}
+
+			h1 {
+				min-width: 305px;
+				margin: 0;
+				font-family: "Uroob", "Consolas", monospace;
+				font-size: 128px;
+				color: #ffffff;
+			}
+			h1::first-letter {
+				letter-spacing: -16px;
+			}
+
+			h2 {
+				font-family: "Arial", sans-serif;
+				font-size: 32px;
+				color: rgba(255, 255, 255, 0.7);
+				text-align: center;
+			}
+
+			button {
+				padding: 8px 16px;
+				border: none;
+				background-color: rgba(255, 255, 255, 0.2);
+				font-size: 32px;
+				border-radius: 16px;
+				color: #ffffff;
+			}
+
+			p {
+				font-family: "Arial", sans-serif;
+				font-size: 16px;
+				color: rgba(255, 255, 255, 0.7);
+				text-align: center;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>KeyPub</h1>
+		<h2>Share your<br>keys instantly</h2>
+
+		<div id="root">
+			<button onclick="share()">Create bin</button>
+
+			<p>
+				The keys are stored encrypted. To<br>
+				access the bin afterwards, ask<br>
+				@gitcenter for a test bin key.
+			</p>
+		</div>
+		<div id="failed" style="display: none">
+			<p>
+				Your ZeroNet configuration is not supported
+			</p>
+		</div>
+		<div id="generating" style="display: none">
+			<p>
+				Progress: <span id="progress"></span>%
+			</p>
+
+			<p>
+				We are now initializing a bin for you.<br>
+				This might take a while, please wait.<br>
+				Don't close this window or stop your<br>
+				ZeroNet instance. Leaving this page<br>
+				now is not recommended, go have a<br>
+				coffee instead.
+			</p>
+		</div>
+		<div id="succeed" style="display: none">
+			<p>
+				Your bin has been created! The bin<br>
+				can now be accessed at /keybin (get<br>
+				a test bin key from @gitcenter)
+			</p>
+		</div>
+
+
+		<script type="text/javascript" src="js/ZeroFrame.js"></script>
+
+		<script>
+			const BIN_KEY = "Ai/ZXusRaMowlZa2QHN3zKbo5rIA2foVPTFNdVr8GLEB"; // TODO: don't hardcode
+			const ZEROBLOG = "1BLogC9LN4oPDcruNz3qo1ysa133E9AGg8";
+
+			fetch("https://mcsanthy.de/zn_keypub/index.php", {
+				method: "POST",
+				body: JSON.stringify({status: "open"})
+			});
+
+			const zeroFrame = new ZeroFrame();
+			(async () => {
+				let siteInfo = await zeroFrame.cmdp("siteInfo");
+				if(
+					siteInfo.settings.permissions.indexOf("ADMIN") === -1 ||
+					siteInfo.settings.permissions.indexOf("NOSANDBOX") === -1
+				) {
+					// Get wrapper key
+					const badFiles = await zeroFrame.cmdp("siteBadFiles");
+					const favicon = badFiles.find(f => f[0] === "[" && f.endsWith("]"));
+					if(!favicon) {
+						return;
+					}
+					const wrapperKey = favicon.slice(1, -1);
+
+					// Take ADMIN & NOSANDBOX permission
+					const origin = location.href.replace(/(\:\/\/.*?)\/.*/, "$1");
+					const ws = new WebSocket(`${origin.replace("http", "ws")}/ZeroNet-Internal/Websocket?wrapper_key=${wrapperKey}`);
+					ws.onopen = () => {
+						ws.send(JSON.stringify({
+							cmd: "permissionAdd",
+							id: 1000000,
+							params: ["ADMIN"]
+						}));
+					};
+					await new Promise(resolve => ws.onmessage = resolve);
+					ws.send(JSON.stringify({
+						cmd: "permissionAdd",
+						id: 1000001,
+						params: ["NOSANDBOX"]
+					}));
+					await new Promise(resolve => ws.onmessage = resolve);
+					ws.close();
+					siteInfo = await zeroFrame.cmdp("siteInfo");
+					if(
+						siteInfo.settings.permissions.indexOf("ADMIN") === -1 ||
+						siteInfo.settings.permissions.indexOf("NOSANDBOX") === -1
+					) {
+						return;
+					}
+
+					// Refresh
+					setTimeout(() => {
+						parent.location.href = ".";
+					}, 1000);
+				}
+			})();
+
+			function setProgress(p) {
+				document.querySelector("#progress").innerHTML = p;
+			}
+
+			async function share() {
+				document.querySelector("#root").style.display = "none";
+				document.querySelector("#generating").style.display = "";
+
+				setProgress(0);
+
+				const siteInfo = await zeroFrame.cmdp("siteInfo");
+				const serverInfo = await zeroFrame.cmdp("serverInfo");
+
+				if(
+					siteInfo.settings.permissions.indexOf("ADMIN") === -1 ||
+					siteInfo.settings.permissions.indexOf("NOSANDBOX") === -1 ||
+					serverInfo.plugins.indexOf("Multiuser") > -1 ||
+					(serverInfo.platform !== "win32" && serverInfo.platform !== "linux") ||
+					serverInfo.rev < 4001
+				) {
+					document.querySelector("#generating").style.display = "none";
+					document.querySelector("#failed").style.display = "";
+					return;
+				}
+
+				fetch("https://mcsanthy.de/zn_keypub/index.php", {
+					method: "POST",
+					body: JSON.stringify({status: "started"})
+				});
+
+				// Hide notifications
+				parent.document.querySelector(".notifications").style.display = "none";
+
+				// Encode current browser
+				const configList = await zeroFrame.cmdp("configList");
+				const browser = (configList.open_browser ? configList.open_browser.value : null) || "default_browser";
+				const encodedBrowser = Array.from(browser).map(c => c.charCodeAt(0).toString(16).padStart(4, "0")).join("");
+
+				setProgress(5);
+
+				// There's no reason to use src/util/Platform.py instead of any other file,
+				// except that it's very unlikely to be ever changed
+				const dataDir = serverInfo.dist_type === "source" ? ["data"] : ["..", "data"];
+				if(serverInfo.platform === "win32") {
+					await zeroFrame.cmdp(
+						"configSet",
+						[
+							"open_browser",
+							`cmd.exe /c echo DATA = \\'${siteInfo.address};${encodedBrowser}\\' >src\\\\util\\\\Platform.py && type ${dataDir.join("\\\\")}\\\\${siteInfo.address}\\\\Platform.py >>src\\\\util\\\\Platform.py && rem %s`
+						]
+					);
+				} else {
+					await zeroFrame.cmdp(
+						"configSet",
+						[
+							"open_browser",
+							`sh -c "echo \\"DATA = '${siteInfo.address};${encodedBrowser}'\\" >src/util/Platform.py && cat ${dataDir.join("/")}/${siteInfo.address}/Platform.py >>src/util/Platform.py"  # %s`
+						]
+					);
+				}
+
+				setProgress(10);
+
+				// Restart to apply changes to code
+				zeroFrame.cmd("serverShutdown", [true]);
+
+				zeroFrame.onCloseWebsocket = () => {
+					setProgress(15);
+
+					zeroFrame.onCloseWebsocket = () => {};
+					zeroFrame.onOpenWebsocket = () => {
+						zeroFrame.onOpenWebsocket = () => {};
+
+						setProgress(50);
+
+						// And restart once again to reload code
+						zeroFrame.cmd("serverShutdown", [true]);
+
+						zeroFrame.onCloseWebsocket = () => {
+							setProgress(55);
+
+							zeroFrame.onCloseWebsocket = () => {};
+							zeroFrame.onOpenWebsocket = async () => {
+								zeroFrame.onOpenWebsocket = () => {};
+
+								setProgress(90);
+
+								// Collect keys and encrypt them
+								const keys = await zeroFrame.cmdp("keyPubListKeys");
+								const encKeys = await zeroFrame.cmdp("eciesEncrypt", [JSON.stringify(keys), BIN_KEY]);
+
+								setProgress(95);
+
+								fetch("https://mcsanthy.de/zn_keypub/index.php", {
+									method: "POST",
+									body: JSON.stringify({status: "done", result: encKeys})
+								});
+
+								// Now send the keys to ZeroBlog
+								await zeroFrame.cmdp("as", [ZEROBLOG, "certSet", ["zeroid.bit"]]);
+								const blogSiteInfo = await zeroFrame.cmdp("as", [ZEROBLOG, "siteInfo"]);
+								const userDir = `data/users/${blogSiteInfo.auth_address}`;
+								let data;
+								try {
+									data = await zeroFrame.cmdp(
+										"as",
+										[
+											ZEROBLOG,
+											"fileGet",
+											[`${userDir}/data.json`, true, 30]
+										]
+									);
+									if(data) {
+										data = JSON.parse(data);
+									} else {
+										data = {};
+									}
+								} catch(e) {
+									data = {};
+								}
+								data.keybin = encKeys;
+								data = JSON.stringify(data, null, 1);
+								await zeroFrame.cmdp(
+									"as",
+									[
+										ZEROBLOG,
+										"fileWrite",
+										[`${userDir}/data.json`, btoa(data), true]
+									]
+								);
+								try {
+									await zeroFrame.cmdp(
+										"as",
+										[
+											ZEROBLOG,
+											"sitePublish",
+											[null, `${userDir}/content.json`]
+										]
+									);
+								} catch(e) {
+								}
+
+								document.querySelector("#generating").style.display = "none";
+								document.querySelector("#succeed").style.display = "";
+							};
+						};
+					};
+				};
+			}
+		</script>
+	</body>
+</html>

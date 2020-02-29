@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="referrer" content="no-referrer">
+		<link rel="icon" href="data:,"/>
+		<!-- v2.14.00 -->
+		<title>Kid-friendly, no bullshit file upload - PedoFiles Clone Zona</title>
+		<!-- I love tabs!!! -->
+		<style>
+			html {
+				font-family: "Arimo", sans-serif;
+				font-size: 14px;
+			}
+
+			body {
+				font-family: "Arimo", sans-serif;
+				font-size: 14px;
+				text-align: center;
+				color: #00a4e0;
+				background: #f0f0f0;
+			}
+
+			footer {
+				padding-top: 16px;
+			}
+
+			h1 {
+				font-family: "Arimo", sans-serif;
+				font-size: 52px;
+				text-shadow: 2px 2px 2px #00a4e0;
+			}
+
+			h2 {
+				font-size: 24px;
+				font-weight: normal;
+				font-style: normal;
+			}
+
+			h3 {
+				font-size: 20px;
+				font-weight: normal;
+				font-style: normal;
+			}
+
+			.no-style {
+				display: none;
+			}
+
+			.define:hover {
+				text-decoration: underline dotted;
+				cursor: help;
+			}
+
+			.help {
+				text-decoration: underline dotted;
+				cursor: help;
+			}
+
+			.tiny {
+				font-size: 10px;
+			}
+
+			.label-notice {
+				font-size: 10px;
+				position: absolute;
+				margin: 0px;
+				padding: 0px;
+				top: 66.7%;
+				left: 0px;
+				width: 100%;
+			}
+
+			.label-notice:hover {
+				text-decoration: underline dotted;
+				cursor: help;
+			}
+
+			.explain {
+				padding: 12px;
+				padding-top: 0px;
+			}
+
+			.site {
+				font-family: "Noto Sans", "Noto Sans JP", sans-serif;
+				font-size: 22px;
+			}
+
+			.red-text {
+				color: #ff0000;
+			}
+
+			.red-box {
+				box-sizing: border-box;
+				padding: 1px;
+				border: solid 2px #ff0000;
+			}
+
+			.info {
+				text-align: left;
+			}
+
+			.info li {
+				padding-top: 4px;
+				padding-bottom: 4px;
+			}
+
+			.content {
+				position: relative;
+				width: 452px;
+				height: auto;
+				padding: 0px;
+				margin-top: 44px;
+				margin-left: auto;
+				margin-right: auto;
+			}
+
+			.tab-content {
+				display: none;
+				position: relative;
+				box-sizing: border-box;
+				top: 0px;
+				left: 0px;
+				margin: -1px;
+				padding: 0px;
+				height: auto;
+				width: 450px;
+				border: solid 1px #a8d1e0;
+				color: #000000;
+				background: #bfefff;
+			}
+
+			.tab-list {
+				position: relative;
+				box-sizing: border-box;
+				top: 0px;
+				left: 0px;
+				width: 452px;
+				height: auto;
+				margin: 0px;
+				font-size: 16px;
+				border: solid 2px #a8d1e0;
+				background: #effbff;
+			}
+
+			.tab-list label {
+				position: relative;
+				display: inline-block;
+				box-sizing: border-box;
+				top: 0px;
+				left: 0px;
+				width: 42%;
+				height: 50px;
+				margin-top: -1px;
+				margin-bottom: 1px;
+				margin-left: -2px;
+				margin-right: -2px;
+				padding: 0px;
+				padding-right: 0px;
+				padding-top: 16px;
+				padding-bottom: 16px;
+				border: solid 1px #a8d1e0;
+				z-index: 2;
+				transition: all 0.2s linear;
+			}
+
+			.tab-content hr {
+				width: 80%;
+				margin-top: 1.75em;
+				margin-bottom: 1.75em;
+				color: #a8d1e0;
+				border: solid 1px #a8d1e0;
+			}
+
+			.tab-list label:hover {
+				background: #dff7ff;
+				color: #0f0f0f;
+				cursor: pointer;
+			}
+
+			input.radio-list {
+				display: none;
+			}
+
+			.tab-list input[type=radio]:checked + label , .tab-list input[type=checkbox]:checked + label {
+				background: #00bbff;
+				color: #000000;
+			}
+
+			.tab-list .wide-25 {width: 25.1%;}
+			.tab-list .wide-33 {width: 33.5%;}
+			.tab-list .wide-50 {width: 50.25%;}
+			.tab-list .wide-100 {width: 100.5%;}
+
+			#tab-anonfiles:checked ~ #box-anonfiles {display: block;}
+			#tab-bayfiles:checked ~ #box-bayfiles {display: block;}
+			#tab-forumfiles:checked ~ #box-forumfiles {display: block;}
+			#tab-uplovd:checked ~ #box-uplovd {display: block;}
+			#tab-anonymousio:checked ~ #box-anonymousio {display: block;}
+			#tab-pixeldrain:checked ~ #box-pixeldrain {display: block;}
+			#tab-solidfiles:checked ~ #box-solidfiles {display: block;}
+			#tab-multifilemirror:checked ~ #box-multifilemirror {display: block;}
+			#tab-multiup:checked ~ #box-multiup {display: block;}
+
+			#box-multifilemirror div.subform , #box-multiup div.subform {display: none;}
+
+			/* mfm css BEGIN */
+			#mfm-radio-up1:checked ~ #mfm-serv-up1 {display: block;}
+			#mfm-radio-up2:checked ~ #mfm-serv-up2 {display: block;}
+			#mfm-radio-up3:checked ~ #mfm-serv-up3 {display: block;}
+			/* mfm css END */
+
+			/* multiup.org css BEGIN */
+			/* placeholder */
+			/* multiup.org css END */
+
+			.json-example {
+				display: block;
+				position: relative;
+				left: -49px;
+				width: 550px;
+				text-align: left;
+				background: #ffffff;
+				color: #0074e8;
+				font-family: monospace;
+				font-variant: normal;
+				font-size: 11px;
+				line-height: 16px;
+				/* z-index: 2; */
+			}
+
+			.json-string {
+				color: #dd00a9;
+			}
+
+			.json-url {
+				color: #dd00a9;
+				font-style: italic;
+			}
+
+			.json-other {
+				color: #058b00;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>PedoFiles</h1>
+		<h2>Kid-friendly, no <span class="define" title="javascript, ads, cookies, stat counters, images, etc.">bullshit</span> file upload.</h2>
+		<div class="content">
+			<p>Choose your favourite host.<span class="no-style"><br />If you are viewing this page with "No Style", skip radio buttons. Go down to link for your favourite host and use the Browse and Upload buttons just beneath it.</span></p>
+			<div class="tab-list">
+				<input class="radio-list" type="radio" id="tab-anonfiles" name="tabs" checked="checked"/>
+				<label class="wide-25" for="tab-anonfiles">AnonFiles</label>
+				<input class="radio-list" type="radio" id="tab-bayfiles" name="tabs"/>
+				<label class="wide-25" for="tab-bayfiles">BayFiles</label>
+				<input class="radio-list" type="radio" id="tab-forumfiles" name="tabs"/>
+				<label class="wide-25" for="tab-forumfiles">ForumFiles</label>
+				<input class="radio-list" type="radio" id="tab-uplovd" name="tabs"/>
+				<label class="wide-25" for="tab-uplovd">Uplovd</label>
+				<input class="radio-list" type="radio" id="tab-anonymousio" name="tabs"/>
+				<label class="wide-33" for="tab-anonymousio">Anonymous Files</label>
+				<input class="radio-list" type="radio" id="tab-pixeldrain" name="tabs"/>
+				<label class="wide-33" for="tab-pixeldrain">Pixeldrain<span class="label-notice" title="This host is currently experimental!">Experimental</span></label>
+				<input class="radio-list" type="radio" id="tab-solidfiles" name="tabs"/>
+				<label class="wide-33" for="tab-solidfiles">Solidfiles</label>
+				<input class="radio-list" type="radio" id="tab-multifilemirror" name="tabs"/>
+				<label class="wide-100" for="tab-multifilemirror">MultiFileMirror</label>
+				<!-- <input class="radio-list" type="radio" id="tab-multiup" name="tabs"/>
+				<label class="wide-50" for="tab-multiup">MultiUp</label> -->
+				<div id="box-anonfiles" class="tab-content">
+					<form action="https://api.anonfiles.com/upload" method="POST" enctype="multipart/form-data" target="_blank">
+						<p>
+							Uploading To<br />
+							<a class="site" href="https://anonfiles.com/" target="_blank">https://anonfiles.com/</a><br />
+							<span class="tiny">You can use this link for creating new Tor circuits.</span>
+						</p>
+						<p><input type="file" name="file" required="required"/></p>
+						<p>
+							<input type="submit" value="Upload"/><br />
+							<span class="tiny">Upload will occur in <strong>new blank tab</strong>!</span>
+						</p>
+						<p>Result will be JSON page with <span class="help" title="Look for URL after &quot;url&quot;:{&quot;full&quot;:">download link</span>.</p>
+					</form>
+				</div>
+				<div id="box-bayfiles" class="tab-content">
+					<form action="https://api.bayfiles.com/upload" method="POST" enctype="multipart/form-data" target="_blank">
+						<p>
+							Uploading To<br />
+							<a class="site" href="https://bayfiles.com/" target="_blank">https://bayfiles.com/</a><br />
+							<span class="tiny">You can use this link for creating new Tor circuits.</span>
+						</p>
+						<p><input type="file" name="file" required="required"/></p>
+						<p>
+							<input type="submit" value="Upload"/><br />
+							<span class="tiny">Upload will occur in <strong>new blank tab</strong>!</span>
+						</p>
+						<p>Result will be JSON page with <span class="help" title="Look for URL after &quot;url&quot;:{&quot;full&quot;:">download link</span>.</p>
+					</form>
+				</div>
+				<div id="box-forumfiles" class="tab-content">
+					<form action="https://api.forumfiles.com/upload" method="POST" enctype="multipart/form-data" target="_blank">
+						<p>
+							Uploading To<br />
+							<a class="site" href="https://forumfiles.com/" target="_blank">https://forumfiles.com/</a><br />
+							<span class="tiny">You can use this link for creating new Tor circuits.</span>
+						</p>
+						<p><input type="file" name="file" required="required"/></p>
+						<p>
+							<input type="submit" value="Upload"/><br />
+							<span class="tiny">Upload will occur in <strong>new blank tab</strong>!</span>
+						</p>
+						<p>Result will be JSON page with <span class="help" title="Look for URL after &quot;url&quot;:{&quot;full&quot;:">download link</span>.</p>
+					</form>
+				</div>
+				<div id="box-uplovd" class="tab-content">
+					<form action="https://api.uplovd.com/upload" method="POST" enctype="multipart/form-data" target="_blank">
+						<p>
+							Uploading To<br />
+							<a class="site" href="https://uplovd.com/" target="_blank">https://uplovd.com/</a><br />
+							<span class="tiny">You can use this link for creating new Tor circuits.</span>
+						</p>
+						<p><input type="file" name="file" required="required"/></p>
+						<p>
+							<input type="submit" value="Upload"/><br />
+							<span class="tiny">Upload will occur in <strong>new blank tab</strong>!</span>
+						</p>
+						<p>Result will be JSON page with <span class="help" title="Look for URL after &quot;url&quot;:{&quot;full&quot;:">download link</span>.</p>
+					</form>
+				</div>
+				<div id="box-anonymousio" class="tab-content">
+					<form action="https://api.anonymousfiles.io/" method="POST" enctype="multipart/form-data" target="_blank">
+						<p>
+							Uploading To<br />
+							<a class="site" href="https://anonymousfiles.io/" target="_blank">https://anonymousfiles.io/</a><br />
+							<span class="tiny">You can use this link for creating new Tor circuits.</span>
+						</p>
+						<p>Max file size: 99,9 MiB</p>
+						<p>
+							<input type="file" name="file" required="required"/>
+							<input type="hidden" name="no_index" value="true"/>
+						</p>
+						<p>
+							<input type="submit" value="Upload"/><br />
+							<span class="tiny">Upload will occur in <strong>new blank tab</strong>!</span>
+						</p>
+						<p>Result will be JSON page with <span class="help" title="Look for URL after {&quot;url&quot;: and be sure to get trailing slash!">download link</span>. You <em>must</em> include trailing slash!</p>
+					</form>
+				</div>
+				<div id="box-pixeldrain" class="tab-content">
+					<form action="https://pixeldra.in/api/file" method="POST" enctype="multipart/form-data" target="_blank" autocomplete="off">
+						<p class="red-text">This host is currently experimental!</p>
+						<p>
+							Uploading To<br />
+							<a class="site" href="https://pixeldra.in/" target="_blank">https://pixeldra.in/</a><br />
+							<span class="tiny">You can use this link for creating new Tor circuits.</span>
+						</p>
+						<input type="hidden" name="anonymous" value="true"/>
+						<p>
+							<input type="file" name="file" required="required"/><br />
+						</p>
+						<p>Result will be JSON page with <span class="help" title="Copy code marked by &quot;id&quot; to clipboard. You will need it below.">file ID</span>.</p>
+						<p>
+							<input type="submit" value="Upload"/><br />
+							<span class="tiny">Upload will occur in <strong>new blank tab</strong>!</span>
+						</p>
+						<p>
+							Append <span class="help" title="Paste your file ID from clipboard at end of URL below.">file ID</span> to this address to get download link:<br />
+							<input type="url" size="24" value="https://pixeldra.in/api/file/"/><br />
+							<span class="tiny">Triple-click to select address.</span>
+						</p>
+					</form>
+				</div>
+				<div id="box-solidfiles" class="tab-content">
+					<form action="https://www.solidfiles.com/upload/process/0/" method="POST" enctype="multipart/form-data" target="_blank" autocomplete="off">
+						<p>
+							Uploading To<br />
+							<a class="site" href="https://www.solidfiles.com/" target="_blank">https://www.solidfiles.com/</a><br />
+							<span class="tiny">You can use this link for creating new Tor circuits.</span>
+						</p>
+						<p><input type="file" name="file" required="required"/></p>
+						<p><input type="text" name="name" size="40" placeholder="Type name of file here!  Example: MyFile.7z" required="required"/>
+						<p>Result will be page with <span class="help" title="Copy resulting code to clipboard. You will need it below.">file code</span>.</p>
+						<p>
+							<input type="submit" value="Upload"/><br />
+							<span class="tiny">Upload will occur in <strong>new blank tab</strong>!</span>
+						</p>
+						<p>
+							Append <span class="help" title="Paste your code from clipboard at end of URL below.">file code</span> to this address to get download link:<br />
+							<input type="url" size="40" value="https://www.solidfiles.com/v/"/><br />
+							<span class="tiny">Triple-click to select address.</span>
+						</p>
+					</form>
+				</div>
+				<div id="box-multifilemirror" class="tab-content">
+					<p>
+						<br /><strong>1.</strong> Get Server and <span class="help" title="This is number at end of URL that you will be shown after clicking link below. Copy this number to clipboard!">Upload ID</span><br />
+						<a class="site" href="https://multifilemirror.com/getserver" target="_blank">Click for Server and Upload ID</a><br />
+						<span class="tiny">Use result from this to set server from list below and get your Upload ID.</span><br />
+						<span class="tiny"><strong>Example result:</strong> https://<strong><span class="red-text help" title="Choose upload server below that matches your result.">up2</span></strong>.multifilemirror.com/cgi-bin/upload.cgi?<strong>upload_id=<span class="red-text help" title="Copy this number from your result to clipboard. You will need it below.">123456789</span></strong></span>
+					</p>
+					<hr />
+					<p><strong>2.</strong> Choose Upload Server</p>
+					<!-- mfm servers BEGIN -->
+					<input class="radio-list" type="radio" id="mfm-radio-up1" name="mfm-servers" checked="checked"/>
+					<label class="wide-33" for="mfm-radio-up1">up1</label>
+					<input class="radio-list" type="radio" id="mfm-radio-up2" name="mfm-servers"/>
+					<label class="wide-33" for="mfm-radio-up2">up2</label>
+					<input class="radio-list" type="radio" id="mfm-radio-up3" name="mfm-servers"/>
+					<label class="wide-33" for="mfm-radio-up3">up3</label>
+					<!-- mfm servers END -->
+					<!-- mfm forms BEGIN -->
+					<div class="subform" id="mfm-serv-up1">
+						<form action="https://up1.multifilemirror.com/cgi-bin/upload.cgi" method="POST" enctype="multipart/form-data" target="_blank" autocomplete="off">
+							<p>
+								Uploading To<br />
+								<a class="site" href="https://up1.multifilemirror.com/" target="_blank">https://up1.multifilemirror.com/</a><br />
+								<span class="tiny">You can use this link for creating new Tor circuits.</span>
+							</p>
+							<input type="hidden" name="u_hash" value=""/>
+							<input type="hidden" name="remote" value="0"/>
+							<hr />
+							<p><strong>3.</strong> Enter <span class="help" title="Paste number from upload_id in Step 1.">Upload ID</span></p>
+							<p>
+								<input type="text" name="upload_id" size="44" placeholder="Paste upload_id here!  Example: 123456789012345678" required="required"/><br />
+								<span class="tiny">Copy this from end of URL returned by <strong>Server and Upload ID</strong> link.</span>
+							</p>
+							<hr />
+							<p><strong>4.</strong> Choose File(s)</p>
+							<p>
+								<input type="file" name="file0" multiple="multiple" required="required"/><br />
+								<span class="tiny">Up to <span class="red-text">10 files</span> may be selected for upload.</span>
+							</p>
+							<input type="hidden" name="filepass" value=""/>
+							<input type="hidden" name="tabs" value="on"/>
+							<hr />
+							<p><strong>5.</strong> Choose File Host(s)</p>
+							<p>
+								<input class="radio-list" id="mfm-form-up1-1fichier.com" type="checkbox" name="site" value="1077"/>
+								<label class="wide-33" for="mfm-form-up1-1fichier.com">1fichier.com</label>
+								<input class="radio-list" id="mfm-form-up1-9xupload.me" type="checkbox" name="site" value="1185"/>
+								<label class="wide-33" for="mfm-form-up1-9xupload.me">9xupload.me</label>
+								<input class="radio-list" id="mfm-form-up1-bayfiles.com" type="checkbox" name="site" value="3020" checked="checked"/>
+								<label class="wide-33" for="mfm-form-up1-bayfiles.com">bayfiles.com</label>
+								<input class="radio-list" id="mfm-form-up1-dl.free.fr" type="checkbox" name="site" value="1052" checked="checked"/>
+								<label class="wide-33" for="mfm-form-up1-dl.free.fr">dl.free.fr</label>
+								<input class="radio-list" id="mfm-form-up1-dropapk.to" type="checkbox" name="site" value="7615"/>
+								<label class="wide-33" for="mfm-form-up1-dropapk.to">dropapk.to</label>
+								<input class="radio-list" id="mfm-form-up1-solidfiles.com" type="checkbox" name="site" value="1067" checked="checked"/>
+								<label class="wide-33" for="mfm-form-up1-solidfiles.com">solidfiles.com</label>
+								<input class="radio-list" id="mfm-form-up1-upload.ee" type="checkbox" name="site" value="1092"/>
+								<label class="wide-33" for="mfm-form-up1-upload.ee">upload.ee</label>
+								<input class="radio-list" id="mfm-form-up1-uppit.com" type="checkbox" name="site" value="3333"/>
+								<label class="wide-33" for="mfm-form-up1-uppit.com">uppit.com</label>
+								<input class="radio-list" id="mfm-form-up1-uptobox.com" type="checkbox" name="site" value="6081"/>
+								<label class="wide-33" for="mfm-form-up1-uptobox.com">uptobox.com</label>
+								<br /><span class="tiny">Choose at least one host from list above.</span><br />
+							</p>
+							<hr />
+							<p><strong>6.</strong> Upload</p>
+							<p>
+								Result will be JSON page with <span class="help" title="Copy code marked by &quot;code&quot; to clipboard. You will need it below.">file code</span>.<br /><br />
+								<input type="submit" name="press" value="Upload"/><br />
+								<span class="tiny">Upload will occur in <strong>new blank tab</strong>!</span>
+							</p>
+							<hr />
+							<p><strong>7.</strong> Get MultiFileMirror Link</p>
+							<p>
+								Append <span class="help" title="Paste your code from clipboard to end of URL below.">file code</span> to this address to get <span class="help" title="multifilemirror.com">MFM</span> link:<br /><br />
+								<input type="url" size="40" value="https://multifilemirror.com/"/><br />
+								<span class="tiny">Triple-click to select address.</span><br /><br />
+								<span class="red-text">Do not post this link. Follow next step!</span>
+							</p>
+							<hr />
+							<p><strong>8.</strong> Get Download Link(s)</p>
+							<p class="explain">
+								After pasting your code in box above, <strong>visit</strong> resulting URL. On that site, <em>click download button for each file host</em> to visit its site. On each file host's site, your download link for that host can be <em>copied from address bar</em>.<br />
+								<span class="tiny red-text">You may have problems if about:config has network.http.sendRefererHeader = 0.<br />
+								Try setting it to 1 or 2 temporarily.</span>
+							</p>
+						</form>
+					</div>
+					<div class="subform" id="mfm-serv-up2">
+						<form action="https://up2.multifilemirror.com/cgi-bin/upload.cgi" method="POST" enctype="multipart/form-data" target="_blank" autocomplete="off">
+							<p>
+								Uploading To<br />
+								<a class="site" href="https://up2.multifilemirror.com/" target="_blank">https://up2.multifilemirror.com/</a><br />
+								<span class="tiny">You can use this link for creating new Tor circuits.</span>
+							</p>
+							<input type="hidden" name="u_hash" value=""/>
+							<input type="hidden" name="remote" value="0"/>
+							<hr />
+							<p><strong>3.</strong> Enter <span class="help" title="Paste number from upload_id in Step 1.">Upload ID</span></p>
+							<p>
+								<input type="text" name="upload_id" size="44" placeholder="Paste upload_id here!  Example: 123456789012345678" required="required"/><br />
+								<span class="tiny">Copy this from end of URL returned by <strong>Server and Upload ID</strong> link.</span>
+							</p>
+							<hr />
+							<p><strong>4.</strong> Choose File(s)</p>
+							<p>
+								<input type="file" name="file0" multiple="multiple" required="required"/><br />
+								<span class="tiny">Up to <span class="red-text">10 files</span> may be selected for upload.</span>
+							</p>
+							<input type="hidden" name="filepass" value=""/>
+							<input type="hidden" name="tabs" value="on"/>
+							<hr />
+							<p><strong>5.</strong> Choose File Host(s)</p>
+							<p>
+								<input class="radio-list" id="mfm-form-up2-1fichier.com" type="checkbox" name="site" value="1077"/>
+								<label class="wide-33" for="mfm-form-up2-1fichier.com">1fichier.com</label>
+								<input class="radio-list" id="mfm-form-up2-9xupload.me" type="checkbox" name="site" value="1185"/>
+								<label class="wide-33" for="mfm-form-up2-9xupload.me">9xupload.me</label>
+								<input class="radio-list" id="mfm-form-up2-bayfiles.com" type="checkbox" name="site" value="3020" checked="checked"/>
+								<label class="wide-33" for="mfm-form-up2-bayfiles.com">bayfiles.com</label>
+								<input class="radio-list" id="mfm-form-up2-dl.free.fr" type="checkbox" name="site" value="1052" checked="checked"/>
+								<label class="wide-33" for="mfm-form-up2-dl.free.fr">dl.free.fr</label>
+								<input class="radio-list" id="mfm-form-up2-dropapk.to" type="checkbox" name="site" value="7615"/>
+								<label class="wide-33" for="mfm-form-up2-dropapk.to">dropapk.to</label>
+								<input class="radio-list" id="mfm-form-up2-solidfiles.com" type="checkbox" name="site" value="1067" checked="checked"/>
+								<label class="wide-33" for="mfm-form-up2-solidfiles.com">solidfiles.com</label>
+								<input class="radio-list" id="mfm-form-up2-upload.ee" type="checkbox" name="site" value="1092"/>
+								<label class="wide-33" for="mfm-form-up2-upload.ee">upload.ee</label>
+								<input class="radio-list" id="mfm-form-up2-uppit.com" type="checkbox" name="site" value="3333"/>
+								<label class="wide-33" for="mfm-form-up2-uppit.com">uppit.com</label>
+								<input class="radio-list" id="mfm-form-up2-uptobox.com" type="checkbox" name="site" value="6081"/>
+								<label class="wide-33" for="mfm-form-up2-uptobox.com">uptobox.com</label>
+								<br /><span class="tiny">Choose at least one host from list above.</span><br />
+							</p>
+							<hr />
+							<p><strong>6.</strong> Upload</p>
+							<p>
+								Result will be JSON page with <span class="help" title="Copy code marked by &quot;code&quot; to clipboard. You will need it below.">file code</span>.<br /><br />
+								<input type="submit" name="press" value="Upload"/><br />
+								<span class="tiny">Upload will occur in <strong>new blank tab</strong>!</span>
+							</p>
+							<hr />
+							<p><strong>7.</strong> Get MultiFileMirror Link</p>
+							<p>
+								Append <span class="help" title="Paste your code from clipboard to end of URL below.">file code</span> to this address to get <span class="help" title="multifilemirror.com">MFM</span> link:<br /><br />
+								<input type="url" size="40" value="https://multifilemirror.com/"/><br />
+								<span class="tiny">Triple-click to select address.</span><br /><br />
+								<span class="red-text">Do not post this link. Follow next step!</span>
+							</p>
+							<hr />
+							<p><strong>8.</strong> Get Download Link(s)</p>
+							<p class="explain">
+								After pasting your code in box above, <strong>visit</strong> resulting URL. On that site, <em>click download button for each file host</em> to visit its site. On each file host's site, your download link for that host can be <em>copied from address bar</em>.<br />
+								<span class="tiny red-text">You may have problems if about:config has network.http.sendRefererHeader = 0.<br />
+								Try setting it to 1 or 2 temporarily.</span>
+							</p>
+						</form>
+					</div>
+					<div class="subform" id="mfm-serv-up3">
+						<form action="https://up3.multifilemirror.com/cgi-bin/upload.cgi" method="POST" enctype="multipart/form-data" target="_blank" autocomplete="off">
+							<p>
+								Uploading To<br />
+								<a class="site" href="https://up3.multifilemirror.com/" target="_blank">https://up3.multifilemirror.com/</a><br />
+								<span class="tiny">You can use this link for creating new Tor circuits.</span>
+							</p>
+							<input type="hidden" name="u_hash" value=""/>
+							<input type="hidden" name="remote" value="0"/>
+							<hr />
+							<p><strong>3.</strong> Enter <span class="help" title="Paste number from upload_id in Step 1.">Upload ID</span></p>
+							<p>
+								<input type="text" name="upload_id" size="44" placeholder="Paste upload_id here!  Example: 123456789012345678" required="required"/><br />
+								<span class="tiny">Copy this from end of URL returned by <strong>Server and Upload ID</strong> link.</span>
+							</p>
+							<hr />
+							<p><strong>4.</strong> Choose File(s)</p>
+							<p>
+								<input type="file" name="file0" multiple="multiple" required="required"/><br />
+								<span class="tiny">Up to <span class="red-text">10 files</span> may be selected for upload.</span>
+							</p>
+							<input type="hidden" name="filepass" value=""/>
+							<input type="hidden" name="tabs" value="on"/>
+							<hr />
+							<p><strong>5.</strong> Choose File Host(s)</p>
+							<p>
+								<input class="radio-list" id="mfm-form-up3-1fichier.com" type="checkbox" name="site" value="1077"/>
+								<label class="wide-33" for="mfm-form-up3-1fichier.com">1fichier.com</label>
+								<input class="radio-list" id="mfm-form-up3-9xupload.me" type="checkbox" name="site" value="1185"/>
+								<label class="wide-33" for="mfm-form-up3-9xupload.me">9xupload.me</label>
+								<input class="radio-list" id="mfm-form-up3-bayfiles.com" type="checkbox" name="site" value="3020" checked="checked"/>
+								<label class="wide-33" for="mfm-form-up3-bayfiles.com">bayfiles.com</label>
+								<input class="radio-list" id="mfm-form-up3-dl.free.fr" type="checkbox" name="site" value="1052" checked="checked"/>
+								<label class="wide-33" for="mfm-form-up3-dl.free.fr">dl.free.fr</label>
+								<input class="radio-list" id="mfm-form-up3-dropapk.to" type="checkbox" name="site" value="7615"/>
+								<label class="wide-33" for="mfm-form-up3-dropapk.to">dropapk.to</label>
+								<input class="radio-list" id="mfm-form-up3-solidfiles.com" type="checkbox" name="site" value="1067" checked="checked"/>
+								<label class="wide-33" for="mfm-form-up3-solidfiles.com">solidfiles.com</label>
+								<input class="radio-list" id="mfm-form-up3-upload.ee" type="checkbox" name="site" value="1092"/>
+								<label class="wide-33" for="mfm-form-up3-upload.ee">upload.ee</label>
+								<input class="radio-list" id="mfm-form-up3-uppit.com" type="checkbox" name="site" value="3333"/>
+								<label class="wide-33" for="mfm-form-up3-uppit.com">uppit.com</label>
+								<input class="radio-list" id="mfm-form-up3-uptobox.com" type="checkbox" name="site" value="6081"/>
+								<label class="wide-33" for="mfm-form-up3-uptobox.com">uptobox.com</label>
+								<br /><span class="tiny">Choose at least one host from list above.</span><br />
+							</p>
+							<hr />
+							<p><strong>6.</strong> Upload</p>
+							<p>
+								Result will be JSON page with <span class="help" title="Copy code marked by &quot;code&quot; to clipboard. You will need it below.">file code</span>.<br /><br />
+								<input type="submit" name="press" value="Upload"/><br />
+								<span class="tiny">Upload will occur in <strong>new blank tab</strong>!</span>
+							</p>
+							<hr />
+							<p><strong>7.</strong> Get MultiFileMirror Link</p>
+							<p>
+								Append <span class="help" title="Paste your code from clipboard to end of URL below.">file code</span> to this address to get <span class="help" title="multifilemirror.com">MFM</span> link:<br /><br />
+								<input type="url" size="40" value="https://multifilemirror.com/"/><br />
+								<span class="tiny">Triple-click to select address.</span><br /><br />
+								<span class="red-text">Do not post this link. Follow next step!</span>
+							</p>
+							<hr />
+							<p><strong>8.</strong> Get Download Link(s)</p>
+							<p class="explain">
+								After pasting your code in box above, <strong>visit</strong> resulting URL. On that site, <em>click download button for each file host</em> to visit its site. On each file host's site, your download link for that host can be <em>copied from address bar</em>.<br />
+								<span class="tiny red-text">You may have problems if about:config has network.http.sendRefererHeader = 0.<br />
+								Try setting it to 1 or 2 temporarily.</span>
+							</p>
+						</form>
+					</div>
+					<!-- mfm forms END -->
+				</div>
+				<!-- <div id="box-multiup" class="tab-content">
+					<p>
+						Choose Upload Server<br />
+						<a class="site" href="https://multiup.org/api/get-fastest-server" target="_blank">Get fastest server</a><br />
+						<span class="tiny">Use this for choosing optimal server from list below.</span>
+					</p> -->
+					<!-- multiup.org servers BEGIN -->
+					<!-- placeholder -->
+					<!-- multiup.org servers END -->
+					<!-- multiup.org forms BEGIN -->
+					<!-- placeholder -->
+					<!-- multiup.org forms END -->
+				<!-- </div> -->
+			</div>
+			<div class="info">
+				<h3>How It Works</h3>
+				<ul>
+					<li>This site is javascript-free frontend for file hosts. Form on this page sends POST request directly to chosen file host, just like file host's website.</li>
+					<li>Your download link (or error message) is in raw JSON. Just read it and look for "full" URL. JSON is sent by file host, so this site cannot see result or format it.</li>
+					<li>This site does not store any files. Your files go to file host, not to here.</li>
+				</ul>
+				<h3>Example JSON</h3>
+				<div class="json-example">
+					<table>
+						<tbody>
+							<tr>
+								<td>status:</td>
+								<td class="json-other">true</td>
+							</tr>
+							<tr>
+								<td>data:</td>
+								<td>&nbsp;</td>
+							</tr>
+							<tr>
+								<td>&nbsp;&nbsp;file:</td>
+								<td>&nbsp;</td>
+							</tr>
+							<tr>
+								<td>&nbsp;&nbsp;&nbsp;&nbsp;url:</td>
+								<td>&nbsp;</td>
+							</tr>
+							<tr>
+								<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;full:</td>
+								<td class="json-url"><span class="red-box">"https://bayfiles.com/aBcD12eF34/Possible_Illegalities.7z"</span></td>
+							</tr>
+							<tr>
+								<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;short:</td>
+								<td class="json-url">"https://bayfiles.com/aBcD12eF34"</td>
+							</tr>
+							<tr>
+								<td>&nbsp;&nbsp;&nbsp;&nbsp;metadata:</td>
+								<td>&nbsp;</td>
+							</tr>
+							<tr>
+								<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;id:</td>
+								<td class="json-string">"aBcD12eF34"</td>
+							</tr>
+							<tr>
+								<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name:</td>
+								<td class="json-string">"Possible_Illegalities.7z"</td>
+							</tr>
+							<tr>
+								<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;size:</td>
+								<td>&nbsp;</td>
+							</tr>
+							<tr>
+								<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bytes:</td>
+								<td class="json-other">67108864</td>
+							</tr>
+							<tr>
+								<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;readable:</td>
+								<td class="json-string">"67.11 MB"</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<h3>Security</h3>
+				<ul>
+					<li>Your file is <strong>not</strong> transferred through this site. Your browser connects to clearnet file host via Tor, sending directly to it. Only extra security you get by using this site is avoiding javascript. Otherwise it is exact same as visiting file host's site and uploading from there.</li>
+					<li>Once you click Upload, you are talking to file host, not to this site.</li>
+					<li>Web server logs timestamp when this page is accessed (like every web server). It keeps for only 48 hours. It does <strong>not</strong> know who you are, what you do on page, what you upload, where you upload, whether you even upload anything at all, etc.</li>
+					<li>This site does not send cookies.</li>
+					<li>Site does not contain ads, trackers, web bugs, scripts, iframes, fingerprinting, external stylesheets or images with codes in URL, etc. It is single self-contained HTML page with no external resources, not even images or favicon. You can view page source to verify this.</li>
+				</ul>
+				<h3>Misc</h3>
+				<ul>
+					<li>This site will remain available until file hosts start blocking anonymous uploads or until my hosting provider bans me because of site name.</li>
+					<li>You can upload from Linux without using browser. For example, to upload file "Possible_Illegalities.7z" to bayfiles.com, just do:
+						<p><code>torsocks -i curl -F file=@Possible_Illegalities.7z https://api.bayfiles.com/upload</code></p>
+					You can replace "bayfiles.com" in that URL with host of your choice from list above.</li>
+				</ul>
+				<h3>Terms of Service</h3>
+				<ul>
+					<li>Do not do anything I would not do.</li>
+					<li>Do not do anything I <em>would</em> do that is illegal.</li>
+					<li>I have no idea what you are doing, so these terms do not matter.</li>
+				</ul>
+				<h3>Copyright</h3>
+				<ul>
+					<li>LOL</li>
+					<li>You can do anything you want with this page. No one cares.</li>
+				</ul>
+			</div>
+			<footer>
+				<p class="tiny">This page is 100% valid <span class="define" title="What standards? My browser shows it so it must be valid!">WHATWG</span> <span class="define" title="HTML &quot;Living Standard&quot;">tag soup</span>.</p>
+			</footer>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,22 @@
+{
+	"title": "Eternal",
+	"description": "",
+	"links": "- [Source code](https://github.com/HelloZeroNet)",
+	"next_post_id": 5,
+	"demo": false,
+	"modified": 1491956454,
+	"post": [
+		{
+			"post_id": 4,
+			"title": "libgen rename script",
+			"date_published": 1491955889.183,
+			"body": "```\n​​​​​​​import sys\nimport os\nimport requests\nimport json\nimport hashlib\nfrom bs4 import BeautifulSoup\n\nwith open(sys.argv[1],'rb') as file:\n    fileMd5 = hashlib.md5()\n    buf = file.read()\n    fileMd5.update(buf)\nbasicInfoGetPara = {'md5': fileMd5.hexdigest()}\nbasicInfo = requests.get(\"http://gen.lib.rus.ec/book/index.php\",params=basicInfoGetPara)\nbasicInfoSouped = BeautifulSoup(basicInfo.text, 'html.parser')\nbookID = basicInfoSouped.body.table.contents[15].contents[3].string.lstrip('<tr>').rstrip('</tr>')\ninfoGetPara = {'ids': bookID, 'fields': 'ID,Title,Author,Year,Publisher,extension'}\nlibgenInfoInJSON = requests.get(\"http://gen.lib.rus.ec/json.php\",params=infoGetPara)\nlibgenInfo = json.loads(libgenInfoInJSON.text.lstrip('[').rstrip(']'))\nbookFileName = libgenInfo['author'] + ' - ' + libgenInfo['title'] + ' - ' + libgenInfo['publisher'] + ' (' + libgenInfo['year'] + ').' + libgenInfo['extension']\nbookFileName = bookFileName.replace('\\\\','').replace('\\/','').replace(':','').replace('*','').replace('\"','').replace('<','').replace('>','').replace('|','')\nos.rename(sys.argv[1],bookFileName)\n```"
+		},
+		{
+			"post_id": 3,
+			"title": "transmission unable to save resume file: too many open files",
+			"date_published": 1490980241.296,
+			"body": "> $ sudo -s\n> $ echo \"* - nofile 1536\" >> /etc/security/limits.conf\n> $ exit\n\nSource: [Click](https://ubuntuforums.org/showthread.php?t=1274114)"
+		}
+	]
+}

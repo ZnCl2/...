@@ -1,0 +1,54 @@
+
+<!DOCTYPE html>
+
+<html>
+<head>
+ <title>New ZeroNet site!</title>
+ <meta charset="utf-8">
+ <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+ <base href="" target="_top" id="base">
+ <script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+</head>
+<style>
+body { font-family: monospace; }
+</style>
+<body>
+
+<script type="text/javascript" src="js/ZeroFrame.js"></script>
+
+<script>
+
+class Page extends ZeroFrame {
+	setServerInfo(server_info) {
+		var out = document.getElementById("out")
+		if (server_info.plugins_rev) {
+			var rev = server_info.plugins_rev["Example"]
+			out.innerHTML =
+				"Example plugin status: " + (rev ? "Yes, rev" + rev : "Not loaded")
+		} else {
+			out.innerHTML = "Plugin install not supported by your client"
+
+		}
+	}
+
+	onOpenWebsocket() {
+		this.cmd("serverInfo", [], function(server_info) {
+			page.setServerInfo(server_info)
+		})
+	}
+
+	installPlugin() {
+		this.cmd("pluginAddRequest", "plugins/Example")
+		return false
+	}
+}
+page = new Page()
+
+</script>
+
+<h2>Plugin install demo</h2>
+<a href="/Plugins">Manage installed plugins</a>, <a href="#Install+example+plugin" onclick="return page.installPlugin()">Install Example plugin</a>
+<br/><br/>
+<div id="out"></div>
+</body>
+</html>

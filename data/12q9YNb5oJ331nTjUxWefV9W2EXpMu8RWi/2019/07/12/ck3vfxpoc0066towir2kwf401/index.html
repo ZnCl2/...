@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html>
+    <head><meta name="generator" content="Hexo 3.8.0">
+    
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>IPFS网络栈第三层-Merkledag数据结构 | blurHY |
+        Decentralized web enthusiast - 分布式互联网开发者</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="P2P,IPFS">
+    <meta name="description" content="Merkledag是IPFS的核心，以Merkeldag为基础，可以建立一些复杂的数据结构：  git bitcoin unixfs  参考资料：  https://github.com/ipld/specs https://www.youtube.com/watch?v=Bqs_LzBjQyk https://proto.school/#/basics/01  看 https://explore">
+<meta name="keywords" content="P2P,IPFS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IPFS网络栈第三层-Merkledag数据结构">
+<meta property="og:url" content="https://blurhy.xyz/2019/07/12/ck3vfxpoc0066towir2kwf401/index.html">
+<meta property="og:site_name" content="blurHY">
+<meta property="og:description" content="Merkledag是IPFS的核心，以Merkeldag为基础，可以建立一些复杂的数据结构：  git bitcoin unixfs  参考资料：  https://github.com/ipld/specs https://www.youtube.com/watch?v=Bqs_LzBjQyk https://proto.school/#/basics/01  看 https://explore">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://blurhy.xyz/images/network.svg">
+<meta property="og:image" content="https://blurhy.xyz/images/Code_-_Insiders_ytGKP1XQua.png">
+<meta property="og:updated_time" content="2019-12-07T10:07:50.569Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="IPFS网络栈第三层-Merkledag数据结构">
+<meta name="twitter:description" content="Merkledag是IPFS的核心，以Merkeldag为基础，可以建立一些复杂的数据结构：  git bitcoin unixfs  参考资料：  https://github.com/ipld/specs https://www.youtube.com/watch?v=Bqs_LzBjQyk https://proto.school/#/basics/01  看 https://explore">
+<meta name="twitter:image" content="https://blurhy.xyz/images/network.svg">
+    
+    <link rel="alternate" type="application/atom+xml" title="blurHY" href="../../../../atom.xml">
+    
+    <link rel="shortcut icon" href="data:image/jpeg;base64,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">
+    <link rel="stylesheet" href="../../../.././css/style.css?v=1.7.2">
+    <script>
+        window.lazyScripts = []
+
+    </script>
+
+    <!-- custom head -->
+    
+    <meta name="google-site-verification" content="1JifdT6IlbLHFtBI6bSFN2g2z7wrUmHzKzlTc7FvsSg">
+    <meta name="msvalidate.01" content="F462D6865A366A37964B46B96028A460">
+</head>
+
+    <body>
+        <div id="loading" class="active"></div>
+ <aside id="menu" class="hide">
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(../../../.././img/brand.jpg)">
+      <div class="brand">
+        <a href="../../../../index.html" class="avatar waves-effect waves-circle waves-light">
+          <img src="data:image/jpeg;base64,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">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">blurHY</h5>
+          <a href="mailto:blurhy@outlook.com" title="blurhy@outlook.com" class="mail">blurhy@outlook.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="../../../../index.html">
+                <i class="icon icon-lg icon-home"></i>
+                Home
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="../../../.././archives">
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="../../../.././tags">
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="../../../.././categories">
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/blurHY" target="_blank">
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://gitlab.com/ipzn">
+                <i class="icon icon-lg icon-link"></i>
+                IPZN
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://blurhy.xyz/tags/InstrumentalMusic/">
+                <i class="icon icon-lg icon-music"></i>
+                Playlist
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+        <main id="main">
+            <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">IPFS网络栈第三层-Merkledag数据结构</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="Search ...">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">IPFS网络栈第三层-Merkledag数据结构</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2019-07-12T09:17:17.000Z" itemprop="datePublished" class="page-time">
+  2019-07-12
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="../../../../categories/P2P/">P2P</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#multiformats"><span class="post-toc-number">1.</span> <span class="post-toc-text"> Multiformats</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#merkle-dag-节点结构"><span class="post-toc-number">2.</span> <span class="post-toc-text"> Merkle dag 节点结构</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#路径"><span class="post-toc-number">2.1.</span> <span class="post-toc-text"> 路径</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#对象层面的加密"><span class="post-toc-number">2.2.</span> <span class="post-toc-text"> 对象层面的加密</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#cid"><span class="post-toc-number">3.</span> <span class="post-toc-text"> CID</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#实践"><span class="post-toc-number">4.</span> <span class="post-toc-text"> 实践</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#dag-cbor"><span class="post-toc-number">4.1.</span> <span class="post-toc-text"> dag-cbor</span></a></li></ol></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-IPFS网络栈第三层-Merkledag数据结构" class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">IPFS网络栈第三层-Merkledag数据结构</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2019-07-12 17:17:17" datetime="2019-07-12T09:17:17.000Z" itemprop="datePublished">2019-07-12</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="../../../../categories/P2P/">P2P</a></li></ul>
+
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>Merkledag是IPFS的核心，以Merkeldag为基础，可以建立一些复杂的数据结构：</p>
+<ul>
+<li>git</li>
+<li>bitcoin</li>
+<li>unixfs</li>
+</ul>
+<p>参考资料：</p>
+<ul>
+<li><a href="https://github.com/ipld/specs" target="_blank" rel="noopener">https://github.com/ipld/specs</a></li>
+<li><a href="https://www.youtube.com/watch?v=Bqs_LzBjQyk" target="_blank" rel="noopener">https://www.youtube.com/watch?v=Bqs_LzBjQyk</a></li>
+<li><a href="https://proto.school/#/basics/01" target="_blank" rel="noopener">https://proto.school/#/basics/01</a></li>
+</ul>
+<p>看 <a href="https://explore.ipld.io/#/explore/z8mWaJ4dRuSpBDDzCN773PsAYfbF3VERf" target="_blank" rel="noopener">https://explore.ipld.io/#/explore/z8mWaJ4dRuSpBDDzCN773PsAYfbF3VERf</a> ，这样就有直观感受了。</p>
+<p>Routing层和Exchange层都是为Merkledag数据结构层做准备的，而那两层基本可以视为BitTorrent。</p>
+<p>这层称为IPLD，Interplanetary Linked Data</p>
+<p><img src="../../../../images/network.svg" alt></p>
+<h2 id="multiformats"><a class="markdownIt-Anchor" href="#multiformats"></a> Multiformats</h2>
+<p>Multiformat是一种自解释的数据格式，举一个例子，multihash。</p>
+<section id="SECTION_1" class="secx">
+    <a href="https://github.com/multiformats/multihash#visual-examples" id="A_8" target="_blank" rel="noopener">multihash</a>
+    <div id="DIV_9">
+        <div id="DIV_10">
+            <code id="CODE_11">0x
+            </code><span id="SPAN_12">11</span><span id="SPAN_13">14</span><span id="SPAN_14"><span id="SPAN_15">dc23ffefcd2feaef8036fda45e949afd</span><span id="SPAN_17">86aae5d7</span></span>
+            <label for="CidInfo-multihash" id="LABEL_19">
+                    Hash digest
+                </label>
+            <div id="DIV_20">
+                    <a href="https://github.com/multiformats/multicodec/blob/master/table.csv" id="A_21" target="_blank" rel="noopener"><code id="CODE_22">0x
+                        </code>
+                        <code id="CODE_23">11
+                            </code> = sha1 哈希函数代码</a>
+                    <div id="DIV_24">
+                                <code id="CODE_25">0x
+                                </code>
+                                <code id="CODE_26">14
+                                    </code> = 160 bits 哈希摘要长度
+                            </div>
+                </div>
+        </div>
+    </div>
+</section>
+<p>比如，sha1函数不安全了，可以很方便地升级到更好的哈希函数。</p>
+<h2 id="merkle-dag-节点结构"><a class="markdownIt-Anchor" href="#merkle-dag-节点结构"></a> Merkle dag 节点结构</h2>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">type IPFSLink <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    Name <span class="built_in">string</span></span><br><span class="line">    <span class="comment">// name or alias of this link</span></span><br><span class="line">    Hash Multihash</span><br><span class="line">    <span class="comment">// cryptographic hash of target</span></span><br><span class="line">    Size <span class="keyword">int</span></span><br><span class="line">    <span class="comment">// total size of target</span></span><br><span class="line">&#125;</span><br><span class="line">type IPFSObject <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    links []IPFSLink</span><br><span class="line">    <span class="comment">// array of links</span></span><br><span class="line">    data []byte</span><br><span class="line">    <span class="comment">// opaque content data</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>IPFS的数据结构是很灵活的，一个节点，只需要link的对象以内容编址、用上文方式编码即可。</p>
+<p>data由IPFS上层应用控制，与IPFS关系不大。</p>
+<p>列出一个节点的子节点：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt; ipfs ls /XLZ1625Jjn7SubMDgEyeaynFuR84ginqvzb</span><br><span class="line">XLYkgq61DYaQ8NhkcqyU7rLcnSa7dSHQ16x 189458 less</span><br><span class="line">XLHBNmRQ5sJJrdMPuu48pzeyTtRo39tNDR5 19441 script</span><br><span class="line">XLF4hwVHsVuZ78FZK6fozf8Jj9WEURMbCX4 5286 template</span><br><span class="line">&lt;object multihash&gt; &lt;object size&gt; &lt;link name&gt;</span><br></pre></td></tr></table></figure>
+<h3 id="路径"><a class="markdownIt-Anchor" href="#路径"></a> 路径</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># format</span><br><span class="line">/ipfs/&lt;hash-of-object&gt;/&lt;name-path-to-object&gt;</span><br><span class="line"># example</span><br><span class="line">/ipfs/XLYkgq61DYaQ8NhkcqyU7rLcnSa7dSHQ16x/foo.txt</span><br></pre></td></tr></table></figure>
+<p>通过遍历links解析路径。</p>
+<h3 id="对象层面的加密"><a class="markdownIt-Anchor" href="#对象层面的加密"></a> 对象层面的加密</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">type EncryptedObject <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    Object []bytes</span><br><span class="line">    <span class="comment">// raw object data encrypted</span></span><br><span class="line">    Tag []bytes</span><br><span class="line">    <span class="comment">// optional tag for encryption groups</span></span><br><span class="line">&#125;</span><br><span class="line">type SignedObject <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    Object []bytes</span><br><span class="line">    <span class="comment">// raw object data signed</span></span><br><span class="line">    Signature []bytes</span><br><span class="line">    <span class="comment">// hmac signature</span></span><br><span class="line">    PublicKey []multihash</span><br><span class="line">    <span class="comment">// multihash identifying key</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>加密或者签名的IPFS对象被包含在另一个对象中。</p>
+<p>若没有密钥，就不能遍历加密的对象了。</p>
+<h2 id="cid"><a class="markdownIt-Anchor" href="#cid"></a> CID</h2>
+<section id="SECTION_1">
+	<label id="LABEL_2">
+		<a href="https://docs.ipfs.io/guides/concepts/cid/" id="A_3" target="_blank" rel="noopener">CID信息</a>
+	</label>
+	<div id="DIV_4">
+		<div id="DIV_5">
+			z8mWaJHXieAVxxLagBpdaNWFEBKVWmMiE
+		</div>
+		<div id="DIV_6">
+			base58btc - cidv1 - git-raw - sha1-160-dc23ffefcd2feaef8036fda45e949afd86aae5d7
+		</div>
+		<label for="CidInfo-human-readable-cid" id="LABEL_7">
+			base - version - codec - multihash
+		</label><a href="https://github.com/multiformats/multihash#visual-examples" id="A_8" target="_blank" rel="noopener">multihash</a>
+		<div id="DIV_9">
+			<div id="DIV_10">
+				<code id="CODE_11">0x
+				</code><span id="SPAN_12">11</span><span id="SPAN_13">14</span><span id="SPAN_14"><span id="SPAN_15">dc23ffefcd2feaef8036fda45e949afd</span><span id="SPAN_17">86aae5d7</span></span>
+				<label for="CidInfo-multihash" id="LABEL_19">
+						Hash digest
+					</label>
+				<div id="DIV_20">
+						<a href="https://github.com/multiformats/multicodec/blob/master/table.csv" id="A_21" target="_blank" rel="noopener"><code id="CODE_22">0x
+							</code>
+							<code id="CODE_23">11
+								</code> = sha1</a>
+						<div id="DIV_24">
+									<code id="CODE_25">0x
+									</code>
+									<code id="CODE_26">14
+										</code> = 160 bits
+								</div>
+					</div>
+			</div>
+		</div>
+	</div>
+</section>
+<p>CID，Content identifier，内容标识符。</p>
+<p>由三个部分组成：</p>
+<ul>
+<li>Multibase - 以支持不同编码</li>
+<li>Multicodec - 以支持不同序列化格式，codec指定数据如何转换成二进制格式。</li>
+<li>Multihash</li>
+</ul>
+<p>CID就是MerkleDag最基本的单元了，CID可以指向其他节点。</p>
+<p>用CID组成一个树，每个节点都是一个文件，那么这个树·就是一个文件夹。</p>
+<p>这样就是一个文件系统，查询文件时只需要遍历这个树。</p>
+<h2 id="实践"><a class="markdownIt-Anchor" href="#实践"></a> 实践</h2>
+<p>建一个文件夹，然后<code>yarn init</code>。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yarn add ipfs-http-client cids --registry https://registry.yarnpkg.com</span><br></pre></td></tr></table></figure>
+<p>运行ipfs daemon <code>.\ipfs.exe daemon</code></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> ipfsClient = <span class="built_in">require</span>(<span class="string">'ipfs-http-client'</span>);</span><br><span class="line"><span class="keyword">const</span> CID = <span class="built_in">require</span>(<span class="string">'cids'</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//Connecting ipfs instance to infura node. You can also use your local node.</span></span><br><span class="line"><span class="keyword">const</span> ipfs = <span class="keyword">new</span> ipfsClient(&#123; <span class="attr">host</span>: <span class="string">'localhost'</span>, <span class="attr">port</span>: <span class="string">'5001'</span>, <span class="attr">protocol</span>: <span class="string">'http'</span> &#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">Creating an IPLD format node:</span></span><br><span class="line"><span class="comment">ipfs.dag.put(dagNode, [options], [callback])</span></span><br><span class="line"><span class="comment">For more information see: </span></span><br><span class="line"><span class="comment">https://github.com/ipfs/interface-js-ipfs-core/blob/master/SPEC/DAG.md#ipfsdagputdagnode-options-callback</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line">ipfs.dag.put(&#123; <span class="attr">name</span>: <span class="string">"vasa"</span> &#125;, &#123; <span class="attr">format</span>: <span class="string">'dag-cbor'</span>, <span class="attr">hashAlg</span>: <span class="string">'sha2-256'</span> &#125;, (err, cid) =&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> (err) &#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">"ERR\n"</span>, err);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">console</span>.log(cid)</span><br><span class="line">    <span class="comment">//featching multihash buffer from cid object.</span></span><br><span class="line">    <span class="keyword">const</span> multihash = cid.multihash;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//passing multihash buffer to CID object to convert multihash to a readable format   </span></span><br><span class="line">    <span class="keyword">const</span> cids = <span class="keyword">new</span> CID(<span class="number">1</span>, <span class="string">'dag-cbor'</span>, multihash);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//Printing out the cid in a readable format</span></span><br><span class="line">    <span class="built_in">console</span>.log(cids.toBaseEncodedString());</span><br><span class="line">    <span class="comment">//zdpuAujL3noEMamveLPQWJPY6CYZHhHoskYQaZBvRbAfVwR8S</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p><img src="../../../../images/Code_-_Insiders_ytGKP1XQua.png" alt></p>
+<h3 id="dag-cbor"><a class="markdownIt-Anchor" href="#dag-cbor"></a> dag-cbor</h3>
+<p><a href="https://github.com/ipld/specs/blob/master/block-layer/serialization-and-formats.md" target="_blank" rel="noopener">https://github.com/ipld/specs/blob/master/block-layer/serialization-and-formats.md</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">┌────────────────────┐             ┌────────────────────┐</span><br><span class="line">│                    │             │                    │</span><br><span class="line">│     Serializer     │             │    Deserializer    │</span><br><span class="line">│                    │             │                    │</span><br><span class="line">└─────────┬──────────┘             └──────────^─────────┘</span><br><span class="line">          │                                   │</span><br><span class="line">          │         Sent to another peer      │</span><br><span class="line">          │                                   │</span><br><span class="line">┌─────────v──────────┐             ┌──────────┴─────────┐</span><br><span class="line">│                    │             │                    │</span><br><span class="line">│       Format       ├─────────────&gt;       Format       │</span><br><span class="line">│                    │             │                    │</span><br><span class="line">└────────────────────┘             └────────────────────┘</span><br></pre></td></tr></table></figure>
+<p>CBOR是IPFS的一种数据格式，代表着如何在结构化数据和二进制数据之间互转。</p>
+<style>
+.secx{
+height: auto!important;
+    padding-top: 0!important;
+}
+#SECTION_1 {
+    box-sizing: border-box;
+    height: 306px;
+    text-size-adjust: 100%;
+    width: 422px;
+    perspective-origin: 211px 153px;
+    transform-origin: 211px 153px;
+    background: rgb(251, 251, 251) none repeat scroll 0% 0% / auto padding-box border-box;
+    font: normal normal 400 normal 16px / 18.4px "Inter UI", system-ui, sans-serif;
+    overflow: hidden;
+    padding: 32px 16px;
+}/*#SECTION_1*/
+
+#SECTION_1:after {
+    text-size-adjust: 100%;
+    font: normal normal 400 normal 16px / 18.4px "Inter UI", system-ui, sans-serif;
+}/*#SECTION_1:after*/
+
+#SECTION_1:before {
+    text-size-adjust: 100%;
+    font: normal normal 400 normal 16px / 18.4px "Inter UI", system-ui, sans-serif;
+}/*#SECTION_1:before*/
+
+#LABEL_2 {
+    display: block;
+    height: 18px;
+    text-size-adjust: 100%;
+    width: 390px;
+    perspective-origin: 195px 13px;
+    transform-origin: 195px 13px;
+    font: normal normal 400 normal 16px / 18.4px "Inter UI", system-ui, sans-serif;
+    padding: 0px 0px 8px;
+}/*#LABEL_2*/
+
+#LABEL_2:after {
+    text-size-adjust: 100%;
+    font: normal normal 400 normal 16px / 18.4px "Inter UI", system-ui, sans-serif;
+}/*#LABEL_2:after*/
+
+#LABEL_2:before {
+    text-size-adjust: 100%;
+    font: normal normal 400 normal 16px / 18.4px "Inter UI", system-ui, sans-serif;
+}/*#LABEL_2:before*/
+
+#A_3 {
+    box-sizing: border-box;
+    color: rgb(67, 154, 157);
+    letter-spacing: 1.6px;
+    text-decoration: none solid rgb(67, 154, 157);
+    text-size-adjust: 100%;
+    text-transform: uppercase;
+    column-rule-color: rgb(67, 154, 157);
+    perspective-origin: 0px 0px;
+    transform-origin: 0px 0px;
+    caret-color: rgb(67, 154, 157);
+    border: 0px none rgb(67, 154, 157);
+    font: normal normal 200 normal 16px / 18.4px "Inter UI", system-ui, sans-serif;
+    outline: rgb(67, 154, 157) none 0px;
+    transition: color 0.15s ease-in 0s;
+}/*#A_3*/
+
+#A_3:after {
+    color: rgb(67, 154, 157);
+    letter-spacing: 1.6px;
+    text-decoration: none solid rgb(67, 154, 157);
+    text-size-adjust: 100%;
+    text-transform: uppercase;
+    column-rule-color: rgb(67, 154, 157);
+    caret-color: rgb(67, 154, 157);
+    border: 0px none rgb(67, 154, 157);
+    font: normal normal 200 normal 16px / 18.4px "Inter UI", system-ui, sans-serif;
+    outline: rgb(67, 154, 157) none 0px;
+}/*#A_3:after*/
+
+#A_3:before {
+    color: rgb(67, 154, 157);
+    letter-spacing: 1.6px;
+    text-decoration: none solid rgb(67, 154, 157);
+    text-size-adjust: 100%;
+    text-transform: uppercase;
+    column-rule-color: rgb(67, 154, 157);
+    caret-color: rgb(67, 154, 157);
+    border: 0px none rgb(67, 154, 157);
+    font: normal normal 200 normal 16px / 18.4px "Inter UI", system-ui, sans-serif;
+    outline: rgb(67, 154, 157) none 0px;
+}/*#A_3:before*/
+
+#DIV_4 {
+    box-sizing: border-box;
+    height: 216px;
+    text-size-adjust: 100%;
+    width: 390px;
+    perspective-origin: 195px 108px;
+    transform-origin: 195px 108px;
+    font: normal normal 400 normal 16px / 18.4px "Inter UI", system-ui, sans-serif;
+}/*#DIV_4*/
+
+#DIV_4:after {
+    text-size-adjust: 100%;
+    font: normal normal 400 normal 16px / 18.4px "Inter UI", system-ui, sans-serif;
+}/*#DIV_4:after*/
+
+#DIV_4:before {
+    text-size-adjust: 100%;
+    font: normal normal 400 normal 16px / 18.4px "Inter UI", system-ui, sans-serif;
+}/*#DIV_4:before*/
+
+#DIV_5 {
+    box-sizing: border-box;
+    color: rgb(183, 187, 200);
+    height: 21px;
+    text-decoration: none solid rgb(183, 187, 200);
+    text-size-adjust: 100%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 390px;
+    column-rule-color: rgb(183, 187, 200);
+    perspective-origin: 195px 10.5px;
+    transform-origin: 195px 10.5px;
+    caret-color: rgb(183, 187, 200);
+    border: 0px none rgb(183, 187, 200);
+    font: normal normal 400 normal 12px / 13.8px Consolas, monaco, monospace;
+    outline: rgb(183, 187, 200) none 0px;
+    overflow: hidden;
+    padding: 0px 0px 8px;
+}/*#DIV_5*/
+
+#DIV_5:after {
+    color: rgb(183, 187, 200);
+    text-decoration: none solid rgb(183, 187, 200);
+    text-size-adjust: 100%;
+    white-space: nowrap;
+    column-rule-color: rgb(183, 187, 200);
+    caret-color: rgb(183, 187, 200);
+    border: 0px none rgb(183, 187, 200);
+    font: normal normal 400 normal 12px / 13.8px Consolas, monaco, monospace;
+    outline: rgb(183, 187, 200) none 0px;
+}/*#DIV_5:after*/
+
+#DIV_5:before {
+    color: rgb(183, 187, 200);
+    text-decoration: none solid rgb(183, 187, 200);
+    text-size-adjust: 100%;
+    white-space: nowrap;
+    column-rule-color: rgb(183, 187, 200);
+    caret-color: rgb(183, 187, 200);
+    border: 0px none rgb(183, 187, 200);
+    font: normal normal 400 normal 12px / 13.8px Consolas, monaco, monospace;
+    outline: rgb(183, 187, 200) none 0px;
+}/*#DIV_5:before*/
+
+#DIV_6 {
+    box-sizing: border-box;
+    height: 24px;
+    text-size-adjust: 100%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 390px;
+    perspective-origin: 195px 12px;
+    transform-origin: 195px 12px;
+    font: normal normal 400 normal 14px / 16.1px "Inter UI", system-ui, sans-serif;
+    overflow: hidden;
+    padding: 0px 0px 8px;
+}/*#DIV_6*/
+
+#DIV_6:after {
+    text-size-adjust: 100%;
+    white-space: nowrap;
+    font: normal normal 400 normal 14px / 16.1px "Inter UI", system-ui, sans-serif;
+}/*#DIV_6:after*/
+
+#DIV_6:before {
+    text-size-adjust: 100%;
+    white-space: nowrap;
+    font: normal normal 400 normal 14px / 16.1px "Inter UI", system-ui, sans-serif;
+}/*#DIV_6:before*/
+
+#LABEL_7 {
+    color: rgb(183, 187, 200);
+    display: block;
+    height: 13px;
+    letter-spacing: 1.2px;
+    text-decoration: none solid rgb(183, 187, 200);
+    text-size-adjust: 100%;
+    text-transform: uppercase;
+    width: 390px;
+    column-rule-color: rgb(183, 187, 200);
+    perspective-origin: 195px 6.5px;
+    transform-origin: 195px 6.5px;
+    caret-color: rgb(183, 187, 200);
+    border: 0px none rgb(183, 187, 200);
+    font: normal normal 200 normal 12px / 13.8px "Inter UI", system-ui, sans-serif;
+    outline: rgb(183, 187, 200) none 0px;
+}/*#LABEL_7*/
+
+#LABEL_7:after {
+    color: rgb(183, 187, 200);
+    letter-spacing: 1.2px;
+    text-decoration: none solid rgb(183, 187, 200);
+    text-size-adjust: 100%;
+    text-transform: uppercase;
+    column-rule-color: rgb(183, 187, 200);
+    caret-color: rgb(183, 187, 200);
+    border: 0px none rgb(183, 187, 200);
+    font: normal normal 200 normal 12px / 13.8px "Inter UI", system-ui, sans-serif;
+    outline: rgb(183, 187, 200) none 0px;
+}/*#LABEL_7:after*/
+
+#LABEL_7:before {
+    color: rgb(183, 187, 200);
+    letter-spacing: 1.2px;
+    text-decoration: none solid rgb(183, 187, 200);
+    text-size-adjust: 100%;
+    text-transform: uppercase;
+    column-rule-color: rgb(183, 187, 200);
+    caret-color: rgb(183, 187, 200);
+    border: 0px none rgb(183, 187, 200);
+    font: normal normal 200 normal 12px / 13.8px "Inter UI", system-ui, sans-serif;
+    outline: rgb(183, 187, 200) none 0px;
+}/*#LABEL_7:before*/
+
+#A_8 {
+    box-sizing: border-box;
+    color: rgb(67, 154, 157);
+    display: inline-block;
+    height: 16px;
+    letter-spacing: 1.4px;
+    text-decoration: none solid rgb(67, 154, 157);
+    text-size-adjust: 100%;
+    text-transform: uppercase;
+    width: 92.7031px;
+    column-rule-color: rgb(67, 154, 157);
+    perspective-origin: 46.3438px 8px;
+    transform-origin: 46.3516px 8px;
+    caret-color: rgb(67, 154, 157);
+    border: 0px none rgb(67, 154, 157);
+    font: normal normal 200 normal 14px / 16.1px "Inter UI", system-ui, sans-serif;
+    margin: 32px 0px 0px;
+    outline: rgb(67, 154, 157) none 0px;
+    transition: color 0.15s ease-in 0s;
+}/*#A_8*/
+
+#A_8:after {
+    color: rgb(67, 154, 157);
+    letter-spacing: 1.4px;
+    text-decoration: none solid rgb(67, 154, 157);
+    text-size-adjust: 100%;
+    text-transform: uppercase;
+    column-rule-color: rgb(67, 154, 157);
+    caret-color: rgb(67, 154, 157);
+    border: 0px none rgb(67, 154, 157);
+    font: normal normal 200 normal 14px / 16.1px "Inter UI", system-ui, sans-serif;
+    outline: rgb(67, 154, 157) none 0px;
+}/*#A_8:after*/
+
+#A_8:before {
+    color: rgb(67, 154, 157);
+    letter-spacing: 1.4px;
+    text-decoration: none solid rgb(67, 154, 157);
+    text-size-adjust: 100%;
+    text-transform: uppercase;
+    column-rule-color: rgb(67, 154, 157);
+    caret-color: rgb(67, 154, 157);
+    border: 0px none rgb(67, 154, 157);
+    font: normal normal 200 normal 14px / 16.1px "Inter UI", system-ui, sans-serif;
+    outline: rgb(67, 154, 157) none 0px;
+}/*#A_8:before*/
+
+#DIV_9 {
+    box-sizing: border-box;
+    height: 109px;
+    text-size-adjust: 100%;
+    width: 390px;
+    perspective-origin: 195px 54.5px;
+    transform-origin: 195px 54.5px;
+    font: normal normal 400 normal 16px / 18.4px "Inter UI", system-ui, sans-serif;
+}/*#DIV_9*/
+
+#DIV_9:after {
+    text-size-adjust: 100%;
+    font: normal normal 400 normal 16px / 18.4px "Inter UI", system-ui, sans-serif;
+}/*#DIV_9:after*/
+
+#DIV_9:before {
+    text-size-adjust: 100%;
+    font: normal normal 400 normal 16px / 18.4px "Inter UI", system-ui, sans-serif;
+}/*#DIV_9:before*/
+
+#DIV_10 {
+    box-sizing: border-box;
+    color: rgb(51, 51, 51);
+    display: inline-block;
+    height: 109px;
+    text-align: right;
+    text-decoration: none solid rgb(51, 51, 51);
+    text-size-adjust: 100%;
+    width: 308.531px;
+    column-rule-color: rgb(51, 51, 51);
+    perspective-origin: 154.266px 54.5px;
+    transform-origin: 154.266px 54.5px;
+    caret-color: rgb(51, 51, 51);
+    border: 0px none rgb(51, 51, 51);
+    font: normal normal 400 normal 14px / 17.5px Consolas, monaco, monospace;
+    outline: rgb(51, 51, 51) none 0px;
+    padding: 8px 8px 0px;
+}/*#DIV_10*/
+
+#DIV_10:after {
+    color: rgb(51, 51, 51);
+    text-align: right;
+    text-decoration: none solid rgb(51, 51, 51);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(51, 51, 51);
+    caret-color: rgb(51, 51, 51);
+    border: 0px none rgb(51, 51, 51);
+    font: normal normal 400 normal 14px / 17.5px Consolas, monaco, monospace;
+    outline: rgb(51, 51, 51) none 0px;
+}/*#DIV_10:after*/
+
+#DIV_10:before {
+    color: rgb(51, 51, 51);
+    text-align: right;
+    text-decoration: none solid rgb(51, 51, 51);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(51, 51, 51);
+    caret-color: rgb(51, 51, 51);
+    border: 0px none rgb(51, 51, 51);
+    font: normal normal 400 normal 14px / 17.5px Consolas, monaco, monospace;
+    outline: rgb(51, 51, 51) none 0px;
+}/*#DIV_10:before*/
+
+#CODE_11 {
+    box-sizing: border-box;
+    color: rgb(183, 187, 200);
+    text-align: right;
+    text-decoration: none solid rgb(183, 187, 200);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(183, 187, 200);
+    perspective-origin: 0px 0px;
+    transform-origin: 0px 0px;
+    caret-color: rgb(183, 187, 200);
+    border: 0px none rgb(183, 187, 200);
+    font: normal normal 400 normal 14px / 17.5px Consolas, monaco, monospace;
+    outline: rgb(183, 187, 200) none 0px;
+}/*#CODE_11*/
+
+#CODE_11:after {
+    color: rgb(183, 187, 200);
+    text-align: right;
+    text-decoration: none solid rgb(183, 187, 200);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(183, 187, 200);
+    caret-color: rgb(183, 187, 200);
+    border: 0px none rgb(183, 187, 200);
+    font: normal normal 400 normal 14px / 17.5px Consolas, monaco, monospace;
+    outline: rgb(183, 187, 200) none 0px;
+}/*#CODE_11:after*/
+
+#CODE_11:before {
+    color: rgb(183, 187, 200);
+    text-align: right;
+    text-decoration: none solid rgb(183, 187, 200);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(183, 187, 200);
+    caret-color: rgb(183, 187, 200);
+    border: 0px none rgb(183, 187, 200);
+    font: normal normal 400 normal 14px / 17.5px Consolas, monaco, monospace;
+    outline: rgb(183, 187, 200) none 0px;
+}/*#CODE_11:before*/
+
+#SPAN_12 {
+    color: rgb(255, 99, 0);
+    text-align: right;
+    text-decoration: none solid rgb(255, 99, 0);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(255, 99, 0);
+    perspective-origin: 0px 0px;
+    transform-origin: 0px 0px;
+    caret-color: rgb(255, 99, 0);
+    border: 0px none rgb(255, 99, 0);
+    font: normal normal 400 normal 14px / 17.5px Consolas, monaco, monospace;
+    outline: rgb(255, 99, 0) none 0px;
+}/*#SPAN_12*/
+
+#SPAN_12:after {
+    color: rgb(255, 99, 0);
+    text-align: right;
+    text-decoration: none solid rgb(255, 99, 0);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(255, 99, 0);
+    caret-color: rgb(255, 99, 0);
+    border: 0px none rgb(255, 99, 0);
+    font: normal normal 400 normal 14px / 17.5px Consolas, monaco, monospace;
+    outline: rgb(255, 99, 0) none 0px;
+}/*#SPAN_12:after*/
+
+#SPAN_12:before {
+    color: rgb(255, 99, 0);
+    text-align: right;
+    text-decoration: none solid rgb(255, 99, 0);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(255, 99, 0);
+    caret-color: rgb(255, 99, 0);
+    border: 0px none rgb(255, 99, 0);
+    font: normal normal 400 normal 14px / 17.5px Consolas, monaco, monospace;
+    outline: rgb(255, 99, 0) none 0px;
+}/*#SPAN_12:before*/
+
+#SPAN_13 {
+    color: rgb(12, 184, 146);
+    text-align: right;
+    text-decoration: none solid rgb(12, 184, 146);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(12, 184, 146);
+    perspective-origin: 0px 0px;
+    transform-origin: 0px 0px;
+    caret-color: rgb(12, 184, 146);
+    border: 0px none rgb(12, 184, 146);
+    font: normal normal 400 normal 14px / 17.5px Consolas, monaco, monospace;
+    outline: rgb(12, 184, 146) none 0px;
+}/*#SPAN_13*/
+
+#SPAN_13:after {
+    color: rgb(12, 184, 146);
+    text-align: right;
+    text-decoration: none solid rgb(12, 184, 146);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(12, 184, 146);
+    caret-color: rgb(12, 184, 146);
+    border: 0px none rgb(12, 184, 146);
+    font: normal normal 400 normal 14px / 17.5px Consolas, monaco, monospace;
+    outline: rgb(12, 184, 146) none 0px;
+}/*#SPAN_13:after*/
+
+#SPAN_13:before {
+    color: rgb(12, 184, 146);
+    text-align: right;
+    text-decoration: none solid rgb(12, 184, 146);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(12, 184, 146);
+    caret-color: rgb(12, 184, 146);
+    border: 0px none rgb(12, 184, 146);
+    font: normal normal 400 normal 14px / 17.5px Consolas, monaco, monospace;
+    outline: rgb(12, 184, 146) none 0px;
+}/*#SPAN_13:before*/
+
+#SPAN_14, #SPAN_15, #SPAN_17 {
+    color: rgb(51, 51, 51);
+    text-align: right;
+    text-decoration: none solid rgb(51, 51, 51);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(51, 51, 51);
+    perspective-origin: 0px 0px;
+    transform-origin: 0px 0px;
+    caret-color: rgb(51, 51, 51);
+    border: 0px none rgb(51, 51, 51);
+    font: normal normal 400 normal 14px / 17.5px Consolas, monaco, monospace;
+    outline: rgb(51, 51, 51) none 0px;
+}/*#SPAN_14, #SPAN_15, #SPAN_17*/
+
+#SPAN_14:after, #SPAN_15:after, #SPAN_17:after {
+    color: rgb(51, 51, 51);
+    text-align: right;
+    text-decoration: none solid rgb(51, 51, 51);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(51, 51, 51);
+    caret-color: rgb(51, 51, 51);
+    border: 0px none rgb(51, 51, 51);
+    font: normal normal 400 normal 14px / 17.5px Consolas, monaco, monospace;
+    outline: rgb(51, 51, 51) none 0px;
+}/*#SPAN_14:after, #SPAN_15:after, #SPAN_17:after*/
+
+#SPAN_14:before, #SPAN_15:before, #SPAN_17:before {
+    color: rgb(51, 51, 51);
+    text-align: right;
+    text-decoration: none solid rgb(51, 51, 51);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(51, 51, 51);
+    caret-color: rgb(51, 51, 51);
+    border: 0px none rgb(51, 51, 51);
+    font: normal normal 400 normal 14px / 17.5px Consolas, monaco, monospace;
+    outline: rgb(51, 51, 51) none 0px;
+}/*#SPAN_14:before, #SPAN_15:before, #SPAN_17:before*/
+
+#BR_16, #BR_18 {
+    color: rgb(51, 51, 51);
+    text-align: right;
+    text-decoration: none solid rgb(51, 51, 51);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(51, 51, 51);
+    perspective-origin: 0px 0px;
+    transform-origin: 0px 0px;
+    caret-color: rgb(51, 51, 51);
+    border: 0px none rgb(51, 51, 51);
+    font: normal normal 400 normal 14px / 17.5px Consolas, monaco, monospace;
+    outline: rgb(51, 51, 51) none 0px;
+}/*#BR_16, #BR_18*/
+
+#BR_16:after, #BR_18:after {
+    color: rgb(51, 51, 51);
+    text-align: right;
+    text-decoration: none solid rgb(51, 51, 51);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(51, 51, 51);
+    caret-color: rgb(51, 51, 51);
+    border: 0px none rgb(51, 51, 51);
+    font: normal normal 400 normal 14px / 17.5px Consolas, monaco, monospace;
+    outline: rgb(51, 51, 51) none 0px;
+}/*#BR_16:after, #BR_18:after*/
+
+#BR_16:before, #BR_18:before {
+    color: rgb(51, 51, 51);
+    text-align: right;
+    text-decoration: none solid rgb(51, 51, 51);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(51, 51, 51);
+    caret-color: rgb(51, 51, 51);
+    border: 0px none rgb(51, 51, 51);
+    font: normal normal 400 normal 14px / 17.5px Consolas, monaco, monospace;
+    outline: rgb(51, 51, 51) none 0px;
+}/*#BR_16:before, #BR_18:before*/
+
+#LABEL_19 {
+    color: rgb(183, 187, 200);
+    letter-spacing: 1.2px;
+    text-align: right;
+    text-decoration: none solid rgb(183, 187, 200);
+    text-size-adjust: 100%;
+    text-transform: uppercase;
+    column-rule-color: rgb(183, 187, 200);
+    perspective-origin: 0px 0px;
+    transform-origin: 0px 0px;
+    caret-color: rgb(183, 187, 200);
+    border: 0px none rgb(183, 187, 200);
+    font: normal normal 200 normal 12px / 15px "Inter UI", system-ui, sans-serif;
+    outline: rgb(183, 187, 200) none 0px;
+}/*#LABEL_19*/
+
+#LABEL_19:after {
+    color: rgb(183, 187, 200);
+    letter-spacing: 1.2px;
+    text-align: right;
+    text-decoration: none solid rgb(183, 187, 200);
+    text-size-adjust: 100%;
+    text-transform: uppercase;
+    column-rule-color: rgb(183, 187, 200);
+    caret-color: rgb(183, 187, 200);
+    border: 0px none rgb(183, 187, 200);
+    font: normal normal 200 normal 12px / 15px "Inter UI", system-ui, sans-serif;
+    outline: rgb(183, 187, 200) none 0px;
+}/*#LABEL_19:after*/
+
+#LABEL_19:before {
+    color: rgb(183, 187, 200);
+    letter-spacing: 1.2px;
+    text-align: right;
+    text-decoration: none solid rgb(183, 187, 200);
+    text-size-adjust: 100%;
+    text-transform: uppercase;
+    column-rule-color: rgb(183, 187, 200);
+    caret-color: rgb(183, 187, 200);
+    border: 0px none rgb(183, 187, 200);
+    font: normal normal 200 normal 12px / 15px "Inter UI", system-ui, sans-serif;
+    outline: rgb(183, 187, 200) none 0px;
+}/*#LABEL_19:before*/
+
+#DIV_20 {
+    box-sizing: border-box;
+    color: rgb(51, 51, 51);
+    height: 50px;
+    text-align: left;
+    text-decoration: none solid rgb(51, 51, 51);
+    text-size-adjust: 100%;
+    width: 292.531px;
+    column-rule-color: rgb(51, 51, 51);
+    perspective-origin: 146.266px 25px;
+    transform-origin: 146.266px 25px;
+    caret-color: rgb(51, 51, 51);
+    border: 0px none rgb(51, 51, 51);
+    font: normal normal 400 normal 14px / 21px Consolas, monaco, monospace;
+    outline: rgb(51, 51, 51) none 0px;
+}/*#DIV_20*/
+
+#DIV_20:after {
+    color: rgb(51, 51, 51);
+    text-align: left;
+    text-decoration: none solid rgb(51, 51, 51);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(51, 51, 51);
+    caret-color: rgb(51, 51, 51);
+    border: 0px none rgb(51, 51, 51);
+    font: normal normal 400 normal 14px / 21px Consolas, monaco, monospace;
+    outline: rgb(51, 51, 51) none 0px;
+}/*#DIV_20:after*/
+
+#DIV_20:before {
+    color: rgb(51, 51, 51);
+    text-align: left;
+    text-decoration: none solid rgb(51, 51, 51);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(51, 51, 51);
+    caret-color: rgb(51, 51, 51);
+    border: 0px none rgb(51, 51, 51);
+    font: normal normal 400 normal 14px / 21px Consolas, monaco, monospace;
+    outline: rgb(51, 51, 51) none 0px;
+}/*#DIV_20:before*/
+
+#A_21 {
+    box-sizing: border-box;
+    color: rgb(255, 99, 0);
+    display: block;
+    height: 29px;
+    text-align: left;
+    text-decoration: none solid rgb(255, 99, 0);
+    text-size-adjust: 100%;
+    width: 292.531px;
+    column-rule-color: rgb(255, 99, 0);
+    perspective-origin: 146.266px 14.5px;
+    transform-origin: 146.266px 14.5px;
+    caret-color: rgb(255, 99, 0);
+    border: 0px none rgb(255, 99, 0);
+    font: normal normal 400 normal 14px / 21px Consolas, monaco, monospace;
+    outline: rgb(255, 99, 0) none 0px;
+    padding: 8px 0px 0px;
+    transition: color 0.15s ease-in 0s;
+}/*#A_21*/
+
+#A_21:after {
+    color: rgb(255, 99, 0);
+    text-align: left;
+    text-decoration: none solid rgb(255, 99, 0);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(255, 99, 0);
+    caret-color: rgb(255, 99, 0);
+    border: 0px none rgb(255, 99, 0);
+    font: normal normal 400 normal 14px / 21px Consolas, monaco, monospace;
+    outline: rgb(255, 99, 0) none 0px;
+}/*#A_21:after*/
+
+#A_21:before {
+    color: rgb(255, 99, 0);
+    text-align: left;
+    text-decoration: none solid rgb(255, 99, 0);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(255, 99, 0);
+    caret-color: rgb(255, 99, 0);
+    border: 0px none rgb(255, 99, 0);
+    font: normal normal 400 normal 14px / 21px Consolas, monaco, monospace;
+    outline: rgb(255, 99, 0) none 0px;
+}/*#A_21:before*/
+
+#CODE_22 {
+    box-sizing: border-box;
+    color: rgb(183, 187, 200);
+    cursor: pointer;
+    text-align: left;
+    text-decoration: none solid rgb(183, 187, 200);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(183, 187, 200);
+    perspective-origin: 0px 0px;
+    transform-origin: 0px 0px;
+    caret-color: rgb(183, 187, 200);
+    border: 0px none rgb(183, 187, 200);
+    font: normal normal 400 normal 14px / 21px Consolas, monaco, monospace;
+    outline: rgb(183, 187, 200) none 0px;
+}/*#CODE_22*/
+
+#CODE_22:after {
+    color: rgb(183, 187, 200);
+    cursor: pointer;
+    text-align: left;
+    text-decoration: none solid rgb(183, 187, 200);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(183, 187, 200);
+    caret-color: rgb(183, 187, 200);
+    border: 0px none rgb(183, 187, 200);
+    font: normal normal 400 normal 14px / 21px Consolas, monaco, monospace;
+    outline: rgb(183, 187, 200) none 0px;
+}/*#CODE_22:after*/
+
+#CODE_22:before {
+    color: rgb(183, 187, 200);
+    cursor: pointer;
+    text-align: left;
+    text-decoration: none solid rgb(183, 187, 200);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(183, 187, 200);
+    caret-color: rgb(183, 187, 200);
+    border: 0px none rgb(183, 187, 200);
+    font: normal normal 400 normal 14px / 21px Consolas, monaco, monospace;
+    outline: rgb(183, 187, 200) none 0px;
+}/*#CODE_22:before*/
+
+#CODE_23 {
+    box-sizing: border-box;
+    color: rgb(255, 99, 0);
+    cursor: pointer;
+    text-align: left;
+    text-decoration: none solid rgb(255, 99, 0);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(255, 99, 0);
+    perspective-origin: 0px 0px;
+    transform-origin: 0px 0px;
+    caret-color: rgb(255, 99, 0);
+    border: 0px none rgb(255, 99, 0);
+    font: normal normal 400 normal 14px / 21px Consolas, monaco, monospace;
+    outline: rgb(255, 99, 0) none 0px;
+}/*#CODE_23*/
+
+#CODE_23:after {
+    color: rgb(255, 99, 0);
+    cursor: pointer;
+    text-align: left;
+    text-decoration: none solid rgb(255, 99, 0);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(255, 99, 0);
+    caret-color: rgb(255, 99, 0);
+    border: 0px none rgb(255, 99, 0);
+    font: normal normal 400 normal 14px / 21px Consolas, monaco, monospace;
+    outline: rgb(255, 99, 0) none 0px;
+}/*#CODE_23:after*/
+
+#CODE_23:before {
+    color: rgb(255, 99, 0);
+    cursor: pointer;
+    text-align: left;
+    text-decoration: none solid rgb(255, 99, 0);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(255, 99, 0);
+    caret-color: rgb(255, 99, 0);
+    border: 0px none rgb(255, 99, 0);
+    font: normal normal 400 normal 14px / 21px Consolas, monaco, monospace;
+    outline: rgb(255, 99, 0) none 0px;
+}/*#CODE_23:before*/
+
+#DIV_24 {
+    box-sizing: border-box;
+    color: rgb(12, 184, 146);
+    height: 21px;
+    text-align: left;
+    text-decoration: none solid rgb(12, 184, 146);
+    text-size-adjust: 100%;
+    width: 292.531px;
+    column-rule-color: rgb(12, 184, 146);
+    perspective-origin: 146.266px 10.5px;
+    transform-origin: 146.266px 10.5px;
+    caret-color: rgb(12, 184, 146);
+    border: 0px none rgb(12, 184, 146);
+    font: normal normal 400 normal 14px / 21px Consolas, monaco, monospace;
+    outline: rgb(12, 184, 146) none 0px;
+}/*#DIV_24*/
+
+#DIV_24:after {
+    color: rgb(12, 184, 146);
+    text-align: left;
+    text-decoration: none solid rgb(12, 184, 146);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(12, 184, 146);
+    caret-color: rgb(12, 184, 146);
+    border: 0px none rgb(12, 184, 146);
+    font: normal normal 400 normal 14px / 21px Consolas, monaco, monospace;
+    outline: rgb(12, 184, 146) none 0px;
+}/*#DIV_24:after*/
+
+#DIV_24:before {
+    color: rgb(12, 184, 146);
+    text-align: left;
+    text-decoration: none solid rgb(12, 184, 146);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(12, 184, 146);
+    caret-color: rgb(12, 184, 146);
+    border: 0px none rgb(12, 184, 146);
+    font: normal normal 400 normal 14px / 21px Consolas, monaco, monospace;
+    outline: rgb(12, 184, 146) none 0px;
+}/*#DIV_24:before*/
+
+#CODE_25 {
+    box-sizing: border-box;
+    color: rgb(183, 187, 200);
+    text-align: left;
+    text-decoration: none solid rgb(183, 187, 200);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(183, 187, 200);
+    perspective-origin: 0px 0px;
+    transform-origin: 0px 0px;
+    caret-color: rgb(183, 187, 200);
+    border: 0px none rgb(183, 187, 200);
+    font: normal normal 400 normal 14px / 21px Consolas, monaco, monospace;
+    outline: rgb(183, 187, 200) none 0px;
+}/*#CODE_25*/
+
+#CODE_25:after {
+    color: rgb(183, 187, 200);
+    text-align: left;
+    text-decoration: none solid rgb(183, 187, 200);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(183, 187, 200);
+    caret-color: rgb(183, 187, 200);
+    border: 0px none rgb(183, 187, 200);
+    font: normal normal 400 normal 14px / 21px Consolas, monaco, monospace;
+    outline: rgb(183, 187, 200) none 0px;
+}/*#CODE_25:after*/
+
+#CODE_25:before {
+    color: rgb(183, 187, 200);
+    text-align: left;
+    text-decoration: none solid rgb(183, 187, 200);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(183, 187, 200);
+    caret-color: rgb(183, 187, 200);
+    border: 0px none rgb(183, 187, 200);
+    font: normal normal 400 normal 14px / 21px Consolas, monaco, monospace;
+    outline: rgb(183, 187, 200) none 0px;
+}/*#CODE_25:before*/
+
+#CODE_26 {
+    box-sizing: border-box;
+    color: rgb(12, 184, 146);
+    text-align: left;
+    text-decoration: none solid rgb(12, 184, 146);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(12, 184, 146);
+    perspective-origin: 0px 0px;
+    transform-origin: 0px 0px;
+    caret-color: rgb(12, 184, 146);
+    border: 0px none rgb(12, 184, 146);
+    font: normal normal 400 normal 14px / 21px Consolas, monaco, monospace;
+    outline: rgb(12, 184, 146) none 0px;
+}/*#CODE_26*/
+
+#CODE_26:after {
+    color: rgb(12, 184, 146);
+    text-align: left;
+    text-decoration: none solid rgb(12, 184, 146);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(12, 184, 146);
+    caret-color: rgb(12, 184, 146);
+    border: 0px none rgb(12, 184, 146);
+    font: normal normal 400 normal 14px / 21px Consolas, monaco, monospace;
+    outline: rgb(12, 184, 146) none 0px;
+}/*#CODE_26:after*/
+
+#CODE_26:before {
+    color: rgb(12, 184, 146);
+    text-align: left;
+    text-decoration: none solid rgb(12, 184, 146);
+    text-size-adjust: 100%;
+    column-rule-color: rgb(12, 184, 146);
+    caret-color: rgb(12, 184, 146);
+    border: 0px none rgb(12, 184, 146);
+    font: normal normal 400 normal 14px / 21px Consolas, monaco, monospace;
+    outline: rgb(12, 184, 146) none 0px;
+}/*#CODE_26:before*/
+
+</style>
+
+        </div>
+
+        <div style="white-space:nowrap;box-shadow:1px
+            1px 4px 1px #00000036;padding: 2px 2px 2px 2px;padding-top:
+            17px;padding-right: 15px;padding-bottom: 15px;border-radius:
+            10px;
+    padding-left: 15px;
+margin: 10px;
+margin-bottom: 25px;
+    ">
+    <h1 style="white-space:nowrap;font-size:18px;
+                    color:#09c;line-height: 1;margin: 0 0 8px 0;padding: 0;">
+        blurHY
+    </h1>
+    <h4 style="white-space:nowrap;font-size:14px;
+                    color:#333;line-height: 1;margin: 0 0 8px 0;font-weight:
+                    400;padding: 0;">
+        Decentralized web enthusiast |
+        <a style="white-space:nowrap;text-decoration: none;
+                      color: #333" href="https://blurhy.xyz" rel="noopener" target="_blank">
+            blurhy.xyz</a>
+    </h4>
+    <h6 style="white-space:nowrap;font-size:14px;
+                    color:#999;line-height: 1;margin: 0;font-weight: 400;">
+        <a href="mailto:taroon.tyagi@gmail.com" style="white-space:nowrap;text-decoration: none;
+                      color: #999" rel="noopener" target="_blank">blurhy@outlook.com</a>
+    </h6>
+    <h6 style="white-space:nowrap;font-size:13px;
+                    color:#999;line-height: 1;margin: 0;font-weight:
+                    400;padding-top: 5px;">
+        <span style="white-space:nowrap;text-decoration: none;
+                      color: #999">Telegram @blurhy</span>
+    </h6>
+    <h6 style="white-space:nowrap;font-size:13px;
+                    color:#999;line-height: 1;margin: 0;font-weight:
+                    400;padding-top: 5px;">
+        <span style="white-space:nowrap;text-decoration: none;
+                      color: #999">Matrix @blurhy:matrix.org</span>
+    </h6>
+    <h6 style="white-space:nowrap;font-size:13px;
+                    color:#999;line-height: 1;margin: 0;font-weight:
+                    400;padding-top: 5px;">
+        <span style="white-space:nowrap;text-decoration: none;
+                      color: #999">Tox
+            867226A9F397786A82F9E8E547A0CFDA080E180B8500D58B7830100D68B0AA3F2B5AFF62F744</span>
+    </h6>
+    <h6 style="white-space:nowrap;font-size:13px;
+                    color:#999;line-height: 1;margin: 0;font-weight:
+                    400;padding-top: 5px;">
+        <a style="white-space:nowrap;text-decoration: none;
+                      color: #999" href="https://github.com/blurHY">Github: https://github.com/blurHY</a>
+    </h6>
+    <h6 style="white-space:nowrap;font-size:13px;
+                    color:#999;line-height: 1;margin: 0;font-weight:
+                    400;padding-top: 5px;">
+        <a style="white-space:nowrap;text-decoration: none;
+                      color: #999" href="https://gitlab.com/blurHY">Gitlab: https://gitlab.com/blurHY</a>
+    </h6>
+</div>
+<blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    Last modified：<time datetime="2019-12-07T10:07:50.569Z" itemprop="dateUpdated">2019-12-07 18:07:50</time>
+</span><br>
+
+ 
+    </div>
+    
+
+    <footer>
+        <a href="https://blurhy.xyz">
+            <img src="data:image/jpeg;base64,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" alt="blurHY">
+            blurHY
+        </a>
+    </footer>
+</blockquote>
+
+        
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="../../../../tags/IPFS/">IPFS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="../../../../tags/P2P/">P2P</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blurhy.xyz/2019/07/12/ck3vfxpoc0066towir2kwf401/&title=《IPFS网络栈第三层-Merkledag数据结构》 — blurHY&pic=https://blurhy.xyzdata:image/jpeg;base64,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" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blurhy.xyz/2019/07/12/ck3vfxpoc0066towir2kwf401/&title=《IPFS网络栈第三层-Merkledag数据结构》 — blurHY&source=For cyber-communism - 信息共产主义 - 反对网络审查" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blurhy.xyz/2019/07/12/ck3vfxpoc0066towir2kwf401/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《IPFS网络栈第三层-Merkledag数据结构》 — blurHY&url=https://blurhy.xyz/2019/07/12/ck3vfxpoc0066towir2kwf401/&via=https://blurhy.xyz" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blurhy.xyz/2019/07/12/ck3vfxpoc0066towir2kwf401/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="../../15/ck3vfxplb0017towi5u3nbkhf/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">IPFS网络栈第四层-IPNS</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="../ck3vfxpl80013towilgj8rmy4/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">IPFS网络栈第二层-Exchange</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<section class="comments" id="comments">
+    <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+        var id = location.pathname
+        if (location.pathname.length > 50) {
+          id = location.pathname.replace(/\/\d+\/\d+\/\d+\//, '').replace('/', '').substring(0, 50)
+        }
+        const gitalk = new Gitalk({
+          clientID: 'df8b7fa0ec8e7415cdcd',
+          clientSecret: '177d2242d3b1a079a2d76156d6fdb58e4b5e2b64',
+          repo: 'blurHY',
+          owner: 'blurHY',
+          admin: ['blurHY'],
+          id: id,      // Ensure uniqueness and length less than 50
+          title: document.title.split('|')[0],
+          distractionFreeMode: false  // Facebook-like distraction free mode
+        })
+
+        gitalk.render('gitalk-container')
+    </script>
+</section>
+
+
+
+
+</article>
+
+
+
+</div>
+ <footer class="footer">
+    <div class="top">
+        
+
+        <p>
+            
+                <span><a href="../../../../atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>博客内容遵循 / License <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh"> 知识共享 署名 - 非商业性 - 相同方式共享 4.0 国际协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>blurHY &copy; 2019</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+        </main>
+        <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blurhy.xyz/2019/07/12/ck3vfxpoc0066towir2kwf401/&title=《IPFS网络栈第三层-Merkledag数据结构》 — blurHY&pic=https://blurhy.xyzdata:image/jpeg;base64,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" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blurhy.xyz/2019/07/12/ck3vfxpoc0066towir2kwf401/&title=《IPFS网络栈第三层-Merkledag数据结构》 — blurHY&source=For cyber-communism - 信息共产主义 - 反对网络审查" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blurhy.xyz/2019/07/12/ck3vfxpoc0066towir2kwf401/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《IPFS网络栈第三层-Merkledag数据结构》 — blurHY&url=https://blurhy.xyz/2019/07/12/ck3vfxpoc0066towir2kwf401/&via=https://blurhy.xyz" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blurhy.xyz/2019/07/12/ck3vfxpoc0066towir2kwf401/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMYAAADGCAAAAACs8KCBAAACL0lEQVR42u3aSY7DMAwF0dz/0u5tA4nc9Ul1AFPlVZBB8vOCEYfXC1/Xr2v16fs336/71e532XDJkCHjsYx049Wn6cqrFdKHIkOGjHMYJIzev+bg1a/I+sv3ZciQIQMHRHJ+q+0rQ4YMGZ3lUiRPYmXIkCEjTWJJGOXFuNqD2JCLy5Ah44EMXnX//ut/6W/IkCHjUYwrvDg1TXGvxiVDhozZDB7gSEG/FrjTY+jyfmTIkDGUwdNFMha2d7QieFgyZMgYzaiVtNIjYBpkeSD+8L8hQ4aMcYzagFenJZkeKINQK0OGjNEMsk1aLEtDc+cYKkOGjNkMvvR9fOOlf7IOiaXxs5QhQ8bDGemtkOS2Vmjjay5/JUOGjGMYtbpdGrh5Ih08UBkyZIxj8IJ+2gZIb7qTAMuQIWM2I80KeXugRu03EmTIkDGPkYYwPk6xq1GKEloZMmQcwOgXvIItw7Ae/CfIkCFjKCNtKPKDHQ/fnWELGTJknMMgjcZOYY6PX9QOozJkyDiHkRb3eZszLbGRQt6HvWTIkHEAI/5Zo9nJG5nBg5YhQ8ZhDHJA5MfKTsLcSmJlyJAxgnGFV20gg/NqYVqGDBmzGbXOYJr09ocqyBiHDBkyZjM64ZJ/P7254uSIDBkyRjPIMAT/NB3LqCWxf/Q3ZMiQIaM9csHDLjqAypAhQwYehug3EookGTJkHMAgSWw6LlYLzeleMmTIOIGxq5ZFNqgNh21rZMqQIeN5jB/TibJQ5WATGAAAAABJRU5ErkJggg==" alt="微信分享二维码">
+</div>
+
+
+
+ <script src="//unpkg.com/node-waves@0.7.6/dist/waves.min.js"></script>
+<script>
+    var BLOG = { ROOT: '/', SHARE: true, REWARD: false };
+
+    
+</script>
+
+<script src="../../../.././js/main.min.js?v=1.7.2"></script>
+ 
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="../../../.././js/search.min.js?v=1.7.2" async></script>
+ 
+  
+
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function(event) {
+                document.querySelectorAll("img").forEach(function(img) {
+                    img.onerror = function() {
+                        this.src =
+                            "../.." +
+                            this.src.substr(this.src.indexOf("/images"));
+                        img.onerror = () => {};
+                    };
+                });
+            });
+        </script>
+    </body>
+</html>

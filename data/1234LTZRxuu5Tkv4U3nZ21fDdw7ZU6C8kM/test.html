@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Browser Fingerprinting and IP Address Detecting</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <style>
+    pre {
+        overflow: scroll;
+        background-color: #DDDDDD;
+        font-family: Consolas, "Courier New", monospace;
+    }
+    div {
+        padding: 10px;
+    }
+    </style>
+</head>
+<body style="background-color: #EEEEEE">
+    <b>Browser Fingerprinting and IP Address Detecting</b>
+    <p></p>
+    <div id='js'>Javascript is not working.</div>
+    <div id='js-outside'>Javascript from another file is not working.</div>
+    <div id='xss'>AJAX-based XSS seems not working.</div>
+    <br>
+    <div>Image from another site:</div>
+    <div>
+    <img src='https://avatars0.githubusercontent.com/u/9919?v=3&s=96'></img>
+    </div>
+    <div>IFrames: (1)GitHub Status API, (2)Stats page of this proxy</div>
+    <div>
+    <iframe src='https://status.github.com/api/status.json?callback=apiStatus'></iframe>
+    <iframe src='/Stats'></iframe>
+    </div>
+    <br>
+    <div>XSS: inside ZeroNet</div>
+    <div id='xss-iframe'>
+        <a href="#" onclick="a">Click To Test</a>
+    </div>
+    <br>
+    <div>BrowserLeaks:</div>
+    <div>
+    <iframe src='https://www.browserleaks.com/whois' style="width: 100%; height: 500px"></iframe>
+    </div>
+    <br>
+    <div id='fingerprint'>Browser Fingerprinting here is not working.</div>
+    <br>
+    <div>BrowserLeaks Browser Fingerprinting:</div>
+    <div>
+    <iframe src='https://www.browserleaks.com/javascript' style="width: 100%; height: 500px"></iframe>
+    </div>
+    <br><br>
+    <a href="how.html">Workarounds</a>
+    <br><br>
+</body>
+    <script src='js.js'></script>
+
+    <script>
+    document.getElementById('js').innerHTML="Javascript is working!";
+    </script>
+
+    <script>
+    function htmlEscape(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+            .replace(/`/g, '&#96;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+    </script>
+
+    <script>
+    var url = "/zerosecurity.bit/?zeronet-browser-fingerprinting="+encodeURIComponent("works");
+    document.getElementById('xss-iframe').innerHTML=
+        "<pre>img src="+htmlEscape(url)+"</pre>" + "<img src='"+url+"'></img>";
+    </script>
+
+    <script>
+    var info = [
+        "Browser fingerprint:",
+        window.navigator.oscpu,
+        window.navigator.appName,
+        window.navigator.appCodeName,
+        window.navigator.platform,
+        window.navigator.product,
+        window.navigator.appVersion,
+        navigator.userAgent,
+        navigator.language,
+        new Date(),
+        "Timezone in minutes: " + new Date().getTimezoneOffset()
+    ];
+    document.getElementById('fingerprint').innerHTML = info.map(function(e){return htmlEscape(e)}).join('<br>');
+    </script>
+
+    <script>
+    var invocation = new XMLHttpRequest();
+    var url = 'http://127.0.0.1:43110/Benchmark';
+
+    if(!invocation) {
+        document.getElementById('xss').innerHTML="AJAX object is undefined.";
+        throw("AJAX object is undefined.");
+    }
+    invocation.open('GET', url, true);
+    invocation.onreadystatechange = handler;
+    invocation.send();
+
+    function handler(){
+        if (invocation.readyState === XMLHttpRequest.DONE) {
+            if (invocation.status === 200) {
+                document.getElementById('xss').innerHTML=invocation.responseText;
+            } else {
+                document.getElementById('xss').innerHTML="XSS: AJAX got a "+invocation.status+" response.";
+            }
+        } else {
+            document.getElementById('xss').innerHTML="AJAX is still not ready...";
+        }
+    }
+    </script>
+</html>

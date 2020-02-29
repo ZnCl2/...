@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html>
+    <head><meta name="generator" content="Hexo 3.8.0">
+    
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>针对爬虫的ZeroNet配置 | blurHY |
+        Decentralized web enthusiast - 分布式互联网开发者</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="P2P,ZeroNet">
+    <meta name="description" content="一般地，零网是给个人使用的，就是说不适用于直接在服务器上运行。 因此，需要配置的一些改动。">
+<meta name="keywords" content="P2P,ZeroNet">
+<meta property="og:type" content="article">
+<meta property="og:title" content="针对爬虫的ZeroNet配置">
+<meta property="og:url" content="https://blurhy.xyz/2019/06/29/ck3vfxpnj0063towip2xmv96g/index.html">
+<meta property="og:site_name" content="blurHY">
+<meta property="og:description" content="一般地，零网是给个人使用的，就是说不适用于直接在服务器上运行。 因此，需要配置的一些改动。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-06-29T04:58:46.291Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="针对爬虫的ZeroNet配置">
+<meta name="twitter:description" content="一般地，零网是给个人使用的，就是说不适用于直接在服务器上运行。 因此，需要配置的一些改动。">
+    
+    <link rel="alternate" type="application/atom+xml" title="blurHY" href="../../../../atom.xml">
+    
+    <link rel="shortcut icon" href="data:image/jpeg;base64,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">
+    <link rel="stylesheet" href="../../../.././css/style.css?v=1.7.2">
+    <script>
+        window.lazyScripts = []
+
+    </script>
+
+    <!-- custom head -->
+    
+    <meta name="google-site-verification" content="1JifdT6IlbLHFtBI6bSFN2g2z7wrUmHzKzlTc7FvsSg">
+    <meta name="msvalidate.01" content="F462D6865A366A37964B46B96028A460">
+</head>
+
+    <body>
+        <div id="loading" class="active"></div>
+ <aside id="menu" class="hide">
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(../../../.././img/brand.jpg)">
+      <div class="brand">
+        <a href="../../../../index.html" class="avatar waves-effect waves-circle waves-light">
+          <img src="data:image/jpeg;base64,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">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">blurHY</h5>
+          <a href="mailto:blurhy@outlook.com" title="blurhy@outlook.com" class="mail">blurhy@outlook.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="../../../../index.html">
+                <i class="icon icon-lg icon-home"></i>
+                Home
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="../../../.././archives">
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="../../../.././tags">
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="../../../.././categories">
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/blurHY" target="_blank">
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://gitlab.com/ipzn">
+                <i class="icon icon-lg icon-link"></i>
+                IPZN
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://blurhy.xyz/tags/InstrumentalMusic/">
+                <i class="icon icon-lg icon-music"></i>
+                Playlist
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+        <main id="main">
+            <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">针对爬虫的ZeroNet配置</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="Search ...">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">针对爬虫的ZeroNet配置</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2019-06-29T04:29:09.000Z" itemprop="datePublished" class="page-time">
+  2019-06-29
+</time>
+
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+
+<article id="post-针对爬虫的ZeroNet配置" class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">针对爬虫的ZeroNet配置</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2019-06-29 12:29:09" datetime="2019-06-29T04:29:09.000Z" itemprop="datePublished">2019-06-29</time>
+
+            
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>一般地，零网是给个人使用的，就是说不适用于直接在服务器上运行。</p>
+<p>因此，需要配置的一些改动。</p>
+<a id="more"></a>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br></pre></td><td class="code"><pre><span class="line">&gt; python zeronet.py --<span class="built_in">help</span></span><br><span class="line"></span><br><span class="line">- Starting ZeroNet...</span><br><span class="line">Db:Chart Table keyvalue outdated...version: False need: 1, rebuilding...</span><br><span class="line">Db:Chart Table json outdated...version: 0 need: 1, rebuilding...</span><br><span class="line">Db:Chart Table <span class="built_in">type</span> outdated...version: 0 need: 1, rebuilding...</span><br><span class="line">Db:Chart Table data outdated...version: 0 need: 2, rebuilding...</span><br><span class="line">Db:Chart Table site outdated...version: 0 need: 1, rebuilding...</span><br><span class="line">- OpenSSL loaded, version: 01000212F</span><br><span class="line">Db:ContentDb Table keyvalue outdated...version: False need: 3, rebuilding...</span><br><span class="line">Db:ContentDb Table json outdated...version: 0 need: 3, rebuilding...</span><br><span class="line">Db:ContentDb Table content outdated...version: 0 need: 1, rebuilding...</span><br><span class="line">Db:ContentDb Table peer outdated...version: 0 need: 2, rebuilding...</span><br><span class="line">Db:ContentDb Table file_optional outdated...version: 0 need: 11, rebuilding...</span><br><span class="line">Db:ContentDb Table site outdated...version: 0 need: 1, rebuilding...</span><br><span class="line">usage: zeronet.py [-h] [--verbose] [--debug] [--silent] [--debug_socket]</span><br><span class="line">                  [--batch] [--config_file path] [--data_dir path]</span><br><span class="line">                  [--log_dir path] [--log_level &#123;DEBUG,INFO,ERROR&#125;]</span><br><span class="line">                  [--log_rotate &#123;hourly,daily,weekly,off&#125;]</span><br><span class="line">                  [--log_rotate_backup_count LOG_ROTATE_BACKUP_COUNT]</span><br><span class="line">                  [--language language] [--ui_ip ip] [--ui_port port]</span><br><span class="line">                  [--ui_restrict [ip [ip ...]]] [--ui_host [host [host ...]]]</span><br><span class="line">                  [--ui_trans_proxy] [--open_browser [browser_name]]</span><br><span class="line">                  [--homepage address] [--updatesite address]</span><br><span class="line">                  [--size_limit <span class="built_in">limit</span>] [--file_size_limit <span class="built_in">limit</span>]</span><br><span class="line">                  [--connected_limit connected_limit]</span><br><span class="line">                  [--global_connected_limit global_connected_limit]</span><br><span class="line">                  [--workers workers] [--fileserver_ip ip]</span><br><span class="line">                  [--fileserver_port port] [--fileserver_port_range port]</span><br><span class="line">                  [--fileserver_ip_type &#123;ipv4,ipv6,dual&#125;]</span><br><span class="line">                  [--ip_local [ip [ip ...]]] [--ip_external [ip [ip ...]]]</span><br><span class="line">                  [--disable_udp] [--proxy ip:port] [--<span class="built_in">bind</span> ip]</span><br><span class="line">                  [--trackers [protocol://address [protocol://address ...]]]</span><br><span class="line">                  [--trackers_file path] [--trackers_proxy TRACKERS_PROXY]</span><br><span class="line">                  [--use_openssl &#123;True,False&#125;] [--disable_db]</span><br><span class="line">                  [--disable_encryption] [--force_encryption]</span><br><span class="line">                  [--disable_sslcompression &#123;True,False&#125;] [--keep_ssl_cert]</span><br><span class="line">                  [--max_files_opened <span class="built_in">limit</span>] [--stack_size thread_stack_size]</span><br><span class="line">                  [--use_tempfiles &#123;True,False&#125;]</span><br><span class="line">                  [--stream_downloads &#123;True,False&#125;]</span><br><span class="line">                  [--msgpack_purepython &#123;True,False&#125;]</span><br><span class="line">                  [--fix_float_decimals &#123;True,False&#125;]</span><br><span class="line">                  [--db_mode &#123;speed,security&#125;]</span><br><span class="line">                  [--download_optional &#123;manual,auto&#125;]</span><br><span class="line">                  [--coffeescript_compiler executable_path]</span><br><span class="line">                  [--tor &#123;<span class="built_in">disable</span>,<span class="built_in">enable</span>,always&#125;] [--tor_controller ip:port]</span><br><span class="line">                  [--tor_proxy ip:port] [--tor_password password]</span><br><span class="line">                  [--tor_use_bridges] [--tor_hs_limit <span class="built_in">limit</span>]</span><br><span class="line">                  [--tor_hs_port <span class="built_in">limit</span>] [--version] [--end]</span><br><span class="line">                  [--bit_resolver address]</span><br><span class="line">                  [--optional_limit GB or free space %]</span><br><span class="line">                  [--optional_limit_exclude_minsize MB]</span><br><span class="line">                  [--autodownload_bigfile_size_limit MB]</span><br><span class="line">                  [--bigfile_size_limit MB]</span><br><span class="line">                  [--working_shared_trackers_limit <span class="built_in">limit</span>]</span><br><span class="line">                  [--broadcast_port port]</span><br><span class="line">                  &#123;main,siteCreate,siteNeedFile,siteDownload,siteSign,sitePublish,siteVerify,siteCmd,dbRebuild,dbQuery,peerPing,peerGetFile,peerCmd,cryptSign,cryptVerify,cryptGetPrivatekey,getConfig,testConnection,testAnnounce&#125;</span><br><span class="line">                  ...</span><br><span class="line"></span><br><span class="line">optional arguments:</span><br><span class="line">  -h, --<span class="built_in">help</span>            show this <span class="built_in">help</span> message and <span class="built_in">exit</span></span><br><span class="line">  --verbose             More detailed logging (default: False)</span><br><span class="line">  --debug               Debug mode (default: False)</span><br><span class="line">  --silent              Disable logging to terminal output (default: False)</span><br><span class="line">  --debug_socket        Debug socket connections (default: False)</span><br><span class="line">  --batch               Batch mode (No interactive input <span class="keyword">for</span> commands)</span><br><span class="line">                        (default: False)</span><br><span class="line">  --config_file path    Path of config file (default: ./zeronet.conf)</span><br><span class="line">  --data_dir path       Path of data directory (default: ./data)</span><br><span class="line">  --log_dir path        Path of logging directory (default: ./<span class="built_in">log</span>)</span><br><span class="line">  --log_level &#123;DEBUG,INFO,ERROR&#125;</span><br><span class="line">                        Level of logging to file (default: DEBUG)</span><br><span class="line">  --log_rotate &#123;hourly,daily,weekly,off&#125;</span><br><span class="line">                        Log rotate interval (default: daily)</span><br><span class="line">  --log_rotate_backup_count LOG_ROTATE_BACKUP_COUNT</span><br><span class="line">                        Log rotate backup count (default: 5)</span><br><span class="line">  --language language   Web interface language (default: en)</span><br><span class="line">  --ui_ip ip            Web interface <span class="built_in">bind</span> address (default: 127.0.0.1)</span><br><span class="line">  --ui_port port        Web interface <span class="built_in">bind</span> port (default: 43110)</span><br><span class="line">  --ui_restrict [ip [ip ...]]</span><br><span class="line">                        Restrict web access (default: False)</span><br><span class="line">  --ui_host [host [host ...]]</span><br><span class="line">                        Allow access using this hosts (default: None)</span><br><span class="line">  --ui_trans_proxy      Allow access using a transparent proxy (default:</span><br><span class="line">                        False)</span><br><span class="line">  --open_browser [browser_name]</span><br><span class="line">                        Open homepage <span class="keyword">in</span> web browser automatically (default:</span><br><span class="line">                        None)</span><br><span class="line">  --homepage address    Web interface Homepage (default:</span><br><span class="line">                        1HeLLo4uzjaLetFx6NH3PMwFP3qbRbTf3D)</span><br><span class="line">  --updatesite address  Source code update site (default:</span><br><span class="line">                        1UPDatEDxnvHDo7TXvq6AEBARfNkyfxsp)</span><br><span class="line">  --size_limit <span class="built_in">limit</span>    Default site size <span class="built_in">limit</span> <span class="keyword">in</span> MB (default: 10)</span><br><span class="line">  --file_size_limit <span class="built_in">limit</span></span><br><span class="line">                        Maximum per file size <span class="built_in">limit</span> <span class="keyword">in</span> MB (default: 10)</span><br><span class="line">  --connected_limit connected_limit</span><br><span class="line">                        Max connected peer per site (default: 8)</span><br><span class="line">  --global_connected_limit global_connected_limit</span><br><span class="line">                        Max connections (default: 512)</span><br><span class="line">  --workers workers     Download workers per site (default: 5)</span><br><span class="line">  --fileserver_ip ip    FileServer <span class="built_in">bind</span> address (default: *)</span><br><span class="line">  --fileserver_port port</span><br><span class="line">                        FileServer <span class="built_in">bind</span> port (0: randomize) (default: 0)</span><br><span class="line">  --fileserver_port_range port</span><br><span class="line">                        FileServer randomization range (default: 10000-40000)</span><br><span class="line">  --fileserver_ip_type &#123;ipv4,ipv6,dual&#125;</span><br><span class="line">                        FileServer ip <span class="built_in">type</span> (default: dual)</span><br><span class="line">  --ip_local [ip [ip ...]]</span><br><span class="line">                        My <span class="built_in">local</span> ips (default: [<span class="string">'127.0.0.1'</span>, <span class="string">'::1'</span>])</span><br><span class="line">  --ip_external [ip [ip ...]]</span><br><span class="line">                        Set reported external ip (tested on start <span class="keyword">if</span> None)</span><br><span class="line">                        (default: None)</span><br><span class="line">  --disable_udp         Disable UDP connections (default: False)</span><br><span class="line">  --proxy ip:port       Socks proxy address (default: None)</span><br><span class="line">  --<span class="built_in">bind</span> ip             Bind outgoing sockets to this address (default: None)</span><br><span class="line">  --trackers [protocol://address [protocol://address ...]]</span><br><span class="line">                        Bootstraping torrent trackers (default:</span><br><span class="line">                        [<span class="string">'zero://boot3rdez4rzn36x.onion:15441'</span>, <span class="string">'zero://zero.b</span></span><br><span class="line"><span class="string">                        ooth.moe#f36ca555bee6ba216b14d10f38c16f7769ff064e0e37d</span></span><br><span class="line"><span class="string">                        887603548cc2e64191d:443'</span>,</span><br><span class="line">                        <span class="string">'udp://tracker.coppersurfer.tk:6969'</span>,</span><br><span class="line">                        <span class="string">'udp://tracker.port443.xyz:6969'</span>,</span><br><span class="line">                        <span class="string">'udp://104.238.198.186:8000'</span>,</span><br><span class="line">                        <span class="string">'http://tracker2.itzmx.com:6961/announce'</span>,</span><br><span class="line">                        <span class="string">'http://open.acgnxtracker.com:80/announce'</span>,</span><br><span class="line">                        <span class="string">'http://open.trackerlist.xyz:80/announce'</span>,</span><br><span class="line">                        <span class="string">'https://1.tracker.eu.org:443/announce'</span>,</span><br><span class="line">                        <span class="string">'zero://2602:ffc5::c5b2:5360:26312'</span>])</span><br><span class="line">  --trackers_file path  Load torrent trackers dynamically from a file</span><br><span class="line">                        (default: False)</span><br><span class="line">  --trackers_proxy TRACKERS_PROXY</span><br><span class="line">                        Force use proxy to connect to trackers (<span class="built_in">disable</span>, tor,</span><br><span class="line">                        ip:port) (default: <span class="built_in">disable</span>)</span><br><span class="line">  --use_openssl &#123;True,False&#125;</span><br><span class="line">                        Use OpenSSL liblary <span class="keyword">for</span> speedup (default: True)</span><br><span class="line">  --disable_db          Disable database updating (default: False)</span><br><span class="line">  --disable_encryption  Disable connection encryption (default: False)</span><br><span class="line">  --force_encryption    Enforce encryption to all peer connections (default:</span><br><span class="line">                        False)</span><br><span class="line">  --disable_sslcompression &#123;True,False&#125;</span><br><span class="line">                        Disable SSL compression to save memory (default: True)</span><br><span class="line">  --keep_ssl_cert       Disable new SSL cert generation on startup (default:</span><br><span class="line">                        False)</span><br><span class="line">  --max_files_opened <span class="built_in">limit</span></span><br><span class="line">                        Change maximum opened files allowed by OS to this</span><br><span class="line">                        value on startup (default: 2048)</span><br><span class="line">  --stack_size thread_stack_size</span><br><span class="line">                        Change thread stack size (default: None)</span><br><span class="line">  --use_tempfiles &#123;True,False&#125;</span><br><span class="line">                        Use temporary files when downloading (experimental)</span><br><span class="line">                        (default: False)</span><br><span class="line">  --stream_downloads &#123;True,False&#125;</span><br><span class="line">                        Stream download directly to files (experimental)</span><br><span class="line">                        (default: False)</span><br><span class="line">  --msgpack_purepython &#123;True,False&#125;</span><br><span class="line">                        Use less memory, but a bit more CPU power (default:</span><br><span class="line">                        False)</span><br><span class="line">  --fix_float_decimals &#123;True,False&#125;</span><br><span class="line">                        Fix content.json modification date <span class="built_in">float</span> precision on</span><br><span class="line">                        verification (default: False)</span><br><span class="line">  --db_mode &#123;speed,security&#125;</span><br><span class="line">  --download_optional &#123;manual,auto&#125;</span><br><span class="line">  --coffeescript_compiler executable_path</span><br><span class="line">                        Coffeescript compiler <span class="keyword">for</span> developing (default: None)</span><br><span class="line">  --tor &#123;<span class="built_in">disable</span>,<span class="built_in">enable</span>,always&#125;</span><br><span class="line">                        <span class="built_in">enable</span>: Use only <span class="keyword">for</span> Tor peers, always: Use Tor <span class="keyword">for</span></span><br><span class="line">                        every connection (default: <span class="built_in">enable</span>)</span><br><span class="line">  --tor_controller ip:port</span><br><span class="line">                        Tor controller address (default: 127.0.0.1:9051)</span><br><span class="line">  --tor_proxy ip:port   Tor proxy address (default: 127.0.0.1:9050)</span><br><span class="line">  --tor_password password</span><br><span class="line">                        Tor controller password (default: None)</span><br><span class="line">  --tor_use_bridges     Use obfuscated bridge relays to avoid Tor block</span><br><span class="line">                        (default: False)</span><br><span class="line">  --tor_hs_limit <span class="built_in">limit</span>  Maximum number of hidden services <span class="keyword">in</span> Tor always mode</span><br><span class="line">                        (default: 10)</span><br><span class="line">  --tor_hs_port <span class="built_in">limit</span>   Hidden service port <span class="keyword">in</span> Tor always mode (default:</span><br><span class="line">                        15441)</span><br><span class="line">  --version             show program<span class="string">'s version number and exit</span></span><br><span class="line"><span class="string">  --end                 Stop multi value argument parsing (default: False)</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Action to perform:</span></span><br><span class="line"><span class="string">  &#123;main,siteCreate,siteNeedFile,siteDownload,siteSign,sitePublish,siteVerify,siteCmd,dbRebuild,dbQuery,peerPing,peerGetFile,peerCmd,cryptSign,cryptVerify,cryptGetPrivatekey,getConfig,testConnection,testAnnounce&#125;</span></span><br><span class="line"><span class="string">    main                Start UiServer and FileServer (default)</span></span><br><span class="line"><span class="string">    siteCreate          Create a new site</span></span><br><span class="line"><span class="string">    siteNeedFile        Get a file from site</span></span><br><span class="line"><span class="string">    siteDownload        Download a new site</span></span><br><span class="line"><span class="string">    siteSign            Update and sign content.json: address [privatekey]</span></span><br><span class="line"><span class="string">    sitePublish         Publish site to other peers: address</span></span><br><span class="line"><span class="string">    siteVerify          Verify site files using sha512: address</span></span><br><span class="line"><span class="string">    siteCmd             Execute a ZeroFrame API command on a site</span></span><br><span class="line"><span class="string">    dbRebuild           Rebuild site database cache</span></span><br><span class="line"><span class="string">    dbQuery             Query site sql cache</span></span><br><span class="line"><span class="string">    peerPing            Send Ping command to peer</span></span><br><span class="line"><span class="string">    peerGetFile         Request and print a file content from peer</span></span><br><span class="line"><span class="string">    peerCmd             Request and print a file content from peer</span></span><br><span class="line"><span class="string">    cryptSign           Sign message using Bitcoin private key</span></span><br><span class="line"><span class="string">    cryptVerify         Verify message using Bitcoin public address</span></span><br><span class="line"><span class="string">    cryptGetPrivatekey  Generate a privatekey from master seed</span></span><br><span class="line"><span class="string">    getConfig           Return json-encoded info</span></span><br><span class="line"><span class="string">    testConnection      Testing</span></span><br><span class="line"><span class="string">    testAnnounce        Testing</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Zeroname plugin:</span></span><br><span class="line"><span class="string">  --bit_resolver address</span></span><br><span class="line"><span class="string">                        ZeroNet site to resolve .bit domains (default:</span></span><br><span class="line"><span class="string">                        1Name2NXVi1RDPDgf5617UoW7xA6YrhM9F)</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">OptionalManager plugin:</span></span><br><span class="line"><span class="string">  --optional_limit GB or free space %</span></span><br><span class="line"><span class="string">                        Limit total size of optional files (default: 10%)</span></span><br><span class="line"><span class="string">  --optional_limit_exclude_minsize MB</span></span><br><span class="line"><span class="string">                        Exclude files larger than this limit from optional</span></span><br><span class="line"><span class="string">                        size limit calculation (default: 20)</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Bigfile plugin:</span></span><br><span class="line"><span class="string">  --autodownload_bigfile_size_limit MB</span></span><br><span class="line"><span class="string">                        Also download bigfiles smaller than this limit if help</span></span><br><span class="line"><span class="string">                        distribute option is checked (default: 1)</span></span><br><span class="line"><span class="string">  --bigfile_size_limit MB</span></span><br><span class="line"><span class="string">                        Maximum size of downloaded big files (default: False)</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">AnnounceShare plugin:</span></span><br><span class="line"><span class="string">  --working_shared_trackers_limit limit</span></span><br><span class="line"><span class="string">                        Stop discovering new shared trackers after this number</span></span><br><span class="line"><span class="string">                        of shared trackers reached (default: 5)</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">AnnounceLocal plugin:</span></span><br><span class="line"><span class="string">  --broadcast_port port</span></span><br><span class="line"><span class="string">                        UDP broadcasting port for local peer discovery</span></span><br><span class="line"><span class="string">                        (default: 1544)</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>关闭logging，这些数据一般没什么用。</li>
+<li>提高<code>size_limit</code>，合适大小约为<code>70MB</code>。</li>
+<li>由于没有配置tor，所以<code>tor=disable</code>。</li>
+</ul>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[global]</span></span><br><span class="line"><span class="attr">log_level</span> = ERROR</span><br><span class="line"><span class="attr">optional_limit</span> = <span class="number">2</span>%</span><br><span class="line"><span class="attr">fileserver_port</span> = <span class="number">43254</span></span><br><span class="line"><span class="attr">ui_ip</span>=<span class="number">127.0</span>.<span class="number">0.1</span></span><br><span class="line"><span class="attr">size_limit</span> = <span class="number">70</span></span><br><span class="line"><span class="attr">tor</span>=disable</span><br></pre></td></tr></table></figure>
+<p>保存文件为<code>ZeroNet/zeronet.conf</code>即可。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nohup python zeronet.py &gt; /dev/null &amp;</span><br></pre></td></tr></table></figure>
+        </div>
+
+        <div style="white-space:nowrap;box-shadow:1px
+            1px 4px 1px #00000036;padding: 2px 2px 2px 2px;padding-top:
+            17px;padding-right: 15px;padding-bottom: 15px;border-radius:
+            10px;
+    padding-left: 15px;
+margin: 10px;
+margin-bottom: 25px;
+    ">
+    <h1 style="white-space:nowrap;font-size:18px;
+                    color:#09c;line-height: 1;margin: 0 0 8px 0;padding: 0;">
+        blurHY
+    </h1>
+    <h4 style="white-space:nowrap;font-size:14px;
+                    color:#333;line-height: 1;margin: 0 0 8px 0;font-weight:
+                    400;padding: 0;">
+        Decentralized web enthusiast |
+        <a style="white-space:nowrap;text-decoration: none;
+                      color: #333" href="https://blurhy.xyz" rel="noopener" target="_blank">
+            blurhy.xyz</a>
+    </h4>
+    <h6 style="white-space:nowrap;font-size:14px;
+                    color:#999;line-height: 1;margin: 0;font-weight: 400;">
+        <a href="mailto:taroon.tyagi@gmail.com" style="white-space:nowrap;text-decoration: none;
+                      color: #999" rel="noopener" target="_blank">blurhy@outlook.com</a>
+    </h6>
+    <h6 style="white-space:nowrap;font-size:13px;
+                    color:#999;line-height: 1;margin: 0;font-weight:
+                    400;padding-top: 5px;">
+        <span style="white-space:nowrap;text-decoration: none;
+                      color: #999">Telegram @blurhy</span>
+    </h6>
+    <h6 style="white-space:nowrap;font-size:13px;
+                    color:#999;line-height: 1;margin: 0;font-weight:
+                    400;padding-top: 5px;">
+        <span style="white-space:nowrap;text-decoration: none;
+                      color: #999">Matrix @blurhy:matrix.org</span>
+    </h6>
+    <h6 style="white-space:nowrap;font-size:13px;
+                    color:#999;line-height: 1;margin: 0;font-weight:
+                    400;padding-top: 5px;">
+        <span style="white-space:nowrap;text-decoration: none;
+                      color: #999">Tox
+            867226A9F397786A82F9E8E547A0CFDA080E180B8500D58B7830100D68B0AA3F2B5AFF62F744</span>
+    </h6>
+    <h6 style="white-space:nowrap;font-size:13px;
+                    color:#999;line-height: 1;margin: 0;font-weight:
+                    400;padding-top: 5px;">
+        <a style="white-space:nowrap;text-decoration: none;
+                      color: #999" href="https://github.com/blurHY">Github: https://github.com/blurHY</a>
+    </h6>
+    <h6 style="white-space:nowrap;font-size:13px;
+                    color:#999;line-height: 1;margin: 0;font-weight:
+                    400;padding-top: 5px;">
+        <a style="white-space:nowrap;text-decoration: none;
+                      color: #999" href="https://gitlab.com/blurHY">Gitlab: https://gitlab.com/blurHY</a>
+    </h6>
+</div>
+<blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    Last modified：<time datetime="2019-06-29T04:58:46.291Z" itemprop="dateUpdated">2019-06-29 12:58:46</time>
+</span><br>
+
+ 
+    </div>
+    
+
+    <footer>
+        <a href="https://blurhy.xyz">
+            <img src="data:image/jpeg;base64,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" alt="blurHY">
+            blurHY
+        </a>
+    </footer>
+</blockquote>
+
+        
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="../../../../tags/P2P/">P2P</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="../../../../tags/ZeroNet/">ZeroNet</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blurhy.xyz/2019/06/29/ck3vfxpnj0063towip2xmv96g/&title=《针对爬虫的ZeroNet配置》 — blurHY&pic=https://blurhy.xyzdata:image/jpeg;base64,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" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blurhy.xyz/2019/06/29/ck3vfxpnj0063towip2xmv96g/&title=《针对爬虫的ZeroNet配置》 — blurHY&source=一般地，零网是给个人使用的，就是说不适用于直接在服务器上运行。
+因此，需要配置的一些改动。" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blurhy.xyz/2019/06/29/ck3vfxpnj0063towip2xmv96g/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《针对爬虫的ZeroNet配置》 — blurHY&url=https://blurhy.xyz/2019/06/29/ck3vfxpnj0063towip2xmv96g/&via=https://blurhy.xyz" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blurhy.xyz/2019/06/29/ck3vfxpnj0063towip2xmv96g/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="../../30/ck3vfxpmf003btowiy1h7j47z/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">统计与分析Horizon爬虫数据</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="../../21/ck3vfxpm6002rtowieixzol90/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">再谈BitTorrent</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<section class="comments" id="comments">
+    <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+        var id = location.pathname
+        if (location.pathname.length > 50) {
+          id = location.pathname.replace(/\/\d+\/\d+\/\d+\//, '').replace('/', '').substring(0, 50)
+        }
+        const gitalk = new Gitalk({
+          clientID: 'df8b7fa0ec8e7415cdcd',
+          clientSecret: '177d2242d3b1a079a2d76156d6fdb58e4b5e2b64',
+          repo: 'blurHY',
+          owner: 'blurHY',
+          admin: ['blurHY'],
+          id: id,      // Ensure uniqueness and length less than 50
+          title: document.title.split('|')[0],
+          distractionFreeMode: false  // Facebook-like distraction free mode
+        })
+
+        gitalk.render('gitalk-container')
+    </script>
+</section>
+
+
+
+
+</article>
+
+
+
+</div>
+ <footer class="footer">
+    <div class="top">
+        
+
+        <p>
+            
+                <span><a href="../../../../atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>博客内容遵循 / License <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh"> 知识共享 署名 - 非商业性 - 相同方式共享 4.0 国际协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>blurHY &copy; 2019</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+        </main>
+        <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blurhy.xyz/2019/06/29/ck3vfxpnj0063towip2xmv96g/&title=《针对爬虫的ZeroNet配置》 — blurHY&pic=https://blurhy.xyzdata:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCABMAEwDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD+/YAYHA6DtS4HoPyoHQfQfypaAEwPQflRgeg/Kvh39pf/AIKV/sH/ALHvizS/h/8AtI/tS/CH4U/EDWrO31DTPAviPxVaL4slsbxtlhfXuiWn2m70TTtQf5bHVNeTTNNutrtFdskcjLo2v7Y1l4ltLXVPh98L/GnjHRNRtbe/0rX7QWiaNq2nXsKXNjqOm6hE1zZ3the20kdxaXdrcy29xBIksMrxurH5zP8Ai/hnhZUHxBnWCyuWK53hqOInKWJxEafL7SVDCUYVcVWjT54c8qVGcYOcVJpyV/WyvIs4zr2v9l5fiMXGg4qtVgowoUXO/IquIqyp0Kcp8snGM6kXJRbinZn2jgeg/KjA9B+VfGf/AA094/6n4DeI1H+1rWng/iNnBqFv2pPHkeS3wI8RbQedutafnH02ck9q+UfjN4ZrfieK/wC6PxDb7/7I/pa7HsrgLix7ZXTe2n9q5NfW3/Ux8z7SwPQflRgeg/Kvyk+O3/BXX9m79lAeHn/ap1PSPgUvit5l8NweL/Fekx6rrkds4jurrS9DtluNYu7C1kzHcakLNNOilUwvdrMrIv2b+z/+1j8CP2m/Dmj+Kfg7490XxbpOv6YusaJdadfWl5a6zpZZo2vtIvrOe4sdTt4ZkkguTZ3EslncRyW95FbzxvGv0GUcecIZ7LCwyvPMLWnjqk6WAjXp4nASx9alGUqtHARzGhhJY2tShCc6lLCqrUpwhOU4xjCTXm47hnPcuhWqYvLqsYYaMZ4mdCdDGQwsJtRhUxM8FVxEcNCcpKMJ13TjKTUYtyaT+jsD0H5UYHoPypaK+uPCEHQfQfyrxT9oL4wWfwS+GeseMpIY73V2kttH8L6VI20ar4k1WUWul2rfxeQJ3E92y8x2kU0nRa9rHQfQfyr86P2ufF2hT/HL4FfDjxF4el8VaPPpHjbxNJpUN/DYPa63Nb2nhbw9rKyXUNxaGfSbjWri+tvtUEsMcsPnNHKE8tvA4pzmPD/D2b5zOth8N9Rwkp08Ri41p4TD1604YbDV8XDDwqYmeFpYitSniYYalVxM6MZww9KrXdOnL1MlwDzTNcDgPZ1aqr117SlQlCNepRpxlWr06E6so0oVp0adSNKdaUKMJuMqs401KS+P/hH+yH+zbo8Xj/x98X/h58NPiF8Sfj/r2ueOPihqfxO0LQvHWueKrzxUzSXA8QXHia21TUrmzg0ua20bw3oBaLRvBfhO00bw/oFhYpZtI/efscfCbR/2WPhBffAe08a6ZqHw/wDCfxV+KV38CtMutbvLq58HfA/xV4pn8UfD/wCHVxea6lvcO3gYavqvh3TLZJbxbbQ7TSLeO7m2ER/Lv/BNj4D6/wD8E8dS+PNz4m/aRh+POu/GbW/C9xJN4om8ZvZeH7fwk3iVIb68ZJPEMep+K9bi8QRxa7qltqFhZJFpdpa21rJCiNH+wNr8dta1rTxJe+FfA3izRb2MqV0/Xr5IbhCSrqYdV0LULOTHKvDPLEVOVkKc4/inKv8AVnMMvrrOPEyv/auaYmWYZosVwrnGZRq5lTnWhDGVcZRxik51qdSXvUcJGnh6FWOFp040qMIR/fM+yvOMFj6dfD8LVnluHpU8LldeONoZXh/qc6UJrC4fDYrCqKhQbkkpYnnrzpyxVSc6laVR8xLPgde2eOBjAIOfQggg85BGMg5rHu7qKON5JJEjjUEmSV4441APVnkKqByBktjkd6y1miW41SWz0uHw/pl1qMl1pXh6C+Oo2+h2klvbLLZQ3Xk28fkyX6Xl/DaW0Qs9OjvFsbUtBAmPzc/4KIfsV+MP22/h/wCCPA/hX4va38F9R8L+O/EHiHxB4hsbvU9Q0rxp4V1vSItN07QdQ0LS9S0O8t7/AMITW0N3oRN9c6PLcXms3l3bNe3sE9p8ZU+qyxGKoVMyw1KjQ9u6eM9jj50cYqVaNKn9WoxwscTfE05PE0Y4ujg7UIzjWdLEOFCp6WCwvtJUFKFSnGo6ftb+xlLDc9Nzbq2rOnP2UkqM3QqV/wB5KMoe0pKVWPX+AP2YPh3p37Sn7S/7UXxTsPBHxN+J3xX8U+HvDfwz1nWtMt/GDfDD4AeC/AvhnRdC8BeH4dW026s/DV1q3jMeN/E/io6Su/U5dT083N9KqyQr2OhfDH4U/Aj/AISLxv8AAnw3ofgC/m+IVn8Utc0TwdINN8Nr4huodO0bxNqGmeE7SRNH8LnxVZ2lpc+JrbRLDTbHXdXhk1m+tJdVu767ufsXQv2hdf8AhZ4R8H+C74+G9VHhXwvoHhyPUtd1rxDqPiXXY9C0q10r+2tZubTSz52p6obT7bf3JtQs15NM6ls5rh/i58dfDHxX+HfibT734faKdfi0uaWw8R2Wu5u9JljwxuIxdaFp2sSQOoMc1gXksrtX8u5dQFZfR4ip8JvL8TmOW+LOIecZXgsLiMvwGJ4S4gy7CVsRkdKlVyvD4fGUq+MpYWvh6+FoSwlWrR5Y4m1Rum5Tmt8jwGf0sThfrPAdR5Vi8VPD4rMaWaYHEtYfMajo4uVWNSjh1WpVqVapCvCFb+G3D32uV/pro+oxavpOmarB/qdS0+zv4sf3Lu3jnUfgJMVo15z8IJ2ufhZ8PZ2JLSeENBJJ5JI06Bf6V6NX+h+Er/WcLhsTZL6xh6Ney2Xtacall5e8fy3Xp+xrVqO/sqtSlfv7Objf52EHQfQfyr8kf2lJxdft1eB7aXBi0v4S2cqhuVU33iS6lckHIwwsAG7EDBr9bh0H0H8q/HL9pO4Nv+3XayNkBPg94aaI+x1rxGj4z23mPOK/K/Haq6PhRxbUV/djkSfT3ZcTZLCV/Llk7+Xkfa+GlP23GuTU+soZvb/EsjzOUbefMlbzPSm8MeGGZiunQqM5CxsyxjPOFX5to9ACABjAA4rdso7HTbYWlhBFbW6s8nlxggGR+XkbJJd3IG5mOcADoAK+YbP4oweHvj/L8MvEF39lg+LHgmDxp8LZ7mQR22q+Ivh8raN8UfBti7MFk1ux8PXHgvxxaaambm80ibxPfwRvFol+8Xup1IL0YHHuD1/Hoe/bnIxzX+etLG06HLJRhH2tNTjOKiuaEmk7S00UlKnJJ256covVM/pXEYfF1/3deviKsINNU6lWpKHMla6jKTTkrySdm17yTOomuhgktwO3TjHTH54/DpWVcXoHRv8ADoOv5nP19qwpdTXvIMD/AGl/Tn/PTPasa51Mc/MB7kjnj0zz+NZ4nN4JXc1t/Ntt/n5XNcPltR2Sg18tNbbL+u2xJqaafNMZ57WCadlUNIyjcypwoYggkKvTJzjABxivOvFc1lHoGuiOO2ikbS7yMCNVVsNGRgHlgCRzz82Oa0tV1mKCKaSSeGGGKOSaa5uJkhgt4IY2lnubmeRliht4IkeaaaRkihiR5JGVFZh8gfC34in4r+DvHvxbsZJJPB/xB8R6gnwxmkEiLq3w18J28HhLw/4st4pFV47Px1q9j4k8Y6QxVTdeHda0O5/5aivi8yzGrWo4icJONCPLSlq+WpVruXs6V00nKcIVqiWt40Zn22VYCadGEpzesXGDlJxjTg43dm7cvwx2UUf0I/BP/kkXw4/7E/Q//SGKvUK88+Elm+n/AAw+H9lICHt/COgowIwQ39nQMQR25bp2r0Ov9kMrhOlluXUprlnTwOEpzT6Shh6cZL5NNH+f2NlGeMxc4O8Z4mvKL7xlVm0/mmhB0H0H8q/HP9uuzl8JftT/AAb8bTK0emeNfAev+DzcniIav4d1Ky8RWtsWxt82bSRrUkSE5cQOAK/YwdB9B/KvlP8AbD/Z4k/aK+EtxoGiX0Wi/EDwtqVp4w+HOvyRiRdM8V6Oxms0uEyDLp+orv07U7fcoubC5uICQJMj5/j7hl8ZcGcScMRqQo1s4yuvh8JWq39lRx9NxxOXVavKpS9jTx9DDTq8sZS9nGXKm7I9jhTOlw7xJk2dShKpSwGOpVcRThb2lTCTvQxlOndqPtJ4SrWhT5mo87jzO1z8j/jr8JfDPx58DnwZ4h1TX/C+raPrem+Mfh38RvB14NO8c/C34iaB5zeG/H3gvUyCttq2ltPcWt5Y3G/Tdf0S91PQNXhm07UJlHy7B+2f8af2Z4l8NftxfC/Xte8NaeVtdO/a7/Z98J6j4v8Ahh4pslwlvqfxO+G2jLdeMPhD4lmiAl1mK1stZ8Ky3Rll0iWC0KLX0B4c+JdxaalN8PfibpFz8PPihoWbPWPCWuFoJpngPlG/8OXU/lx+J/D9wV8zTdV0w3E6W5SDVrayvY5Fb0f+1ol3GO8RN6lWxJ5e5GGGRlbblWHDI2VI4Ir/ACbzKWccJ43FcOcUZNiMPWwlaaq5fjfaYTGYWo3GMq+AxcYzi6VdQjKnVjDG5di6bhiIU6t6VZf3fgaGWZ/haGZ5Vi6OMw1eClSxeGaq0aqaXu1Iq0qdWN7VKFT2VehNOnWhCcZRPEdH/wCCjn7DPiSwGoaT+1d8EmhK73j1Lxjb6DfQkjJS40zXotN1OCVejxS2iyqflK5zXkfxA/4KufsNeDEMFj8cNO+JGuynyrDwt8I9C1/4g+INTuWJWK0sY9M0+PSzNM21E+0atAmSPmxXrXi34Cfs5+N7x9Q8YfBD4LeJ9QkbfJf6x8N/Bd3eyuTkvNenSBczMT1aSVmOee5rT8HfC34O/DeQz/Dz4Y/DPwJc4I+1+D/BHhrQL/GOQL/StLt74Ajgj7RjrXkTzbhrWUsJn1WWjjQ/tHL6UX/dliVltSbi9m44anLomnZnq0ckxSslPDRSsnJ0qsn0TfJ7SKdtl77V90fEk837TH7e0ken+P8AwT4j/ZR/Y5u3jl1/wVrd8bb9oj9onRxIso8NeIlsSn/CrPhprKKsfiCxgZdf1zTXl01Lu7tLp57X9LvDPhiLWtW8E/Drw5p1rY2l9qGheHtM0jTLeO2sNL0Ow8i2hs7K1hURWun6dp1ssNvBGqxwW9usajalcldeJdOiu47Nbr7bqd3II7XTLQPeapezyHCx22n26zahcyOxAxDbSEk/NtHI/TD9kX9nvW/Dl0fir8Q9PfTdeu7Rrfwt4eugpu9FsLlR52oakilkg1K7ixHHaq7tZW5dZXa4mlCfqPhH4c8ReKnFmSzlktTLOBMnxtLG5liY0a9LLpYejVpVq+Do4vEuVXM82zNUqeFqVHVr1qFKUasoUcFh6dGPxviHxlk3A2Q4+nTx9LEcSY3DVMPgMJGpTni41qsJU6WLq0KbthcJg+Z11zxhGrKHsoSnWqOT+9bG0isLKzsYAFhsrW3tIgBgCO3iSFAPoqCrVFFf6sN317n8GLTTsIOg+g/lS0g6D6D+VLQB5P8AE34GfCP4x2aWPxM+H/hrxfFEcwS6vplvPd2zdPMtbwoLm3kHZ4pFYdiK+a5f+Ccv7MXmbrDQ/GOjxZO210n4heL7O1Qdljt01Xy41HQKgAAwAABivuyiuTF4DA4+MYY/BYTGwjflhjMNRxMI335Y14Tim+tkjehisVhZOWFxOIw0pW5pYetUoydtrypyi3bzZ8KR/wDBOn9mtcebp3ju5A7XHxI8YuCPQ/8AE2H+ffmtmz/4J+fstWrK0ngO/wBRwc7dV8WeKNQjbn+OO41Vkb33A5r7SorlpZDkdBqVDJcpoyTunRy3B02n3ThRi0/Q6J5rmlRONTMswqJ6NVMZiZp9NVKozyXwF8CPg78MSJPAfw58KeG7jG03un6RarfsP9u+kR7pvqZSc8161RRXqpWSilZRSUUlZJLZJbJLolocDbbberbu292+7fVhRRRQB//Z" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blurhy.xyz/2019/06/29/ck3vfxpnj0063towip2xmv96g/&title=《针对爬虫的ZeroNet配置》 — blurHY&source=一般地，零网是给个人使用的，就是说不适用于直接在服务器上运行。
+因此，需要配置的一些改动。" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blurhy.xyz/2019/06/29/ck3vfxpnj0063towip2xmv96g/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《针对爬虫的ZeroNet配置》 — blurHY&url=https://blurhy.xyz/2019/06/29/ck3vfxpnj0063towip2xmv96g/&via=https://blurhy.xyz" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blurhy.xyz/2019/06/29/ck3vfxpnj0063towip2xmv96g/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMYAAADGCAAAAACs8KCBAAACJUlEQVR42u3aS26DMBQF0Ox/0+m4qgL3+pFKmONRlFDwoZL1fq9XvN5/1t9fj6/8dM2np7y+sTAwMG7LeB+uTw84hs2R+d4wMDCew0gef3zrySYS0smeMTAwMOKNrt1zcg0GBgZGnoK2yCSJxcDAwGiT2ASfw5KtfyUXx8DAuCFjbSv/8/kr/Q0MDIxbMd7lSv42b3xOdvLrnhgYGFsz8gOuLatd1c5M9oOBgbE349rDND8c18bFmn8NBgbGnow8dLu2cDZJbj9GuBgYGNsx8nZj8mtyBiavrAg9MTAwHsBYG3pYCwHXjuOTOBADA+MxjDaVnY8+tC9rMYnFwMC4OSPfUH5NXvRPCm0FGwMD42GMJI2ck9qENurEYmBgbMdoU8fk1u3AxCRtLjquGBgYN2fkgw7zhkFbyS+GLTAwMLZm5CX+9oicjKAlL/QkNMTAwNiI0T64TU3bUlrdbMDAwHgkY62gn28iCSXreiEGBsamjLawtRY+rh33dVqLgYHxMMZktaFk+83JsAUGBsYDGElQ2AaU+TBHfrzWjUwMDIytGWth3yRJXgsWMTAwdmW8yzVPcduGRHQHDAyMrRltajopt0WJaNCEGFXYMDAwbsuYp5pzXj7GccGbxsDAuC3j+Pt2zGs+WNYGjhgYGBh5AS6PQ6+6PwYGBsakzTlJdGsSBgbGAxhrzYAW2Y6O5U1QDAyMvRltLSsf22oP8bY8h4GB8QDGDxN8N/UTgndvAAAAAElFTkSuQmCC" alt="微信分享二维码">
+</div>
+
+
+
+ <script src="//unpkg.com/node-waves@0.7.6/dist/waves.min.js"></script>
+<script>
+    var BLOG = { ROOT: '/', SHARE: true, REWARD: false };
+
+    
+</script>
+
+<script src="../../../.././js/main.min.js?v=1.7.2"></script>
+ 
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="../../../.././js/search.min.js?v=1.7.2" async></script>
+ 
+  
+
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function(event) {
+                document.querySelectorAll("img").forEach(function(img) {
+                    img.onerror = function() {
+                        this.src =
+                            "../.." +
+                            this.src.substr(this.src.indexOf("/images"));
+                        img.onerror = () => {};
+                    };
+                });
+            });
+        </script>
+    </body>
+</html>

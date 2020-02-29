@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html>
+    <head><meta name="generator" content="Hexo 3.8.0">
+    
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>IPFS与ZeroNet对比和原理浅析 | blurHY |
+        Decentralized web enthusiast - 分布式互联网开发者</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="ZeroNet,IPFS">
+    <meta name="description" content="前言 IPFS[1]和零网[2]是在同一年创立的，而如今IPFS已超零网2K star，生态系统也更加茁壮。 显然，缘于IPFS的模块化，将网络分层，才吸引了更多的开发者。 零网与IPFS有很多相似之处，比如同时基于BitTorrent。但实际上，看似相似，一些深层的技术还是不一样的。  深层机制  DHT DHT即分布式散列表，用于存储节点信息，可以理解为，每个节点都是一个tracker。">
+<meta name="keywords" content="ZeroNet,IPFS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IPFS与ZeroNet对比和原理浅析">
+<meta property="og:url" content="https://blurhy.xyz/2019/02/14/ck3vfxpl70012towiow6fj1wq/index.html">
+<meta property="og:site_name" content="blurHY">
+<meta property="og:description" content="前言 IPFS[1]和零网[2]是在同一年创立的，而如今IPFS已超零网2K star，生态系统也更加茁壮。 显然，缘于IPFS的模块化，将网络分层，才吸引了更多的开发者。 零网与IPFS有很多相似之处，比如同时基于BitTorrent。但实际上，看似相似，一些深层的技术还是不一样的。  深层机制  DHT DHT即分布式散列表，用于存储节点信息，可以理解为，每个节点都是一个tracker。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-07-13T06:02:03.204Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="IPFS与ZeroNet对比和原理浅析">
+<meta name="twitter:description" content="前言 IPFS[1]和零网[2]是在同一年创立的，而如今IPFS已超零网2K star，生态系统也更加茁壮。 显然，缘于IPFS的模块化，将网络分层，才吸引了更多的开发者。 零网与IPFS有很多相似之处，比如同时基于BitTorrent。但实际上，看似相似，一些深层的技术还是不一样的。  深层机制  DHT DHT即分布式散列表，用于存储节点信息，可以理解为，每个节点都是一个tracker。">
+    
+    <link rel="alternate" type="application/atom+xml" title="blurHY" href="../../../../atom.xml">
+    
+    <link rel="shortcut icon" href="data:image/jpeg;base64,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">
+    <link rel="stylesheet" href="../../../.././css/style.css?v=1.7.2">
+    <script>
+        window.lazyScripts = []
+
+    </script>
+
+    <!-- custom head -->
+    
+    <meta name="google-site-verification" content="1JifdT6IlbLHFtBI6bSFN2g2z7wrUmHzKzlTc7FvsSg">
+    <meta name="msvalidate.01" content="F462D6865A366A37964B46B96028A460">
+</head>
+
+    <body>
+        <div id="loading" class="active"></div>
+ <aside id="menu" class="hide">
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(../../../.././img/brand.jpg)">
+      <div class="brand">
+        <a href="../../../../index.html" class="avatar waves-effect waves-circle waves-light">
+          <img src="data:image/jpeg;base64,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">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">blurHY</h5>
+          <a href="mailto:blurhy@outlook.com" title="blurhy@outlook.com" class="mail">blurhy@outlook.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="../../../../index.html">
+                <i class="icon icon-lg icon-home"></i>
+                Home
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="../../../.././archives">
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="../../../.././tags">
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="../../../.././categories">
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/blurHY" target="_blank">
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://gitlab.com/ipzn">
+                <i class="icon icon-lg icon-link"></i>
+                IPZN
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://blurhy.xyz/tags/InstrumentalMusic/">
+                <i class="icon icon-lg icon-music"></i>
+                Playlist
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+        <main id="main">
+            <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">IPFS与ZeroNet对比和原理浅析</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="Search ...">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">IPFS与ZeroNet对比和原理浅析</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2019-02-14T02:32:06.000Z" itemprop="datePublished" class="page-time">
+  2019-02-14
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="../../../../categories/P2P/">P2P</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#前言"><span class="post-toc-number">1.</span> <span class="post-toc-text"> 前言</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#深层机制"><span class="post-toc-number">2.</span> <span class="post-toc-text"> 深层机制</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#dht"><span class="post-toc-number">2.1.</span> <span class="post-toc-text"> DHT</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#kademlia"><span class="post-toc-number">2.1.1.</span> <span class="post-toc-text"> Kademlia</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#bittorrent"><span class="post-toc-number">2.2.</span> <span class="post-toc-text"> BitTorrent</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#git-ipfs亮点之一"><span class="post-toc-number">2.3.</span> <span class="post-toc-text"> Git - IPFS亮点之一</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#zeronet的站点结构"><span class="post-toc-number">2.4.</span> <span class="post-toc-text"> ZeroNet的站点结构</span></a></li></ol></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#分布式网络之上的站点"><span class="post-toc-number">3.</span> <span class="post-toc-text"> 分布式网络之上的站点</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#域名系统"><span class="post-toc-number">3.1.</span> <span class="post-toc-text"> 域名系统</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#速度问题"><span class="post-toc-number">3.2.</span> <span class="post-toc-text"> 速度问题</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#编程语言"><span class="post-toc-number">3.2.1.</span> <span class="post-toc-text"> 编程语言</span></a></li></ol></li></ol></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#做种"><span class="post-toc-number">4.</span> <span class="post-toc-text"> 做种</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#结论"><span class="post-toc-number">5.</span> <span class="post-toc-text"> 结论</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-IPFS与ZeroNet对比和原理浅析" class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">IPFS与ZeroNet对比和原理浅析</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2019-02-14 10:32:06" datetime="2019-02-14T02:32:06.000Z" itemprop="datePublished">2019-02-14</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="../../../../categories/P2P/">P2P</a></li></ul>
+
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h1 id="前言"><a class="markdownIt-Anchor" href="#前言"></a> 前言</h1>
+<p>IPFS<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>和零网<sup class="footnote-ref"><a href="#fn2" id="fnref2">[2]</a></sup>是在同一年创立的，而如今IPFS已超零网2K star，生态系统也更加茁壮。</p>
+<p>显然，缘于IPFS的模块化，将网络分层，才吸引了更多的开发者。</p>
+<p>零网与IPFS有很多相似之处，比如同时基于BitTorrent。但实际上，看似相似，一些深层的技术还是不一样的。</p>
+<h1 id="深层机制"><a class="markdownIt-Anchor" href="#深层机制"></a> 深层机制</h1>
+<h2 id="dht"><a class="markdownIt-Anchor" href="#dht"></a> DHT</h2>
+<p>DHT即分布式散列表，用于存储节点信息，可以理解为，<strong>每个节点都是一个tracker</strong>。</p>
+<blockquote>
+<p>Tracker就是中心化的服务器，节点告诉tracker自己所有的资源，其他节点通过tracker找资源</p>
+</blockquote>
+<p>IPFS支持DHT，可以实现完全去中心化。但<strong>ZeroNet尚不支持，只有tracker交换</strong>。</p>
+<p>Tracker交换相当于弱化的DHT，只有部分节点参与路由，抗封锁能力略弱。</p>
+<a id="more"></a>
+<h3 id="kademlia"><a class="markdownIt-Anchor" href="#kademlia"></a> Kademlia</h3>
+<blockquote>
+<p>Kademlia是一种通过分布式散列表实现的协议算法<sup class="footnote-ref"><a href="#fn3" id="fnref3">[3]</a></sup></p>
+</blockquote>
+<h2 id="bittorrent"><a class="markdownIt-Anchor" href="#bittorrent"></a> BitTorrent</h2>
+<p>BT协议是零网和IPFS的底层协议之一，所以不应将IPFS和零网和BT进行比较，毕竟不是在同一层面的。</p>
+<p>可以说零网和IPFS是经过扩展、增强的BT。</p>
+<p>而IPFS的数据是由一堆Git的数据块组成，这种交换数据块的BT又被称为BitSwap</p>
+<h2 id="git-ipfs亮点之一"><a class="markdownIt-Anchor" href="#git-ipfs亮点之一"></a> Git - IPFS亮点之一</h2>
+<p>Git只增加数据，所以对P2P系统非常友好，并且有了Git之后就<strong>不会出现私钥被偷，文件全部被删除</strong>的事情。</p>
+<blockquote>
+<p>零网有过私钥被公安拿去，强删数据的事情。</p>
+</blockquote>
+<p>版本的变化只不过是添加数据或者更改对commit的引用的更改。</p>
+<h2 id="zeronet的站点结构"><a class="markdownIt-Anchor" href="#zeronet的站点结构"></a> ZeroNet的站点结构</h2>
+<p>不同于IPFS，零网直接使用站点公钥对站点进行标识，以站点为单位，站点之间的文件是分开管理的。</p>
+<p>因此，没有IPFS的去重机制，浪费空间。</p>
+<p>站点由各<code>content.json</code>组织，相当于一个索引文件，所以站点下载的第一件事就是下载它。</p>
+<h1 id="分布式网络之上的站点"><a class="markdownIt-Anchor" href="#分布式网络之上的站点"></a> 分布式网络之上的站点</h1>
+<p>两个网络都一样，不能实现完全动态的站点，站点都是静态文件。没有后端逻辑，纯前端站点。</p>
+<p>零网有原生API，对纯前端站点进行扩展，利用API实现有限的后端功能：</p>
+<ul>
+<li>将文件内数据导入数据库，加快查询速度。</li>
+<li>发布用户内容，实现站点评论。</li>
+<li>聚合站点，实现一定程度的复用。</li>
+</ul>
+<p>可以看出，零网针对站点作出特别优化，IPFS确实是个文件系统。</p>
+<p>但这些附加功能完全可以在IPFS之上实现，通过各种插件。</p>
+<h2 id="域名系统"><a class="markdownIt-Anchor" href="#域名系统"></a> 域名系统</h2>
+<p>零网采用NameCoin，而NameCoin客户端太大，所以用一个官方的零网站点发布域名数据，也就是说域名系统并不完全分布式。</p>
+<p>而IPFS，方法更多，比如IPFS可以使用现有的DNS，需要购买域名，然后添加DNS TXT记录，<code>dnslink=/ipfs/&lt;CID for your content here&gt;</code>。</p>
+<p>最后按<code>/ipns/example.com/path/</code>访问。</p>
+<h2 id="速度问题"><a class="markdownIt-Anchor" href="#速度问题"></a> 速度问题</h2>
+<p>零网对每次发布都推迟几秒，因此CPU占用很小。IPFS没有任何限速，有时候就CPU占用很高。</p>
+<p>当然，有利有弊。</p>
+<h3 id="编程语言"><a class="markdownIt-Anchor" href="#编程语言"></a> 编程语言</h3>
+<p>IPFS的实现更多，Go的实现早就有了，JS的也在编写了。零网到现在都只有Python2编的。</p>
+<p>Go和Python的差距很明显，而且零网用的是Python2，经常发生各种阻塞，查询数据库的时候网页就不响应。</p>
+<p>Py2在2020年以后就不支持了，零网作者应该会在今年搞定到Py3的迁移。</p>
+<h1 id="做种"><a class="markdownIt-Anchor" href="#做种"></a> 做种</h1>
+<p>零网网站一经访问，永久存储和做种在访客硬盘里，但IPFS会将下载的文件视作缓存，定期清理，所以就有Pinning service。</p>
+<p>而零网的网站若是要pin，直接在零网网门访问，然后网门就会为你做种。</p>
+<h1 id="结论"><a class="markdownIt-Anchor" href="#结论"></a> 结论</h1>
+<p>IPFS更加前沿和模块化。零网有很多针对站点的功能，适合建站。</p>
+<hr class="footnotes-sep">
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn1" class="footnote-item"><p><a href="https://github.com/ipfs/ipfs" target="_blank" rel="noopener">https://github.com/ipfs/ipfs</a> <a href="#fnref1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn2" class="footnote-item"><p><a href="https://github.com/HelloZeroNet/ZeroNet" target="_blank" rel="noopener">https://github.com/HelloZeroNet/ZeroNet</a> <a href="#fnref2" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn3" class="footnote-item"><p><a href="https://zh.wikipedia.org/wiki/Kademlia" target="_blank" rel="noopener">https://zh.wikipedia.org/wiki/Kademlia</a> <a href="#fnref3" class="footnote-backref">↩︎</a></p>
+</li>
+</ol>
+</section>
+
+        </div>
+
+        <div style="white-space:nowrap;box-shadow:1px
+            1px 4px 1px #00000036;padding: 2px 2px 2px 2px;padding-top:
+            17px;padding-right: 15px;padding-bottom: 15px;border-radius:
+            10px;
+    padding-left: 15px;
+margin: 10px;
+margin-bottom: 25px;
+    ">
+    <h1 style="white-space:nowrap;font-size:18px;
+                    color:#09c;line-height: 1;margin: 0 0 8px 0;padding: 0;">
+        blurHY
+    </h1>
+    <h4 style="white-space:nowrap;font-size:14px;
+                    color:#333;line-height: 1;margin: 0 0 8px 0;font-weight:
+                    400;padding: 0;">
+        Decentralized web enthusiast |
+        <a style="white-space:nowrap;text-decoration: none;
+                      color: #333" href="https://blurhy.xyz" rel="noopener" target="_blank">
+            blurhy.xyz</a>
+    </h4>
+    <h6 style="white-space:nowrap;font-size:14px;
+                    color:#999;line-height: 1;margin: 0;font-weight: 400;">
+        <a href="mailto:taroon.tyagi@gmail.com" style="white-space:nowrap;text-decoration: none;
+                      color: #999" rel="noopener" target="_blank">blurhy@outlook.com</a>
+    </h6>
+    <h6 style="white-space:nowrap;font-size:13px;
+                    color:#999;line-height: 1;margin: 0;font-weight:
+                    400;padding-top: 5px;">
+        <span style="white-space:nowrap;text-decoration: none;
+                      color: #999">Telegram @blurhy</span>
+    </h6>
+    <h6 style="white-space:nowrap;font-size:13px;
+                    color:#999;line-height: 1;margin: 0;font-weight:
+                    400;padding-top: 5px;">
+        <span style="white-space:nowrap;text-decoration: none;
+                      color: #999">Matrix @blurhy:matrix.org</span>
+    </h6>
+    <h6 style="white-space:nowrap;font-size:13px;
+                    color:#999;line-height: 1;margin: 0;font-weight:
+                    400;padding-top: 5px;">
+        <span style="white-space:nowrap;text-decoration: none;
+                      color: #999">Tox
+            867226A9F397786A82F9E8E547A0CFDA080E180B8500D58B7830100D68B0AA3F2B5AFF62F744</span>
+    </h6>
+    <h6 style="white-space:nowrap;font-size:13px;
+                    color:#999;line-height: 1;margin: 0;font-weight:
+                    400;padding-top: 5px;">
+        <a style="white-space:nowrap;text-decoration: none;
+                      color: #999" href="https://github.com/blurHY">Github: https://github.com/blurHY</a>
+    </h6>
+    <h6 style="white-space:nowrap;font-size:13px;
+                    color:#999;line-height: 1;margin: 0;font-weight:
+                    400;padding-top: 5px;">
+        <a style="white-space:nowrap;text-decoration: none;
+                      color: #999" href="https://gitlab.com/blurHY">Gitlab: https://gitlab.com/blurHY</a>
+    </h6>
+</div>
+<blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    Last modified：<time datetime="2019-07-13T06:02:03.204Z" itemprop="dateUpdated">2019-07-13 14:02:03</time>
+</span><br>
+
+ 
+    </div>
+    
+
+    <footer>
+        <a href="https://blurhy.xyz">
+            <img src="data:image/jpeg;base64,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" alt="blurHY">
+            blurHY
+        </a>
+    </footer>
+</blockquote>
+
+        
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="../../../../tags/IPFS/">IPFS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="../../../../tags/ZeroNet/">ZeroNet</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blurhy.xyz/2019/02/14/ck3vfxpl70012towiow6fj1wq/&title=《IPFS与ZeroNet对比和原理浅析》 — blurHY&pic=https://blurhy.xyzdata:image/jpeg;base64,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" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blurhy.xyz/2019/02/14/ck3vfxpl70012towiow6fj1wq/&title=《IPFS与ZeroNet对比和原理浅析》 — blurHY&source= 前言
+IPFS[1]和零网[2]是在同一年创立的，而如今IPFS已超零网2K star，生态系统也更加茁壮。
+显然，缘于IPFS的模块化，将网络分层，才..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blurhy.xyz/2019/02/14/ck3vfxpl70012towiow6fj1wq/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《IPFS与ZeroNet对比和原理浅析》 — blurHY&url=https://blurhy.xyz/2019/02/14/ck3vfxpl70012towiow6fj1wq/&via=https://blurhy.xyz" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blurhy.xyz/2019/02/14/ck3vfxpl70012towiow6fj1wq/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="../../15/ck3vfxpl4000vtowis77pn5ki/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">Horizon零网搜索引擎</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="../../12/ck3vfxplv0024towiv16h5a5k/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">VSCode重置并保留插件（Windows）</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<section class="comments" id="comments">
+    <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+        var id = location.pathname
+        if (location.pathname.length > 50) {
+          id = location.pathname.replace(/\/\d+\/\d+\/\d+\//, '').replace('/', '').substring(0, 50)
+        }
+        const gitalk = new Gitalk({
+          clientID: 'df8b7fa0ec8e7415cdcd',
+          clientSecret: '177d2242d3b1a079a2d76156d6fdb58e4b5e2b64',
+          repo: 'blurHY',
+          owner: 'blurHY',
+          admin: ['blurHY'],
+          id: id,      // Ensure uniqueness and length less than 50
+          title: document.title.split('|')[0],
+          distractionFreeMode: false  // Facebook-like distraction free mode
+        })
+
+        gitalk.render('gitalk-container')
+    </script>
+</section>
+
+
+
+
+</article>
+
+
+
+</div>
+ <footer class="footer">
+    <div class="top">
+        
+
+        <p>
+            
+                <span><a href="../../../../atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>博客内容遵循 / License <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh"> 知识共享 署名 - 非商业性 - 相同方式共享 4.0 国际协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>blurHY &copy; 2019</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+        </main>
+        <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blurhy.xyz/2019/02/14/ck3vfxpl70012towiow6fj1wq/&title=《IPFS与ZeroNet对比和原理浅析》 — blurHY&pic=https://blurhy.xyzdata:image/jpeg;base64,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" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blurhy.xyz/2019/02/14/ck3vfxpl70012towiow6fj1wq/&title=《IPFS与ZeroNet对比和原理浅析》 — blurHY&source= 前言
+IPFS[1]和零网[2]是在同一年创立的，而如今IPFS已超零网2K star，生态系统也更加茁壮。
+显然，缘于IPFS的模块化，将网络分层，才..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blurhy.xyz/2019/02/14/ck3vfxpl70012towiow6fj1wq/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《IPFS与ZeroNet对比和原理浅析》 — blurHY&url=https://blurhy.xyz/2019/02/14/ck3vfxpl70012towiow6fj1wq/&via=https://blurhy.xyz" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blurhy.xyz/2019/02/14/ck3vfxpl70012towiow6fj1wq/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMYAAADGCAAAAACs8KCBAAACLElEQVR42u3aS27DMAwFwNz/0um2QBrlkVIKmB6vitqRPF4Q/OjxiK/nr+vd3dcnX6/1autdDlwYGBiXZfQ2TrZc/+r1/72PgoGBcR9GEkbXr/vuyeQlEtKHd8bAwMBYPrMTfHf2xcDAwEjStWpiVy1iMTAwMKpFbJIa5s24/KMcrsUxMDAuyMi77v//91fmGxgYGJdiPIvXOsgmjbZqSy56KwwMjNGMPMD1UsbvrYmBgXEfRjWMJnerJXHehovyVgwMjKGMXgKXH6Q4u9cfPAwMjNGMXnOtN5LsJZRbHUQMDIwRjMJRhu22WhJw8zbfhyIWAwNjECMPl9UytYrfiZwYGBj3YeTJXw+8kyxGv8LAwBjKyIeF1ZdLStxeGhqNMDEwMIYyekledYV8eFkuXzEwMEYz8jZZXgZXU8nDhy0wMDDGMZKQlyxdDbK9kUAhNcTAwBjNSJbOkdWQnTxfqLMxMDAuzkgSu2rxWW30Vxlv72JgYNyAcep4Vm8w2TsIgoGBcWdGr0zNA2X1wzXPjGBgYAxlVMeZvcMZSZqYtPYwMDAwekle78BE/rGiIhYDA2MQ41m8ktbY/gGOcnmMgYExmtGbDyYDy7yRlx/OqI4fMDAwJjGqRyt6r7ufaJa/NAYGxjhGHvjycrcXWJuhHwMDAyMIuMk61WFAvgsGBgZGzthPMZskDAyMGzDydn91xLiT9uUpKQYGxmzGTi/rVOG6XuHYIBMDA+N6jB+AKPoIskn4ywAAAABJRU5ErkJggg==" alt="微信分享二维码">
+</div>
+
+
+
+ <script src="//unpkg.com/node-waves@0.7.6/dist/waves.min.js"></script>
+<script>
+    var BLOG = { ROOT: '/', SHARE: true, REWARD: false };
+
+    
+</script>
+
+<script src="../../../.././js/main.min.js?v=1.7.2"></script>
+ 
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="../../../.././js/search.min.js?v=1.7.2" async></script>
+ 
+  
+
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function(event) {
+                document.querySelectorAll("img").forEach(function(img) {
+                    img.onerror = function() {
+                        this.src =
+                            "../.." +
+                            this.src.substr(this.src.indexOf("/images"));
+                        img.onerror = () => {};
+                    };
+                });
+            });
+        </script>
+    </body>
+</html>

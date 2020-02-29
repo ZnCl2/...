@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<head>
+    <title>0git - git repositories hosted on ZeroNet</title>
+
+    <!-- concisecss -->
+    <link rel="stylesheet" href="css/concise/concise.min.css">
+    <link rel="stylesheet" href="css/concise/concise-utils.min.css">
+    <link rel="stylesheet" href="css/concise/concise-ui.min.css">
+    <!-- concisecss's card view is not responsive. -->
+    <link rel="stylesheet" href="css/chewing-grid/chewing-grid-atomic.min.css">
+</head>
+<body>
+<div id="page_header" class="_text-center _pts _mbm">
+    <h1>0git - git repositories hosted on ZeroNet</h1>
+</div>
+<div id="composite_button" grid style="display: block">
+    <button column="2 +9" class="-success" onClick="return show_composite_form()">Post new repository</button>
+</div>
+<div id="composite_post" class="_mlm" style="display: none">
+    <div grid>
+        <input column="2" type="text" id="title" placeholder="project name" required>
+        <input column="6" type="text" id="description" placeholder="brief description (plain text, no markup)" required>
+    </div>
+    <div grid>
+        <input column="4" type="url" id="url" placeholder="project site"
+               required
+               pattern="(http://(127.0.0.1|localhost):43110)?/([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+)|([A-Za-z-]+)(/\.*)?"
+               title="ZeroNet url only.">
+        <input column="4" type="url" id="repo_url" placeholder="repository clone url"
+               required
+               pattern="(http://(127.0.0.1|localhost):43110)?/([123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+)|([A-Za-z-]+)(/\.*)?"
+               title="ZeroNet url only.">
+    </div>
+    <div grid class="_mtxs _mbxs">
+        <span column="3 +5" class="_c-gray-lighter">posted as
+            <a class="_c-gray-lighter _underline"
+             href="#Select+user" id="select_user" onclick='return page.select_user()'>select user</a>
+        </span>
+    </div>
+    <div grid>
+        <button column="2 +6" class="-success" type="submit" id="post" onclick="return page.post_repo()">Post</button>
+    </div>
+</div>
+
+<ul id="repos"
+    class="chew-row chew-row--col-2 chew-row--card-min-350 chew-row--gutter">
+</ul>
+
+<div id="page_footer">
+    <hr class="_mxs">
+    <div id="license" tabindex="0" class="_c-gray-base dropdown-button -hover _plxs">
+        <span>By submitting a post, you agree to license the post under 0BSD.</span>
+        <div class="dropdown-content">
+            <p class="text">Permission to use, copy, modify, and/or distribute this work
+                            for any purpose with or without fee is hereby granted.</p>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="js/ZeroFrame.js"></script>
+
+<script>
+"use strict";
+
+function show_composite_form()
+{
+    document.getElementById("composite_post").style["display"] = 'block';
+    document.getElementById("composite_button").style["display"] = 'none';
+}
+
+
+function _escape_html(text)
+{
+    return text.replace('<', '&lt;').replace('>', '&gt;').replace('&', '&amp;')
+}
+
+function _make_link_relative(url) {
+    const zeronet_link_prefix = 'http://127.0.0.1:43110'
+    const alternative_zeronet_link_prefix = 'http://localhost:43110'
+    if (url.startsWith(zeronet_link_prefix))
+    {
+        return url.slice(zeronet_link_prefix.length)
+    }
+    else if (url.startsWith(alternative_zeronet_link_prefix))
+    {
+        return url.slice(alternative_zeronet_link_prefix.length)
+    }
+    else
+    {
+        return url
+    }
+
+}
+
+
+class ZeroGit extends ZeroFrame
+{
+    select_user ()
+    {
+        this.cmd('certSelect', {accepted_domains: ['zeroid.bit', 'kaffie.bit']})
+        return false
+    }
+
+    add_repo(title, description, url, repo_url, user)
+    {
+        let entry = '<li class="repo chew-cell _"><div class="chew-card _b1">' +
+                    `<h2 class="_text-center"><a href="${encodeURI(_make_link_relative(url))}">${_escape_html(title)}</a></h2>` +
+                    `<p class="_plxs">${_escape_html(description)}</p>` +
+                    `<p class="_plxs"><code>git clone ${_escape_html(repo_url)}</code></p>` +
+                    `<address rel="author" class="_c-gray-lighter _plxs">posted by ${user}</address><p></div></li>`
+        this.repos.innerHTML += entry
+    }
+
+    post_repo()
+    {
+        if (!this.site_info.cert_user_id)
+        {
+            this.cmd("wrapperNotification", ["info", "Please, select your account."])
+            return false
+        }
+
+        let inner_path = "data/users/" + this.site_info.auth_address + "/data.json"
+
+        // Load current posts
+        this.cmd("fileGet", {"inner_path": inner_path, "required": false}, (data) => {
+            if (data)
+            {
+                data = JSON.parse(data)
+            }
+            else  // Not exists yet, use default data
+            {
+                data = { "repos": [] }
+            }
+
+            // Add the new post to data
+            data.repos.push({
+                "title": document.getElementById("title").value,
+                "description": document.getElementById("description").value,
+                "url": document.getElementById("url").value,
+                "repo_url": document.getElementById("repo_url").value,
+                "date_added": Date.now()
+            })
+
+            // Encode data array to utf8 json text
+            let json_raw = decodeURI(encodeURI(JSON.stringify(data, undefined, '\t')))
+
+            // Write file to disk
+            this.cmd("fileWrite", [inner_path, btoa(json_raw)], (response) => {
+                if (response == "ok") {
+                    // Reset post input and hide composite form
+                    document.getElementById("title").value = ""
+                    document.getElementById("description").value = ""
+                    document.getElementById("url").value = ""
+                    document.getElementById("repo_url").value = ""
+                    document.getElementById("composite_post").style["display"] = "none";
+                    document.getElementById("composite_button").style["display"] = "block";
+                    // Publish the file
+                    this.cmd("sitePublish", {"inner_path": inner_path})
+                    this.load_posts()
+                } else {
+                    this.cmd("wrapperNotification", ["error", "File write error: #{res}"])
+                }
+            })
+        })
+
+        return false
+    }
+
+    load_posts ()
+    {
+        this.log("Enter load_posts()")
+        this.cmd("dbQuery", ["SELECT * FROM repos LEFT JOIN json USING (json_id) ORDER BY date_added DESC"], (repos) => {
+            this.log("Got" + repos.length + "repos")
+            document.getElementById("repos").innerHTML = "" // Start from scratch.
+            for (let i = 0; i < repos.length; i++)
+            {
+                this.log(repos[i].title)
+                this.add_repo(repos[i].title, repos[i].description, repos[i].url, repos[i].repo_url, repos[i].cert_user_id)
+            }
+            // Prevent last row expansion.
+            this.repos.innerHTML += '<li class="chew-cell chew-cell--ghost"></li>'
+
+        })
+    }
+
+    onOpenWebsocket ()
+    {
+        this.repos = document.getElementById("repos")
+        this.log('Got id="repos" element.')
+
+        this.cmd("siteInfo", {}, (site_info) => {
+            if (site_info.cert_user_id)
+            {
+                document.getElementById("select_user").innerText = site_info.cert_user_id
+            }
+            this.site_info = site_info
+            this.log("siteInfo.cert_user_id: " + site_info.cert_user_id)
+        })
+
+
+        this.load_posts()
+
+    }
+
+    onRequest (cmd, message)
+    {
+        if (cmd === "setSiteInfo")
+        {
+            if (message.params.cert_user_id)
+            {
+                document.getElementById("select_user").innerHTML = message.params.cert_user_id
+            }
+            else
+            {
+                document.getElementById("select_user").innerHTML = "Select user"
+            }
+            this.site_info = message.params  // Save site info data to allow access it later
+        }
+
+        // Reload posts on arrival of new files.
+        if (message.params.event[0] == "file_done")
+        {
+            this.load_posts()
+        }
+    }
+
+}
+
+let page = new ZeroGit()
+</script>
+</body>
+

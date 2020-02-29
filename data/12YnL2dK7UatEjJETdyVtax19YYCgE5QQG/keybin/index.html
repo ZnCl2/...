@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>New ZeroNet site!</title>
+		<meta charset="utf-8">
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<base href="" target="_top" id="base">
+		<script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+
+		<style type="text/css">
+			html {
+				height: 100%;
+			}
+			body {
+				display: flex;
+				flex-direction: row;
+				height: 100%;
+				margin: 0;
+
+				font-family: "Arial", sans-serif;
+				font-size: 16px;
+			}
+
+			aside {
+				flex: 0 0 192px;
+				background-color: #80b0ff;
+				overflow-x: hidden;
+			}
+			.masterseed {
+				padding: 8px 12px;
+				background-color: rgba(255, 255, 255, 0.4);
+				cursor: pointer;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+			.masterseed:hover {
+				background-color: rgba(255, 255, 255, 0.6);
+			}
+			.masterseed-current {
+				background-color: #ffffff !important;
+			}
+
+			main {
+				padding: 16px;
+				padding-bottom: 0;
+				overflow-x: hidden;
+			}
+			.users {
+				background-color: #d0ffd0;
+				flex: 3 3 0;
+			}
+			.sites {
+				background-color: #ffe0e0;
+				flex: 2 2 0;
+			}
+
+			h2 {
+				margin: 0;
+				margin-bottom: 16px;
+				font-weight: normal;
+				font-size: 24px;
+			}
+			.table {
+				display: flex;
+				flex-direction: column;
+			}
+			.row {
+				display: flex;
+				flex-direction: row;
+				margin-bottom: 1px;
+			}
+			.row:last-child {
+				margin-bottom: 16px;
+			}
+			.users .row {
+				background-color: #80ff80;
+			}
+			.sites .row {
+				background-color: #ffa0a0;
+			}
+			.cell {
+				flex: 1 1 0;
+				padding: 8px 12px;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+		</style>
+	</head>
+	<body>
+		<aside id="masterseeds"></aside>
+		<main class="users">
+			<h2>User identities</h2>
+			<div class="table" id="users"></div>
+		</main>
+		<main class="sites">
+			<h2>Site keys</h2>
+			<div class="table" id="sites"></div>
+		</main>
+
+
+		<script type="text/javascript" src="../js/ZeroFrame.js"></script>
+
+		<script type="text/javascript">
+			const ZEROBLOG = "1BLogC9LN4oPDcruNz3qo1ysa133E9AGg8";
+
+			const qMasterSeeds = document.querySelector("#masterseeds");
+			const qUsers = document.querySelector("#users");
+			const qSites = document.querySelector("#sites");
+
+			const zeroFrame = new ZeroFrame();
+
+			(async () => {
+				const keyMatch = location.search.match(/binkey=(.*?)(&|$)/);
+				if(!keyMatch) {
+					const key = prompt("Bin access key:");
+					parent.location.href = `?binkey=${key}`;
+					return;
+				}
+				const key = keyMatch[1];
+
+				const siteInfo = await zeroFrame.cmdp("siteInfo");
+				if(siteInfo.settings.permissions.indexOf("ADMIN") === -1) {
+					alert("ADMIN permissions is required to read bins");
+					return;
+				}
+
+				let bins = await zeroFrame.cmdp("as", [ZEROBLOG, "fileQuery", ["data/users/*/data.json", "keybin"]]);
+				bins = await Promise.all(bins.map(async bin => {
+					return await zeroFrame.cmdp("eciesDecrypt", [bin.value, key]);
+				}));
+				masterSeeds = bins.map(bin => JSON.parse(bin)).reduce((a, b) => Object.assign(a, b), {});
+
+				for(const masterSeed of Object.keys(masterSeeds)) {
+					const node = document.createElement("div");
+					node.className = "masterseed";
+					node.textContent = masterSeed;
+					node.onclick = () => {
+						for(const node of document.querySelectorAll(".masterseed-current")) {
+							node.classList.remove("masterseed-current");
+						}
+						node.classList.add("masterseed-current");
+
+						qUsers.innerHTML = "";
+						qSites.innerHTML = "";
+
+						for(const domain of Object.keys(masterSeeds[masterSeed].c)) {
+							const [privateKey, authType, userName, certSign] = masterSeeds[masterSeed].c[domain].split(";");
+							
+							const rowNode = document.createElement("div");
+							rowNode.className = "row";
+							qUsers.appendChild(rowNode);
+
+							for(const cell of [`${authType}/${userName}@${domain}`, privateKey, certSign]) {
+								const cellNode = document.createElement("div");
+								cellNode.className = "cell";
+								cellNode.textContent = cell;
+								rowNode.appendChild(cellNode);
+							}
+						}
+
+						for(const address of Object.keys(masterSeeds[masterSeed].s)) {
+							const privateKey = masterSeeds[masterSeed].s[address];
+							
+							const rowNode = document.createElement("div");
+							rowNode.className = "row";
+							qSites.appendChild(rowNode);
+
+							for(const cell of [address, privateKey]) {
+								const cellNode = document.createElement("div");
+								cellNode.className = "cell";
+								cellNode.textContent = cell;
+								rowNode.appendChild(cellNode);
+							}
+						}
+					};
+					qMasterSeeds.appendChild(node);
+				}
+			})();
+		</script>
+	</body>
+</html>

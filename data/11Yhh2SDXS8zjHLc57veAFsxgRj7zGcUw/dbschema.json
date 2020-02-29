@@ -1,0 +1,52 @@
+{
+    "db_name": "DogTravel",
+    "db_file": "data/dogtravel.db",
+    "version": 2,
+    "maps": {
+        "users/.+/data.json": {
+            "to_table": [
+				{"node": "message", "table": "message"},
+				{"node": "userinfo", "table": "userinfo"}
+            ]
+        },
+        "users/.+/content.json": {
+            "to_json_table": [ "cert_user_id" ],
+            "file_name": "data.json"
+        }
+    },
+    "tables": {
+        "json": {
+            "cols": [
+                ["json_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+                ["directory", "TEXT"],
+                ["file_name", "TEXT"],
+                ["cert_user_id", "TEXT"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX path ON json(directory, file_name)"],
+            "schema_changed": 10
+        },
+        "message": {
+            "cols": [
+                ["playerdata", "TEXT"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX message_key ON message(json_id, date_added)"],
+            "schema_changed": 10
+        },
+        "userinfo": {
+            "cols": [
+                ["gender", "INTEGER"],
+                ["travel", "INTEGER"],
+                ["version", "INTEGER"],
+				["address", "TEXT"],
+                ["name", "TEXT"],
+                ["avatar", "TEXT"],
+                ["date_added", "TEXT"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX userinfo_key ON userinfo(json_id, date_added)"],
+            "schema_changed": 10
+        }
+    }
+}
