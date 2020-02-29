@@ -1,0 +1,40 @@
+{
+	"title": "青鸟Blog",
+	"description": "青鸟 ZeroBlog.",
+	"links": "- [Source code](https://github.com/HelloZeroNet)",
+	"next_post_id": 7,
+	"demo": false,
+	"modified": 1505722722,
+	"post": [
+		{
+			"post_id": 6,
+			"title": "tor网络搭建一个网站",
+			"date_published": 1505722329.169,
+			"body": "~~~\napt-get install tor\necho 'HiddenServiceDir /var/lib/tor/hidden_service/\nHiddenServicePort 80 127.0.0.1:80' >>/etc/tor/torrc\napt-get install apache2\nservice tor start\nservice apache2 start\ncat  /var/lib/tor/hidden_service/hostname\n~~~\n然后打开tor浏览器,输入上面显示的字符串.onion\n就可以看到我们站点了\n\n站点目录位于 /var/lib/tor/hidden_service/"
+		},
+		{
+			"post_id": 5,
+			"title": "编译linux内核",
+			"date_published": 1504755717.951,
+			"body": "内核下载\n从[http://www.kernel.org/](http://www.kernel.org/)下载\n---\n\n 目录结构:\n解压linux kernel tar后目录\n\n·arch:根据cpu体系结构不同而分的代码\n·block:部分块设备驱动程序\n·crypto:加密，压缩，CRC校验算法\n·documentation:内核文档\n·drivers:设备驱动程序\n·fs(虚拟文件系统vfs):文件系统\n·include:内核所需的头文件，(与平台无关的头文件在include/linux中)\n·lib:库文件代码(与平台相关的)\n·mm:实现内存管理，与硬件体系结构无关的(与硬件体系结构相关的在arch中)\n·net:网络协议的代码\n·samples:一些内核编程的范例\n·scripts:配置内核的脚本\n·security:SElinux的模块\n·sound:音频设备的驱动程序\n·usr:cpio命令实现，用于制作根文件系统的命令(文件系统与内核放到一块的命令)\n·virt:内核虚拟机\n\n1>linux源码根目录/arch/<cpu架构>/configs/<具体某一的CPU文件>，把里面对应的文件copy并改名为.config至linux源码根目录下\n\n2>利用当前运行已有的文件(要用ls /boot/ -a查看)把/boot/config-2.6.18-53.e15拷贝并改名为.config至linux源码根目录下执行以上操作就可以用make menuconfig在拷贝.config文件上面修改文件了\n\n编译前打开documenttion/change 确认工具完善\n\n 编译内核:make bzImage\n编译好的内核在：arch/<cpu>/boot/目录下\n\n"
+		},
+		{
+			"post_id": 4,
+			"title": "routesploit使用",
+			"date_published": 1504578526.497,
+			"body": "routesploit是一款路由器渗透测试框架\n\n---\n\n一.routesploit目录简介\nroutesploit目录如下\n~~~\nDockerfile  //如上所述,忽略\nREADME.md //说明书,忽略\nroutersploit  //程序主目录\n run_docker.sh //如上所述,忽略\ntox.ini  //如上所述,忽略\nLICENSE //授权书,忽略\n requirements-dev.txt //所需要的模块\n run_linter.sh  //运行脚本.如上所述,忽略\nMakefile //如上所述,忽略\nrequirements.txt  //所需要的模块\n rsf.py //主程序\nrun_tests.sh //测试脚本\n~~~\n\n启动后未选择模块前可使用命令如下\n~~~\nhelp //显示帮助信息\nsearch <信息> //搜索模块\nuse <模块> //选择模块\nexit //结束程序\nexec <命令> //如命令行\n~~~\n\n使用run选择模块后用的几个命令\n~~~\ninfo //显示脚本信息\nshow options //显示参数信息\nset <参数> <值> //设置参数值\nrun //运行\n~~~\n通过set参数选择目标后可直接run进行攻击\n\n模块位于 /routesploit/module/\n有三个目录\n~~~\ncreds //非漏洞型 如管理员密码爆破\nexploits //漏洞利用程序\n__init__.py //每个python包必须要有的\nscanners //扫描\n~~~\n\nscanners 对常见wifi都提供了扫描程序,但实际上只是调用exploits目录的模块的check函数而已\nexploits 各种exp\ncreds    主要都是一些爆破程序"
+		},
+		{
+			"post_id": 3,
+			"title": "gdb 调试运行中python程序",
+			"date_published": 1504422300.764,
+			"body": "安装\n~~~\napt-get install gdb python2.7-dbg\n~~~\n设置 /proc/sys/kernel/yama/ptrace_scope:开启调试\n~~~\necho 0 > /proc/sys/kernel/yama/ptrace_scope\n~~~\n\n启动\n~~~\npython test.py &\n~~~\n~~~\ngdb python <启动上面后出现的pid>\n~~~"
+		},
+		{
+			"post_id": 2,
+			"title": "docker搭建巡风扫描系统",
+			"date_published": 1504331801,
+			"body": "最近用docker搭建了巡风漏洞扫描系统,分享一下\n巡风是一款适用于企业内网的漏洞快速应急、巡航扫描系统\n而且已经提供了docker快速搭建\n---\n \nkali安装docker\n这文章在kali和debian上适用,更多docker安装方法请看官网\n\n用任意编辑器打开/etc/apt/sources.list.d/backports.list文件，如果没有这个文件，就创建一个。\n删除后添加一条新的反向端口条目\n~~~\ndeb http://http.debian.net/debian wheezy-backports main\n~~~\n更新软件包信息\n~~~\napt-get update\napt-get install apt-transport-https ca-certificates gnupg2\n~~~\n添加新的GPG key\n~~~\napt-key adv \\\n  　　--keyserver hkp://ha.pool.sks-keyservers.net:80 \\\n  　　--recv-keys 58118E89F3A912897C070ADBF76221572C52609D\n~~~\n~~~\n apt-get update\n apt-get install docker-engine\n service docker start\n~~~\n\n巡风已经在docker官方仓库有镜像,我们直接拉取\n~~~\ndocker pull medicean/vulapps:tools_xunfeng\n~~~\n\n由于比较大,可能需要下载比较久\n\n如果下载完了,直接\n~~~\ndocker run -d -p 8000:80 medicean/vulapps:tools_xunfeng\n~~~\n然后访问\n~~~\n127.0.0.1:8000\n~~~\n\n巡风默认密码\n~~~\nadmin\nxunfeng321\n~~~\n\n巡风默认提供了61个漏洞插件,我们也可以直接编写\n在爬虫扫描引擎,填写网络资产扫描列表.就可以定期扫描\n> 当然这个功能对我们大部分最多有个vps的人来说意义不大\n巡风官方github地址\n[点我](https://github.com/ysrc/xunfeng)\n\n\n\n\n\n"
+		}
+	]
+}

@@ -1,0 +1,40 @@
+{
+	"db_name": "Play",
+	"db_file": "data/play.db",
+	"version": 2,
+	"maps": {
+		"movies_.*.json": {
+			"to_table": [
+				{"node": "titles", "table": "title", "key_col": "imdb_id"}
+			]
+		},
+		"movie_data.json": {
+			"to_table": [
+				{"node": "title_data", "table": "title_data", "key_col": "imdb_id"}
+			]
+		}
+	},
+	"tables": {
+		"title": {
+			"cols": [
+				["imdb_id", "TEXT"],
+				["name", "TEXT"],
+				["data", "TEXT"],
+				["dl", "TEXT"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX title_key ON title(imdb_id, json_id)"],
+			"schema_changed": 1
+		},
+		"title_data": {
+			"cols": [
+				["imdb_id", "TEXT"],
+				["peers", "INTEGER"],
+				["added", "INTEGER"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX title_data_key ON title_data(imdb_id, json_id)"],
+			"schema_changed": 1
+		}
+	}
+}

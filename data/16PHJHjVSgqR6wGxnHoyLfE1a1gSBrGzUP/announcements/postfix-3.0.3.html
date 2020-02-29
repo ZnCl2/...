@@ -1,0 +1,98 @@
+<!doctype html public "-//W3C//DTD HTML 4.01 Transitional//EN"
+      "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+
+<head>
+
+<title> Postfix stable release 3.0.3 and legacy releases 2.11.7, 2.10.9,
+and 2.9.15 </title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+
+</head>
+
+<body>
+
+<h1> Postfix stable release 3.0.3 and legacy releases 2.11.7, 2.10.9,
+and 2.9.15 </h1>
+
+<p> [An on-line version of this announcement will be available at
+<a href="http://www.postfix.org/announcements/postfix-3.0.3.html">
+http://www.postfix.org/announcements/postfix-3.0.3.html</a>] </p>
+
+<p> Postfix stable release 3.0.3 is available, as well as legacy
+releases 2.11.7, 2.10.9, and 2.9.15. </p>
+
+<p> Fixed in Postfix 2.9 and later: </p>
+
+<ul>
+
+<li> <p> The Postfix Milter client aborted with a panic while adding
+a message header, after adding a short message header with the
+header_checks PREPEND action. Fixed by invoking the header output
+function while PREPENDing a message header.  </p>
+
+<li> <p> False alarms while scanning the Postfix queue. Fixed by
+resetting errno before calling readdir().  This defect was introduced
+19970309. </p>
+
+<li> <p> The postmulti command produced an incorrect error message. </p>
+
+<li> <p> The postmulti command now refuses to create a new MTA
+instance when the template main.cf or master.cf file are missing.
+This is a common problem on Debian-like systems.  </p>
+
+</ul>
+
+<p> Fixed in Postfix 2.10 and later:</p>
+
+<ul>
+
+<li> <p> Turning on Postfix SMTP server HAProxy support broke TLS
+wrappermode. Fixed by temporarily using a 1-byte VSTREAM buffer to
+read the HAProxy connection hand-off information.  </p>
+
+</ul>
+
+<p> Fixed in Postfix 2.11 and later: <p>
+
+<ul>
+
+<li> <p> The xtext_unquote() function did not propagate error reports
+from xtext_unquote_append(), causing the decoder to return partial
+output, instead of rejecting malformed input. The Postfix SMTP server
+uses this function to parse input for the ENVID and ORCPT parameters,
+and for XFORWARD and XCLIENT command parameters. </p>
+
+<li> <p> Compile error with AIX. The AIX 6/7 resolver(5) API defines
+RES_USE_DNSSEC without defining the "ad" bit. Fixed by disabling
+DNSSEC support for AIX 7x and earlier. </p>
+
+</ul>
+
+<p> Fixed in Postfix 3.0: </p>
+
+<ul>
+
+<li> <p> The uxtext_unquote() function had the same problem as
+xtext_unquote(), because one was created by copying the other.  The
+Postfix SMTP server uses this function to parse input for the ORCPT
+parameter when the remote SMTP client sends SMTPUTF8 mail.  </p>
+
+<li> <p> Unreported bug: Postfix smtpd_mumble_restrictions could
+report an incorrect reason for failed DNS lookups.  Fixed by saving
+and restoring h_errno while evaluating the result from multi-query
+DNS lookups. </p>
+
+<li> <p> The COMPATIBILITY_README text and HTML files were not
+installed. </p>
+
+</ul>
+
+<p> You can find the updated Postfix source code at the mirrors listed
+at <a href="http://www.postfix.org/">http://www.postfix.org/</a>.  </p>
+
+</body>
+
+</html>

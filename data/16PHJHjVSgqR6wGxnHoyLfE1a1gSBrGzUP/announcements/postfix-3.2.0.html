@@ -1,0 +1,100 @@
+<!doctype html public "-//W3C//DTD HTML 4.01 Transitional//EN"
+      "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+
+<head>
+
+<title> Postfix stable release 3.2.0 </title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+
+</head>
+
+<body>
+
+<h1> Postfix stable release 3.2.0 </h1>
+
+<p> [An on-line version of this announcement will be available at
+<a href="http://www.postfix.org/announcements/postfix-3.2.0.html">
+http://www.postfix.org/announcements/postfix-3.2.0.html</a>] </p>
+
+<p> Postfix stable release 3.2.0 is available. This release ends support
+for legacy release Postfix 2.10. </p>
+
+<p> The main changes in no particular order are: </p>
+
+<ul>
+
+<li> <p> Elliptic curve negotiation with OpenSSL &ge; 1.0.2. This
+changes the default smtpd_tls_eecdh_grade setting to "auto", and
+introduces a new parameter tls_eecdh_auto_curves with the names of
+curves that may be negotiated. </p>
+
+<li> <p> Stored-procedure support for MySQL databases. Contributed
+by John Fawcett. See the mysql_table(5) manpage for details.
+</p>
+
+<li> <p> Cidr: table support for if/endif and negation (by prepending
+! to a pattern), just like regexp: and pcre: tables. See the
+cidr_table(5) manpage for details. </p>
+
+<li> <p> The postmap command and the inline: and texthash: maps now
+support spaces in left-hand field of lookup table source text. Use
+double quotes (") around a left-hand field that contains spaces,
+and use backslash (\) to protect quotes in a left-hand field. </p>
+
+<li> <p> Support for per-client Milter configuration (smtpd_milter_maps)
+that overrides the main.cf smtpd_milters setting, and that has the
+same syntax. A lookup result of "DISABLE" turns off Milter support
+for that client. See MILTER_README.html for details. </p>
+
+<li> <p> The local SMTP server IP address and port are available
+in the policy delegation protocol (attribute names: server_address,
+server_port), in the Milter protocol (macro names: {daemon_addr},
+{daemon_port}), and in the XCLIENT protocol (attribute names:
+DESTADDR, DESTPORT). </p>
+
+<li> <p> For safety reasons, the Postfix sendmail -C option must
+specify an authorized directory: the default configuration directory,
+a directory that is listed in the default main.cf file with
+alternate_config_directories or multi_instance_directories, otherwise
+the command must be invoked with root privileges. This mitigates a
+recurring "jail break" problem with the PHP mail() function. </p>
+
+<li> <p> "PASS" and "STRIP" actions in header/body_checks. "STRIP"
+is similar to "IGNORE" but also logs the action, and "PASS" disables
+header, body, and Milter inspection for the remainder of the message
+content. Contributed by Hobbit. </p>
+
+<li> <p> The collate.pl script by Viktor Dukhovni for grouping
+Postfix logfile records into "sessions" based on queue ID and process
+ID information, in the auxiliary/collate directory of the Postfix
+source tree. </p>
+
+</ul>
+
+<p> Disabled or removed behavior: </p>
+
+<ul>
+
+<li> <p> SMTPUTF8 support: Postfix 3.2 disables the 'transitional'
+compatibility between the IDNA2003 and IDNA2008 standards for
+internationalized domain names (domain names beyond the limits of
+US-ASCII). This makes Postfix behavior consistent with contemporary
+web browsers. See RELEASE_NOTES for more. </p>
+
+<li> <p> Postfix 3.2 removes tentative features that were implemented
+before the DANE spec was finalized: support for certificate usage
+PKIX-EE(1), the ability to disable digest agility, and the ability
+to disable support for "TLSA 2 [01] [12]" records that specify the
+digest of a trust anchor. See RELEASE_NOTES for more. </p>
+
+</ul>
+
+<p> You can find the updated Postfix source code at the mirrors listed
+at <a href="http://www.postfix.org/">http://www.postfix.org/</a>. </p>
+
+</body>
+
+</html>

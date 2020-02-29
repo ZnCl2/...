@@ -1,0 +1,101 @@
+<!doctype html public "-//W3C//DTD HTML 4.01 Transitional//EN"
+      "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+
+<head>
+
+<title> Postfix stable release 2.9.3 and legacy releases 2.8.11,
+2.7.10, 2.6.16 </title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+
+</head>
+
+<body>
+
+<h1> Postfix stable release 2.9.3 and legacy releases 2.8.11, 2.7.10,
+2.6.16 </h1>
+
+<p> [An on-line version of this announcement will be available at
+<a href="http://www.postfix.org/announcements/postfix-2.9.3.html">
+http://www.postfix.org/announcements/postfix-2.9.3.html</a>] </p>
+
+<p> Postfix stable release 2.9.3, and legacy releases 2.8.11, 2.7.10,
+2.6.16 are available. They contains workarounds that are already
+part of Postfix 2.10.  </p>
+
+<ul>
+
+<li> <p> OpenSSL related (all supported Postfix versions). </p>
+
+<ul>
+
+<li> <p> Some people have reported program crashes when the OpenSSL
+library was updated while Postfix was accessing the Postfix TLS
+session cache. To avoid this, the Postfix TLS session cache ID now
+includes the OpenSSL library version number. This cache ID is not
+shared via the network. </p>
+
+<li> <p> The OpenSSL workaround introduced with the previous stable
+and legacy releases did not compile with older gcc compilers.  These
+compilers can't handle #ifdef inside a macro invocation (NOT:
+definition).  </p>
+
+</ul>
+
+<li> <p> Postfix 2.9 only. </p>
+
+<ul>
+
+<li> <p>  The postconf command flagged parameter "-o name=value"
+settings in master.cf as "unused" when those settings were used
+only in main.cf. Problem reported by Michael Tokarev.  </p>
+
+</ul>
+
+<li> <p> postscreen(8) related (Postfix 2.9, Postfix 2.8). </p>
+
+<ul>
+
+<li> <p> To avoid repeated warnings from postscreen(8) with "connect
+to private/dnsblog service: Connection refused" on FreeBSD, the
+dnsblog(8) daemon now uses the single_server program driver instead
+of the multi_server driver.  This one-line code change has no
+performance impact for other systems, and eliminates a high-frequency
+accept() race on a shared socket that appears to cause trouble on
+FreeBSD.  The same single_server program driver has proven itself 
+for many years in smtpd(8).  Problem reported by Sahil Tandon. </p>
+
+</ul>
+
+<li> <p> Laptop-friendly support (all supported Postfix versions).
+A little-known secret is that Postfix has always had support to
+avoid unnecessary disk spin-up for MTIME updates, by doing s/fifo/unix/
+in master.cf (this is currently not supported on Solaris systems).
+However, two minor fixes are needed to make this bullet-proof.
+</p>
+
+<ul>
+
+<li> <p> In laptop-friendly mode, the "postqueue -f" and "sendmail
+-q" commands did not wait until their requests had reached the pickup
+and qmgr servers before closing their UNIX-domain request sockets.
+</p>
+
+<li> <p> In laptop-friendly mode, the unused postkick command waited
+for more than a minute because the event_drain() function was
+comparing bitmasks incorrectly on systems with kqueue(2), epoll(2)
+or /dev/poll support.
+
+</ul>
+
+</ul>
+
+<p> You can find the updated Postfix source code at the mirrors
+listed at <a href="http://www.postfix.org/">http://www.postfix.org/</a>.
+</p>
+
+</body>
+
+</html>

@@ -1,0 +1,64 @@
+<!doctype html public "-//W3C//DTD HTML 4.01 Transitional//EN"
+      "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+
+<head>
+
+<title> Postfix legacy release 2.8.8 </title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+
+</head>
+
+<body>
+
+<h1> Postfix legacy release 2.8.8 </h1>
+
+<p> [An on-line version of this announcement will be available at
+<a href="http://www.postfix.org/announcements/postfix-2.8.8.html">
+http://www.postfix.org/announcements/postfix-2.8.8.html</a>] </p>
+
+<p> Postfix legacy release 2.8.8 is available. This contains fixes
+that are already part of Postfix 2.9 and 2.10.  </p>
+
+<ul>
+
+<li> <p>  The Postfix sqlite client, introduced with Postfix 2.8,
+had an embarassing bug in its quoting routine. As the result of a
+last-minute code cleanup before release, this routine returned the
+unquoted text instead of the quoted text.  The opportunities for
+mis-use are limited: Postfix sqlite database files are usually owned
+by root, and Postfix daemons usually run with non-root privileges
+so they can't corrupt the database.  This problem was reported by
+Rob McGee (rob0). </p>
+
+<li> <p> The Postfix 2.8.4 fix for local delivery agent database
+lookup errors was incomplete.  The fix correctly added new code to
+detect database lookup errors with mailbox_transport_maps,
+mailbox_command_maps or fallback_transport_maps, but it failed to
+log the problem, and to produce a defer logfile record which is
+needed for "delayed mail" and "mail too old" delivery status
+notifications.  </p>
+
+<li> <p> The trace(8) service, used for DSN SUCCESS notifications,
+did not distinguish between notifications for a non-bounce or a
+bounce message, causing it to "reply" to mail with the null sender
+address. Problem reported by Sabahattin Gucukoglu. </p>
+
+<li> <p> Support for Dovecot auth over TCP sockets, using code that
+already existed for testing purposes. Patrick Koetter kindly provided
+an update for the SASL_README file. </p>
+
+<li> <p> Workaround in the LDAP client for changes in the
+under-documented OpenLDAP API, by Victor Duchovni. </p>
+
+</ul>
+
+<p> You can find the updated Postfix source code at the mirrors
+listed at <a href="http://www.postfix.org/">http://www.postfix.org/</a>.
+</p>
+
+</body>
+
+</html>

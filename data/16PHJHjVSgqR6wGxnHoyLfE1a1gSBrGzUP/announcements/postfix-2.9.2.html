@@ -1,0 +1,79 @@
+<!doctype html public "-//W3C//DTD HTML 4.01 Transitional//EN"
+      "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+
+<head>
+
+<title> Postfix stable release 2.9.2 and legacy releases 2.8.10, 2.7.9, 2.6.15 </title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+
+</head>
+
+<body>
+
+<h1> Postfix stable release 2.9.2 and legacy releases 2.8.10, 2.7.9, 2.6.15 </h1>
+
+<p> [An on-line version of this announcement will be available at
+<a href="http://www.postfix.org/announcements/postfix-2.9.2.html">
+http://www.postfix.org/announcements/postfix-2.9.2.html</a>] </p>
+
+<p> Postfix stable release 2.9.2, and legacy releases 2.8.10, 2.7.9,
+2.6.15 are available. They contains workarounds that are already
+part of Postfix 2.10.  </p>
+
+<p> These releases add support to turn off the TLSv1.1 and TLSv1.2
+protocols.  Introduced with OpenSSL version 1.0.1, these protocols
+are known to cause inter-operability problems, for example with
+some hotmail services. </p>
+
+<p> The radical workaround is to temporarily turn off problematic
+protocols globally: </p>
+
+<blockquote>
+<pre>
+/etc/postfix/main.cf:
+    smtp_tls_protocols = !SSLv2, !TLSv1.1, !TLSv1.2
+    smtp_tls_mandatory_protocols = !SSLv2, !TLSv1.1, !TLSv1.2
+
+    smtpd_tls_protocols = !SSLv2, !TLSv1.1, !TLSv1.2
+    smtpd_tls_mandatory_protocols = !SSLv2, !TLSv1.1, !TLSv1.2
+</pre>
+</blockquote>
+
+However, it may be better to temporarily turn off problematic
+protocols for broken sites only:
+
+<blockquote>
+<pre>
+/etc/postfix/main.cf:
+    smtp_tls_policy_maps = hash:/etc/postfix/tls_policy
+
+/etc/postfix/tls_policy:
+    example.com         may protocols=!SSLv2:!TLSv1.1:!TLSv1.2
+</pre>
+</blockquote>
+
+<p> Notes: </p>
+
+<ul>
+
+<li> <p> Note the use of ":" instead of comma or space. Also,
+note that there is NO space around the "=" in "protocols=". </p>
+
+<li> <p> The smtp_tls_policy_maps lookup key must match the "next-hop"
+destination that is given to the Postfix SMTP client. If you override
+the next-hop destination with transport_maps, relayhost,
+sender_dependent_relayhost_maps, or otherwise, you need to specify
+the same destination for the smtp_tls_policy_maps lookup key. </p>
+
+</ul>
+
+<p> You can find the updated Postfix source code at the mirrors
+listed at <a href="http://www.postfix.org/">http://www.postfix.org/</a>.
+</p>
+
+</body>
+
+</html>

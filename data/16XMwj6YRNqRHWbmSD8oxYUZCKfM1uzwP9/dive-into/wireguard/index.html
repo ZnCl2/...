@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WireGuard Quick Start mmap.page</title>
+    <link rel="stylesheet" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/css/style.css">
+    <link rel="alternate" type="application/rss+xml" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml">
+    <link rel="alternate" type="application/git+http" href="https://github.com/weakish/weakish.github.com.git"/>
+</head>
+<body>
+  <div class="container-lg px-3 my-5 markdown-body">
+
+    <h1><a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/">mmap.page</a></h1>
+    <h1 id="wireguard-quick-start">
+        
+        
+          WireGuard Quick Start
+        
+        
+      </h1>
+<blockquote>
+<p>WireGuard is an extremely simple yet fast and modern VPN that utilizes state-of-the-art cryptography.</p>
+<p>-- <a href="https://www.wireguard.com/">www.wireguard.com</a></p>
+</blockquote>
+    
+      <h2 id="client-side">
+        
+        
+          Client Side <a href="#client-side" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Install the <a href="https://www.wireguard.com/install/">WireGuard package / application</a> for your operating system.</p>
+<p>Create key pairs:</p>
+<pre><code>wg genkey | tee privatekey | wg pubkey &gt; publickey
+</code></pre>
+<p>Create configuration file:</p>
+<pre><code>[Interface]
+Address = 10.200.200.2/32, fd86:ea04:1111::2/128
+PrivateKey = &lt;content of privatekey, base64 string&gt;
+DNS = 1.1.1.1
+    
+[Peer]
+PublicKey = &lt;content of server publickey, base64 string&gt;
+Endpoint = &lt;public ip of server:51820&gt;
+AllowedIPs = 0.0.0.0/0, ::/0
+PersistentKeepalive = 25
+</code></pre>
+<p><code>Interface</code> is for this machine (client info here), and <code>Peer</code> is for other machine (server info here).</p>
+<p><code>10.200.200.2</code> and <code>fd86:ea04:1111::2</code> are private IP addresses.
+I can specify any private IP addresses here,
+as long as the IP addresses are matched with private subnet assigned to the server.</p>
+<p><code>/32</code> is a <a href="https://doc.m0n0.ch/quickstartpc/intro-CIDR.html">subnet mask</a>, which means one single IPv4.
+As a client, this machine only need one IPv4 within the virtual network.
+Similarly, <code>/128</code> is a CIDR indicating one single IPv6.</p>
+<p>The <code>DNS</code> line is optional, which should be a DNS resolver which provides optimal resolutions for the server.
+Here I use <a href="https://developers.cloudflare.com/1.1.1.1/">1.1.1.1</a> from cloudflare.</p>
+<p><code>Endpoint</code> specifies how to access the server.
+The IP can be IPv4 or IPv6, but typically IPv4, because the client machine may be under an IPv4-only network.
+The port (<code>51820</code> here) must match the <code>ListenPort</code> specified in the interface of the server.</p>
+<p><code>0.0.0.0/0, ::/0</code> means sending all traffic to the server.</p>
+<p>If the client is behind NAT, the router will need to translate its internal IP and port before forwarding the packets to the Internet.
+And the router will keep tracks of the connections in a Network Address Translation table.
+Based on this NAT table, it routinely closes off ports that appear dormant.
+If the router erroneously closes the WireGuard port,
+the WireGuard service, unaware of this change, will continue to send packets to the closed port.
+This leads to network problems.
+<code>PersistentKeepalive = 25</code> means sending a keeplive packet to the server every 25 seconds to prevent the NAT expiration (typically in 60 seconds for most routers).</p>
+<p>To enable the tunnel, run:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>wg-quick up /path/to/wg0.conf
+</code></pre></div></div>
+<p>To turn off the tunnel, run:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>wg-quick down /path/to/wg0.conf
+</code></pre></div></div>
+<p>If you uses a GUI WireGuard application, you can import the configuration file instead.</p>
+<p>If you uses the WireGuard mobile application, the fast way to import the configuration is scan a QR code:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> /path/to/wg0.conf | qrencode <span class="nt">-t</span> ansiutf8
+</code></pre></div></div>
+<p>Multiple servers can be specified in multiple <code>.conf</code> files.</p>
+    
+      <h2 id="server-side">
+        
+        
+          Server Side <a href="#server-side" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Install the WireGuard package on server,
+then generate key pairs as mentioned above.</p>
+<p>Create <code>/etc/wireguard/wg0.conf</code>:</p>
+<pre><code>[Interface]
+Address    = 10.200.200.1/24, fd86:ea04:1111::1/64
+PrivateKey = &lt;content of privatekey, base64 string&gt; 
+ListenPort = 51820
+PostUp   = iptables -t nat -A POSTROUTING -o ens3 -j MASQUERADE; ip6tables -t nat -A POSTROUTING -o ens3 -j MASQUERADE
+PostDown = iptables -t nat -D POSTROUTING -o ens3 -j MASQUERADE; ip6tables -t nat -A POSTROUTING -o ens3 -j MASQUERADE
+
+[Peer]
+PublicKey  = &lt;content of client publickey, base64 string&gt; 
+AllowedIPs = 10.200.200.2/32, fd86:ea04:1111::2/128
+</code></pre>
+<p><code>/24</code> is a subnet mask for 256 IPv4 addresses,
+since an IPv4 address uses 32 bits, masking 24 bits leaves 8 bits (<code>2 ** 8 = 256</code>).
+In the above example, <code>10.200.200.0</code> is preserved for compatibility reasons (IPv4 addresses ending with <code>.0</code> are historically considered representing the network itself and used for broadcasting), and <code>10.200.200.1</code> is used by the server.
+Thus this virtual network allows up to 254 clients.</p>
+<p>The subnet mask for IPv6 could be <code>/120</code> (<code>2 ** (128-120) = 256</code>).
+However, IPv6 recommends using <code>/64</code> as the smallest subnet, and a lot of software assumes an IPv6 subnet will not be smaller than <code>/64</code>.</p>
+<p><code>PostUp</code> forwards Internet requests from clients, and <code>ens3</code> is the network interface to access Internet on the server.
+<code>PostDown</code> deletes the iptable rules when the VPN is off.
+Actually these are WireGuard hooks, you can fill any shell command here.</p>
+<p>A quick explanation of iptables rules:</p>
+<ul>
+<li><code>iptables</code>: the command line utility to configure the builtin firewall of Linux kernel.</li>
+<li><code>-t</code>: stands for &quot;table&quot;.</li>
+<li><code>nat</code>: this table is consulted when a packet that creates a new connection is encountered.</li>
+<li><code>-A</code>: append to the rule chain.</li>
+<li><code>POSTROUTING</code>: alter packets as they are about to go out.</li>
+<li><code>-o ens3</code>: alter packets that leave on <code>ens3</code> network interface (<code>-o</code> stands for &quot;output&quot;).</li>
+<li><code>-j</code>: stands for &quot;jump&quot;, i.e., what to do if the packet matches it.</li>
+<li><code>MASQUERADE</code>: MASQUERADE replaces the private IP of the packet with the public IP of the server, allowing the packet to go out to the Internet.</li>
+<li><code>ip6tables</code>: iptables for IPv6.</li>
+</ul>
+<p>The <code>PublicKey</code> and <code>AllowedIPs</code> in the <code>Peer</code> section should match the configuration of the client.</p>
+<p>You can add more clients (multiple <code>Peer</code> sections).</p>
+<p>Enable forwarding IPv4 and IPv6 packets on the server:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">echo</span> <span class="s2">"net.ipv4.ip_forward=1"</span> | <span class="nb">sudo tee</span> <span class="nt">-a</span> /etc/sysctl.conf
+<span class="nb">echo</span> <span class="s2">"net.ipv6.conf.all.forwarding = 1"</span> | <span class="nb">sudo tee</span> <span class="nt">-a</span> /etc/sysctl.conf
+<span class="nb">sudo </span>sysctl <span class="nt">-p</span>
+</code></pre></div></div>
+<p><code>sysctl</code> modifies kernel parameters at runtime, and <code>-p</code> loads <code>/etc/sysctl.conf</code>.
+This is only required on the server, since client allow Internet through server.</p>
+<p>Start WireGuard:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>wg-quick up wg0
+<span class="c"># equivalent to `sudo wg-quick down /etc/wireguard/wg0.conf`</span>
+</code></pre></div></div>
+<p>Stop WireGuard:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>wg-quick down wg0
+</code></pre></div></div>
+<p>You may also add WireGuard service to your init system, e.g. systemd:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>systemctl <span class="nb">enable </span>wg-quick@wg0.service
+</code></pre></div></div>
+    <div class="footer border-top border-gray-light mt-5 pt-3 text-gray">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start">
+        <form id="site-search" action="https://duckduckgo.com/html/" method="get">
+          <input name="q" type="search" value="site:mmap.page " required pattern="site:mmap\.page\s.+">
+          <input type="submit" value="&#x1F50D;" title="search through site content via DuckDuckGo">
+        </form>
+        <p>
+          <a href="mailto:weakish@gmail.com" title="weakish@gmail.com"><img src="https://icongr.am/feather/mail.svg" alt="Feather Icon Mail"></a>
+          <a href="https://savannah.nongnu.org/people/viewgpg.php?user_id=65699" title="2414 AEA0 EA48 5263 9697  F1BA 55F6 EEC2 EA3F 0A87"><img src="https://icongr.am/feather/key.svg" alt="Feather Icon Key"></a>
+          <a href="https://github.com/weakish/" title="GitHub"><img src="https://icongr.am/feather/github.svg" alt="Feather Icon Github"></a>
+          <a href="https://www.instagram.com/jakukyo/" title="Instagram"><img src="https://icongr.am/feather/instagram.svg" alt="Feather Icon Instagram"></a>
+          <a href="https://twitter.com/weakish" title="Twitter"><img src="https://icongr.am/feather/twitter.svg" alt="Feather Icon Twitter"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml" title="RSS 2.0 Feed"><img src="https://icongr.am/feather/rss.svg" alt="Feather Icon RSS"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/uses/" title="uses"><img src="https://icongr.am/feather/book-open.svg" alt="Feather Icon Book Open"></a>
+          
+          
+          <a href="/Me.ZeroNetwork.bit/?Profile/12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv/1GnJD7CXskmG8GywMbTvbP12wneCFW9XzR/weakish@zeroid.bit" title="ZeroMe"><img src="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/images/zeronet_logo.svg" alt="ZeroNet Logo" width="32" height="32"></a>
+        </p>
+      </div>
+        <p>
+        Permission to use, copy, modify, and/or distribute this site for any purpose with or without fee is hereby granted.
+        This site is provided "as is" without express or implied warranty.
+        </p>
+        <p>
+        This site does not use cookies or tracking codes.
+        The hosting service provider (<a href="https://pages.github.com/">GitHub Pages</a>) probably collects server logs,
+        but I do not have access to them.
+        </p>
+        <p>
+        Site source is <a href="https://github.com/weakish/weakish.github.com/">available</a>
+        and feedback is <a href="https://github.com/weakish/weakish.github.com/issues">welcome</a>.
+        </p>
+        <noscript>
+        <p>
+        This site does not use JavaScript.
+        </p>
+        </noscript>
+    </div>
+  </div>
+</body>
+</html>

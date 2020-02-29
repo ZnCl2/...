@@ -1,0 +1,117 @@
+
+<!DOCTYPE html>
+
+<html>
+<head>
+ <title>SadMetadata archive</title>
+ <meta charset="utf-8">
+ <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+ <base href="" target="_top" id="base">
+ <link rel="stylesheet" href="css/custom.css" />
+ <script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+</head>
+<body>
+    <div class="box">
+        <header>
+            <a href="./">Back to Index</a>
+            |
+            <a href="./dbschema.json">What tables can I use?</a>
+        </header>
+        <div class="searchArea">
+            <div class="left">
+                <label for="QueryInput">Custom SQLite query</label>
+                <textarea id="QueryInput"></textarea>
+            </div>
+            <div class="middle">
+                <div class="middleContent">
+                    <!-- In the future
+                    <div class="outputFormatOptionsTitle">Format options:</div>
+                    <div class="outputFormatOptions">
+                        <label for="outputFormatOptionJson">JSON</label>
+                        <input type="radio" name="outputFormat" value="json" id="outputFormatOptionJson">
+                        <label for="outputFormatOptionJson">Human readable</label>
+                        <input type="radio" name="outputFormat" value="human" id="outputFormatOptionHuman" >
+                    </div>
+                    -->
+                    <input class="" type="button" id="runQueryButton" value="Run SQL Query" onclick="return page.runQuery(event)"/>
+                    <div class="errorDiv hidden" id="errorDiv">
+                        <div class="errorTitle">Error</div>
+                        <div class="error" id="errorContainer"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="right">
+                <label for="QueryOutput">Result of query</label>
+                <textarea id="QueryOutput" readonly></textarea>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="js/ZeroFrame.js"></script>
+    <script>
+
+    class SadMetadata extends ZeroFrame {
+        constructor(){
+            super()
+        }
+
+        onOpenWebsocket () {
+
+        }
+        onRequest (cmd, message) {}
+        
+        queryID(id){
+            this.cmd("dbQuery", [
+                `select title, pages, uploader, type, href, uploadDate, SET_INFO, ID, PAGE, IS_DATA_MISSING from metadata where ID is '${id}' `
+            ], (galleries) => {
+                if(!galleries.error){
+                    //let IDs=  []
+                    //for(let i=0;i<galleries.length;i++)
+                        //IDs.push(galleries[i].ID);
+                    //let idStr = IDs.join(", ");
+                    this.cmd("dbQuery", [
+                        `select namespace, name, power from tags where MetadataID in ('${galleries[0].ID}')`
+                    ], (tags) => {
+                        galleries[0].tags = tags;
+                        this.addResult(galleries[0]);
+                    });
+                }else{
+                    this.log("Database query error: ", galleries.error);
+                }
+            })
+        }
+        runQuery(event){
+            document.getElementById("errorDiv").classList.add("hidden")
+            
+            let btn = document.getElementById("runQueryButton");
+            btn.setAttribute("disabled", "");
+            
+            let input = document.getElementById("QueryInput");
+            input.setAttribute("readonly","");
+            let query = input.value;
+            
+            btn.value = "Running Query...";
+            btn.classList.remove("doneProcessing")
+            btn.classList.add("processing")
+            
+            this.cmd("dbQuery", [query], (queryResult) => {
+                if(queryResult.error){
+                    document.getElementById("errorContainer").textContent = queryResult.error;
+                    document.getElementById("errorDiv").classList.remove("hidden")
+                }else{
+                    document.getElementById("QueryOutput").value += "Result of Query \"" +query + "\":\n" + JSON.stringify(queryResult, null, "    ") + "\n\n";
+                }
+                btn.value = "Run SQL Query"
+                btn.classList.remove("processing")
+                btn.classList.add("doneProcessing")
+                btn.removeAttribute("disabled");
+                input.removeAttribute("readonly");
+            });
+        }
+        
+    }
+
+    page = new SadMetadata()
+    </script>
+    
+</body>
+</html>

@@ -1,0 +1,197 @@
+{
+	"next_topic_id": 9,
+	"topic": [
+		{
+			"topic_id": 1,
+			"title": "ZeroNet 离线更新测试",
+			"body": "zeronet的update每次都更新不成功，分析之后发现是因为我们这边把github墙了，导致的。\n然后对着update.py略改了几下，实现离线更新：\n复制update.py到update_local.py:\n# import zipfile\nimport os\nimport re\nimport cStringIO as StringIO\n\nfrom gevent import monkey\nmonkey.patch_all()\n\n\ndef update():\n    from src.util import helper\n    data = StringIO.StringIO()\n    # print \"Downloading.\",\n    # req = helper.httpRequest(\"https://github.com/HelloZeroNet/ZeroNet/archive/master.zip\")\n    # data = StringIO.StringIO()\n    # while True:\n    #     buff = req.read(1024 * 16)\n    #     if not buff:\n    #         break\n    #     data.write(buff)\n    #     print \".\",\n    # print \"Downloaded.\"\n\n    # Checking plugins\n    plugins_enabled = []\n    plugins_disabled = []\n    if os.path.isdir(\"plugins\"):\n        for dir in os.listdir(\"plugins\"):\n            if dir.startswith(\"disabled-\"):\n                plugins_disabled.append(dir.replace(\"disabled-\", \"\"))\n            else:\n                plugins_enabled.append(dir)\n        print \"Plugins enabled:\", plugins_enabled, \"disabled:\", plugins_disabled\n\n    print \"Extracting...\",\n    try:\n        zip = zipfile.ZipFile(\"..\\\\ZeroNet-master.zip\", 'r')\n    except Exception, err:\n        data.seek(0)\n        print \"Unpack error\", err, data.read()\n        return False\n    for inner_path in zip.namelist():\n        if \"..\" in inner_path:\n            continue\n        inner_path = inner_path.replace(\"\\\\\", \"/\")  # Make sure we have unix path\n        print \".\",\n        dest_path = inner_path.replace(\"ZeroNet-master/\", \"\")\n        if not dest_path:\n            continue\n\n        # Keep plugin disabled/enabled status\n        match = re.match(\"plugins/([^/]+)\", dest_path)\n        if match:\n            plugin_name = match.group(1).replace(\"disabled-\", \"\")\n            if plugin_name in plugins_enabled:  # Plugin was enabled\n                dest_path = dest_path.replace(\"plugins/disabled-\" + plugin_name, \"plugins/\" + plugin_name)\n            elif plugin_name in plugins_disabled:  # Plugin was disabled\n                dest_path = dest_path.replace(\"plugins/\" + plugin_name, \"plugins/disabled-\" + plugin_name)\n            print \"P\",\n\n        dest_dir = os.path.dirname(dest_path)\n\n        if dest_dir and not os.path.isdir(dest_dir):\n            os.makedirs(dest_dir)\n\n        if dest_dir != dest_path.strip(\"/\"):\n            data = zip.read(inner_path)\n            try:\n                open(dest_path, 'wb').write(data)\n            except Exception, err:\n                print dest_path, err\n\n    print \"Done.\"\n    return True\n\n\nif __name__ == \"__main__\":\n    try:\n        update()\n    except Exception, err:\n        print \"Update error: %s\" % err\n    raw_input(\"Press enter to exit\")\n\n然后在上级目录弄个bat来快捷执行:\n@echo off\ncd ZeroNet\n..\\Python\\python.exe update_local.py\npause\n\n然后翻墙下载https://github.com/HelloZeroNet/ZeroNet/archive/master.zip\n改名为ZeroNet-master.zip和bat放在同一级目录（在update_local.py的上一级目录）下即可。\n运行bat实现从本地文件更新ZeroNet。",
+			"parent_topic_uri": "8_1NV87VmSkezRyz8NbFpdkYJsJUSfXx7LJa",
+			"added": 1460816686
+		},
+		{
+			"topic_id": 2,
+			"title": "为ZeroNet使用Python最新版本，并配置代理",
+			"body": "首先安装python最新版，当前是2.7.11。\n安装完成后，将Python27目录复制到ZeroBundle目录，与自带的2.7.9的Python在同一目录即可。\n先进入`Python\\Lib\\site-packages` （自带py），复制所有内容。\n再进入`Python27\\Lib\\site-packages`（复制的最新py）。粘贴，遇到重复项，跳过即可。\n最后新建个启动ZeroNet的bat脚本。\n> @echo off\n> cd ZeroNet\n> ..\\Python27\\python.exe zeronet.py --tor disable --proxy 127.0.0.1:1080\n> cd ..\n> pause",
+			"added": 1460988280,
+			"parent_topic_uri": "8_1NV87VmSkezRyz8NbFpdkYJsJUSfXx7LJa"
+		},
+		{
+			"topic_id": 3,
+			"title": "建议新增版块",
+			"body": "建议新增的版块:\n`新闻区`  --时事热点\n`网络安全区`  --翻墙安全，隐私保护",
+			"added": 1460988647,
+			"parent_topic_uri": "14_1NV87VmSkezRyz8NbFpdkYJsJUSfXx7LJa"
+		},
+		{
+			"topic_id": 4,
+			"title": "关于钓鱼网站getlanternn.com",
+			"body": "最近百度搜索lantern，除了推广，排在前面的居然是个中文网站。\n而且听说是个钓鱼的，于是打开搜集点线索。\n首先发现一个小彩蛋，在网站主页右侧有一行文字`1光年 因为自由`的右边有一个白色不规则图形。\n鼠标放上去会动，不知道是什么鬼。\n然后看了下网页源代码。最后一行有注释\n> <!--华少精品站文章管理系统  购买请联系QQ:534550354  验证消息:华少  否则一律不加-->\ngg搜了一下这个QQ，发现该QQ邮箱下有不少域名:\n详见: http://domainbigdata.com/email/534550354@qq.com\n此人的域名大多是拼音，且多跟什么qq，刷钻，翻墙有关。\n值得注意的是，有个与getlanternn.com相似的域名是`goagentt.com`。\n\n> 92yun.net\t2014-02-02\tdns.com.cn\n> mianfeiqq.com\t2014-06-04\txinnet.com\n> youyiseo.com\t2015-02-26\txinnet.com\n> 552q.com\t2014-03-14\txinnet.com\n> ziyoushuang.com\t2013-12-31\t\n> yuanmajia.net\t2014-01-12\tdns.com.cn\n> m2345.net\t2014-04-03\txinnet.com\n> 2qwww.com\t2014-03-14\txinnet.com\n> fg740.com\t2014-07-23\txinnet.com\n> souyichang.com\t2014-08-07\txinnet.com\n> hbhack.net\t2014-06-29\txinnet.com\n> qqshuakongjianzan.com\t2014-11-22\txinnet.com\n> qqshuarenqi.com\t2014-11-22\txinnet.com\n> qqshuashuoshuo.com\t2014-11-22\txinnet.com\n> qq-shuazan.com\t2014-11-22\txinnet.com\n> qqshuazhuyezan.com\t2014-11-22\txinnet.com\n> gtoutiao.com\t2014-12-02\txinnet.com\n> chinazfanqiang.com\t2014-12-12\txinnet.com\n> fanqiangruanjianxiazai.com\t2014-12-12\txinnet.com\n> zaixianfanqiang.com\t2014-12-12\txinnet.com\n> zenmefanqiang.com\t2014-12-12\txinnet.com\n> china-fg740.com\t2014-12-17\t\n> dengdaisoft.com\t2014-12-30\txinnet.com\n> webshualiuyan.com\t2014-12-30\txinnet.com\n> webshuaqq.com\t2014-12-30\txinnet.com\n> webshuarenqi.com\t2014-12-30\txinnet.com\n> webshuazan.com\t2014-12-30\txinnet.com\n> goagentt.com\t2015-01-12\txinnet.com\n> gsousuo.com\t2015-01-13\txinnet.com\n> woyaofanqiang.com\t2014-12-12\t\n> mantoujcw.com\t2014-02-12\tdns.com.cn\n> shuaqqzan.com\t2014-11-22\txinnet.com\n> qqsrq.cn\t2015-11-09\t\n> qqsly.cn\t2015-11-08\t\n> qqsss.cn\t2015-08-22\t\n> beibeiwg2015.com\t2015-05-19\tsudu.cn\n> xixiwg2015.com\t2015-05-19\tsudu.cn",
+			"added": 1460993199,
+			"parent_topic_uri": "10_1NV87VmSkezRyz8NbFpdkYJsJUSfXx7LJa"
+		},
+		{
+			"topic_id": 5,
+			"title": "有人知道xiaolan的消息吗，怎么很久没看到他活跃了？",
+			"body": "在编程随想的博客上听说xiaolan出事了，是真的吗？",
+			"added": 1469089357,
+			"parent_topic_uri": "14_1NV87VmSkezRyz8NbFpdkYJsJUSfXx7LJa"
+		},
+		{
+			"topic_id": 6,
+			"title": "[教程]在VPS上部署TOR非公开的obfs4网桥",
+			"body": "首先说明下什么是**网桥**？\n这里引用编程随想的解释了：\n> Bridge 中文就是“网桥”。tor 的网桥是一种特殊的中转节点。它跟其它中转节点的差异在于：普通的中转节点，其信息会被加入到 TOR 在全球的目录服务器，所以普通的中转节点会被所有的人看到，并用来进行流量中转。而你自己搭建的网桥，其信息不会被加入到全球的目录服务器——只会被你自己所用。\n\n\n不清楚编程兄这么解释对不对，我个人的理解是：即便是网桥，不进行必要的配置的话，tor还是会把你的网桥告知目录服务器的。这样的话，朝廷如果天天盯着tor的公开网桥数据库的话，有可能就会发现你的网桥。\n以上纯属猜测，无任何依据。\n\n\n\n首先说下环境，我是ubuntu server 16.04的vps。\n所以移步[TOR官网关于debian/ubuntu配置](https://www.torproject.org/docs/debian)的页面，选择debian/ubuntu的发行版本，然后修改软件源（**/etc/apt/sources.list**）。\n添加下面内容（具体添加的内容，请在配置页面选择具体发行版，下方会自动生成）:\n> deb http://deb.torproject.org/torproject.org xenial main\n> deb-src http://deb.torproject.org/torproject.org xenial main\n然后执行:\n> gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89\n> gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | sudo apt-key add -\n> apt-get update\n> apt-get install tor deb.torproject.org-keyring\n这样就算是把tor安装完成了，接下来安装obfs4proxy。\n这个可以直接安装：\n> apt-get install obfs4proxy\n\n\n安装完成后，编辑配置文件（**/etc/tor/torrc**），下面是我的配置文件（节省篇幅，井号注释部分就不贴了）：\n```\nSOCKSPort 0\nLog notice file /var/log/tor/notices.log\nRunAsDaemon 1\nORPort 9005\nExtORPort auto\nExitPolicy reject *:* # no exits allowed\nBridgeRelay 1\nPublishServerDescriptor 0\nServerTransportPlugin obfs4 exec /usr/bin/obfs4proxy\nServerTransportListenAddr obfs4 0.0.0.0:443\nContactInfo Anonymous\nNickname Anonymous\n# ContactInfo和Nickname 后面的名称可以自行修改\n```\n\n关于Tor Relay与Tor Bridges的区别请移步[关于搭建 Tor Relay 的一点胡扯——以及为什么现在 Tor Bridges 更好](https://yepster.me/tor-deployment/)。\n\n\n如果你是ubuntu server，你现在可以reboot。但是重启后你会发现tor连接不上，没关系，看看日志说什么：\n`cat /var/log/tor/notices.log`\n> [warn] Could not launch managed proxy executable at '/usr/bin/obfs4proxy' ('Operation not permitted').\n接着你可以谷歌该错误，虽然能搜到一堆，大部分都是叫你修改**/etc/apparmor.d/abstractions/tor**或者**/etc/apparmor.d/system_tor**。修改完之后，仍然启动不起来。\n\n\n这也算是ubuntu上最不爽的地方，没法自启动。\n只有退而求其次的办法，每次启动后：\n`service tor stop`\n如果还存在tor的进程请尝试：\n`killall tor`\n然后直接运行:\n`tor`\n过一会看看日志，如果没有这个错误，说明可能启动成功了。\n有个抖机灵的办法来确定tor以及obfs4混淆插件是否启动成功。\n`netstat -nap`\n看看是否存在下面这行：\n> tcp6       0      0 :::443                  :::*                    LISTEN      1457/obfs4proxy\nPS: 监听443是因为之前的配置文件中写的**ServerTransportListenAddr obfs4 0.0.0.0:443**。\n\n\n然后你发现obfs4也启动成功了，可是该怎么用TOR浏览器连接呢？TOR的网桥数据库里可是还有一大串密码和证书似的东西呢。\n这里时可以编辑一个脚本来实现：\n\n```\n#!/bin/sh\nif [ ! -f $HOME/.tor/pt_state/obfs4_bridgeline.txt ]; then\necho \"Not an obfs4 bridge (or permissions)\"\nexit 1\nfi\nFING=$(cat $HOME/.tor/fingerprint | cut -d ' ' -f2)\nADDR=$(grep ServerTransportListenAddr /etc/tor/torrc | cut -d ' ' -f3 | sort -R | head -n 1)\nBRDG=$(grep Bridge $HOME/.tor/pt_state/obfs4_bridgeline.txt)\necho $BRDG | sed s/'<IP ADDRESS>:<PORT>'/$ADDR/ | sed s/'<FINGERPRINT>'/$FING/\n```\n\n\n运行以后，你会发现显示出一串类似于网桥数据库里的字符串，如果IP是0.0.0.0，别忘了改成你VPS的公网IP。\n\n另外，如果在torrc里配置了**DataDirectory**字段，如下所示：\n`DataDirectory /var/lib/tor`\n还得修改上面的显示脚本，把几处`$HOME/.tor`改成`/var/lib/tor`才能正确显示出来。",
+			"added": 1476970440,
+			"parent_topic_uri": "10_1NV87VmSkezRyz8NbFpdkYJsJUSfXx7LJa"
+		},
+		{
+			"topic_id": 7,
+			"title": "VPN被归类为二级暴恐软件",
+			"body": "[VPN被归类为二级暴恐软件](https://chinadigitaltimes.net/chinese/2016/10/%E5%A5%87%E5%AE%A2%E8%B5%84%E8%AE%AF-vpn%E8%A2%AB%E5%BD%92%E7%B1%BB%E4%B8%BA%E4%BA%8C%E7%BA%A7%E6%9A%B4%E6%81%90%E8%BD%AF%E4%BB%B6/)\n\n查了下MD5，是[fqrouter](md5.virscan.org/c4a22435b4e78d81d568b95482b675fb.html)。\n",
+			"added": 1477093157,
+			"parent_topic_uri": "11_1NV87VmSkezRyz8NbFpdkYJsJUSfXx7LJa"
+		},
+		{
+			"topic_id": 8,
+			"title": "为ZeroNet配置绿色版Python",
+			"body": "ZeroBundle之前我记得自带一个绿色版的Python，不过版本较旧。为了安全性，我是习惯用最新版软件的。\n1、首先去Python官网下载32 bit的Python 2.7.X的安装包，然后安装。\n2、复制安装后的`Python`文件夹下的内容到一个目录下，这里假定复制到`ZeroBundle\\Python_new`目录下。\n3、复制`SysWOW64`或者`System32`下的`python27.dll`到`ZeroBundle\\Python_new`下（32位系统在System32下，64位系统在SysWOW64目录下）。\n4、如果不想要Python了，可以在程序和功能里卸载Python（不是必须卸载）。\n5、在github上下载最新版的ZeroNet的源码，解压到`ZeroBundle\\ZeroNet`。\n6、在`ZeroBundle`目录下创建一个使用`Python_new`启动ZeroNet的脚本，内容如下：\n```\n@echo off\ncd ZeroNet\n..\\Python27_new\\python.exe zeronet.py\npause\n```\n如果需要使用Tor来启动脚本内容如下：\n```\n@echo off\ncd ZeroNet\n..\\Python27_new\\python.exe zeronet.py --tor_proxy 127.0.0.1:9150 --tor always --tor_controller 127.0.0.1:9151\npause\n```\n7、很重要的一步，为绿色版Python更新包，也是在`ZeroBundle`目录创建一个bat脚本：\n```\n@echo off\ncd /d .\\Python27_new\npython -m pip install --upgrade pip\ncd Scripts\npip install --upgrade greenlet\npip install --upgrade gevent\npip install --upgrade msgpack-python\npip install --upgrade zmq\npause\n```",
+			"added": 1487851621,
+			"parent_topic_uri": "8_1NV87VmSkezRyz8NbFpdkYJsJUSfXx7LJa"
+		}
+	],
+	"topic_vote": {
+		"1_1DLevQ8vWAYeB32MsubWqcwUSd8aMTF6kQ": 1
+	},
+	"next_comment_id": 20,
+	"comment": {
+		"1_1NV87VmSkezRyz8NbFpdkYJsJUSfXx7LJa": [
+			{
+				"comment_id": 1,
+				"body": "Hello World",
+				"added": 1459096369
+			}
+		],
+		"2_12kgNNnBaR3s7bN761BCQtkzSC7EbrK2Jd": [
+			{
+				"comment_id": 2,
+				"body": "> [nassau](#comment_15_1M6V4wECbz5e1aUmuij2BB72ensHCYNFmd): 墙再高，总有梯子可以用的，除非对面是绝壁。 没有物理断网，就别怕， 物理断网的可能性太小\n\n那得看什么时候，新疆75的时候就断了半年多的网，如果真的动乱了，呵呵，不排除物理断网的可能性。\n到时候逆境求生，技术宅研究出什么黑科技上网就好了。",
+				"added": 1460210143
+			}
+		],
+		"1_1DLevQ8vWAYeB32MsubWqcwUSd8aMTF6kQ": [
+			{
+				"comment_id": 3,
+				"body": "受不了，怎么搞的，部分代码有格式，部分没有。",
+				"added": 1460817021
+			}
+		],
+		"1_12nosggn5KYWFu3SmxcJUzdi98WGPrKaki": [
+			{
+				"comment_id": 4,
+				"body": "传说中的间谍，难道想要一网打尽？",
+				"added": 1460906485
+			}
+		],
+		"15_1NwWoM1qGUV9gjLG7QGyhqsRxKKga2rhtf": [
+			{
+				"comment_id": 5,
+				"body": "我天企业宽带啊。家用就算全速，一星期估计也到不了1GB啊。",
+				"added": 1460947394
+			}
+		],
+		"1_1H1q2382na7evjuCrQyfwmvDVVDwFHhdqe": [
+			{
+				"comment_id": 6,
+				"body": "搭建匿名web服务器的话，要么tor，要么i2p。",
+				"added": 1460989072
+			}
+		],
+		"4_1DLevQ8vWAYeB32MsubWqcwUSd8aMTF6kQ": [
+			{
+				"comment_id": 7,
+				"body": "此人可能只是搞黑产的。但是百度搜索排名能在官网的前面。\n让我不由得想起了最近国产了很多山寨新闻网，包括BBC什么的。\n所以不排除此人受GOV指使。",
+				"added": 1460993375
+			},
+			{
+				"comment_id": 8,
+				"body": "另外发现此人在赶集网上有招聘过网站开发的人员:\nhttp://wap.ganji.com/suizhou/zpmeishusheji/1374415103x?ca_name=zhuzhan2wap_post_detail_zpmeishusheji",
+				"added": 1460993613
+			}
+		],
+		"17_1GtJqyJRsuZhmxVtw5USgvqGbUmVH7EmBD": [
+			{
+				"comment_id": 9,
+				"body": "谁能大概翻一下~",
+				"added": 1461149036
+			}
+		],
+		"1_1NZsz5ugkzg27d9jmc8qrT9GxcLZdiuBGP": [
+			{
+				"comment_id": 10,
+				"body": "本人有个同事在新疆某地，上次去看他，体验了下\"新疆铁桶\"。\n国外的网站大部分上不去，HTTP下载东西常规后缀名统统被ISP重定向劫持。\n最可气的是，国内很多网站都打不开，百度是可以打开的。\n但是百度云盘可有意思了，只要是新疆IP的访问别人分享的链接，一律显示百度云正在升级中。\n而且新疆IP的去分享文件，表面上分享成功了，但是别人打开也是提示百度云正在升级中。\n听说有好几年了。而且看RFA上说，去年年底，手机上装有VPN软件的，统统暂停服务，要去公安局解锁。\n并且github在新疆地区一直处于封锁状态。",
+				"added": 1461775122
+			}
+		],
+		"8_1NZsz5ugkzg27d9jmc8qrT9GxcLZdiuBGP": [
+			{
+				"comment_id": 11,
+				"body": "确实7.5期间听我同事说翻墙极其困难，ss还可以，时断时续，其他的就算了。",
+				"added": 1468498379
+			}
+		],
+		"9_1NZsz5ugkzg27d9jmc8qrT9GxcLZdiuBGP": [
+			{
+				"comment_id": 12,
+				"body": "支持一个~",
+				"added": 1472656089
+			}
+		],
+		"1_1JRsypcv8wm1TEGix7V1nwLzAdokhWFmsR": [
+			{
+				"comment_id": 13,
+				"body": "CB13ABCHI08728S15",
+				"added": 1476719137
+			}
+		],
+		"6_1DLevQ8vWAYeB32MsubWqcwUSd8aMTF6kQ": [
+			{
+				"comment_id": 14,
+				"body": "> [p2p](#comment_938_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): 多谢分享！代码块是3个`比如\n> #!/bin/sh\n> if [ ! -f $HOME/.tor/pt_state/obfs4_bridgeline.txt ]; then\n> echo \"Not an obfs4 bridge (or permissions)\"\n> exit 1\n> fi\n\n还是不行，3个```是每行都要，还是只要在最开头。还是从开头到结尾？",
+				"added": 1477016307
+			},
+			{
+				"comment_id": 15,
+				"body": "> [sutun](#comment_2_1LLcRbp9QfpN4PRbuXXBWVegE8pPoim7Kf): 楼主能写个centos7.2下的吗？\n\ncentos，仅仅是配置软件源那里不同，torrc都是一样的\n[CentOS/Fedora TOR官方配置页面](https://www.torproject.org/docs/rpms.html.en)",
+				"added": 1477016402
+			}
+		],
+		"1_1JyJgu6ymbdPjVLsNW5bBcZPEio9zaJcEV": [
+			{
+				"comment_id": 16,
+				"body": "> [nassau](#comment_163_1M6V4wECbz5e1aUmuij2BB72ensHCYNFmd): 在哪里下载呢？\n\nhttp://127.0.0.1:43110/shadowsocksr.bit/",
+				"added": 1477123127
+			}
+		],
+		"1_1F7vpN6XU8mvh6NbSkbZf4Wb7KXuQDdrRo": [
+			{
+				"comment_id": 17,
+				"body": "自问自答？",
+				"added": 1481988842
+			}
+		],
+		"9_1DcMmKhgdfkR1GDA6zhWhoFRreaej4wLmW": [
+			{
+				"comment_id": 18,
+				"body": "不谈稳定性的话，感觉混淆功能很不错，虽然ss也没怎么被墙过。\n不过ssr的稳定性实在不如ss。经常更新了C#端，就会莫名其妙的崩溃，退出。",
+				"added": 1481989356
+			}
+		],
+		"1_1DcMmKhgdfkR1GDA6zhWhoFRreaej4wLmW": [
+			{
+				"comment_id": 19,
+				"body": "tor不是用来让你上网冲浪看视频的，是用来保护你的个人隐私，使其难以被追踪到。\n单纯翻墙，ssr或者vpn或者类似的工具足矣。拿tor来翻墙确实有些大材小用。",
+				"added": 1481989489
+			}
+		]
+	},
+	"comment_vote": {}
+}

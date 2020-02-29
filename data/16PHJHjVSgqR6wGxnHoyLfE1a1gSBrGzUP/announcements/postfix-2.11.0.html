@@ -1,0 +1,73 @@
+<!doctype html public "-//W3C//DTD HTML 4.01 Transitional//EN"
+      "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+
+<head>
+
+<title> Postfix stable release 2.11.0 </title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+
+</head>
+
+<body>
+
+<h1> Postfix stable release 2.11.0 </h1>
+
+<p> [An on-line version of this announcement will be available at
+<a href="http://www.postfix.org/announcements/postfix-2.11.0.html">
+http://www.postfix.org/announcements/postfix-2.11.0.html</a>] </p>
+
+<p> Postfix stable release 2.11.0 is available.  This release ends
+support for Postfix 2.7. </p>
+
+<p> The main changes in no particular order are: </p>
+
+<ul>
+
+<li> <p> Support for PKI-less TLS server certificate verification
+with DANE (DNS-based Authentication of Named Entities) where the
+CA public key or the server certificate is identified via DNSSEC
+lookup. This requires a DNS resolver that validates DNSSEC replies.
+The problem with conventional PKI is that there are literally
+hundreds of organizations world-wide that can provide a certificate
+in anyone's name. DANE limits trust to the people who control the
+target DNS zone and its parent zones.  </p>
+
+<li> <p> Support for LMDB databases. Originally developed as part
+of OpenLDAP, LMDB is the first persistent Postfix database that can
+be shared among multiple writers such as postscreen daemons (Postfix
+already supported shared non-persistent memcached caches).  Postfix
+currently requires LMDB version 0.9.11 or later. See LMDB_README
+for details and limitations. </p>
+
+<li> <p> A new postscreen_dnsbl_whitelist_threshold feature to allow
+clients to skip postscreen tests based on their DNSBL score. This
+can eliminate email delays due to "after 220 greeting" protocol
+tests, which otherwise require that a client reconnects before it
+can deliver mail. Some providers such as Google don't retry from
+the same IP address, and that can result in large email delivery
+delays. </p>
+
+<li> <p> The recipient_delimiter feature now supports different
+delimiters, for example both "+" and "-". As before, this implementation
+recognizes exactly one delimiter character per email address, and
+exactly one address extension per email address. </p>
+
+<li> <p> Advanced master.cf query/update support to access service
+attributes as "name = value" pairs. For example to turn off chroot
+on all services use "postconf -F '*/*/chroot = n'", and to change/add
+a "-o name=value" setting use "postconf -P 'smtp/inet/name = value'".
+This was developed primarily to allow automated tools to manage
+Postfix systems without having to parse Postfix configuration files.
+</p>
+
+</ul>
+
+<p> You can find the Postfix source code at the mirrors listed at
+<a href="http://www.postfix.org/">http://www.postfix.org/</a>.  </p>
+
+</body>
+
+</html>

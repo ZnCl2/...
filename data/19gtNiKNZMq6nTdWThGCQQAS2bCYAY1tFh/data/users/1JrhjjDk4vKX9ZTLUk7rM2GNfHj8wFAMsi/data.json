@@ -1,0 +1,108 @@
+{
+	"user": [
+		{
+			"user_id": "1JrhjjDk4vKX9ZTLUk7rM2GNfHj8wFAMsi",
+			"user_name": "qu3tat4nM9p8F@zv.anonymous",
+			"added": 1504981789523
+		}
+	],
+	"topic": [
+		{
+			"topic_id": "1JrhjjDk4vKX9ZTLUk7rM2GNfHj8wFAMsitopic1",
+			"channel_id": "1PiXrhT1UjMZmJc5WFhfUxourdfapeHJ8och1",
+			"title": "What Happens Inside a 100-hop IPv6 Wireless Mesh Network?",
+			"body": "<h1 id=\"reader-title\">What Happens Inside a 100-hop IPv6 Wireless Mesh Network?</h1>              <div class=\"content\">            <div id=\"moz-reader-content\" class=\"line-height4\"><div id=\"readability-page-1\" class=\"page\"><section class=\"content\"><p>A wireless mesh network is a network where the nodes in the network help other nodes achieve coverage and connectivity by forwarding messages on behalf of others.</p><p>Street lighting systems is an example of where a wireless mesh network is needed. A single-hop network would not provide enough coverage, so the lights help each other to reach out.</p><div class=\"img-box\"><div class=\"row\"><div class=\"col-md-10 col-md-offset-1\"><img class=\"img-responsive img-center\" src=\"http://www.thingsquare.com/blog/articles/100-hops-ipv6-mesh/streetlight-mesh.png\"/></div></div><div class=\"row\"><p>A wireless IPv6 mesh network in the wild.</p></div></div><p>The picture above shows an installation of a Thingsquare IPv6 mesh in the wild. (Although our system is known to be able to run on really, tiny devices operated by a <a href=\"http://www.thingsquare.com/blog/articles/sensortag-power/\" target=\"_blank\">single coin-cell battery</a>, this particular installation does not use those low-power mechanisms as street lights have access to power.)</p><p>The big challenge with such a large wireless network is to understand what is going on – and how to develop the software that makes them tick.</p><p>In this article we look into how we develop such large-scale systems at Thingsquare and the tools we use. We push the envelope with a 100-hop network, which is larger than what we typically would see in real-world installations.</p><hr/><p>To see what happens in a 100-hop network, we have built a testbed in our office. The testbed consists of  100 wireless nodes placed in a bookshelf. The nodes all use the <a href=\"http://www.ti.com/product/CC2538\" target=\"_blank\"><span class=\"caps\">TI</span> CC2538 wireless System-on-a-Chip</a>, running the Thingsquare wireless mesh over a <span class=\"caps\">IEEE</span> 802.15.4e low-power radio layer. The nodes are powered by USB, but otherwise have only a wireless connection. Each node also has an LED, which we use to develop and test our wireless lighting system. By default, the nodes form one large wireless network.</p><div class=\"img-box\"><div class=\"row\"><div class=\"col-md-4 col-md-offset-1\"><img class=\"img-responsive img-center\" src=\"http://www.thingsquare.com/blog/articles/100-hops-ipv6-mesh/testbed.jpg\"/></div><div class=\"col-md-6\"><img class=\"img-responsive img-center\" src=\"http://www.thingsquare.com/blog/articles/100-hops-ipv6-mesh/testbed-singlehop.gif\"/></div></div><div class=\"row\"><p>A 100-node testbed and the wireless mesh network created by the nodes in the testbed.</p></div></div><p>Because every node in the testbed is close to each other, they can easily form a single-hop network. That is, every node can reach every other node without meshing.</p><p>To setup a 100-hop network, we manually configure their routes. This way, we can force the system to become a 100-hop network.</p><h2 id=\"setting-up-100-hops\">Setting up 100 Hops</h2><p>After configuring the system to have a 100-hop structure, the mesh looks like this:</p><div class=\"img-box\"><div class=\"row\"><div class=\"col-md-10 col-md-offset-1\"><img class=\"img-responsive img-center\" src=\"http://www.thingsquare.com/blog/articles/100-hops-ipv6-mesh/100-dralite.gif\"/></div></div><div class=\"row\"><p>The 100-node testbed in a 100-hop wireless mesh configuration.</p></div></div><p>We now have a way to test the system with 100 hops, something that is beyond anything we are likely to see in the wild.</p><h2 id=\"100-hops-in-action\">100 Hops in Action</h2><p>To see the 100 hops in action, we set up one node to act as a sniffer and run Wireshark to capture the packets from the network. We then ask the node that is 100 hops away to make a secure <a href=\"https://en.wikipedia.org/wiki/Transport_Layer_Security\" target=\"_blank\"><span class=\"caps\">TLS</span> connection</a> with the backend. In the Wireshark logs, we see the <span class=\"caps\">TLS</span> traffic as well as the ICMPv6 control traffic that is used by the RPL routing protocol to set up and maintain its routing graph.</p><p>(For more in-depth information about the <span class=\"caps\">RPL</span> IPv6 routing protocol, see <a href=\"http://www.thingsquare.com/docs/mesh/\" target=\"_blank\">this article</a> from our docs.)</p><div class=\"img-box\"><div class=\"row\"><div class=\"col-md-6 col-md-offset-0\"><img class=\"img-responsive img-center\" src=\"http://www.thingsquare.com/blog/articles/100-hops-ipv6-mesh/wireshark.png\"/></div><div class=\"col-md-6 col-md-offset-0\"><img class=\"img-responsive img-center\" src=\"http://www.thingsquare.com/blog/articles/100-hops-ipv6-mesh/wireshark2.png\"/></div></div><div class=\"row\"><p>Wireshark logs from the sniffer showing ICMPv6 and <span class=\"caps\">TLS</span> traffic.</p></div></div><p>If we look at the traffic inside the network, we can see how the packets move from node to node, in a snake-like manner:</p><div class=\"img-box\"><div class=\"row\"><div class=\"col-md-10 col-md-offset-1\"><img class=\"img-responsive img-center\" src=\"http://www.thingsquare.com/blog/articles/100-hops-ipv6-mesh/100-packetdump-5.gif\"/></div></div><div class=\"row\"><p>Packets move through every node in the network, 100 hops in total.</p></div></div><p>A wireless mesh system is extremely complex and while a testbed is essential to testing the system, it is not enough for developing it.</p><p>To develop our wireless mesh system, we use our wireless network simulator. The simulator lets us set up the same environment as we see in the real world, but on a single computer. There, we can inspect almost every aspect of the system to see what is going on.</p><div class=\"img-box\"><div class=\"row\"><div class=\"col-md-10 col-md-offset-1\"><img class=\"img-responsive img-center\" src=\"http://www.thingsquare.com/blog/articles/100-hops-ipv6-mesh/cooja.png\"/></div></div><div class=\"row\"><p>The Cooja wireless network simulator.</p></div></div><p>To see a similar behavior as we did our testbed, we set up a simulation with a regular grid of nodes and configure them in a similar fashion as we did in the testbed: they choose parents in the routing graph to make the network as long as possible.</p><p>The simulator also lets us see the packets in a timeline window, where we can see exactly what each node does at any given time.</p><div class=\"img-box\"><div class=\"row\"><div class=\"col-md-4 col-md-offset-1\"><img class=\"img-responsive img-center\" src=\"http://www.thingsquare.com/blog/articles/100-hops-ipv6-mesh/cooja3-tls-network.gif\"/></div><div class=\"col-md-6 col-md-offset-0\"><img class=\"img-responsive img-center\" src=\"http://www.thingsquare.com/blog/articles/100-hops-ipv6-mesh/cooja3-tls-timeline.gif\"/></div></div><div class=\"row\"><p>A <span class=\"caps\">TLS</span> connection in the network and timeline views. We see the packet exchange across multiple hops.</p></div></div><p>Wireless mesh networking allow us to build extremely large-scale networks. But such networks are complex and to build the software that make them tick, we need both hardware testbeds and software simulators.<br/><br/>Clearnet: http://www.thingsquare.com/blog/articles/100-hops-ipv6-mesh/<br/></p></section></div></div>    </div>",
+			"type": "topic",
+			"added": 1504981875745,
+			"body_p": "What Happens Inside a 100-hop IPv6 Wireless Mesh Network?                          A wireless mesh network is a network where the nodes in the network help other nodes achieve coverage and connectivity by forwarding messages on behalf of others.Street lighting systems is an example of where a wireless mesh network is needed. A single-hop network would not provide enough coverage, so the lights help each other to reach out.A wireless IPv6 mesh network in the wild.The picture above shows an installation of a Thingsquare IPv6 mesh in the wild. (Although our system is known to be able to run on really, tiny devices operated by a single coin-cell battery, this particular installation does not use those low-power mechanisms as street lights have access to power.)The big challenge with such a large wireless network is to understand what is going on – and how to develop the software that makes them tick.In this article we look into how we develop such large-scale systems at Thingsquare and the tools we use. We push the envelope with a 100-hop network, which is larger than what we typically would see in real-world installations.To see what happens in a 100-hop network, we have built a testbed in our office. The testbed consists of  100 wireless nodes placed in a bookshelf. The nodes all use the TI CC2538 wireless System-on-a-Chip, running the Thingsquare wireless mesh over a IEEE 802.15.4e low-power radio layer. The nodes are powered by USB, but otherwise have only a wireless connection. Each node also has an LED, which we use to develop and test our wireless lighting system. By default, the nodes form one large wireless network.A 100-node testbed and the wireless mesh network created by the nodes in the testbed.Because every node in the testbed is close to each other, they can easily form a single-hop network. That is, every node can reach every other node without meshing.To setup a 100-hop network, we manually configure their routes. This way, we can force the system to become a 100-hop network.Setting up 100 HopsAfter configuring the system to have a 100-hop structure, the mesh looks like this:The 100-node testbed in a 100-hop wireless mesh configuration.We now have a way to test the system with 100 hops, something that is beyond anything we are likely to see in the wild.100 Hops in ActionTo see the 100 hops in action, we set up one node to act as a sniffer and run Wireshark to capture the packets from the network. We then ask the node that is 100 hops away to make a secure TLS connection with the backend. In the Wireshark logs, we see the TLS traffic as well as the ICMPv6 control traffic that is used by the RPL routing protocol to set up and maintain its routing graph.(For more in-depth information about the RPL IPv6 routing protocol, see this article from our docs.)Wireshark logs from the sniffer showing ICMPv6 and TLS traffic.If we look at the traffic inside the network, we can see how the packets move from node to node, in a snake-like manner:Packets move through every node in the network, 100 hops in total.A wireless mesh system is extremely complex and while a testbed is essential to testing the system, it is not enough for developing it.To develop our wireless mesh system, we use our wireless network simulator. The simulator lets us set up the same environment as we see in the real world, but on a single computer. There, we can inspect almost every aspect of the system to see what is going on.The Cooja wireless network simulator.To see a similar behavior as we did our testbed, we set up a simulation with a regular grid of nodes and configure them in a similar fashion as we did in the testbed: they choose parents in the routing graph to make the network as long as possible.The simulator also lets us see the packets in a timeline window, where we can see exactly what each node does at any given time.A TLS connection in the network and timeline views. We see the packet exchange across multiple hops.Wireless mesh networking allow us to build extremely large-scale networks. But such networks are complex and to build the software that make them tick, we need both hardware testbeds and software simulators.Clearnet: http://www.thingsquare.com/blog/articles/100-hops-ipv6-mesh/    ",
+			"user_id": "qu3tat4nM9p8F@zv.anonymous"
+		},
+		{
+			"topic_id": "1JrhjjDk4vKX9ZTLUk7rM2GNfHj8wFAMsitopic2",
+			"channel_id": "1PiXrhT1UjMZmJc5WFhfUxourdfapeHJ8och1",
+			"title": "Welcome to the Botnet.",
+			"body": "<p>Don't use Google Chrome (and anything other than ungoogled-chromium for that matter!), that includes Brave and Opera!<br/></p>",
+			"type": "topic",
+			"added": 1505091274501,
+			"body_p": "Don't use Google Chrome (and anything other than ungoogled-chromium for that matter!), that includes Brave and Opera!",
+			"user_id": "qu3tat4nM9p8F@zv.anonymous"
+		}
+	],
+	"next_topic_id": 3,
+	"file": [
+		{
+			"file_id": "1JrhjjDk4vKX9ZTLUk7rM2GNfHj8wFAMsifl1",
+			"item_type": "topic",
+			"item_id": "1JrhjjDk4vKX9ZTLUk7rM2GNfHj8wFAMsi2",
+			"file_type": "png",
+			"file_name": "lHshj-png.png",
+			"user_id": "1JrhjjDk4vKX9ZTLUk7rM2GNfHj8wFAMsi",
+			"added": 1505091262962
+		}
+	],
+	"next_file_id": 2,
+	"file_to_item": [
+		{
+			"file_to_item_id": "1JrhjjDk4vKX9ZTLUk7rM2GNfHj8wFAMsifti1",
+			"item_type": "topic",
+			"item_id": "1JrhjjDk4vKX9ZTLUk7rM2GNfHj8wFAMsitopic2",
+			"file_id": "1JrhjjDk4vKX9ZTLUk7rM2GNfHj8wFAMsifl1",
+			"user_id": "1JrhjjDk4vKX9ZTLUk7rM2GNfHj8wFAMsi",
+			"added": 1505091274388
+		}
+	],
+	"next_file_to_item_id": 2,
+	"comment": [
+		{
+			"comment_id": "1JrhjjDk4vKX9ZTLUk7rM2GNfHj8wFAMsicomment1",
+			"comment_parent_id": 0,
+			"topic_id": "168ftJNe8tQtv6Fj1pcj9uszTa42zVv6Hntopic1",
+			"body": "https://sharefa.st/view/iu4n3WCYCxf1 --> Keys.ini",
+			"added": 1505958702215,
+			"user_id": "qu3tat4nM9p8F@zv.anonymous"
+		},
+		{
+			"comment_id": "1JrhjjDk4vKX9ZTLUk7rM2GNfHj8wFAMsicomment2",
+			"comment_parent_id": 0,
+			"topic_id": "1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3htopic11",
+			"body": "looks promising! B)",
+			"added": 1506478999327,
+			"user_id": "qu3tat4nM9p8F@zv.anonymous"
+		}
+	],
+	"next_comment_id": 3,
+	"topic_vote": [
+		{
+			"topic_vote_id": "1J1c7eML6uMwDU4uiKbKRxoqxGP6WMFMvbvt1",
+			"topic_id": "1PiXrhT1UjMZmJc5WFhfUxourdfapeHJ8otopic14",
+			"vote": 1,
+			"added": 1505958755180,
+			"user_id": "qu3tat4nM9p8F@zv.anonymous"
+		},
+		{
+			"topic_vote_id": "1J1c7eML6uMwDU4uiKbKRxoqxGP6WMFMvbvt2",
+			"topic_id": "1Hvxi2Ygnr6GageTcaryMZmwwRLTYb1jbtopic1",
+			"vote": 1,
+			"added": 1507467714370,
+			"user_id": "qu3tat4nM9p8F@zv.anonymous"
+		},
+		{
+			"topic_vote_id": "1J1c7eML6uMwDU4uiKbKRxoqxGP6WMFMvbvt3",
+			"topic_id": "1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3htopic14",
+			"vote": 1,
+			"added": 1508084216125,
+			"user_id": "qu3tat4nM9p8F@zv.anonymous"
+		}
+	],
+	"next_topic_vote_id": 4,
+	"comment_vote": [
+		{
+			"comment_vote_id": "1JrhjjDk4vKX9ZTLUk7rM2GNfHj8wFAMsicvt1",
+			"comment_id": "1JvEtCFJrYcLwWut2p9fXyLidLbzptHaTBcomment14",
+			"vote": 0,
+			"added": 1506478914467,
+			"user_id": "qu3tat4nM9p8F@zv.anonymous"
+		}
+	],
+	"next_comment_vote_id": 2
+}

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dive into Flow mmap.page</title>
+    <link rel="stylesheet" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/css/style.css">
+    <link rel="alternate" type="application/rss+xml" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml">
+    <link rel="alternate" type="application/git+http" href="https://github.com/weakish/weakish.github.com.git"/>
+</head>
+<body>
+  <div class="container-lg px-3 my-5 markdown-body">
+
+    <h1><a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/">mmap.page</a></h1>
+    <h1 id="dive-into-flow">
+        
+        
+          Dive into Flow
+        
+        
+      </h1>
+    
+      <h2 id="peek-at-the-type-system">
+        
+        
+          Peek at the type system <a href="#peek-at-the-type-system" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<ul>
+<li>Nullability. Maybe type <code>?T</code> is <code>T|null|void</code>.</li>
+<li>Optional object properties and function parameters are typed <code>T|void</code>,
+e.g. <code>function optional_parameter(p?: string) { (p: string|void) }</code>.</li>
+<li>Function parameters with a default value are typed <code>T|void</code> for callers but <code>T</code> in function body.</li>
+<li><code>any</code> is unchecked (supertype <em>and</em> subtype of all types),
+<code>mixed</code> is <code>Any</code> in other languages,
+<code>Object</code> is a supertype of all object types including functions,
+not including primitive types and array types.
+and <code>Function</code> is a supertype of all functions.</li>
+<li>Flow does not do bound checking for arrays.
+This means <code>[J, K]</code> is actually <code>[J, K, any...]</code>.
+This is less strict than TypeScript.</li>
+<li>Object is also structural typed, but they have nominal alternatives <code>{| p: T |}</code>.</li>
+<li>Objects can be invariant(default), covariant(<code>{+p: T}</code>), or contravariant (<code>{-p: T}</code>).
+Generics use the same variance syntax.</li>
+<li>Functions are modeled as object type with a callable property.</li>
+<li>Interfaces uses structural typing like Go.</li>
+<li>For a class <code>C</code>, <code>C</code> is its instance type, and its class type is <code>Class&lt;C&gt;</code>.</li>
+<li>Array types are invariant to element type.</li>
+<li>Rest parameters are annotated with an array type, e.g. <code>...xs: number[]</code>.</li>
+<li>Object type can include a callable property, e.g. <code>(...xs: number[]): number</code>,
+which allows values of that type be called like a function,
+and an indexer property, e.g. <code>[x: number]: string</code>,
+which allows values of that type to be used like a dictionary.</li>
+<li>Type aliases, interfaces, <code>import type</code> and <code>export type</code> are entirely erased at compile time.</li>
+<li>Destructing are annotated as a whole,
+e.g. <code>let {a, b: {c}}: {a: string, b: {c: number}} = {a: &quot;&quot;, b: {c: 0}};</code></li>
+<li>Type casting uses the same syntax as type annotation <code>e: T</code>.</li>
+<li><code>typeof e</code> in type annotation represents the type of <code>e</code>.</li>
+</ul>
+    
+      <h2 id="built-in-types">
+        
+        
+          Built-in types <a href="#built-in-types" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+    
+      <h3 id="boolean">
+        
+        
+          Boolean <a href="#boolean" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>JavaScript specifies many implicit conversions,
+which provide boolean semantics to values of other types.
+Flow allows this in conditional of <code>if</code> statements etc.</p>
+<p>Note that in JavaScript <code>Boolean(0)</code> and <code>new Boolean(0)</code> are different.
+The formal is converting <code>0</code> to the <code>boolean</code> primitive type via the <code>Boolean</code> function,
+the later is initialize a <code>Boolean</code> wrapped object, which is rarely used.
+Same thing applies to <code>number</code>/<code>Number</code> and <code>string</code>/<code>String</code>.</p>
+    
+      <h3 id="number">
+        
+        
+          Number <a href="#number" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>JavaScript has a single number type, which is IEEE 754 floating point numbers.</p>
+    
+      <h3 id="literal-types">
+        
+        
+          Literal types <a href="#literal-types" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p><code>true</code>, <code>false</code>, any <code>number</code>, and any <code>string</code> is a literal type.</p>
+<p><code>let wrong: false = true &amp;&amp; false</code> is valid
+since a type checker can infer that for <code>t</code> typed <code>true</code> and <code>f</code> typed <code>false</code>, <code>t &amp;&amp; f</code> is typed <code>false</code>,
+just like a type checker can infer that for <code>m</code> and <code>n</code> typed <code>number</code>, <code>m + n</code> is typed <code>number</code>.
+Unlike boolean, literal types of number and string has infinite members,
+a type checker cannot infer if the sum of two number typed as literal type has another specific literal type.
+So <code>let two: 2 = 1 + 1</code> is invalid.</p>
+    
+      <h2 id="declaration-files">
+        
+        
+          Declaration files <a href="#declaration-files" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Flow's declaration files are like C's header files.</p>
+<p>A declaration file of <code>foo.js</code> is named <code>foo.js.flow</code>:</p>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* @flow */</span>
+
+<span class="nx">declare</span> <span class="k">export</span> <span class="kd">function</span> <span class="nx">isLeapYear</span><span class="p">(</span><span class="nx">year</span><span class="p">:</span> <span class="nx">string</span><span class="p">):</span> <span class="nx">boolean</span><span class="p">;</span>
+<span class="nx">declare</span> <span class="k">export</span> <span class="kd">let</span> <span class="nx">DEBUG</span><span class="p">:</span> <span class="nx">boolean</span><span class="p">;</span>
+
+<span class="nx">declare</span> <span class="k">export</span> <span class="kd">class</span> <span class="nx">Counter</span> <span class="p">{</span>
+  <span class="nl">val</span><span class="p">:</span> <span class="nx">number</span><span class="p">;</span>
+  <span class="nx">increase</span><span class="p">():</span> <span class="k">void</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nx">declare</span> <span class="k">export</span> <span class="nx">type</span> <span class="nx">Response</span> <span class="o">=</span> <span class="dl">'</span><span class="s1">yes</span><span class="dl">'</span> <span class="o">|</span> <span class="dl">'</span><span class="s1">no</span><span class="dl">'</span> <span class="o">|</span> <span class="dl">'</span><span class="s1">maybe</span><span class="dl">'</span><span class="p">;</span>
+
+<span class="nx">declare</span> <span class="k">export</span> <span class="kr">interface</span> <span class="nx">Stack</span><span class="o">&lt;</span><span class="nx">T</span><span class="o">&gt;</span> <span class="p">{</span>
+  <span class="nx">push</span><span class="p">(</span><span class="na">item</span><span class="p">:</span> <span class="nx">T</span><span class="p">):</span> <span class="k">void</span><span class="p">;</span>
+  <span class="nx">pop</span><span class="p">():</span> <span class="nx">T</span><span class="p">;</span>
+  <span class="nx">isEmpty</span><span class="p">():</span> <span class="nx">bool</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Declaration files supports mixin,
+which can also be used in implementations, for example,</p>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* @flow */</span>
+
+<span class="nx">declare</span> <span class="kd">class</span> <span class="nx">MyClass</span> <span class="kd">extends</span> <span class="nx">Child</span> <span class="nx">mixins</span> <span class="nx">MixinA</span><span class="p">,</span> <span class="nx">MixinB</span> <span class="p">{}</span>
+<span class="nx">declare</span> <span class="kd">class</span> <span class="nx">MixinA</span> <span class="p">{</span>
+  <span class="nl">a</span><span class="p">:</span> <span class="nx">number</span><span class="p">;</span>
+  <span class="nl">b</span><span class="p">:</span> <span class="nx">number</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="c1">// Mixing in MixinB will NOT mix in MixinBase</span>
+<span class="nx">declare</span> <span class="kd">class</span> <span class="nx">MixinB</span> <span class="kd">extends</span> <span class="nx">MixinBase</span> <span class="p">{}</span>
+<span class="nx">declare</span> <span class="kd">class</span> <span class="nx">MixinBase</span> <span class="p">{</span>
+  <span class="nl">c</span><span class="p">:</span> <span class="nx">number</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="nx">declare</span> <span class="kd">class</span> <span class="nx">Child</span> <span class="kd">extends</span> <span class="nx">Base</span> <span class="p">{</span>
+  <span class="nl">a</span><span class="p">:</span> <span class="nx">string</span><span class="p">;</span>
+  <span class="nl">c</span><span class="p">:</span> <span class="nx">string</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="nx">declare</span> <span class="kd">class</span> <span class="nx">Base</span> <span class="p">{</span>
+  <span class="nl">b</span><span class="p">:</span> <span class="nx">string</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kd">var</span> <span class="nx">c</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">MyClass</span><span class="p">();</span>
+<span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">a</span><span class="p">:</span> <span class="nx">number</span><span class="p">);</span> <span class="c1">// Both Child and MixinA provide `a`, so MixinA wins</span>
+<span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">b</span><span class="p">:</span> <span class="nx">number</span><span class="p">);</span> <span class="c1">// The same principle holds for `b`, which Child inherits</span>
+<span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">c</span><span class="p">:</span> <span class="nx">string</span><span class="p">);</span> <span class="c1">// mixins does not copy inherited properties,</span>
+               <span class="c1">// so `c` comes from Child</span>
+</code></pre></div></div>
+    
+      <h2 id="problems">
+        
+        
+          Problems <a href="#problems" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+    
+      <h3 id="interfaces-use-structural-typing">
+        
+        
+          Interfaces use structural typing. <a href="#interfaces-use-structural-typing" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p><a href="https://golang.org/doc/faq#guarantee_satisfies_interface">Go's FAQ</a> suggests to add an additional method to doc implementations:</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">type</span> <span class="n">Fooer</span> <span class="k">interface</span> <span class="p">{</span>
+    <span class="n">Foo</span><span class="p">()</span>
+    <span class="n">ImplementsFooer</span><span class="p">()</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>This is a simple workaround for documentation
+and it prevents accidental implementation of interfaces.
+However, it does not prevent a later modification of implementation of <code>Fooer</code>
+to remove <code>Foo()</code> and make <code>ImplementsFooer()</code> not correct any more.</p>
+<p>With JavaScript, a much better workaround is possible (mentioned in <a href="https://github.com/facebook/flow/issues/2376">#2376</a>):</p>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* @flow */</span>
+<span class="kr">interface</span> <span class="nx">A</span> <span class="p">{</span>
+  <span class="nx">foo</span><span class="p">():</span> <span class="nx">number</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kd">class</span> <span class="nx">AImpl</span> <span class="p">{</span>
+  <span class="kd">constructor</span><span class="p">():</span> <span class="nx">A</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="nx">foo</span><span class="p">():</span> <span class="nx">number</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="mi">1</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>So flow's structural typed interface is not as hopeless bad as Go.</p>
+    
+      <h3 id="implicitly-type-casting-codenumbercode-to-codestringcode-with-codecode">
+        
+        
+          Implicitly type casting <code>number</code> to <code>string</code> with <code>+</code>. <a href="#implicitly-type-casting-codenumbercode-to-codestringcode-with-codecode" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>The <code>number + string</code> idiom is fairly common, so flow accepts it, like TypeScript.</p>
+<p>With this <a href="https://github.com/facebook/flow/pull/4610">patch</a>, <code>flow</code> will reject <code>number + string</code>:</p>
+<pre><code>Error: main.js:3
+  3:    return 1 + &quot;s&quot;
+               ^ number. This type cannot be added to
+  3:    return 1 + &quot;s&quot;
+                   ^^^ string
+</code></pre>
+    
+      <h2 id="hegel">
+        
+        
+          Hegel <a href="#hegel" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p><a href="https://hegel.js.org/">Hegel</a> has a more sound type system than Flow,
+and it does not have the two problems mentioned above:</p>
+<ol>
+<li>It dose not support interface.</li>
+<li>No type coercion for <code>number + string</code>.</li>
+</ol>
+<p>It borrows Flow's syntax for type annotation, thus JavaScript can be generated via Flow tools (<code>@babel/preset-flow</code> or <code>flow-remove-types</code>).
+However, it uses TypeScript <code>d.ts</code> files for library definition, because TypeScript has a much larger ecosystem than Flow.
+Note some types are not supported, for example, Flow's interface and TypeScript's conditional typing.</p>
+<p>Its vscode extension is <a href="https://hegel.js.org/">still in development</a>.</p>
+    <div class="footer border-top border-gray-light mt-5 pt-3 text-gray">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start">
+        <form id="site-search" action="https://duckduckgo.com/html/" method="get">
+          <input name="q" type="search" value="site:mmap.page " required pattern="site:mmap\.page\s.+">
+          <input type="submit" value="&#x1F50D;" title="search through site content via DuckDuckGo">
+        </form>
+        <p>
+          <a href="mailto:weakish@gmail.com" title="weakish@gmail.com"><img src="https://icongr.am/feather/mail.svg" alt="Feather Icon Mail"></a>
+          <a href="https://savannah.nongnu.org/people/viewgpg.php?user_id=65699" title="2414 AEA0 EA48 5263 9697  F1BA 55F6 EEC2 EA3F 0A87"><img src="https://icongr.am/feather/key.svg" alt="Feather Icon Key"></a>
+          <a href="https://github.com/weakish/" title="GitHub"><img src="https://icongr.am/feather/github.svg" alt="Feather Icon Github"></a>
+          <a href="https://www.instagram.com/jakukyo/" title="Instagram"><img src="https://icongr.am/feather/instagram.svg" alt="Feather Icon Instagram"></a>
+          <a href="https://twitter.com/weakish" title="Twitter"><img src="https://icongr.am/feather/twitter.svg" alt="Feather Icon Twitter"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml" title="RSS 2.0 Feed"><img src="https://icongr.am/feather/rss.svg" alt="Feather Icon RSS"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/uses/" title="uses"><img src="https://icongr.am/feather/book-open.svg" alt="Feather Icon Book Open"></a>
+          
+          
+          <a href="/Me.ZeroNetwork.bit/?Profile/12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv/1GnJD7CXskmG8GywMbTvbP12wneCFW9XzR/weakish@zeroid.bit" title="ZeroMe"><img src="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/images/zeronet_logo.svg" alt="ZeroNet Logo" width="32" height="32"></a>
+        </p>
+      </div>
+        <p>
+        Permission to use, copy, modify, and/or distribute this site for any purpose with or without fee is hereby granted.
+        This site is provided "as is" without express or implied warranty.
+        </p>
+        <p>
+        This site does not use cookies or tracking codes.
+        The hosting service provider (<a href="https://pages.github.com/">GitHub Pages</a>) probably collects server logs,
+        but I do not have access to them.
+        </p>
+        <p>
+        Site source is <a href="https://github.com/weakish/weakish.github.com/">available</a>
+        and feedback is <a href="https://github.com/weakish/weakish.github.com/issues">welcome</a>.
+        </p>
+        <noscript>
+        <p>
+        This site does not use JavaScript.
+        </p>
+        </noscript>
+    </div>
+  </div>
+</body>
+</html>

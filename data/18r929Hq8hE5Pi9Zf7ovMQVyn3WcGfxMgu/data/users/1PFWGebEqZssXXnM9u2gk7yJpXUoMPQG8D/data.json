@@ -1,0 +1,125 @@
+{
+    "pull_requests": [
+        {
+            "title": "Fix issue comments, PR comments feed query",
+            "body": "Test a PR.\n\nIf not working, you can use the diff here for a quick fix.\n\n\n./src/js/repo.js\n```diff\n-       issueComments: \"SELECT 'comment' AS type, issue_comments.date_added AS date_added, issues.title AS title, issue_comments.body AS body, 'repo/issues/view/?' || json.site || '/' || issues.id || '@' || REPLACE(json.directory, 'data/users/', '') AS url FROM issues, issue_comments, json, json AS json2 WHERE issues.json_id = json.json_id AND issue_comments.issue_id = issues.id AND issue_comments.json_id = json2.json_id AND issue_comments.issue_json = json2.directory AND json.site = json2.site AND json.site IN (:params)\",\n-       pullRequestComments: \"SELECT 'comment' AS type, pull_request_comments.date_added AS date_added, pull_requests.title AS title, pull_request_comments.body AS body, 'repo/pull-requests/view/?' || json.site || '/' || pull_requests.id || '@' || REPLACE(json.directory, 'data/users/', '') AS url FROM pull_requests, pull_request_comments, json, json AS json2 WHERE pull_requests.json_id = json.json_id AND pull_request_comments.pull_request_id = pull_requests.id AND pull_request_comments.json_id = json2.json_id AND pull_request_comments.pull_request_json = json2.directory AND json.site = json2.site AND json.site IN (:params)\"\n+       issueComments: \"SELECT 'comment' AS type, issue_comments.date_added AS date_added, issues.title AS title, issue_comments.body AS body, 'repo/issues/view/?' || json.site || '/' || issues.id || '@' || REPLACE(json.directory, 'data/users/', '') AS url FROM issue_comments LEFT JOIN issues ON (issue_id = issues.id AND issue_comments.json_id = issues.json_id) LEFT JOIN json USING (json_id) WHERE json.site IN (:params)\",\n+       pullRequestComments: \"SELECT 'comment' AS type, pull_request_comments.date_added AS date_added, pull_requests.title AS title, pull_request_comments.body AS body, 'repo/pull-requests/view/?' || json.site || '/' || pull_requests.id || '@' || REPLACE(json.directory, 'data/users/', '') AS url FROM pull_request_comments LEFT JOIN pull_requests ON (pull_request_id = pull_requests.id AND pull_request_comments.json_id = pull_requests.json_id) LEFT JOIN json USING (json_id) WHERE json.site IN (:params)\" \n```\n\n",
+            "date_added": 1511245054500,
+            "merged": true,
+            "fork_address": "http://127.0.0.1:43110/13NvWEuvyiydj4SdmDoSoHJXkKWYDnCD7J",
+            "fork_branch": "master",
+            "tags": "newsfeed,feed,pull request,issue,fix,bug",
+            "id": 0
+        },
+        {
+            "title": "Show Username on Comments in ZeroHello Newsfeed",
+            "body": "Solution for [issue#5](/gitcenter.bit/repo/issues/view/?18r929Hq8hE5Pi9Zf7ovMQVyn3WcGfxMgu/5@12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu)\n\n```diff\n-                       'comment' AS type, issue_comments.date_added AS date_added, issues_json.title AS title, issue_comments.body AS body, 'repo/issues/view/?' || issues_json.site || '/' || issues_json.id || '@' || REPLACE(issues_json.directory, 'data/users/', '') AS url\\\n+                       'comment' AS type, issue_comments.date_added AS date_added, issues_json.title AS title, '@' || RTRIM(cert_user_id, '@zeroid.bit') || ': ' || issue_comments.body AS body, 'repo/issues/view/?' || issues_json.site || '/' || issues_json.id || '@' || REPLACE(issues_json.directory, 'data/users/', '') AS url\\\n                FROM\\\n                        issue_comments\\\n                LEFT JOIN\\\n-                       (SELECT id, title, body, json_id, site, directory FROM issues LEFT JOIN json USING (json_id)) AS issues_json\\\n+                       (SELECT id, title, body, json_id, site, directory, cert_user_id FROM issues LEFT JOIN json USING (json_id)) AS issues_json\\\n                ON\\\n                        (issue_comments.issue_id = issues_json.id AND issue_comments.issue_json = issues_json.directory)\\\n                WHERE\\\n@@ -15,11 +15,11 @@ FOLLOW_QUERIES = {\n        \",\n        pullRequestComments: \"\\\n                SELECT\\\n-                       'comment' AS type, pull_request_comments.date_added AS date_added, pull_requests_json.title AS title, pull_request_comments.body AS body, 'repo/pull-requests/view/?' || pull_requests_json.site || '/' || pull_requests_json.id || '@' || REPLACE(pull_requests_json.directory, 'data/users/', '') AS url\\\n+                       'comment' AS type, pull_request_comments.date_added AS date_added, pull_requests_json.title AS title, '@' || RTRIM(cert_user_id, '@zeroid.bit') || ': ' || pull_request_comments.body AS body, 'repo/pull-requests/view/?' || pull_requests_json.site || '/' || pull_requests_json.id || '@' || REPLACE(pull_requests_json.directory, 'data/users/', '') AS url\\\n                FROM\\\n                        pull_request_comments\\\n                LEFT JOIN\\\n-                       (SELECT id, title, body, json_id, site, directory FROM pull_requests LEFT JOIN json USING (json_id)) AS pull_requests_json\\\n+                       (SELECT id, title, body, json_id, site, directory, cert_user_id FROM pull_requests LEFT JOIN json USING (json_id)) AS pull_requests_json\\\n                ON\\\n                        (pull_request_comments.pull_request_id = pull_requests_json.id AND pull_request_comments.pull_request_json = pull_requests_json.directory)\\\n                WHERE\\\n\n```",
+            "date_added": 1511628164800,
+            "merged": true,
+            "fork_address": "http://127.0.0.1:43110/13NvWEuvyiydj4SdmDoSoHJXkKWYDnCD7J",
+            "fork_branch": "master",
+            "tags": "newsfeed,comment",
+            "id": 1
+        },
+        {
+            "title": "Sort issue and PR list by date_added",
+            "body": "My last comment is \"Sort issue and PR list by date_added\", leave a comment if you have problem for updating my repo.",
+            "date_added": 1512267403600,
+            "merged": true,
+            "fork_address": "http://127.0.0.1:43110/13NvWEuvyiydj4SdmDoSoHJXkKWYDnCD7J",
+            "fork_branch": "master",
+            "tags": "sorting",
+            "id": 2
+        }
+    ],
+    "next_pull_request_id": 3,
+    "pull_request_comments": [
+        {
+            "pull_request_id": 0,
+            "pull_request_json": "data/users/1PFWGebEqZssXXnM9u2gk7yJpXUoMPQG8D",
+            "body": "I check the result. My query is also not correct. Some issue comments link to the wrong issue. `(issue_id, json_id)` in issue_comment table doesn't match `(id, json_id)` in issues table. I will try to figure it out later.",
+            "date_added": 1511248048000,
+            "id": 0
+        },
+        {
+            "pull_request_id": 0,
+            "pull_request_json": "data/users/1PFWGebEqZssXXnM9u2gk7yJpXUoMPQG8D",
+            "body": "Version 2:\n```\n\"SELECT \n    'comment' AS type, issue_comments.date_added AS date_added, issues_json.title AS title, issue_comments.body AS body, 'repo/issues/view/?' || issues_json.site || '/' || issues_json.id || '@' || REPLACE(issues_json.directory, 'data/users/', '') AS url \nFROM \n    issue_comments \nLEFT JOIN \n    (SELECT * FROM issues LEFT JOIN json USING (json_id)) AS issues_json \nON\n    (issue_comments.issue_id = issues_json.id AND issue_comments.issue_json = issues_json.directory) \nWHERE \n    issues_json.site IN (:params) AND issue_comments.json_id IN (SELECT json_id FROM json WHERE json.site = issues_json.site)\"\n```\n\nIt works when I use sqlite3 in command line. But after I throw it to users.json, ZeroHello doesn't show anything. Can you test it?",
+            "date_added": 1511272954000,
+            "id": 1
+        },
+        {
+            "pull_request_id": 0,
+            "pull_request_json": "data/users/1PFWGebEqZssXXnM9u2gk7yJpXUoMPQG8D",
+            "body": "```diff\n- LEFT JOIN \n-     (SELECT * FROM issues LEFT JOIN json USING (json_id)) AS issues_json\n+ LEFT JOIN \n+    (SELECT id, title, body, json_id, site, directory FROM issues LEFT JOIN json USING (json_id)) AS issues_json \n```\nDone! Thanks to zeronet cmd log.\n\n\n./src/js/repo.js\n```\n-       issueComments: \"SELECT 'comment' AS type, issue_comments.date_added AS date_added, issues.title AS title, issue_comments.body AS body, 'repo/issues/view/?' || json.site || '/' || issues.id || '@' || REPLACE(json.directory, 'data/users/', '') AS url FROM issues, issue_comments, json, json AS json2 WHERE issues.json_id = json.json_id AND issue_comments.issue_id = issues.id AND issue_comments.json_id = json2.json_id AND issue_comments.issue_json = json2.directory AND json.site = json2.site AND json.site IN (:params)\",\n-       pullRequestComments: \"SELECT 'comment' AS type, pull_request_comments.date_added AS date_added, pull_requests.title AS title, pull_request_comments.body AS body, 'repo/pull-requests/view/?' || json.site || '/' || pull_requests.id || '@' || REPLACE(json.directory, 'data/users/', '') AS url FROM pull_requests, pull_request_comments, json, json AS json2 WHERE pull_requests.json_id = json.json_id AND pull_request_comments.pull_request_id = pull_requests.id AND pull_request_comments.json_id = json2.json_id AND pull_request_comments.pull_request_json = json2.directory AND json.site = json2.site AND json.site IN (:params)\"\n+       issueComments: \"SELECT 'comment' AS type, issue_comments.date_added AS date_added, issues_json.title AS title, issue_comments.body AS body, 'repo/issues/view/?' || issues_json.site || '/' || issues_json.id || '@' || REPLACE(issues_json.directory, 'data/users/', '') AS url FROM issue_comments LEFT JOIN (SELECT id, title, body, json_id, site, directory FROM issues LEFT JOIN json USING (json_id)) AS issues_json ON (issue_comments.issue_id = issues_json.id AND issue_comments.issue_json = issues_json.directory) WHERE issues_json.site IN (:params) AND issue_comments.json_id IN (SELECT json_id FROM json WHERE json.site = issues_json.site)\",\n+       pullRequestComments: \"SELECT 'comment' AS type, pull_request_comments.date_added AS date_added, pull_requests_json.title AS title, pull_request_comments.body AS body, 'repo/pull_requests/view/?' || pull_requests_json.site || '/' || pull_requests_json.id || '@' || REPLACE(pull_requests_json.directory, 'data/users/', '') AS url FROM pull_request_comments LEFT JOIN (SELECT id, title, body, json_id, site, directory FROM pull_requests LEFT JOIN json USING (json_id)) AS pull_requests_json ON (pull_request_comments.pull_request_id = pull_requests_json.id AND pull_request_comments.pull_request_json = pull_requests_json.directory) WHERE pull_requests_json.site IN (:params) AND pull_request_comments.json_id IN (SELECT json_id FROM json WHERE json.site = pull_requests_json.site)\"\n```",
+            "date_added": 1511274830300,
+            "id": 2
+        },
+        {
+            "pull_request_id": 0,
+            "pull_request_json": "data/users/1PFWGebEqZssXXnM9u2gk7yJpXUoMPQG8D",
+            "body": "No problem here. Interestingly the feed query in my users.json is auto-updated. Btw, the feed queries in `dbschema.json` have no any effect if I understand correctly, like before I explained [in my blog](/1EiMAqhd6sMjPG2tznkkGXxhdwFBDdeqT9/?Post:35), you may like to remove them.",
+            "date_added": 1511343589800,
+            "id": 3
+        },
+        {
+            "pull_request_id": 0,
+            "pull_request_json": "data/users/1PFWGebEqZssXXnM9u2gk7yJpXUoMPQG8D",
+            "body": "> and queries from dbschema.json are shown in feed search\n\nI understand now, and I check the `NewsfeedPlugin.py`, feed search really reads query from `dbschema.json`. Thanks for the clarification.",
+            "date_added": 1511403010200,
+            "id": 4
+        },
+        {
+            "pull_request_id": 1,
+            "pull_request_json": "data/users/1PFWGebEqZssXXnM9u2gk7yJpXUoMPQG8D",
+            "body": "I can't find a way to cut string before a specific character '@', so I only rtrim @zeroid.bit",
+            "date_added": 1511628258200,
+            "id": 5
+        },
+        {
+            "pull_request_id": 1,
+            "pull_request_json": "data/users/1PFWGebEqZssXXnM9u2gk7yJpXUoMPQG8D",
+            "body": "@krixano: yep, it looks like I need another `JOIN`.\n\nMy repo updates with the new fix. I find that with `rtrim(user_id, '@zeroid.bit')`, `gitcenter@zeroid.bit` becomes `gitcen`, so I use `replace` instead.\n\n```diff\n        issueComments: \"\\\n                SELECT\\\n-                       'comment' AS type, issue_comments.date_added AS date_added, issues_json.title AS title, '@' || RTRIM(cert_user_id, '@zeroid.bit') || ': ' || issue_comments.body AS body, 'repo/issues/view/?' || issues_json.site || '/' || issues_json.id || '@' || REPLACE(issues_json.directory, 'data/users/', '') AS url\\\n+                       'comment' AS type, issue_comments.date_added AS date_added, issues_json.title AS title, '@' || REPLACE(cert_user_id, '@zeroid.bit', '') || ': ' || issue_comments.body AS body, 'repo/issues/view/?' || issues_json.site || '/' || issues_json.id || '@' || REPLACE(issues_json.directory, 'data/users/', '') AS url\\\n                FROM\\\n                        issue_comments\\\n                LEFT JOIN\\\n-                       (SELECT id, title, body, json_id, site, directory, cert_user_id FROM issues LEFT JOIN json USING (json_id)) AS issues_json\\\n+                       (SELECT id, title, body, json_id, site, directory FROM issues LEFT JOIN json USING (json_id)) AS issues_json\\\n                ON\\\n                        (issue_comments.issue_id = issues_json.id AND issue_comments.issue_json = issues_json.directory)\\\n+               LEFT JOIN\\\n+                       (SELECT cert_user_id, json_id AS comment_json_id FROM json) AS comment_json\\\n+               ON\\\n+                       (comment_json.comment_json_id = issue_comments.json_id)\\\n                WHERE\\\n                        issues_json.site IN (:params) AND issue_comments.json_id IN (SELECT json_id FROM json WHERE json.site = issues_json.site)\\\n        \",\n        pullRequestComments: \"\\\n                SELECT\\\n-                       'comment' AS type, pull_request_comments.date_added AS date_added, pull_requests_json.title AS title, '@' || RTRIM(cert_user_id, '@zeroid.bit') || ': ' || pull_request_comments.body AS body, 'repo/pull-requests/view/?' || pull_requests_json.site || '/' || pull_requests_json.id || '@' || REPLACE(pull_requests_json.directory, 'data/users/', '') AS url\\\n+                       'comment' AS type, pull_request_comments.date_added AS date_added, pull_requests_json.title AS title, '@' || REPLACE(cert_user_id, '@zeroid.bit', '') || ': ' || pull_request_comments.body AS body, 'repo/pull-requests/view/?' || pull_requests_json.site || '/' || pull_requests_json.id || '@' || REPLACE(pull_requests_json.directory, 'data/users/', '') AS url\\\n                FROM\\\n                        pull_request_comments\\\n                LEFT JOIN\\\n-                       (SELECT id, title, body, json_id, site, directory, cert_user_id FROM pull_requests LEFT JOIN json USING (json_id)) AS pull_requests_json\\\n+                       (SELECT id, title, body, json_id, site, directory FROM pull_requests LEFT JOIN json USING (json_id)) AS pull_requests_json\\\n                ON\\\n                        (pull_request_comments.pull_request_id = pull_requests_json.id AND pull_request_comments.pull_request_json = pull_requests_json.directory)\\\n+               LEFT JOIN\\\n+                       (SELECT cert_user_id, json_id AS comment_json_id FROM json) AS comment_json\\\n+               ON\\\n+                       (comment_json.comment_json_id = pull_request_comments.json_id)\\\n                WHERE\\\n                        pull_requests_json.site IN (:params) AND pull_request_comments.json_id IN (SELECT json_id FROM json WHERE json.site = pull_requests_json.site)\\\n        \",\n```",
+            "date_added": 1511768110200,
+            "id": 6
+        },
+        {
+            "pull_request_id": 1,
+            "pull_request_json": "data/users/1PFWGebEqZssXXnM9u2gk7yJpXUoMPQG8D",
+            "body": "@gitcenter: I thought it was useful for quickly reviewing the patch, and as there is no many peers with my repo site, so it's also possible you can't quickly fetch the new commit from my repo site.\nFrom [Mercurial and Fossil VCS Support?](/gitcenter.bit/repo/issues/view/?18r929Hq8hE5Pi9Zf7ovMQVyn3WcGfxMgu/0@12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu) issue:\n>Krixano: You can use this jsdifflib for showing changes from commits too right?\n>\n>You: Yep. An good idea.\n\nUsing jsdiff may solve the first problem, and make [adding Merge button](/gitcenter.bit/repo/issues/view/?18r929Hq8hE5Pi9Zf7ovMQVyn3WcGfxMgu/0@1CvyxRucf7BbDvGtFe5LayTS2qX88VN7Er) more useful for some small PRs.\n\nI have no solution for the second problem.",
+            "date_added": 1511830860600,
+            "id": 7
+        },
+        {
+            "pull_request_id": 2,
+            "pull_request_json": "data/users/1PFWGebEqZssXXnM9u2gk7yJpXUoMPQG8D",
+            "body": "Btw, repo order on Repository Index looks quite random. There is not date_added for repository index, what about sorting them with name?",
+            "date_added": 1512268681100,
+            "id": 8
+        }
+    ],
+    "next_pull_request_comment_id": 9,
+    "issue_comments": [
+        {
+            "issue_id": 0,
+            "issue_json": "data/users/1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3h",
+            "body": "Looks like it works in this issue, the issue state is \"closed\".\nBtw, in my data.json: `/path/to/zeronet/data/18r929Hq8hE5Pi9Zf7ovMQVyn3WcGfxMgu/data/users/1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3h/data.json`, the value of `reopened` key is set to `true`. Is that normal?\nBy binchan2",
+            "date_added": 1511325068800,
+            "id": 0
+        },
+        {
+            "issue_id": 0,
+            "issue_json": "data/users/18fLf6bqfzvGLvMA2DrEmDxiqvnAWyN6dv",
+            "body": "> WebSocket stops working because of bug in ZeroNet as I load a lot of files at once. I asked nofish to fix this.\n\n@ivanq, that's great! This issue is likely the same with my Raspi 2, I can't load Git Center Source, Poster and \"My Repo\" with it. But I don't have any problem with my main laptop.\nI thought it's because my Raspi 2 is not powerful enough and using remote server mode, so just a specific and trivial issue. Hope the coming fix can solve my problem, too.",
+            "date_added": 1511831872000,
+            "id": 1
+        },
+        {
+            "issue_id": 0,
+            "issue_json": "data/users/18fLf6bqfzvGLvMA2DrEmDxiqvnAWyN6dv",
+            "body": "There is no any record in the ZeroNet log. Other repos like ZeroMedium, my messy repo work on my Pi. Also if I keep refresh the page, there is a very small chance that content will show up.\nIn Firefox console there is no useful info, use My Repo page as example:\nIt's\n```\n[ZeroWebsocket] Closed close { target: WebSocket, isTrusted: true, wasClean: false, code: 1006, reason: \"\", currentTarget: WebSocket, eventPhase: 2, bubbles: false, cancelable: false, defaultPrevented: false, composed: false }  all.js:142:14\n[Wrapper] Created!  all.js:1546:14\n[ZeroWebsocket] Open  all.js:142:14\n[ZeroFrame] Websocket open  ZeroFrame.js:82:9\n[Wrapper] Setting title to Git Center - ZeroNet  all.js:1546:14\n```\nor\n```\n[ZeroWebsocket] Closed close { target: WebSocket, isTrusted: true, wasClean: false, code: 1006, reason: \"\", currentTarget: WebSocket, eventPhase: 2, bubbles: false, cancelable: false, defaultPrevented: false, composed: false }  all.js:142:14\n[Wrapper] Created!  all.js:1546:14\n[ZeroWebsocket] Open  all.js:142:14\n[ZeroFrame] Websocket open  ZeroFrame.js:82:9\n[Wrapper] Setting title to Git Center - ZeroNet  all.js:1546:14\nDie Verbindung zu ws://192.168.1.110:43110/Websocket?wrapper_key=9e74ab1f9651add8a066018ca31a76f92dfb332df6ce663fcf12bce863513cd6 wurde unterbrochen, während die Seite geladen wurde.  all.js:69:16\n[ZeroWebsocket] Error error { target: WebSocket, isTrusted: true, currentTarget: WebSocket, eventPhase: 2, bubbles: false, cancelable: false, defaultPrevented: false, composed: false, timeStamp: 1100, cancelBubble: false, originalTarget: WebSocket }  all.js:142:14\n[ZeroWebsocket] Closed close { target: WebSocket, isTrusted: true, wasClean: false, code: 1006, reason: \"\", currentTarget: WebSocket, eventPhase: 2, bubbles: false, cancelable: false, defaultPrevented: false, composed: false }  all.js:142:14\n[ZeroFrame] Websocket close  ZeroFrame.js:82:9\n[ZeroWebsocket] Reconnecting...  all.js:142:14\n[ZeroWebsocket] Open  all.js:142:14\n[ZeroFrame] Websocket open  ZeroFrame.js:82:9\n[Wrapper] Setting title to Git Center - ZeroNet  all.js:1546:14\n```\nIn Chromium console there is a piece of error info\n```\nall.js?rev=3151&lang=de:69 WebSocket connection to 'ws://192.168.1.110:43110/Websocket?wrapper_key=9e74ab1f9651add8a066018ca31a76f92dfb332df6ce663fcf12bce863513cd6' failed: Could not decode a text frame as UTF-8.\nZeroWebsocket.connect @ all.js?rev=3151&lang=de:69\nWrapper @ all.js?rev=3151&lang=de:839\n(anonymous) @ all.js?rev=3151&lang=de:1569\n(anonymous) @ all.js?rev=3151&lang=de:1571\n```\nBut I searched `Could not decode a text frame as UTF-8.` found it's quite a common error, so probably unrelated.",
+            "date_added": 1511976486500,
+            "id": 2
+        }
+    ],
+    "next_issue_comment_id": 3
+}

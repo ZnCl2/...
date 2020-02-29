@@ -1,0 +1,222 @@
+<!DOCTYPE HTML>
+<html lang="ru">
+    <head>
+      <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb</title>
+      <link rel="stylesheet" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/css/main.css"/>
+      <link rel="shortcut icon" type="image/x-icon" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/favicon.ico"/>
+      <link href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/rss.xml" title="Akademic's blog" type="application/rss+xml" rel="alternate"/>
+    </head>
+    <body>
+        <header><h1><a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb" rel="home">akademic.name</a></h1></header>
+        <main class="content">
+            
+<article>
+    <h1>Мониторинг заданий Folding@home часть 2</h1> <time>16.02.2010</time>
+	<p>В предыдущем посте <a href="http://akademic.name/blog/2010/monitoring-zadanij-foldinghome/" title="Мониторинг заданий Folding@Home">Мониторинг заданий Folding@home часть 1</a> я рассказал, как организовать оповещение сервера при изменении статуса расчёта задания.
+В этом мне помогли программа <a href="http://inotify.aiken.cz/?section=incron&amp;page=about" title="About Incron">incron</a> и скрипт на языке Python.</p>
+
+<p>В этот раз я расскажу как эти данные принять и вывести.</p>
+
+<p>Возвращаясь к первой части.
+В силу того, что один из моих серверов имеет динамический ip-адрес, пришлось изменить программу-нотификатор так, чтобы она посылала ещё и hostname, т.к. он уникален среди моих машин и в то же время не зависит от ip.</p>
+
+<p>Теперь она выглядит так:</p>
+
+<pre><code>#!/usr/bin/python
+import os,sys
+import urllib
+filename = sys.argv[1]
+stats = open(filename).read()
+dir = os.path.dirname(filename)
+config = open(dir+'/client.cfg')
+for line in config:
+    if line[:9] == 'machineid':
+        mid = line[-2]
+data = [('mid', mid), ('stats', stats), ('hostname', os.uname()[1])]
+urllib.urlopen( 'http://мой.сайт/принимающий/данные/', urllib.urlencode( data ) )
+</code></pre>
+
+<p>Вернёмся к нашим баранам - принимающему серверу.
+Поскольку сейчас мне интересен python и django, то писать буду соответственно на них. Предполагаю, что <a href="http://docs.djangoproject.com/en/1.1/intro/tutorial01/#intro-tutorial01" title="Django Tutorial">туториал</a> уже пройден.</p>
+
+<p>Начнём.
+Создадим приложение.
+<code>./manage.py startapp folding</code></p>
+
+<p><code>vim folding/views.py</code></p>
+
+<p>Здесь мы напишем также и функцию для отображения статистики, поэтому указываю сразу все импорты. Ценной же частью является функция collect</p>
+
+<pre><code>from datetime import datetime
+from django.core.cache import cache
+from django.http import HttpResponse
+from django.template import RequestContext, loader
+from django.contrib.auth.decorators import login_required
+</code></pre>
+
+<pre><code>def collect(request):
+    data = cache.get('folding')
+    if data == None:
+        data = {}
+    mid = request.POST['mid']
+    stats = request.POST['stats']
+    host = request.POST['hostname']
+    name_start = stats.find('Name:') + 6
+    name_end = stats.find('Tag:') - 1
+    title = stats[name_start:name_end]
+    pr_start = stats.rfind('Progress:') + 10
+    pr_end = stats.find( '%', pr_start )
+    progress = int( stats[pr_start:pr_end] )
+    now = datetime.now()
+    if data.has_key( host ) != True:
+        data[host] = { 'host': host, 'mids': { mid: {'title': title, 'progress': progress, 'last_update': now } } }
+    else:
+        next_update = 0
+        if data[host]['mids'].has_key(mid) == True:
+            diff = now - data[host]['mids'][mid]['last_update']
+            if diff.seconds &gt; 0:
+                next_update = diff + now
+            else:
+                next_update = data[host]['mids'][mid]['next_update']
+        data[host]['mids'][mid] = {'title': title, 'progress': progress, 'last_update': now, 'next_update': next_update }
+    cache.set('folding', data, 5400)
+    return HttpResponse()
+</code></pre>
+
+<p>В принципе тут всё просто. Но есть интересная особенность. Здесь я использую прямой доступ к кешу для хранения статистики. Имеется ввиду именно кеш в памяти. Т.к. статистика очень быстро теряет актуальность, а вести её историю я в планах не имею, то это очень интересный метод. Не надо моделей, не надо таблиц в БД, не надо файлов, можно просто хранить эти данные в памяти, благо их совсем чуть.</p>
+
+<p>Это весьма приятный бонус django по сравнению с любым php сайтом. Поскольку сайт работает демоном, то он может хранить данные между запросами.</p>
+
+<p>Тут хорошо бы переписать на конкретный класс для работы с кешом в памяти, но я пока не разобрался как, так что ограничился пока установкой</p>
+
+<p><code>CACHE_BACKEND = 'locmem://'</code></p>
+
+<p>в settings.py</p>
+
+<p>Дабы закончить со сбором статистики напишем folding/urls.py</p>
+
+<pre><code>from django.conf.urls.defaults import *
+import views
+urlpatterns = patterns('',
+                url(r'^collect/', views.collect),
+                url(r'^status/', views.display),
+            )
+</code></pre>
+
+<p>и включим его в глобальный urls.py</p>
+
+<p><code>(r'^folding/', include('folding.urls')),</code></p>
+
+<p>И вот уже можно собирать статистику.</p>
+
+<p>Теперь вывод. В тот же folding/views.py добавим функцию display</p>
+
+<pre><code>@login_required
+def display(request):
+    data = cache.get('folding')
+    if data != None:
+        tdata = []
+        for k in data:
+            mids = data[k]['mids']
+            tmids = []
+            for km in mids:
+                mids[km]['mid'] = km
+                tmids.append(mids[km])
+            data[k]['mids'] = tmids
+            tdata.append(data[k])
+        t = loader.get_template('folding/status.htm')
+        c = RequestContext(request, { 'data': tdata })
+        return HttpResponse( t.render(c) )
+    return HttpResponse( 'No data' )
+</code></pre>
+
+<p>Соответственно нужен шаблон для вывода. Вот и он:</p>
+
+<pre><code>&lt;ol&gt;
+{% for host in data %}
+    &lt;li&gt;
+        Host: {{host.host}}
+        &lt;ol&gt;
+        {% for mid in host.mids %}
+            &lt;li&gt;MachineID: {{mid.mid}}, WU Name: {{mid.title}}&lt;br&gt; Progress: {{mid.progress}}% Last update: {{ mid.last_update|date:&quot;Y-m-d H:i:s&quot; }} Next update: {{ mid.next_update|date:&quot;Y-m-d H:i:s&quot; }}&lt;/li&gt;
+        {% endfor %}
+        &lt;/ol&gt;
+    &lt;/li&gt;
+{% endfor %}
+&lt;/ol&gt;
+</code></pre>
+
+<p>По-спартански, зато работает.
+Шаблон у меня лежит в folding/templates/folding/status.htm
+Для того чтобы это работало, необходимо добавить приложение folding в settings.py в INSTALLED_APPS.</p>
+
+<p>Итак теперь по адресу сайт/folding/collect/ собирается статистика, а по адресу сайт/folding/display/ она отображается, причём только зарегистрированному пользователю. На моём сайте это только я.</p>
+
+<p>Для целей мониторинга этого вполне достаточно, но я решил сделать ещё одну полезную штуку. А именно попрактиковаться в написании шаблонных тегов.
+Приведённый далее код экстраполирует полученные результаты с целью показать ближайшее время окончания расчёта задания.</p>
+
+<pre><code>from django import template
+from django.core.cache import cache
+from datetime import datetime
+pre.
+register = template.Library()
+pre.
+@register.inclusion_tag('folding/closiest_wu.htm')
+def folding_closiest_wu():
+    data = cache.get('folding')
+    if data == None:
+        return {
+            'data': False
+        }
+    min_time = False
+    mid_to_show = False
+    for host in data:
+        for mid in data[host]['mids']:
+            lmid = data[host]['mids'][mid]
+            if lmid.has_key( 'next_update' ) == True and lmid['next_update'] != 0 and lmid['next_update'] &gt; datetime.now():
+                prog = lmid['progress']
+                speed = lmid['next_update'] - lmid['last_update']
+                time_rest = ( 100 - prog ) * speed
+                if min_time == False or ( time_rest.seconds &gt; 0 and time_rest &lt; min_time ):
+                    min_time = time_rest
+                    mid_to_show = lmid
+    if mid_to_show != False:
+        mid_to_show['end'] = mid_to_show['last_update'] + min_time
+        return {
+            'data': mid_to_show
+        }
+    else:
+        return {
+            'data': False
+        }
+</code></pre>
+
+<p>Тег этот находится в файле folding/templatetags/tag_folding.py
+Подключить его в шаблоне можно при помощи конструкции</p>
+
+<p><code>{% load tag_folding %}{% folding_closiest_wu %}</code></p>
+
+<p>Результат можно видеть на главной странице моего блога <a href="http://akademic.name/">http://akademic.name/</a> сразу после последнего поста из juick.</p>
+
+    
+    <span class="next_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2010/raskladka-mashinopis-dlya-ktouch/index.html" rel="next">Раскладка &#34;машинопись&#34; для ktouch</a>
+    </span>
+	
+	
+    <span class="prev_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2010/monitoring-zadanij-foldinghome/index.html" rel="previous">Мониторинг заданий Folding@home часть 1</a>
+    </span>
+	
+</article>
+
+        </main>
+        <footer>
+        Будьте внимательны, многое из того, что написано в этом блоге, является личным мнением автора и не претендует на истину.
+        <img src="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/yopiright.jpg" width="12" height="12"/> 2008
+        </footer>
+    </body>
+</html>

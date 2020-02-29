@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ceylon v.s. Kotlin mmap.page</title>
+    <link rel="stylesheet" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/css/style.css">
+    <link rel="alternate" type="application/rss+xml" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml">
+    <link rel="alternate" type="application/git+http" href="https://github.com/weakish/weakish.github.com.git"/>
+</head>
+<body>
+  <div class="container-lg px-3 my-5 markdown-body">
+
+    <h1><a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/">mmap.page</a></h1>
+    <h1 id="ceylon-vs-kotlin">
+        
+        
+          Ceylon v.s. Kotlin
+        
+        
+      </h1>
+    
+      <h2 id="void-function">
+        
+        
+          void function <a href="#void-function" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Kotlin uses <code>Unit</code> for functions returning nothing, like many functional languages,
+while Ceylon uses <code>void</code> keyword.
+void functions in Ceylon actually returns <code>Anything</code>.
+This allows to use other non-void functions when void functions are expected,
+and other non-void functions to accept void function as parameter.</p>
+<p>Ceylon's <code>Anything</code> approach is flexible,
+but it may not fit in a more disciplined coding style.
+If non-void functions are used when void functions are expected,
+then we are using side effects with non-void functions.
+But a non-void function should avoid exposing side effects.</p>
+<p>We can declare our own <code>Unit</code> class in Ceylon:</p>
+<div class="language-ceylon highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">abstract</span> <span class="kd">class</span> <span class="nc">Unit</span><span class="o">()</span> <span class="kd">of</span> <span class="n">unit</span> <span class="o">{}</span>
+<span class="kd">object</span> <span class="nc">unit</span> <span class="kd">extends</span> <span class="nd">Unit</span><span class="o">()</span> <span class="o">{}</span>
+
+<span class="nd">Unit</span> <span class="n">f</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">print</span><span class="o">(</span><span class="s">"hi"</span><span class="o">);</span>
+    <span class="k">return</span> <span class="n">unit</span><span class="o">;</span>
+<span class="o">}</span>
+
+<span class="nd">shared</span> <span class="kt">void</span> <span class="n">run</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">f</span><span class="o">();</span>
+<span class="o">}</span>
+</code></pre></div></div>
+<p>Like assignment returning a value, Ceylon's behavior may also be influenced by C.
+In C, any function can be converted to <code>void</code> via <code>(void) f</code>, discarding its return value.</p>
+    
+      <h2 id="variadic-arguments">
+        
+        
+          Variadic arguments <a href="#variadic-arguments" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Kotlin uses <code>vararg</code> keyword to mark variadic argument, while Ceylon just types
+them with <code>T*</code> or <code>T+</code> (at least have an argument).  This is an example of
+Ceylon's regularity of type system. Kotlin uses <code>Array&lt;T&gt;</code> for <code>vararg p: T</code>
+underhood but special array types for basic types, e.g. <code>IntArray</code> for <code>vararg p: Int</code>. However, <code>p: Array&lt;T&gt;</code> and <code>vararg p: T</code> behaves differently. In other
+words, given a function <code>Array&lt;T&gt; -&gt; Unit</code>, we do not know how to invoke it
+just from its signature.</p>
+    
+      <h2 id="function-reference">
+        
+        
+          Function reference <a href="#function-reference" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Kotlin's function reference syntax is strange:</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">fun</span> <span class="nf">gf</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nc">Double</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="p">(</span><span class="nc">Double</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="nc">Double</span><span class="p">):</span> <span class="nc">Double</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="nf">gf</span><span class="p">(</span><span class="m">2.0</span><span class="p">,</span> <span class="o">::</span><span class="n">findFixPoint</span><span class="p">)</span>
+</code></pre></div></div>
+<p>Without <code>::</code> it will not work.</p>
+<p>Languages using special function reference syntax usually saves <code>f</code> for <code>f()</code>.
+But that is not allowed in Kotlin, either.
+Instead, Kotlin saves <code>f</code> for a variable/property <code>f</code> with the same name!</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">val</span> <span class="py">i</span> <span class="p">=</span> <span class="m">2</span>
+<span class="k">fun</span> <span class="nf">i</span><span class="p">():</span> <span class="nc">Int</span> <span class="p">{</span> <span class="k">return</span> <span class="m">2</span> <span class="p">};</span>
+<span class="nf">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="nf">print</span><span class="p">(</span><span class="nf">i</span><span class="p">())</span>
+</code></pre></div></div>
+<p>Still Kotlin compiler cannot resolve the function reference
+if there is a property which has the same name:</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">fun</span> <span class="nf">h</span><span class="p">(</span><span class="n">f</span><span class="p">:</span> <span class="p">()</span> <span class="p">-&gt;</span> <span class="nc">Int</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nf">print</span><span class="p">(</span><span class="nf">f</span><span class="p">())</span>
+<span class="p">}</span>
+<span class="nf">h</span><span class="p">(</span><span class="o">::</span><span class="n">i</span><span class="p">)</span> <span class="c1">// error: overload resolution ambiguity</span>
+</code></pre></div></div>
+<p>Also, Kotlin only allows reference to <code>Foo::bar</code>
+[not <code>foo::bar</code>][bound-callable-references].</p>
+<p>For anonymous function, there is no ambiguity.
+Thus the function reference is normal.</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">val</span> <span class="py">f</span> <span class="p">=</span> <span class="k">fun</span><span class="p">():</span> <span class="nc">Int</span> <span class="p">{</span> <span class="k">return</span> <span class="m">1</span> <span class="p">}</span>
+<span class="nf">h</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+</code></pre></div></div>
+<p>Ceylon's function reference is normal.</p>
+<p>Ceylon does not support overloading. And function reference will not work for
+Java overloading functions.</p>
+    
+      <h2 id="inline-functions">
+        
+        
+          Inline functions <a href="#inline-functions" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Kotlin supports inline functions.</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">inline</span> <span class="k">fun</span> <span class="nf">foo</span><span class="p">(</span><span class="n">inlined</span><span class="p">:</span> <span class="p">()</span> <span class="p">-&gt;</span> <span class="nc">Unit</span><span class="p">,</span> <span class="k">noinline</span> <span class="n">notInlined</span><span class="p">:</span> <span class="p">()</span> <span class="p">-&gt;</span> <span class="nc">Unit</span><span class="p">)</span> <span class="p">{}</span>
+<span class="k">inline</span> <span class="k">fun</span> <span class="nf">f</span><span class="p">(</span><span class="k">crossinline</span> <span class="n">body</span><span class="p">:</span> <span class="p">()</span> <span class="p">-&gt;</span> <span class="nc">Unit</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">val</span> <span class="py">f</span> <span class="p">=</span> <span class="k">object</span><span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+        <span class="c1">// body is called in another context `object: Runnable`,</span>
+        <span class="c1">// thus we need the `crossinline` keyword.</span>
+        <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">=</span> <span class="nf">body</span><span class="p">()</span>
+    <span class="p">}</span>
+    <span class="c1">// ...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Kotlin's inline function supports reified generics:</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">inline</span> <span class="k">fun</span> <span class="p">&lt;</span><span class="err">reified</span> <span class="nc">T</span><span class="p">&gt;</span> <span class="nc">TreeNode</span><span class="p">.</span><span class="nf">findParentOfType</span><span class="p">():</span> <span class="nc">T</span><span class="p">?</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="py">p</span> <span class="p">=</span> <span class="n">parent</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">p</span> <span class="p">!=</span> <span class="k">null</span> <span class="p">&amp;&amp;</span> <span class="n">p</span> <span class="p">!</span><span class="k">is</span> <span class="nc">T</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">p</span> <span class="p">=</span> <span class="n">p</span><span class="o">?.</span><span class="n">parent</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">p</span> <span class="k">as</span> <span class="nc">T</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Ceylon does not support inline functions, and all generics are reified, except
+interoperation with Java code.</p>
+<p>IMO, languages should make function calls cheap, instead of bring in confusing
+inline features.</p>
+    
+      <h2 id="object">
+        
+        
+          Object <a href="#object" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Kotlin's object looks like class, and provides an <code>invoke</code> method to mimic
+function call with object initialization.</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">object</span> <span class="nc">SingletonExample</span> <span class="p">{</span>
+   <span class="k">fun</span> <span class="nf">singletonMethod</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="s">"We cannot initialize a singleton."</span>
+   <span class="p">}</span>
+   <span class="k">operator</span> <span class="k">fun</span> <span class="nf">invoke</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="s">"`invoke` will be called when we write `SingletonExample()`."</span>
+   <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>I dislike this feature.
+Now every time I see <code>CapsName(something)</code>
+I am not sure it returns an instance of <code>CapsName</code>.
+It may return anything!</p>
+<p>Ceylon's object does not have a <code>invoke</code> method.</p>
+<div class="language-ceylon highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">shared</span> <span class="kd">object</span> <span class="nc">consoleWriter</span> <span class="kd">satisfies</span> <span class="nd">Writer</span> <span class="o">{</span>
+    <span class="n">formatter</span> <span class="o">=</span> <span class="nd">StringFormatter</span><span class="o">();</span>
+    <span class="n">write</span><span class="o">(</span><span class="nd">String</span> <span class="n">string</span><span class="o">)</span> <span class="o">=&gt;</span> <span class="n">process</span><span class="o">.</span><span class="n">write</span><span class="o">(</span><span class="n">string</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div></div>
+<p>The downside of object (anonymous class) in Ceylon is if we ever need to write
+code that refers to the concrete type consoleWriter, we must use the very ugly
+syntax <code>\IconsoleWriter</code> as the type name.
+A toplevel object in Ceylon is a singleton.</p>
+<p>Object (anonymous class) in Ceylon is actually a value constructor:</p>
+<div class="language-ceylon highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// object thing {}
+</span><span class="kd">class</span> <span class="err">\</span><span class="nc">Ithing</span> <span class="o">{</span>
+    <span class="nd">shared</span> <span class="kt">new</span> <span class="n">thing</span> <span class="o">{}</span>
+<span class="o">}</span>
+<span class="nd">\Ithing</span> <span class="n">thing</span> <span class="o">=&gt;</span> <span class="nd">\Ithing</span><span class="o">.</span><span class="n">thing</span><span class="o">;</span>
+</code></pre></div></div>
+<p>Kotlin also has object expression.</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">val</span> <span class="py">adHoc</span> <span class="p">=</span> <span class="kd">object</span> <span class="err">{
+    var x: </span><span class="nc">Int</span> <span class="p">=</span> <span class="m">0</span>
+    <span class="kd">var</span> <span class="py">y</span><span class="p">:</span> <span class="nc">Int</span> <span class="p">=</span> <span class="m">0</span>
+<span class="p">}</span>
+<span class="k">open</span> <span class="kd">class</span> <span class="nc">A</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nc">Int</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">public</span> <span class="k">open</span> <span class="kd">val</span> <span class="py">y</span><span class="p">:</span> <span class="nc">Int</span> <span class="p">=</span> <span class="n">x</span>
+<span class="p">}</span>
+
+<span class="kd">interface</span> <span class="nc">B</span>
+
+<span class="kd">val</span> <span class="py">ab</span> <span class="p">=</span> <span class="kd">object</span> <span class="err">: </span><span class="nc">A</span><span class="p">(</span><span class="m">1</span><span class="p">),</span> <span class="nc">B</span> <span class="p">{</span>
+    <span class="k">override</span> <span class="kd">val</span> <span class="py">y</span> <span class="p">=</span> <span class="m">15</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Object expression in Ceylon:</p>
+<div class="language-ceylon highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">return</span> <span class="kd">object</span> <span class="nc">extends</span> <span class="nd">Foo</span><span class="o">()</span> <span class="kd">satisfies</span> <span class="nd">Bar</span> <span class="o">{</span>
+    <span class="c1">// ...
+</span><span class="o">};</span>
+</code></pre></div></div>
+<p>An object expression is basically a shorthand for a local object declaration.</p>
+<div class="language-ceylon highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">object</span> <span class="nc">foo</span> <span class="kd">extends</span> <span class="nd">Foo</span><span class="o">()</span> <span class="kd">satisfies</span> <span class="nd">Bar</span> <span class="o">{</span>
+    <span class="c1">// ...
+</span><span class="o">};</span>
+<span class="k">return</span> <span class="n">foo</span><span class="o">;</span>
+</code></pre></div></div>
+<p>Kotlin uses component object to mimic Java static methods:</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="nc">ExampleClass</span><span class="p">(</span><span class="kd">val</span> <span class="py">x</span><span class="p">:</span> <span class="nc">Int</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">companion</span> <span class="k">object</span> <span class="p">{</span>
+        <span class="c1">// still a real object at runtime</span>
+        <span class="k">fun</span> <span class="nf">aMethodLooksLikeStaticButNot</span><span class="p">()</span> <span class="p">=</span> <span class="nf">println</span><span class="p">(</span><span class="s">"not static"</span><span class="p">)</span>
+        <span class="nd">@JvmStatic</span> <span class="k">fun</span> <span class="nf">aMethodToBeCompiledToStaticMethodOnJVM</span><span class="p">()</span> <span class="p">{</span>
+            <span class="nf">println</span><span class="p">(</span><span class="s">"compiled to static methods on JVM"</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="nc">ExampleClass</span><span class="p">.</span><span class="nf">aMethodLooksLikeStaticButNot</span><span class="p">()</span>
+<span class="nc">ExampleClass</span><span class="p">.</span><span class="nf">aMethodToBeCompiledToStaticMethodOnJVM</span><span class="p">()</span>
+</code></pre></div></div>
+<p>Ceylon dose not support this.</p>
+<p>Both Kotlin and Ceylon support top level function declaration,
+something like package level static method.</p>
+<p>Ceylon 1.3.1 introduces static member.</p>
+<p>Also, Kotlin supports extension method.
+Extension method on Kotlin is resolved statically,
+only providing a way to call with <code>Class.method</code> syntax,
+not actually modifying the extended class.</p>
+<p>Similarly to functions, Kotlin supports extension properties. Again, Ceylon
+does not support this.</p>
+    
+      <h2 id="final-class">
+        
+        
+          Final class <a href="#final-class" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Classes in Kotlin are <code>final</code> by default.
+Also, Kotlin requires explicit <code>open</code> modifier for overridable members.
+And a member marked override is itself open.
+Also, properties declared in Interface are open.</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">open</span> <span class="kd">class</span> <span class="nc">OpenClass</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nc">Int</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">open</span> <span class="k">fun</span> <span class="nf">overridableMember</span><span class="p">()</span> <span class="p">{}</span>
+<span class="p">}</span>
+<span class="k">open</span> <span class="kd">class</span> <span class="nc">ChildOfOpenClass</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nc">Int</span><span class="p">)</span> <span class="p">:</span> <span class="nc">OpenClass</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">overridableMember</span><span class="p">()</span> <span class="p">{}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Ceylon classes are by default open, unless annotated with <code>final</code>.
+However, Ceylon also requires explicit annotation for overridable members:</p>
+<ul>
+<li><code>formal</code> for declaration without implementation,</li>
+<li><code>default</code> for <code>open</code> in Kotlin,</li>
+<li><code>actual</code> for <code>override</code> in Kotlin (no <code>default</code> unless denoted).</li>
+</ul>
+<p>Also, attributes in interface are not open by default in Kotlin.
+You need to explicitly annotate it as <code>formal</code>.</p>
+    
+      <h2 id="codesupercode-ambiguity">
+        
+        
+          <code>super</code> ambiguity <a href="#codesupercode-ambiguity" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Kotlin uses <code>super&lt;A&gt;.f()</code>.</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">open</span> <span class="kd">class</span> <span class="nc">A</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">open</span> <span class="k">fun</span> <span class="nf">f</span><span class="p">()</span> <span class="p">{</span> <span class="nf">print</span><span class="p">(</span><span class="s">"A"</span><span class="p">)</span> <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">interface</span> <span class="nc">B</span> <span class="p">{</span>
+    <span class="c1">// Interface members are open by default.</span>
+    <span class="k">fun</span> <span class="nf">f</span><span class="p">()</span> <span class="p">{</span> <span class="nf">print</span><span class="p">(</span><span class="s">"B"</span><span class="p">)</span> <span class="p">}</span>  <span class="c1">// Allowing method implementations, like Java 8.</span>
+<span class="p">}</span>
+
+<span class="kd">class</span> <span class="nc">ChildOfAB</span><span class="p">()</span> <span class="p">:</span> <span class="nc">A</span><span class="p">(),</span> <span class="nc">B</span> <span class="p">{</span>
+    <span class="c1">// The compiler requires `f()` to be overridden.</span>
+    <span class="c1">// So you do not need to remember rules of priorities</span>
+    <span class="c1">// and check super class definitions for possible conflicts.</span>
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">f</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">super</span><span class="p">&lt;</span><span class="nc">A</span><span class="p">&gt;.</span><span class="nf">f</span><span class="p">()</span>
+        <span class="k">super</span><span class="p">&lt;</span><span class="nc">B</span><span class="p">&gt;.</span><span class="nf">f</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Ceylon uses <code>(super of A).f()</code>.</p>
+<div class="language-ceylon highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="nc">SelfReference</span><span class="o">()</span> <span class="o">{</span>
+    <span class="c1">// Ceylon has keywords `this` and `super`.
+</span>    <span class="c1">// To deal with ambiguity of what `super` refers to, use the widening operator.
+</span>    <span class="kd">class</span> <span class="nc">Impl</span><span class="o">()</span> <span class="kd">extends</span> <span class="nd">Class</span><span class="o">()</span> <span class="kd">satisfies</span> <span class="nd">Interface</span> <span class="o">{</span>
+    <span class="c1">// Suppose Impl inherits two different implementations of `ambiguous`
+</span>    <span class="c1">// from Class and Interface.
+</span>        <span class="o">(</span><span class="kd">super</span> <span class="kd">of</span> <span class="nd">Interface</span><span class="o">).</span><span class="n">ambiguous</span><span class="o">()</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+    
+      <h2 id="getter-and-setter">
+        
+        
+          getter and setter <a href="#getter-and-setter" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Kotlin uses <code>get()</code> and <code>set()</code> functions with optional backing field:</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="nc">GettersAndSetters</span><span class="p">(</span><span class="kd">val</span> <span class="py">x</span><span class="p">:</span> <span class="nc">Int</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="py">isEmpty</span><span class="p">:</span> <span class="nc">Boolean</span> <span class="p">=</span> <span class="k">null</span>
+        <span class="k">get</span><span class="p">()</span> <span class="p">=</span> <span class="k">this</span><span class="p">.</span><span class="n">x</span> <span class="p">==</span> <span class="m">0</span>
+        <span class="c1">// By convention, the name of the setter parameter is value,</span>
+        <span class="c1">// but you can choose a different name if you prefer.</span>
+        <span class="k">set</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+                <span class="c1">// Kotlin provides an automatic backing `field`.</span>
+                <span class="n">field</span> <span class="p">=</span> <span class="k">false</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="c1">// The field identifier can only be used in the accessors of the property.</span>
+                <span class="n">field</span> <span class="p">=</span> <span class="n">value</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Ceylon uses anonymous setter and <code>assign</code> for getter,
+without backing field.</p>
+<pre><code class="language-Ceylon">>class GetterSetterExample() {
+    variable String? rank = null;  // Ceylon never auto initializes to null.
+    variable String? comment = null;
+    shared String review =&gt; &quot;``rank``: ``comment``&quot;;
+    assign review {
+        value tokens = review.split(&quot;:&quot;).iterator();
+        if (is String first = tokens.next()) {  // narrowing down types
+            rank = first;
+        }
+        if (is String second = tokens.next()) {
+            comment = second;
+        }
+    }
+}
+</code></pre>
+<p>In Kotlin, immutable variable <code>val</code> does not allow setter.
+Ceylon's getter and setter are more flexible.
+In the above example, we have a setter for immutable <code>review</code>.
+The setter is valid, since it actually changes value of mutable <code>rank</code> and <code>comment</code>.</p>
+    
+      <h2 id="const">
+        
+        
+          const <a href="#const" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Kotlin has compile time <code>const</code>:</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">const</span> <span class="kd">val</span> <span class="py">VERSION</span><span class="p">:</span> <span class="nc">String</span> <span class="p">=</span> <span class="s">"alpha"</span>
+</code></pre></div></div>
+<p><code>const</code> only allows <code>String</code> or a primitive type.</p>
+<p>Ceylon does not have this.</p>
+<p>I have no idea why this need to be explicitly marked in Kotlin.
+The compiler cannot automatically optimize this?</p>
+    
+      <h2 id="late-init">
+        
+        
+          late init <a href="#late-init" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Kotlin has <code>lateinit</code> and Ceylon has <code>late</code> annotation.
+But they are two different things.</p>
+<p>Kotlin only allows non-nullable, not-primitive types to use <code>lateinit</code>. Kotlin
+uses the <code>null</code> value to mark that a <code>lateinit</code> property has not been
+initialized and to throw the appropriate exception when the property is
+accessed. But primitive Java types can't have a 'null' value. In other words,
+the property must be not nullable in Kotlin level, but nullable in Java level.</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="kd">class</span> <span class="nc">MyTest</span> <span class="p">{</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">subject</span><span class="p">:</span> <span class="nc">TestSubject</span>
+
+    <span class="nd">@SetUp</span> <span class="k">fun</span> <span class="nf">setup</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">subject</span> <span class="p">=</span> <span class="nc">TestSubject</span><span class="p">()</span>
+    <span class="p">}</span>
+
+    <span class="nd">@Test</span> <span class="k">fun</span> <span class="nf">test</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">subject</span><span class="p">.</span><span class="nf">method</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Ceylon uses <code>late</code> to suppress definite initialization checks.
+In Ceylon, all declaration is done after initialization,
+which may cause problems on circular reference.</p>
+<div class="language-ceylon highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="nc">Child</span><span class="o">(</span><span class="n">parent</span><span class="o">)</span> <span class="o">{</span>
+    <span class="nd">shared</span> <span class="n">late</span> <span class="nd">Parent</span> <span class="n">parent</span><span class="o">;</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">Parent</span><span class="o">()</span> <span class="o">{</span>
+    <span class="c1">// This won't work,
+</span>    <span class="c1">// because `this` refers to an instance of Parent in its own initializer section,
+</span>    <span class="c1">// where Parent has not been initialized yet.
+</span>    <span class="c1">// shared Child child = Child(this);
+</span>    <span class="nd">shared</span> <span class="nd">Child</span> <span class="n">child</span> <span class="o">=</span> <span class="nd">Child</span><span class="o">();</span>
+    <span class="n">child</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="k">this</span><span class="o">;</span> <span class="c1">// ok, since parent is late
+</span><span class="o">}</span>
+</code></pre></div></div>
+    
+      <h2 id="declaration-site-variance">
+        
+        
+          declaration-site variance <a href="#declaration-site-variance" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Both Kotlin and Ceylon uses declaration-site variance <code>&lt;out Bar&gt;</code>.</p>
+<p>Ceylon also support use-site variance for interoperation with Java code.
+So does Kotlin, with a slightly different syntax <code>&lt;out Bar!&gt;!</code>.</p>
+    
+      <h2 id="generics-constrains">
+        
+        
+          Generics constrains <a href="#generics-constrains" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Kotlin uses common <code>T : Upper</code> syntax:</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">fun</span> <span class="p">&lt;</span><span class="nc">T</span> <span class="err">:</span> <span class="nc">Comparable</span><span class="p">&lt;</span><span class="nc">T</span><span class="p">&gt;&gt;</span> <span class="nf">sort</span><span class="p">(</span><span class="n">list</span><span class="p">:</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">T</span><span class="p">&gt;)</span> <span class="p">{}</span>
+</code></pre></div></div>
+<p>More than one upper bounds need to be specify in a where clause:</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">fun</span> <span class="p">&lt;</span><span class="nc">T</span><span class="p">&gt;</span> <span class="nf">cloneWhenGretter</span><span class="p">(</span><span class="n">list</span><span class="p">:</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">T</span><span class="p">&gt;,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nc">T</span><span class="p">):</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">T</span><span class="p">&gt;</span>
+        <span class="k">where</span> <span class="nc">T</span> <span class="p">:</span> <span class="nc">Cloneable</span><span class="p">,</span> <span class="nc">T</span> <span class="p">:</span> <span class="nc">Comparable</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">list</span><span class="p">.</span><span class="nf">filter</span><span class="p">{</span><span class="n">it</span> <span class="p">&gt;</span> <span class="n">threshold</span><span class="p">}.</span><span class="nf">map</span><span class="p">{</span><span class="n">it</span><span class="p">.</span><span class="nf">clone</span><span class="p">()}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Ceylon has a more consistent syntax,
+and uses intersection type for more than one upper bounds.</p>
+<pre><code>Value genericFunction&lt;Value&gt;(Value num, Value denom)
+        given Value satisfies Comparable&lt;Value&gt; &amp; Summable&lt;Value&gt;
+        =&gt; if num &gt; denom then num else num + denom;
+</code></pre>
+<p>Both Kotlin and Ceylon does not support raw type.
+Kotlin has a similar star projection syntax:</p>
+<p>Given <code>interface Function&lt;in S, out T&gt;</code>, <code>Function&lt;*, *&gt;</code> is a shortcut for
+<code>Function&lt;in Nothing, out Any?&gt;</code></p>
+<p>Ceylon just supports explicit <code>Function&lt;in Nothing, out Anything&gt;</code>.</p>
+<p>Also note that Ceylon uses <code>Anything</code> instead of <code>Any?</code> in Kotlin.
+<code>Any</code> in Kotlin is not truly <code>Any</code> because it does not hold <code>null</code>.
+Ceylon's <code>Anything</code> is an enumerated type:</p>
+<div class="language-ceylon highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">shared</span> <span class="nd">abstract</span> <span class="kd">class</span> <span class="nc">Anything</span><span class="o">()</span>
+        <span class="kd">of</span> <span class="nd">Object</span> <span class="o">|</span> <span class="nd">Null</span> <span class="o">{}</span>
+</code></pre></div></div>
+<p><code>of Object | Null</code> can be used in generics as enumerated constrain.</p>
+    
+      <h2 id="anonymous-function">
+        
+        
+          Anonymous function <a href="#anonymous-function" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Kotlin has both anonymous function and lambda:</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// anonymous function</span>
+<span class="k">fun</span><span class="p">():</span> <span class="nc">Unit</span> <span class="p">{</span> <span class="nf">println</span><span class="p">(</span><span class="n">numbers</span><span class="p">.</span><span class="n">size</span><span class="p">)</span> <span class="p">}</span>
+<span class="c1">// lambda</span>
+<span class="p">{</span> <span class="n">n</span><span class="p">:</span> <span class="nc">Int</span> <span class="p">-&gt;</span> <span class="n">n</span> <span class="p">&lt;=</span> <span class="m">0</span> <span class="p">}</span>
+<span class="c1">// one parameter lambda can be abbreviated,</span>
+<span class="c1">// also parameter type can be omitted if it can be inferred by compiler</span>
+<span class="p">{</span> <span class="n">it</span> <span class="p">&lt;=</span> <span class="m">0</span> <span class="p">}</span>
+</code></pre></div></div>
+<p>The difference between lambda and anonymous function is:</p>
+<ul>
+<li>lambda cannot specify a return type</li>
+<li>control flow <code>return</code> in lambda returns the outer function</li>
+</ul>
+<p>Ceylon just have anonymous function.</p>
+<div class="language-ceylon highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Same as lambda in Kotlin, an anonymous function cannot specify return type.
+</span><span class="o">(</span><span class="nd">Integer</span> <span class="n">n</span><span class="o">)</span> <span class="o">=&gt;</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="mi">0</span>
+<span class="c1">// Except `void`.
+</span><span class="kt">void</span> <span class="o">(</span><span class="nd">Integer</span> <span class="n">n</span><span class="o">,</span> <span class="nd">Integer</span> <span class="n">m</span><span class="o">)</span> <span class="o">=&gt;</span> <span class="n">print</span><span class="o">(</span><span class="n">m</span> <span class="o">+</span> <span class="n">n</span><span class="o">)</span>
+<span class="c1">// Mark it with `function`
+</span><span class="kt">function</span> <span class="o">(</span><span class="nd">Integer</span> <span class="n">n</span><span class="o">)</span> <span class="o">=&gt;</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="mi">0</span>
+<span class="c1">// Like `function`, `void` can be omitted.
+</span><span class="o">()</span> <span class="o">=&gt;</span> <span class="n">print</span><span class="o">(</span><span class="s">"Hi!"</span><span class="o">)</span>
+<span class="c1">// Same as above, with block
+</span><span class="o">()</span> <span class="o">{</span> <span class="n">print</span><span class="o">(</span><span class="s">"Hi!"</span><span class="o">);</span> <span class="o">}</span>
+<span class="c1">// Similar to Kotlin's anonymus function
+</span><span class="kt">function</span> <span class="o">()</span> <span class="o">{</span> <span class="n">print</span><span class="o">(</span><span class="s">"Hi!"</span><span class="o">);</span> <span class="o">}</span>
+</code></pre></div></div>
+    
+      <h2 id="case">
+        
+        
+          case <a href="#case" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Kotlin uses <code>when</code> for both <code>case</code> and <code>cond</code> in Scheme.</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">when</span> <span class="p">{</span>
+    <span class="n">i</span> <span class="p">==</span> <span class="m">0</span> <span class="p">-&gt;</span> <span class="k">false</span>
+    <span class="k">else</span> <span class="p">-&gt;</span> <span class="k">true</span>
+<span class="p">}</span>
+<span class="k">when</span> <span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+    <span class="m">0</span> <span class="p">-&gt;</span> <span class="k">false</span>
+    <span class="k">else</span> <span class="p">-&gt;</span> <span class="k">true</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Ceylon just uses <code>switch</code> for <code>case</code>:</p>
+<div class="language-ceylon highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="kt">void</span> <span class="n">printID</span><span class="o">(</span><span class="nd">String</span><span class="o">|</span><span class="nd">Integer</span> <span class="n">id</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">switch</span> <span class="o">(</span><span class="n">id</span><span class="o">)</span>
+      <span class="k">case</span> <span class="o">(</span><span class="k">is</span> <span class="nd">String</span><span class="o">)</span> <span class="o">{</span>
+          <span class="n">println</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
+      <span class="o">}</span>
+      <span class="k">case</span> <span class="o">(</span><span class="k">is</span> <span class="nd">Integer</span><span class="o">)</span> <span class="o">{</span>
+          <span class="k">switch</span> <span class="o">(</span><span class="n">id</span><span class="o">)</span>
+          <span class="k">case</span> <span class="o">(</span><span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">println</span><span class="o">(</span><span class="s">"Error"</span><span class="o">);</span>
+          <span class="o">}</span>
+          <span class="k">else</span> <span class="o">{</span>
+            <span class="n">println</span><span class="o">(</span><span class="s">"id number: ``id``"</span><span class="o">);</span>
+          <span class="o">}</span>
+      <span class="o">}</span>
+      <span class="c1">// No `else` clause since all cases of a union type is exhausted.
+</span><span class="o">}</span>
+</code></pre></div></div>
+<p>Ceylon uses <code>switch</code> as statements,
+while Kotlin uses <code>when</code> as both statements and expressions.</p>
+<p><code>case</code> must be both disjoint and exhausted in Ceylon.</p>
+<div class="language-ceylon highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">shared</span> <span class="nd">abstract</span> <span class="kd">class</span> <span class="nc">Comparison</span><span class="o">(</span><span class="nd">shared</span> <span class="nd">actual</span> <span class="nd">String</span> <span class="n">string</span><span class="o">)</span>
+        <span class="kd">of</span> <span class="n">larger</span> <span class="o">|</span> <span class="n">smaller</span> <span class="o">|</span> <span class="n">equal</span> <span class="o">{}</span>
+<span class="k">switch</span> <span class="o">(</span><span class="n">x</span><span class="o">&lt;=&gt;</span><span class="n">y</span><span class="o">)</span>  <span class="c1">//  `&lt;=&gt;`  produces an instance of `Comparison`.
+</span><span class="k">case</span> <span class="o">(</span><span class="n">equal</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">print</span><span class="o">(</span><span class="s">"same same"</span><span class="o">);</span>
+<span class="o">}</span>
+<span class="k">case</span> <span class="o">(</span><span class="n">smaller</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">print</span><span class="o">(</span><span class="s">"x smaller"</span><span class="o">);</span>
+<span class="o">}</span>
+<span class="k">case</span> <span class="o">(</span><span class="n">larger</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">print</span><span class="o">(</span><span class="s">"y smaller"</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div></div>
+<p>Cases must be exhausted in Kotlin only in <code>when</code> expression.</p>
+<p>In Ceylon, <code>switch</code> can declare a scoped local variable:</p>
+<div class="language-ceylon highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">switch</span> <span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="n">process</span><span class="o">.</span><span class="n">arguments</span><span class="o">.</span><span class="n">first</span><span class="o">)</span>
+<span class="k">case</span> <span class="o">(</span><span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">print</span><span class="o">(</span><span class="s">"Hello world!"</span><span class="o">);</span>
+<span class="o">}</span>
+<span class="k">else</span> <span class="o">{</span>
+    <span class="n">print</span><span class="o">(</span><span class="s">"Hello ``name``!"</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div></div>
+<p>This is frequently used in Ceylon,
+because Ceylon's case condition does not allow arbitrary expressions.
+Only conditions like <code>exists</code>, <code>is Type</code>, <code>nonempty</code>
+and literal values of basic types are allowed.</p>
+    
+      <h2 id="catch-checked-exceptions-from-java">
+        
+        
+          Catch checked exceptions from Java <a href="#catch-checked-exceptions-from-java" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Kotlin does not have checked exceptions. So, normally, the Java signatures of
+Kotlin functions do not declare exceptions thrown. If you want to call them in
+try catch clause from Java, you need to annotate functions with
+<code>@Throws(IOException::class)</code>.</p>
+<p>The root of the exception hierarchy in Ceylon is <code>ceylon.language::Throwable</code>,
+Unlike Java's <code>Throwable</code>, <code>ceylon.language::Throwable</code> is sealed and the only
+subclasses available to users are <code>ceylon.language::Exception</code> and
+<code>ceylon.language::AssertionError</code>.</p>
+<p>The JVM implementation of <code>ceylon.language::Exception</code> is a
+<code>java.lang.RuntimeException</code>. On the other hand,
+<code>ceylon.language::AssertionError</code> is a <code>java.lang.Error</code> at runtime. This means
+that pure Ceylon code compiled for the JVM can only generate unchecked
+exceptions.</p>
+<p>Impure Ceylon (that is, Ceylon code which access Java code) may throw any
+exception that is thrown by that Java code, including checked exceptions. If a
+Ceylon function may throw checked exceptions, you need to call it in a try
+catch clause in Java.</p>
+    
+      <h2 id="reassignment-of-function-parameters">
+        
+        
+          Reassignment of function parameters <a href="#reassignment-of-function-parameters" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Kotlin does not allow reassignment of function parameters,
+i.e. function parameters are always implicitly <code>val</code>,
+like function parameters are always implicitly <code>let</code> in Swift.</p>
+<p>Ceylon disallows this unless the function parameter is annotated as <code>variable</code>.
+This is consistent with variable declaration.</p>
+    <div class="footer border-top border-gray-light mt-5 pt-3 text-gray">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start">
+        <form id="site-search" action="https://duckduckgo.com/html/" method="get">
+          <input name="q" type="search" value="site:mmap.page " required pattern="site:mmap\.page\s.+">
+          <input type="submit" value="&#x1F50D;" title="search through site content via DuckDuckGo">
+        </form>
+        <p>
+          <a href="mailto:weakish@gmail.com" title="weakish@gmail.com"><img src="https://icongr.am/feather/mail.svg" alt="Feather Icon Mail"></a>
+          <a href="https://savannah.nongnu.org/people/viewgpg.php?user_id=65699" title="2414 AEA0 EA48 5263 9697  F1BA 55F6 EEC2 EA3F 0A87"><img src="https://icongr.am/feather/key.svg" alt="Feather Icon Key"></a>
+          <a href="https://github.com/weakish/" title="GitHub"><img src="https://icongr.am/feather/github.svg" alt="Feather Icon Github"></a>
+          <a href="https://www.instagram.com/jakukyo/" title="Instagram"><img src="https://icongr.am/feather/instagram.svg" alt="Feather Icon Instagram"></a>
+          <a href="https://twitter.com/weakish" title="Twitter"><img src="https://icongr.am/feather/twitter.svg" alt="Feather Icon Twitter"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml" title="RSS 2.0 Feed"><img src="https://icongr.am/feather/rss.svg" alt="Feather Icon RSS"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/uses/" title="uses"><img src="https://icongr.am/feather/book-open.svg" alt="Feather Icon Book Open"></a>
+          
+          
+          <a href="/Me.ZeroNetwork.bit/?Profile/12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv/1GnJD7CXskmG8GywMbTvbP12wneCFW9XzR/weakish@zeroid.bit" title="ZeroMe"><img src="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/images/zeronet_logo.svg" alt="ZeroNet Logo" width="32" height="32"></a>
+        </p>
+      </div>
+        <p>
+        Permission to use, copy, modify, and/or distribute this site for any purpose with or without fee is hereby granted.
+        This site is provided "as is" without express or implied warranty.
+        </p>
+        <p>
+        This site does not use cookies or tracking codes.
+        The hosting service provider (<a href="https://pages.github.com/">GitHub Pages</a>) probably collects server logs,
+        but I do not have access to them.
+        </p>
+        <p>
+        Site source is <a href="https://github.com/weakish/weakish.github.com/">available</a>
+        and feedback is <a href="https://github.com/weakish/weakish.github.com/issues">welcome</a>.
+        </p>
+        <noscript>
+        <p>
+        This site does not use JavaScript.
+        </p>
+        </noscript>
+    </div>
+  </div>
+</body>
+</html>

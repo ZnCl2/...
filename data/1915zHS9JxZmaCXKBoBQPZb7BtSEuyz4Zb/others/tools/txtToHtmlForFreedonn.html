@@ -1,0 +1,81 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Txt to HTML</title>
+
+<script src="../js/jquery.js" language="javascript"></script>
+<script>
+$(document).ready(function(){
+	$("#btn1").click(function(){
+		txtToHtml();
+	})
+});
+
+function txtToHtml(){
+	var s=$("#ta1").val();
+	var sp=$("#txt1").val();
+	
+	var arr=s.split("\n");
+	
+	if(!arr || !arr.length)
+		return;
+	
+	var sbuff="<table>\n";
+	for(var i=0;i<arr.length;i++){
+		var line="<tr>";
+		var arrTds=arr[i].split(sp);
+		for(var j=1;j<arrTds.length;j++){
+			if(j==1)
+				line+="<td><a href='http://127.0.0.1:43110/"+arrTds[0]+"/'>"+unescape(arrTds[j].replace(/\\/g, "%"))+"</a></td>";
+			else
+				line+="<td>"+unescape(arrTds[j].replace(/\\/g, "%"))+"</td>";	
+		}	
+		line+="</tr>\n";
+		sbuff+=line;
+	}
+	sbuff+="</table>";
+	
+	$("#output").html(sbuff);
+	
+	$("#ta2").val(sbuff);
+}
+</script>
+<style>
+
+
+td{
+	border:1px solid #000;
+}
+
+textarea{
+	width:800px;
+	height:600px;
+	border:1px solid #000;
+}
+
+input{
+	width:200px;
+	border:1px solid #000;
+}
+
+</style>
+</head>
+
+<body>
+<div id="input">
+	请输入分隔符：<input type="text" id="txt1" value="__Z0t__" />  请输入文本：
+	<br />
+	<textarea id="ta1"></textarea>
+	<br>
+	<input type="button" value="提交" id="btn1" />
+</div>
+<div id="output">
+	
+</div>
+<div id="sourcecode">
+	<textarea id="ta2"></textarea>
+</div>
+
+</body>
+</html>

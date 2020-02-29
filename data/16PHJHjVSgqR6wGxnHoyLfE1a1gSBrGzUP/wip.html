@@ -1,0 +1,328 @@
+<!doctype html public "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+
+<head>
+
+<title>Postfix work-in-progress</title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+
+</head>
+
+<body>
+
+<h1><img src="postfix-logo.jpg" width="203" height="98" ALT="">Postfix
+work-in-progress</h1> <hr>
+
+<blockquote> <p>
+<a href="#trickle">Advanced master.cf query/update support</a> |
+<a href="#trickle">Trickle attack defense</a> |
+<a href="#postscreen">Postscreen zombie defense</a> |
+<a href="#tls-renegotiation">TLS (SSL) renegotiation attacks</a>
+</p> </blockquote>
+
+<h2><a name="trickle">Advanced master.cf query/update support</a></h2>
+
+<p> [Last update: November 2013] </p>
+
+<p> Support for advanced master.cf query and update operations is
+implemented primarily to support automated system management tools.
+</p>
+
+<p> The idea is to make all Postfix master.cf details accessible
+as a list of "name=value" pairs, where the names are organized into
+structured name spaces.  This allows other programs to query
+information or request updates, without having to worry about the
+exact layout of master.cf files. </p>
+
+<p> First, an example that shows the smtp/inet service in the
+traditional form: </p>
+
+<pre>
+    $ postconf -M smtp/inet
+    smtp       inet  n       -       n       -       -       smtpd
+</pre>
+
+<p> Different variants of this command show different amounts of
+output.  For example, "postconf -M smtp" enumerates all services
+that have a name "smtp" and any service type ("inet", "unix", etc.),
+and "postconf -M" enumerates all master.cf services.  </p>
+
+<p> General rule: each name component that is not present becomes
+a "*" wildcard.  </p>
+
+<p> Coming back to the above example, the postconf -F option can
+now enumerate the smtp/inet service fields as follows: </p>
+
+<pre>
+    $ postconf -F smtp/inet
+    smtp/inet/service = smtp
+    smtp/inet/type = inet
+    smtp/inet/private = n
+    smtp/inet/unprivileged = -
+    smtp/inet/chroot = n
+    ...
+</pre>
+
+<p> This form makes it very easy to change one field in master.cf.
+For example to turn on chroot on the smtp/inet service you use:
+</p>
+
+<pre>
+    $ postconf -F smtp/inet/chroot=y
+</pre>
+
+<p> Moreover, with "-F" you can specify "*" for service name or
+service type to get a wild-card match.  For example, to turn off
+chroot on all Postfix daemons, use this: </p>
+
+<pre>
+    $ postconf -F '*/*/chroot=n'
+</pre>
+
+<p> For a second example, let's look at the submission service.
+This service typically has multiple "-o parameter=value" overrides.
+First the traditional view: </p>
+
+<pre>
+    $ postconf -Mf submission
+    submission inet  n       -       n       -       -       smtpd
+        -o smtpd_tls_security_level=encrypt
+        -o smtpd_sasl_auth_enable=yes
+        ...
+</pre>
+
+<p> The postconf -P option can now enumerate these parameters as
+follows: </p>
+
+<pre>
+    $ postconf -P submission
+    submission/inet/smtpd_sasl_auth_enable = yes
+    submission/inet/smtpd_tls_security_level = encrypt
+    ...
+</pre>
+
+<p> Again, this form makes it very easy to modify one parameter
+setting, for example to change the smtpd_tls_security_level setting
+for the submission/inet service: </p>
+
+<pre>
+    $ postconf -P 'submission/inet/smtpd_tls_security_level=may'
+</pre>
+
+<p> You can create or remove a parametername=parametervalue setting:
+</p>
+
+<p>
+Create:
+</p>
+
+<pre>
+    $ postconf -P 'submission/inet/parametername=parametervalue'
+</pre>
+
+<p>
+Remove:
+</p>
+
+<pre>
+    $ postconf -PX submission/inet/parametername
+</pre>
+
+<p> Finally, adding master.cf entries is possible, but currently
+this does not yet have "advanced" support. It can only be done at
+the level of the traditional master.cf file format.  </p>
+
+<p> For example, to clone the smtp/unix service settings and create
+a new delay/unix service you would enumerate the smtp/unix service
+like this: </p>
+
+<pre>
+    $ postconf -M smtp/unix
+    smtp      unix  -       -       n       -       -       smtp
+</pre>
+
+<p> Then you would copy those fields (except the first field) to
+update or create the delay/unix service: </p>
+
+<pre>
+    $ postconf -M delay/unix="delay   unix   -   -   n   -   -   smtp"
+</pre>
+
+<p> To combine the above in one command: </p>
+
+<pre>
+    $ postconf -M delay/unix="`postconf -M smtp/unix|awk '{$1 = "delay"}'`"
+</pre>
+
+<p> This is perhaps not super-convenient for manual cloning, but
+it should be sufficient for programmatic configuration management.
+</p>
+
+<p> The -X (delete entry) and -# (comment out entry) options already
+exist for main.cf, and they now also work work for entire master.cf
+entries: </p>
+
+<p>
+Remove main.cf or master.cf entry:
+</p>
+
+<pre>
+    $ postconf -X parametername
+    $ postconf -MX delay/unix
+</pre>
+
+<p>
+Comment out main.cf or master.cf entry:
+</p>
+
+<pre>
+    $ postconf -# parametername
+    $ postconf -M# delay/unix
+</pre>
+
+<p> Support to manipulate other daemon options (-v, -D) and non-option
+arguments is not yet implemented. For now, use the "postconf -M"
+traditional view. </p>
+
+<h2><a name="trickle">Trickle attack defense</a></h2>
+
+<p> [Last update: January 2012] </p>
+
+<p> Trickle attacks are old, but have received attention recently
+in the context of web servers. The idea is that an attacker sends
+a request slowly, for example, one byte at a time. Since many
+servers implement per-read time limits, instead of per-transaction
+time limits, an attacker can keep a connection busy for a very long
+time.  Namely, the maximum number of seconds before a read operation
+times out, multiplied by the maximum number of bytes per transaction,
+multiplied by the number of transactions per session. </p>
+
+<p> The <a href="#postscreen">postscreen</a> daemon, available with
+Postfix 2.8 and later, already implements time limits to receive
+one complete SMTP command line. Postscreen uses a default time
+limit of 300s for RFC compliance, but it will switch to a 10s limit
+under overload conditions.  Postscreen limits the number of commands
+per session and never receives mail, so this is a complete solution.
+</p>
+
+<p> Support for per-line time limits in the Postfix SMTP server and
+client is now part of the stable Postfix 2.9 release.  This solves
+most of the problem; it limits the time to send or receive one
+complete SMTP command or reply, but it does not yet limit the total
+amount of time to receive or transmit the content of an email
+message.  In the SMTP server, use the existing Postfix mechanisms
+to reject mail before the SMTP "DATA" command, and to limit the
+number of sessions and MAIL transactions per client.  </p>
+
+<p> The whole thing is implemented in very little code in the
+lowest-layer Postfix routines. With per-line time limits, Postfix
+behaves exactly in the same way as before, except when someone
+trickles the bytes.  </p>
+
+<h2><a name="postscreen">Postscreen zombie defense</a></h2>
+
+<p> [Last update: November 2010] </p>
+
+<p> Postscreen is the code name for a new daemon that sits in front
+of Postfix and that does connection-level filtering. The program
+is currently part of the Postfix 2.8 experimental release.  </p>
+
+<p> The major goals of the program are: </p>
+
+<ul>
+
+<li> <p> Keep the zombies away from the Postfix SMTP server.
+According to the August 2010 report by MessageLabs, 92% of all
+email was spam, and 95% of spam was sent by botnets.  </p>
+
+<li> <p> Improve Postfix scalability by moving potentially
+time-consuming operations such as DNS blocklist lookups and SMTP
+protocol checks out of the SMTP server.  </p>
+
+</ul>
+
+<p> <a href="postscreen-2010.pdf">Early results</a> for several
+weeks of spam were presented at the 2010 LISA conference in San
+Jose:
+
+<ul>
+
+<li> <p> Anomalies in spammer SMTP client implementations.  Spammers
+are in a hurry to send spam, and therefore they cut corners in the
+SMTP protocol.  Postscreen currently detects SMTP clients that
+start talking too early (pregreeters).  Postscreen contains a dummy
+SMTP engine that logs the sender and recipient of rejected mail.
+This dummy engine can also detect spambots that send multiple
+commands (pipelining) and that make other mistakes.  </p>
+
+<li> <p> Parallel lookups from DNS blocklists and whitelists, with
+configurable weights and reject threshold. </p>
+
+<li> <p> Geolocation and time-of-day patterns for spam connections
+to servers in Europe. Geolocation is done off-line, based on logfile
+analysis. </p>
+
+</ul>
+
+<p> Data were collected with help by Ralf Hildebrandt. In an earlier
+pilot experiment in 2009, Ralf reported that by dropping all
+pregreeter connections to one server, he reduced the frequency of
+the "all server ports busy" condition from several times a day to
+once a week.  </p>
+
+<p> There is a lengthy history of prior work in this field. For
+example, <a href="http://www.openbsd.org/spamd/"> OpenBSD spamd</a>,
+<a href="http://mailchannels.com/">MailChannels TrafficControl</a>,
+and work by Michael Tokarev in the early 2000s.
+
+<h2><a name="tls-renegotiation">TLS (SSL) renegotiation attacks</a></h2>
+
+<p> [Last update: November 2009] </p>
+
+<p> Early November 2009 there was big news about a security hole
+in the TLS protocol that allows a man-in-the-middle to prepend data
+to a fully-secure TLS session.  That is, the server certificate
+verifies, and therefore no-one can read or modify the network
+traffic. Or so we thought. The initial discussions were focused on
+the impact on HTTP applications. </p>
+
+<p> While looking at the impact of this for SMTP mail, Wietse came
+up with an attack that redirects and modifies SMTP mail that is
+sent over a fully-secure TLS connection; Victor came up with an
+attack that changes the first command in a TLS session. You can
+find a preliminary analysis at: </p>
+
+<blockquote> <p> <a
+href="http://www.porcupine.org/postfix-mirror/smtp-renegotiate.pdf">
+http://www.porcupine.org/postfix-mirror/smtp-renegotiate.pdf </a>
+</p> </blockquote>
+
+<p>This writeup comes with a little tutorial on SMTP over TLS, and
+on TLS renegotiation attacks. </p>
+
+<p> The impact of TLS-based attacks on SMTP should not be over-stated.
+Presently, most SMTP clients don't verify the TLS certificates of
+SMTP servers.  Such clients are already vulnerable to ordinary
+man-in-the-middle attacks, and TLS renegotiation introduces no new
+threats for them. </p>
+
+<p> The Postfix SMTP server with OpenSSL is not affected by the
+TLS renegotiation attack that redirects and modifies SMTP mail,
+due to accidental details of the Postfix and OpenSSL implementations.
+Other SMTP server implementations may be affected (my report
+describes some of the requirements).  There may of course be other
+attacks that I wasn't aware of when I wrote the analysis. </p>
+
+<p> Most SMTP client implementations, including Postfix, will not
+detect the SMTP-level after-effects from a TLS renegotiation attack.
+Victor and Wietse have looked into a number of workarounds that
+can be implemented in the SMTP client, pending a bugfix in the TLS
+protocol and in TLS implementations.  Some of these workarounds
+may end up in Postfix. </p>
+
+</body>
+
+</html>

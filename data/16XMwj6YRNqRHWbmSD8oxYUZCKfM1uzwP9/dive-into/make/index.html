@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Write Makefile Compatible with Both GNU make and BSD make mmap.page</title>
+    <link rel="stylesheet" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/css/style.css">
+    <link rel="alternate" type="application/rss+xml" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml">
+    <link rel="alternate" type="application/git+http" href="https://github.com/weakish/weakish.github.com.git"/>
+</head>
+<body>
+  <div class="container-lg px-3 my-5 markdown-body">
+
+    <h1><a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/">mmap.page</a></h1>
+    <h1 id="write-makefile-compatible-with-both-gnu-codemakecode-and-bsd-codemakecode">
+        
+        
+          Write Makefile Compatible with Both GNU <code>make</code> and BSD <code>make</code>
+        
+        
+      </h1>
+<p>BSD make is simple, but GNU make is more popular due to Linux's popularity.
+Thus I prefer to write Makefile compatible with both versions.</p>
+    
+      <h2 id="syntax">
+        
+        
+          Syntax <a href="#syntax" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>The following syntax is valid in both GNU make and BSD make.</p>
+<div class="language-make highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">include</span><span class="sx"> config.mk</span>
+
+<span class="c"># variable declaration (this is a comment)
+</span><span class="nv">PREFIX</span> <span class="o">=</span> /usr/local
+
+<span class="c"># First target is the default target which will be invoked when typing `make`.
+</span><span class="nl">all</span><span class="o">:</span> <span class="nf">this-is-a-target another-target</span>
+
+<span class="nl">this-is-a-target</span><span class="o">:</span>
+        <span class="err">echo</span> <span class="err">command</span>
+        <span class="err">echo</span> <span class="err">`echo</span> <span class="err">command</span> <span class="err">substitution`</span>
+        <span class="err">@echo</span> <span class="err">not</span> <span class="err">echo</span> <span class="err">the</span> <span class="err">command</span> <span class="err">line</span> <span class="err">to</span> <span class="err">screen</span>
+        <span class="err">-echo</span> <span class="err">keep</span> <span class="err">going</span> <span class="err">even</span> <span class="err">if</span> <span class="err">command</span> <span class="err">returns</span> <span class="err">a</span> <span class="err">nonzero</span> <span class="err">status</span>
+
+<span class="nl">another-target</span><span class="o">:</span> <span class="nf">sourcefile</span>
+        <span class="err">echo</span> <span class="err">will</span> <span class="err">only</span> <span class="err">run</span> <span class="err">if</span> <span class="err">sourcefile</span> <span class="err">timestamp</span> <span class="err">is</span> <span class="err">newer</span>
+        <span class="err">echo</span> <span class="err">${PREFIX}</span>
+</code></pre></div></div>
+    
+      <h2 id="bsd-vs-gnu">
+        
+        
+          BSD vs. GNU <a href="#bsd-vs-gnu" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<blockquote>
+<p>BSD Make just knows about dependencies, targets, rules and macros.
+GNU Make adds built in rules to that mix to make it easier for the developer.</p>
+<p>It turns out that details of systems are conflicting and cannot be known in advance.
+BSD Make deals with system dependencies by having the system define its parameters.
+GNU Make's built in rules turn out to be inadequate.</p>
+</blockquote>
+<p>-- <a href="http://www.cplusplus.com/articles/jTbCpfjN/">kbw</a></p>
+<blockquote>
+<p>When using <code>bsd.*.mk</code>, each Makefile can build only one program or library.</p>
+<p>...</p>
+<p>The file <code>bsd.port.mk</code> is at the center of FreeBSD Ports,
+the system that builds software packages for FreeBSD.
+(NetBSD <code>pkgsrc</code> calls this file <code>bsd.pkg.mk</code>.)</p>
+</blockquote>
+<p>-- <a href="https://stackoverflow.com/questions/2131219/merits-of-bmake/25152244">George Koehler</a></p>
+<blockquote>
+<p>Most of openbsds simple Makefiles are compatible with bmake
+but if it gets a little bit more complicated
+there are small differences that break the build.</p>
+<p>... the openbsd Makefiles <code>/usr/share/mk</code> ... are  not really portable
+and use openbsd specific binaries like <code>lorder</code> and <code>tsort</code> with the openbsd specific <code>-q</code> flag.</p>
+<p>And most software is using GNU Make,
+I think it would be way more work to use bsd makefiles on linux targets,
+they are not really written to be portable.</p>
+</blockquote>
+<p>-- <a href="https://forum.voidlinux.eu/t/pitfalls-on-bmake-bsd-make/956/2">Duncaen</a></p>
+<p>Under debian, BSD make is available as the <code>bmake</code> package.
+And FreeBSD makefile templates for bmake are available as the <code>freebsd-mk</code> package.</p>
+    
+      <h2 id="bonus-plan9-mk">
+        
+        
+          Bonus: Plan9 mk <a href="#bonus-plan9-mk" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p><code>mk</code> in Plan9 is similar to BSD make, with fewer rules.</p>
+<p>The main difference is templating:</p>
+<ul>
+<li>BSD Makefile supports standard templates <code>.include &lt;bsd.prog.mk&gt;</code> and nonstandard templates <code>.include &quot;/path/to/included.mk&quot;</code> or <code>include filename</code>,</li>
+<li>Plan9 Makefile does not support standard templates, and it uses different syntax for nonstandard templates <code>&lt;/path/to/included.mk</code>.</li>
+<li>Plan9 Makefile also supports including command line output (<code>&lt;|cat /path/to/included.mk&gt;</code>).</li>
+</ul>
+<p>Plan9 also supports using different shells within a single mkfile:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">MKSHELL</span><span class="o">=</span>/bin/rc
+use-rc:V:
+    <span class="k">for</span><span class="o">(</span>i <span class="k">in </span>a b c<span class="o">)</span> <span class="nb">echo</span> <span class="nv">$i</span>
+
+<span class="nv">MKSHELL</span><span class="o">=</span>sh
+use-sh:V:
+    <span class="k">for </span>i <span class="k">in </span>a b c<span class="p">;</span> <span class="k">do </span><span class="nb">echo</span> <span class="nv">$i</span><span class="p">;</span> <span class="k">done</span>
+</code></pre></div></div>
+    <div class="footer border-top border-gray-light mt-5 pt-3 text-gray">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start">
+        <form id="site-search" action="https://duckduckgo.com/html/" method="get">
+          <input name="q" type="search" value="site:mmap.page " required pattern="site:mmap\.page\s.+">
+          <input type="submit" value="&#x1F50D;" title="search through site content via DuckDuckGo">
+        </form>
+        <p>
+          <a href="mailto:weakish@gmail.com" title="weakish@gmail.com"><img src="https://icongr.am/feather/mail.svg" alt="Feather Icon Mail"></a>
+          <a href="https://savannah.nongnu.org/people/viewgpg.php?user_id=65699" title="2414 AEA0 EA48 5263 9697  F1BA 55F6 EEC2 EA3F 0A87"><img src="https://icongr.am/feather/key.svg" alt="Feather Icon Key"></a>
+          <a href="https://github.com/weakish/" title="GitHub"><img src="https://icongr.am/feather/github.svg" alt="Feather Icon Github"></a>
+          <a href="https://www.instagram.com/jakukyo/" title="Instagram"><img src="https://icongr.am/feather/instagram.svg" alt="Feather Icon Instagram"></a>
+          <a href="https://twitter.com/weakish" title="Twitter"><img src="https://icongr.am/feather/twitter.svg" alt="Feather Icon Twitter"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml" title="RSS 2.0 Feed"><img src="https://icongr.am/feather/rss.svg" alt="Feather Icon RSS"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/uses/" title="uses"><img src="https://icongr.am/feather/book-open.svg" alt="Feather Icon Book Open"></a>
+          
+          
+          <a href="/Me.ZeroNetwork.bit/?Profile/12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv/1GnJD7CXskmG8GywMbTvbP12wneCFW9XzR/weakish@zeroid.bit" title="ZeroMe"><img src="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/images/zeronet_logo.svg" alt="ZeroNet Logo" width="32" height="32"></a>
+        </p>
+      </div>
+        <p>
+        Permission to use, copy, modify, and/or distribute this site for any purpose with or without fee is hereby granted.
+        This site is provided "as is" without express or implied warranty.
+        </p>
+        <p>
+        This site does not use cookies or tracking codes.
+        The hosting service provider (<a href="https://pages.github.com/">GitHub Pages</a>) probably collects server logs,
+        but I do not have access to them.
+        </p>
+        <p>
+        Site source is <a href="https://github.com/weakish/weakish.github.com/">available</a>
+        and feedback is <a href="https://github.com/weakish/weakish.github.com/issues">welcome</a>.
+        </p>
+        <noscript>
+        <p>
+        This site does not use JavaScript.
+        </p>
+        </noscript>
+    </div>
+  </div>
+</body>
+</html>

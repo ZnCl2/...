@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+	<head>
+	<meta charset="utf-8" />
+	<title> PingPong v. 1.0.0</title>
+	</head>
+	<body>
+
+		PingPong v. 1.0.0<br>
+
+		<canvas id="gameCanvas" width = "800" height = "600">
+		</canvas>
+		<script>
+	
+	
+			// VARIABLES
+	
+			var canvas;
+			var canvasContext;
+			
+			var ballX = 400;
+			var ballSpeedX = 10;
+			var ballY = 300;
+			var ballSpeedY = 4;
+			
+			const BALL_RADIUS = 5;
+			
+			var paddle1Y = 250;
+			var paddle2Y = 250;
+			
+			const PADDLE_HEIGHT = 100;
+			const PADDLE_THICKNESS = 10;
+			const RIM = PADDLE_THICKNESS + BALL_RADIUS * 0.5;
+			const ENEMY_SPEED = 6;//unused
+			
+			var player1Score = 0;
+			var player2Score = 0;
+			var showingWinScreen = false;
+			
+			const WINNING_SCORE = 3;
+			
+			
+			
+			
+			// MOUSE CALCULATUION AND CONTROL
+			
+			function calculateMousePos(evt)
+			{
+				var rect = canvas.getBoundingClientRect();					//checking where on the page
+				var root = document.documentElement;						// canvas element is, checking where
+				var mouseX = evt.clientX - rect.left - root.scrollLeft;		// on the screen the mouse is potitioned
+				var mouseY = evt.clientY - rect.top - root.scrollTop;		// and finding where on the canvas the mouse is
+				return {
+					x:mouseX,
+					y:mouseY
+				};
+			}
+			
+			function handleMouseClick(evt) {
+				if(showingWinScreen) {
+					player1Score = 0
+					player2Score = 0
+					showingWinScreen = false;
+				}
+			}
+			
+		
+			// MAIN FUNCTION
+		
+			window.onload = function()
+			{
+				//console.log("Files are loaded, PingPong started.");
+				canvas = document.getElementById('gameCanvas');
+				canvasContext = canvas.getContext('2d');
+				
+				var fPS = 30;
+				var invFPS = 1/fPS;
+				
+				setInterval(function()
+				{
+					MoveEverything();
+					DrawEverything();
+				}, 1000*invFPS);
+				
+				canvas.addEventListener('mousedown', handleMouseClick);
+				
+				canvas.addEventListener ('mousemove',
+					function(evt) {
+						var mousePos = calculateMousePos(evt);
+						paddle1Y = mousePos.y;
+					}
+				)
+				
+				//console.log("Main function end");
+			}
+			
+			
+			
+
+			// MOVEMENT
+			
+			//	>	BALL RESET
+			
+			function ballReset() {
+				//console.log(player1Score);
+				//console.log(player2Score);
+				if (player1Score >= WINNING_SCORE ||
+					player2Score >= WINNING_SCORE) {
+						showingWinScreen = true;
+					}
+			
+				ballX = canvas.width*0.5;
+				ballY = canvas.height*0.5;
+				ballSpeedX = - ballSpeedX
+				ballSpeedY = - ballSpeedY
+			}
+			
+			//	>	COMPUTER
+			
+			function ComputerMovement ()
+			{
+				if (paddle2Y < ballY - 35) {
+					paddle2Y += 6;
+				}
+				else if (paddle2Y > ballY + 35) {
+					paddle2Y -= 6;
+				}
+			}
+			
+			function Demo ()
+			{
+				if (paddle1Y < ballY - 35) {
+					paddle1Y += 6;
+				}
+				else if (paddle1Y > ballY + 35) {
+					paddle1Y -= 6;
+				}
+			}
+			
+			//______Move_It________________________________,.-='"
+			
+			function MoveEverything()
+			{
+				if (showingWinScreen) {
+					return;
+				}
+				const PADDLE1_TOP = paddle1Y - PADDLE_HEIGHT * 0.5;
+				const PADDLE1_BOTTOM = paddle1Y + PADDLE_HEIGHT * 0.5;
+				const PADDLE2_TOP = paddle2Y - PADDLE_HEIGHT * 0.5;
+				const PADDLE2_BOTTOM = paddle2Y + PADDLE_HEIGHT * 0.5;
+			
+				ComputerMovement();
+				//Demo();
+				ballX += ballSpeedX;
+				ballY += ballSpeedY;
+				
+				if (ballX < RIM)
+				{
+					if (ballY > PADDLE1_TOP &&
+						ballY < PADDLE1_BOTTOM) {
+							ballSpeedX = - ballSpeedX;
+							
+							var deltaY = ballY - (PADDLE1_TOP + PADDLE_HEIGHT*0.5);
+							ballSpeedY = deltaY * 0.35;
+						}
+					else {
+						
+						player2Score++;
+						ballReset();
+					}
+				}
+				else
+				if (ballX > canvas.width - RIM)
+				{
+					if (ballY > PADDLE2_TOP &&
+						ballY < PADDLE2_BOTTOM) {
+							ballSpeedX = - ballSpeedX;
+							
+							var deltaY = ballY - (PADDLE2_TOP + PADDLE_HEIGHT*0.5);
+							ballSpeedY = deltaY * 0.35;
+						}
+					else {
+						
+						player1Score++;
+						ballReset();
+					}
+				}
+				else
+				
+				if (ballY > canvas.height - RIM || ballY < RIM)
+				{
+					ballSpeedY = - ballSpeedY
+				}
+			}
+			
+			
+			
+			
+			//	DRAWING
+			
+			//	>	DRAWING PREFABS
+			
+			//	>	>	RECTANGLE
+			
+			function ColorRect (leftX, topY, width, height, drawColor)
+			{
+				canvasContext.fillStyle = drawColor;
+				canvasContext.fillRect(leftX,topY,width,height);
+			}
+			
+			//	>	>	CIRCLE
+			
+			function ColorCircle (centerX, centerY, radius, color)
+			{
+				canvasContext.fillStyle = color;
+				canvasContext.beginPath();
+				canvasContext.arc (centerX, centerY, radius, 0, Math.PI*2, true);
+					// center's x,y , radius, arc start and end (radians), clockwise
+				canvasContext.fill();
+			}
+			
+			//	>	>	NET
+			
+			function DrawNet() {
+				for (var i=9; i < canvas.height; i+=40) {
+					ColorRect (canvas.width * 0.5 - 1, i, 2, 20, 'white')
+				}
+			}
+			
+			
+			//	>	DRAW FUNCTION
+			
+			function DrawEverything()
+			{		
+				// canvas
+				ColorRect(0,0,800,600,"black");
+				
+				if (showingWinScreen) {
+					canvasContext.fillStyle = 'white';
+					
+					if (player1Score >= WINNING_SCORE)
+					{
+						canvasContext.fillText("Left player won!", 350, 200)
+					} else
+					
+					if (player2Score >= WINNING_SCORE)
+					{
+						canvasContext.fillText("Right player won!", 350, 200)
+					}
+				
+					canvasContext.fillText("Click to continue...", 350, 500);
+					return;
+				}
+
+				//net
+				DrawNet();
+				
+				// ball
+				ColorCircle (ballX, ballY, 5, "white");
+				
+				// player paddle
+				ColorRect(0,paddle1Y-(PADDLE_HEIGHT*0.5),PADDLE_THICKNESS,100,"white");
+				
+				// enemy paddle
+				ColorRect(canvas.width - PADDLE_THICKNESS, paddle2Y-(PADDLE_HEIGHT*0.5),
+					PADDLE_THICKNESS, 100, "white");
+					
+					
+				// score
+				canvasContext.fillText(player1Score, 100, 100)
+				canvasContext.fillText(player2Score, canvas.width - 100, 100)
+			}
+			
+		</script>
+		
+		<p>		<!-- copyright -->
+			<font size="3" color="#777777">
+				Created by Musickiller in Notepad++ 05.03.2016<br>
+				Tutorials were provided by Zarkonnen and gamkedo<br>
+			</font>
+		</p>
+		<p>		<!-- contacts -->
+			<font size="4" color="#777777">
+		Me Online:<br>
+				<font size="2">
+		Twister: @MusickillerRus<br>
+		ZeroMail: Musickiller<br>
+		Twitter: @MusickillerRus<br>
+				</font>
+			</font>
+		</p>
+
+	</body>
+
+
+</html>

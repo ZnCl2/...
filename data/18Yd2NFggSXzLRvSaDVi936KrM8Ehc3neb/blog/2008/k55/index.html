@@ -1,0 +1,78 @@
+<!DOCTYPE HTML>
+<html lang="ru">
+    <head>
+      <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb</title>
+      <link rel="stylesheet" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/css/main.css"/>
+      <link rel="shortcut icon" type="image/x-icon" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/favicon.ico"/>
+      <link href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/rss.xml" title="Akademic's blog" type="application/rss+xml" rel="alternate"/>
+    </head>
+    <body>
+        <header><h1><a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb" rel="home">akademic.name</a></h1></header>
+        <main class="content">
+            
+<article>
+    <h1>TwitVim</h1> <time>29.05.2008</time>
+	<p>Искал чего интересного на vim.org
+Нашёл.
+<a href="http://www.vim.org/scripts/script.php?script_id=2204">TwitVim</a> - плагин для постинга в твиттер прямо из вима.
+Удобно, подумал я. Ведь на работе постоянно в коде и очень лень переключаться на миранду и открывать диалог с ботом твиттера.
+Но не всё так просто.</p>
+
+<p>Первое, что надо сделать это прописать в переменную окружения Path программку curl.<br />
+Для винды у меня была скомпилена в cygwin. Однако, автор TwitVim&rsquo;a в инструкции указал откуда можно скачать.<br />
+Вторая проблема заключается в том, что в винде русский текст в cp-1251, а для корректной отсылки сообщения необходимо, чтобы оно было в utf-8.<br />
+Т.к. я собирал также под cygwin&rsquo;ом iconv, то пропатчил функцию: s:urlencode таким образом<br />
+<br />
+<pre>function! s:url<em>encode(str)</pre>
+<pre>&nbsp;&nbsp;&nbsp; let istr = iconv( a:str, &lsquo;cp1251&rsquo;, &lsquo;utf-8&rsquo; )</pre>
+&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; return substitute(istr, &lsquo;[^a-zA-Z</em>-]&lsquo;, &lsquo;\=printf(&quot;%%%02X&quot;, char2nr(submatch(0)))&lsquo;, &lsquo;g&rsquo;)
+<pre>&nbsp;&nbsp;&nbsp; endif</pre>
+<pre>endfunction<br /><br /></pre>
+<p>После этого стало можно писать на великом и могучем.</p>
+<p>Однако, одна проблема осталась. Читать твиттер не получается, т.к. приходят кракозяблы (то биш юникод, а перекодировать плагин пока не может, надо дописать будет)<br />
+</p>
+<p><br />
+Вечером попробовал под линуксом этот плагин. Думал, что тут-то всё пойдёт как по маслу. А вот и фиг.</p>
+<p>Функция printf отработала не так, как ожидалось, выдавая числа вида %410 вместо вида %D0%B1</p>
+<p>Решил, что лучше использовать внешний urlencode. Например из php.</p>
+<p>Пока остановился на варианте </p>
+<pre><br /><pre>function! s:url<em>encode(str)</pre>
+<pre>    &quot;if has( &lsquo;php&rsquo; )</pre>
+<pre>        return system( &quot;php -r &lsquo;echo urlencode(&quot;.a:str.&quot;);&rsquo;&quot; )</pre>
+<pre>    &quot;else</pre>
+<pre>    &quot;    return substitute(istr, &lsquo;[^a-zA-Z</em>-]&lsquo;, &lsquo;\=printf(&quot;%%%02X&quot;, char2nr(submatch(0)))&lsquo;, &lsquo;g&rsquo;)</pre>
+<pre>    &quot;endif</pre>
+<pre><br />endfunction</pre>
+</pre>
+Тестовый прогон показал, что кодированная строка правильная.<br />
+Однако, твиттер отключили и проверить никак.<br />
+<br />
+Второй косяк под линуксом в том, что функция PosttoTwitter не работает.<br />
+Обхожу тем, что пишу текст в окно, выделяю и отправляю по Alt+T<br />
+<br />
+Зато читать твиттер можно нормально - по-русски.<br />
+<br />
+P.S. Почему всё время мучится так приходится?</p>
+
+    
+    <span class="next_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2008/k56/index.html" rel="next">TwitVim2</a>
+    </span>
+	
+	
+    <span class="prev_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2008/k54/index.html" rel="previous">HP1020</a>
+    </span>
+	
+</article>
+
+        </main>
+        <footer>
+        Будьте внимательны, многое из того, что написано в этом блоге, является личным мнением автора и не претендует на истину.
+        <img src="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/yopiright.jpg" width="12" height="12"/> 2008
+        </footer>
+    </body>
+</html>

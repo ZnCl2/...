@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Fight for Type Safety Stand with JavaScript mmap.page</title>
+    <link rel="stylesheet" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/css/style.css">
+    <link rel="alternate" type="application/rss+xml" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml">
+    <link rel="alternate" type="application/git+http" href="https://github.com/weakish/weakish.github.com.git"/>
+</head>
+<body>
+  <div class="container-lg px-3 my-5 markdown-body">
+
+    <h1><a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/">mmap.page</a></h1>
+    <h1 id="fight-for-type-safety-stand-with-javascript">
+        
+        
+          Fight for Type Safety Stand with JavaScript
+        
+        
+      </h1>
+<p>TypeScript 2.3 and later support type-checking JavaScript files with JSDoc types.
+And JSDoc's uses the Closure Compiler's type language,
+which in turn is originally based on the abandoned ES4 spec.
+Therefore, to some extent, TypeScript can check against <a href="https://github.com/bkero/es4/blob/master/spec/working-drafts/type-system.pdf">ES4 type language</a>!</p>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/**
+ * @template T, U
+ * @typedef {U &amp; { readonly __TYPE__: T}} Opaque */</span>
+
+<span class="cm">/** @typedef {Opaque&lt;'age', number&gt;} Age */</span>
+<span class="cm">/** @type {function(number): Age} */</span>
+<span class="kd">const</span> <span class="nx">newAge</span> <span class="o">=</span> <span class="p">(</span><span class="nx">n</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">n</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="dl">"</span><span class="s2">age must be positive</span><span class="dl">"</span><span class="p">)</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="cm">/** @type {Age} */</span><span class="p">(</span><span class="nx">n</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+    
+      <h2 id="es4-type-language-overview">
+        
+        
+          ES4 Type Language Overview <a href="#es4-type-language-overview" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Take a glance at ES4 type language:</p>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/** @type {null} */</span>
+<span class="kd">const</span> <span class="nx">nil</span> <span class="o">=</span> <span class="kc">null</span>
+
+<span class="cm">/** @type {string?} */</span>
+<span class="kd">let</span> <span class="nx">nullable</span> <span class="o">=</span> <span class="kc">null</span>
+
+<span class="cm">/** @type {function(number, number): number} */</span>
+<span class="kd">const</span> <span class="nx">functionType</span> <span class="o">=</span> <span class="p">(</span><span class="nx">x</span><span class="p">,</span> <span class="nx">y</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">x</span> <span class="o">+</span> <span class="nx">y</span>
+
+<span class="cm">/**
+ * function.&lt;T&gt;(T): T
+ * @type {&lt;T&gt;(x: T) =&gt; T}
+ */</span>
+<span class="kd">const</span> <span class="nx">genericFunction</span> <span class="o">=</span> <span class="nx">x</span> <span class="o">=&gt;</span> <span class="nx">x</span>
+
+<span class="cm">/**
+ * @type { {k: string} }
+ */</span>
+<span class="kd">const</span> <span class="nx">objectType</span> <span class="o">=</span> <span class="p">{</span> <span class="na">k</span><span class="p">:</span> <span class="dl">"</span><span class="s2">structural</span><span class="dl">"</span> <span class="p">}</span>
+
+<span class="cm">/**
+ * (string, number)
+ * @type {string  | number}
+ */</span>
+<span class="kd">let</span> <span class="nx">unionType</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="cm">/**
+ * [number]
+ * @type {number[]}
+ */</span>
+<span class="kd">const</span> <span class="nx">arrayType</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+
+<span class="cm">/**
+ * @type {[string, number]}
+ */</span>
+<span class="kd">const</span> <span class="nx">tupleType</span> <span class="o">=</span> <span class="p">[</span><span class="dl">"</span><span class="s2">one</span><span class="dl">"</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
+<span class="cm">/** @type {*} */</span>
+<span class="kd">let</span> <span class="nx">dynamicType</span> <span class="o">=</span> <span class="kc">null</span>
+</code></pre></div></div>
+<p>Note that TypeScript syntax differs from ES4 for the following types:</p>
+<ol start="0">
+<li>dynamic type: <code>any</code> vs <code>*</code></li>
+<li>union type: <code>A | B</code> vs <code>(A, B)</code></li>
+<li>array: <code>T[]</code> vs <code>[T]</code></li>
+<li>function: <code>(x: P) =&gt; R</code> vs <code>function(P): R</code></li>
+</ol>
+<p>Since Closure Compiler also uses <code>*</code> and <code>function(P): R</code>,
+and TypeScript tries to be compatible with Closure type syntax,
+TypeScript also accepts <code>*</code> and <code>function(P): R</code> in JSDoc type annotation.
+However, some function type cannot be expressed in <code>function(P): R</code> form,
+e.g. type guard and assertion signature:</p>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/** @typedef { {swim(): void;} } Fish */</span>
+<span class="cm">/** @typedef { {fly(): void;} } Bird */</span>
+
+<span class="cm">/** @type {(p: Fish | Bird) =&gt; p is Fish} */</span>
+<span class="kd">const</span> <span class="nx">isFish</span> <span class="o">=</span>  <span class="p">(</span><span class="nx">p</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="cm">/** @type {Fish} */</span><span class="p">(</span><span class="nx">p</span><span class="p">).</span><span class="nx">swim</span> <span class="o">!==</span> <span class="kc">undefined</span>
+
+<span class="cm">/** @type {(p: Fish | Bird) =&gt; asserts p is Fish} */</span>
+<span class="kd">const</span> <span class="nx">assertIsFish</span> <span class="o">=</span> <span class="p">(</span><span class="nx">p</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="cm">/** @type {Fish} */</span><span class="p">(</span><span class="nx">p</span><span class="p">).</span><span class="nx">swim</span> <span class="o">===</span> <span class="kc">undefined</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nx">AssertionError</span><span class="p">(</span><span class="dl">"</span><span class="s2">not a string</span><span class="dl">"</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>And there are other subtle differences,
+e.g. ES4 tuples should have at least two elements.
+But let's just ignore these details for now.</p>
+    
+      <h2 id="more-syntax-borrowed-from-closure-compiler">
+        
+        
+          More Syntax Borrowed from Closure Compiler <a href="#more-syntax-borrowed-from-closure-compiler" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+    
+      <h3 id="type-alias">
+        
+        
+          Type Alias <a href="#type-alias" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>Type aliases can be defined with the keyword <code>@typedef</code>:</p>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/** @typedef { {x: number, y: number} } Pointer */</span>
+<span class="cm">/** @type {Pointer} */</span>
+<span class="kd">const</span> <span class="nx">typeAlias</span> <span class="o">=</span> <span class="p">{</span> <span class="na">x</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="na">y</span><span class="p">:</span> <span class="mi">0</span> <span class="p">}</span>
+</code></pre></div></div>
+<p>Generic type parameters can be defined with the keyword <code>template</code>:</p>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/**
+ * @template T, U
+ * @typedef {U &amp; { readonly __TYPE__: T}} Opaque */</span>
+
+<span class="cm">/** @typedef {Opaque&lt;'age', number&gt;} Age */</span>
+<span class="cm">/** @type {function(number): Age} */</span>
+<span class="kd">const</span> <span class="nx">newAge</span> <span class="o">=</span> <span class="p">(</span><span class="nx">n</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">n</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="dl">"</span><span class="s2">age must be positive</span><span class="dl">"</span><span class="p">)</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="c1">// Type cast requires parenthesized expression.</span>
+    <span class="k">return</span> <span class="cm">/** @type {Age} */</span><span class="p">(</span><span class="nx">n</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+    
+      <h3 id="enum">
+        
+        
+          Enum <a href="#enum" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p><code>@enum</code> is also borrowed from <a href="https://github.com/google/closure-compiler/wiki/Annotating-JavaScript-for-the-Closure-Compiler#enum-type">Closure Compiler's type system</a>,
+and is quite different from <a href="https://www.typescriptlang.org/docs/handbook/enums.html">TypeScript's enum</a>.</p>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/**
+ * @enum {function(number): number}
+ */</span>
+<span class="kd">const</span> <span class="nx">immutableObjectLiteral</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="cm">/** @type {function(number)} */</span>
+  <span class="na">succ</span><span class="p">:</span> <span class="nx">n</span> <span class="o">=&gt;</span> <span class="nx">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+  <span class="cm">/** @type {function(number)} */</span>
+  <span class="na">pred</span><span class="p">:</span> <span class="nx">n</span> <span class="o">=&gt;</span> <span class="nx">n</span> <span class="o">-</span> <span class="mi">1</span>
+<span class="p">}</span>
+</code></pre></div></div>
+    
+      <h3 id="function-overloads">
+        
+        
+          Function Overloads <a href="#function-overloads" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>JSDoc's overloaded function comment syntax is not supported:</p>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/**
+ * @param {string} input
+ * @returns {string} result
+ *//**
+ * @param {number} input
+ * @returns {string} result
+ */</span>
+<span class="kd">function</span> <span class="nx">notSupported</span><span class="p">(</span><span class="nx">input</span><span class="p">)</span> <span class="p">{</span> <span class="cm">/* omit */</span> <span class="p">}</span>
+</code></pre></div></div>
+<p>However, we can express <a href="https://github.com/Microsoft/TypeScript/blob/master/doc/spec.md#62-function-overloads">function overloading type in TypeScript's form</a> in a tricky way:</p>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/** @type { {
+            (): void;
+            (code: 0): void;
+            (code: 1, msg: string): void
+          } } */</span>
+<span class="kd">const</span> <span class="nx">f</span> <span class="o">=</span> <span class="p">(</span>
+  <span class="cm">/** @type {0 | 1} */</span> <span class="nx">code</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+  <span class="cm">/** @type {string | undefined} */</span> <span class="nx">msg</span> <span class="o">=</span> <span class="nx">code</span> <span class="o">===</span> <span class="mi">0</span> <span class="p">?</span> <span class="kc">undefined</span> <span class="p">:</span> <span class="dl">""</span>
+<span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span> <span class="cm">/* omit */</span> <span class="p">}</span>
+</code></pre></div></div>
+<p>By default TypeScript will infer parameters' type of overloaded function implementation as <code>any</code>,
+thus we need to specify specific types compatible with all overloads in parameter list of the function implementation.</p>
+<p>Also, because here different overloads have different arity, we use default parameters to ensure the function implementation compatible with all overloads.</p>
+    
+      <h3 id="import-types">
+        
+        
+          Import Types <a href="#import-types" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>Use <code>import(&quot;module&quot;).Type</code> to import types:</p>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/** @type { import("m").T } */</span>
+</code></pre></div></div>
+<p>This is often used in type aliases for brevity:</p>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/** @typedef { import("module-name").LongTypeName } ShortName */</span>
+</code></pre></div></div>
+<p>But if you have difficulties in expressing certain types in JSDoc comments,
+you can also declare the type in a separate TypeScript file,
+then import it in JSDoc comments.</p>
+    
+      <h2 id="type-checking">
+        
+        
+          Type Checking <a href="#type-checking" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Just enable <code>allowJs</code>, <code>checkJs</code>, <code>noEmit</code> in tsconfig.json,
+to tell vscode to check JavaScript files.</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"compilerOptions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"strict"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"noUnusedParameters"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"noUnusedLocals"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"noImplicitReturns"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"noFallthroughCasesInSwitch"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"allowJs"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"checkJs"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"noEmit"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"target"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ES2017"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"incremental"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+<p>It is possible to check JavaScript files without tsconfig.json file
+with writing magic comment <code>// @ts-check</code> or setting an configuration option in vscode.
+But I prefer the tsconfig.json way, since I tend to setup some typescript compiler options.</p>
+    
+      <h2 id="why">
+        
+        
+          Why <a href="#why" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Actually ES4 type system is quite different from TypeScript.
+For example, they have different subtype rules.
+Also, the JSDoc way of TypeScript type checking lacks some features,
+for example, there is no way to pass type parameter when invoking generic functions via JSDoc.
+The only thing we can do is let TypeScript infer the type parameter.
+If it fails to infer the type, we have to accept <code>any</code> as the type parameter.
+Another example is TypeScript cannot parse conditional types in JSDoc comments correctly. (<a href="https://github.com/microsoft/TypeScript/issues/27424">#27424</a>)
+Also, there is no equivalent form of <code>as const</code> assertion yet (<a href="https://github.com/Microsoft/TypeScript/issues/30445">#30445</a>).</p>
+<p>So why not code in TypeScript instead?</p>
+<p>Possible reasons:</p>
+<ol>
+<li>Get rid of the compilation step.</li>
+<li>Avoid using TypeScript features unavailable in ECMAScript.</li>
+<li>Secretly migrate a JavaScript project to TypeScript when other project developers do not want to switch to TypeScript.</li>
+</ol>
+    <div class="footer border-top border-gray-light mt-5 pt-3 text-gray">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start">
+        <form id="site-search" action="https://duckduckgo.com/html/" method="get">
+          <input name="q" type="search" value="site:mmap.page " required pattern="site:mmap\.page\s.+">
+          <input type="submit" value="&#x1F50D;" title="search through site content via DuckDuckGo">
+        </form>
+        <p>
+          <a href="mailto:weakish@gmail.com" title="weakish@gmail.com"><img src="https://icongr.am/feather/mail.svg" alt="Feather Icon Mail"></a>
+          <a href="https://savannah.nongnu.org/people/viewgpg.php?user_id=65699" title="2414 AEA0 EA48 5263 9697  F1BA 55F6 EEC2 EA3F 0A87"><img src="https://icongr.am/feather/key.svg" alt="Feather Icon Key"></a>
+          <a href="https://github.com/weakish/" title="GitHub"><img src="https://icongr.am/feather/github.svg" alt="Feather Icon Github"></a>
+          <a href="https://www.instagram.com/jakukyo/" title="Instagram"><img src="https://icongr.am/feather/instagram.svg" alt="Feather Icon Instagram"></a>
+          <a href="https://twitter.com/weakish" title="Twitter"><img src="https://icongr.am/feather/twitter.svg" alt="Feather Icon Twitter"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml" title="RSS 2.0 Feed"><img src="https://icongr.am/feather/rss.svg" alt="Feather Icon RSS"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/uses/" title="uses"><img src="https://icongr.am/feather/book-open.svg" alt="Feather Icon Book Open"></a>
+          
+          
+          <a href="/Me.ZeroNetwork.bit/?Profile/12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv/1GnJD7CXskmG8GywMbTvbP12wneCFW9XzR/weakish@zeroid.bit" title="ZeroMe"><img src="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/images/zeronet_logo.svg" alt="ZeroNet Logo" width="32" height="32"></a>
+        </p>
+      </div>
+        <p>
+        Permission to use, copy, modify, and/or distribute this site for any purpose with or without fee is hereby granted.
+        This site is provided "as is" without express or implied warranty.
+        </p>
+        <p>
+        This site does not use cookies or tracking codes.
+        The hosting service provider (<a href="https://pages.github.com/">GitHub Pages</a>) probably collects server logs,
+        but I do not have access to them.
+        </p>
+        <p>
+        Site source is <a href="https://github.com/weakish/weakish.github.com/">available</a>
+        and feedback is <a href="https://github.com/weakish/weakish.github.com/issues">welcome</a>.
+        </p>
+        <noscript>
+        <p>
+        This site does not use JavaScript.
+        </p>
+        </noscript>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE HTML>
+<html lang="ru">
+    <head>
+      <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb</title>
+      <link rel="stylesheet" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/css/main.css"/>
+      <link rel="shortcut icon" type="image/x-icon" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/favicon.ico"/>
+      <link href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/rss.xml" title="Akademic's blog" type="application/rss+xml" rel="alternate"/>
+    </head>
+    <body>
+        <header><h1><a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb" rel="home">akademic.name</a></h1></header>
+        <main class="content">
+            
+<article>
+    <h1>Мониторинг заданий Folding@home часть 1</h1> <time>10.02.2010</time>
+	<p>Я уже рассказывал про распределённые вычисления в статьях <a href="http://akademic.name/blog/2010/foldinghome/" title="Первый пост про Folding@Home">Folding@home</a> и <a href="http://akademic.name/blog/2010/foldinghome-nvidia-gpu/" title="Настройка обсчёта на Nvidia GeForce 9400">folding@home с помощью nvidia gpu на debian linux</a>.</p>
+
+<p>Сегодня я считаю уже на трёх машинах, что в сумме даёт 6 процессов расчёта.
+В связи с этим захотелось мониторить их состояние где-нибудь в одном месте.
+Например у себя на сайте.</p>
+
+<p>В этом и следующем посте я изложу как это можно сделать.</p>
+
+<p>Собственно процесс можно разделить на две части:</p>
+
+<ol>
+<li>Отправка состояния на сервер - это на считающих машинах</li>
+<li>Приём данных и вывод состояния систем - это на сайте</li>
+</ol>
+
+<p>Начнём с первого.
+Можно было бы воспользоваться встроенным в клиенты Folding@Home веб-сервером (я полагаю, что он там есть, раз есть соответствующая настройка в client.cfg). Но в этом случае пришлось бы писать опросчик, который с заданным интервалом заходил бы на клиенты и считывал данные. Получится что 90% времени мы будем получать данные, которые у нас уже есть, потому как с прошлого опроса они не изменились. Правильно подобранный интервал опроса лишь снизит паразитный трафик.</p>
+
+<p>Было бы здорово получать данные только если они изменились и сразу как только они изменились. Необходимо чтобы клиентские машины при изменении состояния оповещали об этом событии сервер. Так и не будет впустую гоняться трафик по сети и результаты буду доступны немедленно.</p>
+
+<p>Как это реализовать технически?
+Клиенты Folding@Home сохраняют своё состояние в файле unitinfo.txt.
+А раз мы в линуксе и состояние это файл, то мы можем воспользоваться замечательным способом подписки на события файла - <a href="http://ru.wikipedia.org/wiki/Inotify" title="Inotify на Википедии">inotify</a>.</p>
+
+<p>Первое что нам понадобится это пакет incron:</p>
+
+<p><code>sudo apt-get install incron</code></p>
+
+<p>incron - это cron-подобный сервис мониторинга файлов, запускает заданный скрипт при возникновении заданного события у файла.</p>
+
+<p>После инсталляции incron, необходимо добавить пользователя, от имени которого будем запускать скрипт в файл /etc/incron.allow
+Просто вписываем туда имя пользователя.</p>
+
+<p>Затем добавляем задания для отслеживания:</p>
+
+<p><code>incrontab -e</code></p>
+
+<p>Туда вписываем строчки:</p>
+
+<p><code>/путь/к/файлу/unitinfo.txt IN_CLOSE_WRITE /путь/к/обработчику/события $@</code></p>
+
+<p>Здесь IN_CLOSE_WRITE - событие, на которое мы подписались
+$@ - это имя файла, с которым произошло событие. Передаётся параметром запускаемому скрипту.</p>
+
+<p>Полдела сделано. Теперь пора написать, собственно, обработчик события. Вернее, я то его уже написал на <a href="http://python.org" title="Python">python</a>. Просто приведу код:</p>
+
+<pre><code>#!/usr/bin/python
+import os,sys
+import urllib
+filename = sys.argv[1]
+stats = open(filename).read()
+dir = os.path.dirname(filename)
+config = open(dir+'/client.cfg')
+for line in config:
+    if line[:9] == 'machineid':
+        mid = line[-2]
+data = [('mid', mid), ('stats', stats)]
+urllib.urlopen( 'http://мой.сайт/принимающий/данные/', urllib.urlencode( data ) )
+</code></pre>
+
+<p>Скрипт посылает на сервер целиком файл unitinfo.txt и machineid, взятый из файла client.cfg</p>
+
+<p>Осталось реализовать принимающую часть. Её буду делать в виде приложения для <a href="http://djangoproject.com/" title="Django framework">django</a>. Это в следующей статье.</p>
+
+    
+    <span class="next_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2010/monitoring-zadanij-foldinghome-chast-2/index.html" rel="next">Мониторинг заданий Folding@home часть 2</a>
+    </span>
+	
+	
+    <span class="prev_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2010/foldinghome-nvidia-gpu/index.html" rel="previous">Folding@Home с помощью Nvidia GPU на debian linux</a>
+    </span>
+	
+</article>
+
+        </main>
+        <footer>
+        Будьте внимательны, многое из того, что написано в этом блоге, является личным мнением автора и не претендует на истину.
+        <img src="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/yopiright.jpg" width="12" height="12"/> 2008
+        </footer>
+    </body>
+</html>

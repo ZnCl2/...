@@ -1,0 +1,22 @@
+{
+	"title": "扬帆远航",
+	"description": "关注互联网技术",
+	"links": "- [Source code](https://github.com/HelloZeroNet)",
+	"next_post_id": 3,
+	"demo": false,
+	"modified": 1461244421,
+	"post": [
+		{
+			"post_id": 2,
+			"title": "搭建可远程访问的ZeroNet",
+			"date_published": 1461216949.653,
+			"body": "有时候我们并不想在自己的笔记本上搭建ZeroNet，或者有时候你需要使用手机，Pad来浏览ZeroNet，这个时候你可能就需要在远程的服务器或者在你家里的主机或者NAS中搭建一个ZeroNet供自己随时访问。\n---\n## 1. 搭建ZeroNet服务\n就举自己的例子好了，我用的是一台支持虚拟机技术的NAS，首先创建一个Debian的虚拟机，然后安装ZeroNet，记得将plugin目录中的disabled-UiPassword改成UiPassword\n\n```\nsudo apt-get update\nsudo apt-get install msgpack-python python-gevent\nwget https://github.com/HelloZeroNet/ZeroNet/archive/master.tar.gz\ntar xvpfz master.tar.gz\ncd ZeroNet-master\nnohup python zeronet.py --ui_ip \"*\" --ui_password Lukejin1986 > zeronet.log 2>&1 &\n```\n## 2. 开启Tor\n为了更安全地使用ZeroNet，建议在安装ZeroNet服务的机器上安装Tor。\nZeroNet需要Tor的版本为0.2.7.5+， 诸如Debian这样的系统的源中的Tor的版本都过低，所以需要自己添加源。\n```\necho 'deb http://deb.torproject.org/torproject.org jessie main'>> /etc/apt/sources.list.d/tor.list\ngpg --keyserver keys.gnupg.net --recv 886DDD89\ngpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -\napt-get update\napt-get install tor\n```\n不过可惜的是，http://deb.torproject.org 在国内是被墙了的，所以你需要自己搞定在翻墙的基础上进行 apt-get的update和install操作。要不然安装不了最新的版本的Tor。\n\n安装好了Tor之后需要对Tor进行简单的配置。使用你熟悉的编辑器进行下面的配置文件的修改\n\n```\nvi /etc/tor/torrc\n```\n将如下两行的注释去掉\n\n```\nControlPort 9051\nCookieAuthentication 1 \n```\n然后重启Tor,以及给你当前的user添加相应的权限\n```\n/etc/init.d/tor restart\n\nusermod -a -G debian-tor [yourlinuxuser]\n```\n\n最后访问你搭建的ZeroNet，将Tor选择为Allways，然后重启你的ZeroNet服务。一切大功告成\n"
+		},
+		{
+			"post_id": 1,
+			"title": "Congratulations!",
+			"date_published": 1433033779.604,
+			"body": "Your zeronet blog has been successfully created!"
+		}
+	]
+}

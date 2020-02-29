@@ -1,0 +1,190 @@
+{
+	"title": "r3df0x Blog",
+	"description": "贴一些自己使用的文章",
+	"links": "- [Source code](https://github.com/HelloZeroNet)",
+	"next_post_id": 41,
+	"demo": false,
+	"modified": 1508640023,
+	"post": [
+		{
+			"post_id": 40,
+			"title": "PyHook",
+			"date_published": 1484885396.782,
+			"body": "PyHook是一个基于Python的“钩子”库，主要用于监听当前电脑上鼠标和键盘的事件。这个库依赖于另一个Python库PyWin32，PyWin32只能运行在Windows平台，所以PyHook也只能运行在Windows平台。下面主要学习了以下几点：\n如何设置鼠标和键盘的“钩子”\n事件信息\n如何传递和屏蔽事件\npythoncom 任何应用程序想得到鼠标和键盘的输入事件通知，都必须有一个Windows的消息通道。最简单的方法是使用在Win32扩展的Python包pythoncom 的PumpMessages方法。\n    import pythoncom \n    pythoncom.PumpMessages()\nMouse Hooks 要接收鼠标事件，你必须创建一个HookManager对象，并提供它会为您感兴趣的事件的回调。例如，你可以选择接收只有左边的按钮按下事件，鼠标移动事件，或所有鼠标事件，仅举几例。每个事件类型可以被定向到一个且只有一个回调函数。\n```\nimport pythoncom, pyHook \n\ndef OnMouseEvent(event):\n    # called when mouse events are received\n    print 'MessageName:',event.MessageName\n    print 'Message:',event.Message\n    print 'Time:',event.Time\n    print 'Window:',event.Window\n    print 'WindowName:',event.WindowName\n    print 'Position:',event.Position\n    print 'Wheel:',event.Wheel\n    print 'Injected:',event.Injected\n    print '---'\n    # 返回 True 以便将事件传给其它处理程序\n    # 注意，这儿如果返回 False ，则鼠标事件将被全部拦截\n    # 也就是说你的鼠标看起来会僵在那儿，似乎失去响应了\n    return True\n\n# create a hook manager\nhm = pyHook.HookManager()\n# watch for all mouse events\nhm.MouseAll = OnMouseEvent\n# set the hook\nhm.HookMouse()\n# wait forever\npythoncom.PumpMessages()\n```\nKeyboard Hooks 键盘“钩子”的运行方式和鼠标的相似，只是返回的信息不同。\n```\nimport pythoncom, pyHook \n \ndef OnKeyboardEvent(event):\n    print 'MessageName:',event.MessageName\n    print 'Message:',event.Message\n    print 'Time:',event.Time\n    print 'Window:',event.Window\n    print 'WindowName:',event.WindowName\n    print 'Ascii:', event.Ascii, chr(event.Ascii)\n    print 'Key:', event.Key\n    print 'KeyID:', event.KeyID\n    print 'ScanCode:', event.ScanCode\n    print 'Extended:', event.Extended\n    print 'Injected:', event.Injected\n    print 'Alt', event.Alt\n    print 'Transition', event.Transition\n    print '---'\n \n # 同鼠标事件监听函数的返回值\n    return True\n \n# create a hook manager\nhm = pyHook.HookManager()\n# watch for all mouse events\nhm.KeyDown = OnKeyboardEvent\n# set the hook\nhm.HookKeyboard()\n# wait forever\npythoncom.PumpMessages()\n```\nEvent Filtering 键盘和鼠标事件的回调可以决定是否允许事件讯息传递给他们的窗口。如果一个回调函数返回True，允许消息传递给其他应用程序，然后到它的目的地已注册的回调。如果函数返回FALSE，消息被封锁。\n```\nimport pythoncom, pyHook \n \ndef OnKeyboardEvent(event):\n  # block only the letter A, lower and uppercase\n  return (event.Ascii not in (ord('a'), ord('A')))\n \n# create a hook manager\nhm = pyHook.HookManager()\n# watch for all mouse events\nhm.KeyDown = OnKeyboardEvent\n# set the hook\nhm.HookKeyboard()\n# wait forever\npythoncom.PumpMessages()\n```"
+		},
+		{
+			"post_id": 39,
+			"title": "zeronet上的良心网站啊~~",
+			"date_published": 1479803929.417,
+			"body": "1 [play](http://127.0.0.1:43110/1PLAYgDQboKojowD3kwdb3CtWmWaokXvfp/?Home)\n\n2 [0TV](http://127.0.0.1:43110/1BEJbnufyav7TK23ADTs2Qi2UJeKSGDzw6/)\n\n3 [FOMO](http://127.0.0.1:43110/17Tzm1HYknrRiiHZ5xLJqGNooebmoLqit7/)\n\n4[老司机福利社](http://127.0.0.1:43110/15xit2EiY7mpnQAj482BB4TjFynAJYLuj5/?Home)"
+		},
+		{
+			"post_id": 38,
+			"title": "linux crontab 使用",
+			"date_published": 1479036481.346,
+			"body": "sudo crontab -l     #查看任务列表\nsudo crontab -e    #编辑定时任务\n基本格式 :\n*　　*　　*　　*　　*　　command\n分　时　日　月　周　命令\n\n第1列表示分钟1～59 每分钟用*或者 */1表示\n第2列表示小时1～23（0表示0点）\n第3列表示日期1～31\n第4列表示月份1～12\n第5列标识号星期0～6（0表示星期天）\n第6列要运行的命令\n\n`30 7 * * * /home/pi/hosts/tools/lhosts`\n`30 6 * * * /home/pi/dnsmasq-china-list/git_fetch.sh`\n每天 7:30 执行/home/pi/hosts/tools/lhosts\n每天6:30  执行/home/pi/dnsmasq-china-list/git_fetch.sh\n"
+		},
+		{
+			"post_id": 37,
+			"title": "检查进程是否存在，如不存在就重启脚本",
+			"date_published": 1479035894.684,
+			"body": "```\n#!/bin/sh\nps -fe|grep launcher/start.py|grep -v grep\nif [ $? -ne 0 ]\nthen\necho \"Restart process.....\"\nsudo nohup /home/pi/GoGo-1.8.0/start.sh &\nelse\necho \"runing.....\"\nfi\n#####\n ```\nlauncher/start.py 为进程关键字"
+		},
+		{
+			"post_id": 36,
+			"title": "树莓派版的Lantern",
+			"date_published": 1479027502.615,
+			"body": "https://github.com/EasyPi\nhttps://github.com/EasyPi/docker-lantern-arm/releases/ 下载最新版"
+		},
+		{
+			"post_id": 35,
+			"title": "树莓派开机启动文件",
+			"date_published": 1479027005.859,
+			"body": "sudo nano /ect/rc.local\n编辑此文件加入命令即可"
+		},
+		{
+			"post_id": 34,
+			"title": "破解华为光猫hg526",
+			"date_published": 1479026465.204,
+			"body": "先用光猫后面的帐号密码登录后 把址改成http://192.168.1.1/backupsettings.conf下载backupsettings.conf（不能用迅雷或其它下载工具）。备份好这个原始的conf文件以防万一。 再用记事本打开backupsettings.conf，查找telecomadmin，在附件找超级密码\n\n登录\ntelcomadmin\n <Password>telecomadmin25097626</Password>\n\n<Password>MDAxNzY0AA==</Password>\nMDAxNzY0AA==  base64  001764"
+		},
+		{
+			"post_id": 33,
+			"title": "推荐3个国外BT站",
+			"date_published": 1478178048.25,
+			"body": "https://yts.ag/\nhttp://torrentking.eu/\nhttps://otorrents.com/"
+		},
+		{
+			"post_id": 32,
+			"title": "ubuntu查看系统资源占用（内存,cpu和进程) ",
+			"date_published": 1473765499.899,
+			"body": "linux真是太强大了。\n\n查看ubuntu的资源占用的命令为$: top\ntop命令就可以查看内存，cpu和进程了，很方便\n\n\ntop：\n\n主要参数\n\nd：指定更新的间隔，以秒计算。\n\nq：没有任何延迟的更新。如果使用者有超级用户，则top命令将会以最高的优先序执行。\n\nc：显示进程完整的路径与名称。\n\nS：累积模式，会将己完成或消失的子行程的CPU时间累积起来。\n\ns：安全模式。\n\ni：不显示任何闲置（Idle）或无用（Zombie）的行程。\n\nn：显示更新的次数，完成后将会退出to\n\n显示参数：\n\nPID（Process ID）：进程标示号。\n\nUSER：进程所有者的用户名。\n\nPR：进程的优先级别。\n\nNI：进程的优先级别数值。\n\nVIRT：进程占用的虚拟内存值。\n\nRES：进程占用的物理内存值。\n\nSHR：进程使用的共享内存值。\n\nS：进程的状态，其中S表示休眠，R表示正在运行，Z表示僵死状态，N表示该进程优先值是负数。\n\n%CPU：该进程占用的CPU使用率。\n\n%MEM：该进程占用的物理内存和总内存的百分比。\n\nTIME＋：该进程启动后占用的总的CPU时间。\n\nCommand：进程启动的启动命令名称，如果这一行显示不下，进程会有一个完整的命令行。\ntop命令\n\n《空格》：立刻刷新。\n\nP：根据CPU使用大小进行排序。\n\nT：根据时间、累计时间排序。\n\nq：退出top命令。\n\nm：切换显示内存信息。\n\nt：切换显示进程和CPU状态信息。\n\nc：切换显示命令名称和完整命令行。\n\nM：根据使用内存大小进行排序。\n\nW：将当前设置写入~/.toprc文件中。这是写top配置文件的推荐方法。\n\nfree\n\n1.作用\n\nfree命令用来显示内存的使用情况，使用权限是所有用户。\n\n2.格式\n\nfree ［－b－k－m］ ［－o］ ［－s delay］ ［－t］ ［－V］\n\n3.主要参数\n\n－b －k －m：分别以字节（KB、MB）为单位显示内存使用情况。\n\n－s delay：显示每隔多少秒数来显示一次内存使用情况。\n\n－t：显示内存总和列。\n\n－o：不显示缓冲区调节列。\n\n\nuptime\n\n18:59:15 up 25 min， 2 users， load average： 1.23， 1.32， 1.21\n\n现在的时间\n\n系统开机运转到现在经过的时间\n\n连线的使用者数量\n\n最近一分钟，五分钟和十五分钟的系统负载\n\n参数： -V 显示版本资讯。\n\nvmstat\n\nprocs -----------memory---------- ---swap-- -----io---- --system-- ----cpu----\n\nr b swpd free buff cache si so bi bo in cs us sy id wa\n\n0 1 24980 10792 8296 47316 5 19 205 52 1161 698 26 3 1 70\n\n1 观察磁盘活动情况\n\n磁盘活动情况主要从以下几个指标了解：\n\nbi：表示从磁盘每秒读取的块数（blocks/s）。数字越大，表示读磁盘的活动越多。\n\nbo：表示每秒写到磁盘的块数（blocks/s）。数字越大，表示写磁盘的活动越多。\n\nwa：cpu等待磁盘I／O（未决的磁盘IO）的时间比例。数字越大，表示文件系统活动阻碍cpu的情况越严重，因为cpu在等待慢速的磁盘系统提供数据。wa为0是最理想的。如果wa经常大于10，可能文件系统就需要进行性能调整了。\n\n2 观察cpu活动情况\n\nvmstat比top更能反映出cpu的使用情况：\n\nus：用户程序使用cpu的时间比例。这个数字越大，表示用户进程越繁忙。\n\nsy：系统调用使用cpu的时间比例。注意，NFS由于是在内核里面运行的，所以NFS活动所占用的cpu时间反映在sy里面。这个数字经常很大的 话，就需要注意是否某个内核进程，比如NFS任务比较繁重。如果us和sy同时都比较大的话，就需要考虑将某些用户程序分离到另外的服务器上面，以免互相 影响。\n\nid：cpu空闲的时间比例。\n\nwa：cpu等待未决的磁盘IO的时间比例。\n\niostat\n\n用于统计CPU的使用情况及tty设备、硬盘和CD-ROM的I/0量\n\n参数：\n\n-c 只显示CPU行\n\n-d 显示磁盘行\n\n-k 以千字节为单位显示磁盘输出\n\n-t 在输出中包括时间戳\n\n-x 在输出中包括扩展的磁盘指标\n\navg-cpu： %user %nice %sys %iowait %idle\n\n20.25 0.18 2.61 76.39 0.57\n\n%iowait 等待本地I/O时CPU空闲时间的百分比\n\n%idle 未等待本地I/O时CPU空闲时间的百分比\n\nDevice： tps Blk_read/s Blk_wrtn/s Blk_read Blk_wrtn\n\nhda 9.86 284.34 84.48 685407 2036\n\n每秒传输数（tps）、每秒512字节块读取数（Blk_read/s）、每秒512字节块写入数（Blk_wrtn/s）和512字节块读取（Blk_read）和写入（Blk_wrtn）的总数量。"
+		},
+		{
+			"post_id": 31,
+			"title": "两个web翻墙代理",
+			"date_published": 1473578936.496,
+			"body": "Hidester https://hidester.com 号称世界最快的在线代理\nKProxy http://stmp2.sumalab.com\n\nvia：http://127.0.0.1:43110/1BRBcDoZLw1ZpThY4aWpkCDkgNQaCrSCH9/?Home"
+		},
+		{
+			"post_id": 30,
+			"title": "纪录片网站：老记录",
+			"date_published": 1469938763.598,
+			"body": "全部ed2k链接。http://www.laojilu.com"
+		},
+		{
+			"post_id": 29,
+			"title": "ubuntu服务管理",
+			"date_published": 1469938278.424,
+			"body": "Ubuntu下管理启动服务\n \n方式一：\n \n查看服务列表代码  \nservice --status-all \n \n启动开机时的服务代码  \nsudo update-rc.d -f myservice default  \n \n停止开机时的服务代码  \nsudo update-rc.d -f myservice remove  \n \n方式二： \n \n安装代码  \nsudo install sysv-rc-conf  \n \n执行代码  \nsudo sysv-rc-conf "
+		},
+		{
+			"post_id": 28,
+			"title": "pip设置阿里云的镜像源，速度超级快",
+			"date_published": 1469874808.593,
+			"body": "linux下运行命令\nvi ~/.pip/pip.conf\n然后写入如下内容并保存\n [global]\n trusted-host =  mirrors.aliyun.com\n index-url = http://mirrors.aliyun.com/pypi/simple"
+		},
+		{
+			"post_id": 27,
+			"title": "Linux目录解释",
+			"date_published": 1469338842.968,
+			"body": "/bin:bin是binary(二进制)的缩写。这个目录是对UNIX系统习惯的沿袭，存放着使用者最经常使用的命令。例如：cp,ls,cat。 \n\n/boot:这里存放的是启动LINUX时使用的一些核心文件。 \n\n/dev:dev是device(设备)的缩写。这个目录下是所有LINUX的外部设备，其功能类似DOS下的.sys和Win下的.vxd。在LINUX中设备和文件是用同种方法访问的。例如:/dev/hda代表第一个物理IDE硬盘。 \n\n/etc:这个目录用来存放所有的系统管理所需要的配置文件和子目录。 \n\n/home:用户的主目录，比如说有个用户叫liubin，那他的主目录就是/home/liubin也可以用~liubin表示，说到这里，打个岔，你现应该明白在我们访问一些个人网页(如http://www.liubin.net/~liubin)的时候，~liubin就是表示访问www.liubin.net站点中的用户liubin的用户主目录。 \n如果这个网站的操作系统是LINUX，那就是表示/home/liubin。 \n\n/lib:这个目录里存放着系统最基本的动态链接共享库，其作用类似于Windows里的.dll文件。几乎所有的应用程序都需要用到这些共享库。 \n\n/lost+found:这个目录平时是空的，当系统不正常关机后，这里就成了一些无家可归的文件的避难所。对了，有点类似于DOS下的.chk文件。 \n\n/mnt:这个目录是空的，系统提供这个目录是让用户临时挂载别的文件系统。 \n\n/proc:这个目录是一个虚拟的目录，它是系统内存的映射，我们可以通过直接访问这个目录来获取系统信息。也就是说，这个目录的内容不在硬盘上而是在内存里啊！？ \n\n/root:系统管理员，也叫作超级权限者的用户主目录。当然系统的拥有者，总要有些特权啊！ \n\n/sbin:s就是Super User的意思，也就是说这里存放的是一些系统管理员使用的系统管理程序。 \n\n/tmp:这个目录不用说，一定是用来存放一些临时文件的地方了。 \n\n/usr:这是个最庞大的目录，我们要用到的很多应用程序和文件几乎都存放在这个目录下。具体来说： \n/usr/X11R6 存放X-Windows的目录； \n/usr/bin 存放着许多应用程序； \n/usr/sbin 给超级用户使用的一些管理程序就放在这； \n/usr/doc 这就是LINUX文档的大本营； \n/usr/include LINUX下开发和编译应用程序需要的头文件，在这找； \n/usr/lib 存放一些常用的动态链接共享库和静态档案库； \n/usr/local 这是提供给一般用户的/usr目录，在这安装软件最适合； \n/usr/man man是什么，对了是帮助。这里就是帮助文档目录啊！ \n/usr/src LINUX开放的源代码，就存在这个目录，爱好者们别放过哦！ \n\n/var:这个目录中存放着那些不断在扩充着的东西，为了保持/usr的相对稳定，那些经常被修改的目录可以放在这个目录下，实际上许多系统管理员都是这样干的。顺带说一下系统的日志文件就在/var/log目录中。 \n　　这里列出了最常见的目录，根据LINUX发行套件的不同，目录结构也是有一定差别的。还有你自己建立的目录，我当然不知是存什么的。希望上面的文字能使你在大脑里留下了LINUX的全景图，以便大家深入掌握LINUX的其它方方面面。 \n\n（已经知道了就不用看了，当做偶留个备份）"
+		},
+		{
+			"post_id": 25,
+			"title": "无界浏览16.03正式版(2016年7月11日) Emule(电骡/电驴) 下载连接",
+			"date_published": 1469271913.496,
+			"body": "ed2k://|file|GIFC_20160711_ultra_1603.zip|2567878|6B82086CFFA995F646DF255E4F53CAE0|/\n\nLinux版：\nhttp://wujieliulan.com/download/u1603\nSHA1: bc3afb2a878d54913ac16fb261878ea050e32bae\nMD5: e61a5deac7826d066e8ec94bd98fc54b\n\nLinux版使用方法：\n下载后打开一个终端，chmod +x u1603，然后执行：./u1603, 默认监听地址：127.0.0.1：9666。需要手动设置浏览器代理。\n如需要监听 0.0.0.0：./u1603 -L=”0.0.0.0:9666″ 或 u1603 -L=”:9666″\n如需要通过代理： ./u1603 -P=“1.2.3.4：8080” 或 ./u1603 -P=”socks://1.2.3.4:1080″\n./u1603 -h 会給出提示。"
+		},
+		{
+			"post_id": 20,
+			"title": "Tor网桥",
+			"date_published": 1468922817.716,
+			"body": "获取网桥（需翻墙）\nhttps://bridges.torproject.org/bridges?transport=obfs3\nhttps://bridges.torproject.org/bridges?transport=obfs4\n\n利用电子邮件获取\nyahoo邮箱\nsubject:getbridges\n内容如下：\nbeidges obfs4 或者 bridges obfs3\n\n最近获取到的网桥，时间久了就会失效：\nobfs4 104.129.176.152:26145 072B62A5FE3D16598068596E96BE5878FE2A3C65 cert=8I6Qa0kstGhySz2zp5P3vP/mMPv6oMIwdfJMIRaGDqtLdjapibYVEPKYVXJ4i2u6DUQHTA iat-mode=0\nobfs4 192.36.31.233:35462 7C23DEDCC9FC6361FF8568B4312AF6182291B830 cert=blvHEuKx1dZ+jKNUMGvIkgl/wRy/4aqEtcGippc2ZPmHMCM5O8ippbOW5lXRGLzxGFYATA iat-mode=0\nobfs4 69.163.37.128:2483 383FDF8E29F6797F9F386E4D37241EF394B0C112 cert=50ESFeT8xbzSq97BP/4i660u7kPJCCsiXVqvebRZZmAlCN5+NwKngqK6hONw6tRqRXnoQg iat-mode=0"
+		},
+		{
+			"post_id": 19,
+			"title": "TOP 500网站",
+			"date_published": 1468921953.079,
+			"body": "https://soundcloud.com/\nhttp://www.xnxx.com/\nhttps://bongacams.com/\nhttp://xhamster.com/\nhttps://www.pixnet.net/blog\nhttp://www.pornhub.com/\nhttp://bbs.fc2.com/en/\nhttp://www.youporn.com"
+		},
+		{
+			"post_id": 18,
+			"title": "ubuntu命令汇总",
+			"date_published": 1468921396.829,
+			"body": "find /usr -name linux.so -print\nscp local_file remote_username@remote_ip:remote_folder\n\n安装paper主题\nhttps://itsfoss.com/install-paper-theme-linux/\nhttps://itsfoss.com/how-to-install-themes-in-ubuntu-13-10/\n\n安装docky\nhttps://serholiu.com/ubuntu-faenza-docky\n\n安装软件PPA\nsudo add-apt-repository ppa:abbat/tox\nsudo apt-get update\n\nDebain 安装flash插件，不适用Ubuntu\nupdate-flashplugin-nonfree --install\nupdate-flashplugin-nonfree --uninstall\nupdate-flashplugin-nonfree --status\n\n增加开机启动项\nsudo nano /etc/rc.local\nexit 0 #这一行之前增加\n绝对路径：/etc/init.d/dnsmasq start &\n不能返回提示符的要加&号\n\n"
+		},
+		{
+			"post_id": 16,
+			"title": "谷歌墙内搜索列表\t",
+			"date_published": 1464868483.225,
+			"body": "https://www.logcg.com/archives/877.html\nhttp://web.de"
+		},
+		{
+			"post_id": 13,
+			"title": " 细节的力量",
+			"date_published": 1464066292.624,
+			"body": "https://xijie.wordpress.com/ 希望他能在0Net办一个分站。"
+		},
+		{
+			"post_id": 12,
+			"title": "pdf测试！",
+			"date_published": 1461637044.925,
+			"body": "[比较全的树莓派资料<===](data/PDF/raspi.pdf)\n将PDF文件放入站点目录：data/PDF/xxx.pdf;pdf文件夹需要自己新建。\n语法和普通链接一样\\[foo](data/PDF/raspi.pdf)\n文件名必须英文。"
+		},
+		{
+			"post_id": 11,
+			"title": "Markdown语法",
+			"date_published": 1461594983.98,
+			"body": "[维基百科链接](https://zh.wikipedia.org/wiki/Markdown)\n[zeronet链接](http://127.0.0.1:43110/mosen.bit/?Post:2)\nMarkdown 是一种轻量级标记语言，创始人为约翰·格鲁伯（John Gruber）。它允许人们“使用易读易写的纯文本格式编写文档，然后转换成有效的XHTML(或者HTML)文档”。[3]这种语言吸收了很多在电子邮件中已有的纯文本标记的特性。\n\nMarkdown同时还是一个由Gruber编写的Perl脚本：Markdown.pl。它把用markdown语法编写的内容转换成有效的、结构良好的XHTML或HTML内容，并将左尖括号('<')和&号替换成它们各自的字符实体引用。它可以用作单独的脚本，Blosxom和Movable Type的插件又或者BBEdit的文本过滤器.[3]\n\nMarkdown也已经被其他人用Perl和别的编程语言重新实现，其中一个Perl模块放在了CPAN(Text::Markdown)上。它基于一个BSD风格的许可证分发并可以作为几个内容管理系统的插件。[5][6]"
+		},
+		{
+			"post_id": 10,
+			"title": "ShadowsocksR Zeronet站点",
+			"date_published": 1461594368.642,
+			"body": "http://127.0.0.1:43110/1GUwoyRUxHWkUik5o4BBKgjrpbeCMXFj9z/"
+		},
+		{
+			"post_id": 9,
+			"title": "墙内的DNS方案",
+			"date_published": 1461511990.497,
+			"body": "**在墙内防止运营商劫持可以将DNS设置为\n首选DNSPod：119.29.29.29\n备用OneDNS：114.215.126.16\n当然在访问墙外网站时仍然会有污染，Amethyst-SSR提供非标准端口DNS\n162.243.52.237:1828\n欢迎试用。**"
+		},
+		{
+			"post_id": 8,
+			"title": "SSR+Tor+ZeroNet匿名浏览方法",
+			"date_published": 1461511895.148,
+			"body": "下载Tor：http://127.0.0.1:43110/1Mg82NHKBLzgnzp199NT1Mh8rUdXw2ij1h/T4Z.7z\n将压缩包内文件覆盖到ZeroBundle/ZeroNet/tools/tor\n配置torrc，使Tor通过SSR代理，默认为端口1080。\n关闭SSR的系统代理但不关闭程序（避免冲突）\n启动ZeroNet，右上角为TOR：OK证明成功，建议将TOR设为ALWAYS模式。"
+		},
+		{
+			"post_id": 7,
+			"title": "比特币 (Bitcoin) 系统是如何运行的？--知乎",
+			"date_published": 1461508110,
+			"body": "后面的回答很精彩！\nhttp://www.zhihu.com/question/20941124"
+		},
+		{
+			"post_id": 6,
+			"title": "贴图测试",
+			"date_published": 1461473523.629,
+			"body": "第一张\n![情人办公室OL诱惑1](data/img/20160417_04370eba132866c2efefviBlvEsn9SCh.jpg)\n第二张\n![情人办公室OL诱惑2](data/img/20160417_526fd7c4ae136372c6e8Os7Z7GWWSTQN.jpg)\n"
+		},
+		{
+			"post_id": 5,
+			"title": "福利",
+			"date_published": 1461391481.612,
+			"body": "https://zhanhaitao.tumblr.com\nhttps://the-r3df0x.tumblr.com/"
+		},
+		{
+			"post_id": 2,
+			"title": "我的博客开业啦！",
+			"date_published": 1461388663.894,
+			"body": "你好！0网！\n0Net:http://127.0.0.1:43110/16TkQqszbHV6wk6sQC3WH4CNLLfcWCPqzv\n0Net:http://127.0.0.1:43110/r3df0x.bit\nPublic Net:https://bit.no.com:43110/r3df0x.bit"
+		},
+		{
+			"post_id": 1,
+			"title": "Congratulations!",
+			"date_published": 1433033779.604,
+			"body": "Your zeronet blog has been successfully created!"
+		}
+	]
+}

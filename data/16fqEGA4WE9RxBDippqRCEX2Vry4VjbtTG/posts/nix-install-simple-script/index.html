@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="referrer" content="no-referrer">
+        <title>rf - Installing a Simple Script in Nix // NixOS</title>
+        <link rel="stylesheet" href="../../css/default.css" />
+        <link rel="shortcut icon" href="favicon.ico.html" type="image/x-icon"><link rel="shortcut icon" href="../../images/favicons/favicon32.png"><link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../images/favicons/favicon144.png"><link rel="apple-touch-icon-precomposed" sizes="114x114" href="../../images/favicons/favicon114.png"><link rel="apple-touch-icon-precomposed" sizes="72x72" href="../../images/favicons/favicon72.png"><link rel="apple-touch-icon-precomposed" sizes="57x57" href="../../images/favicons/favicon57.png">
+    </head>
+    <body>
+        <header>
+            <div class="logo">
+                <a href="../../index.html">Regular Flolloping</a>
+            </div>
+            <nav class="navbar">
+                <a href="../../index.html">Home</a>
+                <a href="../../about/index.html">About</a>
+                <a href="../../contact/index.html">Contact</a>
+                <a href="../../archive/index.html">Archive</a>
+            </nav>
+        </header>
+
+        <main role="main">
+            <h1>Installing a Simple Script in Nix // NixOS</h1>
+            <article>
+    <section class="header">
+        Posted on August 20, 2018
+        
+    </section>
+    <section>
+        <p>so readers here are probably in one of two groups of people:</p>
+<ul>
+<li>people i know irl</li>
+<li>people from irc / discord</li>
+</ul>
+<p>and luckily a single thing is true of both sections, we’ll start with the easy one:</p>
+<h3 id="people-from-irc-discord">people from irc / discord</h3>
+<p>if you use irc you’re a functional programming nerd. no arguments.<br />
+if you use discord then you’re probably a nerd, at the very least you’re not popular, and therefore you probably like functional programming, no arguments.</p>
+<h3 id="people-i-know-irl">people i know irl</h3>
+<p>you know me, and that means there’s approximately a 100% chance you’ve heard me go on about functional programming <strong><em>at great length</em></strong> with the type of loving obsession that would cause an innocent bystander to (understandably) believe we were talking about a woman with a <strong><em>stonking pair of titter totters</em></strong>, and thus, discussions on functional programming are nothing new to you at all, however one-sided.</p>
+<h2 id="the-actual-article">the actual article</h2>
+<blockquote>
+<p>disclaimer: i know sweet country bumpkiss about this, but who knows maybe its still helpful</p>
+</blockquote>
+<p>so with that out of the way, lets talk about something thats pretty fuarking computers, and that thing is <a href="https://nixos.org">NixOS</a>, and its package manager that if it were a person would have one magnum package, <a href="https://nixos.org/nix/">Nix</a></p>
+<p>to put things briefly, nix is a functional package manager that is filled with awesome awesome features, and nixos is the operating system built around it that is fuarking black magic.</p>
+<p>installing packages in nix are done through <strong>nix derivations</strong>, a piece of code written in nix that defines the parameters for building the package.</p>
+<p>nix is weird to get into because it does things like <strong>not have a /bin</strong> or baically any other file structure that any other version of linux has, so theres some caveats to installing things.</p>
+<p>this article will run through packaging a simple script, namely my <a href="https://github.com/techieAgnostic/swatch">Swatch Beats Script</a></p>
+<p>swatch beats are pretty fizzityucking radical, but thats for another post. in essence they are a new time format, and i like to have them in my prompt, which is why i wrote this script and why i want to install it in nixos. sue me.</p>
+<h2 id="the-initial-problems">the initial problems</h2>
+<p>so there are two main problems with this script that prevent us from just running it like we might in other distros:</p>
+<ul>
+<li>there is no <code>/bin/bash</code></li>
+<li>our equivilent of <code>/bin/</code> is read-only</li>
+</ul>
+<p>which is why we need a derivation to install it the way god intended (referring of course to Jon Osterman)</p>
+<h2 id="step-1">step 1</h2>
+<p>we create a file called <code>swatch.nix</code> to place our derivation in, and will be using a tool called <code>mkDerivation</code> which is part of the <code>stdenv</code> library in nix.</p>
+<p><code>stdenv</code> provides us with many tools you might expect to find in a (ST)an(D)ard linux (ENV)ironment, such a <code>mv</code>, <code>echo</code>, <code>cp</code> etc etc, as well as a lot of nix specific things, in this case <code>mkDerivation</code></p>
+<p>now nix things are purely functional which means if we want to use any of the standard tools we need to pass them into the function. so lets begin <code>swatch.nix</code> like so</p>
+<pre><code>{ stdenv }:
+
+stdenv.mkDerivation rec {
+
+}</code></pre>
+<p>which tells the function its allowed to use stdenv stuff, and also begins our call to mkDerivation. the <code>rec</code> bit, i have been informed, allows the following attribute set (the bit between the curly brackets) to refer to itself recursively if need be, and its one of those things where if i remove it it doesnt work anymore so lets just leave it there for now.</p>
+<p>now we can start to fill out the call.</p>
+<h2 id="step-2">step 2</h2>
+<p>to start with we’ll add some meta data to the package. the important one is the name, which is where into the nix store (<code>/nix/store/</code>, the nixos equivilent to <code>/bin/</code>) it will be placed.</p>
+<p>generally this is in the form of <code>name-version</code> because its possible to have multiple versions of the same package installed at the same time (or even multiple versions of the same version of a package).</p>
+<p>so add the following:</p>
+<pre><code>{ stdenv }:
+
+stdenv.mkDerivation rec {
+   name = &quot;swatch-${version}&quot;;
+   version = &quot;1.0.0&quot;;
+}</code></pre>
+<p>and now we can move on to the actual meta tag that has all the stuff package repositories like you to have. to do this we add a new set to the call:</p>
+<pre><code>{ stdenv }:
+
+stdenv.mkDerivation rec {
+   name = &quot;swatch-${version}&quot;;
+   version = &quot;1.0.0&quot;;
+   meta = {
+      description = &quot;Display the current swatch beats&quot;;
+      longDescription = ''
+         d i s p l a y   t h e   c u r r e n t   s w a t c h   b e a t s
+      '';
+      homepage = https://github.com/techieAgnostic/swatch/;
+      license = stdenv.lib.licenses.bsd3;
+      maintainers = [ &quot;Shaun Kerr (tA) - s@p7.co.nz&quot; ];
+      platforms = stdenv.lib.platforms.all;
+
+   };
+}</code></pre>
+<p>the things that may be new here are the <code>stdenv.lib.licenses.bsd3</code> bit, which is simply a variable defined as part of <code>stdenv</code> we can reference, and the square bracket notation, which creates a set (although this one only has one item in it).</p>
+<p>there is also the double quote notation <code>''</code>, which is just a multi line string.</p>
+<p>now we’re on to the meat and potatoes.</p>
+<h2 id="step-3">step 3</h2>
+<p>so the basic steps for installing a script would be:</p>
+<ul>
+<li>download the script from somewhere</li>
+<li>install it to your preferred folder</li>
+</ul>
+<p>which is exactly what we’re gonna do, but with a <strong><em>twist</em></strong></p>
+<p>this script is a single file, so we can use the <code>fetchurl</code> utility to grab it. this is <strong>not</strong> part of <code>stdenv</code> so we will need to add it to the first line in much the same way, and then we can define what we’re going to download, in this case the script file from a specific commit to the repo (for reproducibility).</p>
+<pre><code>{ stdenv, fetchurl }:
+
+stdenv.mkDerivation rec {
+   name = &quot;swatch-${version}&quot;;
+   version = &quot;1.0.0&quot;;
+   meta = {
+      description = &quot;Display the current swatch beats&quot;;
+      longDescription = ''
+         d i s p l a y   t h e   c u r r e n t   s w a t c h   b e a t s
+      '';
+      homepage = https://github.com/techieAgnostic/swatch/;
+      license = stdenv.lib.licenses.bsd3;
+      maintainers = [ &quot;Shaun Kerr (tA) - s@p7.co.nz&quot; ];
+      platforms = stdenv.lib.platforms.all;
+   };
+   repoUrl = &quot;https://raw.githubusercontent.com/techieAgnostic/swatch&quot;;
+   commit = &quot;008f121290029a422af10328fc69f8f310cb19d5&quot;;
+   src = fetchurl {
+      url = &quot;${repoUrl}/${commit}/swatch&quot;;
+      sha256 = &quot;e373ab25e713eac78e5ea0647a3f511e1e21a635691d7167c9420cb838bf4d71&quot;;
+   };
+}</code></pre>
+<p>the checksum can be calculated using the <code>sha256sum</code> program from <code>coreutils</code>.</p>
+<p>this will download whatever is at src, and place it in <code>/tmp</code> for us to work on</p>
+<p>now we need to move it into the right place, which is a bit weird in nix. <code>mkDerivation</code> has a bunch of predefined phases it will execute, with predefined behaviour unless we override them. these phases are all built for much larger programs, so we’re only going to use two.</p>
+<p>add the line</p>
+<pre><code>phases = &quot;installPhase fixupPhase&quot;</code></pre>
+<p>to tell nix we only want to use those two.</p>
+<p>the <strong>installPhase</strong> is where we move our script into the nix store. the phase defines an environment variable <code>$out</code> which is the path to the programs folder in the store. this is useful because the actual path contains a big fuck-off hash at the start, and we don’t know that ourselves.</p>
+<p>the behaviour we want is pretty simple for this, so lets go ahead and override it by adding the following:</p>
+<pre><code>installPhase = ''
+   mkdir -p $out/bin
+   cp ${src} $out/bin/swatch
+   chmod +x $out/bin/swatch
+'';</code></pre>
+<p>the only piece of sneakiness here is that nix expects there to be a <code>/bin</code> in the <code>$out</code> directory, so we have to make that ourselves.</p>
+<p>the <strong>fixupPhase</strong> is a nix specific thing, and is there to change things that would work on normal linux, but not in hipster linux. the main thing that this script trips up is there being no <code>/bin/bash</code> so our <code>#!/bin/bash</code> at the top of the file doesn’t work, but in a larger program it may be things like there not being any standard libraries where the program things they are.</p>
+<p>the standard behaviour for the fixupPhase is to do a find/replace on the <code>#!</code> lines to make them work, which is exactly what we want so we do not need to redefine this phase. null perspiration there.</p>
+<p>once you’ve done this the whole derivation should look as follows:</p>
+<pre><code>{ stdenv, fetchurl }:
+
+stdenv.mkDerivation rec {
+   name = &quot;swatch-${version}&quot;;
+   version = &quot;1.0.0&quot;;
+   meta = {
+      description = &quot;Display the current swatch beats&quot;;
+      longDescription = ''
+         d i s p l a y   t h e   c u r r e n t   s w a t c h   b e a t s
+      '';
+      homepage = https://github.com/techieAgnostic/swatch/;
+      license = stdenv.lib.licenses.bsd3;
+      maintainers = [ &quot;Shaun Kerr (tA) - s@p7.co.nz&quot; ];
+      platforms = stdenv.lib.platforms.all;
+   };
+   repoUrl = &quot;https://raw.githubusercontent.com/techieAgnostic/swatch&quot;;
+   commit = &quot;008f121290029a422af10328fc69f8f310cb19d5&quot;;
+   src = fetchurl {
+      url = &quot;${repoUrl}/${commit}/swatch&quot;;
+      sha256 = &quot;e373ab25e713eac78e5ea0647a3f511e1e21a635691d7167c9420cb838bf4d71&quot;;
+   };
+   phases = &quot;installPhase fixupPhase&quot;;
+   installPhase = ''
+      mkdir -p $out/bin
+      cp ${src} $out/bin/swatch
+      chmod +x $out/bin/swatch
+   '';
+}</code></pre>
+<p>and is ready to be tested</p>
+<h2 id="step-fant4stic">step fant4stic</h2>
+<p>to test this we can use the <code>nix-build</code> utility to install the package to a local folder rather than to the proper nix store. to do this we need to write a quick nix expression to call the package derivation (normally this would be part of a larger repository).</p>
+<p>create <code>default.nix</code> with the following:</p>
+<pre><code>with import &lt;nixpkgs&gt; { };
+
+rec {
+   swatch = pkgs.callPackage ./swatch.nix { };
+}</code></pre>
+<p>and we’ll test our derivation by running <code>nix-build default.nix</code>.</p>
+<p>assuming all goes well you’ll find the result in a symlinked folder <code>./result/bin/swatch</code> and it will run fine.</p>
+<h2 id="step-five">step five</h2>
+<p>once the derivation works you can add it to your main nixos configuration to install it system wide. this can be done by adding it to the <code>environment.systemPackages</code> set in your nixos configuration like so:</p>
+<pre><code>environment.systemPackages = with pkgs; [
+   otherPackage1
+   otherPackage2
+   (callPackage /home/shaun/nds/swatch.nix { })
+];</code></pre>
+<p>and a quick rebuild should have the script installed normally <sup>.</sup></p>
+<h2 id="closing-up">closing up</h2>
+<p>this is pretty basic stuff as far as nix is concerned, but it took me ages with about four different articles and irc open to figure it all out, so hopefully this helps someone work out how to get their script they need for their shitty rice avaliable to them.</p>
+<p>peace out ny’all, ima bounce.</p>
+    </section>
+</article>
+
+        </main>
+
+        <footer>
+            powered by <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </footer>
+    </body>
+</html>

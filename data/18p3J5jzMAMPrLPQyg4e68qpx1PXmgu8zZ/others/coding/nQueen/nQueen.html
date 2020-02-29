@@ -1,0 +1,136 @@
+<!--
+by leaflet@ZeroID.bit
+-->
+<meta HTTP-EQUIV="Content-Type" Content="text-html; charset=UTF-8">
+<title>Queen</title>
+<style>
+td {
+width:40px;
+height:40px;
+border:1px solid #888;
+text-align:center;
+cursor:hand;
+background-color:#feff99;
+font-size:25px;
+}
+
+table {
+border-collapse:collapse;
+}
+</style>
+
+<script>
+function dw(s){document.write(s);}
+function $(s){return document.getElementById(s);}
+
+
+var  n, b, i, j, num; 
+
+var hang=[];
+var ans=[];
+
+function queen(i){  
+   var j, k;  
+    if(i == N){ //一组新的解产生了
+		ans[num]=[];
+        for(j = 0; j < N; j++){			
+			ans[num][j+1] = hang[j] + 1;
+		}	
+        num++;  
+        return;  
+    }  
+    for (j=0; j<N; j++){ //将当前皇后i逐一尝试放置在不同的列  
+        for(k=0; k<i; k++) //逐一判定i与前面的皇后是否冲突  
+            if( hang[k] == j || (k - i) == (hang[k] - j) || (i - k) == (hang[k] - j )) break;  
+        if (k == i) {  //放置i，尝试第i+1个皇后  
+            hang[i] = j;  
+            queen(i + 1);  
+        }  
+    }  
+}
+
+
+
+function getRandomUL(L,U){
+	return(L+Math.floor((U-L)*Math.random()));	//包含L,不含U			
+}
+
+function nQueen(){
+	num=0;  
+    queen(0);	
+    
+	arr=ans[getRandomUL(0,ans.length)];
+	
+}
+
+var N=8;
+//var L=N+1;
+var arr;
+
+function setTD(chr,i,j){
+	var sRe="<td  title=\"位置："+i+"行，"+j+"列\">"+chr+"</td>";
+	return sRe;
+}
+
+function showQP(a,n){
+	var sbuff="N="+N+"，共有"+ans.length+"组解";
+	sbuff+="<table>";
+	for(var i=1;i<n+1;i++){
+		sbuff+="<tr>"
+		for(var j=1;j<n+1;j++){
+			if(arr[i]==j)
+				sbuff+=setTD("&#9813;",i,j);
+			else
+				sbuff+=setTD("&nbsp;",i,j);	
+		}
+		sbuff+="</tr>";
+	}
+	sbuff+="</table>";
+	return sbuff;
+}
+
+
+
+
+
+function rSet(){
+	var cN=Number($("t1").value);
+	if(isNaN(cN))
+		cN=8;
+	cN=Math.round(cN)	
+	if(cN<1)
+		cN=8;
+			
+	N=cN;
+	
+	arr=[];
+	hang=[];
+	ans=[];
+
+	nQueen();
+
+	if(!arr){
+		arr=[];
+		for(var i=0;i<N+1;i++)
+			arr[i]=0;
+	}
+
+	$("divQP").innerHTML=showQP(arr,N);
+}
+
+nQueen();
+</script>
+
+<center>
+<div><h1>N皇后</h1>
+<form>
+棋盘大小 <input id="t1" type="text"> <input type="button" onclick="rSet()" value="Go">
+</form>
+</div>
+<br>
+<div id="divQP">
+<script>
+dw(showQP(arr,N));
+</script>
+</div>
+</center>

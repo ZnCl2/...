@@ -1,0 +1,54 @@
+
+<!DOCTYPE html>
+
+<html>
+<head>
+ <title>New ZeroNet site!</title>
+ <meta charset="utf-8">
+ <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+ <base href="" target="_top" id="base">
+ <script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+</head>
+<body style="font-family:monospace;background:#4F4F4F;color:#fff;font-size:1.5em;">
+<br>
+<div id="out" style="text-align:center;margin:0 auto;align:center;">...</div>
+
+<script type="text/javascript" src="js/ZeroFrame.js"></script>
+
+<script>
+
+class Page extends ZeroFrame {
+	setSiteInfo(site_info) {
+		var out = document.getElementById("out")
+    if (site_info.settings.domain) {
+      out.innerHTML =
+  			"Welcome to " + site_info.address + ", " + site_info.settings.domain.replace(".bit","") + " (if it's you?)" +
+        "<br><b>If you see this message you know that I reserved this domain for you</b>" +
+        "<br>Also <a style=\"color:lightblue\" href=\"/mkg20001.bit\">visit me</a>"
+    } else {
+     out.innerHTML = "This page is shown on domains I reserved for someone" +
+     "<br>This is not a domain so, whatever" +
+     "<br>And don't forget to <a style=\"color:lightblue\" href=\"/mkg20001.bit\">visit me</a>"
+    }
+
+	}
+
+	onOpenWebsocket() {
+		this.cmd("siteInfo", [], function(site_info) {
+			page.setSiteInfo(site_info)
+		})
+	}
+
+	onRequest(cmd, message) {
+		if (cmd == "setSiteInfo")
+			this.setSiteInfo(message.params)
+		else
+			this.log("Unknown incoming message:", cmd)
+	}
+}
+page = new Page()
+
+</script>
+
+</body>
+</html>

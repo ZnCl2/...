@@ -1,0 +1,439 @@
+
+<HTML>	
+<HEAD>
+<META HTTP-EQUIV="content-type" CONTENT="text/html;charset=iso-8859-1">		
+<TITLE>Sys Admin Magazine Online</TITLE>			
+<LINK REL=STYLESHEET HREF="samag.css" TYPE="text/css">
+
+</HEAD>
+<BODY>
+<table border="0" cellpadding="3" cellspacing="0" width="800" valign="center">
+  <tr>     
+    <td valign="TOP" width="125" background="salogo-bg.gif" bgcolor="#009999"> 
+      <a href="/"><img src="salogo2.gif" border="0" alt="Sys Admin, The Journal for Unix Administrators" width="135" height="89"></a> 
+      <br>&nbsp;<br>
+
+<a href="/" class="nav">Root</a><br>           
+<a href="/current/" class="nav">Current</a><br>
+<a href="/articles/" class="nav">Archives</a><br>
+<a href="/code/" class="nav">Downloads</a><br>
+<a href="/solaris/" class="nav">Solaris Corner</a><br>
+<a href="/linux/" class="nav">LINUX Rookery</a><br>
+<a href="/tool/" class="nav">Tool Showcase</a><br>
+<a href="/quest/" class="nav">Q&A</a><br>
+
+<a href="/extra/" class="nav">Resources</a> <br>
+<a href="/newsletters/" class="nav">Newsletters</a><br>
+<a href="/market/" class="nav">Marketing opps</a> 
+ <p>
+ <form method=get action="/search/search.cgi" name="SearchForm">
+<input type="hidden" name="Range" value="All">
+<input type="hidden" name="Format" value="Standard">
+<input name="Terms" size=12 maxlength=100 value="">
+<br><input type="image" src="search2.gif" alt="Search" border="0" value="Search" name="submit">
+
+         </form>
+   <br>&nbsp;<br>
+      <!-----Custom Ad Banner Tag Here----->&nbsp; &nbsp;<a href="http://66.35.216.90/redirect/0/813/991604815508" TARGET="_top"><img src="usenix01_125x125.gif" ALT="[Advertisement]" Width="125" Height="125"></a> 
+       <p>&nbsp;</p>
+      <p>&nbsp;</p>
+    </td>
+    <td valign="TOP" width="711">       
+      <table width="100%" border="0" cellspacing="0" cellpadding="1">
+        <tr> 
+          <td width="431" height="56">
+	  <!-----Custom Ad Banner Tag Here-----><a href="http://66.35.216.90/redirect/0/811/991604815517" TARGET="_top"><img src="usenix01_468x60.gif" ALT="[Advertisement]" Width="468" Height="60"></a>
+          </td>
+        </tr>
+      </table>
+      <span class="footer">INSIDE Sys Admin:<br>
+     <a href="/">HOME</a> | 
+     <a href="/contact/">CONTACT US </a> | 
+     <a href="/sub/">SUBSCRIBE</a> | 
+     <a href="/market/">ADVERTISE</a> |  
+     <a href="/ed/">WRITE FOR US </a> | 
+     <a href="/about/">ABOUT US</a> |
+     <a href="/extra/cd_order.htm">CDROM </a>
+     </span>
+    <br>&nbsp;<br>
+     <!-----SA Content Body Here-----> 
+      <p align="left">
+<h1>IBM's Secure Mailer</h1>
+
+<p>Kyle Dent</p>
+
+<p>Wietse Venema, probably best known as the developer of SATAN and
+the TCP Wrapper security tools, has now created Secure Mailer. In
+December of 1998, IBM released Secure Mailer as open source
+software providing a new, freely available alternative to the
+nearly universal Sendmail program. The program, more commonly known
+in open-source circles as Postfix, attempts to be fast, easy to
+administer, and secure. One of the primary goals of Postfix is to
+be widely implemented in order to make the most significant impact
+on the performance and security of Internet email overall.</p>
+
+<p>Sendmail by some estimates handles nearly three-quarters of all
+email on the Internet, but it has had a bit of a checkered past
+with a history of security problems. A scan through the CERT
+Advisories quickly turned up more than a dozen Sendmail incidents.
+Although Sendmail developers have made a lot of progress in
+bringing it up to date for an environment that was unimaginable
+when it was originally created, Postfix offers a solid alternative
+that is inherently more secure.</p>
+
+<p><b>Good Breeding and Impeccable Manners</b></p>
+
+<p>In addition to tighter security, Postfix offers several
+advantages over Sendmail while maintaining a high level of
+compatibility with it. The Postfix Web site claims that it is up to
+three times faster than its nearest competitor. (There are several
+other Sendmail alternatives, such as qmail and various commercial
+packages.) It is designed to be robust and behave well under
+stress. For example, runaway conditions that might occur during
+error handling are diminished because the software pauses before
+sending error messages or terminating with a fatal error. It
+operates under a "no thundering herd" policy when
+delivering mail to other hosts. Initially, Postfix will make only
+two simultaneous connections. If the deliveries succeed, Postfix
+will slowly increase connections up to a configurable limit. It
+will also detect whether the receiving host can no longer handle
+the load and decrease the number of connections.</p>
+
+<p>In processing its own queue, Postfix implements a few other
+policies to make it a well-behaved software package. The queue
+manager sorts messages by destination and processes deliveries in a
+round-robin fashion to hit all destinations in the queue. Postfix
+will only make simultaneous deliveries to the same host when it
+does not have messages for other destinations waiting. If a message
+cannot be delivered, the queue manager marks it with a time stamp.
+With each repeated delivery failure, Postfix will wait longer each
+time before wasting resources trying to deliver a message to a host
+that is not available. The queue manager also maintains a
+short-term list of unreachable destinations.</p>
+
+<p><b>We Can Still Be Friends</b></p>
+
+<p>Postfix is designed to be compatible with Sendmail to make
+migration easier, and to make the change transparent to users. In
+fact, you can continue to use Sendmail in conjunction with Postfix,
+allowing the new mailer to replace specific mail functions as
+needed. Postfix continues support for <b>/etc/aliases</b> and
+delivery to any of the standard mail directories as well as to a
+specified file or command. It also respects <b>user.lock</b> files
+and will obey <b>$HOME/.forward</b> directives. Basically all the
+aspects of Sendmail are present except one significant one --
+<b>sendmail.cf</b>.</p>
+
+<p>Sendmail makes extensive use of rewriting rules to ensure that
+addresses are in the correct form and to select the correct mail
+delivery agent for a message site. Administrators can also use them
+to customize delivery for their networks. The Postfix Web pages say
+that there is not yet support for rewriting rules; rather, Postfix
+uses a rewriting table. In my opinion, Postfix should display this
+fact as its most prominent feature and not suggest support for any
+rewriting rules in the future. Only a handful of sites would ever
+need the full power of Sendmail's rewriting rules, and even
+fewer systems administrators understand the black art of rewriting
+rules well enough to make reasonable modifications. If you do in
+fact modify Sendmail rewriting rules, Postfix is probably not an
+option for you. However, you should look at the address mapping
+table feature to see whether it can support your requirements.</p>
+
+<p><b>Defensive Mailing</b></p>
+
+<p>Overall, Postfix is written to be a highly secure network
+application. It employs multiple layers of defense. All of its
+processes run at a fixed low privilege, and most can be run within
+a <b>chroot</b>ed environment. Sendmail is the classic monolithic
+program, and it runs with root privilege. These two facts are
+largely the reason for the severity of Sendmail's security
+problems. If a vulnerability is discovered, the possibility that it
+will allow root access is high.</p>
+
+<p>It is quite possible that Postfix has security bugs, but because
+of its design, whatever vulnerabilities might exist will be very
+limited and possibly not even exploitable over a network. Its
+modularity provides flexibility and also security. There are
+various processes that perform specific tasks. There is a separate
+process to send mail and receive mail and to deliver mail locally.
+Systems only run the processes they need. If a process is not
+running, it is necessarily not vulnerable. Another side effect is
+that each process is insulated, so that, for example, the local
+delivery agent has no communication with the network. If a
+vulnerability is discovered within local delivery, it cannot be
+exploited from outside that host.</p>
+
+<p>Some additional security aspects are that Postfix programs do
+not run under a user process, thereby eliminating exploits that
+involve signals, open files, the environment, and other process
+attributes that might be passed from a parent to a child. Postfix
+relies on the security notion of trust or lack of it. Postfix
+processes do not even trust each other. Contents of queue files or
+IPC messages might have been tampered with; therefore, each process
+tries to use only its own information in taking security-sensitive
+actions.</p>
+
+<p>Some other security lessons learned from Sendmail (among others)
+and incorporated into Postfix are that there are no setuid
+programs, no <b>/tmp</b> race conditions, no remote data in shell
+variables or shell commands, and no fixed-length string buffers.
+Memory is allocated dynamically for buffers and strings, and long
+lines of messages are broken up into sequences that are
+reconstructed upon delivery.</p>
+
+<p><b>Installing Postfix</b></p>
+
+<p>After you have downloaded Postfix, it is a simple matter to
+uncompress the bundle and compile it. On my system, I had to add
+one option for the compiler, which was easily accomplished by
+editing a straightforward <b>make</b> file. The <b>INSTALL</b> file
+that comes with the distribution lists supported systems. The
+normal UNIX platforms are all there. For most systems, compilation
+should be as simple as going to the top-level directory and typing
+<b>make</b>. In my case compilation was less than a minute, and
+after I corrected the makefile, reported no errors.</p>
+
+<p>The <b>INSTALL</b> file offers three options for installing
+Postfix:</p>
+
+<p>1. Send mail only, without changing an existing Sendmail
+installation.</p>
+
+<p>2. Send and receive mail via a virtual host interface, without
+changing an existing Sendmail installation.</p>
+
+<p>3. Replace Sendmail altogether.</p>
+
+<p>I opted for the third choice. Documentation is available on the
+Postfix Web site and also comes with the distribution as HTML files
+and man pages. The <b>INSTALL</b> file provides instructions for
+installing Postfix after compilation is complete.</p>
+
+<p>You will need root access on the machine where you are
+installing the package. As root, create a directory for
+Postfix.</p>
+
+<pre>
+# mkdir /etc/postfix
+</pre>
+
+<p>Then execute the following commands from the Postfix source
+directory:</p>
+
+<pre>
+# chmod 755 /etc/postfix
+# cp conf/* /etc/postfix
+# chmod 644 /etc/postfix/*
+# chmod 755 /etc/postfix/postfix-script*
+</pre>
+
+<p>This will create the configuration directory for Postfix. The
+path <b>/etc/postfix</b> is hardcoded but can be overridden by
+setting an environment variable <b>MAIL_CONFIG</b>.</p>
+
+<p>You will also need to create a spool directory for Postfix.</p>
+
+<pre>
+# mkdir /var/spool/postfix
+# chmod 755 /var/spool/postfix
+</pre>
+
+<p>Finally, you will need both a commands directory and a daemons
+directory. These paths are configurable in <b>
+/etc/postfix/main.cf</b>. You can place them anywhere that makes
+sense for your system. I chose the recommended <b>/usr/sbin</b> for
+commands and <b>/usr/lib/postfix</b> for daemons. If you are
+replacing an existing Sendmail installation, you will want to
+rename the Sendmail program, because the Postfix distribution
+includes a binary called Sendmail. After moving your Sendmail
+program out of the way (e.g., <b>mv /usr/lib/sendmail
+/usr/lib/sendmail.orig</b>) execute the following from the Postfix
+source directory:</p>
+
+<pre>
+# cp bin/* /usr/sbin
+# mkdir /usr/lib/postfix
+# cp libexec/* /usr/lib/postfix
+</pre>
+
+<p>You can copy the included man pages into place or adjust your
+MANPATH environment variable as necessary.</p>
+
+<p>Now, you need to replace the previous Sendmail installation.
+First, you will need to move <b>mailq</b> and <b>newaliases</b> so
+that Postfix can assume their functions. Assuming your programs are
+in <b>/usr/bin</b>, execute the following:</p>
+
+<pre>
+# mv /usr/bin/mailq /usr/bin/mailq.orig
+# mv /usr/bin/newaliases /usr/bin/newaliases.orig
+# chmod 755 /usr/bin/newaliases.orig /usr/bin/mailq.orig
+
+# ln -s /usr/sbin/sendmail /usr/bin/mailq
+# ln -s /usr/sbin/sendmail /usr/bin/newaliases
+</pre>
+
+<p>Create an account that will own the Postfix queue and most of
+its processes. The account should be set up so that no one can log
+in using the userid, and it should not have a shell. Use your
+normal tools to create the account. The <b>/etc/passwd</b> entry
+should resemble the following:</p>
+
+<pre>
+postfix:*:45128:45128:Postfix Mailer:/dev/null:/dev/null
+</pre>
+
+<p>Next, there are certain mandatory configuration options to set,
+and you can set any others as appropriate for your system. Postfix
+parameters work like environment variables. Edit the file <b>
+/etc/postfix/main.cf</b>. The default file is well documented. If
+you are following the above installation, set each of the following
+as shown:</p>
+
+<pre>
+queue_directory = /var/spool/postfix
+command_directory = /usr/sbin
+daemon_directory = /usr/lib/postfix
+mail_owner = postfix
+</pre>
+
+<p>For <b>myhostname</b> and <b>mydomain</b> name, use your own
+host and domain names, but be sure to set them because they are
+used as the defaults for other configuration options. Also, be sure
+to select (uncomment) the correct <b>mydestination</b> line from
+the default configuration file.</p>
+
+<p>You can get more configuration information from the online
+documentation or from the HTML directory in the Postfix source
+directory. You should certainly familiarize yourself with most of
+the configuration options to decide which settings are important
+for your environment.</p>
+
+<p>In addition to configuration changes, you have the option of
+running most of the Postfix processes within a <b>chroot</b>ed
+environment. This is an excellent security measure that will add
+another layer of protection from someone trying to penetrate your
+system. The steps for creating a <b>chroot</b> are a bit tricky,
+and they vary from platform to platform. Also, the <b>chroot</b>
+will depend on how your binaries were compiled. The Postfix
+distribution does include some help in the <b>
+examples/chroot-setup</b> directory, but these are a bit skimpy and
+probably do not provide all the information you will need. You will
+have to investigate the documentation for your system and
+experiment. From a security point of view, this is well worth the
+effort.</p>
+
+<p>There is another security decision you will have to make
+regarding Postfix's submission mechanism, that is, the
+attributes on directories used for mail spooling. Postfix offers
+two options. The first uses a world-writable, sticky (1733)
+directory for messages. Because it is world-writable there is no
+need to run any program with special privileges (setuid or setgid),
+and the mail files themselves are not world-writable or otherwise
+accessible to other users.</p>
+
+<p>There is a possibility that a local user could do some small
+damage. For example, it would be possible to create a hard link to
+a mail file so that it is not removed when Postfix deletes it. Or,
+a local user could copy or hard link some system file to the
+directory to try to have it delivered as mail. Postfix does take
+steps to prevent this (remember, trust no one), so the likelihood
+that this would work is significantly diminished. However, if you
+have a lot of local users on the mail system, and your own security
+policies would not permit world-write permissions, Postfix offers
+an alternative. You can set the directory permissions more
+restrictively (1730) and install an additional program, called
+postdrop, provided to run setgid. You will have to create a special
+group that has no members and set the mail spool directory's
+group to the unique group you created. Postfix will automatically
+run <b>postdrop</b> when it detects that the spool directory write
+permission is restricted.</p>
+
+<p>You will need to copy the correct script into place to enable
+one of the submission modes. On my system there are many mail
+accounts, but very few local users (only administrators), so I
+chose the first option. From the <b>/etc/postfix</b> directory,
+type:</p>
+
+<pre>
+# cp postfix-script-nosgid postfix-script
+</pre>
+
+<p>Once you have selected your submission mechanism and you are
+satisfied with your configuration, you can start your Postfix
+daemons:</p>
+
+<pre>
+# postfix start
+</pre>
+
+<p>The first time you start the application, you will see warning
+messages as it creates its various directories. If you make any
+changes to configuration files, you should reload Postfix:</p>
+
+<pre>
+# postfix reload
+</pre>
+
+<p>Although the distribution does not provide an installation
+script, handling it manually is quite simple and perhaps provides a
+better understanding of the program as a whole. In addition to the
+configuration discussed above, there are a number of other options
+that deal with virtual hosting, antispam, resource controls, and
+address manipulation.</p>
+
+<p>One issue that might affect your decision in considering a
+switch to Postfix is that there is not yet any commercial support
+for the product. If you now have support from your system vendor,
+or if you have contracted with a third party for Sendmail support,
+you will probably be on your own for the near future if you run
+Postfix. On the other hand, Postfix provides a stable and secure
+mail system that is easy to set up, yet provides most of the
+flexibility of Sendmail. It is a new application that has not had
+much experience in the real world, but based on its design and
+initial performance reports, it is an application that has
+tremendous promise and is probably worth an investment of some time
+to investigate its potential for your site.</p>
+
+<p><b>References</b></p>
+
+<pre>
+http://www.alphaworks.ibm.com/
+
+http://www.postfix.org/
+</pre>
+
+<h1>About the Author</h1>
+
+<p>Kyle Dent is the founder and owner of SeaGlass Technologies,
+Inc. a company specializing in secure Web hosting/development and
+Internet/security consulting. He can be reached at:
+kdent@seaglass.com.</p>
+</p>
+    </td>
+  </tr>
+  <tr> 
+ 
+	 <td width="125" bgcolor="#009999">&nbsp; </td>    
+	 
+    <td align="center" width="711"> 
+      <p align = "left"> <!-----Custom Ad Banner Tag Here-----> <a href="http://66.35.216.90/redirect/0/811/991604815526" TARGET="_top"><img src="usenix01_468x60.gif" ALT="[Advertisement]" Width="468" Height="60"></a> 
+        <br>
+        <span class="footer">Copyright &copy; 2001 <i>SysAdmin Magazine</i>, 
+        SysAdmin Magazine's <a href="/contact/privacy.htm">Privacy Policy</a>, 
+        <br>
+        Comments about the website: <a href="mailto:webmaster@sysadminmag.com">webmaster@sysadminmag.com 
+        </a><br>
+        SDMG Websites: <a href="http://www.cuj.com/" target="_new">C/C++ Users 
+        Journal</a>, <a href="http://www.ddj.com/" target="_new">Dr. Dobb's Journal</a>, 
+        <a href="http://msdn.microsoft.com/msdnmag/" target="_new">MSDN Magazine</a>, 
+        <a href="http://www.sysadminmag.com/" target="_new">Sys Admin</a>, <a href="http://www.sdexpo.com/" target="_new">SD 
+        Expo</a>,<a href="http://www.sdmagazine.com/" target="_new">SD Magazine</a>, <a href="http://www.unixreview.com/" target="_new">Unixreview.com</a>, 
+        <a href="http://www.wdj.com/" target="_new">Windows Developer's Journal</a> 
+        </span> 
+    </td> 
+	  </tr>
+	  </table>
+	  </BODY>
+	  </HTML>
+

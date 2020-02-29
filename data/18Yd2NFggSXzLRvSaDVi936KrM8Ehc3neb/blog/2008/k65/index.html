@@ -1,0 +1,98 @@
+<!DOCTYPE HTML>
+<html lang="ru">
+    <head>
+      <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb</title>
+      <link rel="stylesheet" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/css/main.css"/>
+      <link rel="shortcut icon" type="image/x-icon" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/favicon.ico"/>
+      <link href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/rss.xml" title="Akademic's blog" type="application/rss+xml" rel="alternate"/>
+    </head>
+    <body>
+        <header><h1><a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb" rel="home">akademic.name</a></h1></header>
+        <main class="content">
+            
+<article>
+    <h1>Персональный OpenID</h1> <time>21.09.2008</time>
+	<p>Я давно хотел завести себе OpenID для авторизации на сайтах без регистрации.
+Нет, формально у меня их есть уже несколько; на livejournal, yandex, может быть ещё в паре мест. Но хочется иметь полный контроль над тем какую информацию, кому и когда я предоставляю.</p>
+
+<p>Почитав документацию на сайте <a href="http://openid.net/">http://openid.net/</a>, понял что за пару вечеров я с нуля сервер не напишу. Поэтому решил начать с простого - поставить готовое стороннее решение.<br />
+<br />
+Чего-то навороченного не хотелось. В нём трудно будет разобраться, да и таскать монстра вместе с своим сайтом тоже не очень. А маленькое нишевое решение можно потихоньку переписать/интегрировать в свою систему.<br />
+<br />
+Поискав по сети нашёл standalone openid-сервер <a href="http://siege.org/projects/phpMyID/">phpMyID</a>.<br />
+Он авторизует только одного пользователя, чего мне достаточно, не использует БД и не нуждается в дополнительных библиотеках.<br />
+Это всё, можно сказать, плюсы.<br />
+Но не совсем. Поскольку эта редиска не использует БД, то для авторизации используется довольно сложный способ -&nbsp; digest-авторизация. По безопасности такого метода сказать ничего не могу, но удобство настройки в этой программе страдает значительно.<br />
+<br />
+Вся необходимая настройка описывается <a href="http://it.nittis.ru/setup-phpmyid.html">здесь</a>.<br />
+Однако, тут не разбирается один случай, который оказался у меня. А именно запуск при включённом safe mode. Хотя автор openid-сервера, предусмотрел некоторые сложности safe mode, но у меня сервер никак не хотел пускать меня под моими учётными данными.<br />
+<br />
+<br />
+Первое, что надо учесть. Генерация хэша, который подставляется в файл конфигурации немножко другая. В посте, который я указал в качестве руководства приведён способ, отличный от того, что указано в README к серверу.<br />
+Правильно получать MD5 от следующего выражения:<br />
+<br />
+<pre>login:realm:password</pre>
+<br />
+Например, в консоли это можно сделать следующим образом:<br />
+<br />
+echo -n &lsquo;login:realm:password&rsquo; | openssl md5<br />
+<br />
+Второй момент. При включённом safe mode к realm, указанному в конфиге прибавляется -&lt;uid&gt;, где uid - id пользователя в системе, который является владельцем файла (имеется ввиду исполняемый файл openid-сервера).<br />
+Т.е. если realm стоит по умолчанию, то в safe mode получаем что-то вроде phpMyID-4263.<br />
+Именно такой realm надо подставлять при генерации md5-хэша.<br />
+<br />
+Но и это ещё не всё. Даже так у меня не заработало.<br />
+Каких-то два часа дебага и я понял почему именно не работает.<br />
+<br />
+Всё дело в том, откуда сервер берёт информацию после ввода пароля. <br />
+Есть в функции authorize_mode следующий код:<br />
+<br />
+<pre>if (function_exists(&lsquo;apache_request_headers&rsquo;) &amp;&amp; ini_get(&lsquo;safe_mode&rsquo;) == false) {</pre>
+<pre>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; $arh = apache_request_headers();</pre>
+<pre>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; $hdr = isset($arh[&lsquo;Authorization&rsquo;]) ? $arh[&lsquo;Authorization&rsquo;] : null;</pre>
+<pre><br />&nbsp;&nbsp;&nbsp; } elseif (isset($_SERVER[&lsquo;PHP_AUTH_DIGEST&rsquo;])) {</pre>
+<pre>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; $hdr = $_SERVER[&lsquo;PHP_AUTH_DIGEST&rsquo;];</pre>
+<pre><br />&nbsp;&nbsp;&nbsp; } elseif (isset($_SERVER[&lsquo;HTTP_AUTHORIZATION&rsquo;])) {</pre>
+<pre>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; $hdr = $_SERVER[&lsquo;HTTP_AUTHORIZATION&rsquo;];</pre>
+<pre><br />&nbsp;&nbsp;&nbsp; } elseif (isset($_ENV[&lsquo;PHP_AUTH_DIGEST&rsquo;])) {</pre>
+<pre>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; $hdr = $_ENV[&lsquo;PHP_AUTH_DIGEST&rsquo;];</pre>
+<pre><br />&nbsp;&nbsp;&nbsp; } elseif (isset($_SERVER[&lsquo;Authorization&rsquo;])) {</pre>
+<pre>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; $hdr = $_SERVER[&lsquo;Authorization&rsquo;];</pre>
+<pre><br />&nbsp;&nbsp;&nbsp; } elseif (isset($_REQUEST[&lsquo;auth&rsquo;])) {</pre>
+<pre>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; $hdr = stripslashes(urldecode($_REQUEST[&lsquo;auth&rsquo;]));</pre>
+<pre><br />&nbsp;&nbsp;&nbsp; } else {</pre>
+<pre>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; $hdr = null;</pre>
+<pre>&nbsp;&nbsp;&nbsp; }</pre>
+<br />
+Этот код пытается вытащить из пришедших от браузера данных блок с логином и паролем.<br />
+В первой строчке и содержится проблема safe mode<br />
+<br />
+<pre>if (function_exists(&lsquo;apache_request_headers&rsquo;) &amp;&amp; ini_get(&lsquo;safe_mode&rsquo;) == false)</pre>
+<br />
+Условие верно, если существует функция и safe mode отключен. В моём случае достаточно было удалить условие ini_get( &lsquo;safe_mode&rsquo; ) == false, т.к. авторизационные данные можно было получить только через функцию apache_request_headers.<br />
+<br />
+Вот так я и стал обладателем собственного уникального иденификатора akademic.name. <br />
+Но это начало. Теперь надо дополнить механизм сохранением мест где, я авторизовался через openid. Так можно будет выделить круг посещаемых сайтов и далее ввести контроль за своей информацией в сети. Так что есть ещё куда приложить силы.</p>
+
+    
+    <span class="next_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2008/k66/index.html" rel="next">KDE4 и сохранение сессий</a>
+    </span>
+	
+	
+    <span class="prev_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2008/k64/index.html" rel="previous">Подготовка к обучению.</a>
+    </span>
+	
+</article>
+
+        </main>
+        <footer>
+        Будьте внимательны, многое из того, что написано в этом блоге, является личным мнением автора и не претендует на истину.
+        <img src="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/yopiright.jpg" width="12" height="12"/> 2008
+        </footer>
+    </body>
+</html>

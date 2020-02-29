@@ -1,0 +1,186 @@
+<!DOCTYPE HTML>
+<html lang="ru">
+    <head>
+      <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb</title>
+      <link rel="stylesheet" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/css/main.css"/>
+      <link rel="shortcut icon" type="image/x-icon" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/favicon.ico"/>
+      <link href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/rss.xml" title="Akademic's blog" type="application/rss+xml" rel="alternate"/>
+    </head>
+    <body>
+        <header><h1><a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb" rel="home">akademic.name</a></h1></header>
+        <main class="content">
+            
+<article>
+    <h1>Folding@Home с помощью Nvidia GPU на debian linux</h1> <time>06.02.2010</time>
+	<p>Как я писал в <a href="http://akademic.name/blog/2010/foldinghome/" title="Folding@Home">прошлый раз</a>, решил попробовать считать белки с помощью видеокарты сервера. Всё равно ему видюха бес толку.
+А видюха там Nvidia GeForce 9400, поддерживает технологию <a href="http://ru.wikipedia.org/wiki/CUDA" title="CUDA в википедии">CUDA</a>.</p>
+
+<p>Сейчас на сервере запущен расчёт на CPU: две штуки, расчёт на GPU: одна штука.
+Кроме этого сервер скачивает и раздаёт торренты через rtorrent на максимальной скорости соединения и можно смотреть 2 фильма по NFS. Всё без тормозов.</p>
+
+<p>Под &ldquo;катом&rdquo; инструкция, как настроить обсчёт заданий на GPU. Поехали.</p>
+
+<p>К сожалению клиента для расчёта на видеокарте под linux нет, есть только для windows. Поэтому придётся задействовать <a href="http://www.winehq.org/" title="WineHQ">wine</a>.</p>
+
+<p>Делал по статье <a href="http://foldingforum.org/viewtopic.php?f=52&amp;t=6793">NVIDIA GPU2 Linux/WINE Headless Install Guide</a> с поправкой на то, что у меня debian x32.</p>
+
+<p>Начну с пятого пункта статьи, т.к. установленный debian уже есть.
+Необходимо поставить wine.
+Можно как в статье</p>
+
+<p><code>sudo apt-get install wine</code></p>
+
+<p>Мне не понравилось, что с wine автоматически ставится куча мусора вроде поддержки печати, сканера и т.п.
+Поэтому ставим wine-bin и libwine-gl:</p>
+
+<p><code>sudo apt-get install wine-bin libwine-gl</code></p>
+
+<p>Далее качаем драйвера для видеокарты и cuda с сайта nvidia.
+Можно взять последние стабильные и думаю, что скоро это будет наиболее правильный путь. Но пока у меня с ними не заработало. Пришлось качать &ldquo;CUDA Toolkit 3.0 Beta(CUDA Toolkit 3.0 Beta)&rdquo;:<a href="http://forums.nvidia.com/index.php?showtopic=149959">http://forums.nvidia.com/index.php?showtopic=149959</a>.</p>
+
+<p>На всякий случай вот прямые ссылки на скачивание:
+&ldquo;Видеодрайвер Linux 32 195.17(Linux 32 195.17)&rdquo;:<a href="http://developer.download.nvidia.com/compute/cuda/3_0-Beta1/drivers/cudadriver_3.0-beta1_linux_32_195.17-beta.run">http://developer.download.nvidia.com/compute/cuda/3_0-Beta1/drivers/cudadriver_3.0-beta1_linux_32_195.17-beta.run</a>
+&ldquo;CUDA Toolkit for Ubuntu 9.04 32-bit(CUDA Toolkit)&rdquo;:<a href="http://developer.download.nvidia.com/compute/cuda/3_0-Beta1/toolkit/cudatoolkit_3.0-beta1_linux_32_ubuntu9.04.run">http://developer.download.nvidia.com/compute/cuda/3_0-Beta1/toolkit/cudatoolkit_3.0-beta1_linux_32_ubuntu9.04.run</a></p>
+
+<p>Для компиляции драйверов необходимо поставить пакеты kernel-headers и build-essential.</p>
+
+<p><code>sudo apt-get install build-essential linux-headers-\</code>uname -r``</p>
+
+<p>Затем ставим собственно драйвера:
+<code>sudo sh cudadriver_3.0-beta1_linux_32_195.17-beta.run</code>
+<code>sudo sh cudatoolkit_3.0-beta1_linux_32_ubuntu9.04.run</code></p>
+
+<p>Надеюсь этот этап пройдёт без запинки. У меня здесь вечно проблемы. То версия gcc не та, то в kernel-headers файлика не хватает. То симлинки где-нибудь прописать придётся.</p>
+
+<p>Создаём ссылки на библиотеки cuda:
+<code>sudo sh -c &quot;echo '/usr/local/cuda/lib' &gt; /etc/ld.so.conf.d/cuda.conf&quot;</code>
+<code>sudo ldconfig</code></p>
+
+<p>Инициализируем wine:</p>
+
+<p><code>wine notepad</code></p>
+
+<p>Создастся каталог ~/.wine</p>
+
+<p>Скачиваем обёртку для работы libcuda в wine:</p>
+
+<p><code>wget http://www.gpu2.twomurs.com/wrapper2ndgen/2.1/cudart.dll.so -O ~/.wine/drive_c/windows/system32/cudart.dll</code>
+<code>ln -s ~/.wine/drive_c/windows/system32/cudart.dll ~/.wine/drive_c/windows/system32/nvcuda.dll</code></p>
+
+<p>Проверяем, что все нужные зависимости у нас есть:</p>
+
+<p><code>ldd ~/.wine/drive_c/windows/system32/cudart.dll</code></p>
+
+<p>Вывод будет похож на такой:</p>
+
+<pre><code>linux-gate.so.1 =&gt;  (0xb78c3000)
+libcudart.so.2 =&gt; /usr/local/cuda/lib/libcudart.so.2 (0xb7866000)
+libwine.so.1 =&gt; /usr/lib/libwine.so.1 (0xb772a000)
+libm.so.6 =&gt; /lib/libm.so.6 (0xb7703000)
+libc.so.6 =&gt; /lib/libc.so.6 (0xb75bc000)
+libdl.so.2 =&gt; /lib/libdl.so.2 (0xb75b8000)
+libpthread.so.0 =&gt; /lib/libpthread.so.0 (0xb75a0000)
+librt.so.1 =&gt; /lib/librt.so.1 (0xb7597000)
+libstdc++.so.6 =&gt; /usr/lib/libstdc++.so.6 (0xb74a6000)
+libgcc_s.so.1 =&gt; /lib/libgcc_s.so.1 (0xb7488000)
+/lib/ld-linux.so.2 (0xb78c4000)
+</code></pre>
+
+<p>Если рядом с какой-нибудь библиотекой будет стоять &ldquo;not found&rdquo;, значить либо какой-то из шагов пропущен, либо поможет следующий экспорт:</p>
+
+<p><code>export LD_LIBRARY_PATH=/usr/local/cuda/lib:$LD_LIBRARY_PATH</code></p>
+
+<p>Не помню где я это взял, но мне помог именно он.</p>
+
+<p>Теперь надо создать скрипт для инициализации CUDA без запуска X-сервера:
+<code>nano -w cudaini</code></p>
+
+<p>Вот сам скрипт:</p>
+
+<pre><code>#!/bin/bash
+
+PATH=$PATH:/usr/local/cuda/bin
+
+modprobe nvidia
+
+if [ &quot;$?&quot; -eq 0 ]; then
+
+# Count the number of NVIDIA controllers found.
+N3D=`/usr/bin/lspci | grep -i NVIDIA | grep &quot;3D controller&quot; | wc -l`
+NVGA=`/usr/bin/lspci | grep -i NVIDIA | grep &quot;VGA compatible controller&quot; | wc -l`
+
+N=\`expr $N3D + $NVGA - 1\`
+for i in \`seq 0 $N\`; do
+mknod -m 666 /dev/nvidia$i c 195 $i;
+done
+
+mknod -m 666 /dev/nvidiactl c 195 255
+
+else
+exit 1
+fi
+</code></pre>
+
+<p>Даём скрипту права на исполнение:
+<code>chmod u+x cudainit</code></p>
+
+<p>И запускаем:
+<code>sudo ./cudainit</code></p>
+
+<p>Проверяем, что всё хорошо:
+<code>ls /dev/nv*</code></p>
+
+<p>Должно вывестись следующее(для одной видеокарты):
+<code>/dev/nvidia0  /dev/nvidiactl</code></p>
+
+<p>Можно вставить запуск cudainit в /etc/rc.local для автостарта при перезагрузке.</p>
+
+<p>Пора, наконец, скачать клиент для windows:
+<code>wget http://www.stanford.edu/group/pandegroup/folding/release/Folding@home-Win32-GPU_XP-623.zip</code></p>
+
+<p>И распаковать его
+<code>sudo apt-get install unzip</code>
+<code>mkdir ~/fahgpu2</code>
+<code>unzip Folding@home-Win32-GPU_XP-623.zip -d fahgpu2</code></p>
+
+<p>И вот он момент истины! Запускаем!
+<code>cd ~/fahgpu2</code>
+<code>nice wine Folding@home-Win32-GPU.exe -verbosity 9 -forcegpu nvidia_g80</code></p>
+
+<p>Должен побежать текст по экрану.
+Вывод программы останавливается и если не видно ошибок в последних строках типа
+<code>Folding@home Core Shutdown: UNSTABLE_MACHINE</code>
+то скорее всего всё хорошо.
+Можно подождать минут 10-20 появится вывод
+<code>Completed 1%</code>
+<code>Completed 2%</code></p>
+
+<p>На GeForce 9400 один процент делается минут за 7-8 в среднем.</p>
+
+<p><em>Итог мучений</em></p>
+
+<p>На Atom N330 на одном ядре на 1% выполнения задания затрачивается около часа времени, на GeForce 9400 чуть менее восьми минут.
+При использовании расчёта на видеокарте нагрузка на процессор не превышает 15% (htop показывает 4 процессора = 2 ядра * HyperThreading, нагрузка только на один).</p>
+
+    
+    <span class="next_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2010/monitoring-zadanij-foldinghome/index.html" rel="next">Мониторинг заданий Folding@home часть 1</a>
+    </span>
+	
+	
+    <span class="prev_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2010/foldinghome/index.html" rel="previous">Folding@Home</a>
+    </span>
+	
+</article>
+
+        </main>
+        <footer>
+        Будьте внимательны, многое из того, что написано в этом блоге, является личным мнением автора и не претендует на истину.
+        <img src="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/yopiright.jpg" width="12" height="12"/> 2008
+        </footer>
+    </body>
+</html>

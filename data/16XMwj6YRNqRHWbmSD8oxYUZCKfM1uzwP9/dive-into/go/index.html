@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quick Introduction to Go mmap.page</title>
+    <link rel="stylesheet" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/css/style.css">
+    <link rel="alternate" type="application/rss+xml" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml">
+    <link rel="alternate" type="application/git+http" href="https://github.com/weakish/weakish.github.com.git"/>
+</head>
+<body>
+  <div class="container-lg px-3 my-5 markdown-body">
+
+    <h1><a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/">mmap.page</a></h1>
+    <h1 id="quick-introduction-to-go">
+        
+        
+          Quick Introduction to Go
+        
+        
+      </h1>
+<p>We're going to try to quickly show you enough of Go 1.14 to actually try it out.</p>
+    
+      <h2 id="a-syntax-derived-from-c">
+        
+        
+          A Syntax Derived from C <a href="#a-syntax-derived-from-c" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>The main difference to C is type annotation after identifier.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+<span class="k">import</span> <span class="s">"fmt"</span>
+
+<span class="k">type</span> <span class="n">Point</span> <span class="k">struct</span> <span class="p">{</span>
+	<span class="n">x</span> <span class="kt">float64</span>
+	<span class="n">y</span> <span class="kt">float64</span>
+<span class="p">}</span>
+<span class="k">func</span> <span class="n">distance</span><span class="p">(</span><span class="n">from</span> <span class="n">Point</span><span class="p">,</span> <span class="n">to</span> <span class="n">Point</span><span class="p">)</span> <span class="kt">float64</span> <span class="p">{</span>
+	<span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">Pow</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">Pow</span><span class="p">(</span><span class="n">from</span><span class="o">.</span><span class="n">x</span><span class="o">-</span><span class="n">to</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="m">2</span><span class="p">)</span><span class="o">+</span><span class="n">math</span><span class="o">.</span><span class="n">Pow</span><span class="p">(</span><span class="n">from</span><span class="o">.</span><span class="n">y</span><span class="o">-</span><span class="n">to</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="m">2</span><span class="p">),</span> <span class="m">0.5</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="c">// You can only declare a method with a receiver defined in the same package.</span>
+<span class="k">func</span> <span class="p">(</span><span class="n">point</span> <span class="n">Point</span><span class="p">)</span> <span class="n">Dist</span><span class="p">(</span><span class="n">other</span> <span class="n">Point</span><span class="p">)</span> <span class="kt">float64</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">Pow</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">Pow</span><span class="p">(</span><span class="n">point</span><span class="o">.</span><span class="n">x</span><span class="o">-</span><span class="n">other</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="m">2</span><span class="p">)</span><span class="o">+</span><span class="n">math</span><span class="o">.</span><span class="n">Pow</span><span class="p">(</span><span class="n">point</span><span class="o">.</span><span class="n">y</span><span class="o">-</span><span class="n">other</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="m">2</span><span class="p">),</span> <span class="m">0.5</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="n">point</span> <span class="n">Point</span> <span class="o">=</span> <span class="n">Point</span><span class="p">{</span><span class="m">0.0</span><span class="p">,</span> <span class="m">0.0</span><span class="p">}</span>
+    <span class="k">var</span> <span class="n">zero</span> <span class="kt">float64</span> <span class="o">=</span> <span class="n">distance</span><span class="p">(</span><span class="n">Point</span><span class="p">{</span><span class="m">0.0</span><span class="p">,</span> <span class="m">0.0</span><span class="p">},</span> <span class="n">Point</span><span class="p">{</span><span class="m">2.0</span><span class="p">,</span> <span class="m">3.0</span><span class="p">})</span> <span class="o">-</span> <span class="n">point</span><span class="o">.</span><span class="n">Dist</span><span class="p">(</span><span class="n">Point</span><span class="p">{</span><span class="m">2.0</span><span class="p">,</span> <span class="m">3.0</span><span class="p">})</span>
+    <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"The entry point of an executable must be a function named `main` in a package named `main`."</span><span class="p">)</span>
+</code></pre></div></div>
+    
+      <h2 id="slice">
+        
+        
+          Slice <a href="#slice" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">names</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">"Tom"</span><span class="p">,</span> <span class="s">"Dick"</span><span class="p">,</span> <span class="s">"Harry"</span><span class="p">}</span> <span class="c">// inferred type `[]T`</span>
+
+<span class="c">// Go reuses `:=` instead of a dedicated keyword `in`.</span>
+<span class="c">// `_` is called blank identifier,meaning we are not interested in indices of the slice.</span>
+<span class="c">// BTW, if we are not interested in the loop values, we can just write `for range names`.</span>
+<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">name</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">names</span> <span class="p">{</span>
+    <span class="c">// Go does not have access modifiers.</span>
+    <span class="c">// Exported (public) names begin with a capital letter.</span>
+	<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"Hello, "</span> <span class="o">+</span> <span class="n">name</span> <span class="o">+</span> <span class="s">" !"</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>The slice uses an underlying array to store data.
+The length of an array <code>[n]T</code> is part of its type, so arrays cannot be resized.
+Thus slices are much more common than arrays.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">type</span> <span class="n">slice</span> <span class="k">struct</span> <span class="p">{</span>
+    <span class="n">array</span> <span class="n">unsafe</span><span class="o">.</span><span class="n">Pointer</span>
+    <span class="nb">len</span>   <span class="kt">int</span> <span class="c">// current length</span>
+    <span class="nb">cap</span>   <span class="kt">int</span> <span class="c">// capacity, the length of the underlying array</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Go has a built-in <code>append</code> function to add elements to a slice, modifying the underlying array directly, or replacing the underlying array with a new one with a larger capacity.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">// pesudo code (pretend Go supports generics)</span>
+<span class="k">func</span> <span class="nb">append</span><span class="p">(</span><span class="n">slice</span> <span class="p">[]</span><span class="n">T</span><span class="p">,</span> <span class="n">elements</span> <span class="o">...</span><span class="n">T</span><span class="p">)</span> <span class="p">[]</span><span class="n">T</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="n">element</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">elements</span> <span class="p">{</span>
+        <span class="n">slice</span><span class="o">.</span><span class="nb">len</span> <span class="o">+=</span> <span class="m">1</span>
+        <span class="k">if</span> <span class="n">slice</span><span class="o">.</span><span class="nb">len</span> <span class="o">&lt;=</span> <span class="n">slice</span><span class="o">.</span><span class="nb">cap</span> <span class="p">{</span>
+            <span class="n">slice</span><span class="p">[</span><span class="nb">len</span><span class="o">-</span><span class="m">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">element</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="n">new_slice</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="n">T</span><span class="p">,</span> <span class="p">(</span><span class="n">slice</span><span class="o">.</span><span class="nb">len</span><span class="o">+</span><span class="m">1</span><span class="p">)</span><span class="o">*</span><span class="m">2</span><span class="p">)</span>
+            <span class="nb">copy</span><span class="p">(</span><span class="n">new_slice</span><span class="p">,</span> <span class="n">slice</span><span class="p">)</span>
+            <span class="n">slice</span> <span class="o">=</span> <span class="n">new_slice</span>
+            <span class="n">slice</span><span class="p">[</span><span class="nb">len</span><span class="o">-</span><span class="m">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">element</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">slice</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>To create a new slice:</p>
+<ol>
+<li>Use the slice expressions on an existing array: <code>a[n:m]</code>, <code>a[:m]</code>, <code>a[n:]</code>, and <code>a[:]</code>.</li>
+<li>Slice expressions can also specify capacity, <code>a[n:m:k]</code> or <code>a[:m:k]</code>. <code>k</code> must be less than or equal to the capacity of the source slice or array.</li>
+<li>The <code>make</code> allocates a zeroed array and returns a slice that refers to that array, e.g. <code>s := make([]int, 2, 5)</code>.</li>
+<li><code>var s []T</code> returns <code>nil</code>, the zero value of a slice. It has a length and capacity of 0 and has no underlying array.</li>
+</ol>
+<p>Similarly, the zero value of a map is also <code>nil</code> (<code>var m map[K]T</code>).
+And <code>make(map[K]T)</code> returns a map initialized and ready for use.</p>
+<p>Since re-slicing a slice doesn't make a copy of the underlying array, the full underlying array will be kept in memory until it is no longer referenced.
+Occasionally this can cause the program to hold all the data in memory when only a small piece of it is needed.
+In that case, copy the data over to another new slice via <code>copy</code> or <code>append</code>.</p>
+    
+      <h3 id="codemakecode-and-codenewcode">
+        
+        
+          <code>make</code> and <code>new</code> <a href="#codemakecode-and-codenewcode" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>Normally Go has two ways to create a non-primitive:</p>
+<ol>
+<li>Composite literals, e.g. <code>[]int{1, 2, 3}</code>, which creates an instance, are mostly used.</li>
+<li><code>new(T)</code> creates a zero value of <code>T</code> and returns a pointer <code>*T</code>, equivalent to <code>&amp;T{}</code>.</li>
+</ol>
+<p>However, slices are special.
+As shown above, composite literals like <code>[]int{1, 2, 3}</code> work well with slices.
+But <code>new([]int)</code> is rarely useful, since it only returns a pointer with zero value of a slice <code>nil</code>.
+However, unlike other structures, a slice is not ready to use with its zero value.
+To prepare a slice, we need to first create its underlying array.
+Also, since slices are cheap and expensive as explained in next section, and modifying a slice automatically modifies its underlying array,
+a pointer to a slice is rarely used.
+Thus Go introduces a new built-in function <code>make</code> for this purpose.
+<code>make([]int, 10, 100)</code> creates a slice ready to use, with underlying array allocated with zero values, and returns a slice, not a pointer to a slice.</p>
+<p>Same applies to <code>maps</code> and <code>channels</code>.
+And <code>make</code> applies only to slices, maps, and channels.</p>
+    
+      <h3 id="unsafe-pointer">
+        
+        
+          Unsafe Pointer <a href="#unsafe-pointer" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>The <code>array</code> field of the slice does not point to the underlying array.
+Instead, it points to the first element of the underlying array.
+This makes slicing as cheap and efficient as passing around explicit indexes.</p>
+<p>However, this also means slice cannot utilize array's compile time bound checks.
+Index out of range error with slices can only be checked at runtime.</p>
+<p>Strings have the same issue since strings in Go are effectively slices of bytes.</p>
+<p>Note that <a href="https://blog.golang.org/go-slices-usage-and-internals">Go Slices: usage and internals</a> on <a href="https://blog.golang.org">The Go Blog</a> mentioned slice consists of a pointer to the <strong>array</strong>, the length of the segment, and its capacity.
+Instead slice contains a pointer to the <strong>first element of the array</strong>.
+The illusion below is correct (<code>ptr *Elem</code>).
+In C, a pointer to an array is actually a pointer to the first element of an array.
+So a pointer to an array and a pointer to the first element of an array are equivalent in C.
+But this does not applies to Go.</p>
+    
+      <h3 id="variadic-functions">
+        
+        
+          Variadic Functions <a href="#variadic-functions" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>Go supports variadic functions (splats arguments): <code>(ns ...int)</code>.</p>
+    
+      <h2 id="flow-control">
+        
+        
+          Flow Control <a href="#flow-control" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+    
+      <h3 id="codeforcode">
+        
+        
+          <code>for</code> <a href="#codeforcode" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p><code>for</code> is the only looping construct in Go.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">sum</span> <span class="o">:=</span> <span class="m">0</span>
+<span class="k">for</span> <span class="n">i</span> <span class="o">:=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="m">10</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span> <span class="p">{</span> <span class="c">// `i++` is a statement, not an expression.</span>
+	<span class="n">sum</span> <span class="o">+=</span> <span class="n">i</span>
+<span class="p">}</span>
+<span class="k">for</span> <span class="n">sum</span> <span class="o">&lt;</span> <span class="m">1000</span> <span class="p">{</span>
+	<span class="n">sum</span> <span class="o">+=</span> <span class="n">sum</span>
+<span class="p">}</span>
+<span class="k">for</span> <span class="p">{</span>
+    <span class="n">sum</span> <span class="o">+=</span> <span class="n">sum</span>
+    <span class="k">if</span> <span class="n">sum</span> <span class="o">&gt;=</span> <span class="m">1000</span> <span class="p">{</span>
+        <span class="k">break</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+    
+      <h3 id="codeifcode-and-codeswitchcode">
+        
+        
+          <code>if</code> and <code>switch</code> <a href="#codeifcode-and-codeswitchcode" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>Like <code>for</code>, <code>if</code> and <code>switch</code> statements can start with a short statement to execute before the condition.
+This is mainly used to declare variables to limit their scope until the end of the <code>if</code> (including <code>else</code> blocks).</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="n">v</span> <span class="o">:=</span> <span class="n">math</span><span class="o">.</span><span class="n">Pow</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">n</span><span class="p">);</span> <span class="n">v</span> <span class="o">&lt;</span> <span class="n">lim</span> <span class="p">{</span>
+	<span class="k">return</span> <span class="n">v</span>
+<span class="p">}</span>
+<span class="k">switch</span> <span class="n">os</span> <span class="o">:=</span> <span class="n">runtime</span><span class="o">.</span><span class="n">GOOS</span><span class="p">;</span> <span class="n">os</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="s">"darwin"</span><span class="o">:</span>
+        <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"macOS."</span><span class="p">)</span>
+    <span class="k">case</span> <span class="s">"linux"</span><span class="o">:</span>
+        <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"Linux."</span><span class="p">)</span>
+    <span class="k">default</span><span class="o">:</span>
+        <span class="n">fmt</span><span class="o">.</span><span class="n">Printf</span><span class="p">(</span><span class="s">"%s."</span><span class="p">,</span> <span class="n">os</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+    
+      <h3 id="codedefercode">
+        
+        
+          <code>defer</code> <a href="#codedefercode" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>A <code>defer</code> statement defers the execution of a function until the surrounding function returns.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">file</span><span class="p">,</span> <span class="n">_</span> <span class="o">:=</span> <span class="n">os</span><span class="o">.</span><span class="n">Open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+<span class="k">defer</span> <span class="n">file</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+</code></pre></div></div>
+<p>The deferred call's arguments are evaluated immediately, though.</p>
+<p>Multiple deferred function calls are pushed onto a stack.
+When a function returns, its deferred calls are executed in last-in-first-out order.</p>
+<p><code>defer</code> breaks the rule of natural order of execution.
+Thus it should be restricted for cleanup operations.
+Abusing <code>defer</code> disturbs the execution flow thus harming readability.</p>
+    
+      <h2 id="basic-types">
+        
+        
+          Basic Types <a href="#basic-types" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<ul>
+<li><code>bool</code></li>
+<li><code>string</code></li>
+<li><code>int8</code>, <code>int16</code>, <code>int32</code>, <code>int64</code></li>
+<li><code>uint8</code>, <code>uint16</code>, <code>uint32</code>, <code>uint64</code></li>
+<li><code>int</code>, <code>uint</code>, <code>uintptr</code>: 32/64 bits wide on 32/64-bit systems</li>
+<li><code>byte</code>: alias for uint8</li>
+<li><code>rune</code>: alias for int32, represents a Unicode code point</li>
+<li><code>float32</code>, <code>float64</code></li>
+<li><code>complex64</code>, <code>complex128</code></li>
+</ul>
+<p>The expression <code>T(v)</code> converts the value <code>v</code> to the type <code>T</code>.</p>
+<p>Constants are declared with the <code>const</code> keyword, they can be character, string, boolean, or numeric values.
+Numeric constants are high-precision values.
+An untyped constant takes the type needed by its context.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">const</span> <span class="n">Pi</span> <span class="o">=</span> <span class="m">3.14</span>
+</code></pre></div></div>
+    
+      <h2 id="type-aliases-and-defined-type">
+        
+        
+          Type Aliases and Defined Type <a href="#type-aliases-and-defined-type" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">type</span> <span class="n">Boolean</span> <span class="o">=</span> <span class="kt">bool</span>
+</code></pre></div></div>
+<p>Now <code>Boolean</code> is an alternative spelling of <code>bool</code>.
+They both denote the same type.</p>
+<p>Be aware the difference between type aliasing and type declaration.
+For example, these are type declarations:</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">type</span> <span class="n">IsPositive</span> <span class="kt">bool</span>
+<span class="k">type</span> <span class="n">IsNegative</span> <span class="kt">bool</span>
+</code></pre></div></div>
+<p><code>IsPositive</code> and <code>IsNegative</code> are <em>named types</em> or <em>defined types</em>, with <code>bool</code> as their <em>underlying type</em>.
+<code>IsPositive</code> and <code>IsNegative</code> are new types, different from any other type, including their underlying type <code>bool</code>.
+Also, <code>IsPositive</code> and <code>IsNegative</code> are not assignable to each other,
+because both of them are defined types.</p>
+<blockquote>
+<p>A value x is assignable to a variable of type T (&quot;x is assignable to T&quot;) if one of the following conditions applies:
+...
+x's type V and T have identical underlying types and at least one of V or T is not a defined type.</p>
+</blockquote>
+<p>This is a great feature.
+In many programming languages, it is best practice to name a boolean type with its &quot;direction&quot;:</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">var</span> <span class="n">sex</span> <span class="kt">bool</span> <span class="c">// bad</span>
+<span class="k">var</span> <span class="n">isMale</span> <span class="kt">bool</span> <span class="c">// good</span>
+</code></pre></div></div>
+<p>In Go, I can go further:</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">type</span> <span class="n">IsMale</span> <span class="kt">bool</span>
+<span class="k">var</span> <span class="n">isMale</span> <span class="n">IsMale</span>
+</code></pre></div></div>
+<p>And if I accidentally assign an unrelated boolean value or opposite directed boolean value to IsMale, the compiler will refuse to compile it.</p>
+    
+      <h2 id="multiple-return-values">
+        
+        
+          Multiple Return Values <a href="#multiple-return-values" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>A function can return any number of results, which is mostly used in error handling:</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">val</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">someFunction</span><span class="p">()</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">err</span>
+<span class="p">}</span>
+<span class="n">codeUsing</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+</code></pre></div></div>
+<p>To handle errors with multiple return values conveniently,
+Go introduces two hacky features:</p>
+<p>First, when <code>err</code> is not <code>nil</code>, <code>val</code> is assigned to the zero value of its type.
+For problems on zero values, see next section.</p>
+<p>Second, instead of writing</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">val</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">f</span><span class="p">()</span>
+<span class="k">var</span> <span class="n">newVal</span> <span class="n">T</span>
+<span class="n">newVal</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">g</span><span class="p">()</span>
+</code></pre></div></div>
+<p>Go allows us to 'reuse' the <code>err</code> variable:</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">val</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">f</span><span class="p">()</span>
+<span class="n">newVal</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">g</span><span class="p">()</span> <span class="c">// `err` is **re-assigned** here</span>
+</code></pre></div></div>
+<p>Because in a <code>:=</code> declaration a variable <code>v</code> may appear even if it has already been declared, provided:</p>
+<ul>
+<li>this declaration is in the same scope as the existing declaration of <code>v</code>,</li>
+<li>the corresponding value in the initialization is assignable to <code>v</code>, and</li>
+<li>there is at least one other variable in the declaration that is being declared anew.</li>
+</ul>
+<p>Introducing an unusual, inconsistent rule to support one use case is doubtful.
+Together with other problems of using multiple return values to model exceptions, this implies a poor design of error handling.</p>
+<p>Note some built-in structures can produce one or multiple value.
+We have seen <code>range slice</code> returns two values (index and element) before.
+If you only want the index, just write <code>for i := range names</code>.</p>
+<p>Similarly, we have <code>element := m[key]</code> and <code>element, present := m[key]</code>.
+In both cases, <code>element</code> is the zero value for the map's element type if <code>key</code> is not present in the map (<code>present</code> is false in the later case).</p>
+<p>Similar to the issue with errors, the zero value <code>element</code> may be a valid value, making missing a key undistinguishable.</p>
+<p>Also note that the evaluation order of multiple return values is uncertain.
+Never assume the evaluation order of multiple return values is from left to right.</p>
+<p>Another issue is Go functions can only consume multiple values returned by another function in a whole.
+For example, given three functions <code>f() (int, int)</code>, <code>g(int, int)</code>, <code>h(int, int, int)</code>,
+<code>g(f())</code> compiles while <code>h(f(), 1)</code> and <code>h(1, f())</code> do not.</p>
+    
+      <h2 id="zero-values">
+        
+        
+          Zero Values <a href="#zero-values" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Variables declared without an explicit initial value are given their zero value:</p>
+<ul>
+<li><code>0</code> for numeric types</li>
+<li><code>false</code> for the boolean type</li>
+<li><code>&quot;&quot;</code> (empty string) for strings</li>
+<li><code>nil</code> for pointers, functions, interfaces, slices, channels, and maps.</li>
+<li>The above zero values are applied recursively for arrays and structs.</li>
+</ul>
+<p>Using <code>0</code>, <code>fales</code>, and <code>&quot;&quot;</code> for numbers, bools, and strings is confusing.
+And the compiler cannot check declaration without assignment errors.</p>
+<p>Using <code>nil</code> as zero values has the same problem with nullability in other languages.</p>
+<p>To make things worse:</p>
+<ul>
+<li><code>nil</code> for functions and interfaces requires any function taking a function or an interface check whether the argument is null or not.</li>
+<li><code>nil</code> for pointers requires any function taking a pointer, and any method, a.k.a. functions with a receiver argument, check whether the argument is null or not.</li>
+<li><code>nil</code> for slices, maps, and channels requires introducing a special <code>make</code> function to create their instances.</li>
+</ul>
+    
+      <h2 id="functions-as-values">
+        
+        
+          Functions as Values <a href="#functions-as-values" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Functions are values too.
+They can be passed around just like other values.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">sortStringsByLength</span><span class="p">(</span><span class="n">s</span> <span class="p">[]</span><span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">sort</span><span class="o">.</span><span class="n">Slice</span><span class="p">(</span>
+            <span class="n">s</span><span class="p">,</span>
+            <span class="c">// Anonymous functions are closures.</span>
+            <span class="k">func</span><span class="p">(</span><span class="n">i</span> <span class="kt">int</span><span class="p">,</span> <span class="n">j</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span> <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="p">})</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>However, it only matches exact function signature.
+It does not support subtyping of functions, since Go does not support covariance and contravariance.
+Even covariant return type is not supported, which is supported by Java.</p>
+    
+      <h2 id="pointers">
+        
+        
+          Pointers <a href="#pointers" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Unlike C, Go has no pointer arithmetic.
+And accessing the field via a struct pointer will derefer the pointer implicitly.
+Also, methods with a pointer/value receiver also accept its value/pointer as the receiver when they are called.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="p">(</span><span class="n">point</span> <span class="o">*</span><span class="n">Point</span><span class="p">)</span> <span class="n">Scale</span><span class="p">(</span><span class="n">f</span> <span class="kt">float64</span><span class="p">)</span> <span class="p">{</span> <span class="c">/* ... */</span> <span class="p">}</span>
+<span class="n">point</span> <span class="o">:=</span> <span class="n">Point</span><span class="p">{</span><span class="n">x</span><span class="o">:</span> <span class="m">1.0</span><span class="p">,</span> <span class="n">y</span><span class="o">:</span> <span class="m">2.0</span><span class="p">}</span>
+<span class="n">pointer</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="n">point</span> <span class="c">// the `&amp;` operator generates a pointer</span>
+<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">pointer</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="c">// same as (*pointer).x, where the `*` operator denotes the underlying value</span>
+<span class="n">point</span><span class="o">.</span><span class="n">Scale</span><span class="p">(</span><span class="m">10</span><span class="p">)</span> <span class="c">// same as pointer.Scale(10)</span>
+</code></pre></div></div>
+<p>We are cheating in the definition of <code>Scale</code>.
+The definition of <code>Scale</code> does not check nil value of <code>*Point</code>.
+As mentioned before, <code>nil</code> is zero value of a pointer, in other words, all pointers are nullable in Go.
+The compiler accepts <code>nil</code> as a valid receiver of <code>Scale</code>, which is in fact invalid.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">var</span> <span class="n">n</span> <span class="o">*</span><span class="n">Point</span> <span class="c">// nil</span>
+<span class="n">n</span><span class="o">.</span><span class="n">Scale</span><span class="p">(</span><span class="m">10</span><span class="p">)</span> <span class="c">// The compiler does not check nullability.</span>
+</code></pre></div></div>
+<p><code>n.Scale(10)</code> compiles, but triggers a <strong>runtime</strong> error: <code>invalid memory address or nil pointer dereference</code>.
+Due to the auto indirection of a value receiver, even a method accepting a value of a type not accepting <code>nil</code> may take a <code>nil</code> receiver argument.</p>
+<p>Thus I prefer to declare a function instead.
+Methods are only used to implement interfaces.</p>
+    
+      <h2 id="interfaces">
+        
+        
+          Interfaces <a href="#interfaces" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+    
+      <h3 id="implicitness">
+        
+        
+          Implicitness <a href="#implicitness" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>Interfaces are implemented implicitly.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">type</span> <span class="n">I</span> <span class="k">interface</span> <span class="p">{</span>
+	<span class="n">M</span><span class="p">()</span>
+<span class="p">}</span>
+<span class="c">// Type T implements the interface I, without explicit declaration.</span>
+<span class="k">func</span> <span class="p">(</span><span class="n">t</span> <span class="n">T</span><span class="p">)</span> <span class="n">M</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">S</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+    
+      <h3 id="empty-interface">
+        
+        
+          Empty Interface <a href="#empty-interface" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>Because Go does not have generics,
+you are forced to use empty interface <code>interface{}</code> for generic code.
+<code>interface{}</code> is similar to <code>void*</code> in C, breaking type safety.</p>
+<p><code>t := i.(T)</code> asserts <code>i</code> holding <code>T</code> and assigns the underlying <code>T</code> value, triggering a panic if <code>i</code> does not hold <code>T</code>.
+<code>t, ok := i.(T)</code> avoids triggering a panic if <code>i</code> does not hold <code>T</code>.
+<code>switch t := i.(type)</code> permits several type assertions in series.</p>
+<p>An interface can be considered as a pair of <code>(ConcreteType, Value)</code>.
+Thus while an interface can be nil (for example, zero value), an interface holding a nil concrete value is itself non-nil.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">var</span> <span class="n">i</span> <span class="k">interface</span><span class="p">{}</span> <span class="o">=</span> <span class="no">nil</span> <span class="c">// i == nil</span>
+<span class="k">var</span> <span class="n">j</span> <span class="p">[]</span><span class="kt">string</span> <span class="o">=</span> <span class="no">nil</span>
+<span class="n">i</span> <span class="o">=</span> <span class="n">j</span> <span class="c">// i != nil</span>
+</code></pre></div></div>
+    
+      <h3 id="check-implementation">
+        
+        
+          Check Implementation <a href="#check-implementation" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>To check if a value satisfies an interface at <strong>run time</strong>, use type assertion:</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">m</span><span class="p">,</span> <span class="n">ok</span> <span class="o">:=</span> <span class="n">val</span><span class="o">.</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">Marshaler</span><span class="p">)</span>
+</code></pre></div></div>
+<p>To get the type and underlying value of an interface value at rut time, use <code>reflect.TypeOf(x)</code> and <code>reflect.ValueOf(x)</code>.
+Both <code>reflect.Type</code> and <code>reflect.Value</code> have a <code>Kind</code> method that returns a constant indicating what sort of item is stored:
+<code>reflect.Uint</code>, <code>reflect.Float64</code>, <code>reflect.Slice</code>, and so on.
+<code>reflect.Value</code> also has an <code>Interface</code> method, which packs the type and value information back into an interface representation and returns the result.</p>
+<p>To change the underlying value of <code>reflect.Value</code>, we can use <code>reflect.SetT</code>.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">var</span> <span class="n">x</span> <span class="kt">float64</span> <span class="o">=</span> <span class="m">3.4</span>
+<span class="n">v</span> <span class="o">:=</span> <span class="n">reflect</span><span class="o">.</span><span class="n">ValueOf</span><span class="p">(</span><span class="o">&amp;</span><span class="n">x</span><span class="p">)</span>
+<span class="n">v</span><span class="o">.</span><span class="n">SetFloat</span><span class="p">(</span><span class="m">7.1</span><span class="p">)</span>
+</code></pre></div></div>
+<p>Note that we pass <code>&amp;x</code> instead of <code>x</code> to <code>reflect.ValueOf</code>.
+Otherwise <code>v</code> would store a copy of <code>x</code>, and <code>v.SetFloat</code> would be illegal.
+The <code>CanSet</code> method of <code>reflect.Value</code> reports the settability of it.</p>
+<p>Be careful with reflections.
+Reflections involves type assertion and value copying.
+Thus it may cause performance issues.</p>
+<p>To make sure that a type implementing the required interface at <strong>compile time</strong>:</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">var</span> <span class="n">_</span> <span class="n">json</span><span class="o">.</span><span class="n">Marshaler</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">RawMessage</span><span class="p">)(</span><span class="no">nil</span><span class="p">)</span>
+</code></pre></div></div>
+<p>Here we use a pointer instead of <code>new(RawMessage)</code> because if RawMessage is a big array or struct, calling <code>new</code> may allocate unnecessary memory.</p>
+    
+      <h3 id="embedded-interfaces">
+        
+        
+          Embedded Interfaces <a href="#embedded-interfaces" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>Interface type name can be used in place of a method specification.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">type</span> <span class="n">ComplexInterface</span> <span class="k">interface</span> <span class="p">{</span>
+    <span class="n">EmbeddedInterface</span>
+    <span class="n">AnotherEmbeddedInterface</span>
+    <span class="n">AMethod</span><span class="p">()</span> <span class="kt">int</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>The method set of <code>ComplexInterface</code> is the union of its embedded interfaces and its explicitly declared methods.
+If there are interface methods have identical names, they must have identical signatures.</p>
+    
+      <h3 id="struct">
+        
+        
+          Struct <a href="#struct" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>Structs can embed interfaces.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">// Job has all the methods of `*log.Logger`.</span>
+<span class="k">type</span> <span class="n">Job</span> <span class="k">struct</span> <span class="p">{</span>
+    <span class="n">Command</span> <span class="kt">string</span>
+    <span class="o">*</span><span class="n">log</span><span class="o">.</span><span class="n">Logger</span> <span class="c">// same as Logger *log.Logger</span>
+<span class="p">}</span>
+</code></pre></div></div>
+    
+      <h3 id="stringer">
+        
+        
+          Stringer <a href="#stringer" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>One of the most ubiquitous interfaces is <code>Stringer</code>
+defined by the <code>fmt</code> package.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">type</span> <span class="n">Stringer</span> <span class="k">interface</span> <span class="p">{</span>
+    <span class="n">String</span><span class="p">()</span> <span class="kt">string</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>The print functions from <code>fmt</code> utilizes the <code>Stringer</code> interface.</p>
+    
+      <h3 id="error">
+        
+        
+          error <a href="#error" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>The other ubiquitous interface is the built-in <code>error</code> interface:</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">type</span> <span class="n">NullPointerException</span> <span class="k">struct</span> <span class="p">{</span>
+    <span class="n">Message</span> <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="c">// satisfies `error` interface</span>
+<span class="k">func</span> <span class="p">(</span><span class="n">e</span> <span class="o">*</span><span class="n">NullPointerException</span><span class="p">)</span> <span class="n">Error</span><span class="p">()</span> <span class="kt">string</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="n">Message</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>If we do not want to declare our own error type, we just use a general error with a string via <code>errors.New</code> or <code>fmt.Errorf</code>.</p>
+    
+      <h4 id="erroris-and-erroras">
+        
+        
+          error.Is and error.As <a href="#erroris-and-erroras" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h4>
+<p>Besides <code>New</code>, <code>errors</code> also provides two functions: <code>Is</code> and <code>As</code>.</p>
+<p><code>errors.Is</code> compares an error to a value.
+There are two differences between using <code>errors.Is(err, value)</code> and comparing via <code>err == value</code> directly:</p>
+<ol>
+<li><code>errors.Is</code> will invoke the <code>Is</code> method of the error if available.</li>
+<li><code>errors.Is</code> will examine all the wrapped errors on the chain.</li>
+</ol>
+<p>For example:</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">type</span> <span class="n">NonExistError</span> <span class="k">struct</span> <span class="p">{</span>
+    <span class="n">Code</span> <span class="kt">int</span>
+    <span class="n">Err</span> <span class="kt">error</span>
+<span class="p">}</span>
+<span class="k">func</span> <span class="p">(</span><span class="n">e</span> <span class="o">*</span><span class="n">NonExistError</span><span class="p">)</span> <span class="n">Error</span><span class="p">()</span> <span class="kt">string</span> <span class="p">{</span> <span class="k">return</span> <span class="n">strconv</span><span class="o">.</span><span class="n">Itoa</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Code</span><span class="p">)</span> <span class="p">}</span>
+<span class="c">// If e1.Unwrap() returns e2, then e1 wraps e2, and we can unwrap e1 to get e2.</span>
+<span class="c">// e2 itself may implement an Unwrap method returning its underlying error (error chain).</span>
+<span class="k">func</span> <span class="p">(</span><span class="n">e</span> <span class="o">*</span><span class="n">NonExistError</span><span class="p">)</span> <span class="n">Unwrap</span><span class="p">()</span> <span class="kt">error</span> <span class="p">{</span> <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="n">Err</span> <span class="p">}</span>
+<span class="k">func</span> <span class="p">(</span><span class="n">e</span> <span class="o">*</span><span class="n">NonExistError</span><span class="p">)</span> <span class="n">Is</span><span class="p">(</span><span class="n">target</span> <span class="kt">error</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="n">t</span><span class="p">,</span> <span class="n">ok</span> <span class="o">:=</span> <span class="n">target</span><span class="o">.</span><span class="p">(</span><span class="o">*</span><span class="n">NonExistError</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ok</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="n">Code</span> <span class="o">==</span> <span class="n">t</span><span class="o">.</span><span class="n">Code</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="no">false</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Similarly, there is an <code>errors.As</code> method, examining all the wrapped errors on the chain, using <code>As</code> method defined on errors when available.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">var</span> <span class="n">err</span> <span class="o">*</span><span class="n">NonExistError</span>
+<span class="k">var</span> <span class="n">ok</span> <span class="kt">bool</span> <span class="o">=</span> <span class="n">errors</span><span class="o">.</span><span class="n">As</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">err</span><span class="p">)</span>
+</code></pre></div></div>
+    
+      <h4 id="w">
+        
+        
+          %w <a href="#w" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h4>
+<p>Besides defining the <code>Unwrap</code> method explicitly, <code>fmt.Errorf</code> with <code>%w</code> verb present returns an error with an <code>Unwrap</code> method returning the argument of <code>%w</code>.
+Thus the argument of <code>%w</code> must be an error.
+In other aspects, <code>%w</code> is identical to <code>%v</code>.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">e2</span> <span class="o">:=</span> <span class="n">errors</span><span class="o">.</span><span class="n">New</span><span class="p">(</span><span class="s">"wrap me"</span><span class="p">)</span>
+<span class="n">e1</span> <span class="o">:=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Errorf</span><span class="p">(</span><span class="s">"wraps %w"</span><span class="p">,</span> <span class="n">e2</span><span class="p">)</span>
+</code></pre></div></div>
+<p>Wrapping an error will expose the underlying error, thus making the wrapped error part of the API.
+Therefore abusing wrapping will break abstraction and expose implementation details unnecessarily.</p>
+    
+      <h4 id="panic-and-recover">
+        
+        
+          panic and recover <a href="#panic-and-recover" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h4>
+<p>As an alternative to return an error, we can <code>panic</code> instead.</p>
+<p>To regain control of a panicking execution, we can use the built-in <code>recover</code> function.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">f</span><span class="p">(</span><span class="n">v</span> <span class="k">interface</span><span class="p">{})</span> <span class="p">{</span>
+    <span class="c">// anonymous function</span>
+    <span class="k">defer</span> <span class="k">func</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">r</span><span class="o">:</span> <span class="o">=</span> <span class="nb">recover</span><span class="p">();</span> <span class="n">r</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">Fatal</span><span class="p">(</span><span class="s">"Recovered in f"</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}()</span>
+    <span class="k">func</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nb">panic</span><span class="p">(</span><span class="s">"panic"</span><span class="p">)</span>
+    <span class="p">}()</span>
+    <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+    
+      <h2 id="goroutines">
+        
+        
+          Goroutines <a href="#goroutines" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Goroutines are user level continuation, more lightweight than system level continuation (threads).</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">sum</span><span class="p">(</span><span class="n">s</span> <span class="p">[]</span><span class="kt">int</span><span class="p">,</span> <span class="n">c</span> <span class="k">chan</span><span class="o">&lt;-</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span> <span class="c">// `chan&lt;-` only receive values; `&lt;-chan` only send values</span>
+	<span class="n">sum</span> <span class="o">:=</span> <span class="m">0</span>
+	<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">v</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">s</span> <span class="p">{</span>
+		<span class="n">sum</span> <span class="o">+=</span> <span class="n">v</span>
+	<span class="p">}</span>
+	<span class="n">c</span> <span class="o">&lt;-</span> <span class="n">sum</span> <span class="c">// send sum to c</span>
+<span class="p">}</span>
+<span class="k">func</span> <span class="n">calc</span><span class="p">(</span><span class="n">s</span> <span class="p">[]</span><span class="kt">int</span><span class="p">,</span> <span class="n">c</span> <span class="k">chan</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span> <span class="c">// `chan` has no direction (can receive and send values)</span>
+	<span class="k">go</span> <span class="n">sum</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="o">:</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">/</span><span class="m">2</span><span class="p">],</span> <span class="n">c</span><span class="p">)</span>
+    <span class="k">go</span> <span class="n">sum</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">/</span><span class="m">2</span><span class="o">:</span><span class="p">],</span> <span class="n">c</span><span class="p">)</span>
+    <span class="k">return</span> <span class="o">&lt;-</span><span class="n">c</span> <span class="o">+</span> <span class="o">&lt;-</span><span class="n">c</span>
+<span class="p">}</span>
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">s</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="m">7</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">8</span><span class="p">,</span> <span class="o">-</span><span class="m">9</span><span class="p">,</span> <span class="m">4</span><span class="p">,</span> <span class="m">0</span><span class="p">}</span>
+	<span class="n">c</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="k">chan</span> <span class="kt">int</span><span class="p">,</span> <span class="m">2</span><span class="p">)</span> <span class="c">// no race conditions, thus we create a buffered channel</span>
+    <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">calc</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">c</span><span class="p">))</span>
+<span class="p">}</span>
+</code></pre></div></div>
+    
+      <h3 id="closing-a-channel">
+        
+        
+          Closing a Channel <a href="#closing-a-channel" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>A sender can close a channel to indicate that no more values will be sent: <code>close(c)</code>.
+Sending on a closed channel will cause a panic.
+Thus only the sender should close a channel, never the receiver.</p>
+<p>Channels aren't like files; you don't usually need to close them.
+Closing is only necessary when the receiver must be told there are no more values coming, such as to terminate a range loop.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">fibonacci</span><span class="p">(</span><span class="n">n</span> <span class="kt">int</span><span class="p">,</span> <span class="n">c</span> <span class="k">chan</span><span class="o">&lt;-</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">:=</span> <span class="m">0</span><span class="p">,</span> <span class="m">1</span>
+	<span class="k">for</span> <span class="n">i</span> <span class="o">:=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">n</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span> <span class="p">{</span>
+		<span class="n">c</span> <span class="o">&lt;-</span> <span class="n">x</span>
+		<span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="o">+</span><span class="n">y</span>
+	<span class="p">}</span>
+	<span class="nb">close</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">c</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="k">chan</span> <span class="kt">int</span><span class="p">)</span> <span class="c">// unbuffered channel</span>
+	<span class="k">go</span> <span class="n">fibonacci</span><span class="p">(</span><span class="m">10</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+	<span class="k">for</span> <span class="n">i</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">c</span> <span class="p">{</span>
+		<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Receivers can test whether a channel has been closed by assigning a second parameter to the receive expression <code>v, ok := &lt;-c</code>.</p>
+    
+      <h3 id="select">
+        
+        
+          Select <a href="#select" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>The <code>select</code> statement lets a goroutine wait on multiple communication operations.</p>
+<p>A select blocks until one of its cases can run, then it executes that case.
+It chooses one <strong>at random</strong> if multiple are ready。</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">fibonacci</span><span class="p">(</span><span class="n">c</span> <span class="k">chan</span><span class="o">&lt;-</span> <span class="kt">int</span><span class="p">,</span> <span class="n">end</span> <span class="o">&lt;-</span><span class="k">chan</span> <span class="kt">bool</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">:=</span> <span class="m">0</span><span class="p">,</span> <span class="m">1</span>
+	<span class="k">for</span> <span class="p">{</span>
+		<span class="k">select</span> <span class="p">{</span>
+		<span class="k">case</span> <span class="n">c</span> <span class="o">&lt;-</span> <span class="n">x</span><span class="o">:</span>
+			<span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="o">+</span><span class="n">y</span>
+		<span class="k">case</span> <span class="o">&lt;-</span><span class="n">end</span><span class="o">:</span>
+			<span class="k">return</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">c</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="k">chan</span> <span class="kt">int</span><span class="p">)</span>
+	<span class="n">end</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="k">chan</span> <span class="kt">bool</span><span class="p">)</span>
+	<span class="k">go</span> <span class="k">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="k">for</span> <span class="n">i</span> <span class="o">:=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="m">10</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span> <span class="p">{</span>
+			<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="o">&lt;-</span><span class="n">c</span><span class="p">)</span>
+		<span class="p">}</span>
+		<span class="n">end</span> <span class="o">&lt;-</span> <span class="no">true</span>
+	<span class="p">}()</span>
+	<span class="n">fibonacci</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>The <code>default</code> case in a select is run if no other case is ready.</p>
+    
+      <h2 id="name-conventions">
+        
+        
+          Name Conventions <a href="#name-conventions" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+    
+      <h3 id="package">
+        
+        
+          Package <a href="#package" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>By convention, packages are given lower case, single-word names; there should be no need for underscores or mixedCaps.
+Another convention is that the package name is the base name of its source directory, for example <code>encoding/base64</code>.</p>
+<p>By the way, to import a package only for its side effect (<code>init()</code>), use a blank identifier <code>import _ packageName</code>.</p>
+    
+      <h3 id="getter">
+        
+        
+          Getter <a href="#getter" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>It's neither idiomatic nor necessary to put <code>Get</code> into the getter's name.
+If you have a field called <code>owner</code> (lower case, unexported), the getter method should be called <code>Owner</code> (upper case, exported), not <code>GetOwner</code>.
+The use of upper-case names for export provides the hook to discriminate the field from the method.
+A setter function, if needed, will likely be called <code>SetOwner</code>.</p>
+    
+      <h3 id="interface">
+        
+        
+          Interface <a href="#interface" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>By convention, one-method interfaces are named by the method name plus an -er suffix or similar modification to construct an agent noun: <code>Reader</code>, <code>Writer</code>, <code>Formatter</code>, <code>CloseNotifier</code> etc.</p>
+    
+      <h3 id="mixedcaps">
+        
+        
+          MixedCaps <a href="#mixedcaps" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>The convention in Go is to use <code>MixedCaps</code> or <code>mixedCaps</code> rather than underscores to write multiword names.</p>
+<p>Why?</p>
+<p>First, <code>set_owner</code> (unexported names in Go) is easier to read because we are already familiar with <code>set owner</code> in natural languages.
+We Are not Familiar with Compound words and Similar structures Like this.
+Thus <code>Set_owner</code> (exported names in Go) does not feel nature.</p>
+<p>Second, Go prefers brevity ~~over~~ for clarity.
+<em>Effective Go</em> suggested that:</p>
+<blockquote>
+<p>Long names don't automatically make things more readable.
+A helpful doc comment can often be more valuable than an extra long name.</p>
+</blockquote>
+<p>Thus mixedCaps will probably not get long enough to reduce readability, e.g. <a href="https://signalvnoise.com/posts/3250-clarity-over-brevity-in-variable-and-method-names"><code>isSomeoneElseJustFinishedWriting</code></a>.</p>
+    
+      <h2 id="testing">
+        
+        
+          Testing <a href="#testing" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>To test Go code, write testing functions as <code>TestXxx(*testing.T)</code>.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="k">import</span> <span class="s">"testing"</span>
+
+<span class="k">func</span> <span class="n">TestSum</span><span class="p">(</span><span class="n">t</span> <span class="o">*</span><span class="n">testing</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">total</span> <span class="o">:=</span> <span class="n">Sum</span><span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="m">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">total</span> <span class="o">!=</span> <span class="m">2</span> <span class="p">{</span>
+       <span class="n">t</span><span class="o">.</span><span class="n">Errorf</span><span class="p">(</span><span class="s">"Sum(1, 1) got: %d, expected: %d."</span><span class="p">,</span> <span class="n">total</span><span class="p">,</span> <span class="m">2</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Put those testing functions in a file whose name ends with <code>_test.go</code> within the package.
+The file will be excluded from regular package builds but will be included when the <code>go test</code> command is run.</p>
+    
+      <h3 id="benchmark">
+        
+        
+          Benchmark <a href="#benchmark" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>Functions of the form <code>BenchmarkXxx(*testing.B)</code> are benchmarks, which will be executed by <code>go test -bench</code>.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">BenchmarkHello</span><span class="p">(</span><span class="n">b</span> <span class="o">*</span><span class="n">testing</span><span class="o">.</span><span class="n">B</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">doSomeExpensiveSetup</span><span class="p">()</span>
+    <span class="n">b</span><span class="o">.</span><span class="n">ResetTimer</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="o">:=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">b</span><span class="o">.</span><span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span> <span class="p">{</span>
+        <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"hello"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>The output</p>
+<pre><code>BenchmarkHello    10000000    282 ns/op
+</code></pre>
+<p>means that the loop ran 10000000 times at a speed of 282 ns per loop.</p>
+<p>The times are adjusted until the benchmark function lasts long enough to be timed reliably.</p>
+<p>If a benchmark needs to test performance in a parallel setting, it may use the <code>RunParallel</code> helper function; such benchmarks are intended to be used with the go test <code>-cpu</code> flag:</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">BenchmarkTemplateParallel</span><span class="p">(</span><span class="n">b</span> <span class="o">*</span><span class="n">testing</span><span class="o">.</span><span class="n">B</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">templ</span> <span class="o">:=</span> <span class="n">template</span><span class="o">.</span><span class="n">Must</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">New</span><span class="p">(</span><span class="s">"test"</span><span class="p">)</span><span class="o">.</span><span class="n">Parse</span><span class="p">(</span><span class="s">"Hello, {.}!"</span><span class="p">))</span>
+    <span class="n">b</span><span class="o">.</span><span class="n">RunParallel</span><span class="p">(</span><span class="k">func</span><span class="p">(</span><span class="n">pb</span> <span class="o">*</span><span class="n">testing</span><span class="o">.</span><span class="n">PB</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">var</span> <span class="n">buf</span> <span class="n">bytes</span><span class="o">.</span><span class="n">Buffer</span>
+        <span class="k">for</span> <span class="n">pb</span><span class="o">.</span><span class="n">Next</span><span class="p">()</span> <span class="p">{</span>
+            <span class="n">buf</span><span class="o">.</span><span class="n">Reset</span><span class="p">()</span>
+            <span class="n">templ</span><span class="o">.</span><span class="n">Execute</span><span class="p">(</span><span class="o">&amp;</span><span class="n">buf</span><span class="p">,</span> <span class="s">"World"</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">})</span>
+<span class="p">}</span>
+</code></pre></div></div>
+    
+      <h3 id="examples">
+        
+        
+          Examples <a href="#examples" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>Example functions may include a concluding line comment that begins with <code>Output:</code> and is compared with the standard output of the function when the tests are run.
+The comparison ignores leading and trailing space.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">ExampleHello</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"hello"</span><span class="p">)</span>
+        <span class="c">// Output: hello</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="n">ExampleSalutations</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"hello, and"</span><span class="p">)</span>
+        <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"goodbye"</span><span class="p">)</span>
+        <span class="c">// Output:</span>
+        <span class="c">// hello, and</span>
+        <span class="c">// goodbye</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Example functions without output comments are compiled but not executed.</p>
+    
+      <h3 id="subtests-and-sub-benchmarks">
+        
+        
+          Subtests and Sub-benchmarks <a href="#subtests-and-sub-benchmarks" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>The <code>Run</code> method allows defining subtests and sub-benchmarks,
+without having to define separate functions for each.
+This enables uses like table-driven benchmarks and creating hierarchical tests.
+It also provides a way to share common setup and tear-down code:</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">TestFoo</span><span class="p">(</span><span class="n">t</span> <span class="o">*</span><span class="n">testing</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c">// &lt;setup code&gt;</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">Run</span><span class="p">(</span><span class="s">"one"</span><span class="p">,</span> <span class="k">func</span><span class="p">(</span><span class="n">t</span> <span class="o">*</span><span class="n">testing</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">})</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">Run</span><span class="p">(</span><span class="s">"two"</span><span class="p">,</span> <span class="k">func</span><span class="p">(</span><span class="n">t</span> <span class="o">*</span><span class="n">testing</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">})</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">Run</span><span class="p">(</span><span class="s">"B=1"</span><span class="p">,</span> <span class="k">func</span><span class="p">(</span><span class="n">t</span> <span class="o">*</span><span class="n">testing</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">})</span>
+    <span class="c">// &lt;tear-down code&gt;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>The argument to the <code>-run</code> and <code>-bench</code> command-line flags
+is an unanchored regular expression that matches the test's name.</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>go <span class="nb">test</span> <span class="nt">-run</span> Foo     <span class="c"># Run top-level tests matching "Foo", such as "TestFooBar".</span>
+go <span class="nb">test</span> <span class="nt">-run</span> Foo/B<span class="o">=</span>  <span class="c"># For top-level tests matching "Foo", run subtests matching "B=".</span>
+go <span class="nb">test</span> <span class="nt">-run</span> /B<span class="o">=</span>1    <span class="c"># For all top-level tests, run subtests matching "B=1".</span>
+</code></pre></div></div>
+<p>Subtests can also be used to control parallelism.
+A parent test will only complete once all of its subtests complete.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">TestGroupedParallel</span><span class="p">(</span><span class="n">t</span> <span class="o">*</span><span class="n">testing</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">tc</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">tests</span> <span class="p">{</span>
+        <span class="n">tc</span> <span class="o">:=</span> <span class="n">tc</span> <span class="c">// capture range variable</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">Run</span><span class="p">(</span><span class="n">tc</span><span class="o">.</span><span class="n">Name</span><span class="p">,</span> <span class="k">func</span><span class="p">(</span><span class="n">t</span> <span class="o">*</span><span class="n">testing</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">t</span><span class="o">.</span><span class="n">Parallel</span><span class="p">()</span>
+        <span class="p">})</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+    
+      <h3 id="main">
+        
+        
+          Main <a href="#main" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>It is sometimes necessary for a test program to do extra setup or teardown before or after testing.
+It is also sometimes necessary for a test to control which code runs on the main thread.
+To support these and other cases, if a test file contains a function:</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">TestMain</span><span class="p">(</span><span class="n">m</span> <span class="o">*</span><span class="n">testing</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+</code></pre></div></div>
+<p>then the generated test will call <code>TestMain(m)</code> instead of running the tests directly.
+<code>TestMain</code> runs in the main goroutine and can do whatever setup and teardown is necessary around a call to <code>m.Run</code>.
+It should then call <code>os.Exit</code> with the result of <code>m.Run</code>.
+When <code>TestMain</code> is called, <code>flag.Parse</code> has not been run.
+If <code>TestMain</code> depends on command-line flags, it should call <code>flag.Parse</code> explicitly.</p>
+<p>A simple implementation of <code>TestMain</code> is:</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">TestMain</span><span class="p">(</span><span class="n">m</span> <span class="o">*</span><span class="n">testing</span><span class="o">.</span><span class="n">M</span><span class="p">)</span> <span class="p">{</span>
+	<span class="c">// flag.Parse()</span>
+	<span class="n">os</span><span class="o">.</span><span class="n">Exit</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">Run</span><span class="p">())</span>
+<span class="p">}</span>
+</code></pre></div></div>
+    
+      <h3 id="helper-functions">
+        
+        
+          Helper functions <a href="#helper-functions" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>When testing, to print location of a call to the helper function,
+instead of a line in the definition of the helper function, invoke <code>Helper</code> method in the definition of the helper function.</p>
+<p>For example:</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">assertTrue</span><span class="p">(</span><span class="n">t</span> <span class="o">*</span><span class="n">testing</span><span class="o">.</span><span class="n">T</span> <span class="n">condition</span> <span class="kt">bool</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c">// This marks assertTrue a helper function.</span>
+    <span class="c">// Without it, if something is wrong,</span>
+    <span class="c">// `go test` will always print the line number of `t.Fail()` below.</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">Helper</span><span class="p">()</span>
+    <span class="k">if</span> <span class="o">!</span><span class="n">condition</span> <span class="p">{</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">Fail</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="n">TestFoo</span><span class="p">(</span><span class="n">t</span> <span class="o">*</span><span class="n">testing</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c">// Since assertTrue is marked as a helper function,</span>
+    <span class="c">// `go test` will print the line number of the following line.</span>
+    <span class="n">assertTrue</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="m">1</span> <span class="o">+</span> <span class="m">1</span> <span class="o">==</span> <span class="m">1</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p><code>testing/iotest</code> implements Readers and Writers useful mainly for testing.</p>
+    
+      <h2 id="tooling">
+        
+        
+          Tooling <a href="#tooling" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+    
+      <h3 id="formatting">
+        
+        
+          Formatting <a href="#formatting" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p><code>go fmt</code> formats your code.
+It has no line length limit.</p>
+    
+      <h3 id="documentation">
+        
+        
+          Documentation <a href="#documentation" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p><code>go doc</code> processes Go source files to extract documentation.
+Comments that appear before top-level declarations, with no intervening newlines, are extracted along with the declaration.</p>
+<p>Every package should have a <em>package comment</em>, a block comment preceding the package clause.
+For multi-file packages, the package comment only needs to be present in one file, and any one will do.</p>
+<p>Comments do not need extra formatting such as banners of stars.
+The comments are uninterpreted plain text, except that indented text will be display in a fixed-width font, suitable for program snippets.</p>
+<p><code>godoc</code> does not support cross reference.</p>
+<p>Inside a package, every exported (capitalized) name in a program should have a <em>doc comment</em>.</p>
+<p>The first sentence of a doc comment should be a one-sentence summary that starts with the name being declared.
+This is because <code>godoc</code> is stupid.
+It does not offer a <code>search</code> function.
+To search for a function, we have to use <code>grep</code>:</p>
+<pre><code>go doc regexp | grep parse
+</code></pre>
+<p><em>Effective Go</em> pointed out:</p>
+<blockquote>
+<p>If all the doc comments in the package began, &quot;This function...&quot;,
+<code>grep</code> wouldn't help you remember the name.</p>
+</blockquote>
+<p>This approach has three issues:</p>
+<p>First, beginning a comment with <code>&quot;This function...</code> may be redundant, but just omitting the function name like <code>Returns the source text used to compile the regular expression.</code> is more succinct.</p>
+<p>Second, although this approach does support a hacky way to search for function names, it does not provide an important information, the function signature, which is crucial for a static typed language.</p>
+<p>Third, in fact neither <code>godoc</code> nor <code>grep</code> has a concept of sentence.
+Thus the &quot;first sentence&quot; is actually the &quot;first line&quot;.
+The <code>go doc regexp | grep parse</code> example given in the <em>Effective Go</em> demonstrates how ineffective this approach.
+<code>go doc regexp | grep parse</code> finds <code>Compile</code>, but fails to find <code>MustCompile</code> and <code>MustCompilePOSIX</code>:</p>
+<pre><code>MustCompile is like Compile but panics if the expression cannot be
+parsed.
+
+MustCompilePOSIX is like CompilePOSIX but panics if the expression
+cannot be parsed.
+</code></pre>
+<p>Because &quot;parsed&quot; does not fit into the first line,
+<code>go doc regexp | grep parse</code> fails to find these two related functions.</p>
+<p>This is a typical example of a poor design that roots in the unix philosophy &quot;pass everything as text&quot;.</p>
+<p><code>godoc</code> should have parsed the comments into structures consist of signature, summary, description, etc., and either provided a built-in search command, or produced an AST for other tools to consume.</p>
+    
+      <h2 id="unsupported">
+        
+        
+          Unsupported <a href="#unsupported" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Go does not has generics.</p>
+<p>Go does not distinguish reassignable and irreassignable variables, even function parameters and method receiver are reassignable (just like a local variable).</p>
+<p>Go does not have immutable collection types in its standard library.</p>
+<p>Go does not support optional parameters or overloading, except for some built-in functions like <code>append</code> and <code>make</code>.</p>
+    
+      <h2 id="style-and-conventions">
+        
+        
+          Style and Conventions <a href="#style-and-conventions" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<ol>
+<li>Error strings should not be capitalized (unless beginning with proper nouns or acronyms) or end with punctuation, since they are usually printed following other context.</li>
+<li>Avoid renaming imports except to avoid a name collision; good package names should not require renaming. In the event of collision, prefer to rename the most local or project-specific import.</li>
+<li>Words in names that are initialisms or acronyms have a consistent case. For example, <code>xmlHTTPRequest</code> or <code>XMLHTTPRequest</code>. Code generated by the protocol buffer compiler is exempt from this rule.</li>
+<li>Go interfaces generally belong in the package that uses values of the interface type, not the package that implements those values. The implementing package should return concrete (usually pointer or struct) types: that way, new methods can be added to implementations without requiring extensive refactoring.</li>
+<li>Prefer synchronous functions over asynchronous ones. If callers need more concurrency, they can add it easily by calling the function from a separate goroutine. But it is quite difficult - sometimes impossible - to remove unnecessary concurrency at the caller side.</li>
+<li>In tests, the order is <code>actual != expected</code>, and the message uses that order too. For example, <code>if got != tt.want {t.Errorf(&quot;Foo(%q) = %d; want %d&quot;, tt.in, got, tt.want)}</code> Some test frameworks encourage writing these backwards: <code>0 != x, &quot;expected 0, got x&quot;</code>, and so on. Go does not.</li>
+</ol>
+<p>See <a href="https://github.com/golang/go/wiki/CodeReviewComments">https://github.com/golang/go/wiki/CodeReviewComments</a> for more information.</p>
+    
+      <h2 id="references">
+        
+        
+          References <a href="#references" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>This introduction is based on the following materials:</p>
+<ol>
+<li><a href="https://tour.golang.org">A Tour of Go</a></li>
+<li><a href="https://golang.org/doc/effective_go.html">Effective Go</a></li>
+<li><a href="https://gobyexample.com/timeouts">Go by Example</a></li>
+<li><a href="https://blog.golang.org/go-slices-usage-and-internals">Go Slices: usage and internals</a></li>
+<li><a href="https://blog.golang.org/defer-panic-and-recover">Defer, Panic, and Recover</a></li>
+</ol>
+    <div class="footer border-top border-gray-light mt-5 pt-3 text-gray">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start">
+        <form id="site-search" action="https://duckduckgo.com/html/" method="get">
+          <input name="q" type="search" value="site:mmap.page " required pattern="site:mmap\.page\s.+">
+          <input type="submit" value="&#x1F50D;" title="search through site content via DuckDuckGo">
+        </form>
+        <p>
+          <a href="mailto:weakish@gmail.com" title="weakish@gmail.com"><img src="https://icongr.am/feather/mail.svg" alt="Feather Icon Mail"></a>
+          <a href="https://savannah.nongnu.org/people/viewgpg.php?user_id=65699" title="2414 AEA0 EA48 5263 9697  F1BA 55F6 EEC2 EA3F 0A87"><img src="https://icongr.am/feather/key.svg" alt="Feather Icon Key"></a>
+          <a href="https://github.com/weakish/" title="GitHub"><img src="https://icongr.am/feather/github.svg" alt="Feather Icon Github"></a>
+          <a href="https://www.instagram.com/jakukyo/" title="Instagram"><img src="https://icongr.am/feather/instagram.svg" alt="Feather Icon Instagram"></a>
+          <a href="https://twitter.com/weakish" title="Twitter"><img src="https://icongr.am/feather/twitter.svg" alt="Feather Icon Twitter"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml" title="RSS 2.0 Feed"><img src="https://icongr.am/feather/rss.svg" alt="Feather Icon RSS"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/uses/" title="uses"><img src="https://icongr.am/feather/book-open.svg" alt="Feather Icon Book Open"></a>
+          
+          
+          <a href="/Me.ZeroNetwork.bit/?Profile/12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv/1GnJD7CXskmG8GywMbTvbP12wneCFW9XzR/weakish@zeroid.bit" title="ZeroMe"><img src="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/images/zeronet_logo.svg" alt="ZeroNet Logo" width="32" height="32"></a>
+        </p>
+      </div>
+        <p>
+        Permission to use, copy, modify, and/or distribute this site for any purpose with or without fee is hereby granted.
+        This site is provided "as is" without express or implied warranty.
+        </p>
+        <p>
+        This site does not use cookies or tracking codes.
+        The hosting service provider (<a href="https://pages.github.com/">GitHub Pages</a>) probably collects server logs,
+        but I do not have access to them.
+        </p>
+        <p>
+        Site source is <a href="https://github.com/weakish/weakish.github.com/">available</a>
+        and feedback is <a href="https://github.com/weakish/weakish.github.com/issues">welcome</a>.
+        </p>
+        <noscript>
+        <p>
+        This site does not use JavaScript.
+        </p>
+        </noscript>
+    </div>
+  </div>
+</body>
+</html>

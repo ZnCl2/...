@@ -1,0 +1,503 @@
+{
+	"next_topic_id": 14,
+	"topic": [
+		{
+			"topic_id": 1,
+			"title": "建议增加ZeroNet开发版块",
+			"body": "版块中再置顶一个开发资源向导帖，以便于开发人员检索信息。",
+			"added": 1485250009,
+			"parent_topic_uri": "14_1NV87VmSkezRyz8NbFpdkYJsJUSfXx7LJa"
+		},
+		{
+			"topic_id": 2,
+			"title": "如何把WordPress文章导入ZeroBlog？-自动化工具",
+			"body": "tags:\n- 自动化工具\n- WordPress\n- Python\n---\n系统依赖：\n\n| Windows | Linux | Mac  | Android | iOS  |\n| :-----: | :---: | :--: | :-----: | :--: |\n|   通过    |  未测试  | 未测试  |   未测试   | 未测试  |\n\n\n运行环境：Python3.6\n\n\n环境包依赖：`html2text`\n\n\n```python\n# -*- coding: UTF-8 -*-\nimport xml.dom.minidom\nimport time\nimport json\nimport html2text\nfrom os.path import isfile\n\n# -------Edit Below-------\ndata_json_path = \"\"\n# Example: data_json_path = r\"N:\\ZeroBundle\\ZeroNet\\data\\1NtyUa8gvLkwJeHYebVkZXA9hespXvTRFv\\data\\data.json\"\nWordPress_ExportXML_Path = \"\"\n# Your WordPress Export XML File Path\n# -------Edit End-------\n\nif not isfile(data_json_path) or not isfile(WordPress_ExportXML_Path):\n    print('Please Edit Me And Set data_json_path and WordPress_ExportXML_Path')\n    exit(1)\n\nh = html2text.HTML2Text()\nsite_json = open(data_json_path, encoding='utf-8').read()\nopen('site_data_json.bak', 'wb').write(site_json.encode())\nsite_json = json.loads(site_json)\ncurrent_post_id = site_json['next_post_id']\nposts = site_json['post']\n\nDOMTree = xml.dom.minidom.parse(WordPress_ExportXML_Path)\nitems = DOMTree.documentElement.getElementsByTagName(\"item\")\nfor item in items:\n    if not item.getElementsByTagName('content:encoded')[0].childNodes:\n        continue\n    post_title = item.getElementsByTagName('title')[0].childNodes[0].data\n    post_time = items[1].getElementsByTagName('wp:post_date')[0].childNodes[0].data\n    post_time = time.mktime(time.strptime(post_time, '%Y-%m-%d %H:%M:%S'))\n    post_body = h.handle(item.getElementsByTagName('content:encoded')[0].childNodes[0].data)\n    post = {\"post_id\": current_post_id, \"title\": post_title, \"date_published\": post_time,\n            \"body\": post_body}\n    posts.insert(0, post)\n    current_post_id += 1\n\nsite_json['next_post_id'] = current_post_id\nopen(data_json_path, 'wb').write(json.dumps(site_json, ensure_ascii=False, indent=\"\\t\").encode())\nprint('Good! Convert Finished, Please sign site and published, then refresh the page, you will see your WordPress post')\n```",
+			"added": 1485271423,
+			"parent_topic_uri": "57_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ"
+		},
+		{
+			"topic_id": 3,
+			"title": "ZeroNet域名解析原理以及 如何注册域名",
+			"body": "当我们在ZeroNet上建立了自己的网站之后想要像TaLk或Me以及其他站点一样给自己的站点上一个域名，我们该怎么做呢？\n\n\n在[UiRequestPlugin.py#L49](https://github.com/HelloZeroNet/ZeroNet/blob/d65d5eb45c3e29241b480364c1dac558e2b387b6/plugins/Zeroname/UiRequestPlugin.py#L49)我们可以看到，在默认情况下ZeroNet 的站点域名解析是基于1Name2NXVi1RDPDgf5617UoW7xA6YrhM9F这个Zite的，打开这个站点的文件夹，我们可以看到在这个站点的data目录下有个names.json文件，（点击[这里](http://127.0.0.1:43110/1Name2NXVi1RDPDgf5617UoW7xA6YrhM9F/data/names.json)即可看到 ）打开之后可以看到域名以及对应的站点公钥地址都是以`“域名”:“站点公钥地址”`这样的简单k-v模式json格式储存的，那么，我们怎么让这个names.json文件里记录下自己想要的域名以及对应的Zite地址呢？\n\n\n通过文档我们可以知道，这个站点目前是由@Nofish的程序在VPS上24小时365无休自动维护的，他的程序通过读取 NameCoin （一个去中心化的域名解析项目）网络中域名解析记录里的`\"zeronet\"`字段来自动更新这一列表，那么，我们又该如何注册一个NameCoin网络的.bit域名，并且让自己的站点也能让他人通过该域名访问呢？\n\n\n首先，若要确保你自己可以控制你的域名，你需要下载一个NameCoin客户端，官网下载地址：[https://namecoin.org/download/](https://namecoin.org/download/)，下载好了之后在本地安装运行等待同步完成，在等待同步的同时，你可以去[聚币网](https://www.jubi.com/)注册一个账户并下载任意一币种的轻钱包，，之后充值购买那一币种，再去把它提现到自己的钱包（在这里，我使用的是DogeCoin，优点是转账交易费十分低廉，只有1狗币（约合人民币0.001380元）），再到[ShapeShift](https://zh.shapeshift.io/)将你购买的虚拟币转换成NameCoin转到自己的NameCoin钱包地址，这样你便得到了NameCoin。\n\n\n之后，访问https://namecha.in/name/d/ + 你想要的域名去查询域名是否已经出售，如https://namecha.in/name/d/zeronetwork 显示的便是ZeroNetWork.bit的域名注册信息。找好了还没被注册的域名之后，到本地运行的NameCoin客户端的ManageNames选项卡去，在输入框内按照提示输入域名（不要.bit后缀，如d/zeronetwork）然后点击提交，确认提示框之后到弹出窗口的Custom Configuration选项卡中输入框内输入自己的站点域名配置，如NewGFWTalk的域名配置为`{\"zeronet\":{\"\":\"19BPUZYAdCMxExKHoVSG3cG95wfUfFTEC9\",\"dev\":\"1AYpPewPtystyZxhHp4a5VFNrgJfmsWRU6\"}}`，即在访问http://127.0.0.1:43110/NewGFWTalk.bit 时会解析到http://127.0.0.1:43110/19BPUZYAdCMxExKHoVSG3cG95wfUfFTEC9，访问http://127.0.0.1:43110/dev.NewGFWTalk.bit 时会解析到http://127.0.0.1:43110/1AYpPewPtystyZxhHp4a5VFNrgJfmsWRU6 ，按照自己需求配置就好。然后确定提交，开着电脑做工3个小时以上，以确保全网确认，之后你的域名就可以使用了。（如果要让别人从ZeroHello点进去一样访问的是带域名的，记得到自己的站点根目录下content.json内加入`  \"domain\": \"xxxx.bit\", `一项并签名发布）。\n\n\n\n       当然，如果你想自己实现一个域名解析服务让别人用，只需要创建一个站点然后在站点的data目录下按照k-v模式自己写一个names.json文件让别人在启动ZeroNet时带上`--bit_resolver 你的站点地址`就好。\n\n\nPS：\n\n1. 如果你愿意，可以在注册聚币网账户时填写我的邀请码：490958\n2. 注意，目前NameCoin的区块链大小已将近4G，需要的同步时间视网络情况大致在4个小时到16个小时左右\n3. 之所以选择聚币网是因为这里存入资金为50元起，支持支付宝、银行卡付款，且提币限额低，比起比特儿起存100，不适合建站使用。但又因为这里不能直接购买域名币，所以要中转\n4. 软文推广，如果想要购买域名币又不想上面那样几个交易网站来回折腾，或者不想投这么多钱到那些交易网站难得麻烦，可以联系我购买域名以及域名币，1个域名1元钱，20一个域名币，付款方式微信支付宝银行转账比特币狗狗币都接受，ZeroMail我就好",
+			"added": 1485331451,
+			"parent_topic_uri": "57_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ"
+		},
+		{
+			"topic_id": 4,
+			"title": "如何在路由器上运行ZeroNet",
+			"body": "在路由器上运行ZeroNet可以减少碳排放，且只要路由器没关整个局域网都可以便捷快速访问，下面，我便介绍如何在路由器上运行ZeroNet。\n\n![1484830875.jpg (1064x857)](data/img/post_1_1484830875.jpg)\n\n首先，查看您的路由器是否可以安装这个固件：[[2017-1-16]改华硕[N14U N54U]5G 2G的7620老毛子Padavan固件(百度云同步 aria2 QOS)](http://www.right.com.cn/forum/thread-161324-1-1.html)\n\n本教程特为此固件设计，不是的话不能确保成功。\n\n* * *\n\n（PS：路由器上不能外挂存储的基本上也没希望了，毕竟路由器本身的内存也就那么点。。）\n如果是的话，自行跟着上面帖子里刷好自己的路由器，将移动硬盘或者U盘啥的插到路由器上做数据盘，最好还按照上面教程中设置swap，然后ssh连上，不详述。\n\n之后，输入以下命令并回车执行，一次一条\n\n```shell\nopkg update\nopkg install wget\nopkg install python-pip\nopkg install python-gevent python-greenlet\nopkg install tmux\n```\n\n更新以及安装好上述软件之后，cd到自己路由器的外挂存储，我的移动硬盘在路由器上的目录是/media/AiDisk_a5，不知道的可以通过`df`命令查看，/media目录下的那个就是。\n\n`cd /media/AiDisk_a5`\n然后，让我们下载ZeroNet:\n`wget https://github.com/HelloZeroNet/ZeroNet/archive/master.zip`\n解压：\n`unzip master.zip`\n打开文件管理器，访问\\路由器ip（如我的是\\192.168.123.1）然后打开里面的AiDisk_ax文件夹（x代表你的硬盘编号，如我的是AiDisk_a5），你可以看到刚刚下载的master.zip和解压出来的ZeroNet-master文件夹都在底下。之后把ZeroNet-master文件夹重命名为ZeroNet，进入文件夹，然后用npp或者写字板打开zeronet.py文件，然后在第五行`import sys`下加上以下两行并保存\n\n```python\nfrom thread import stack_size\nstack_size(32768)\n```\n\n在当前目录再新建zeronet.conf文件，输入以下内容并保存：\n\n```\n[global]\nui_ip = 192.168.123.1\n```\n\n回到ssh，输入以下代码，一次一行\n\n```shell\ncd ZeroNet\ntmux\n```\n\n这时会显示如下：\n\n![1484830120.png (774x374)](data/img/post_1_1484830120.png)​​​​​​​\n\n然后输入`pip install -r requirement.txt -i https://pypi.tuna.tsinghua.edu.cn/simple`回车安装剩下依赖，完成之后输入`python zeronet.py`回车运行OK\n\n打开浏览器，访问[http://192.168.123.1:43110/](http://192.168.123.1:43110/) 即可\n\n![1484830875.jpg (1064x857)](data/img/post_1_1484830875.jpg)\n\n如果你还有兴趣，可以使用内置的lnmp功能配置nginx反向代理以及再加上https做公共代理，这里就不详述了。\n：）enjoy it",
+			"added": 1485331677,
+			"parent_topic_uri": "57_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ"
+		},
+		{
+			"topic_id": 5,
+			"title": "ZeroNet签名代码（可用于自签名、机器人开发等）",
+			"body": "tags:\n- 自动化工具\n- 机器人\n- ZeroNet\n- 签名\n- Python\n---\n系统依赖：\n\n| Windows | Linux | Mac  | Android | iOS  |\n| :-----: | :---: | :--: | :-----: | :--: |\n|   通过    |  通过  | 未测试，理论签名通过  |   未通过，Android下缺少依赖   | 未测试  |\n\n运行环境：Python3.6\n环境依赖：`bitcoin`\n\n```python\nimport os\nimport json\nimport hashlib\nimport time\n\nfrom bitcoin import ecdsa_sign\n\nprint('注意：该代码默认只签名data.json')\n\nhub_cert = '1RedkCkVaXuVXrqCMpoXQS29bwaqsuFdL'\nuser_cert = '1CwbqLCD6TdkinNNNb4GneZxbsoJ6Mw6oE'\nuser_private_key = ''\n\nblog_cert = ''\nblog_private_key = ''\n\n\ndef sha512sum(file):\n    file = open(file, \"rb\")\n    file_hash = hashlib.sha512()\n    while True:\n        data = file.read(65536)\n        if not data:\n            break\n        file_hash.update(data)\n    return file_hash.hexdigest()[0:64]  # Truncate to 256bits is good enough\n\n\ndef ZeroMeSign(hub_cert, user_cert, user_private_key):\n    os.chdir(os.path.join(hub_cert, 'data', 'users', user_cert))\n    content_file = open('content.json', 'r+', encoding='utf-8')\n    content = json.loads(content_file.read())\n    content[\"modified\"] = int(time.time())\n\n    data_filename = 'data.json'\n\n    if 'files' not in content:\n        print('node files not exist')\n        content['files'] = {}\n    if 'data.json' not in content['files']:\n        print('node data.json not exist')\n        content['files']['data.json'] = {}\n    content['files']['data.json'] = {'sha512': sha512sum(data_filename), 'size': os.path.getsize(data_filename)}\n    if \"signs\" in content:\n        del (content[\"signs\"])  # Delete old signs\n    if \"sign\" in content:\n        del (content[\"sign\"])  # Delete old sign (backward compatibility)\n    sign_content = json.dumps(content, sort_keys=True)\n    sign = ecdsa_sign(sign_content, user_private_key)\n    if sign:  # If signing is successful (not an old address)\n        content[\"signs\"] = {}\n        content[\"signs\"][user_cert] = sign\n    else:\n        print('sign fail! exit')\n        exit(1)\n    content = json.dumps(content, indent=4, sort_keys=True)\n    content_file.seek(0, 0)\n    content_file.truncate()\n    content_file.write(content)\n    content_file.close()\n\n\nZeroMeSign(hub_cert, user_cert, user_private_key)\n```",
+			"added": 1485335834,
+			"parent_topic_uri": "57_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ"
+		},
+		{
+			"topic_id": 6,
+			"title": "ZeroNet站点私钥一键恢复程序",
+			"body": "tags:\n- 自动化工具\n- 站点私钥恢复\n- ZeroNet\n- Python\n---\n**系统依赖：**\n\n| Windows | Linux | Mac  | Android | iOS  |\n| :-----: | :---: | :--: | :-----: | :--: |\n|   通过    |  通过   |  通过  |   通过    | 未测试  |\n\n**运行环境：** Python3.6\n**环境依赖：**`bitcoin`\n\n### 说明：\nmaster_seed在user.json里，address_index在站点根目录的content.json中，若站点根目录的content.json中没有address_index一项只能爆破，那样算暴力破解工具了，日后新开工具实现这项功能。\n\n```python\nfrom bitcoin import bip32_master_key, bip32_ckd, bip32_extract_key, encode_privkey\nimport argparse\n\nnewParser = argparse.ArgumentParser()\nnewParser.add_argument('master_seed', help=\"Your master_seed\")\nnewParser.add_argument('address_index', type=int, help=\"Your site address_index\")\nargs = newParser.parse_args()\n\nmasterkey = bip32_master_key(args.master_seed.encode('utf-8'))\nchildkey = bip32_ckd(masterkey, args.address_index % 100000000)\nkey = bip32_extract_key(childkey)\nprint(f'Your site private key is: {encode_privkey(key, \"wif\")}')\n\n```",
+			"added": 1485344204,
+			"parent_topic_uri": "57_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ"
+		},
+		{
+			"topic_id": 7,
+			"title": "test",
+			"body": "1Nse6WcodQ5Mj6ZwvZvuyCVvQESwuxbCUy\n/1Nse6WcodQ5Mj6ZwvZvuyCVvQESwuxbCUy\n/1Nse6WcodQ5Mj6ZwvZvuyCVvQESwuxbCUy/\nhttp://127.0.0.1:43110/1Nse6WcodQ5Mj6ZwvZvuyCVvQESwuxbCUy\nhttp://127.0.0.1:43110/1Nse6WcodQ5Mj6ZwvZvuyCVvQESwuxbCUy/\n\n---\n\ngfwtalk.bit\n/gfwtalk.bit\n/gfwtalk.bit/\nhttp://127.0.0.1:43110/gfwtalk.bit\nhttp://127.0.0.1:43110/gfwtalk.bit/\n\n---\n\nGFWTalk.bit\n/GFWtalk.bit\n/gfwTalk.bit/\nhttp://127.0.0.1:43110/GFWtalk.bit\nhttp://127.0.0.1:43110/gfwTalk.bit/\n\n---\n\n[test GFWtalk.bit](/GFWtalk.bit)\n[test 127GFWtalk.bit](http://127.0.0.1:43110/GFWtalk.bit)\n[test 1Nse6WcodQ5Mj6ZwvZvuyCVvQESwuxbCUy](/1Nse6WcodQ5Mj6ZwvZvuyCVvQESwuxbCUy)\ndata/1Nse6WcodQ5Mj6ZwvZvuyCVvQESwuxbCUy",
+			"added": 1485418664,
+			"parent_topic_uri": "57_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ"
+		},
+		{
+			"topic_id": 8,
+			"title": "ZeroNet WebSocket API调用示例 既 ZeroMail-Client v0.1发布",
+			"body": "tags:\n- 客户端\n- ZeroMail\n- ZeroNetAPI调用\n- Python\n---\n**系统依赖：**\n\n| Windows | Linux | Mac  | Android | iOS  |\n| :-----: | :---: | :--: | :-----: | :--: |\n|   通过    |  通过   |  通过  |   通过    | 未测试  |\n\n**运行环境：** Python3.6\n**环境依赖：** \nPyExecJS>=1.4.0\nrequests>=2.13.0\nwebsocket-client>=0.40.0\n\n### 说明：\n\n个人精力有限，代码规范格式，易于上手，欢迎各位提交代码。\n项目地址： https://github.com/cxgreat2014/ZeroMail-client\n\n```python\nimport os\nimport websocket\nimport re\nfrom json import loads, dumps\nfrom requests import get\nimport execjs\n\n\nclass ZeroMail:\n    __version__ = 0.1\n\n    def __init__(self, host='127.0.0.1', port=43110, address='Mail.ZeroNetwork.bit', port_control='http',\n                 data_file='data.json'):\n        html = get(f'{port_control}://{host}:{port}/{address}/', headers={\"ACCEPT\": \"text/html\"}).content.decode()\n        self.wrapper_key = re.search('wrapper_key = \"([a-z0-9]+)', html).group(1)\n        self.link = f\"ws://{host}:{port}/Websocket?wrapper_key={self.wrapper_key}\"\n        self.id = 0\n        self.ws = websocket.create_connection(self.link)\n        self.send('channelJoin', {\"channel\": \"siteChanged\"}, 1000000)\n        self.send('siteInfo', {})\n        self.site_info = self.recv_json()\n        self.auth_address = self.site_info['auth_address']\n\n        # ToDo: Load cache && config\n        '''\n        if os.path.isfile(data_file):\n            self.config = loads(data_file)\n        else:\n            self.config = {}\n        if 'scanned' not in self.config:\n            self.config['scanned'] = False\n        if not self.config['scanned']:\n            self.my_mail = self.scan_mails()\n        '''\n        self.recv_mail = self.scan_mails()\n\n    def send(self, cmd, params=None, id=0):\n        if params is None:\n            params = \"\"\n        message = {'cmd': cmd, 'params': params}\n        if id == 0:\n            self.id += 1\n            message['id'] = self.id\n        else:\n            message['id'] = id\n        message = dumps(message)\n        self.ws.send(message)\n\n    def recv(self):\n        return self.ws.recv()\n\n    def recv_json(self):\n        return loads(self.recv())['result']\n\n    def get_sent_mail(self):\n        self.send('fileGet', {\"inner_path\": f\"data/users/{self.auth_address}/data.json\", \"required\": False})\n        return self.recv_json()\n\n    def get_mailbox_info(self):\n        self.send(\"fileRules\", f\"data/users/{self.auth_address}/data.json\")\n        return self.recv_json()\n\n    def get_user_id_by_auth_address(self, auth_address_list):\n        self.send(\"dbQuery\", [\"SELECT directory, value AS cert_user_id\\nFROM json\\nLEFT JOIN keyvalue USING (json_id)\"\n                              \"\\nWHERE ? AND file_name = 'content.json' AND key = 'cert_user_id'\",\n                              {\"directory\": auth_address_list}])\n        return self.recv_json()\n\n    def get_mail(self):\n        return self.recv_mail\n\n    def scan_mails(self):\n        self.send(\"dbQuery\", [\"SELECT * FROM secret\\nLEFT JOIN json USING (json_id)\\n\\nORDER BY date_added ASC\"])\n        secret_list = self.recv_json()\n        self.send(\"eciesDecrypt\", [[mail['encrypted'] for mail in secret_list]])\n        result = self.recv_json()\n        contacts = [[secret_list[x]['directory'], result[x]] for x in range(len(secret_list)) if result[x] is not None]\n        print(contacts)\n        address_book = self.get_user_id_by_auth_address([x[0] for x in contacts])\n        address_book = {x['directory']: x['cert_user_id'] for x in address_book}\n        self.send(\"dbQuery\", [\n            f\"SELECT * FROM message\\nLEFT JOIN json USING (json_id)\\nWHERE directory IN ({repr([x[0] for x in contacts])[1:-1]})\\nORDER BY date_added ASC\"])\n        mails = self.recv_json()\n        self.send(\"aesDecrypt\", [[x['encrypted'].split(',') for x in mails], [x[1] for x in contacts]])\n        result = self.recv_json()\n        recv_mail = []\n        for x in range(len(result)):\n            if result[x] is not None:\n                mail = loads(repr(execjs.eval(f\"decodeURIComponent(escape('{result[x]}'))\"))[1:-1])\n                mail['from'] = f\"{mails[x]['directory']}<{address_book[mails[x]['directory']]}>\"\n                recv_mail.append(mail.copy())\n        mails = None\n        return recv_mail\n\n\nif __name__ == \"__main__\":\n    mails = ZeroMail().recv_mail\n    for mail in mails:\n        print('#' * 36)\n        print('Subject: ' + mail['subject'])\n        print('From: ' + mail['from'])\n        print('Message: ' + mail['body'])\n\n```",
+			"added": 1485533787,
+			"parent_topic_uri": "57_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ"
+		},
+		{
+			"topic_id": 9,
+			"title": "建议在JS内设定在主页不显示除了13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ以及1NV87VmSkezRyz8NbFpdkYJsJUSfXx7LJa的帖子",
+			"body": "RT，就像这样，不然完全没法阻止在主页自行设立 : ）\n另外，SQL建议也改改，否则在关注了NewsFeed的人的ZeroHello也还会显示: ）",
+			"added": 1486184452,
+			"parent_topic_uri": "8_1NV87VmSkezRyz8NbFpdkYJsJUSfXx7LJa"
+		},
+		{
+			"topic_id": 10,
+			"title": "优化版论坛迁移脚本",
+			"body": "用ZeroNet内部的签名机制来迁移论坛是一件耗时极长的事情，而自己实现ZeroNet的签名机制来生成文件签名并保存可节约大量时间，因此，此下省略三百字。\n该代码力量巨大，而且对于一般人来说用不到，因此也就不详细说明了。为了预防社区分裂，我干脆丢了代码就跑，能跑起来算你赢。（逃）\n```\nimport os\nimport subprocess\nimport json\nimport re\nimport hashlib\n\nfrom bitcoin import ecdsa_sign\n\n\ndef sha512sum(file, blocksize=65536):\n    file = open(file, \"rb\")\n    hash = hashlib.sha512()\n    while True:\n        data = file.read(blocksize)\n        if not data:\n            break\n        hash.update(data)\n    return hash.hexdigest()[0:64]  # Truncate to 256bits is good enough\n\n\nos.chdir(os.path.join(site_cert, 'data', 'users'))\nout_put = subprocess.getoutput('dir /A:D /B').split('\\n')\nprint(len(out_put), out_put)\n\nrc = re.compile('gfwtalk\\.bit', flags=re.I)\nfor x in out_put:\n    content_file = open(os.path.join(x, 'content.json'), 'r+', encoding='utf-8')\n    content = json.loads(content_file.read())\n    content['address'] = site_cert\n\n    data_filename = os.path.join(x, 'data.json')\n    data_file = open(data_filename, 'r+', encoding='utf-8')\n    data_file_content = data_file.read()\n    data_file_content = data_file_content.replace(\n        \"19BPUZYAdCMxExKHoVSG3cG95wfUfFTEC9\", \"1AYpPewPtystyZxhHp4a5VFNrgJfmsWRU6\"\n    )\n    data_file_content = data_file_content.replace(\n        \"1Nse6WcodQ5Mj6ZwvZvuyCVvQESwuxbCUy\", \"1AYpPewPtystyZxhHp4a5VFNrgJfmsWRU6\"\n    )\n    data_file_content = rc.sub('NewGFWTalk.bit', data_file_content)\n    data_file.seek(0, 0)\n    data_file.truncate()\n    data_file.write(data_file_content)\n    data_file.close()\n\n    if 'files' not in content:\n        print('node files not exist')\n        content['files'] = {}\n    if 'data.json' not in content:\n        print('node data.json not exist')\n        content['files']['data.json'] = {}\n    content['files']['data.json'] = {'sha512': sha512sum(data_filename), 'size': os.path.getsize(data_filename)}\n    if \"signs\" in content:\n        del (content[\"signs\"])  # Delete old signs\n    if \"sign\" in content:\n        del (content[\"sign\"])  # Delete old sign (backward compatibility)\n    sign_content = json.dumps(content, sort_keys=True)\n    sign = ecdsa_sign(sign_content, site_private_key)\n    if sign:  # If signing is successful (not an old address)\n        content[\"signs\"] = {}\n        content[\"signs\"][site_cert] = sign\n    else:\n        print('sign fail! exit')\n        exit(1)\n    content = json.dumps(content, indent=4, sort_keys=True)\n    content_file.seek(0, 0)\n    content_file.truncate()\n    content_file.write(content)\n\n```",
+			"added": 1486209390,
+			"parent_topic_uri": "57_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ"
+		},
+		{
+			"topic_id": 11,
+			"title": "# 屏蔽ZeroMe Spammer方法：",
+			"body": "#  更新到最新版zeronet，网页控制台inner-iframe输入以下回车\n\n```\nPage.cmd(\"MuteAdd\", ['183YBfiZcnntR2sun59dSAmue4DizmrVhf','nigger@kaffie.bit','Spammer'], function(res) {console.log(res) })\nPage.cmd(\"MuteAdd\", ['1GJUaZMjTfeETdYUhchSkDijv6LVhjekHz','hello world@kaffie.bit','Spammer'], function(res) {console.log(res) })\n```",
+			"added": 1486618298,
+			"parent_topic_uri": "57_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ"
+		},
+		{
+			"topic_id": 12,
+			"title": "# 屏蔽ZeroMe Spammer方法：",
+			"body": "#  更新到最新版zeronet，网页控制台inner-iframe输入以下回车\n\n```\nPage.cmd(\"MuteAdd\", ['183YBfiZcnntR2sun59dSAmue4DizmrVhf','nigger@kaffie.bit','Spammer'], function(res) {console.log(res) })\nPage.cmd(\"MuteAdd\", ['1GJUaZMjTfeETdYUhchSkDijv6LVhjekHz','hello world@kaffie.bit','Spammer'], function(res) {console.log(res) })\n```",
+			"added": 1486618417,
+			"parent_topic_uri": "8_1NV87VmSkezRyz8NbFpdkYJsJUSfXx7LJa"
+		},
+		{
+			"topic_id": 13,
+			"title": "貌似英文ZeroTalk被中文洗版了。。。",
+			"body": "有外国人已经到中文talk来抗议了。。。。",
+			"added": 1495693408,
+			"parent_topic_uri": "8_1NV87VmSkezRyz8NbFpdkYJsJUSfXx7LJa"
+		}
+	],
+	"topic_vote": {},
+	"next_comment_id": 77,
+	"comment": {
+		"1_15qcGEu7LuArtRwGS1cv5RDWL4CZ4yN7mL": [
+			{
+				"comment_id": 1,
+				"body": "> [p2p](#comment_1025_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): 你去提issue吧\n\n你这回答好直接。。",
+				"added": 1482155417
+			}
+		],
+		"1_1AZCBZGFdZR4pwafMut2Z1kk4wbYantaAL": [
+			{
+				"comment_id": 2,
+				"body": "Excited!",
+				"added": 1482740955
+			}
+		],
+		"52_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ": [
+			{
+				"comment_id": 3,
+				"body": "很荣幸我在其中占据数位，233",
+				"added": 1483781961
+			},
+			{
+				"comment_id": 4,
+				"body": "我去。。这个也太麻烦了吧。。windows的我去看看",
+				"added": 1483782025
+			}
+		],
+		"1_184vGP5fcYRNVupDCBcxi938D8AqGCU6JT": [
+			{
+				"comment_id": 5,
+				"body": "storj也是如此。。或许可以互相借鉴一下",
+				"added": 1484061503
+			}
+		],
+		"1_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ": [
+			{
+				"comment_id": 6,
+				"body": "p2p，你在干啥呢？一天没见你冒泡了",
+				"added": 1485091717
+			}
+		],
+		"56_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ": [
+			{
+				"comment_id": 7,
+				"body": "域名也上了，更新下更新下，[New GFW Talk](/NewGFWTalk.bit/)",
+				"added": 1485186040
+			}
+		],
+		"3_1CwbqLCD6TdkinNNNb4GneZxbsoJ6Mw6oE": [
+			{
+				"comment_id": 8,
+				"body": "> [zendic](#comment_1_1GDC9WtGFWbdtKm4so8dsfbHeUrPaUbGPd): 付款会留下线索\n\n若是捅了大篓子，真查没啥查不到的。而且支持比特币狗狗币付款，想匿名也是可以的",
+				"added": 1485335925
+			},
+			{
+				"comment_id": 44,
+				"body": "> [onecoder](#comment_7_1Hit8zjbVAf1Cpu2DWWQyr8tjTKQqSKHWW): 按照提示设置成功了，感谢！我的blog http://127.0.0.1:43110/onecoder.bit\n\n哈哈~没事，已做节点",
+				"added": 1489250022
+			}
+		],
+		"1_1GDC9WtGFWbdtKm4so8dsfbHeUrPaUbGPd": [
+			{
+				"comment_id": 9,
+				"body": "去zerome发张图看看吧，看看那里有没有元数据",
+				"added": 1485335970
+			}
+		],
+		"6_1CwbqLCD6TdkinNNNb4GneZxbsoJ6Mw6oE": [
+			{
+				"comment_id": 10,
+				"body": "> [mbp374](#comment_18_1FzCyv6ibgoShdXjQu7CCLiNTWhWhj5E6J): address_index 是网站的地址么？\n\n不是，是一个int整数，见[gfwtalk.bit/content.json](/gfwtalk.bit/content.json) 第三address_index 字段",
+				"added": 1485345679
+			}
+		],
+		"4_1CwbqLCD6TdkinNNNb4GneZxbsoJ6Mw6oE": [
+			{
+				"comment_id": 11,
+				"body": "> [p2p](#comment_1067_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): gevent依赖greenlet，你不知道？\n\n> [nekocross](#comment_167_1FHN4oukAG7zFUpiC9L2iz7QpQVTuT3xkz): greenlet是用于python多线程的。是路由器的环境特殊才需要安装他吗\n\n哈哈",
+				"added": 1485350367
+			}
+		],
+		"37_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ": [
+			{
+				"comment_id": 12,
+				"body": "怎么改电脑上的 zeronet 让局域网里面我的iphone手机访问呢？\n启动zeronet时加`--ui_ip *`参数，或者先在zeronet目录创建zeronet.conf文件，内容：\n```\n[global]\nui_ip = 0.0.0.0\n```\n再启动zeronet即可。",
+				"added": 1485425996
+			}
+		],
+		"3_1Ekf2tGQLhG3iifFsuUk9RcBPx26cQmCD1": [
+			{
+				"comment_id": 13,
+				"body": "我把整个zeronet不包括可选文件全部缓存下来也就4个G，还没阿凡达高清的9分之一的大小，（抠鼻），现在存储越来越大早不是问题，关键是内容",
+				"added": 1485575984
+			},
+			{
+				"comment_id": 14,
+				"body": "另外，一个站不提限额最大也就10MB，现在8块钱一张2G内存卡，350块一块2T西数黑盘，就缺这10M？",
+				"added": 1485576109
+			},
+			{
+				"comment_id": 15,
+				"body": "还有，严重浪费。。10MB就严重浪费硬盘。。带宽更是无稽之谈，网站有价值才会被人访问，访问了之后都自动变成节点分发，网站访问的人越多分摊到每个人身上的带宽也就越小，\n> 现在ZN上死掉的站/废站/旧站太多,严重浪费客户端硬盘和带宽.\n..........你开心就好",
+				"added": 1485576407
+			},
+			{
+				"comment_id": 16,
+				"body": "需求压根不存在，不知有啥意义。",
+				"added": 1485576431
+			},
+			{
+				"comment_id": 19,
+				"body": "> [mibox](#comment_2_1CYYQrdFXd8tR85XP7KGf6rWTvEK6Mv6QD): 操心那么多干嘛，你把自己客户端上的废站删掉就行了\n\n666",
+				"added": 1485580083
+			},
+			{
+				"comment_id": 34,
+				"body": "> [tossp](#comment_1_12BEqKXvKJ6Rh6p51kjoW5tVBRnzHvZhpo): 为什么有人对这个项目冷嘲热讽的？你没有需求别人就没有需求了吗？\n> 别人热心发布一个项目出来，对你有用点赞或者参与维护，对你没有你默默关掉页面就好，都什么心态啊\n> 说直白一点就叫吃屎的开始骂拉屎的，埋怨味道不好了，简直翻了天了！\n\n你用过吸血雷吗？只要这个插件普及，谁都把自己看过的觉得没啥用的站分分钟删掉，zeronet可用性立马死给你看你信不信",
+				"added": 1487594990
+			},
+			{
+				"comment_id": 36,
+				"body": "> [tossp](#comment_8_12BEqKXvKJ6Rh6p51kjoW5tVBRnzHvZhpo): 您这扯得更离谱了，技术的两面性谁都知道你前面的帖子，都是在说明这个项目的不必要性，现在开始和我扯数据冗余的重要性？\n> \n> 我前面说的你意识到了，就该为你自己的言论负责。对别人提供代码还冷嘲热讽的态度你还真觉得理所应当了？\n> 既然你提到了数据冗余的价值，我承认这一点。但事实来说，你建了一个网站，没有任何人愿意给你做镜像，你觉得是你内容的问题，还是其他人选择的问题？有价值的网站，自然会有人订阅。\n> 迅雷做的最坏的事情是没有对等的回馈，这才是迅雷的恶，但同时他也提供了另一种可行的方案镜像。1块钱10MB的内容镜像一年，你愿意付费吗？类似PT站的积分机制呢？方案太多了，这些都不是单单是技术范围的事情，但是为什么要用不是技术范围的东西，去掩盖技术的可能性呢？所以，你前面扯什么zeronet的可用性和这个项目没有半点关系。\n\n你开心就好啦。\n第一点质疑，只不过我最开始不想把吸血雷提出来而已。\n第二点，你听说过轻钱包吗？\n至于后面的可行方案镜像。。那是去中心化？\n你开心就好：）",
+				"added": 1487640775
+			},
+			{
+				"comment_id": 37,
+				"body": "> [tossp](#comment_12_12BEqKXvKJ6Rh6p51kjoW5tVBRnzHvZhpo): 迅雷的案例和这个项目没半点关系\n> 不要用不对等的东西来比喻ZeroNet，不恰当\n> 什么叫去中心化，你搞懂再来和我对话\n\n：）你开心就好",
+				"added": 1487650767
+			},
+			{
+				"comment_id": 39,
+				"body": "tossp的论据：\n迅雷不是依赖于P2P\nP2P不是P2P\n没有中心化服务器，依靠我为人人人人为我的方式运作，12h我不明白。",
+				"added": 1487651870
+			},
+			{
+				"comment_id": 40,
+				"body": "> [tossp](#comment_12_12BEqKXvKJ6Rh6p51kjoW5tVBRnzHvZhpo): \n> 你这种人，死不承认自己的问题，套用互联网初期的一句话“谁Tm知道，和我对话的是猪还是狗”\n> 最后，遇见你，我很恶心\n\n另外。。听说肚量越小的人越容易生气暴跳如雷，哈哈~\n你还得多学习一个才是：）\n与君共勉",
+				"added": 1487651961
+			},
+			{
+				"comment_id": 41,
+				"body": "> [p2p](#comment_1119_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): ZeroNet目前很多站属于测试性质，N久不更新，站长N久没上线，也有站长魔改玩脱废弃的站。这些站占用的硬盘资源不是讨论重点，而是占用网络连接数资源，特别是在tor下。这些站占用着有限的网络连接数资源，而且还占这更新队列，导致本该拥有更多连接数、更新速度更快的常用站点出现更新失败，常常收不到帖子。所以留着这些站弊远远大于利。至于你担心的看完即删的问题，我的设想是，只要这个批量删除插件没有内置到ZeroNet，需要折腾一下才能用，那么80%左右的用户就不会去折腾它。愿意去折腾它的，基本上都会是老用户——下载了N多站，卡得不行了，有真实的批量删除需求。\n> \n> 提醒一下，两位就事论事即可，没必要说对方人怎样怎样\n\n这个对于你的这个情况的确是个问题。。不过我觉得更应该让nofish把更新队列智能优化做好，而不是单纯暴力删除。譬如说对所有站点进行更新，可以先获取peer，然后根据站点更新频率排序，假如某节点有三个本地已缓存的站点的内容，就把三个站点的hash请求打包，一次性发过去询问比对，比现在这样一个个发更好",
+				"added": 1487678423
+			},
+			{
+				"comment_id": 42,
+				"body": "> [p2p](#comment_1120_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): 更新队列智能优化是肯定要做的，但是面对大量废弃的站（几百个，还在增加中），优化的效果十分有限，而且越来越没效果（如果没有配套批量删除的话）。\n\n废站打上标记（自动/手动）之后自动丢到最低优先级队列，7天更新一次，这样既做种也能节省开销",
+				"added": 1487681333
+			}
+		],
+		"8_1CwbqLCD6TdkinNNNb4GneZxbsoJ6Mw6oE": [
+			{
+				"comment_id": 17,
+				"body": "其实基于ZN Websocket 还有很多玩法，欢迎大家开发更多更好玩的东西来",
+				"added": 1485576531
+			},
+			{
+				"comment_id": 18,
+				"body": "> [mibox](#comment_1_1CYYQrdFXd8tR85XP7KGf6rWTvEK6Mv6QD): 比如可以搞个zerome的安卓客户端\n\n是的，机器人也可以这样写",
+				"added": 1485580025
+			},
+			{
+				"comment_id": 20,
+				"body": "> [mibox](#comment_1_1CYYQrdFXd8tR85XP7KGf6rWTvEK6Mv6QD): 比如可以搞个zerome的安卓客户端\n\n有时间我会看看，不过。。其实可以建立以zeronet为基础的应用生态",
+				"added": 1485580133
+			},
+			{
+				"comment_id": 21,
+				"body": "> [mibox](#comment_3_1CYYQrdFXd8tR85XP7KGf6rWTvEK6Mv6QD): 如果能直接访问数据库就好了\n\nzeronet作为内容更新以及API提供商，本来就可以通过API直接访问数据库",
+				"added": 1485595148
+			},
+			{
+				"comment_id": 22,
+				"body": "> [mibox](#comment_3_1CYYQrdFXd8tR85XP7KGf6rWTvEK6Mv6QD): 如果能直接访问数据库就好了\n\n实际上，直接去写文件很不利于操作，而使用websocketAPI来操作zeronet实在是爽爆了，不用再管那些签名了2333，直接site publish搞定",
+				"added": 1485595591
+			}
+		],
+		"13_1zYus1ZaPCSzAfCSeU6pfMQM58AQy6Tgt": [
+			{
+				"comment_id": 23,
+				"body": "每个人都有着自己的思想与见解，没必要强加给他人。不然你的行为就如穆斯林杀死所有的异教徒。在不侵犯到他人的前提之下每个人对每个事都可以有自己的观点，没必要强加给他人。国家替我们思考，屏蔽了所有六四和蛤，结果呢？谁不骂？到了这里你又开始自我审查了，我看你和政府里那些替人民思考的人是一个类型",
+				"added": 1485596074
+			},
+			{
+				"comment_id": 72,
+				"body": "> [hkmdcyy](#comment_2_12jAxe3YWHo6CXpQjihZ4wuuh5uH3ieYd4): 自由也要讲基本法（道德）啊\n\n秩序生于混沌，秩序克制混沌，秩序死于混沌。有市场证明有需求，真有能力的人是加以循循善诱，而非禁止。用法律约束人民是下策，让人民明白正误自行约束才是上策。",
+				"added": 1495292252
+			}
+		],
+		"1_1Ekf2tGQLhG3iifFsuUk9RcBPx26cQmCD1": [],
+		"9_1CwbqLCD6TdkinNNNb4GneZxbsoJ6Mw6oE": [
+			{
+				"comment_id": 27,
+				"body": "> [nekocross](#comment_184_1FHN4oukAG7zFUpiC9L2iz7QpQVTuT3xkz): 也就是限定只有xiaolan和p2p的帖子才能在首页显示\n\n+1",
+				"added": 1486185666
+			},
+			{
+				"comment_id": 28,
+				"body": "> [p2p](#comment_1087_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): JS要怎么写呢？\n\n主页加载时id为8的db query那得到返回结果之后做下过滤就好，SQL加个In就行",
+				"added": 1486198972
+			},
+			{
+				"comment_id": 29,
+				"body": "> [ysc3839](#comment_107_13RFJdsXQGN5cfMK8GctB6nQZ5xwLmjcfB): 我建议是写个列表放在content.json里面，载入主页的时候就只加载这几个。\n\n> [p2p](#comment_1090_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): 这样可维护性更好。最好是放在下级content.json，这样不需要站长权限就能更改\n\n这种办法也6, 2333",
+				"added": 1486209369
+			}
+		],
+		"7_1PBMVMMVVtSK6FmMbfz4fhEw5fv6eZs5Dn": [
+			{
+				"comment_id": 30,
+				"body": "我有个半成品AutoSeed插件，要的话我发上来",
+				"added": 1486881812
+			}
+		],
+		"62_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ": [
+			{
+				"comment_id": 31,
+				"body": "我建议把那些不需要屏蔽的直接去掉，别not了。。我那样搞只是省事",
+				"added": 1487159345
+			},
+			{
+				"comment_id": 32,
+				"body": "> [p2p](#comment_1115_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): 我也想省事。以后有更多的spammers，直接复制粘帖即可，无需手动去掉not False，现在的相当于demo\n\n但是你用英语发到zerome里做宣传。。别人不知道的以为permissions 这些都是Spammer",
+				"added": 1487159597
+			},
+			{
+				"comment_id": 33,
+				"body": "> [p2p](#comment_1115_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): 我也想省事。以后有更多的spammers，直接复制粘帖即可，无需手动去掉not False，现在的相当于demo\n\n另外，zerome nofish回你了",
+				"added": 1487159680
+			}
+		],
+		"2_15FDfY8PxKsonSWAs2XTbDMuAzVkK4oyYD": [
+			{
+				"comment_id": 43,
+				"body": "+1",
+				"added": 1488159443
+			}
+		],
+		"63_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ": [
+			{
+				"comment_id": 45,
+				"body": "用户隐私数据过往都是存在c的数据库里，对其他人都是不可见的。。而要移植过来必然使得这些数据得进行特别处理。。亦或者把这些敏感数据录入的地方去掉。（毕竟ZN主打还有匿名）",
+				"added": 1489626828
+			},
+			{
+				"comment_id": 46,
+				"body": "而且原本的应用不少是通过mail注册激活账户，甚至以mail地址为主键。。估计很多时候难度基本等于重写。。",
+				"added": 1489628412
+			},
+			{
+				"comment_id": 47,
+				"body": "> [p2p](#comment_1133_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): 隐私数据用公钥加个密即可。还可参考zeromail\n\n是呀，相关代码就得重写。\n> [p2p](#comment_1134_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): 12hlearn@zeroid.bit 这不就是mail地址吗\n\n同样如此。这些部分调用到的库、函数等都要转换成ZN方式的",
+				"added": 1489641413
+			},
+			{
+				"comment_id": 48,
+				"body": "> [p2p](#comment_1134_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): 12hlearn@zeroid.bit 这不就是mail地址吗\n\n并且。。。在zn中找回密码这种事情。。。没有存在的必要，发邮件激活，邮件通知，所有现有应用的用户管理部分都得重写才能适应zn。登录部分直接选择账户，激活部分去除，邮件通知变成feed，不必要的信息录入都要换掉等",
+				"added": 1489641492
+			},
+			{
+				"comment_id": 49,
+				"body": "> [p2p](#comment_1135_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): 不用重写啊，反代把已加密的部分解密后交给浏览器。你把反代想象成一个中间人就行了。\n> \n> 这里12hlearn@zeroid.bit仅仅作为用户标识而已，把原有的收发邮件什么的代码直接给删了或禁了\n\n这个可以。的确可行。但工程量收益比啥的。。。要不您先来做个示范？（滑稽）",
+				"added": 1489642997
+			},
+			{
+				"comment_id": 50,
+				"body": "> [p2p](#comment_1136_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): 这里12hlearn@zeroid.bit仅仅作为用户标识而已，把原有的收发邮件什么的代码直接给删了或禁了。一个好的框架应该是模块化的，删了或禁了应该都不难。\n\ndiscourse那货的邮箱验证。。。进数据库直接改字段都不行。。。",
+				"added": 1489643045
+			},
+			{
+				"comment_id": 51,
+				"body": "> [p2p](#comment_1135_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): 不用重写啊，反代把已加密的部分解密后交给浏览器。你把反代想象成一个中间人就行了。\n> \n> 这里12hlearn@zeroid.bit仅仅作为用户标识而已，把原有的收发邮件什么的代码直接给删了或禁了\n\n实际上还有一个问题。。每个站点的程序都是不一样的，如何确保这些站点程序中不混入恶意代码？",
+				"added": 1489643121
+			},
+			{
+				"comment_id": 52,
+				"body": "> [p2p](#comment_1135_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): 不用重写啊，反代把已加密的部分解密后交给浏览器。你把反代想象成一个中间人就行了。\n> \n> 这里12hlearn@zeroid.bit仅仅作为用户标识而已，把原有的收发邮件什么的代码直接给删了或禁了\n\n另外还涉及到站点程序更新问题，譬如说我的后端程序代码升级了一下，如何确保所有节点的 程序都升级？以及如何进行进程管理，在不影响使用的情况下停止现有实例然后以新版代码启动？",
+				"added": 1489643280
+			},
+			{
+				"comment_id": 53,
+				"body": "譬如说我想要拿这个来建站共享知识 https://github.com/phith0n/mooder 先发布无害的原版程序，之后等别人都跑起来了我更新一下后端里面加个urlencode(open('/etc/passwd').read())然后加上ip信息保存到一个前端不可见的个人信息字段中。。",
+				"added": 1489643324
+			},
+			{
+				"comment_id": 54,
+				"body": "> [p2p](#comment_1139_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): 欺骗反代乱改数据，受影响的只有本地，俗称自欺欺人如果站点的程序真的有问题，反问一句，难道现在的ZeroNet上网站JS有问题能彻底防范？\n\n确实能。。。。试过好几种理论上可行的攻击方法了，然并卵，zn的确没有特别明显的漏洞",
+				"added": 1489643588
+			},
+			{
+				"comment_id": 55,
+				"body": "> [p2p](#comment_1141_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): 不用tor broswer或改代理设置，泄露IP分分钟\n\nip泄露。。。这个都不算事了。。zn没有已知可以被利用进行攻击的漏洞。",
+				"added": 1489643828
+			},
+			{
+				"comment_id": 56,
+				"body": "> [p2p](#comment_1142_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): ip泄露咋不算事？所有建站程序（也就是python端）都要官方升级和patch，不允许站长乱搞这样限制以后，也应该不算事\n\n互联网上来说，ip只能知道大致地区\n生活中倒是有点危险，查水表。。\n这么来说还是算点事",
+				"added": 1489644188
+			},
+			{
+				"comment_id": 57,
+				"body": "> [p2p](#comment_1142_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): ip泄露咋不算事？所有建站程序（也就是python端）都要官方升级和patch，不允许站长乱搞这样限制以后，也应该不算事\n\n官方升级和patch....就得看应用生态了",
+				"added": 1489644270
+			},
+			{
+				"comment_id": 58,
+				"body": "> [p2p](#comment_1142_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): ip泄露咋不算事？所有建站程序（也就是python端）都要官方升级和patch，不允许站长乱搞这样限制以后，也应该不算事\n\n来吧，你来搞起第一个（滑稽）",
+				"added": 1489644293
+			}
+		],
+		"24_12kcMDfKMos1marvnhfduW5aBbwXcPV2ka": [
+			{
+				"comment_id": 59,
+				"body": "....完了。。。我忘记我TOX账号密码了",
+				"added": 1489901998
+			},
+			{
+				"comment_id": 60,
+				"body": "> [p2p](#comment_1147_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): 为了避免更新后覆盖，我做成了插件：http://127.0.0.1:43110/17iF64gTLycSohUSJsFyq7FMYsQfMqghJa/UpdateFrequently.tar.gz代码非常简单，下载解压到ZeroNet/plugins/文件夹，重启ZeroNet即可。启动后几分钟log里搜UpdateFrequently plugin runs well即可知道是否生效\n\n要不你新开一贴，详细讲讲这个插件功能什么的？",
+				"added": 1489902025
+			},
+			{
+				"comment_id": 61,
+				"body": "> [p2p](#comment_1148_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): 总共才几行代码啊，实际改动只有一行，就是我前几条回复里说的：if条件放宽，删掉connected_before == 0条件，即每次检查都update一下\n\n额。。好吧。。。我看看。。。",
+				"added": 1489903897
+			}
+		],
+		"5_12Ugp53jiMdvj1Kxa1w7c2LcXUBdGPs1oK": [
+			{
+				"comment_id": 64,
+				"body": "噗。。。别说了，抓下包有惊喜。（滑稽）",
+				"added": 1489972323
+			}
+		],
+		"1_1EfYeykSZcHNjjszE5BiZy7iMMja7CMDrE": [
+			{
+				"comment_id": 65,
+				"body": "[如何在路由器上运行ZeroNet](http://127.0.0.1:43110/17vUgpdVUpN4yWeMJJtid7AAeQfLahHtXH/?Post:1:%E5%A6%82%E4%BD%95%E5%9C%A8%E8%B7%AF%E7%94%B1%E5%99%A8%E4%B8%8A%E8%BF%90%E8%A1%8CZeroNet)",
+				"added": 1490615088
+			}
+		],
+		"23_1PBMVMMVVtSK6FmMbfz4fhEw5fv6eZs5Dn": [
+			{
+				"comment_id": 66,
+				"body": "> [p2p](#comment_1162_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): @12hlearn 他居然没有翻译完，最气人的是他居然没有注明未翻译完！所以后半部分要看原版教程： http://127.0.0.1:43110/Blog.ZeroNetwork.bit/?Post:46\n\n噗。。我太忙了。",
+				"added": 1491281120
+			},
+			{
+				"comment_id": 67,
+				"body": "> [p2p](#comment_1163_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): 忙也要注明未翻译完啊，否则误人子弟\n\n噗。。误人子弟不至于，毕竟我没翻译错",
+				"added": 1491442517
+			}
+		],
+		"14_1Ekf2tGQLhG3iifFsuUk9RcBPx26cQmCD1": [
+			{
+				"comment_id": 68,
+				"body": "先创项目吧，上github开坑，然后大家一起填会快很多",
+				"added": 1494553846
+			}
+		],
+		"2_1JW2rWSRrq6oEWq7buxhGCt3a3WCA96UWe": [
+			{
+				"comment_id": 69,
+				"body": "> [nofishes](#comment_33_12yaKkoqVKBUi66uB5pYXamWguKFaWdDnx): 20块钱一个有人卖。请找@12hlearn\n\n哈哈，谢谢~若是做成分红给你",
+				"added": 1495113130
+			},
+			{
+				"comment_id": 70,
+				"body": "没错，20元一个域名币，付款二维码：\nhttp://127.0.0.1:43110/Me.ZeroNetwork.bit/?Post/1KNmG5rJUGhgUJGFbLkv2B5isaqu9PrZqi/1CwbqLCD6TdkinNNNb4GneZxbsoJ6Mw6oE/1493956257\n详情：\nhttp://127.0.0.1:43110/NewGFWTalk.bit/?Topic:3_1CwbqLCD6TdkinNNNb4GneZxbsoJ6Mw6oE/ZeroNet",
+				"added": 1495113282
+			},
+			{
+				"comment_id": 71,
+				"body": "> [nofishes](#comment_35_12yaKkoqVKBUi66uB5pYXamWguKFaWdDnx): 哈哈，那我是不是先得同步好几个G的namcoin数据先。/Happy\n\n到时btc、NMC、支付宝随意",
+				"added": 1495189083
+			}
+		],
+		"1_1BiouZaoK2zKaqSihxi7LudLqix6ynXYtj": [
+			{
+				"comment_id": 73,
+				"body": "> [nekocross](#comment_273_1FHN4oukAG7zFUpiC9L2iz7QpQVTuT3xkz): We asked them post there, but they don't trust us(the admin of this site). They said we are thug hired by chinese government.\n\nhere，不是there",
+				"added": 1495693184
+			},
+			{
+				"comment_id": 74,
+				"body": "I think maybe contury redict is helpful....",
+				"added": 1495693270
+			}
+		],
+		"5_16XhwuR6w5BURDK4bn3m3Fy9qXRmX24kDc": [
+			{
+				"comment_id": 75,
+				"body": "哈哈，想你想你当然想你~\n\n一样好久没上0网，主要是一堆破事还有破优化，生活琐碎耽误太多时间（扶额），才没有那么多心情和那些人扯呢。\n\n时间过得很快，又到了可以大口吃冰淇淋的时节，可惜项目进展依然不顺利。。如果日后项目完成，我可能也会参与SSR的开发~\n\n祝你生活愉快~",
+				"added": 1498874044
+			}
+		],
+		"2_14QA11YfgS5ftWwD54YYnTyvRbBRZGouPk": [
+			{
+				"comment_id": 76,
+				"body": "@P2P: 提限额啦~！",
+				"added": 1508648066
+			}
+		]
+	},
+	"comment_vote": {}
+}

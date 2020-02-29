@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ZeroBay - ZeroNet_</title>
+    <link href="css/ext/bootstrap.min.css" rel="stylesheet"/>
+    <link href="css/main.css" rel="stylesheet"/>
+</head>
+<body>
+
+<img class="header" src="images/pirate-flag.jpg"/>
+
+<hr>
+
+<div class="center" id="search">
+    <p>
+        <input id="q" title="Pirate Search" size="100" placeholder="Pirate Search" autofocus required>
+    </p>
+
+    <p>
+        <label title="All"><input name="" type="checkbox" disabled>All</label>
+        <label title="Anime"><input name="iht" type="checkbox" value="1" id="chkAnime" disabled>Anime</label>
+        <label title="Software"><input name="iht" type="checkbox" value="2" id="chkSoftware" disabled>Software</label>
+        <label title="Games"><input name="iht" type="checkbox" value="3" id="chkGames" disabled>Games</label>
+        <label title="Adult"><input name="iht" type="checkbox" value="4" id="chkAdult" disabled>Adult</label>
+        <label title="Movies"><input name="iht" type="checkbox" value="5" id="chkMovies" disabled>Movies</label>
+        <label title="Music"><input name="iht" type="checkbox" value="6" id="chkMusic" disabled>Music</label>
+        <label title="Other"><input name="iht" type="checkbox" value="7" id="chkOther" disabled>Other</label>
+        <label title="Series &amp; TV"><input name="iht" type="checkbox" value="8" id="chkSeries" disabled>Series &amp; TV</label>
+        <label title="Books"><input name="iht" type="checkbox" value="9" id="chkBooks" disabled>Books</label>
+    </p>
+
+    <p id="subm">
+        <input type="button" value="Pirate Search" accesskey="s" id="searchBtn">
+    </p>
+</div>
+
+<hr>
+
+<div class="small center">
+    <p><i>proof of concept - further effort tbd - msg with questions - BM-2cVzx5jb3pM6zomnyyLS7mPPX69rUonCpn</i></p>
+    <p><i>donations fund further development <a href="bitcoin:185svHDbKarjv5uFbokzX9Ye7uSKDxo2mf">185svHDbKarjv5uFbokzX9Ye7uSKDxo2mf</a></i></p>
+</div>
+
+<hr>
+
+<div class="center" id="results-div" style="display:none">
+    <table class="table table-striped table-condensed results center">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Size</th>
+            <th>S</th>
+            <th>L</th>
+        </tr>
+        </thead>
+        <tbody id="table-results">
+
+        </tbody>
+    </table>
+</div>
+
+<hr>
+
+<footer class="center">
+    <div class="center">
+    <p><i>&copy; Everyone 2015</i></p>
+        </div>
+</footer>
+
+<script src="js/jquery-1.11.2.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/archive-min.js"></script>
+<script src="js/pouchdb-3.2.1.min.js"></script>
+
+<script>
+    var dbMovies;
+    $(function () {
+        //PouchDB.destroy('zb-movies');
+        dbMovies = new PouchDB('zb-movies');
+        $.getJSON('data/movies.json', function (data) {
+            dbMovies.bulkDocs(data);
+            var m = $('#chkMovies');
+            m.prop("disabled", false);
+            m.prop("checked", true);
+        });
+
+        $('#subm').on('click', search);
+    });
+
+    function search() {
+        $('#results-div').show();
+        $('#table-results').html('');
+
+        var q = $('#q').val();
+        dbMovies.allDocs({include_docs: true, limit: 5}, function(err, res) {
+            res.rows.forEach(function (row) {
+                var magnetLink = 'magnet:?dn=' + row.doc.nm + '&xt=urn:btih:' + row.doc.h + '&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce';
+                var newRowHtml = '<tr><td><a href="' + magnetLink + '">' + row.doc.nm + '</a></td><td>' + row.doc.sz + '</td><td>' + row.doc.sd + '</td><td>' + row.doc.le + '</td></tr>';
+                $('#table-results').append(newRowHtml);
+            });
+        });
+    }
+</script>
+</body>
+</html>

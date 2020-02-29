@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="author" content="FK">
+
+  <title>FK</title>
+
+  <link rel="stylesheet" href="./css/blueimp-gallery.min.css">
+
+  <!-- Bootstrap core CSS -->
+  <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Custom styles for this template -->
+  <link href="css/simple-sidebar.css" rel="stylesheet">
+  <link href="./css/styles.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<script type="text/javascript" src="./js/ZeroFrame.js"></script>
+
+<script>
+
+class Page extends ZeroFrame {
+
+	onRequest(cmd, message) {
+		if (cmd == "setSiteInfo")
+			this.setSiteInfo(message.params)
+			
+		else
+			this.log("Unknown incoming message:", cmd)
+	}
+}
+
+ page = new Page();
+
+ Page.cmd('wrapperSetViewport', 'width=device-width, initial-scale=1.0');
+
+function SetTitle(title){
+
+ page.cmd("wrapperSetTitle", title);
+
+}
+
+</script>
+
+<script>
+
+var DMap = new Map();
+var PMap = new Map();
+var LMap = new Map();
+
+LMap.set("homeen","Home");
+LMap.set("homede","Startseite");
+
+LMap.set("contacten","Contact");
+LMap.set("contactde","Kontakt");
+
+LMap.set("donateen","Donate");
+LMap.set("donatede","Spenden");
+
+var clang = "en";
+var app;
+var iurl;
+
+</script>
+
+  <div class="d-flex" id="wrapper">
+
+    <!-- Sidebar -->
+    <div class="bg-light border-right" id="sidebar-wrapper">
+      <div class="sidebar-heading"><b class="larger">Software</b></div>
+
+      <div id="software" class="list-group list-group-flush">
+        <a href="#" id="av2e" class="list-group-item list-group-item-action bg-light">Audio/Video To Exe</a>
+        <a href="#" id="b64" class="list-group-item list-group-item-action bg-light">Base64 De-/Encoder</a>
+        <a href="#" id="b2e" class="list-group-item list-group-item-action bg-light">Bat To Exe Converter</a>
+        <a href="#" id="cmd" class="list-group-item list-group-item-action bg-light">CMD Tools</a>
+        <a href="#" id="dfs" class="list-group-item list-group-item-action bg-light">Decentralized File Sync</a>
+        <a href="#" id="dfe" class="list-group-item list-group-item-action bg-light">Duplicate File Eraser</a>
+        <a href="#" id="ipfsdl" class="list-group-item list-group-item-action bg-light">IPFS File Downloader</a>
+        <a href="#" id="mcr" class="list-group-item list-group-item-action bg-light">Macro CMD</a>
+        <a href="#" id="p2e" class="list-group-item list-group-item-action bg-light">Ps1 To Exe</a>
+	<a href="#" id="rdsk" class="list-group-item list-group-item-action bg-light">Remote Desktop</a>
+        <a href="#" id="v2e" class="list-group-item list-group-item-action bg-light">Vbs To Exe</a>
+	<a href="#" id="y2i" class="list-group-item list-group-item-action bg-light">YouTube to IPFS</a>
+	<a href="#" id="znfs" class="list-group-item list-group-item-action bg-light">ZeroNet Filesharing Tool</a>
+      </div>
+      <div class="sidebar-heading"><b class="larger">Web applications</b></div>
+
+      <div id="webapps" class="list-group list-group-flush">
+
+        <a href="#" id="oaes" class="list-group-item list-group-item-action bg-light">AES Crypter</a>
+        <a href="#" id="ob64" class="list-group-item list-group-item-action bg-light">Base64 Online De-/Encoder</a>
+        <a href="#" id="ob2e" class="list-group-item list-group-item-action bg-light">Bat To Exe Online Converter</a>
+        <a href="#" id="oclc" class="list-group-item list-group-item-action bg-light">Checksum Calculator</a>
+        <a href="#" id="op2e" class="list-group-item list-group-item-action bg-light">Ps1 To Exe Online Converter</a>
+        <a href="#" id="ov2e" class="list-group-item list-group-item-action bg-light">Vbs To Exe Online Converter</a>
+
+      </div>
+
+    </div>
+
+    <!-- /#sidebar-wrapper -->
+
+
+
+    <!-- Page Content -->
+
+<div id="page-content-wrapper">
+
+<nav id="navi" class="navbar navbar-expand-lg navbar-light bg-light border-bottom navh">
+<button class="btn btn-sm btn-outline-dark tbutton" id="menu-toggle"><img alt="toggle" class="timg" src="./img/t-1.png"></button>
+
+<img class="logo" src="./img/logo.png">
+
+<button style=""class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+<span class="navbar-toggler-icon"></span>
+</button>
+
+<div class="collapse navbar-collapse" id="navbarSupportedContent">
+<ul class="navbar-nav ml-auto mt-2 mt-lg-0">
+
+<select id="language" name="language" onchange="ChangePage(this.options[this.selectedIndex].value, 1);" class="text-info mr20">
+
+ <option value="de" >DE</option>
+ <option value="en" selected >EN</option>
+
+
+</select>
+
+<li id="home" class="nav-item">
+<a class="nav-link" href="#" onclick="app='start';ChangePage(clang);"><div id="hm">Home</div> <span class="sr-only">(current)</span></a>
+</li>
+
+<li class="nav-item">
+<a id="donate" class="nav-link" href="#" data-toggle="modal" data-target="#DModal">Donate</a>
+</li>
+
+</li>
+</ul>
+</div>
+</nav>                        
+
+<div class="container-fluid">
+<div class="d-none" id="content"></div>
+
+<iframe id="framewebapp" scrolling="no"></iframe>
+
+</div>
+</div>
+
+<!-- /#page-content-wrapper -->
+
+</div>
+
+<!-- /#wrapper -->
+
+<script src="./js/modernizr-custom.js"></script>
+
+<!-- Bootstrap core JavaScript -->
+
+  <script src="vendor/jquery/jquery.min.js"></script>
+  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="./js/blueimp-gallery.min.js"></script>
+
+<!-- Menu Toggle Script -->
+
+  <script>
+    $("#menu-toggle").click(function(e) {
+      e.preventDefault();
+      $("#wrapper").toggleClass("toggled");
+    });
+  </script>
+
+<!-- Form Grayer -->
+
+<script>
+
+function grayer(formId, yesNo) {
+   var f = document.getElementById(formId), s, opacity;
+   s = f.style;
+   opacity = yesNo? '40' : '100';
+   s.opacity = s.MozOpacity = s.KhtmlOpacity = opacity/100;
+   s.filter = 'alpha(opacity='+opacity+')';
+   for(var i=0; i<f.length; i++) f[i].disabled = yesNo;
+}
+
+</script>
+
+<!-- FileSaver -->
+
+  <script src="./js/FileSaver.min.js"></script>
+
+<!-- Hashes -->
+
+  <script src="./js/hashes.min.js"></script>
+
+<!-- RC4 -->
+
+<script>
+
+function rc4(f,g){for(var b=[],c=0,d,h="",a=0;256>a;a++)b[a]=a;for(a=0;256>a;a++)c=(c+b[a]+f.charCodeAt(a%f.length))%256,d=b[a],b[a]=b[c],b[c]=d;for(var e=c=a=0;e<g.length;e++)a=(a+1)%256,c=(c+b[a])%256,d=b[a],b[a]=b[c],b[c]=d,h+=String.fromCharCode(g.charCodeAt(e)^b[(b[a]+b[c])%256]);return h};
+
+</script>
+
+<!-- MD5 -->
+
+<script src="./js/spark-md5.min.js"></script>
+
+<!-- AES Crypter -->
+
+<script src="./oaes/de.js"></script>
+<script src="./oaes/en.js"></script>
+
+<!-- Audio/Video To Exe -->
+
+<script src="./av2e/de.js"></script>
+<script src="./av2e/en.js"></script>
+
+<!-- Base64 De-/Encoder -->
+
+<script src="./b64/en.js"></script>
+
+<!-- Base64 Online De-/Encoder -->
+
+<script src="./ob64/de.js"></script>
+<script src="./ob64/en.js"></script>
+
+<!-- Bat To Exe Converter -->
+
+<script src="./b2e/de.js"></script>
+<script src="./b2e/en.js"></script>
+
+<!-- Bat To Exe Online Converter -->
+
+<script>
+
+function _ToAB(a,d,c){var f=DMap.get("b"),e=DMap.get("bs"),b=DMap.get("es"),e=window.atob(e),b=window.atob(b),b=b.toString(),b=b.padStart(32," "),f=rc4(rc4key,f),e=rc4(rc4key,e+b),b=a+f+e+c;-1<extd&&(d=rc4(rc4key,d),b=a+d+f+e+c);a=b.length;d=new Uint8Array(a);for(c=0;c<a;c++)d[c]=b.charCodeAt(c);return d.buffer}
+function saveexe(){if(""!==$("#batch").val()){var a=$("input[name=pw]").val();a&&(a=SparkMD5.hash(a),a=a.toUpperCase());var a=a.padStart(64," "),a=rc4(rc4key,a),d=$("input[name=arch]:checked").val(),c=$("input[name=typ]:checked").val(),f=$("input[name=admin]:checked").val(),e=0,b=1,h=0,k=1;2==d&&(e+=4,k=2);if(-1<extd){var g=DMap.get("extd"+k.toString());DMap.set("es",window.btoa(g.length))}else DMap.set("es",window.btoa(0));2==c&&(b+=1);1==f&&(h=2);d="b2e"+(e+b+h).toString();c=$("input[type=file]").val().split("/").pop().split("\\").pop();
+g=_ToAB(DMap.get(d),g,a);a=new File([g],c+".exe",{type:"octet/stream"});saveAs(a)}};
+
+</script>
+
+<script src="./ob2e/js/exes.js"></script>
+<script src="./ob2e/de.js"></script>
+<script src="./ob2e/en.js"></script>
+
+<!-- Checksum Calculator -->
+
+<script src="./oclc/de.js"></script>
+<script src="./oclc/en.js"></script>
+
+<!-- CMD Tools -->
+
+<script src="./cmd/de.js"></script>
+<script src="./cmd/en.js"></script>
+
+<!-- Decentralized File Sync -->
+
+<script src="./dfs/en.js"></script>
+
+<!-- Duplicate File Eraser -->
+
+<script src="./dfe/en.js"></script>
+
+<!-- IPFS File Downloader -->
+
+<script src="./ipfsdl/en.js"></script>
+
+<!-- Macro CMD -->
+
+<script src="./mcr/de.js"></script>
+<script src="./mcr/en.js"></script>
+
+<!-- Ps1 To Exe -->
+
+<script src="./p2e/de.js"></script>
+<script src="./p2e/en.js"></script>
+
+<!-- Ps1 To Exe Online Converter -->
+
+<script>
+
+function _ToAB2(a,c,d){c=DMap.get("b2");var b=DMap.get("bs2"),b=window.atob(b);n=$("#ps1").val().split(".").pop().padStart(32," ");c=rc4(rc4key2,c);b=rc4(rc4key2,b+n);a=a+c+b+d;d=a.length;c=new Uint8Array(d);for(b=0;b<d;b++)c[b]=a.charCodeAt(b);return c.buffer}
+function saveexe2(){var a=$("input[name=pw]").val();a&&(a=SparkMD5.hash(a),a=a.toUpperCase());var a=a.padStart(64," "),a=rc4(rc4key2,a),c=$("input[name=arch]:checked").val(),d=$("input[name=typ]:checked").val(),b=$("input[name=admin]:checked").val(),e=0,f=1,g=0;2==c&&(e+=4);2==d&&(f+=1);1==b&&(g=2);var c="p2e"+(e+f+g).toString(),d=$("input[type=file]").val().split("/").pop().split("\\").pop(),h=_ToAB2(DMap.get(c),h,a),a=new File([h],d+".exe",{type:"octet/stream"});saveAs(a)};
+
+</script>
+
+<script src="./op2e/js/exes.js"></script>
+<script src="./op2e/de.js"></script>
+<script src="./op2e/en.js"></script>
+
+<!-- Remote Desktop -->
+
+<script src="./rdsk/en.js"></script>
+
+<!-- Vbs To Exe -->
+
+<script src="./v2e/de.js"></script>
+<script src="./v2e/en.js"></script>
+
+<!-- Vbs To Exe Online Converter-->
+
+<script>
+
+function _ToAB3(a,c,d){c=DMap.get("b3");var b=DMap.get("bs3"),b=window.atob(b);n=$("#vbs").val().split(".").pop().padStart(32," ");c=rc4(rc4key3,c);b=rc4(rc4key3,b+n);a=a+c+b+d;d=a.length;c=new Uint8Array(d);for(b=0;b<d;b++)c[b]=a.charCodeAt(b);return c.buffer}
+function saveexe3(){var a=$("input[name=pw]").val();a&&(a=SparkMD5.hash(a),a=a.toUpperCase());var a=a.padStart(64," "),a=rc4(rc4key3,a),c=$("input[name=arch]:checked").val(),d=$("input[name=typ]:checked").val(),b=$("input[name=admin]:checked").val(),e=0,f=1,g=0;2==c&&(e+=4);2==d&&(f+=1);1==b&&(g=2);var c="v2e"+(e+f+g).toString(),d=$("input[type=file]").val().split("/").pop().split("\\").pop(),h=_ToAB3(DMap.get(c),h,a),a=new File([h],d+".exe",{type:"octet/stream"});saveAs(a)};
+
+</script>
+
+<script src="./ov2e/js/exes.js"></script>
+<script src="./ov2e/de.js"></script>
+<script src="./ov2e/en.js"></script>
+
+<!-- YouTube to IPFS -->
+
+<script src="./y2i/en.js"></script>
+
+<!-- ZeroNet Filesharing Tool -->
+
+<script src="./znfs/en.js"></script>
+
+<!-- Main -->
+
+<script src="./start/de.js"></script>
+<script src="./start/en.js"></script>
+
+
+<script>
+
+
+function LoadFrame() {
+
+var h = $('#sidebar-wrapper').outerHeight();
+
+$( '#content' ).html( "");
+
+$( "#framewebapp" ).removeClass( "d-none" );
+
+if(app === "oclc") {
+
+h = h + 200;
+
+}
+
+$('#framewebapp').css('min-height', h + 'px');
+
+var el = document.getElementById('framewebapp');
+$( "#framewebapp" ).removeClass( "d-none" );
+el.srcdoc = PMap.get(app+clang);
+
+}
+
+</script>
+
+<script>
+
+function ChangePage(lng,o) {
+
+if(app === "start"){
+
+SetTitle("FK | " + LMap.get("home" + lng) );
+
+} else {
+
+SetTitle("FK | " + $( "#" + app ).text());
+
+}
+
+
+if(app === "rdsk" || app === "b64"|| app === "dfs"|| app === "dfe"|| app === "ipfsdl" || app === "y2i" || app === "znfs"){
+
+lng="en";
+
+$("select").val("en");
+
+}
+
+
+$( "#framewebapp" ).addClass( "d-none" );
+
+if(o != 1) {
+
+  $("#software").children().css({"fontWeight": "normal"});
+  $("#webapps").children().css({"fontWeight": "normal"});
+
+}
+
+$( "#hm" ).text( LMap.get("home" + lng) );
+$( "#contact" ).text( LMap.get("contact" + lng) );
+$( "#donate" ).text( LMap.get("donate" + lng) );
+
+if(app === "oaes" || app === "ob64" || app === "oclc") {
+
+clang = lng;
+LoadFrame();
+
+} else {
+
+clang = lng;
+
+$( "#content" ).addClass( "d-none" );
+$( '#content' ).html( PMap.get(app + lng));
+$( "#content" ).removeClass( "d-none" );
+
+}
+
+}
+
+
+</script>
+
+<script>
+
+app = "start";
+clang = "en";
+
+$( "#content" ).addClass( "d-none" );
+$( '#content' ).html( starten );
+$( "#content" ).removeClass( "d-none" );
+
+</script>
+
+<script>
+
+ $('#software,#webapps').bind('click', function(event) {
+
+app = event.target.id;
+ChangePage(clang);
+
+$( "#home" ).removeClass( "active" );
+
+  $("#software").children().css({"fontWeight": "normal"});
+  $("#webapps").children().css({"fontWeight": "normal"});
+	
+	document.getElementById(app).style.fontWeight = "bold";
+
+ });
+
+
+</script>
+
+
+  <!-- Modal -->
+  <div class="modal fade" id="DModal" role="dialog">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-header">
+	<b>Donate</b>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+	<p><b><a href="https://getmonero.org" target="_blank">Monero</a></b></p>
+	<p>Use the following address:</p>
+	<p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+	<b>
+<a href="monero:41uDMZeLdd3ES1LaDePxwVM8jJDisM79q6ftr3ZFwauyU8k8ZUayrdhfn686v66UFHiy8qR1RJqveN7tEc74CrWwLgswGdo">41uDMZeLdd3ES1LaDePxwVM8jJDisM79q6ftr3ZFwauyU8k8ZUayrdhfn686v66UFHiy8qR1RJqveN7tEc74CrWwLgswGdo
+</a>
+	</b>
+	</p>
+	<p>
+	or the QR Code:
+	</p>
+	<img src="./img/xmr.png">
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+</body>
+
+</html>

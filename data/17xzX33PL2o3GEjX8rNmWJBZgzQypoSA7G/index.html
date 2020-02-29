@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+	<title>Galerie de pénis</title>
+	<script type="text/javascript" src="js/three.js"></script>
+    <script type="text/javascript" src="js/OrbitControls.js"></script>
+    <script type="text/javascript" src="js/Mirror.js"></script>
+    <script type="text/javascript" src="js/WaterShader.js"></script>
+    
+    <script type="text/javascript" src="js/CTMLoader.js"></script>
+    <script type="text/javascript" src="js/ctm.js"></script>
+    <script type="text/javascript" src="js/lzma.js"></script>
+
+    <script type="text/javascript" src="js/Tween.js"></script>
+
+    <script type="text/javascript" src="js/EffectComposer.js"></script>
+    <script type="text/javascript" src="js/MaskPass.js"></script>
+    <script type="text/javascript" src="js/RenderPass.js"></script>
+    <script type="text/javascript" src="js/ShaderPass.js"></script>
+    <script type="text/javascript" src="js/CopyShader.js"></script>
+
+    <script type="text/javascript" src="js/HorizontalBlurShader.js"></script>
+    <script type="text/javascript" src="js/VerticalBlurShader.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="css/penis.css">
+    <link rel="stylesheet" type="text/css" href="css/vagrounded.css">
+
+    <script type="text/javascript" src="js/CSSPlugin.min.js"></script>
+    <script type="text/javascript" src="js/Draggable.min.js"></script>
+    <script type="text/javascript" src="js/TweenLite.min.js"></script>
+	<style>
+		body {
+			margin: 0;
+			overflow: hidden;
+		}
+	</style>
+</head>
+
+<body>
+<div id="bye" class="drag" style="z-index:1;width:auto;height:auto;background-image:url(tx/marbre.jpg);padding:20px;position:absolute;font-family:VAG Rounded;font-size:18px;">
+	En échange de me permettre de te scanner</br></br>
+	et d’utiliser le scan de ton pénis, je te</br></br>
+	remets les géométries et les textures</br></br>
+	du scan en OBJ+MTL+JPEG que tu pourras</br></br>
+	consulter dans une application 3D.</br></br></br>
+	Mon ZeroId c'est : frerepoulet@zeroid.bit
+</div>
+<div id="WebGL-output" style="z-index:2"></div>
+<img id="poster" src="tx/screenshot.jpg" style="z-index:3">
+<div id="allo" class="drag" style="z-index:4;width:auto;height:auto;background-color:#ff8a00;padding:20px;position:absolute;font-family:VAG Rounded;font-size:18px;text-align:left;color:#434323;">
+	Salut je m’appelle Olivier</br></br>
+	alias frère poulet.</br></br>
+	Je veux scanner</br></br>
+	ton pénis en 3D</br></br>
+	pour un jeu vidéo.</br></br>
+	J’ai préparé une sculpture</br></br>
+	du mien en exemple.</br></br>
+	Clique sur l’image pour</br></br>
+	voir ce que ça donne.</br></br>
+	Après, clique sur le texte</br></br>
+	en dessous de l’image</br></br>
+	pour plus d’information.
+</div>
+<script type="text/javascript">
+	Draggable.create('.drag', {
+		type:"top,left",
+		bounds: window,
+		edgeResistance:1,
+		cursor: 'move',
+		zIndexBoost: false
+	});
+	var allo = document.getElementById('allo');
+	allo.style.left = String(window.innerWidth/2 - 350) + 'px';
+	allo.style.top = String(window.innerHeight/2 - 350) + 'px';
+
+	var bye = document.getElementById('bye');
+	bye.style.left = String(window.innerWidth/2 + 50) + 'px';
+	bye.style.top = String(window.innerHeight/2 + 100) + 'px';
+
+	GLOBAL_SCENE_LOADERS = new Array();
+
+	var renderer, orbitControl, camera, scene, matMirror1, waterNormals, water;
+
+	init();
+
+	function init() {
+
+		//degrees to radian
+		function deg2rad( degrees ) {
+
+			return degrees * Math.PI / 180;
+
+		}
+
+		// ---------scene-----------
+
+		scene = new THREE.Scene();
+
+		// ---------renderer-----------
+
+		renderer = new THREE.WebGLRenderer( { antialias: true } );
+		renderer.setSize( 480, 480 );
+		renderer.setClearColor( 0xffaaaa );
+		renderer.shadowMap.enabled = true;
+
+		// ---------camera-----------
+
+		camera = new THREE.PerspectiveCamera( 45, 480 / 480, 0.1, 1000000 );
+		var lookPoint = new THREE.Vector3( 0, 300, 0 );
+		camera.position.set( -500, 200, 1500 );
+		camera.lookAt( lookPoint );
+
+		// ---------lights-----------
+
+		scene.add( new THREE.AmbientLight( 0xddddff, 0.5 ) );
+
+		var directionalLight = new THREE.DirectionalLight( 0xffddaa, 0.5 );
+		directionalLight.position.set( -3000, 3000, 3000 );
+		directionalLight.castShadow = true;
+		directionalLight.shadow.camera.near = 2;
+		directionalLight.shadow.camera.far = 20000;
+		directionalLight.shadow.camera.left = -500;
+		directionalLight.shadow.camera.right = 500;
+		directionalLight.shadow.camera.top = 500;
+		directionalLight.shadow.camera.bottom = -500;
+		directionalLight.shadow.mapSize.height = 1024;
+		directionalLight.shadow.mapSize.width = 1024;
+		scene.add( directionalLight );
+
+		// ---------loaders-----------
+		
+		var tLoader = new THREE.TextureLoader();
+		var ctmLoader = new THREE.CTMLoader();
+
+		// ---------materials-----------
+
+		var phongPink = new THREE.MeshPhongMaterial( { color:0xffaaaa } );
+		var phongYellow = new THREE.MeshPhongMaterial( { color:0xffff44 } );
+
+		var phongSky = new THREE.MeshPhongMaterial( { 
+			color:0xffffff, 
+			map : tLoader.load( "tx/sky1.jpg" ), 
+			emissive: 0x555555 
+		} );
+
+		var mirrorColor = new THREE.Color(0x888888);
+		matMirror1 = new THREE.Mirror( renderer, camera, { 
+			textureWidth: 480, 
+			textureHeight: 480, 
+			color: mirrorColor 
+		} );
+
+		waterNormals = tLoader.load( 'tx/waterNormals1.jpg' );
+		waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping;
+		
+		water = new THREE.Water( renderer, camera, scene, {
+			textureWidth: 512,
+			textureHeight: 512,
+			waterNormals: waterNormals,
+			alpha: 1.0,
+			sunDirection: directionalLight.position.clone().normalize(),
+			sunColor: 0xffffdd,
+			waterColor: 0x006f55,
+			distortionScale: 50
+		});
+
+		// ---------geo-----------
+
+		//waterMesh
+
+		var waterMesh = new THREE.Mesh( new THREE.PlaneBufferGeometry( 5000, 5000 ), water.material );
+		waterMesh.add( water );
+		waterMesh.position.set( 0, -100, 0 );
+		waterMesh.rotation.x = -deg2rad( 90 );
+		scene.add( waterMesh );
+
+		//sky
+
+		var sky = new THREE.Mesh( new THREE.PlaneBufferGeometry( 5000, 5000 ), phongSky );
+		sky.position.set( 0, 1000, 0 );
+		sky.rotation.x = deg2rad( 90 );
+		scene.add( sky );
+
+		var cube3 = new THREE.Mesh( new THREE.BoxGeometry( 500, 50, 500 ), phongYellow );
+		cube3.position.set( 0, -75.5, 0 );
+		cube3.receiveShadow = true;
+		scene.add( cube3 );
+
+		//world
+
+		var planeRectGeoW = new THREE.PlaneBufferGeometry( 5000, 2000 );
+
+		var planeRectWorld1 = new THREE.Mesh( planeRectGeoW, phongPink );
+		planeRectWorld1.position.set( 0, 0, -2500 );
+		var planeRectWorld2 = new THREE.Mesh( planeRectGeoW, phongPink );
+		planeRectWorld2.position.set( 0, 0, 2500 );
+		planeRectWorld2.rotation.y = deg2rad( 180 );
+		var planeRectWorld3 = new THREE.Mesh( planeRectGeoW, phongPink );
+		planeRectWorld3.position.set( -2500, 0, 0 );
+		planeRectWorld3.rotation.y = deg2rad( 90 );
+		var planeRectWorld4 = new THREE.Mesh( planeRectGeoW, phongPink );
+		planeRectWorld4.position.set( 2500, 0, 0 );
+		planeRectWorld4.rotation.y = -deg2rad( 90 );
+		scene.add( planeRectWorld1, planeRectWorld2, planeRectWorld3, planeRectWorld4 );
+
+		//terrain
+		ctmLoader.load( 'geo/tGrass.ctm', function ( object ) {
+
+			var material = new THREE.MeshPhongMaterial( { color: 0xeeffbb } );
+			callbackModel( object, 40, material, 0, 0, 0, 0, 0, 0 );
+
+		} );
+
+		ctmLoader.load( 'geo/tFern.ctm', function ( object ) {
+
+			var material = new THREE.MeshPhongMaterial( { 
+				color: 0xffffff,
+				side: THREE.DoubleSide,
+				map: tLoader.load( 'tx/weedleafDif.jpg' ),
+				transparent : true,
+				alphaMap: tLoader.load( 'tx/weedleafTr.jpg' )
+			} );
+			var mesh = new THREE.Mesh( object, material );
+			mesh.scale.set( 40, 40, 40 );
+			mesh.castShadow = true;
+			scene.add( mesh );
+
+		});
+
+		ctmLoader.load( 'geo/tBranch.ctm', function ( object ) {
+
+			var material = new THREE.MeshPhongMaterial( { color: 0xaabbaa } );
+			callbackModel( object, 40, material, 0, 0, 0, 0, 0, 0 );
+
+		});
+
+		ctmLoader.load( 'geo/tRock.ctm', function ( object ) {
+
+			var material = new THREE.MeshPhongMaterial( { 
+				color: 0xdddddd, 
+				map: tLoader.load( 'tx/tRockDif.jpg' ), 
+				side: THREE.DoubleSide 
+			} );
+			var mesh = new THREE.Mesh( object, material );
+			mesh.scale.set( 40, 40, 40 );
+			mesh.rotation.x = deg2rad( -90 );
+			mesh.castShadow = true;
+			scene.add( mesh );
+
+		});
+
+		ctmLoader.load( 'geo/tSable.ctm', function ( object ) {
+
+			var material = new THREE.MeshPhongMaterial( { 
+				color: 0xe4cdb4, shading: THREE.FlatShading
+			} );
+			callbackModel( object, 40, material, 0, 0, 0, 0, 0, 0 );
+
+		});
+
+		ctmLoader.load( 'geo/tBark.ctm', function ( object ) {
+
+			var material = new THREE.MeshPhongMaterial( { 
+				color: 0xcccccc, 
+				map: tLoader.load( 'tx/tBarkDif.jpg' ) 
+			} );
+			callbackModel( object, 40, material, 0, 0, 0, 0, 0, 0 );
+
+		});
+
+		ctmLoader.load( 'geo/tLeaf.ctm', function ( object ) {
+
+			var material = new THREE.MeshPhongMaterial( { 
+				color: 0xbbbbbb, 
+				map: tLoader.load( 'tx/tLeafDif.jpg' ) 
+			} );
+			callbackModel( object, 40, material, 0, 0, 0, 0, 0, 0 );
+
+		});
+
+		//model6v3
+
+		ctmLoader.load( 'geo/model6v3.ctm', function ( object ) {
+
+			var material = new THREE.MeshPhongMaterial( { 
+				color: 0xffffff, 
+				map: tLoader.load( 'tx/model6v3.jpg' ) 
+			} );
+			callbackModel( object, 200, material, 150, 40, 0, 0, 90, 0 );
+
+		});
+
+		//model5v4
+	
+		ctmLoader.load( 'geo/model5v4.ctm', function ( object ) {
+
+			var material = new THREE.MeshPhongMaterial( { 
+				color: 0xffffff, 
+				map: tLoader.load( 'tx/model5v4.jpg' ) 
+			} );
+			callbackModel( object, 200, material, -150, 60, 0, 0, -90, 0 );
+
+		} );
+
+		//model4v5
+	
+		ctmLoader.load( 'geo/model4v5.ctm', function ( object ) {
+
+			var material = new THREE.MeshPhongMaterial( { 
+				color: 0xffffff, 
+				map: tLoader.load( 'tx/model4v5.jpg' ) 
+			} );
+			callbackModel( object, 200, material, 0, 100, -175, 0, 180, 0 );
+
+		});
+
+		//model3v6
+
+		ctmLoader.load( 'geo/model3v6.ctm', function ( object ) {
+
+			var material = new THREE.MeshPhongMaterial( { 
+				color: 0xffffff, 
+				map: tLoader.load( 'tx/model3v6.jpg' ) 
+			} );
+			callbackModel( object, 200, material, 0, 150, 200, 0, 0, 0 );
+
+		});
+
+		var poster = document.getElementById( "poster" );
+		poster.addEventListener( "click", startScene );
+
+		function startScene() {
+
+			poster.parentNode.removeChild(poster);
+			var tweenLook = new TWEEN.Tween( lookPoint )
+				.to( { x: 0, y: 150, z: 0 }, 5000 )
+				.start();
+
+			var tweenPos = new TWEEN.Tween( camera.position )
+				.onUpdate( function() {
+					camera.lookAt( lookPoint );
+				})
+				.interpolation( TWEEN.Interpolation.Bezier )
+				.to( { x: [ -2000, 0, 2000, 0 ], z: [ -500, -2000, -500, 1000 ] }, 5000 )
+				.start();
+
+			orbitControl = new THREE.OrbitControls( camera, renderer.domElement );
+			orbitControl.target.set( 0, 150, 0 );
+			orbitControl.enablePan = true;
+			scene.add( camera );
+
+		}
+
+		function callbackModel( object, s, material, x, y, z, rx, ry, rz ) {
+
+			var mesh = new THREE.Mesh( object, material );
+
+			mesh.position.set( x, y, z );
+			mesh.scale.set( s, s, s );
+			mesh.rotation.x = deg2rad( rx );
+			mesh.rotation.y = deg2rad( ry );
+			mesh.rotation.z = deg2rad( rz );
+
+			mesh.receiveShadow = true;
+			mesh.castShadow = true;
+
+			mesh.material.side = THREE.DoubleSide;
+
+			scene.add( mesh );
+
+		};
+		
+		document.getElementById( "WebGL-output" ).appendChild( renderer.domElement );
+
+		animate();
+
+		function animate() {
+
+			requestAnimationFrame( animate );
+
+			TWEEN.update();
+
+			render();
+
+		}
+
+		function render() {
+
+			var time = performance.now() * 0.001;
+
+			matMirror1.render();
+
+			water.material.uniforms.time.value += 1.0 / 60.0;
+			water.render();
+
+			renderer.render( scene, camera );
+
+		}
+		
+	}
+
+</script>
+</body>
+</html>

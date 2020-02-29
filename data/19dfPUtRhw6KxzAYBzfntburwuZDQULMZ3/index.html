@@ -1,0 +1,224 @@
+
+<!DOCTYPE html>
+
+<html>
+<head>
+ <title>SadMetadata archive</title>
+ <meta charset="utf-8">
+ <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+ <link rel="stylesheet" href="css/index.css" />
+ <base href="" target="_top" id="base">
+ <script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+</head>
+<body>
+    <header>
+        <a href="custom.html">Want something more specific? Make your own Query here!</a>
+        |
+        <span>This site is still in development, you can find the source code at the <a href="/1MqTXukdSULZVC6kXVwgC7pNkUum6TbmyH">GitCenter repo</a></span>
+        |
+        <span>Bug reports and contributions as well as advice and seeders are always welcome ~<a href="/1MeFqFfFFGQfa1J3gJyYYUvb5Lksczq7nH/?Profile/1MoonP8t4rk9QamBUPh5Aspkwa1Xhf5ux2/1PBCaxayoEqvXFuayjxzGJvPub3BMUJUJT/sadloli@zeroid.bit">sadloli@zeroid.bit</a>.</span>
+    </header>
+    <div class="box">
+        <div class="info">
+            <div>You currently have the data of <span id="numOfGalleries">?</span> out of <span id="totalNumOfGalleries">?</span> galleries downloaded.<button onclick="page.refreshGalleryCount(event)">Refresh</button></div>
+            <div>This site can only search through the data you already downloaded. <button onclick="page.downloadAddJsons(event)" id="downloadButton">Auto-download all data</button></div>
+        </div>
+        <div class="searchArea">
+            <label for="SearchQuery">https://www.exhentai.org</label>
+            <input type="text" id="SearchQuery">
+            <input type="button" id="send" value="Search!" onclick="return page.sendQuery(event)"/>
+        </div>
+        <div class="resultArea">
+            <div class="loading">
+
+            </div>
+            <ol class="results" id="results">
+
+            </ol>
+        </div>
+    </div>
+    <script type="text/javascript" src="js/ZeroFrame.js"></script>
+    <script>
+
+    class SadMetadata extends ZeroFrame {
+        constructor(){
+            super()
+            this.resultList = document.getElementById("results");
+        }
+        /*
+         * Metadata object:
+         *   {
+         *    "title": String,
+         *    "pages": Integer,
+         *    "uploader": String,
+         *    "href": String,
+         *    "type": String,
+         *    "uploadDate": Integer,
+         *    "tags":[
+         *      {
+         *          "namespace":String,
+         *          "name":String,
+         *          "power":String
+         *      },
+         *      {...}
+         *    ],
+         *    "SET_INFO": String,
+         *    "ID": String,
+         *    "PAGE": Inetger,
+         *    "IS_DATA_MISSING": Boolean
+         *  }
+         * 
+         * 
+         * 
+         */
+        addResult (metadata) {
+            let li = document.createElement("li");
+            
+            li.innerHTML = 
+            `
+                <div class='mTitle'>Title: ${metadata.title}</div>
+                <div class='mPages'>Pages: ${metadata.pages}</div>
+                <div class='mUploader'>Uploader: ${metadata.uploader}</div>
+                <div class='mURL'>URL: ${metadata.href}</div>
+                <div class='mType'>Type: ${metadata.type}</div>
+                <div class='mDate'>Upload date: ${metadata.uploadDate}</div>
+                <div class='mSet'>SET: ${metadata.SET_INFO}</div>
+                <div class='mId'>ID: ${metadata.ID}</div>
+                <div class='mPage'>PAGE: ${metadata.PAGE}</div>
+                <div class='mMissingData'>IS DATA MISSING:  ${metadata.IS_DATA_MISSING}</div>
+            `
+            if(metadata.tags){
+                let tagList = document.createElement("ul");
+                tagList.classList.add("tagList");
+                for(let i=0; i<metadata.tags.length; i++){
+                    let tagli = document.createElement("li");
+                    tagli.innerHTML = 
+                    `
+                        ${metadata.tags[i].namespace}:${metadata.tags[i].name}
+                    `
+                    tagli.classList.add(metadata.tags[i].power)
+                    tagList.appendChild(tagli);
+                }
+                li.appendChild(tagList)
+            }
+            if(!this.resultList.children[0]){
+                this.resultList.appendChild(li);
+            }else{
+                this.resultList.insertBefore(li, this.resultList.children[0]);
+            }
+        }
+
+        onOpenWebsocket () {
+            this.refreshGalleryCount();
+            this.cmd("optionalHelpList",[],(helpList)=>{
+                if(!helpList.error){
+                    if(helpList["data/Metadata/files/"] && helpList["data/Tags/files/"]){
+                        let btn = document.getElementById("downloadButton");
+                        btn.textContent = "Stop auto-downloading data";
+                        btn.setAttribute("onclick", "page.downloadRemoveJsons(event)");
+                    }
+                }else{
+                    this.znError(helpList.error);
+                }
+            });
+        }
+        
+        onRequest (cmd, message) {}
+        znInfo(msg){
+            this.cmd("wrapperNotification",["info", msg]);
+        }
+        znError(msg){
+            this.cmd("wrapperNotification",["error", msg]);
+        }
+        queryID(id){
+            let processedID = id;
+            if(!processedID.startsWith("/")){
+                processedID = "/" + processedID;
+            }
+            if(!processedID.endsWith("/")){
+                processedID = processedID + "/";
+            }
+            this.cmd("dbQuery", [
+                `select title, pages, uploader, type, href, uploadDate, SET_INFO, ID, PAGE, IS_DATA_MISSING from metadata where ID is '${processedID}' `
+            ], (galleries) => {
+                if(!galleries.error){
+                    if(galleries.length === 0){
+                        this.znInfo("Database query error: No results found for'" + id + "'!");
+                    }else{
+                        this.cmd("dbQuery", [
+                            `select namespace, name, power from tags where MetadataID in ('${galleries[0].ID}')`
+                        ], (tags) => {
+                            if(tags.error){
+                                this.znError("Database query error: " + tags.error);
+                                galleries[0].tags = [];
+                            }else{
+                                galleries[0].tags = tags;
+                            }
+                            this.addResult(galleries[0]);
+                        });
+                    }
+                }else{
+                    this.znError("Database query error: " + galleries.error);
+                }
+            })
+        }
+        sendQuery(event){
+            this.queryID(document.getElementById("SearchQuery").value)
+        }
+        
+        refreshGalleryCount(event){
+            this.cmd("dbQuery",["select count(ID) as galleries from metadata"],(resp)=>{
+                if(!resp.error){
+                    document.getElementById("totalNumOfGalleries").textContent = "" + 690583;//691733;//<- number of entries in the original dataset; Somehow the reported amount in the database is lower TODO: figure out why //hardcoded, idk how to get this info any other way.
+                    document.getElementById("numOfGalleries").textContent = "" + resp[0].galleries;
+                }else{
+                    this.znError(resp.error);
+                }
+            })
+            
+        }
+        
+        downloadAddJsons(event){
+            this.cmd("optionalHelp",{directory:"data/Metadata/files/", title:"SadMetadata metadata files"});
+            this.cmd("optionalHelp",{directory:"data/Tags/files/", title:"SadMetadata tag files"});
+            
+            this.cmd("fileGet",{inner_path:"data/Metadata/content.json"},(resp)=>{
+                if(!resp.error){
+                    let metadataFiles = Object.keys(JSON.parse(resp)["files_optional"]);
+                    for(let i=0;i<metadataFiles.length;i++){
+                        this.cmd("fileNeed",{inner_path: "data/Metadata/" + metadataFiles[i]})
+                    }
+                }else{
+                    this.znError(resp.error);
+                }
+            });
+            this.cmd("fileGet",{inner_path:"data/Tags/content.json"},(resp)=>{
+                if(!resp.error){
+                    let tagFiles = Object.keys(JSON.parse(resp)["files_optional"]);
+                    for(let i=0;i<tagFiles.length;i++){
+                        this.cmd("fileNeed",{inner_path: "data/Tags/" + tagFiles[i]})
+                    }
+                }else{
+                    this.znError(resp.error);
+                }
+            });
+            let btn = document.getElementById("downloadButton");
+            btn.textContent = "Stop auto-downloading data";
+            btn.setAttribute("onclick", "page.downloadRemoveJsons(event)");
+            
+        }
+        downloadRemoveJsons(event){
+            this.cmd("optionalHelpRemove",{directory:"data/Metadata/files/"});
+            this.cmd("optionalHelpRemove",{directory:"data/Tags/files/"});
+            let btn = document.getElementById("downloadButton");
+            btn.textContent = "Auto-download all data";
+            btn.setAttribute("onclick", "page.downloadAddJsons(event)");
+        }
+        
+    }
+
+    var page = new SadMetadata()
+    </script>
+    
+</body>
+</html>

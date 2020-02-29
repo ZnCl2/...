@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="iso-8859-1" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" /><title>29.11. Clock Synchronization with NTP</title><link rel="stylesheet" type="text/css" href="docbook.css" /><link rev="made" href="mailto:doc@FreeBSD.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.78.1" /><link rel="home" href="index.html" title="FreeBSD Handbook" /><link rel="up" href="network-servers.html" title="Chapter 29. Network Servers" /><link rel="prev" href="network-samba.html" title="29.10. File and Print Services for Microsoft® Windows® Clients (Samba)" /><link rel="next" href="network-iscsi.html" title="29.12. iSCSI Initiator and Target Configuration" /><link rel="copyright" href="legalnotice.html" title="Copyright" /><script xmlns="" type="text/javascript" src="/layout/js/google.js"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">29.11. Clock Synchronization with NTP</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="network-samba.html">Prev</a> </td><th width="60%" align="center">Chapter 29. Network Servers</th><td width="20%" align="right"> <a accesskey="n" href="network-iscsi.html">Next</a></td></tr></table><hr /></div><div class="sect1"><div xmlns="" class="titlepage"><div><div><h2 xmlns="http://www.w3.org/1999/xhtml" class="title" style="clear: both"><a id="network-ntp"></a>29.11. Clock Synchronization with NTP</h2></div></div></div><a id="idp79600328" class="indexterm"></a><p>Over time, a computer's clock is prone to drift.   This is
+      problematic as many network services require the computers on a
+      network to share the same accurate time.  Accurate time is also
+      needed to ensure that file timestamps stay consistent.  The
+      Network Time Protocol (<acronym class="acronym">NTP</acronym>) is one way to
+      provide clock accuracy in a network.</p><p>FreeBSD includes <a class="citerefentry" href="https://www.FreeBSD.org/cgi/man.cgi?query=ntpd&amp;sektion=8&amp;manpath=freebsd-release-ports"><span class="citerefentry"><span class="refentrytitle">ntpd</span>(8)</span></a> which can be configured to query
+      other <acronym class="acronym">NTP</acronym> servers in order to synchronize the
+      clock on that machine or to provide time services to other
+      computers in the network.  The servers which are queried can be
+      local to the network or provided by an <acronym class="acronym">ISP</acronym>.
+      In addition, an <a class="link" href="http://support.ntp.org/bin/view/Servers/WebHome" target="_top">online
+	list of publicly accessible <acronym class="acronym">NTP</acronym>
+      servers</a> is available.  When choosing a public
+      <acronym class="acronym">NTP</acronym> server, select one that is geographically
+      close and review its usage policy.</p><p>Choosing several <acronym class="acronym">NTP</acronym> servers is
+      recommended in case one of the servers becomes unreachable or
+      its clock proves unreliable.  As <span class="application">ntpd</span>
+      receives responses, it favors reliable servers over the less
+      reliable ones.</p><p>This section describes how to configure
+      <span class="application">ntpd</span> on FreeBSD.  Further documentation
+      can be found in <code class="filename">/usr/share/doc/ntp/</code> in HTML
+      format.</p><div class="sect2"><div xmlns="" class="titlepage"><div><div><h3 xmlns="http://www.w3.org/1999/xhtml" class="title"><a id="idp79607752"></a>29.11.1. <acronym class="acronym">NTP</acronym> Configuration</h3></div></div></div><a id="idp79608648" class="indexterm"></a><p>On FreeBSD, the built-in <span class="application">ntpd</span> can
+	be used to synchronize a system's clock.  To enable
+	<span class="application">ntpd</span> at boot time, add
+	<code class="literal">ntpd_enable="YES"</code> to
+	<code class="filename">/etc/rc.conf</code>.  Additional variables can
+	be specified in <code class="filename">/etc/rc.conf</code>.  Refer to
+	<a class="citerefentry" href="https://www.FreeBSD.org/cgi/man.cgi?query=rc.conf&amp;sektion=5&amp;manpath=freebsd-release-ports"><span class="citerefentry"><span class="refentrytitle">rc.conf</span>(5)</span></a> and <a class="citerefentry" href="https://www.FreeBSD.org/cgi/man.cgi?query=ntpd&amp;sektion=8&amp;manpath=freebsd-release-ports"><span class="citerefentry"><span class="refentrytitle">ntpd</span>(8)</span></a> for
+	details.</p><p>This application reads <code class="filename">/etc/ntp.conf</code>
+	to determine which <acronym class="acronym">NTP</acronym> servers to query.
+	Here is a simple example of an
+	<code class="filename">/etc/ntp.conf</code>:</p><div class="example"><a id="idp79619144"></a><div class="example-title">Example 29.4. Sample <code class="filename">/etc/ntp.conf</code></div><div class="example-contents"><pre class="programlisting">server ntplocal.example.com prefer
+server timeserver.example.org
+server ntp2a.example.net
+
+driftfile /var/db/ntp.drift</pre></div></div><br class="example-break" /><p>The format of this file is described in <a class="citerefentry" href="https://www.FreeBSD.org/cgi/man.cgi?query=ntp.conf&amp;sektion=5&amp;manpath=freebsd-release-ports"><span class="citerefentry"><span class="refentrytitle">ntp.conf</span>(5)</span></a>.
+	The <code class="literal">server</code> option specifies which servers
+	to query, with one server listed on each line.  If a server
+	entry includes <code class="literal">prefer</code>, that server is
+	preferred over other servers.  A response from a preferred
+	server will be discarded if it differs significantly from
+	other servers' responses; otherwise it will be used.  The
+	<code class="literal">prefer</code> argument should only be used for
+	<acronym class="acronym">NTP</acronym> servers that are known to be highly
+	accurate, such as those with special time monitoring
+	hardware.</p><p>The <code class="literal">driftfile</code> entry specifies which
+	file is used to store the system clock's frequency offset.
+	<span class="application">ntpd</span> uses this to automatically
+	compensate for the clock's natural drift, allowing it to
+	maintain a reasonably correct setting even if it is cut off
+	from all external time sources for a period of time.  This
+	file also stores information about previous responses
+	from <acronym class="acronym">NTP</acronym> servers.  Since this file contains
+	internal information for <acronym class="acronym">NTP</acronym>, it should not
+	be modified.</p><p>By default, an <acronym class="acronym">NTP</acronym> server is accessible
+	to any network host.  The <code class="literal">restrict</code> option
+	in <code class="filename">/etc/ntp.conf</code> can be used to control
+	which systems can access the server.  For example, to deny all
+	machines from accessing the <acronym class="acronym">NTP</acronym> server, add
+	the following line to
+	<code class="filename">/etc/ntp.conf</code>:</p><pre class="programlisting">restrict default ignore</pre><div xmlns="" class="note"><h3 class="admontitle">Note: </h3><p xmlns="http://www.w3.org/1999/xhtml">This will also prevent access from other
+	  <acronym class="acronym">NTP</acronym> servers.  If there is a need to
+	  synchronize with an external <acronym class="acronym">NTP</acronym> server,
+	  allow only that specific server.  Refer to <a class="citerefentry" href="https://www.FreeBSD.org/cgi/man.cgi?query=ntp.conf&amp;sektion=5&amp;manpath=freebsd-release-ports"><span class="citerefentry"><span class="refentrytitle">ntp.conf</span>(5)</span></a>
+	  for more information.</p></div><p>To allow machines within the network to synchronize their
+	clocks with the server, but ensure they are not allowed to
+	configure the server or be used as peers to synchronize
+	against, instead use:</p><pre class="programlisting">restrict 192.168.1.0 mask 255.255.255.0 nomodify notrap</pre><p>where <code class="systemitem">192.168.1.0</code> is the local
+	network address and <code class="systemitem">255.255.255.0</code> is the network's
+	subnet mask.</p><p>Multiple <code class="literal">restrict</code> entries are
+	supported.  For more details, refer to the <code class="literal">Access
+	  Control Support</code> subsection of
+	<a class="citerefentry" href="https://www.FreeBSD.org/cgi/man.cgi?query=ntp.conf&amp;sektion=5&amp;manpath=freebsd-release-ports"><span class="citerefentry"><span class="refentrytitle">ntp.conf</span>(5)</span></a>.</p><p>Once <code class="literal">ntpd_enable="YES"</code> has been added
+	to <code class="filename">/etc/rc.conf</code>,
+	<span class="application">ntpd</span> can be started now without
+	rebooting the system by typing:</p><pre class="screen"><code class="prompt">#</code> <strong class="userinput"><code>service ntpd start</code></strong></pre></div><div class="sect2"><div xmlns="" class="titlepage"><div><div><h3 xmlns="http://www.w3.org/1999/xhtml" class="title"><a id="idp79657544"></a>29.11.2. Using <acronym class="acronym">NTP</acronym> with a
+	<acronym class="acronym">PPP</acronym> Connection</h3></div></div></div><p><span class="application">ntpd</span> does not need a permanent
+	connection to the Internet to function properly.  However, if
+	a <acronym class="acronym">PPP</acronym> connection is configured to dial out
+	on demand, <acronym class="acronym">NTP</acronym> traffic should be prevented
+	from triggering a dial out or keeping the connection alive.
+	This can be configured with <code class="literal">filter</code>
+	directives in <code class="filename">/etc/ppp/ppp.conf</code>.  For
+	example:</p><pre class="programlisting">set filter dial 0 deny udp src eq 123
+ # Prevent NTP traffic from initiating dial out
+ set filter dial 1 permit 0 0
+ set filter alive 0 deny udp src eq 123
+ # Prevent incoming NTP traffic from keeping the connection open
+ set filter alive 1 deny udp dst eq 123
+ # Prevent outgoing NTP traffic from keeping the connection open
+ set filter alive 2 permit 0/0 0/0</pre><p>For more details, refer to the
+	<code class="literal">PACKET FILTERING</code> section in <a class="citerefentry" href="https://www.FreeBSD.org/cgi/man.cgi?query=ppp&amp;sektion=8&amp;manpath=freebsd-release-ports"><span class="citerefentry"><span class="refentrytitle">ppp</span>(8)</span></a> and
+	the examples in
+	<code class="filename">/usr/share/examples/ppp/</code>.</p><div xmlns="" class="note"><h3 class="admontitle">Note: </h3><p xmlns="http://www.w3.org/1999/xhtml">Some Internet access providers block low-numbered ports,
+	  preventing NTP from functioning since replies never reach
+	  the machine.</p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="network-samba.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="network-servers.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="network-iscsi.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">29.10. File and Print Services for <span class="trademark">Microsoft</span>® <span class="trademark">Windows</span>® Clients
+      (Samba) </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 29.12. <acronym class="acronym">iSCSI</acronym> Initiator and Target
+      Configuration</td></tr></table></div><p xmlns="" align="center"><small>All FreeBSD documents are available for download
+    at <a href="https://download.freebsd.org/ftp/doc/">https://download.freebsd.org/ftp/doc/</a></small></p><p xmlns="" align="center"><small>Questions that are not answered by the
+    <a href="https://www.FreeBSD.org/docs.html">documentation</a> may be
+    sent to &lt;<a href="mailto:freebsd-questions@FreeBSD.org">freebsd-questions@FreeBSD.org</a>&gt;.<br />
+    Send questions about this document to &lt;<a href="mailto:freebsd-doc@FreeBSD.org">freebsd-doc@FreeBSD.org</a>&gt;.</small></p></body></html>

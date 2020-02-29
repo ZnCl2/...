@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Chapter3: Variables</title>
+  <meta name="description" content="变量的区别">
+
+  <link rel="stylesheet" href="/187Aytx6wew7W16TqST6zLWijPJmgGLGsr/assets/main.css">
+  <link rel="canonical" href="http://localhost:4000/187Aytx6wew7W16TqST6zLWijPJmgGLGsr/lambda/2017/07/12/lambda-chapter3.html">
+  <link rel="alternate" type="application/rss+xml" title="GoldenGrape&#39;s Blog" href="/187Aytx6wew7W16TqST6zLWijPJmgGLGsr/feed.xml">
+  
+  
+</head>
+
+
+  <body>
+
+    <header class="site-header" role="banner">
+
+  <div class="wrapper">
+    
+    
+    <a class="site-title" href="/187Aytx6wew7W16TqST6zLWijPJmgGLGsr/">GoldenGrape&#39;s Blog</a>
+  
+    
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+              <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+              <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+          
+            
+            
+          
+            
+            
+            <a class="page-link" href="/187Aytx6wew7W16TqST6zLWijPJmgGLGsr/about/">About</a>
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+        </div>
+      </nav>
+    
+  </div>
+</header>
+
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">Chapter3: Variables</h1>
+    <p class="post-meta">
+      <time datetime="2017-07-12T05:00:03+08:00" itemprop="datePublished">
+        
+        Jul 12, 2017
+      </time>
+      </p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <h2 id="变量的区别">变量的区别</h2>
+
+<p>上回说到lambda calculus其实只有一种操作，就是字符替换。但是具体怎么替换还是有些讲究的。</p>
+
+<p>有时候数学书难读是因为数学书的作者往往是数学家，作者知道的太多了，以至于不知道读者不知道，于是从读者的角度来说就凭空引入了一些概念。所以，我们还是从数学中熟悉的中学数学区域出发好了。</p>
+
+<p>比如，一元二次函数：
+<script type="math/tex">f(x)=ax^2+bx+c</script>
+这里面的变量是x，老师问<script type="math/tex">f(2)=？</script>那么就是把<script type="math/tex">x=2</script>代入到<script type="math/tex">f(x)</script>中，
+<script type="math/tex">f(2)=a 2^2+b 2+c=4a+2b+c</script>
+那a,b,c是什么呢？老师没给，所以我们就当作a,b,c各自是3个数好了。如果老师给出a=1,b=2,c=3，那么这时候
+<script type="math/tex">f(x)=x^2+2x+3
+\\
+f(2)=4+4+3=11</script>
+看起来对a,b,c操作和刚才对于x做的操作也类似啊，如果有数就代入进去，没有的话就留着。</p>
+
+<p>在<script type="math/tex">f(x)=ax^2+bx+c</script>中，x，写在了<script type="math/tex">f(x)</script> 的括号里面，这个x可以叫做metavariable，在函数的定义式子里面已经明确告诉你，函数定义里面的x如何变化要去看metavariable到底是什么，所以<script type="math/tex">ax^2+bx+c</script>式子里的x叫做bound variables，是约束变量，是被bound到metavariable上的。</p>
+
+<p>而对于式子中的a,b,c，并不在这个函数内部定义，是在函数外部定义的，比如题目中写的，或者老师写在了黑板上，abc也是可变的，但怎么变这个函数定义式没说，是自由的，所以叫做自由变量free variables。所有没有bound到metavariables上的变量都是free的。</p>
+
+<p>正是由于<script type="math/tex">f(x)=ax^2+bx+c</script>中的a,b,c可以free取各种特殊的数值，中学数学才有那么多题目可以出。比如a,b,c之中有个0啦，a和0之间的关系，b和0之间的关系，a和b之间的关系……</p>
+
+<p>如果要对<script type="math/tex">f(x)=ax^2+bx+c</script> 中的x进行替换，那么是对bound variables进行替换，也就是找到其中的x，而不是其中的a,b,c这样的free variables。</p>
+
+<p>实际上<script type="math/tex">f(x)</script>这个写法，声明了两件事情：</p>
+
+<ul>
+  <li>f是这个函数的名字</li>
+  <li>括号里面的x是metavariable，</li>
+</ul>
+
+<p>如果是<script type="math/tex">g(a,b,c)=ax^2+bx+c</script>那么就是另外一个函数了，里面的bound variables是a,b,c，而x反而变成了free variable.</p>
+
+<p>更复杂一点，如果函数中有嵌套，比如</p>
+
+<p><script type="math/tex">L(x, f(x))</script>，现在求x=2时的值，也是把x代入，<script type="math/tex">L(2, f(2))</script></p>
+
+<h2 id="lambda-calculus中">lambda calculus中</h2>
+
+<p>对于lambda calculus，书写的时候和二次函数一样，会明确标记出谁是metavariable。</p>
+
+<p>与f(x)不同，λx.只声明了一件事情，λ和点. 之间的x是metavariables。</p>
+
+<p>在点.后面的是函数的定义表达式，如果变量跟metavariables是绑定的，就是bound variable。</p>
+
+<p>比如：</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>(λx.x) HelloWorld  
+</code></pre>
+</div>
+<p>相当于<script type="math/tex">f(x)=x</script>，求x=HelloWorld，就是将x替换成HelloWorld</p>
+
+<p>λx.中间是metavariable x，λx.后面是函数定义的表达式x，这里面只有一个变量x，与metavariable是相同的，是bound variable。用Hello替换掉bound variable。</p>
+
+<p><img src="./assets/2.png" alt="" /></p>
+
+<p>我们看<script type="math/tex">L(x, f(x))</script>那个例子，如果求x=2时，是把2替换掉x，得到<script type="math/tex">L(2, f(2))</script></p>
+
+<p>类似的，我们可以写另一个。</p>
+
+<p>打开<a href="http://www.cburch.com/lambda/">http://www.cburch.com/lambda/</a> 试一试，输入：</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>(λx.(x (λy.x)) HelloWorld  
+</code></pre>
+</div>
+<p><img src="./assets/8.png" alt="" /></p>
+
+<p>类比<script type="math/tex">L(x, f(x))</script>那个例子，<script type="math/tex">x (λy.x)</script>中，第一个x显然是bound variable，要被替换成HelloWorld，第二个x，虽然在λy.x内部，但是λy.x中的metavariable定义的是y，而不是x，所以x是free的，它的值要从λy.x外面找，所以还是HelloWorld.</p>
+
+<p>更复杂一点，如果</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>(λx.(x (λx.x))) HelloWorld  
+</code></pre>
+</div>
+<p>就不一样了，(x (λx.x))之中，第一个x是bound variable，要被替换成HelloWorld，内部嵌套的那个λx.x中，由于声明了x是这个函数体内的bound variable，那么这里面的x值就不是HelloWorld了。</p>
+
+<p>我很喜欢 <a href="http://www.cburch.com/lambda/">http://www.cburch.com/lambda/</a> 这个lambda calculus interpreter的原因之一是，它会自动做变量的重新解释，(x (λx.x))之中λx.x的x与外部的x是无关的，所以干脆可以写成其他的名字，比如i0，在不容易混淆的时候再换回成x就好了。</p>
+
+<p><img src="./assets/9.png" alt="" /></p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>(λx.x (λi0.i0)) HelloWorld  
+⇒    HelloWorld (λx.x)
+</code></pre>
+</div>
+<p>我们再看Hello World中的第二个例子，就可以更清楚地理解了。</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>(λx.λy.x) Hello World  
+</code></pre>
+</div>
+<p><img src="./assets/3.png" alt="" /></p>
+
+<p>λx.(λy.x)中，定义x是bound variable，在λy.x中，y是metavariable，x是free variable，x的值在λy.x的上一层定义，所以当Hello传入时，送到了λy.x中的x里面。</p>
+
+<p>(λx.λy.x) Hello World<br />
+⇒    (λy.Hello) World</p>
+
+<p>所以，到目前为止，</p>
+
+<ul>
+  <li>
+    <p>你已经知道variables有三种：</p>
+
+    <ul>
+      <li>metavariable是写在λ和点.之间的那个</li>
+      <li>函数表达式里和metavariable绑定的那个是bound variable</li>
+      <li>函数表达式里没有被绑住，可以自由变来变去的那些都是free variables.</li>
+    </ul>
+  </li>
+  <li>
+    <p>你也知道替换的规则是什么了：</p>
+
+    <ul>
+      <li>应该替换掉的是bound variables，如果一个变量是free variables就要去它的上一层找值。</li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="附变量符号的小历史">附变量符号的小历史</h2>
+
+<p>中国古代也有类似的标记方法，会把bound variables叫做元，比如天元、地元、人元，分别是3个bound variables，x,y,z。</p>
+
+<p>北宋平阳蒋周创立了天元的概念，李冶（1192－1279）发展了天元术。</p>
+
+<blockquote>
+  <p>“李冶在东平获得刘汝谐撰《如积释锁》，书中用十九个单字表示未知数的各个 <script type="math/tex">x^9至 x^{-9}</script>的幂：</p>
+
+  <p>仙、明、霄、汉、垒、层、高、上、天、人、地、下、低、减、落、逝、泉、暗、鬼；其中立天元在上。”</p>
+</blockquote>
+
+<p>我还不太确定其中的仙……鬼是指系数还是指<script type="math/tex">ax^9</script>这样合起来的一项。如果是后者，可能还没有区分free variables。  <a href="https://zh.wikipedia.org/wiki/天元术">https://zh.wikipedia.org/wiki/天元术</a></p>
+
+<p>弗朗索瓦·韦达François Viète（1540－1603） 则是在欧洲首先使用符号来标记bound variables和free variables，而且是作出了区分  <a href="https://zh.wikipedia.org/wiki/弗朗索瓦·韦达">https://zh.wikipedia.org/wiki/弗朗索瓦·韦达</a></p>
+
+<p>在我看来，将未知数和符号引入数学，是不亚于仓颉造字的大事，从此数学摆脱了实体世界的束缚。（回忆一下你在小学还经常可以看到取水放水的小明，到中学他就已经渐渐远去了。）</p>
+
+<p>造字尚且使“鬼夜哭”，符号的引入则令“神始惧”。</p>
+
+
+  </div>
+
+  
+</article>
+
+      </div>
+    </main>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">GoldenGrape&#39;s Blog</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>
+            
+              GoldenGrape&#39;s Blog
+            
+            </li>
+            
+            <li><a href="mailto:your-email@example.com">your-email@example.com</a></li>
+            
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+            <a href="https://github.com/goldengrape"><span class="icon icon--github"><svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">goldengrape</span></a>
+
+          </li>
+          
+
+          
+          <li>
+            <a href="https://twitter.com/goldengrape"><span class="icon icon--twitter"><svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M15.969,3.058c-0.586,0.26-1.217,0.436-1.878,0.515c0.675-0.405,1.194-1.045,1.438-1.809c-0.632,0.375-1.332,0.647-2.076,0.793c-0.596-0.636-1.446-1.033-2.387-1.033c-1.806,0-3.27,1.464-3.27,3.27 c0,0.256,0.029,0.506,0.085,0.745C5.163,5.404,2.753,4.102,1.14,2.124C0.859,2.607,0.698,3.168,0.698,3.767 c0,1.134,0.577,2.135,1.455,2.722C1.616,6.472,1.112,6.325,0.671,6.08c0,0.014,0,0.027,0,0.041c0,1.584,1.127,2.906,2.623,3.206 C3.02,9.402,2.731,9.442,2.433,9.442c-0.211,0-0.416-0.021-0.615-0.059c0.416,1.299,1.624,2.245,3.055,2.271 c-1.119,0.877-2.529,1.4-4.061,1.4c-0.264,0-0.524-0.015-0.78-0.046c1.447,0.928,3.166,1.469,5.013,1.469 c6.015,0,9.304-4.983,9.304-9.304c0-0.142-0.003-0.283-0.009-0.423C14.976,4.29,15.531,3.714,15.969,3.058z"/></svg>
+</span><span class="username">goldengrape</span></a>
+
+          </li>
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>Write an awesome description for your new site here. You can edit this line in _config.yml. It will appear in your document head meta (for Google search results) and in your feed.xml site description.
+</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Command Line Interface Testing mmap.page</title>
+    <link rel="stylesheet" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/css/style.css">
+    <link rel="alternate" type="application/rss+xml" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml">
+    <link rel="alternate" type="application/git+http" href="https://github.com/weakish/weakish.github.com.git"/>
+</head>
+<body>
+  <div class="container-lg px-3 my-5 markdown-body">
+
+    <h1><a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/">mmap.page</a></h1>
+    <h1 id="command-line-interface-testing">
+        
+        
+          Command Line Interface Testing
+        
+        
+      </h1>
+    
+      <h2 id="a-hrefhttpsgithubcomlehmannroassertshassertsha">
+        
+        
+          <a href="https://github.com/lehmannro/assert.sh">assert.sh</a> <a href="#a-hrefhttpsgithubcomlehmannroassertshassertsha" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Example:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">.</span> assert.sh
+
+<span class="c"># `echo test` is expected to write "test" on stdout</span>
+assert <span class="s2">"echo test"</span> <span class="s2">"test"</span>
+<span class="c"># exit code of `true` is expected to be 0</span>
+assert_raises <span class="s2">"true"</span>
+<span class="c"># exit code of `false` is expected to be 1</span>
+assert_raises <span class="s2">"false"</span> 1
+<span class="c"># end of test suite</span>
+assert_end examples
+</code></pre></div></div>
+<p>Pros:</p>
+<ul>
+<li>simple (only <code>assert</code>, <code>assert_raises</code> and <code>assert_end</code>)</li>
+<li>light weight (just <code>source assert.sh</code>)</li>
+</ul>
+<p>Cons:</p>
+<ul>
+<li>It can only match result exactly, no support for &quot;output should contains ...&quot; like function.</li>
+<li>No setup/teardown.</li>
+</ul>
+<p>You can <a href="https://github.com/lehmannro/assert.sh/issues/10">implement your own</a> <code>assert_contains</code> function.</p>
+    
+      <h2 id="a-hrefhttpsgithubcomthinkerbottstsa">
+        
+        
+          <a href="https://github.com/thinkerbot/ts">ts</a> <a href="#a-hrefhttpsgithubcomthinkerbottstsa" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>It is similar to assert.sh.</p>
+<p>Differences:</p>
+<ul>
+<li><code>setup ()</code> and <code>teardown ()</code>.</li>
+<li>Every test is a function. <code>exit 0</code> to pass tests.</li>
+</ul>
+    
+      <h2 id="a-hrefhttpbmizeranygithubiorounduproundupa">
+        
+        
+          <a href="http://bmizerany.github.io/roundup">roundup</a> <a href="#a-hrefhttpbmizeranygithubiorounduproundupa" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Example:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/usr/bin/env roundup</span>
+
+describe <span class="s2">"group tests"</span>
+
+it_displays_the_title<span class="o">()</span> <span class="o">{</span>
+    <span class="nv">first_line</span><span class="o">=</span><span class="si">$(</span>rup roundup-5 | <span class="nb">head</span> <span class="nt">-n</span> 1<span class="si">)</span>
+    <span class="nb">test</span> <span class="s2">"</span><span class="nv">$first_line</span><span class="s2">"</span> <span class="s2">"="</span> <span class="s2">"roundup(5)"</span>
+<span class="o">}</span>
+
+it_exists_non_zero<span class="o">()</span> <span class="o">{</span>
+    <span class="nv">status</span><span class="o">=</span><span class="si">$(</span><span class="nb">set</span> +e <span class="p">;</span> rup roundup-5 <span class="o">&gt;</span>/dev/null <span class="p">;</span> <span class="nb">echo</span> <span class="nv">$?</span><span class="si">)</span>
+    <span class="nb">test </span>2 <span class="nt">-eq</span> <span class="nv">$status</span>
+<span class="o">}</span>
+
+it_survives_edge_cases<span class="o">()</span> <span class="o">{</span>
+    rup edge
+<span class="o">}</span>
+</code></pre></div></div>
+<p>Differences to assert.sh:</p>
+<ul>
+<li>Use <code>describe</code> at the beginning of a test group instead of <code>assert_end</code> in the end.</li>
+<li>Put tests in functions.</li>
+</ul>
+<p>I think these differences add readability.</p>
+<p>Cons are similar to assert.sh.</p>
+    
+      <h2 id="a-hrefhttpsgithubcomroman-neuhauserrntrnta">
+        
+        
+          <a href="https://github.com/roman-neuhauser/rnt">rnt</a> <a href="#a-hrefhttpsgithubcomroman-neuhauserrntrnta" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Save output of  commands to <code>*.actual</code>, then compare them with <code>*.expected</code> via <code>diff</code>.</p>
+<p>Cons are similar to assert.sh, plus:</p>
+<ul>
+<li>Separate expected output with the corresponding command.</li>
+<li>A lot of tests lead to complex directory structure.</li>
+</ul>
+    
+      <h2 id="a-hrefhttpliwficmdtestcmdtesta">
+        
+        
+          <a href="http://liw.fi/cmdtest/">cmdtest</a> <a href="#a-hrefhttpliwficmdtestcmdtesta" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Like rnt, cmdtest also uses a lot of files.
+But it adds support for standard error and setup/teardown.</p>
+<pre><code>   foo.script
+          a script to run the test (this is required)
+
+   foo.stdin
+          the file fed to standard input
+
+   foo.stdout
+          the expected output to the standard output
+
+   foo.stderr
+          the expected output to the standard error
+
+   foo.exit
+          the expected exit code
+
+   foo.setup
+          a shell script to run before the test
+
+   foo.teardown
+          a shell script to run after test
+
+   setup-once
+          a shell script to run once, before any tests
+
+   setup  a shell script to run before each test
+
+   teardown
+          a shell script to run after each test
+
+   teardown-once
+          a shell script to run once, after all tests
+</code></pre>
+<p>Cons:</p>
+<ul>
+<li>No support for &quot;output should contains ...&quot; like function.</li>
+<li>Separate expected output with the corresponding command.</li>
+<li>A lot of tests lead to complex directory structure.</li>
+</ul>
+    
+      <h2 id="a-hrefhttpsgithubcomtlevineurchinurchina">
+        
+        
+          <a href="https://github.com/tlevine/urchin">urchin</a> <a href="#a-hrefhttpsgithubcomtlevineurchinurchina" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>urchin is similar to rnt, but it does use separate output files.
+Instead, <code>exit 0</code> passes tests.</p>
+<pre><code>tests/
+  setup
+  setup_dir
+  bar/
+    setup
+    test_that_something_works
+    teardown
+  baz/
+    jack-in-the-box/
+      setup
+      test_that_something_works
+      teardown
+    cat-in-the-box/
+      fixtures/
+        things.pdf
+      test_thingy
+  teardown
+</code></pre>
+<p>Cons are similar to rnt except for 'Separate expected output'.</p>
+    
+      <h2 id="a-hrefhttpsbitheaporgcramcrama">
+        
+        
+          <a href="https://bitheap.org/cram/">Cram</a> <a href="#a-hrefhttpsbitheaporgcramcrama" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Tests look like documents:</p>
+<pre><code class="language-cram">>
+This is a comment.
+
+  $ echo 'Lines beginning with two space followed by $ is a test.'
+  $ echo 'Multiline test
+  &gt; exit 0 passes tests.'
+
+  $ cram -h
+  [Uu]sage: cram \[OPTIONS\] TESTS\.\.\. (re)
+
+  [Oo]ptions: (re)
+    -h, --help          show this help message and exit
+    -V, --version       show version information and exit
+    -q, --quiet         don't print diffs
+    -v, --verbose       show filenames and test status
+    -i, --interactive   interactively merge changed test output
+    -y, --yes           answer yes to all questions
+    -n, --no            answer no to all questions
+    -E, --preserve-env  don't reset common environment variables
+    --keep-tmpdir       keep temporary directories
+    --shell=PATH        shell to use for running tests
+    --indent=NUM        number of spaces to use for indentation
+
+Lines beginning with two space not followed by $ or &gt; is output.
+Output lines ending with a space and (re) are matched against PCRE.
+</code></pre>
+<p>Cons:</p>
+<ul>
+<li>No setup/teardown.</li>
+<li><code>(re)</code> only matches a single line.</li>
+</ul>
+    
+      <h2 id="a-hrefhttpjoyfulcomshelltestrunnershelltestrunnera">
+        
+        
+          <a href="http://joyful.com/shelltestrunner/">shelltestrunner</a> <a href="#a-hrefhttpjoyfulcomshelltestrunnershelltestrunnera" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<pre><code class="language-shelltestrunner">># optional comment
+a one-line shell command
+&lt;&lt;&lt;
+zero or more lines of standard input
+&gt;&gt;&gt;
+zero or more lines of expected standard output (or /REGEXP/ added to the previous line)
+&gt;&gt;&gt;2
+zero or more lines of expected standard error output (or /REGEXP/ added to the previous line)
+&gt;&gt;&gt;= STATUS (or /REGEXP/)
+</code></pre>
+<p>Cons:</p>
+<ul>
+<li>No setup/teardown.</li>
+</ul>
+    
+      <h2 id="a-hrefhttpsgithubcommpapistftfa">
+        
+        
+          <a href="https://github.com/mpapis/tf">tf</a> <a href="#a-hrefhttpsgithubcommpapistftfa" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Example:</p>
+<div class="language-tf highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">## User comments start with double #</span>
+<span class="c1">## command can be writen in one line with multiple tests:</span>
+<span class="kc">true</span> <span class="c1"># status=0; match=/^$/</span>
+<span class="c1">## or tests can be placed in following lines:</span>
+<span class="kc">false</span>
+<span class="c1"># status=1</span>
+</code></pre></div></div>
+<p>Cons:</p>
+<ul>
+<li>No setup/teardown.</li>
+<li>Syntax: <code>env[]=~//</code>, <code>env[]?=</code>, <code>env[][]=</code>, etc.</li>
+</ul>
+    
+      <h2 id="a-hrefhttpbitbucketorgzsergebricolagebricolagea">
+        
+        
+          <a href="http://bitbucket.org/zserge/bricolage">Bricolage</a> <a href="#a-hrefhttpbitbucketorgzsergebricolagebricolagea" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Example:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># A test is a function. $T is a variable where test keeps its internal files</span>
+mytest<span class="o">()</span> <span class="o">{</span>
+    <span class="c"># ok is the only assertion helper</span>
+    <span class="c"># It uses `test` to check the condition, so syntax is common</span>
+    ok 1 <span class="nt">-eq</span> 1
+    ok foo <span class="o">=</span> foo
+    <span class="nv">foo</span><span class="o">=</span><span class="s2">"Foo bar"</span>
+    ok <span class="s2">"</span><span class="nv">$foo</span><span class="s2">"</span> <span class="o">=</span> <span class="s2">"Foo bar"</span>
+
+    <span class="c"># You can use `spy` to make a wrapper over a command.</span>
+    spy <span class="nb">date
+
+    date</span>
+
+    <span class="c"># Command output will be written into &lt;spy&gt;.stdout file:</span>
+    ok <span class="s2">"</span><span class="si">$(</span><span class="nb">cat</span> <span class="nv">$T</span>/spy.date.stdout<span class="si">)</span><span class="s2">"</span> <span class="o">=</span> <span class="s2">"foo"</span>
+
+    <span class="c"># Fake spy output can be specified in the &lt;spy&gt; file:</span>
+    <span class="nb">echo </span>foo <span class="o">&gt;</span> <span class="nv">$T</span>/spy.date
+    <span class="nb">date</span>
+
+    <span class="c"># You can assert it using tail, sed, awk and other common unix tools</span>
+    ok <span class="s2">"</span><span class="si">$(</span><span class="nb">tail</span> <span class="nt">-n</span> 1 <span class="nv">$T</span>/spy.date.stdout<span class="si">)</span><span class="s2">"</span> <span class="o">=</span> <span class="s2">"foo"</span>
+<span class="o">}</span>
+
+<span class="c"># You may override test reports as you need</span>
+pass<span class="o">()</span> <span class="o">{</span> <span class="nb">echo </span>PASS <span class="nv">$*</span> <span class="o">}</span>
+fail<span class="o">()</span> <span class="o">{</span> <span class="nb">echo </span>FAIL <span class="nv">$*</span> <span class="o">}</span>
+
+<span class="c"># You have to run your tests manually</span>
+bricolage mytest
+
+<span class="c"># Clean test data</span>
+<span class="nb">rm</span> <span class="nt">-rf</span> <span class="nv">$T</span>
+</code></pre></div></div>
+<p>Pros:</p>
+<ul>
+<li>Extremely small (50 LOC).</li>
+<li>Ultimately minimal.</li>
+</ul>
+<p>Cons:</p>
+<ul>
+<li>Ultimately minimal.</li>
+</ul>
+    <div class="footer border-top border-gray-light mt-5 pt-3 text-gray">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start">
+        <form id="site-search" action="https://duckduckgo.com/html/" method="get">
+          <input name="q" type="search" value="site:mmap.page " required pattern="site:mmap\.page\s.+">
+          <input type="submit" value="&#x1F50D;" title="search through site content via DuckDuckGo">
+        </form>
+        <p>
+          <a href="mailto:weakish@gmail.com" title="weakish@gmail.com"><img src="https://icongr.am/feather/mail.svg" alt="Feather Icon Mail"></a>
+          <a href="https://savannah.nongnu.org/people/viewgpg.php?user_id=65699" title="2414 AEA0 EA48 5263 9697  F1BA 55F6 EEC2 EA3F 0A87"><img src="https://icongr.am/feather/key.svg" alt="Feather Icon Key"></a>
+          <a href="https://github.com/weakish/" title="GitHub"><img src="https://icongr.am/feather/github.svg" alt="Feather Icon Github"></a>
+          <a href="https://www.instagram.com/jakukyo/" title="Instagram"><img src="https://icongr.am/feather/instagram.svg" alt="Feather Icon Instagram"></a>
+          <a href="https://twitter.com/weakish" title="Twitter"><img src="https://icongr.am/feather/twitter.svg" alt="Feather Icon Twitter"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml" title="RSS 2.0 Feed"><img src="https://icongr.am/feather/rss.svg" alt="Feather Icon RSS"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/uses/" title="uses"><img src="https://icongr.am/feather/book-open.svg" alt="Feather Icon Book Open"></a>
+          
+          
+          <a href="/Me.ZeroNetwork.bit/?Profile/12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv/1GnJD7CXskmG8GywMbTvbP12wneCFW9XzR/weakish@zeroid.bit" title="ZeroMe"><img src="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/images/zeronet_logo.svg" alt="ZeroNet Logo" width="32" height="32"></a>
+        </p>
+      </div>
+        <p>
+        Permission to use, copy, modify, and/or distribute this site for any purpose with or without fee is hereby granted.
+        This site is provided "as is" without express or implied warranty.
+        </p>
+        <p>
+        This site does not use cookies or tracking codes.
+        The hosting service provider (<a href="https://pages.github.com/">GitHub Pages</a>) probably collects server logs,
+        but I do not have access to them.
+        </p>
+        <p>
+        Site source is <a href="https://github.com/weakish/weakish.github.com/">available</a>
+        and feedback is <a href="https://github.com/weakish/weakish.github.com/issues">welcome</a>.
+        </p>
+        <noscript>
+        <p>
+        This site does not use JavaScript.
+        </p>
+        </noscript>
+    </div>
+  </div>
+</body>
+</html>

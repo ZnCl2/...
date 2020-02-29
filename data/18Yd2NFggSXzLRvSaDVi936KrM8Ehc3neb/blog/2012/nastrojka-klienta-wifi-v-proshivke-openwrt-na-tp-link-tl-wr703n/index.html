@@ -1,0 +1,91 @@
+<!DOCTYPE HTML>
+<html lang="ru">
+    <head>
+      <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb</title>
+      <link rel="stylesheet" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/css/main.css"/>
+      <link rel="shortcut icon" type="image/x-icon" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/favicon.ico"/>
+      <link href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/rss.xml" title="Akademic's blog" type="application/rss+xml" rel="alternate"/>
+    </head>
+    <body>
+        <header><h1><a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb" rel="home">akademic.name</a></h1></header>
+        <main class="content">
+            
+<article>
+    <h1>Настройка клиента wifi в прошивке openwrt на tp-link tl-wr703n</h1> <time>03.07.2012</time>
+	<p>Приехал ко мне на выходных сей девайс почтой из Гонконга:
+<a href="http://www.tp-link.com/en/products/details/?categoryid=241&amp;model=TL-WR702N" title="tp-link tl-wr703n">TP-LINK tl-wr703n</a></p>
+
+<p>Тут же поставил на него прошивку openwrt вместо идущей в комплекте на китайском языке.
+Ну и стал думать что же теперь полезного можно сделать на этой железке.</p>
+
+<p>Возможности пока что кажутся безграничными, но настраивается всякое с трудом.
+Я сознательно не стал ставить графический интерфейс, чтобы сэкономить место для полезных программ. Да и текстовые конфиги довольно понятные и привычные.</p>
+
+<p>После дня мучений наконец удалось настроить wr703n так, чтобы он подключался в качестве клиента по wifi к существующей сети.</p>
+
+<p>Казалось бы, какие должны возникнуть проблемы?
+Вот <a href="http://wiki.openwrt.org/doc/uci/wireless" title="Wireless configuration">документация</a>. Бери и настраивай.</p>
+
+<p>Но фиг!
+Для подключения к сети с шифрованием wpa2-psk предлагается следующее:</p>
+
+<pre><code>config wifi-iface
+    option device radio0
+    option network wan
+    option mode sta
+    option ssid 'MyWifi'
+    option encryption 'psk2'
+    option key 'password'
+</code></pre>
+
+<p>Однако эти настройки не сработали.
+Я долго перебирал разные варианты настроек. Но ничего не помогало.
+Особенно я заинтересовался полем &ldquo;encryption&rdquo;.
+В документации даны такие <a href="http://wiki.openwrt.org/doc/uci/wireless#wpa.modes">варианты</a>
+Но какой выбрать?</p>
+
+<p>Я посмотрел на конфиг wpa_supplicant, который создаётся автоматически здесь:
+<code>/var/run/wpa_supplicant-wlan0.conf</code></p>
+
+<p>И увидел следующую картину:</p>
+
+<pre><code>scan_ssid=1
+ssid=&quot;bkas&quot;
+key_mgmt=NONE
+</code></pre>
+
+<p>Подставив в этот файл правильные значения для своей сети (их я взял из конфига на своём ноутбуке), я перезапустил wpa_supplicant (опции подсмотрел в ps | grep wpa).</p>
+
+<p>И вдруг всё заработало.</p>
+
+<p>Почему так вышло, я понял, когда докопался до скрипта генерящего этот конфиг:
+<code>/lib/wifi/wpa_supplicant.sh</code></p>
+
+<p>Почитав его я понял, что для генерации правильного конфига для wpa_supplicant достаточно указать
+<code>option encryption 'psk'</code></p>
+
+<p>И таки заработало.
+Теперь буду пытаться поднять на ней WDS. Несколько предыдущих попыток не дали ничего&hellip;</p>
+
+    
+    <span class="next_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2012/konfiguraciya-ethernet-interfejsa-iz-skripta-v-openwrt/index.html" rel="next">Конфигурация ethernet интерфейса из скрипта в openwrt</a>
+    </span>
+	
+	
+    <span class="prev_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2012/kak-napravit-pochtu-v-gmail-s-ms-exchange/index.html" rel="previous">Как направить почту в gmail из ms exchange</a>
+    </span>
+	
+</article>
+
+        </main>
+        <footer>
+        Будьте внимательны, многое из того, что написано в этом блоге, является личным мнением автора и не претендует на истину.
+        <img src="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/yopiright.jpg" width="12" height="12"/> 2008
+        </footer>
+    </body>
+</html>

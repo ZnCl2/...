@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Deploy Jekyll Site to ZeroNet mmap.page</title>
+    <link rel="stylesheet" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/css/style.css">
+    <link rel="alternate" type="application/rss+xml" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml">
+    <link rel="alternate" type="application/git+http" href="https://github.com/weakish/weakish.github.com.git"/>
+</head>
+<body>
+  <div class="container-lg px-3 my-5 markdown-body">
+
+    <h1><a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/">mmap.page</a></h1>
+    <h1 id="deploy-jekyll-site-to-zeronet">
+        
+        
+          Deploy Jekyll Site to ZeroNet
+        
+        
+      </h1>
+    
+      <h2 id="basic-setup">
+        
+        
+          Basic Setup <a href="#basic-setup" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>A basic setup is mostly straightforward.
+The only thing to pay attention to is avoiding broken links.</p>
+<p>Typically, the jekyll site will be deployed to <code>https://some.domain.example</code> (root path) and <code>https://127.0.0.1:43110/some-zite-address/</code> (with zite address as the preceding path).
+Thus if not careful, there will be broken links on your clearnet site or/and ZeroNet site.</p>
+<p>As a rule of thumb, keep all internal links within the page content (markdown files) as relative to current path links.
+For example, the homepage of this site links to this page as <code>[Deploy Jekyll Site to ZeroNet](dive-into/jekyll-zeronet/)</code>.
+Relative to current path links work both under <code>https://some.domain.example</code> and <code>https://127.0.0.1:43110/some-zite-address/</code>.</p>
+<p>For links in page templates, you have several options:</p>
+<ol>
+<li>
+<p>Keep all pages in one directory, thus relative to current path links can be used in page templates.</p>
+</li>
+<li>
+<p>Use different templates for pages under different directories, or at least pages under different depth of directories.
+This also allows for relative to current path links in page templates.</p>
+</li>
+<li>
+<p>If your site may have arbitrary levels of directories and you want to use just one template for them all, then you can choose a ZeroNet first approach, using your zite address as the base path of your clearnet site.
+For example, if your zite address is <code>16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9</code> and clearnet site domain is <code>mmap.page</code>, then you can host your clearnet site under <code>https://mmap.page/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9</code>. This way, you can use relative to document root links in page templates, such as <code>/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/css/style.css</code>.</p>
+</li>
+<li>
+<p>You can also use absolute links via template variable in page templates.
+First, you define the site variable <code>url</code> as your clearnet url, e.g. <code>https://mmap.page</code>.
+Now comes the tricky part.
+Jekyll allows any value for the site url variable.
+Thus you can specify it as <code>/zite-address</code> for ZeroNet deployment.
+For example, <code>url: /16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9</code>.
+Note that you should not use <code>https://127.0.0.1:43110/some-zite-address</code> here, since other users may bind a different IP or port for their ZeroNet service.
+Then you can use {{site.url}} to construct absolute links in page templates,
+e.g. {{site.url}}/assets/css/style.css.</p>
+</li>
+</ol>
+    
+      <h2 id="multiple-configurations">
+        
+        
+          Multiple Configurations <a href="#multiple-configurations" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Jekyll can accept multiple configuration files.
+Thus if most of your configurations are the same for clearnet and ZeroNet, you can do most configurations in <code>_config.yml</code>, then append or override some configurations in <code>_zeronet.yml</code> or <code>_clearnet.yml</code>.
+For example, my <code>_zeronet.yml</code> only contains one line <code>url: /16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9</code> and I run the following command to generate a static site for ZeroNet deployment.</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle <span class="nb">exec </span>jekyll build <span class="nt">--config</span> _config.yml,_zeronet.yml <span class="nt">-d</span> /path/to/ZeroNet/data/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/
+</code></pre></div></div>
+    
+      <h2 id="conditional-content">
+        
+        
+          Conditional Content <a href="#conditional-content" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>You can use conditional expressions in Jekyll templates to display different content on clearnet and ZeroNet.</p>
+<p>For example, to display a greyscale version of ZeroNet logo on clearnet, while keeping the logo colorful on ZeroNet:</p>
+<div class="language-liquid highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{%</span><span class="w"> </span><span class="nt">assign</span><span class="w"> </span><span class="nv">leading</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">site</span><span class="p">.</span><span class="nv">url</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nf">slice</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">%}</span>
+<span class="p">{%</span><span class="w"> </span><span class="kr">if</span><span class="w"> </span><span class="nv">leading</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">'/'</span><span class="w"> </span><span class="p">%}</span>
+    <span class="p">{%</span><span class="w"> </span><span class="nt">assign</span><span class="w"> </span><span class="nv">zeronet_logo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'zeronet_logo.svg'</span><span class="w"> </span><span class="p">%}</span>
+<span class="p">{%</span><span class="w"> </span><span class="kr">else</span><span class="w"> </span><span class="p">%}</span>
+    <span class="p">{%</span><span class="w"> </span><span class="nt">assign</span><span class="w"> </span><span class="nv">zeronet_logo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'zeronet_grey.svg'</span><span class="w"> </span><span class="p">%}</span>
+<span class="p">{%</span><span class="w"> </span><span class="kr">endif</span><span class="w"> </span><span class="p">%}</span>
+&lt;img src="<span class="p">{{</span><span class="w"> </span><span class="nv">site</span><span class="p">.</span><span class="nv">url</span><span class="w"> </span><span class="p">}}</span>/assets/images/<span class="p">{{</span><span class="w"> </span><span class="nv">zeronet_logo</span><span class="w"> </span><span class="p">}}</span>" alt="ZeroNet Logo" width="32" height="32"&gt;
+</code></pre></div></div>
+<p>Here I chose the fourth option (<code>site.url</code>) mentioned in the &quot;Basic Setup&quot; section,
+thus I decide if it is on ZeroNet by checking if <code>site.url</code> starts with <code>/</code>.
+If you use other options, you can define an additional boolean option on your <code>_zeronet.yml</code> or <code>_clearnet.yml</code>,
+and ues it to detect the deployment environment.</p>
+    
+      <h2 id="rss">
+        
+        
+          RSS <a href="#rss" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Unfortunately, RSS does not like relative links.
+If your sites need RSS, then you have to replace relative links with absolute ones in templates.
+Since the Liquid template language Jekyll uses is quite limited,
+I chose to use <strong>relative to document root links</strong> in page content, which makes it easier to finding these links via Liquid template languages (just looks for <code>&lt;a href=&quot;/</code> and <code>&lt;img src=&quot;/&gt;</code>).</p>
+<p>In RSS template, I implemented something like this:</p>
+<div class="language-liquid highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{%</span><span class="w"> </span><span class="nt">assign</span><span class="w"> </span><span class="nv">absolutelink</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'&lt;a href="'</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nf">append</span><span class="p">:</span><span class="w"> </span><span class="nv">site</span><span class="p">.</span><span class="nv">url</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nf">append</span><span class="p">:</span><span class="w"> </span><span class="s1">'/'</span><span class="w"> </span><span class="p">%}</span>
+<span class="p">{%</span><span class="w"> </span><span class="nt">assign</span><span class="w"> </span><span class="nv">absoluteimglink</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'&lt;img src='</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nf">append</span><span class="p">:</span><span class="w"> </span><span class="nv">site</span><span class="p">.</span><span class="nv">url</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nf">append</span><span class="p">:</span><span class="w"> </span><span class="s1">'/'</span><span class="w"> </span><span class="p">%}</span>
+&lt;description&gt;<span class="p">{{</span><span class="w"> </span><span class="nv">page_content</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nf">markdownify</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nf">replace</span><span class="p">:</span><span class="w"> </span><span class="s1">'&lt;a href="/'</span><span class="p">,</span><span class="w"> </span><span class="nv">absolutelink</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nf">replace</span><span class="p">:</span><span class="w"> </span><span class="s1">'&lt;img src="/'</span><span class="p">,</span><span class="w"> </span><span class="nv">absoluteimglink</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nf">xml_escape</span><span class="p">}}</span>&lt;/description&gt;
+</code></pre></div></div>
+<p>I also implemented similar logic in default page template to avoid broken links since now relative to document root links are used.</p>
+<p>Alternatively, you can write some lengthy liquid template processing logic or write a post-process script in other programming languages to find and replace all relative links.
+This way, you can keep using relative to current path in page content and keep the default page template intact.</p>
+    <div class="footer border-top border-gray-light mt-5 pt-3 text-gray">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start">
+        <form id="site-search" action="https://duckduckgo.com/html/" method="get">
+          <input name="q" type="search" value="site:mmap.page " required pattern="site:mmap\.page\s.+">
+          <input type="submit" value="&#x1F50D;" title="search through site content via DuckDuckGo">
+        </form>
+        <p>
+          <a href="mailto:weakish@gmail.com" title="weakish@gmail.com"><img src="https://icongr.am/feather/mail.svg" alt="Feather Icon Mail"></a>
+          <a href="https://savannah.nongnu.org/people/viewgpg.php?user_id=65699" title="2414 AEA0 EA48 5263 9697  F1BA 55F6 EEC2 EA3F 0A87"><img src="https://icongr.am/feather/key.svg" alt="Feather Icon Key"></a>
+          <a href="https://github.com/weakish/" title="GitHub"><img src="https://icongr.am/feather/github.svg" alt="Feather Icon Github"></a>
+          <a href="https://www.instagram.com/jakukyo/" title="Instagram"><img src="https://icongr.am/feather/instagram.svg" alt="Feather Icon Instagram"></a>
+          <a href="https://twitter.com/weakish" title="Twitter"><img src="https://icongr.am/feather/twitter.svg" alt="Feather Icon Twitter"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml" title="RSS 2.0 Feed"><img src="https://icongr.am/feather/rss.svg" alt="Feather Icon RSS"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/uses/" title="uses"><img src="https://icongr.am/feather/book-open.svg" alt="Feather Icon Book Open"></a>
+          
+          
+          <a href="/Me.ZeroNetwork.bit/?Profile/12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv/1GnJD7CXskmG8GywMbTvbP12wneCFW9XzR/weakish@zeroid.bit" title="ZeroMe"><img src="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/images/zeronet_logo.svg" alt="ZeroNet Logo" width="32" height="32"></a>
+        </p>
+      </div>
+        <p>
+        Permission to use, copy, modify, and/or distribute this site for any purpose with or without fee is hereby granted.
+        This site is provided "as is" without express or implied warranty.
+        </p>
+        <p>
+        This site does not use cookies or tracking codes.
+        The hosting service provider (<a href="https://pages.github.com/">GitHub Pages</a>) probably collects server logs,
+        but I do not have access to them.
+        </p>
+        <p>
+        Site source is <a href="https://github.com/weakish/weakish.github.com/">available</a>
+        and feedback is <a href="https://github.com/weakish/weakish.github.com/issues">welcome</a>.
+        </p>
+        <noscript>
+        <p>
+        This site does not use JavaScript.
+        </p>
+        </noscript>
+    </div>
+  </div>
+</body>
+</html>

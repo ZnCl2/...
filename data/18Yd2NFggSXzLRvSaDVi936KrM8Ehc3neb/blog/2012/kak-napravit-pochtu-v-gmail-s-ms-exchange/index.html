@@ -1,0 +1,80 @@
+<!DOCTYPE HTML>
+<html lang="ru">
+    <head>
+      <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb</title>
+      <link rel="stylesheet" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/css/main.css"/>
+      <link rel="shortcut icon" type="image/x-icon" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/favicon.ico"/>
+      <link href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/rss.xml" title="Akademic's blog" type="application/rss+xml" rel="alternate"/>
+    </head>
+    <body>
+        <header><h1><a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb" rel="home">akademic.name</a></h1></header>
+        <main class="content">
+            
+<article>
+    <h1>Как направить почту в gmail из ms exchange</h1> <time>04.05.2012</time>
+	<p>Перевели тут на работе почту с нормального фряшного мэйлсервера на ms exchange.
+Для линуксоидной части пользователей сделали протоколы pop3 и imap, для забора почты.</p>
+
+<p>На старом сервере у меня был настроен редирект на почту в gmail, а на exchange редирект работает только внутри домена, что печально.</p>
+
+<p>Радостно, что gmail умеет собирать почту по pop3.
+Печально, что gmail не смог забрать почту по pop3 с exchange сервера.</p>
+
+<p>Радостно, что icedove (он же thunderbird) справился с pop3.
+Сбор пакетов сниффером показал то, что в процессе работы по pop3 происходит переход на шифрованный канал. Для шифрования используется протокол starttls.</p>
+
+<p>После выяснения сего факта относительно непродолжительное гугление вывело на демон stunnel.</p>
+
+<p>Эта замечательная штука умеет проксировать соединения вида шифрованное-нешифрованное.
+Например её можно использовать для навешивания ssl на вебсервера, которые его не умеют использовать.
+Или как понадобилось мне обеспечивать шифрованный канал с сервером для поддержания совместимости с простыми клиентами, не знающими радости шифрования.</p>
+
+<p>Конфиг написал вот такой:
+<code>
+pid = /tmp/stunnel4.pop3.pid
+debug = 2
+output = /var/log/stunnel4/stunnel.log
+[pop3tls]
+client = yes
+accept = 110
+connect = &lt;ip или домен exchange&gt;:110
+protocol = pop3
+</code></p>
+
+<p>Здесь задаётся файл с pid работающего демона.
+debug = 2 - логировать только критические ошибки
+output - куда логи складывать</p>
+
+<p>Секция [pop3tls] (может называть как угодно, лишь бы вам было понятно) содержит уже настройки конкретного проксирования:
+client = yes говорит, что прокси выступает в качестве потребителя шифрованного соединения.
+connect = ip:port говорит, куда коннектиться (адрес exchange сервера)
+protocol = pop3 - по какому протоколу общаться с сервером, указанным в connect
+accept = ip:port говорит, на каком ip:port принимать соединения от клиентов. Если ip опущен, то он видимо 0.0.0.0, то есть для любого ip хоста.</p>
+
+<p>Запускаем stunnel с этим конфигом на своём сервере и настраиваем забор почты по pop3.
+В качестве сервера, указываем не адрес exchange, а адрес сервера, на котором установлен stunnel.</p>
+
+<p>Теперь почта прекрасно получается в gmail. Жизнь продолжается.</p>
+
+    
+    <span class="next_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2012/nastrojka-klienta-wifi-v-proshivke-openwrt-na-tp-link-tl-wr703n/index.html" rel="next">Настройка клиента wifi в прошивке openwrt на tp-link tl-wr703n</a>
+    </span>
+	
+	
+    <span class="prev_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2012/besporyadochnaya-kompaniya-bilajn/index.html" rel="previous">Беспорядочная компания билайн</a>
+    </span>
+	
+</article>
+
+        </main>
+        <footer>
+        Будьте внимательны, многое из того, что написано в этом блоге, является личным мнением автора и не претендует на истину.
+        <img src="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/yopiright.jpg" width="12" height="12"/> 2008
+        </footer>
+    </body>
+</html>

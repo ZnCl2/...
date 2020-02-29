@@ -1,0 +1,58 @@
+{
+	"title": "TechZero",
+	"description": "ZeroNet爱好者",
+	"links": "-[CSDN Blog](http://blog.csdn.net/michaeljscofield)\n\n-[Source code](https://github.com/HelloZeroNet)\n",
+	"next_post_id": 10,
+	"demo": false,
+	"modified": 1465054646,
+	"post": [
+		{
+			"post_id": 9,
+			"title": "ZeroNet框架（ZeroFrame）API参考",
+			"date_published": 1465054370.738,
+			"body": "水平有限，翻译错误的地方还望网友斧正\n***\nWrapper 封装\n--\n这些命令可以控制wrapper框架，不用使用websocket发送到UiServer。\n\n**wrapperConfirm** message,[button_caption]\n显示一个带确认按钮的通知框。\n|参数|描述|\n|:----------|:------------------------|\n|message|你要显示的消息|\n|button_caption(可选)|确认的按钮的文字（默认：OK）|\n\n返回：确认返回Ture\n\n例子：\n`# Delete site\nsiteDelete: (address) ->\n    site = @sites[address]\n    title = site.content.title\n    if title.length > 40\n        title = title.substring(0, 15)+\"...\"+title.substring(title.length-10)\n    @cmd \"wrapperConfirm\", [\"Are you sure you sure? <b>#{title}</b>\", \"Delete\"], (confirmed) =>\n        @log \"Deleting #{site.address}...\", confirmed\n        if confirmed\n            $(\".site-#{site.address}\").addClass(\"deleted\")\n            @cmd \"siteDelete\", {\"address\": address}`\n\n***\n**wrapperGetLocalStorage**\n\n返回：浏览器站点本地存储\n例子：\n`@cmd \"wrapperGetLocalStorage\", [], (res) =>\n    res ?= {}\n    @log \"Local storage value:\", res`\n***\n**wrapperSetLocalStorage** data\n设置站点在本地浏览器中存储的数据\n返回：None\n例子：\n`Page.local_storage[\"topic.#{@topic_id}_#{@topic_user_id}.visited\"] = Time.timestamp()\nPage.cmd \"wrapperSetLocalStorage\", Page.local_storage\n`\n***\n**wrapperNotification** type, message, [timeout]\n显示一个通知\n|参数|描述|\n|:----------|:------------------------|\n|type|可能的值:info,error,done|\n|message|你要显示的消息|\n|timeout(可选)|消失的时间（毫秒ms)|\n返回：None\n例子：\n`@cmd \"wrapperNotification\", [\"done\", \"Your registration has been sent!\", 10000]`\n\n***\n**wrapperPrompt** message, [type]\n显示一个可以输入文字的提示框。\n|参数|描述|\n|:----------|:------------------------|\n|message|你要显示的消息|\n|type(可选)|输入的类型(默认:text)|\n返回：输入的文字\n例子：\n`# Prompt the private key\n@cmd \"wrapperPrompt\", [\"Enter your private key:\", \"password\"], (privatekey) =>\n    $(\".publishbar .button\").addClass(\"loading\")\n    # Send sign content.json and publish request to server\n    @cmd \"sitePublish\", [privatekey], (res) =>\n        $(\".publishbar .button\").removeClass(\"loading\")\n        @log \"Publish result:\", res`\n***\n**wrapperSetViewport** viewport\n设置站点`viewport`元标签内容(移动站点会用到)\n|参数|描述|\n|:----------|:------------------------|\n|viewport|viewport元标签的内容|\n返回：None\n例子：\n`# Prompt the private key\n@cmd \"wrapperSetViewport\", \"width=device-width, initial-scale=1.0\"`\n***\nUiServer\n--\nUiServer对于ZeroNet就像LAMP设置的站点。\nUiServer会完成所有的“后台”工作(比如：查询数据库，访问文件，诸如此类)。你可以调用这些API搭建动态网站。\n\n**certAdd** domain, auth_type, auth_user_name, cert\n为当前的用户添加一个证书\n|参数|描述|\n|:----------|:------------------------|\n|domain|认证所有者的域名|\n|auth_type|注册的验证类型|\n|auth_user_name|注册的用户名|\n|cert|证书内容：将字段`auth_address#auth_type/auth_user_name`签给站点的所有者|\n返回：\"ok\",\"Not changed\"或者{\"error\":error_message}\n例子：\n`@cmd \"certAdd\", [\"zeroid.bit\", auth_type, user_name, cert_sign], (res) =>\n    $(\".ui\").removeClass(\"flipped\")\n    if res.error\n        @cmd \"wrapperNotification\", [\"error\", \"#{res.error}\"]`\n***\n**certSelect** accepted_domains\n显示证书选择器\n|参数|描述|\n|:----------|:------------------------|\n|accpeted_domains|接受认证的列表|\n返回：None\n例子：\n`@cmd \"certSelect\", {\"accepted_domains\": [\"zeroid.bit\"]}`\n***\n**channelJoin** channel\n关于站点事件的请求通知\n|参数|描述|\n|:----------|:------------------------|\n|channel|加入频道|\n返回：None\nChannels:\n- **siteChanged**(默认加入)\nEvent:peers_added,file_started,file_done,file_failed\n\n例子：\n`# Wrapper websocket connection ready\nonOpenWebsocket: (e) =>\n    @cmd \"channelJoinAllsite\", {\"channel\": \"siteChanged\"}\nroute: (cmd, data) ->\n    if cmd == \"setSiteInfo\"\n        @log \"Site changed\", data\n    else\n        @log \"Unknown command\", cmd, data`\n\n例子event data:\n`{\n    \"tasks\":0,\n    \"size_limit\":10,\n    \"address\":\"1RivERqttrjFqwp9YH1FviduBosQPtdBN\",\n    \"next_size_limit\":10,\n    \"event\":[ \"file_done\", \"index.html\" ],\n    [...] # Same as siteInfo return dict\n}`\n***\n**dbQuey** query\n>引用\nZeroNet 官方文档 http://zeronet.readthedocs.org/en/latest/"
+		},
+		{
+			"post_id": 8,
+			"title": "ZeroNet网站开发指南（未完待续）",
+			"date_published": 1464507884.178,
+			"body": "大部分都是对官方文档翻译。个人水平有限，如有错误地方请斧正。\n\n概述\n--\n\nZeroNet 允许你推送静态和动态的网站。\n\n尽管ZeroNet不能运行脚本语言，如PHP 或者Ruby，但是你可以用ZeroNet的Zero框架 API（ZeroFrame）、JavaScript（或者CoffeeScript）、built-in SQL创建一个动态的网站。\n\nZeroNet调试模式\n--\n用调试模式启动会让开发变得更容易。\n\n使用命令`python zeronet.py --debug`运行即可。\n\n**调试模式功能：**\n\n - 自动转换 CoffeeScript -> JavaScript.(本文档写的例子皆来自 [CoffeeScript.org](http://coffeescript.org))\n - 调试的消息显示在控制台上。\n - 自动重载一些源文件（UiRequest、UiWebsocket、FileRequest），无需每次改变文件后都要重新启动才生效（GNU/Linux需要请求PyFilesystem）。\n - `[http://127.0.0.1:43110/Debug](http://127.0.0.1:43110/Debug)` 跟踪和交互Python 控制台最后出错位置。（使用神奇的[Werkzeug debugger](http://werkzeug.pocoo.org/)）\n - `http://127.0.0.1:43110/Console` 生成一个可以和Python交互的控制台。（使用神奇的[Werkzeug debugger](http://werkzeug.pocoo.org/)）\n \n ##附加功能（仅在你自己的网站上生效）##\n - 合成CSS文件：所有在网站文件夹的CSS文件都会被合成一个文件，叫`all.css` 你可以选择只包含这个文件到你的网站。如果你想保留其它CSS文件让开发更加轻松点。你可以添加一个ignore键到你的`content.json`。这样，它们就不会被推送到你的站点了。（等于你添加`\"ignore\": \"(js|css)/(?!all.(js|css))\"` 到`content.json` 后，就会忽略所有的CSS和JS文件，除了`all.js`和`all.css`）\n - 合成JS文件：所有在网站文件夹的JS文件都会被合成一个文件，叫`all.js`。CoffeeScript编译器会提前将 `.coffee`转换成`.js`。\n - 为了每个文件合成 `all.css/all.js` ，文件首先在子目录 `js/css`文件夹被命名为`01_a.css, 02_a.css,之类`\n\nZeroNet网站开发指南\n--\n**第一部分**\n- 网站创建\n- Zero框架 API（ZeroFrame）\n\n**第二部分**\n- 用户登录\n- 推送新的内容到网络\n- SQL数据库插入和查询\n- 实时更新的你网站\n\n我的ZeroNet博客 http://127.0.0.1:43110/TechZero.bit\n（欢迎访问，并点Follow关注，我随时更新）\nZeroNet交流论坛 https://www.reddit.com/r/zeronet/"
+		},
+		{
+			"post_id": 7,
+			"title": "Chrome ZeroNet 插件让你访问ZeroNet更轻松",
+			"date_published": 1462518814.406,
+			"body": "下载地址: https://chrome.google.com/webstore/detail/cpkpdcdljfbnepgfejplkhdnopniieop\n\n可以实现 http://zero/ 访问 你的http://127.0.0.1:43110/你的主页\n\n同时对已经申请了bit域名的博客，可以直接输入访问，如本博客。\n\nhttp://TechZero.bit\n![Chrome ZeroNet插件](img/chromezeronet.jpg)\n\n经过本人测试，这个插件和Shadowsocks冲突，会导致Shadowsocks无法正常作用在Chrome\n\n----------------------------------------------------------------\n我的ZeroNet博客   http://127.0.0.1:43110/TechZero.bit\n（欢迎访问，并点Follow关注，我随时更新）\nZeroNet交流论坛   https://www.reddit.com/r/zeronet/"
+		},
+		{
+			"post_id": 5,
+			"title": "通过克隆创建一个ZeroNet Blog或者论坛",
+			"date_published": 1462105356.919,
+			"body": "首先克隆可以这样，如官方图片所示：\n![Zeronet克隆博客动图](img/how-to-create-a-blog-2.gif)\n\n克隆完毕，可以移动鼠标去网站名和签名那里。会出现一个小铅笔的图标，点击即可修改自己的网站名和签名。\n\n修改完毕注意点右下角那里的 Sign & Publish new content 将修改推送出去。\n\n一般新建的站点，peers比较少的时候，可能你发送给你朋友并不会很快生效。等等吧。论坛同理。\n\n我的ZeroNet博客   http://127.0.0.1:43110/TechZero.bit\n（欢迎访问，并点Follow关注，我随时更新）\nZeroNet交流论坛   https://www.reddit.com/r/zeronet/\n\n引用：\nZeroNet 官方文档 http://zeronet.readthedocs.org/en/latest/"
+		},
+		{
+			"post_id": 4,
+			"title": "如何安装ZeroNet",
+			"date_published": 1461559019.915,
+			"body": "首先下载ZeroBundle。地址：https://github.com/HelloZeroNet/ZeroBundle/releases\n快捷下载通道\n``` Microsoft Windows ：```\nhttps://github.com/HelloZeroNet/ZeroBundle/releases/download/0.1.1/ZeroBundle-v0.1.1.zip\n ```Apple OS X：```\nhttps://github.com/HelloZeroNet/ZeroBundle/releases/download/0.1.1/ZeroBundle-mac-osx-10.8-v0.1.1.zip\n ```Linux 64bit：```\nhttps://github.com/HelloZeroNet/ZeroBundle/releases/download/0.1.1/ZeroBundle-linux64-v0.1.1.tar.gz\n```Linux 32bit：```\nhttps://github.com/HelloZeroNet/ZeroBundle/releases/download/0.1.1/ZeroBundle-linux32-v0.1.1.tar.gz\n解压后， (win用户)运行 ```ZeroNet.cmd```,  (osx用户)运行```ZeroNet(.app)``` , (linux)运行 ```ZeroNet.sh```\n运行后，能访问 http://127.0.0.1:43110/  就大功告成了。\n\nDebian Linux用户可以采取以下安装方法\n```\nsudo apt-get update\nsudo apt-get install msgpack-python python-gevent\nwget https://github.com/HelloZeroNet/ZeroNet/archive/master.tar.gz\ntar xvpfz master.tar.gz\ncd ZeroNet-master\nStart with python zeronet.py\n访问 http://127.0.0.1:43110/\n```\n\n我的ZeroNet博客   http://127.0.0.1:43110/17DCyNgnWJ8Vsdp4myiSMryPvPmVGXnxY/ （欢迎访问，并点Follow关注，我随时更新）\nZeroNet交流论坛   https://www.reddit.com/r/zeronet/\n\n引用：\nZeroNet 官方文档 http://zeronet.readthedocs.org/en/latest/"
+		},
+		{
+			"post_id": 3,
+			"title": "如何快速发布并推送文章",
+			"date_published": 1461500640.533,
+			"body": "每次编辑完文章点保存后，注意右下角。有个“Sign & Publish new content”按钮，点一下，就很快将内容推送出去了。"
+		},
+		{
+			"post_id": 2,
+			"title": "New blog post",
+			"date_published": 1461477343.551,
+			"body": "thanks everybody"
+		},
+		{
+			"post_id": 1,
+			"title": "Congratulations!",
+			"date_published": 1433033779.604,
+			"body": "Your zeronet blog has been successfully created!"
+		}
+	]
+}

@@ -1,0 +1,99 @@
+{
+	"db_name": "ZeroBlog",
+	"db_file": "data/zeroblog.db",
+	"version": 2,
+	"maps": {
+		"users/.+/data.json": {
+			"to_table": [
+				"comment",
+				{"node": "comment_vote", "table": "comment_vote", "key_col": "comment_uri", "val_col": "vote"},
+				{"node": "post_vote", "table": "post_vote", "key_col": "post_id", "val_col": "vote"},
+                {"node": "post_pv",   "table": "post_pv",   "key_col": "post_id", "val_col": "pv"}
+			]
+		},
+		"users/.+/content.json": {
+			"to_keyvalue": [ "cert_user_id" ]
+		},
+		"data.json": {
+			"to_table": [ "post" ],
+			"to_keyvalue": [ "title", "description", "links","info","recommended","next_post_id", "demo", "modified"]
+		},
+        "tag.json":{
+            "to_table":[
+                {"node":"tag","table":"tag","key_col":"tag_id","val_col":"body"}
+            ]
+        }
+
+	},
+	"tables": {
+		"comment": {
+			"cols": [
+				["comment_id", "INTEGER"],
+				["post_id", "INTEGER"],
+				["body", "TEXT"],
+				["date_added", "INTEGER"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX comment_key ON comment(json_id, comment_id)", "CREATE INDEX comment_post_id ON comment(post_id)"],
+			"schema_changed": 1426195823
+		},
+		"comment_vote": {
+			"cols": [
+				["comment_uri", "TEXT"],
+				["vote", "INTEGER"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE INDEX comment_vote_comment_uri ON comment_vote(comment_uri)", "CREATE INDEX comment_vote_json_id ON comment_vote(json_id)"],
+			"schema_changed": 1426195822
+		},
+		"post": {
+			"cols": [
+				["post_id", "INTEGER"],
+				["title", "TEXT"],
+				["body", "TEXT"],
+				["date_published", "INTEGER"],
+                ["tags","TEXT"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX post_uri ON post(json_id, post_id)", "CREATE INDEX post_id ON post(post_id)"],
+			"schema_changed": 1426195823
+		},
+		"post_vote": {
+			"cols": [
+				["post_id", "INTEGER"],
+				["vote", "INTEGER"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE INDEX post_vote_post_id ON post_vote(post_id)", "CREATE INDEX post_vote_json_id ON post_vote(post_id)"],
+			"schema_changed": 1426195826
+		},
+        "post_pv":{
+            "cols":[
+                ["post_id","INTEGER"],
+                ["pv","INTEGER"],
+                ["json_id","INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes":["CREATE INDEX post_pv_post_id ON post_pv(post_id)","CREATE INDEX post_pv_json_id ON post_pv(post_id)"],
+            "schema_changed":1426195826
+        },
+        "tag":{
+            "cols":[
+                ["tag_id","INTEGER"],
+                ["body","TEXT"],
+                ["status","INTEGER"],
+                ["json_id","INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes":["CREATE INDEX tag_id ON tag(tag_id)","CREATE INDEX tag_id_json_id ON tag(tag_id,json_id) "],
+            "schema_changed":1426195826
+        },
+        "post_tag":{
+            "cols":[
+                ["post_tag_id","INTEGER"],
+                ["tag_id","INTEGER"],
+                ["post_id","INTEGER"]
+            ],
+            "indexes":["CREATE INDEX post_id_tag_id ON post_tag(post_tag_id)"],
+            "schema_changed":1426195826
+        }
+	}
+}

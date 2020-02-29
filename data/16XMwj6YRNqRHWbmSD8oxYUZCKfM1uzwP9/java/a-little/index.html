@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Notes on A little Java, a Few Patterns mmap.page</title>
+    <link rel="stylesheet" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/css/style.css">
+    <link rel="alternate" type="application/rss+xml" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml">
+    <link rel="alternate" type="application/git+http" href="https://github.com/weakish/weakish.github.com.git"/>
+</head>
+<body>
+  <div class="container-lg px-3 my-5 markdown-body">
+
+    <h1><a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/">mmap.page</a></h1>
+    <h1 id="notes-on-a-little-java-a-few-patterns">
+        
+        
+          Notes on A little Java, a Few Patterns
+        
+        
+      </h1>
+    
+      <h2 id="advantages-of-java">
+        
+        
+          Advantages of Java <a href="#advantages-of-java" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<ul>
+<li>a small core language with a simple semantic model</li>
+<li>gc</li>
+</ul>
+    
+      <h2 id="design-patterns">
+        
+        
+          Design Patterns <a href="#design-patterns" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Design patterns are used:</p>
+<ul>
+<li>to organize your code</li>
+<li>to communicate with others</li>
+</ul>
+    
+      <h2 id="introductory-language">
+        
+        
+          Introductory Language <a href="#introductory-language" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Recommended introductory language: Scheme or ML.</p>
+    
+      <h2 id="too-much-coffee">
+        
+        
+          Too Much Coffee <a href="#too-much-coffee" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p><strong>Q:</strong> Is it confusing that we need to connect <code>int</code> with <code>Integer</code> (e.g. <code>Integer(5)</code>)
+and <code>boolean</code> with <code>Boolean</code> (e.g. <code>Boolean(false)</code>)?</p>
+<p><strong>A:</strong> Too much coffee does that.</p>
+<p>Note the book uses an early version of Java.
+Current Java can do auto boxing and unboxing for primitive types.</p>
+<p>Also, in this book, if the method specified its return type as <code>Object</code> in interface,
+then its implementation also annotated as returning <code>Object</code>,
+even when the implementation in fact always returns <code>Boolean</code>.</p>
+<p><strong>Q:</strong> There is no number <code>x</code> in the world for which</p>
+<pre><code>x = x + 1
+</code></pre>
+<p>So why should we expect there to be a Java <code>p</code> such that</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">p</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Top</span><span class="o">(</span><span class="k">new</span> <span class="nc">Anchovy</span><span class="o">(),</span> <span class="n">p</span><span class="o">)</span>
+</code></pre></div></div>
+<p><strong>A:</strong> That's right. But that's what happens when you have one too many double espresso.</p>
+    
+      <h2 id="semicolon-on-its-own-line-for-mutability">
+        
+        
+          Semicolon on Its Own Line for Mutability <a href="#semicolon-on-its-own-line-for-mutability" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="nc">PutSemicolonOnItsOwnLineForMutability</span>
+<span class="o">{</span>
+    <span class="nc">Pie</span> <span class="n">p</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Crust</span><span class="o">();</span>
+    <span class="nc">Pie</span> <span class="n">p</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Top</span><span class="o">(</span><span class="k">new</span> <span class="nc">Anchovy</span><span class="o">(),</span> <span class="n">p</span><span class="o">)</span>
+    <span class="o">;</span> <span class="c1">// the future begins, i.e. from this line on, references to `p` reflect the change</span>
+    <span class="nc">Pieman</span> <span class="n">yy</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Bottom</span><span class="o">();</span>
+    <span class="n">yy</span><span class="o">.</span><span class="na">addTop</span><span class="o">(</span><span class="k">new</span> <span class="nc">Anchovy</span><span class="o">())</span>
+    <span class="o">;</span> <span class="c1">// same as above</span>
+<span class="o">}</span>
+</code></pre></div></div>
+    
+      <h2 id="littlejavajava">
+        
+        
+          LittleJava.java <a href="#littlejavajava" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// `D` means this is a data class.</span>
+<span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">Num</span><span class="err">ᴰ</span> <span class="o">{}</span>
+
+<span class="kd">class</span> <span class="nc">Zero</span> <span class="kd">extends</span> <span class="n">Num</span><span class="err">ᴰ</span> <span class="o">{}</span>
+
+<span class="kd">class</span> <span class="nc">OneMoreThan</span> <span class="kd">extends</span> <span class="n">Num</span><span class="err">ᴰ</span> <span class="o">{</span>
+    <span class="n">Num</span><span class="err">ᴰ</span> <span class="n">predecessor</span><span class="o">;</span>
+
+    <span class="c1">// Constructor</span>
+    <span class="nc">OneMoreThan</span><span class="o">(</span><span class="n">Num</span><span class="err">ᴰ</span> <span class="n">_p</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">predecessor</span> <span class="o">=</span> <span class="n">_p</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="cm">/*
+We did not tell you these are Peano axioms.
+We din not give formal definition.
+So you can form your own definition.
+Try to give it a name by yourself.
+This helps you to remember and understand it better.
+ */</span>
+
+
+
+
+
+<span class="cm">/* This book shows how to protect direct access to property without the `private` access modifier.
+
+   Wrap it into an interface. In that interface, only expose public methods, not the "private" property.
+ */</span>
+
+<span class="cm">/* Visitor pattern */</span>
+<span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">Shish</span><span class="err">ᴰ</span>
+<span class="o">{</span>
+    <span class="n">OnlyOnions</span><span class="err">ⱽ</span> <span class="n">ooFn</span> <span class="o">=</span> <span class="k">new</span> <span class="n">OnlyOnions</span><span class="err">ⱽ</span><span class="o">();</span>
+    <span class="kd">abstract</span> <span class="kt">boolean</span> <span class="nf">onlyOnions</span><span class="o">();</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">OnlyOnions</span><span class="err">ⱽ</span>
+<span class="o">{</span>
+    <span class="kt">boolean</span> <span class="nf">forSkewer</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kt">boolean</span> <span class="nf">forOnion</span><span class="o">(</span><span class="n">Shish</span><span class="err">ᴰ</span> <span class="n">s</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="na">onlyOnions</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="kt">boolean</span> <span class="nf">forLamb</span><span class="o">(</span><span class="n">Shish</span><span class="err">ᴰ</span> <span class="n">s</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kt">boolean</span> <span class="nf">forTomato</span><span class="o">(</span><span class="n">Shish</span><span class="err">ᴰ</span> <span class="n">s</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">Skewer</span> <span class="kd">extends</span> <span class="n">Shish</span><span class="err">ᴰ</span>
+<span class="o">{</span>
+    <span class="kt">boolean</span> <span class="nf">onlyOnions</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="n">ooFn</span><span class="o">.</span><span class="na">forSkewer</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">Onion</span> <span class="kd">extends</span> <span class="n">Shish</span><span class="err">ᴰ</span>
+<span class="o">{</span>
+    <span class="n">Shish</span><span class="err">ᴰ</span> <span class="n">s</span><span class="o">;</span>
+    <span class="nc">Onion</span><span class="o">(</span><span class="n">Shish</span><span class="err">ᴰ</span> <span class="n">_s</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">_s</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kt">boolean</span> <span class="nf">onlyOnions</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="n">ooFn</span><span class="o">.</span><span class="na">forOnion</span><span class="o">(</span><span class="n">s</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+<span class="kd">class</span> <span class="nc">Lamb</span> <span class="kd">extends</span> <span class="n">Shish</span><span class="err">ᴰ</span>
+<span class="o">{</span>
+    <span class="n">Shish</span><span class="err">ᴰ</span> <span class="n">s</span><span class="o">;</span>
+    <span class="nc">Lamb</span><span class="o">(</span><span class="n">Shish</span><span class="err">ᴰ</span> <span class="n">_s</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">_s</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kt">boolean</span> <span class="nf">onlyOnions</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="n">ooFn</span><span class="o">.</span><span class="na">forLamb</span><span class="o">(</span><span class="n">s</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+<span class="kd">class</span> <span class="nc">Tomato</span> <span class="kd">extends</span> <span class="n">Shish</span><span class="err">ᴰ</span>
+<span class="o">{</span>
+    <span class="n">Shish</span><span class="err">ᴰ</span> <span class="n">s</span><span class="o">;</span>
+    <span class="nc">Tomato</span><span class="o">(</span><span class="n">Shish</span><span class="err">ᴰ</span> <span class="n">_s</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">_s</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kt">boolean</span> <span class="nf">onlyOnions</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="n">ooFn</span><span class="o">.</span><span class="na">forTomato</span><span class="o">(</span><span class="n">s</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+<span class="cm">/* Before introducing visitor pattern,
+   every subclass of Shishᴰ need to contain the logic of `onlyOnions()` in its definition.
+   And the book asked "Wasn't this overwhelming?"
+   I had thought it would introduce generics next.
+   But it turned out to be the visitor pattern.
+   Oh, I forgot Java's generics are not reified.
+
+   If Java had reified generics:
+
+       class Shishᴰ
+       {
+           &lt;S: Shishᴰ&gt; boolean onlyOnions(S s)
+           {
+               if (s instanceof Sewer)
+               {
+                   return true;
+               }
+               else if (s instanceof Onion)
+               {
+                   return onlyOnions(s.s);
+               }
+               else
+               {
+                   return false;
+               }
+           }
+       }
+ */</span>
+
+
+
+<span class="cm">/* This is for the loyal Schemers and MLers. */</span>
+
+<span class="kd">interface</span> <span class="nc">T</span><span class="err">ᴵ</span>
+<span class="o">{</span>
+    <span class="c1">// It seems Java does not allow unicode arrows in identity name.</span>
+    <span class="c1">// So we use the Chinese character `一` (one), which has a similar shape.</span>
+    <span class="n">o</span><span class="err">一</span><span class="n">o</span><span class="err">ᴵ</span> <span class="n">apply</span><span class="o">(</span><span class="n">T</span><span class="err">ᴵ</span> <span class="n">x</span><span class="o">);</span>
+<span class="o">}</span>
+
+<span class="kd">interface</span> <span class="nc">o</span><span class="err">一</span><span class="n">o</span><span class="err">ᴵ</span>
+<span class="o">{</span>
+    <span class="nc">Object</span> <span class="nf">apply</span><span class="o">(</span><span class="nc">Object</span> <span class="n">x</span><span class="o">);</span>
+<span class="o">}</span>
+
+<span class="kd">interface</span> <span class="nc">oo</span><span class="err">一</span><span class="n">oo</span><span class="err">ᴵ</span>
+<span class="o">{</span>
+    <span class="n">o</span><span class="err">一</span><span class="n">o</span><span class="err">ᴵ</span> <span class="n">apply</span><span class="o">(</span><span class="n">o</span><span class="err">一</span><span class="n">o</span><span class="err">ᴵ</span> <span class="n">x</span><span class="o">);</span>
+<span class="o">}</span>
+
+<span class="kd">interface</span> <span class="nc">oo</span><span class="err">一</span><span class="n">oo</span><span class="err">一</span><span class="n">oo</span><span class="err">ᴵ</span>
+<span class="o">{</span>
+    <span class="n">o</span><span class="err">一</span><span class="n">o</span><span class="err">ᴵ</span> <span class="n">apply</span><span class="o">(</span><span class="n">oo</span><span class="err">一</span><span class="n">oo</span><span class="err">ᴵ</span> <span class="n">x</span><span class="o">);</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">Y</span> <span class="kd">implements</span> <span class="n">oo</span><span class="err">一</span><span class="n">oo</span><span class="err">一</span><span class="n">oo</span><span class="err">ᴵ</span>
+<span class="o">{</span>
+    <span class="kd">public</span> <span class="n">o</span><span class="err">一</span><span class="n">o</span><span class="err">ᴵ</span> <span class="n">apply</span><span class="o">(</span><span class="n">oo</span><span class="err">一</span><span class="n">oo</span><span class="err">ᴵ</span> <span class="n">f</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">H</span><span class="o">(</span><span class="n">f</span><span class="o">).</span><span class="na">apply</span><span class="o">(</span><span class="k">new</span> <span class="no">H</span><span class="o">(</span><span class="n">f</span><span class="o">));</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">H</span> <span class="kd">implements</span> <span class="n">T</span><span class="err">ᴵ</span>
+<span class="o">{</span>
+    <span class="n">oo</span><span class="err">一</span><span class="n">oo</span><span class="err">ᴵ</span> <span class="n">f</span><span class="o">;</span>
+    <span class="no">H</span><span class="o">(</span><span class="n">oo</span><span class="err">一</span><span class="n">oo</span><span class="err">ᴵ</span> <span class="n">_f</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">_f</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="n">o</span><span class="err">一</span><span class="n">o</span><span class="err">ᴵ</span> <span class="n">apply</span><span class="o">(</span><span class="n">T</span><span class="err">ᴵ</span> <span class="n">x</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="n">f</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="k">new</span> <span class="no">G</span><span class="o">(</span><span class="n">x</span><span class="o">));</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">G</span> <span class="kd">implements</span> <span class="n">o</span><span class="err">一</span><span class="n">o</span><span class="err">ᴵ</span>
+<span class="o">{</span>
+    <span class="n">T</span><span class="err">ᴵ</span> <span class="n">x</span><span class="o">;</span>
+
+    <span class="no">G</span><span class="o">(</span><span class="n">T</span><span class="err">ᴵ</span> <span class="n">_x</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">_x</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">Object</span> <span class="nf">apply</span><span class="o">(</span><span class="nc">Object</span> <span class="n">y</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="o">(</span><span class="n">x</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="n">x</span><span class="o">)).</span><span class="na">apply</span><span class="o">(</span><span class="n">y</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">MKFact</span> <span class="kd">implements</span> <span class="n">oo</span><span class="err">一</span><span class="n">oo</span><span class="err">ᴵ</span>
+<span class="o">{</span>
+    <span class="kd">public</span> <span class="n">o</span><span class="err">一</span><span class="n">o</span><span class="err">ᴵ</span> <span class="n">apply</span><span class="o">(</span><span class="n">o</span><span class="err">一</span><span class="n">o</span><span class="err">ᴵ</span> <span class="n">fact</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">Fact</span><span class="o">(</span><span class="n">fact</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">Fact</span> <span class="kd">implements</span> <span class="n">o</span><span class="err">一</span><span class="n">o</span><span class="err">ᴵ</span>
+<span class="o">{</span>
+    <span class="n">o</span><span class="err">一</span><span class="n">o</span><span class="err">ᴵ</span> <span class="n">fact</span><span class="o">;</span>
+    <span class="nc">Fact</span><span class="o">(</span><span class="n">o</span><span class="err">一</span><span class="n">o</span><span class="err">ᴵ</span> <span class="n">_fact</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="n">fact</span> <span class="o">=</span> <span class="n">_fact</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">Object</span> <span class="nf">apply</span><span class="o">(</span><span class="nc">Object</span> <span class="n">i</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="kt">int</span> <span class="n">inti</span> <span class="o">=</span> <span class="o">((</span><span class="nc">Integer</span><span class="o">)</span> <span class="n">i</span><span class="o">).</span><span class="na">intValue</span><span class="o">();</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">inti</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="nf">Integer</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">else</span>
+        <span class="o">{</span>
+            <span class="k">return</span>
+                <span class="k">new</span> <span class="nf">Integer</span><span class="o">(</span>
+                    <span class="n">inti</span>
+                    <span class="o">*</span>
+                    <span class="o">((</span><span class="nc">Integer</span><span class="o">)</span>
+                        <span class="n">fact</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="k">new</span> <span class="nc">Integer</span><span class="o">(</span><span class="n">inti</span> <span class="o">-</span> <span class="mi">1</span><span class="o">))).</span><span class="na">intValue</span><span class="o">());</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="c1">// Try to figure out how the above code works.</span>
+<span class="c1">// First the concrete one `Fact`.</span>
+<span class="c1">// To construct a `Fact`, we need a `fact`.</span>
+<span class="c1">// Suppose we already have `fact`, then we call `fact.apply(n - 1)`.</span>
+<span class="c1">// To successfully continue the recursion,</span>
+<span class="c1">// `fact.apply(n - 1)` should be equivalent to something like `New Fact(...).apply(n - 1)`.</span>
+<span class="c1">// Oh! We need to construct a new `Fact`, which requires a `fact` again.</span>
+<span class="c1">// But wait. We already have `fact`, so we can reuse it.</span>
+<span class="c1">// That's it -- self reference.</span>
+<span class="kd">class</span> <span class="nc">Dummy</span> <span class="kd">implements</span> <span class="n">o</span><span class="err">一</span><span class="n">o</span><span class="err">ᴵ</span>
+<span class="o">{</span>
+    <span class="kd">public</span> <span class="nc">Object</span> <span class="nf">apply</span><span class="o">(</span><span class="nc">Object</span> <span class="n">x</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">Fact</span><span class="o">(</span><span class="k">this</span><span class="o">).</span><span class="na">apply</span><span class="o">(</span><span class="n">x</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="c1">// It works.</span>
+<span class="c1">// And it also what `MKFact.apply` needs.</span>
+<span class="c1">//</span>
+<span class="c1">// Let's move on.</span>
+<span class="c1">// `Fact` implements `o一oᴵ`, and `MKFact` implements `oo一ooᴵ`.</span>
+<span class="c1">// `o一oᴵ` is like a constructor,</span>
+<span class="c1">// and `oo一ooᴵ` is like a higher-order function taking a function and returning a function.</span>
+<span class="c1">// Similarly, `oo一oo一ooᴵ` is like a function taking a higher-order function that takes a function and returning a function.</span>
+<span class="c1">// Also `Tᴵ` is like a higher-order function returning a function.</span>
+<span class="c1">//</span>
+<span class="c1">// Now is the `Y`, `H`, `G` classes.</span>
+<span class="c1">// Our `Dummy` class works, but it makes `MKFact` redundant.</span>
+<span class="c1">// We need to find a way to produce `Fact` from `MKFact` without defining extra classes.</span>
+<span class="c1">// Let's look at the types.</span>
+<span class="c1">// `Fact` implements `o一oᴵ`, and `MKFact` implements `oo一ooᴵ`.</span>
+<span class="c1">// So we need something that takes `oo一ooᴵ` and returns `o一oᴵ`, a.k.a `oo一ooᴵ -&gt; o一oᴵ`.</span>
+<span class="c1">// `Y.apply` happens to have such a signature.</span>
+<span class="c1">// Thus probably we can get a `Fact` through `new Y().apply(new MKFact())`?</span>
+<span class="c1">// And it works.</span>
+<span class="c1">// Why?</span>
+<span class="c1">// Revisit our `Dummy` class.</span>
+<span class="c1">// In `New Fact(new Dummy())`, `(new Dummy).apply` calls back `New Fact(this)`.</span>
+<span class="c1">// Next we demonstrate `new Y().apply(new MKFact())` is an equivalent form without `this`.</span>
+<span class="c1">// And by the definition of `Y`, `new Y().apply(new MKFact())` is `new MKFact().apply(new G(new H(new MKFact())))`.</span>
+<span class="c1">// Let `x = new G(new H(new MKFact()))`, we have `new MKFact().apply(x)`.</span>
+<span class="c1">// By the definition of `MKFact`, it is `new Fact(x)`.</span>
+<span class="c1">// Then we check what is `new Fact(x).apply(n)`.</span>
+<span class="c1">// Fill in the value of `x`, it is `new Fact(new G(new H(new MKFact())).apply(n)`.</span>
+<span class="c1">// By the definition of `Fact`, it is `new G(new H(new MKFact())).apply(n)`.</span>
+<span class="c1">// By the definition of `G`, it is `new H(new MKFact()).apply(new H(new MKFact())).apply(n)`.</span>
+<span class="c1">// By the definition of `H`, it is `new MKFact().apply(new G(new H(new MKFact()))).apply(n)`.</span>
+<span class="c1">// By the definition of `MKFact`, it is `new Fact(x).apply(n)`.</span>
+<span class="c1">// That is it. Self-referring to `Fact` itself without using `this`!</span>
+<span class="c1">//</span>
+<span class="c1">// This is the mighty Y combinator.</span>
+<span class="c1">// The scheme version is in The Little Schemer, chapter 9.</span>
+<span class="c1">//</span>
+<span class="c1">// Let's walk through the reinvention of it in Java.</span>
+<span class="c1">//</span>
+<span class="c1">// First let's write a straightforward recursion version of `fact`.</span>
+<span class="kd">class</span> <span class="nc">StaticFact</span>
+<span class="o">{</span>
+    <span class="kd">static</span> <span class="kt">int</span> <span class="nf">fact</span><span class="o">(</span><span class="kt">int</span> <span class="n">n</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="mi">1</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">else</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="n">n</span> <span class="o">*</span> <span class="n">fact</span><span class="o">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="c1">// Hmm, we haven't introduced static method in this book.</span>
+<span class="c1">// We did mention using static method like `Math.max` in footnotes,</span>
+<span class="c1">// but we never explain how to *declare* a static method.</span>
+<span class="c1">// Thus we changed it to a non static version.</span>
+<span class="c1">// The definition is almost the same.</span>
+<span class="kd">class</span> <span class="nc">NormalFact</span>
+<span class="o">{</span>
+    <span class="kt">int</span> <span class="nf">fact</span><span class="o">(</span><span class="kt">int</span> <span class="n">n</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="mi">1</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">else</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="n">n</span> <span class="o">*</span> <span class="n">fact</span><span class="o">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="c1">// We refer `fact` itself in function body, which is not possible in lambda calculus.</span>
+<span class="c1">// So we pass a function as parameter instead.</span>
+<span class="c1">// Oh, no! Java dose not support first class function.</span>
+<span class="c1">// Hmm, in fact we could pass a function via the reflection API, or as a lambda in Java 8.</span>
+<span class="c1">// But none of them is available when this book is written.</span>
+<span class="c1">// Thus we wrap the function in a class.</span>
+<span class="c1">// Note that we do not need a separate class.</span>
+<span class="kd">class</span> <span class="nc">Fact1</span>
+<span class="o">{</span>
+    <span class="kt">int</span> <span class="nf">apply</span><span class="o">(</span><span class="nc">Fact1</span> <span class="n">f</span><span class="o">,</span> <span class="kt">int</span> <span class="n">n</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="mi">1</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">else</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="n">n</span> <span class="o">*</span> <span class="n">f</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="n">f</span><span class="o">,</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+<span class="c1">// Nice!</span>
+<span class="c1">// But lambda can only accept one parameter.</span>
+<span class="c1">// We need to change `Fact1.apply` to return a function.</span>
+<span class="c1">// Again in Java we return a wrapped class instead.</span>
+<span class="c1">// To make future changes easier,</span>
+<span class="c1">// we declare an additional interface instead of using hard-coded class.</span>
+<span class="kd">interface</span> <span class="nc">Fact2</span><span class="err">ᴵ</span>
+<span class="o">{</span>
+    <span class="kt">int</span> <span class="nf">apply</span><span class="o">(</span><span class="kt">int</span> <span class="n">n</span><span class="o">);</span>
+<span class="o">}</span>
+<span class="kd">class</span> <span class="nc">NClosure</span> <span class="kd">implements</span> <span class="n">Fact2</span><span class="err">ᴵ</span>
+<span class="o">{</span>
+    <span class="nc">Fact2</span> <span class="n">f</span><span class="o">;</span>
+    <span class="nc">NClosure</span><span class="o">(</span><span class="nc">Fact2</span> <span class="n">_f</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">_f</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">apply</span><span class="o">(</span><span class="kt">int</span> <span class="n">n</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="mi">1</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">else</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="n">n</span> <span class="o">*</span> <span class="o">(</span><span class="n">f</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="n">f</span><span class="o">)).</span><span class="na">apply</span><span class="o">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+<span class="kd">class</span> <span class="nc">Fact2</span>
+<span class="o">{</span>
+    <span class="n">Fact2</span><span class="err">ᴵ</span> <span class="n">apply</span><span class="o">(</span><span class="nc">Fact2</span> <span class="n">f</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">NClosure</span><span class="o">(</span><span class="n">f</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+<span class="c1">// This is the poor man's Y combinator.</span>
+
+<span class="c1">// Look at this line `return n * (f.apply(f)).apply(n - 1);`,</span>
+<span class="c1">// if it is `g.apply(n - 1)` then it would be similar to the original recursion version.</span>
+<span class="c1">// Let's `g = f.apply(f)`:</span>
+<span class="kd">class</span> <span class="nc">GG</span> <span class="kd">implements</span> <span class="n">Fact2</span><span class="err">ᴵ</span>
+<span class="o">{</span>
+    <span class="nc">Fact3</span> <span class="n">f</span><span class="o">;</span>
+    <span class="no">GG</span><span class="o">(</span><span class="nc">Fact3</span> <span class="n">_f</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">_f</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">apply</span><span class="o">(</span><span class="kt">int</span> <span class="n">n</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="o">(</span><span class="n">f</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="n">f</span><span class="o">)).</span><span class="na">apply</span><span class="o">(</span><span class="n">n</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+<span class="kd">class</span> <span class="nc">Fact3</span>
+<span class="o">{</span>
+    <span class="n">Fact2</span><span class="err">ᴵ</span> <span class="n">apply</span><span class="o">(</span><span class="nc">Fact3</span> <span class="n">f</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">GClosure</span><span class="o">(</span><span class="n">f</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">GClosure</span> <span class="kd">implements</span> <span class="n">Fact2</span><span class="err">ᴵ</span>
+<span class="o">{</span>
+    <span class="nc">Fact3</span> <span class="n">f</span><span class="o">;</span>
+    <span class="no">GG</span> <span class="n">g</span><span class="o">;</span>
+    <span class="nc">GClosure</span><span class="o">(</span><span class="nc">Fact3</span> <span class="n">_f</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">_f</span><span class="o">;</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="k">new</span> <span class="no">GG</span><span class="o">(</span><span class="n">f</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">apply</span><span class="o">(</span><span class="kt">int</span> <span class="n">n</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="mi">1</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">else</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="n">n</span> <span class="o">*</span> <span class="n">g</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="c1">// We are almost done.</span>
+<span class="c1">// `GClosure.apply()` is the recursion definition we want.</span>
+<span class="c1">// Let's create something that takes a `GClosure`.</span>
+<span class="kd">class</span> <span class="nc">YY</span>
+<span class="o">{</span>
+    <span class="n">Fact2</span><span class="err">ᴵ</span> <span class="n">f</span><span class="o">;</span>
+    <span class="no">YY</span><span class="o">(</span><span class="n">Fact2</span><span class="err">ᴵ</span> <span class="n">_f</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">_f</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kt">int</span> <span class="nf">apply</span><span class="o">(</span><span class="kt">int</span> <span class="n">n</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="n">f</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="n">n</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+<span class="c1">// Hmm, the problem is we still need `Fact3`, whose definition hard coded reference to `GClosure`.</span>
+<span class="c1">// We could made the constructor of `Fact3` taking `GClosure` as a parameter.</span>
+<span class="c1">// That is, to construct a `Fact3`, we need a `GClosure`,</span>
+<span class="c1">// and to construct a `GClosure`, we need a `Fact3`.</span>
+<span class="c1">// Now if we make `Fact3` and `GClosure` one thing, it will be self-referral.</span>
+<span class="kd">class</span> <span class="nc">Fact0</span> <span class="kd">implements</span> <span class="n">Fact2</span><span class="err">ᴵ</span>
+<span class="o">{</span>
+    <span class="n">Fact2</span><span class="err">ᴵ</span> <span class="n">g</span><span class="o">;</span>
+    <span class="nc">Fact0</span><span class="o">(</span><span class="n">Fact2</span><span class="err">ᴵ</span> <span class="n">_g</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">_g</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">apply</span><span class="o">(</span><span class="kt">int</span> <span class="n">n</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="mi">1</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">else</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="n">n</span> <span class="o">*</span> <span class="n">g</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+<span class="c1">// Now the tricky part is constructing `Fact0(_f)`.</span>
+<span class="c1">// Again this smells like self-reference.</span>
+<span class="c1">// Just as we introduced an additional function as parameter before,</span>
+<span class="c1">// to construct `Fact0(_f)` we probably need an additional function.</span>
+<span class="kd">class</span> <span class="nc">MKFact0</span>
+<span class="o">{</span>
+    <span class="n">Fact2</span><span class="err">ᴵ</span> <span class="n">apply</span><span class="o">(</span><span class="n">Fact2</span><span class="err">ᴵ</span> <span class="n">fact2</span><span class="err">ᴵ</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">Fact0</span><span class="o">(</span><span class="n">fact2</span><span class="err">ᴵ</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+<span class="c1">// Now we need to define `Y0` such that `new Y0().apply(new MKFact0())` will construct a `Fact0`.</span>
+<span class="c1">// It is hard to write the `apply` method of `Y0`.</span>
+<span class="c1">// Let's go back to last iteration.</span>
+<span class="c1">// `GG` is not abstract. It has `Fact3` hard coded in its definition.</span>
+<span class="c1">// Let's refactor it.</span>
+<span class="kd">class</span> <span class="nc">G0</span> <span class="kd">implements</span> <span class="n">Fact2</span><span class="err">ᴵ</span>
+<span class="o">{</span>
+    <span class="n">Fact2</span><span class="err">ᴵ</span> <span class="n">g</span><span class="o">;</span>
+    <span class="no">G0</span><span class="o">(</span><span class="n">Fact2</span><span class="err">ᴵ</span> <span class="n">_g</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">_g</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">apply</span><span class="o">(</span><span class="kt">int</span> <span class="n">n</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="o">(</span><span class="n">g</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="n">g</span><span class="o">)).</span><span class="na">apply</span><span class="o">(</span><span class="n">n</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+<span class="c1">// Oops! `g.apply(g)` is invalid.</span>
+<span class="c1">// From here we may try to rewrite `G0`.</span>
+<span class="c1">// Or we may try to rewrite `Fact2ᴵ`, `int -&gt; int` is too restrictive,</span>
+<span class="c1">// i.e. if we cannot solve a specific problem,</span>
+<span class="c1">// try to solve its more general form.</span>
+
+<span class="c1">// Rewrite `Fact2ᴵ`, substitute `int` with `Object`, we get `o一oᴵ`.</span>
+<span class="c1">// Change `Fact0` and `MKFact0` accordingly, we get `Fact` and `MKFact`.</span>
+<span class="c1">// `Fact` implements `o一oᴵ`, we need to define an interface for `MKFact` as well. That is `oo一ooᴵ`.</span>
+<span class="c1">// Now we try to rewrite `G0`.</span>
+<span class="c1">// We find that `g.apply(g)` still cause type mismatch.</span>
+<span class="c1">// `g` cannot be an ordinary `Object`, which may no have an `apply` method defined.</span>
+<span class="c1">// Also `g` cannot be an `o一oᴵ`, which cannot take itself (`o一oᴵ`) as a parameter.</span>
+<span class="c1">// Thus we need a new type (interface).</span>
+<span class="c1">// An interface whose `apply` method takes anything (an `Object`) and returns an `o一oᴵ`.</span>
+<span class="c1">// Thus we have `Tᴵ`.</span>
+<span class="c1">// Then we look at `Y`.</span>
+<span class="c1">// We still dose not know how to write its `apply` method, but we know the signature of it.</span>
+<span class="c1">// It takes `MKFact`, a.k.a. `oo一ooᴵ`, and returns `Fact`, a.k.a. `o一oᴵ`.</span>
+<span class="c1">// Thus we have `oo一oo一ooᴵ`.</span>
+<span class="c1">//</span>
+<span class="c1">// We try to pass `MKFact` to `G`, `new G(new MKFact())`.</span>
+<span class="c1">// Not possible. We need a bridge to connect `oo一ooᴵ` and `Tᴵ`,</span>
+<span class="c1">// i.e. something takes a `MKFact` a.k.a. `oo一ooᴵ` and produces a `Tᴵ` for `G`.</span>
+<span class="kd">class</span> <span class="nc">H</span> <span class="kd">implements</span> <span class="n">T</span><span class="err">ᴵ</span>
+<span class="o">{</span>
+    <span class="n">oo</span><span class="err">一</span><span class="n">oo</span><span class="err">ᴵ</span> <span class="n">f</span><span class="o">;</span>
+    <span class="no">H</span><span class="o">(</span><span class="n">oo</span><span class="err">一</span><span class="n">oo</span><span class="err">ᴵ</span> <span class="n">_f</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">_f</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="n">o</span><span class="err">一</span><span class="n">o</span><span class="err">ᴵ</span> <span class="n">apply</span><span class="o">(</span><span class="n">T</span><span class="err">ᴵ</span> <span class="n">x</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="o">...;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+<span class="c1">// Now we need to fill in the missing `apply` definition for `H`.</span>
+<span class="c1">// It returns `o一oᴵ`. Do we have something returns `o一oᴵ`?</span>
+<span class="c1">// `f.apply` happens to produce `o一oᴵ`.</span>
+<span class="kd">class</span> <span class="nc">H</span> <span class="kd">implements</span> <span class="n">T</span><span class="err">ᴵ</span>
+<span class="o">{</span>
+    <span class="n">oo</span><span class="err">一</span><span class="n">oo</span><span class="err">ᴵ</span> <span class="n">f</span><span class="o">;</span>
+    <span class="no">H</span><span class="o">(</span><span class="n">oo</span><span class="err">一</span><span class="n">oo</span><span class="err">ᴵ</span> <span class="n">_f</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">_f</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="n">o</span><span class="err">一</span><span class="n">o</span><span class="err">ᴵ</span> <span class="n">apply</span><span class="o">(</span><span class="n">T</span><span class="err">ᴵ</span> <span class="n">x</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="n">f</span><span class="o">.</span><span class="na">apply</span><span class="o">(...);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+<span class="c1">// `f.apply()` takes an `o一oᴵ`. Do we have something to transform `Tᴵ` to `o一oᴵ`?</span>
+<span class="c1">// The `apply` method of `Tᴵ`.</span>
+<span class="c1">// Do we have some class implements `Tᴵ`, except `H` itself?</span>
+<span class="c1">// No.</span>
+<span class="c1">// So we need to implement one?</span>
+<span class="c1">// Wait. `G` implements `o一oᴵ` and its construction method takes `Tᴵ` as parameter.</span>
+<span class="c1">// So `new G(x)` fills in the gap.</span>
+<span class="kd">class</span> <span class="nc">H</span> <span class="kd">implements</span> <span class="n">T</span><span class="err">ᴵ</span>
+<span class="o">{</span>
+    <span class="n">oo</span><span class="err">一</span><span class="n">oo</span><span class="err">ᴵ</span> <span class="n">f</span><span class="o">;</span>
+    <span class="no">H</span><span class="o">(</span><span class="n">oo</span><span class="err">一</span><span class="n">oo</span><span class="err">ᴵ</span> <span class="n">_f</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">_f</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="n">o</span><span class="err">一</span><span class="n">o</span><span class="err">ᴵ</span> <span class="n">apply</span><span class="o">(</span><span class="n">T</span><span class="err">ᴵ</span> <span class="n">x</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="n">f</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="k">new</span> <span class="no">G</span><span class="o">(</span><span class="n">x</span><span class="o">));</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+<span class="c1">// In fact, this is the very definition given in the book.</span>
+<span class="c1">//</span>
+<span class="c1">// At last, let's complete `Y`.</span>
+<span class="kd">class</span> <span class="nc">Y</span> <span class="kd">implements</span> <span class="n">oo</span><span class="err">一</span><span class="n">oo</span><span class="err">一</span><span class="n">oo</span><span class="err">ᴵ</span>
+<span class="o">{</span>
+    <span class="kd">public</span> <span class="n">o</span><span class="err">一</span><span class="n">o</span><span class="err">ᴵ</span> <span class="n">apply</span><span class="o">(</span><span class="n">oo</span><span class="err">一</span><span class="n">oo</span><span class="err">ᴵ</span> <span class="n">f</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="o">...;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+<span class="c1">// We need something takes `oo一ooᴵ` and produces `o一oᴵ`.</span>
+<span class="c1">// `H` takes `oo一ooᴵ` in its construction method, and produces `o一oᴵ` by its `apply` method.</span>
+<span class="kd">class</span> <span class="nc">Y</span> <span class="kd">implements</span> <span class="n">oo</span><span class="err">一</span><span class="n">oo</span><span class="err">一</span><span class="n">oo</span><span class="err">ᴵ</span>
+<span class="o">{</span>
+    <span class="kd">public</span> <span class="n">o</span><span class="err">一</span><span class="n">o</span><span class="err">ᴵ</span> <span class="n">apply</span><span class="o">(</span><span class="n">oo</span><span class="err">一</span><span class="n">oo</span><span class="err">ᴵ</span> <span class="n">f</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">H</span><span class="o">(</span><span class="n">f</span><span class="o">).</span><span class="na">apply</span><span class="o">(...);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+<span class="c1">// The parameter of `H(f).apply()` need to be a `Tᴵ`.</span>
+<span class="c1">// Do we have something implements `Tᴵ`?</span>
+<span class="c1">// `H` itself.</span>
+<span class="c1">// So</span>
+<span class="kd">class</span> <span class="nc">Y</span> <span class="kd">implements</span> <span class="n">oo</span><span class="err">一</span><span class="n">oo</span><span class="err">一</span><span class="n">oo</span><span class="err">ᴵ</span>
+<span class="o">{</span>
+    <span class="kd">public</span> <span class="n">o</span><span class="err">一</span><span class="n">o</span><span class="err">ᴵ</span> <span class="n">apply</span><span class="o">(</span><span class="n">oo</span><span class="err">一</span><span class="n">oo</span><span class="err">ᴵ</span> <span class="n">f</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">H</span><span class="o">(</span><span class="n">f</span><span class="o">).</span><span class="na">apply</span><span class="o">(</span><span class="k">new</span> <span class="no">H</span><span class="o">(</span><span class="n">f</span><span class="o">));</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+<span class="c1">// The very definition given in the book.</span>
+
+<span class="c1">// If you still have difficulties to understand it in Java,</span>
+<span class="c1">// try use another language.</span>
+<span class="c1">// For example,</span>
+<span class="c1">//</span>
+<span class="c1">// ```js</span>
+<span class="c1">// // Poor man's Y combinator</span>
+<span class="c1">// ((f =&gt; n =&gt; n == 0 ? 1 : n * f(f)(n - 1))</span>
+<span class="c1">//   (f =&gt; n =&gt; n == 0 ? 1 : 0 * f(f)(n - 1))</span>
+<span class="c1">//   3)</span>
+<span class="c1">// ```</span>
+<span class="c1">//</span>
+<span class="c1">// It would be perfect if it is `f(n -1)` instead of `f(f(n)(n - 1))`.</span>
+<span class="c1">// Let `g = f(f)`:</span>
+<span class="c1">//</span>
+<span class="c1">// ```js</span>
+<span class="c1">// ((f =&gt; ((g =&gt; n =&gt; n == 0 ? 1 : n * g(n - 1)) f(f))</span>
+<span class="c1">//   # same as above</span>
+<span class="c1">//   3)</span>
+<span class="c1">// ```</span>
+<span class="c1">//</span>
+<span class="c1">// Hmm, `(g =&gt; n =&gt; n == 0 ? 1 : n * g(n - 1)` is just what we want!</span>
+<span class="c1">// Let `h = (g =&gt; n =&gt; n == 0 ? 1 : n * g(n - 1)`:</span>
+<span class="c1">//</span>
+<span class="c1">// ```js</span>
+<span class="c1">// (((h =&gt;</span>
+<span class="c1">//    (f =&gt; h(f(f)))</span>
+<span class="c1">//    (f =&gt; h(f(f))))</span>
+<span class="c1">//      (g =&gt; n =&gt; n == 0 ? 1 : n * g(n - 1))</span>
+<span class="c1">//      3)</span>
+<span class="c1">// ```</span>
+<span class="c1">//</span>
+<span class="c1">// Look! The factorial logic is factor out: `(g =&gt; n =&gt; n == 0 ? 1 : n * g(n - 1))`.</span>
+<span class="c1">// And this is the Y combinator.</span>
+<span class="c1">//</span>
+<span class="c1">// ```js</span>
+<span class="c1">// Y =</span>
+<span class="c1">//   (h =&gt;</span>
+<span class="c1">//    (f =&gt; h(f(f)))</span>
+<span class="c1">//    (f =&gt; h(f(f))))</span>
+<span class="c1">// ```</span>
+<span class="c1">//</span>
+<span class="c1">// To construct `fact` with Y combinator: `Y(g =&gt; n =&gt; n == 0 ? 1 : n * g(n - 1))`.</span>
+<span class="c1">//</span>
+<span class="c1">// Hope this helps to understand those `Y`, `H`, `G` classes in Java.</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">LittleJava</span>
+<span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="nc">Fact</span> <span class="n">fact</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Fact</span><span class="o">(</span><span class="k">new</span> <span class="nc">Dummy</span><span class="o">());</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">fact</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="k">new</span> <span class="nc">Integer</span><span class="o">(</span><span class="mi">5</span><span class="o">)));</span>
+        <span class="nc">MKFact</span> <span class="n">mKFact</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">MKFact</span><span class="o">();</span>
+
+        <span class="nc">Fact</span> <span class="n">newFact</span> <span class="o">=</span> <span class="o">(</span><span class="nc">Fact</span><span class="o">)</span> <span class="n">mKFact</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="k">new</span> <span class="nc">Dummy</span><span class="o">());</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">newFact</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="k">new</span> <span class="nc">Integer</span><span class="o">(</span><span class="mi">5</span><span class="o">)));</span>
+
+        <span class="nc">Fact</span> <span class="n">yFact</span> <span class="o">=</span> <span class="o">(</span><span class="nc">Fact</span><span class="o">)</span> <span class="k">new</span> <span class="no">Y</span><span class="o">().</span><span class="na">apply</span><span class="o">(</span><span class="k">new</span> <span class="nc">MKFact</span><span class="o">());</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">yFact</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="k">new</span> <span class="nc">Integer</span><span class="o">(</span><span class="mi">5</span><span class="o">)));</span>
+
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"static recursion version"</span><span class="o">);</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="nc">StaticFact</span><span class="o">.</span><span class="na">fact</span><span class="o">(</span><span class="mi">5</span><span class="o">));</span>
+
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"normal version"</span><span class="o">);</span>
+        <span class="nc">NormalFact</span> <span class="n">normalFact</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">NormalFact</span><span class="o">();</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">normalFact</span><span class="o">.</span><span class="na">fact</span><span class="o">(</span><span class="mi">5</span><span class="o">));</span>
+
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"Fact1"</span><span class="o">);</span>
+        <span class="nc">Fact1</span> <span class="n">fact1</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Fact1</span><span class="o">();</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">fact1</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="n">fact1</span><span class="o">,</span> <span class="mi">5</span><span class="o">));</span>
+
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"Fact2: poor man's Y combinator"</span><span class="o">);</span>
+        <span class="nc">Fact2</span> <span class="n">fact2</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Fact2</span><span class="o">();</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">((</span><span class="n">fact2</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="n">fact2</span><span class="o">)).</span><span class="na">apply</span><span class="o">(</span><span class="mi">5</span><span class="o">));</span>
+
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"Fact3: g = f(f)"</span><span class="o">);</span>
+        <span class="nc">Fact3</span> <span class="n">fact3</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Fact3</span><span class="o">();</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">((</span><span class="n">fact3</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="n">fact3</span><span class="o">)).</span><span class="na">apply</span><span class="o">(</span><span class="mi">5</span><span class="o">));</span>
+
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"YY"</span><span class="o">);</span>
+        <span class="no">YY</span> <span class="n">yy</span> <span class="o">=</span> <span class="k">new</span> <span class="no">YY</span><span class="o">(</span><span class="k">new</span> <span class="nc">GClosure</span><span class="o">(</span><span class="k">new</span> <span class="nc">Fact3</span><span class="o">()));</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">yy</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="mi">5</span><span class="o">));</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+    <div class="footer border-top border-gray-light mt-5 pt-3 text-gray">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start">
+        <form id="site-search" action="https://duckduckgo.com/html/" method="get">
+          <input name="q" type="search" value="site:mmap.page " required pattern="site:mmap\.page\s.+">
+          <input type="submit" value="&#x1F50D;" title="search through site content via DuckDuckGo">
+        </form>
+        <p>
+          <a href="mailto:weakish@gmail.com" title="weakish@gmail.com"><img src="https://icongr.am/feather/mail.svg" alt="Feather Icon Mail"></a>
+          <a href="https://savannah.nongnu.org/people/viewgpg.php?user_id=65699" title="2414 AEA0 EA48 5263 9697  F1BA 55F6 EEC2 EA3F 0A87"><img src="https://icongr.am/feather/key.svg" alt="Feather Icon Key"></a>
+          <a href="https://github.com/weakish/" title="GitHub"><img src="https://icongr.am/feather/github.svg" alt="Feather Icon Github"></a>
+          <a href="https://www.instagram.com/jakukyo/" title="Instagram"><img src="https://icongr.am/feather/instagram.svg" alt="Feather Icon Instagram"></a>
+          <a href="https://twitter.com/weakish" title="Twitter"><img src="https://icongr.am/feather/twitter.svg" alt="Feather Icon Twitter"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml" title="RSS 2.0 Feed"><img src="https://icongr.am/feather/rss.svg" alt="Feather Icon RSS"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/uses/" title="uses"><img src="https://icongr.am/feather/book-open.svg" alt="Feather Icon Book Open"></a>
+          
+          
+          <a href="/Me.ZeroNetwork.bit/?Profile/12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv/1GnJD7CXskmG8GywMbTvbP12wneCFW9XzR/weakish@zeroid.bit" title="ZeroMe"><img src="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/images/zeronet_logo.svg" alt="ZeroNet Logo" width="32" height="32"></a>
+        </p>
+      </div>
+        <p>
+        Permission to use, copy, modify, and/or distribute this site for any purpose with or without fee is hereby granted.
+        This site is provided "as is" without express or implied warranty.
+        </p>
+        <p>
+        This site does not use cookies or tracking codes.
+        The hosting service provider (<a href="https://pages.github.com/">GitHub Pages</a>) probably collects server logs,
+        but I do not have access to them.
+        </p>
+        <p>
+        Site source is <a href="https://github.com/weakish/weakish.github.com/">available</a>
+        and feedback is <a href="https://github.com/weakish/weakish.github.com/issues">welcome</a>.
+        </p>
+        <noscript>
+        <p>
+        This site does not use JavaScript.
+        </p>
+        </noscript>
+    </div>
+  </div>
+</body>
+</html>

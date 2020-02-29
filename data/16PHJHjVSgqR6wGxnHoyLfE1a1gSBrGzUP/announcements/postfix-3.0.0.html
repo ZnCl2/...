@@ -1,0 +1,91 @@
+<!doctype html public "-//W3C//DTD HTML 4.01 Transitional//EN"
+      "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+
+<head>
+
+<title> Postfix stable release 3.0.0 </title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+
+</head>
+
+<body>
+
+<h1> Postfix stable release 3.0.0 </h1>
+
+<p> [An on-line version of this announcement will be available at
+<a href="http://www.postfix.org/announcements/postfix-3.0.0.html">
+http://www.postfix.org/announcements/postfix-3.0.0.html</a>] </p>
+
+<p> Postfix stable release 3.0.0 is available.  This release ends
+support for Postfix 2.8. </p>
+
+<p> The main changes in no particular order are: </p>
+
+<ul>
+
+<li> <p> SMTPUTF8 support for internationalized domain names and
+address localparts as defined in RFC 6530 and related documents.
+The implementation is based on code contributed by Arnt Gulbrandsen
+and sponsored by CNNIC. SMTPUTF8 support is a work in progress; it
+is expected to be completed during the Postfix 3.1 development
+cycle. See SMTPUTF8_README for a summary of limitations. </p>
+
+<li> <p> Support for Postfix dynamically-linked libraries and
+database plugins. The implementation is based on code by LaMont
+Jones for Debian Linux.  See INSTALL for detailed descriptions of
+the available options.  </p>
+
+<li> <p> An OPT-IN safety net for the selective adoption of new
+Postfix default settings. If you do nothing, the old Postfix default
+settings *should* remain in effect (complain to your downstream
+maintainer if that is not the case). See COMPATIBILITY_README
+for detailed descriptions of Postfix logfile messages. </p>
+
+<li> <p> Support for operations on multiple lookup tables. The
+pipemap:{map1,map2...} database type implements a pipeline of lookup
+tables where the result from one lookup table becomes a query for
+the next table; the unionmap:{map1,map2,...} database type sends
+the same query to multiple lookup tables and concatenates their
+results. </p>
+
+<li> <p> Support for pseudo-tables that make simple things easy to
+implement.  The inline:{key1=value1,key2=value2,...} table avoids
+the need to create an external file for just a few items; and the
+randmap{value1,value2,...} table implements random selection from
+the specified values. </p>
+
+<li> <p> Table-driven transformation of DNS lookup results and of
+delivery agent status codes and messages. Typically, one would use
+a PCRE table to fix problematic DNS responses or to fix the handling
+of delivery errors. See smtp_dns_reply_filter, smtp_delivery_status_filter,
+and similarly-named parameters for other Postfix daemons. </p>
+
+<li> <p> Improved configuration file syntax with support for the
+ternary operator such as ${name?{iftrue}:{iffalse}}, comparison
+operators such as ${{expr1}==${expr2}?{iftrue}:{iffalse}}, per-Milter
+and per-policy server timeout and other settings, master.cf parameters
+that contain whitespace, import/export_environment settings that
+contain whitespace, and "static" table lookup results that contain
+whitespace. Support for multiple lookup results in access(5) and
+header/body_checks(5) tables is expected to be completed in the
+Postfix 3.1 development cycle. </p>
+
+<li> <p> Per-session command profiles, logged at the end of each
+inbound SMTP session.  For example, a password-guessing bot is
+logged as "disconnect from name[addr] ehlo=1 auth=0/1 commands=1/2",
+meaning that the client sent one EHLO command that worked, one AUTH
+command that failed, and hung up without sending a QUIT command.
+This information is always logged, and can help to solve puzzles
+without verbose logging or network sniffers.  </p>
+
+</ul>
+
+<p> You can find the Postfix source code at the mirrors listed at
+<a href="http://www.postfix.org/">http://www.postfix.org/</a>.  </p>
+
+</body>
+
+</html>

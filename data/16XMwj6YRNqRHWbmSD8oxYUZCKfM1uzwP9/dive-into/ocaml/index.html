@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OCaml Basic mmap.page</title>
+    <link rel="stylesheet" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/css/style.css">
+    <link rel="alternate" type="application/rss+xml" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml">
+    <link rel="alternate" type="application/git+http" href="https://github.com/weakish/weakish.github.com.git"/>
+</head>
+<body>
+  <div class="container-lg px-3 my-5 markdown-body">
+
+    <h1><a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/">mmap.page</a></h1>
+    <h1 id="ocaml-basic">
+        
+        
+          OCaml Basic
+        
+        
+      </h1>
+    
+      <h2 id="types">
+        
+        
+          Types <a href="#types" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<ul>
+<li><strong>unit</strong> <code>()</code></li>
+<li><strong>bool</strong> <code>true</code>, <code>false</code></li>
+<li><strong>int</strong> <code>min_int ... -1 0 1 2 ... max_int</code> (63-bit signed integers on a 64-bit machine)</li>
+<li><strong>char</strong> <code>'c' ...</code> (8-bit byte)</li>
+<li><strong>string</strong> <code>&quot;a sequence of char&quot;</code></li>
+<li><strong>float</strong> <code>min_float ... 0.0 ... max_float</code> (<code>double</code> in C)</li>
+<li><strong>option</strong> <code>type 'a option = None | Some of 'a</code></li>
+<li><strong>io</strong> <code>in_channel</code>, <code>out_channel</code></li>
+</ul>
+    
+      <h2 id="operators">
+        
+        
+          Operators <a href="#operators" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<ul>
+<li>arithmetic operators for integers: <code>+ - * / mod</code></li>
+<li>arithmetic operators for floats: <code>+. -. *. /. **</code></li>
+<li>comparison: <code>= &lt; &lt;= &gt; &gt;= &lt;&gt;</code> and <code>== !=</code></li>
+<li>logical operators: <code>&amp;&amp;</code>, <code>||</code>, <code>not</code>, <code>if ... then ... else ...</code>, <code>if ... then ...</code></li>
+<li>tuples: <code>(a, b)</code></li>
+<li>cons: <code>a :: (b :: [])</code> (<code>[a; b; c]</code>)</li>
+<li>concat: <code>string1 ^ string2</code>, <code>[a; b] @ [c; d]</code></li>
+</ul>
+<p>Wrapping an operator in parentheses to form a function:</p>
+<div class="language-ocaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="o">+</span><span class="p">)</span> <span class="mi">1</span> <span class="mi">2</span><span class="p">;;</span>
+</code></pre></div></div>
+    
+      <h2 id="names">
+        
+        
+          Names <a href="#names" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<ul>
+<li><code>let name = expression</code></li>
+<li><code>let name1 = expression1 in let name2 = expression2 in ...</code></li>
+</ul>
+    
+      <h2 id="pattern-matching">
+        
+        
+          Pattern Matching <a href="#pattern-matching" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<div class="language-ocaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">match</span> <span class="n">x</span> <span class="k">with</span>
+  <span class="o">|</span> <span class="mi">0</span> <span class="o">|</span> <span class="mi">1</span> <span class="o">-&gt;</span> <span class="mi">1</span>
+  <span class="o">|</span> <span class="n">_</span> <span class="o">-&gt;</span> <span class="n">x</span>
+</code></pre></div></div>
+<p>Pattern matching multiple values:</p>
+<div class="language-ocaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">match</span> <span class="n">x</span><span class="o">,</span> <span class="n">y</span> <span class="k">with</span>
+  <span class="o">|</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">0</span> <span class="o">-&gt;</span> <span class="bp">true</span>
+  <span class="o">|</span> <span class="n">_</span><span class="o">,</span> <span class="n">_</span> <span class="o">-&gt;</span> <span class="bp">false</span>
+</code></pre></div></div>
+<p>Nested pattern matching:</p>
+<div class="language-ocaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">match</span> <span class="n">x</span> <span class="k">with</span>
+  <span class="o">|</span> <span class="mi">0</span> <span class="o">-&gt;</span>
+    <span class="k">begin</span> <span class="k">match</span> <span class="n">y</span> <span class="k">with</span>
+      <span class="o">|</span> <span class="mi">0</span> <span class="o">-&gt;</span> <span class="mi">0</span>
+      <span class="o">|</span> <span class="n">_</span> <span class="o">-&gt;</span> <span class="n">x</span>
+    <span class="k">end</span>
+  <span class="o">|</span> <span class="mi">1</span> <span class="o">-&gt;</span> <span class="mi">1</span>
+</code></pre></div></div>
+<p><code>begin ... end</code> is a syntax sugar for <code>( ... )</code>.</p>
+<p>Guarded patterns:</p>
+<div class="language-ocaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">match</span> <span class="n">x</span> <span class="k">with</span>
+  <span class="o">|</span> <span class="n">x</span> <span class="k">when</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="o">-&gt;</span> <span class="mi">1</span>
+  <span class="o">|</span> <span class="n">_</span> <span class="o">-&gt;</span> <span class="n">x</span> <span class="o">*</span> <span class="n">f</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);;</span>
+</code></pre></div></div>
+<p>Alias patterns (<code>as</code>):</p>
+<div class="language-ocaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="k">rec</span> <span class="n">fib</span> <span class="o">=</span> <span class="k">function</span>
+  <span class="o">|</span> <span class="p">(</span><span class="mi">0</span> <span class="o">|</span> <span class="mi">1</span><span class="p">)</span> <span class="k">as</span> <span class="n">i</span> <span class="o">-&gt;</span> <span class="n">i</span>
+  <span class="o">|</span> <span class="n">i</span> <span class="o">-&gt;</span> <span class="n">fib</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">fib</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">);;</span>
+</code></pre></div></div>
+<p>Matching character intervals:</p>
+<div class="language-ocaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="n">alphanum</span> <span class="n">c</span> <span class="o">=</span> <span class="k">match</span> <span class="n">c</span> <span class="k">with</span>
+  <span class="o">|</span> <span class="k">'</span><span class="n">a'</span><span class="o">..</span><span class="k">'</span><span class="n">z'</span> <span class="o">|</span> <span class="k">'</span><span class="nn">A'</span><span class="p">..</span><span class="err">'</span><span class="nc">Z'</span> <span class="o">-&gt;</span> <span class="s2">"letter"</span>
+  <span class="o">|</span> <span class="k">'</span><span class="mi">0</span><span class="k">'</span><span class="o">..</span><span class="k">'</span><span class="mi">9</span><span class="k">'</span> <span class="o">-&gt;</span> <span class="s2">"number"</span>
+  <span class="o">|</span> <span class="n">_</span> <span class="o">-&gt;</span> <span class="s2">"other"</span><span class="p">;;</span>
+</code></pre></div></div>
+<p>Matches should be exhaustive and reachable,
+otherwise the compiler will emit a warning.</p>
+<p>Matching against floating-point values is rarely used
+because of numerical issues.</p>
+<p>Also, name binding (<code>let</code>) uses pattern matching under the hood.</p>
+<div class="language-ocaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="p">(</span><span class="n">a</span><span class="o">,</span><span class="n">b</span><span class="o">,</span><span class="n">c</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">,</span> <span class="bp">true</span><span class="o">,</span> <span class="k">'</span><span class="nc">A'</span><span class="p">);;</span>
+</code></pre></div></div>
+    
+      <h2 id="functions">
+        
+        
+          Functions <a href="#functions" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<ul>
+<li>Anonymous function: <code>fun parameter -&gt; body</code></li>
+<li>Shortcut for pattern matching: <code>function [] -&gt; 0 | _::rest -&gt; 1 + length t</code></li>
+<li>Named function: <code>let name parametr1 paremeter2 -&gt; body</code></li>
+<li>Recursive function: <code>let rec name parameter -&gt; body</code></li>
+<li>Recursive value: <code>let rec infinite_list = 1 :: 1</code></li>
+<li>Mutually recursive function: <code>let rec f x = ... and g y = ...</code></li>
+<li>Type constraining: <code>let id (x: int): int = x</code></li>
+<li>Define void functions: <code>let void_function () = body</code></li>
+<li>Call void functions: <code>print_newline ()</code></li>
+<li>No main function, <code>let () = body</code> ensures body is side-effect only</li>
+<li>Labelled parameters: <code>let f ~x ~y = x - y;; f ~y:2 ~x:1;;</code></li>
+<li>Optional parameters: <code>let f ?(x=1) y = x - y;; f ~x:3 2;;</code></li>
+</ul>
+<p>Optional parameters use pattern match under the hood:</p>
+<div class="language-ocaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="n">f</span> <span class="o">?</span><span class="n">x</span> <span class="n">y</span> <span class="o">=</span>
+  <span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="k">match</span> <span class="n">x</span> <span class="k">with</span> <span class="nc">None</span> <span class="o">-&gt;</span> <span class="mi">1</span> <span class="o">|</span> <span class="nc">Some</span> <span class="n">n</span> <span class="o">-&gt;</span> <span class="n">n</span> <span class="k">in</span>
+    <span class="n">x</span> <span class="o">-</span> <span class="n">y</span><span class="p">;;</span>
+
+<span class="n">f</span> <span class="o">?</span><span class="n">x</span><span class="o">:</span><span class="p">(</span><span class="nc">Some</span> <span class="mi">3</span><span class="p">)</span> <span class="mi">2</span><span class="p">;;</span>
+</code></pre></div></div>
+<p>This 'raw' syntax can be used to delegate default behavior
+from a wrapper function to the wrapped function:</p>
+<div class="language-ocaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="n">f'</span> <span class="o">?</span><span class="n">x</span> <span class="n">y</span> <span class="o">=</span> <span class="n">f</span> <span class="o">?</span><span class="n">x</span> <span class="n">y</span>
+</code></pre></div></div>
+<p>Optional parameters are always called as named parameters.
+To support partial application (currying),
+optional parameters should always be followed by not-optional parameters in declaration.</p>
+<p>Because optional parameters applications reuse
+the syntax of named parameters,
+the type of a higher-order function may be ambiguous.
+The compiler will always prefer to infer that a parameter is labeled, not optional.
+If optional parameter is wanted, type need to be specified explicitly.</p>
+    
+      <h2 id="types-1">
+        
+        
+          Types <a href="#types-1" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<ul>
+<li>type definition: <code>type name = type expression</code></li>
+<li>with parameters: <code>type 'a name = type expression</code></li>
+<li>records: <code>type name = { field: type }</code></li>
+<li>sum type: <code>type name = | S | T of ...</code></li>
+</ul>
+<p>Unlike functions, type declaration is recursive by default.</p>
+    
+      <h2 id="exception">
+        
+        
+          Exception <a href="#exception" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<ul>
+<li><code>exception ExceptionName</code></li>
+<li><code>exception ExceptionWithExtraInfo of type</code></li>
+<li><code>raise ExceptionName</code>: type of <code>raise</code> is <code>exn -&gt; 'a</code> which seems impossible because it never returns at all. Returning <code>'a</code> allows throwing an exception anywhere in a program.</li>
+<li><code>try ... with ...</code></li>
+<li><code>failwith &quot;string&quot;</code>: <code>raise (Failure &quot;string&quot;)</code> (predefined)</li>
+<li><code>Invalid_argument</code> is like <code>Failure</code> but mainly used for programming bugs</li>
+<li><code>assert (boolean)</code>:  <code>boolean || raise (Assert_failure ...)</code></li>
+<li><code>assert false</code> is similar to <code>raise Invalid_argument</code></li>
+</ul>
+    
+      <h2 id="mutability">
+        
+        
+          Mutability <a href="#mutability" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+    
+      <h3 id="reference">
+        
+        
+          Reference <a href="#reference" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<ul>
+<li><code>'a ref</code>: <code>type 'a ref = { mutable contents: 'a }</code></li>
+<li><code>let p = ref 0</code></li>
+<li><code>p := 1</code>: <code>p.contents &lt;- 1</code></li>
+<li><code>!p</code>: <code>p.contents</code></li>
+<li><code>let np = ref 1</code>: <code>let np = {p with contents=1}</code></li>
+</ul>
+    
+      <h3 id="array">
+        
+        
+          Array <a href="#array" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<ul>
+<li><code>[|1; 2; 3|]</code></li>
+<li><code>Array.make length init</code>, <code>Array.length</code></li>
+<li><code>arr.(i)</code>, <code>arr.(i) &lt;- e</code></li>
+</ul>
+    
+      <h3 id="loop">
+        
+        
+          Loop <a href="#loop" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<ul>
+<li><code>while condition do expression done</code></li>
+<li><code>for name = start to/downto end do expression done</code></li>
+</ul>
+    
+      <h2 id="lazy">
+        
+        
+          Lazy <a href="#lazy" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<ul>
+<li>Construct a lazy value: <code>let name = lazy expression</code></li>
+<li>Returns the value (calculated on demand): <code>Lazy.force name</code></li>
+</ul>
+    
+      <h2 id="module">
+        
+        
+          Module <a href="#module" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<ul>
+<li><code>Module.function</code> or <code>open Module</code> to use unqualified names</li>
+<li>access record field wrapped in module: <code>t.Module.field</code></li>
+<li>module file: normal OCaml files <code>.ml</code></li>
+<li>interface: <code>val f : int -&gt; int</code> in <code>.mli</code> files</li>
+</ul>
+<p>Example: <code>set.mli</code></p>
+<div class="language-ocaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">(* Abstract type *)</span>
+<span class="k">type</span> <span class="k">'</span><span class="n">a</span> <span class="n">set</span>
+<span class="c">(* Concrete type to make it explicit what is a choice,
+since simply writing
+
+    type 'a choice
+
+is not informative.
+Also, exposing concrete implementation allows client code
+to pattern match against choice.
+
+`set.ml` must repeat this definition.
+*)</span>
+<span class="k">type</span> <span class="k">'</span><span class="n">a</span> <span class="n">choice</span> <span class="o">=</span>
+  <span class="o">|</span> <span class="nc">Element</span> <span class="k">of</span> <span class="k">'</span><span class="n">a</span>
+  <span class="o">|</span> <span class="nc">Empty</span>
+<span class="c">(* declare types for public values *)</span>
+<span class="k">val</span> <span class="n">empty</span> <span class="o">:</span> <span class="k">'</span><span class="n">a</span> <span class="n">set</span>
+<span class="k">val</span> <span class="n">contains</span> <span class="o">:</span> <span class="k">'</span><span class="n">a</span> <span class="n">set</span> <span class="o">-&gt;</span> <span class="k">'</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">bool</span>
+<span class="c">(* optional and labeled parameters *)</span>
+<span class="k">val</span> <span class="n">add</span> <span class="o">:</span> <span class="o">?</span><span class="n">elem</span><span class="o">:</span><span class="k">'</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">a_set</span><span class="o">:</span><span class="k">'</span><span class="n">a</span> <span class="n">set</span> <span class="o">-&gt;</span> <span class="k">'</span><span class="n">a</span> <span class="n">set</span>
+<span class="k">val</span> <span class="n">choose</span> <span class="o">:</span> <span class="k">'</span><span class="n">a</span> <span class="n">set</span> <span class="o">-&gt;</span> <span class="k">'</span><span class="n">a</span> <span class="n">choice</span>
+</code></pre></div></div>
+<p>Or embed modules in a file:</p>
+<div class="language-ocaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nc">Set</span> <span class="o">:</span> <span class="k">sig</span>
+  <span class="k">type</span> <span class="n">t</span>
+  <span class="k">val</span> <span class="o">...</span>
+<span class="k">end</span> <span class="o">=</span> <span class="k">struct</span>
+  <span class="k">type</span> <span class="n">t</span> <span class="o">=</span> <span class="o">...</span>
+  <span class="k">let</span> <span class="o">...</span>
+<span class="k">end</span>
+</code></pre></div></div>
+<p>Or separate signature and implementation (allow different implementations):</p>
+<div class="language-ocaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="k">type</span> <span class="nc">Set</span> <span class="o">=</span> <span class="k">sig</span>
+  <span class="k">include</span> <span class="p">(</span><span class="k">module</span> <span class="k">type</span> <span class="k">of</span> <span class="nc">OtherModule</span><span class="p">)</span>
+  <span class="k">type</span> <span class="o">...</span>
+  <span class="k">val</span> <span class="o">...</span>
+<span class="k">end</span>
+
+<span class="k">module</span> <span class="k">type</span> <span class="nc">ListBackend</span> <span class="o">=</span> <span class="k">struct</span>
+  <span class="k">include</span> <span class="nc">OtherModule</span>
+  <span class="k">type</span> <span class="o">...</span>
+  <span class="k">let</span> <span class="o">...</span>
+<span class="k">end</span>
+
+<span class="k">module</span> <span class="nc">SetOnList</span> <span class="o">:</span> <span class="nc">Set</span> <span class="o">=</span> <span class="nc">ListBackend</span>
+</code></pre></div></div>
+<p>By convention, the primary type of a given module <code>M</code> is called <code>t</code>.
+And functions in <code>M</code> that take a value of <code>M.t</code> takes it as their first argument.</p>
+    
+      <h2 id="get-started">
+        
+        
+          Get Started <a href="#get-started" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+    
+      <h3 id="install">
+        
+        
+          Install <a href="#install" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<pre><code>sudo apt-get install ocaml-nox opam curl build-essential m4
+</code></pre>
+    
+      <h3 id="compile">
+        
+        
+          Compile <a href="#compile" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>For a single file:</p>
+<pre><code>ocamlopt -strict-sequence -o x x.ml
+</code></pre>
+<p><code>-strict-sequence</code> forces the left-hand part of each sequence to have type unit,
+thus <code>a; b; c</code> is equivalent to:</p>
+<div class="language-ocaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="bp">()</span> <span class="o">=</span> <span class="n">a</span> <span class="k">in</span>
+<span class="k">let</span> <span class="bp">()</span> <span class="o">=</span> <span class="n">b</span> <span class="k">in</span>
+<span class="n">c</span>
+</code></pre></div></div>
+<p>For debugging, compile to byte-code,
+which is also faster to compile,
+also turning on all warnings
+and adding debug information
+(required to run <code>ocamldebug</code> and to print stack backtraces)</p>
+<pre><code>ocamlc -wA -g -o x x.ml
+ocamldebug ./x
+</code></pre>
+<p>For a project (automatically finding modules, etc.):</p>
+<pre><code>ocamlbuild -strict-sequence x.native
+</code></pre>
+    
+      <h3 id="opam">
+        
+        
+          OPAM <a href="#opam" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>Initialize (run once):</p>
+<pre><code>opam init
+</code></pre>
+    
+      <h3 id="standard-library">
+        
+        
+          Standard Library <a href="#standard-library" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>OCaml's Standard Library is developed for use in bootstrapping the compiler,
+and is purposefully kept small and simple.</p>
+<p>The general-purpose 'standard' library is
+the Core distribution provided by Jane Street.</p>
+<pre><code>opam install core
+</code></pre>
+    
+      <h3 id="repl">
+        
+        
+          REPL <a href="#repl" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>The built-in repl <code>opam</code> lacks features such as history and completion.
+Use <code>utop</code> instead (shipped with <code>core</code>):</p>
+<pre><code>utop
+</code></pre>
+    
+      <h3 id="editors">
+        
+        
+          Editors <a href="#editors" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>Merlin is an editor service that provides modern IDE features:</p>
+<ul>
+<li>context-sensitive auto-completion</li>
+<li>interactive type-querying</li>
+<li>highlight parts of code that don't compile on the go</li>
+<li>goto definition</li>
+</ul>
+<p>Install it via opam:</p>
+<pre><code>opam install merlin
+# Auto configure Emacs and Vim
+opam user-setup install
+</code></pre>
+<p>Supported editors:</p>
+<ul>
+<li>Emacs</li>
+<li>Vim</li>
+<li>Acme</li>
+<li>Atom</li>
+<li>VS Code</li>
+<li>Sublime Text 3</li>
+</ul>
+<p><code>ocp-indent</code> can indent opam code automatically
+(available via <code>opam</code>).</p>
+    
+      <h2 id="code-example">
+        
+        
+          Code Example <a href="#code-example" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<div class="language-ocaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">(* FUNCTIONS *)</span>
+
+<span class="c">(* Floats use different operators. *)</span>
+<span class="k">let</span> <span class="n">pi</span> <span class="o">=</span> <span class="mi">4</span><span class="o">.</span><span class="mi">0</span> <span class="o">*.</span> <span class="n">atan</span> <span class="mi">1</span><span class="o">.</span><span class="mi">0</span>
+
+<span class="c">(* Global type inference. *)</span>
+<span class="k">let</span> <span class="n">square</span> <span class="o">=</span> <span class="k">fun</span> <span class="n">x</span> <span class="o">-&gt;</span> <span class="n">x</span> <span class="o">*.</span> <span class="n">x</span>
+
+<span class="c">(* Functions are by default non-recursive.
+Recursion need to be explicit (with `rec`).
+*)</span>
+<span class="k">let</span> <span class="k">rec</span> <span class="n">fact</span> <span class="o">=</span> <span class="k">fun</span> <span class="n">n</span> <span class="o">-&gt;</span>
+  <span class="k">match</span> <span class="n">n</span> <span class="k">with</span> <span class="c">(* pattern matching *)</span>
+  <span class="o">|</span> <span class="mi">0</span> <span class="o">|</span> <span class="mi">1</span> <span class="o">-&gt;</span> <span class="mi">1</span>
+  <span class="o">|</span> <span class="n">_</span> <span class="o">-&gt;</span> <span class="n">n</span> <span class="o">*</span> <span class="n">fact</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+<span class="c">(* The compiler will emit a warning if
+pattern matching is not exhaustive,
+or contains unreachable matches.
+*)</span>
+
+<span class="c">(* Mutually recursion with function declaration shortcuts. *)</span>
+<span class="k">let</span> <span class="k">rec</span> <span class="n">sort</span> <span class="o">=</span> <span class="k">function</span>
+  <span class="o">|</span> <span class="bp">[]</span> <span class="o">-&gt;</span> <span class="bp">[]</span>
+  <span class="o">|</span> <span class="n">first</span> <span class="o">::</span> <span class="n">rest</span> <span class="o">-&gt;</span> <span class="n">insert</span> <span class="n">first</span> <span class="p">(</span><span class="n">sort</span> <span class="n">rest</span><span class="p">)</span>
+<span class="ow">and</span> <span class="n">insert</span> <span class="n">element</span> <span class="n">a_list</span> <span class="o">=</span> <span class="k">match</span> <span class="n">a_list</span> <span class="k">with</span>
+  <span class="o">|</span> <span class="bp">[]</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="n">element</span><span class="p">]</span>
+  <span class="o">|</span> <span class="n">first</span> <span class="o">::</span> <span class="n">rest</span> <span class="o">-&gt;</span>
+    <span class="k">if</span> <span class="n">element</span> <span class="o">&lt;=</span> <span class="n">first</span> <span class="k">then</span>
+      <span class="n">element</span> <span class="o">::</span> <span class="n">a_list</span>
+    <span class="k">else</span> <span class="c">(* the else clause has the same type as the then clause *)</span>
+      <span class="n">first</span> <span class="o">::</span> <span class="n">insert</span> <span class="n">element</span> <span class="n">rest</span>
+<span class="c">(* `sort` and `insert` is polymorphic.
+They can be applied to lists of any type,
+and returns a list with the same type.
+
+`sort` and `insert` does not modify their input list.
+Lists are immutable, like most data structures in OCaml.
+*)</span>
+
+<span class="c">(* OCaml provides the `|&gt;` operator to flip function and its parameter.*)</span>
+<span class="k">let</span> <span class="k">rec</span> <span class="n">fact'</span> <span class="o">=</span> <span class="k">function</span>
+  <span class="o">|</span> <span class="mi">0</span> <span class="o">|</span> <span class="mi">1</span> <span class="o">-&gt;</span> <span class="mi">1</span>
+  <span class="o">|</span> <span class="n">n</span> <span class="o">-&gt;</span>
+    <span class="n">n</span>
+    <span class="o">|&gt;</span> <span class="p">(</span><span class="o">-</span><span class="p">)</span> <span class="mi">1</span> <span class="c">(* Convert infix operator to prefix function call. *)</span>
+    <span class="o">|&gt;</span> <span class="n">fact</span>
+    <span class="o">|&gt;</span> <span class="p">(</span> <span class="o">*</span> <span class="p">)</span> <span class="n">n</span> <span class="c">(* Spaces to avoided be recognized as comments. *)</span>
+<span class="c">(* It can easily be defined as a higher-order function. *)</span>
+<span class="k">let</span> <span class="p">(</span><span class="o">|&gt;</span><span class="p">)</span> <span class="n">f</span> <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="n">f</span>
+
+<span class="c">(* `|&gt;` operator makes refactoring (changing numbers and order of argument) harder,
+thus intemediate variables are often preferred. *)</span>
+
+<span class="c">(* TYPES *)</span>
+
+<span class="c">(* Type Aliases *)</span>
+<span class="k">type</span> <span class="n">boolean</span> <span class="o">=</span> <span class="kt">bool</span>
+<span class="k">type</span> <span class="n">integer</span> <span class="o">=</span> <span class="kt">int</span>
+<span class="k">type</span> <span class="n">double</span> <span class="o">=</span> <span class="kt">float</span>
+<span class="k">type</span> <span class="n">character</span> <span class="o">=</span> <span class="kt">char</span>
+<span class="k">type</span> <span class="n">sequence_of_bytes</span> <span class="o">=</span> <span class="kt">string</span>
+
+<span class="c">(* Records *)</span>
+<span class="k">type</span> <span class="n">point</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="o">:</span> <span class="kt">float</span><span class="p">;</span> <span class="n">y</span><span class="o">:</span> <span class="kt">float</span><span class="p">}</span>
+<span class="k">let</span> <span class="n">new_point</span> <span class="n">x</span> <span class="n">y</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="p">;</span> <span class="n">y</span><span class="p">}</span>
+
+<span class="c">(* Here type annotations can be omitted.
+However, it is a good practice to annotate types for records in real projects,
+because OCaml infer record types from field names.
+
+In real projects, declaration of the distance function may be far from
+the declaration of the point type.
+And later declaration of a new record with the same field names may be added
+between the declaration of type point and function distance,
+which will cause type error of the distance function
+if the fields of the new record have different types,
+or change the semantics of function distance silently
+if the fields of the new record have same types as type point.
+*)</span>
+<span class="k">let</span> <span class="n">distance</span> <span class="p">(</span><span class="n">from</span><span class="o">:</span> <span class="n">point</span><span class="p">)</span> <span class="p">(</span><span class="n">target</span><span class="o">:</span> <span class="n">point</span><span class="p">)</span> <span class="o">=</span>
+  <span class="p">((</span><span class="n">from</span><span class="o">.</span><span class="n">x</span> <span class="o">-.</span> <span class="n">target</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="o">.</span><span class="mi">0</span> <span class="o">+.</span> <span class="p">(</span><span class="n">from</span><span class="o">.</span><span class="n">y</span> <span class="o">-.</span> <span class="n">target</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="o">.</span><span class="mi">0</span><span class="p">)</span> <span class="o">**</span> <span class="mi">0</span><span class="o">.</span><span class="mi">5</span>
+
+<span class="c">(* We cannot make function new_point also accepts integer values (will be converted to floats.
+OCaml's type system does not allow this.
+However, types can be wrapped/tagged with a type constructor,
+and the wrapped/tagged types can be combined to disjoint unions.
+This is called polymorphic variants.
+*)</span>
+<span class="k">type</span> <span class="n">number</span> <span class="o">=</span> <span class="p">[</span><span class="nt">`Integer</span> <span class="k">of</span> <span class="kt">int</span> <span class="o">|</span> <span class="nt">`Float</span> <span class="k">of</span> <span class="kt">float</span><span class="p">]</span>
+<span class="k">let</span> <span class="n">new_point_polymorphic</span> <span class="p">(</span><span class="n">x</span><span class="o">:</span> <span class="p">[</span><span class="o">&lt;</span> <span class="n">number</span><span class="p">])</span> <span class="p">(</span><span class="n">y</span><span class="o">:</span> <span class="p">[</span><span class="o">&lt;</span> <span class="n">number</span><span class="p">])</span><span class="o">:</span> <span class="n">point</span> <span class="o">=</span>
+  <span class="k">match</span> <span class="n">x</span><span class="o">,</span> <span class="n">y</span> <span class="k">with</span>
+    <span class="o">|</span> <span class="nt">`Integer</span> <span class="n">m</span><span class="o">,</span> <span class="nt">`Integer</span> <span class="n">n</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="n">x</span> <span class="o">=</span> <span class="n">float_of_int</span> <span class="n">m</span><span class="p">;</span> <span class="n">y</span> <span class="o">=</span> <span class="n">float_of_int</span> <span class="n">n</span><span class="p">}</span>
+    <span class="o">|</span> <span class="nt">`Integer</span> <span class="n">m</span><span class="o">,</span> <span class="nt">`Float</span> <span class="n">n</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="n">x</span> <span class="o">=</span> <span class="n">float_of_int</span> <span class="n">m</span><span class="p">;</span> <span class="n">y</span> <span class="o">=</span> <span class="n">n</span><span class="p">}</span>
+    <span class="o">|</span> <span class="nt">`Float</span> <span class="n">m</span><span class="o">,</span> <span class="nt">`Integer</span> <span class="n">n</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="n">x</span> <span class="o">=</span> <span class="n">m</span><span class="p">;</span> <span class="n">y</span> <span class="o">=</span> <span class="n">float_of_int</span> <span class="n">n</span><span class="p">}</span>
+    <span class="o">|</span> <span class="nt">`Float</span> <span class="n">m</span><span class="o">,</span> <span class="nt">`Float</span> <span class="n">n</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="n">x</span> <span class="o">=</span> <span class="n">m</span><span class="p">;</span> <span class="n">y</span> <span class="o">=</span> <span class="n">n</span><span class="p">}</span>
+
+<span class="c">(* Unlike the closed [&lt; `A | `B], [&gt; `A | `B] is structural typing,
+opening to any type that can at least match `A and `B.
+Both of them can only be denoted directly, not be given a name via `type`.
+And [`A | `B] is fixed type.
+
+- [&lt; `A | `B | `C]: [&lt; `B | `A | `C], [&lt; `C | `A], [`A | `B | `C], [`B]
+- [&gt; `A | `B ]: [&gt; `A | `C | `B], [`A | `B | `C], [&gt; `A | `B], [`B | `A]
+- [`A | `B]: [`B | `A]
+
+A | B is normal variant type:
+
+- It cannot be denoted directly. To use it, it has to been given a name.
+- Once the name is given, A and B is assigned to a unique type. In other words,
+  `type one_name = A | B` and `type another_name = A | B` are not compatible.
+
+Normal variants are slightly lighter than polymorphic variants,
+since static information allows for more optimizations.
+However noticeable differences would only appear on huge data structures.
+*)</span>
+
+<span class="c">(* Recursive Types *)</span>
+<span class="k">type</span> <span class="k">'</span><span class="n">a</span> <span class="n">binary_tree</span> <span class="o">=</span> <span class="c">(* 'a is a type variable, and stands for any given type. *)</span>
+  <span class="o">|</span> <span class="nc">Leaf</span>
+  <span class="o">|</span> <span class="nc">Node</span> <span class="k">of</span> <span class="k">'</span><span class="n">a</span> <span class="o">*</span> <span class="k">'</span><span class="n">a</span> <span class="n">binary_tree</span> <span class="o">*</span> <span class="k">'</span><span class="n">a</span> <span class="n">binary_tree</span>
+  <span class="c">(* The `*` character is used
+  because the set of all pairs of type `t * s`
+  corresponds to the Cartesian product of
+  the set of elements of type `t` and the set of elements of type `s`.
+  *)</span>
+
+<span class="c">(* IMPERATIVE FEATURES *)</span>
+
+<span class="k">let</span> <span class="n">increse_array</span> <span class="n">arr</span> <span class="o">=</span>
+  <span class="k">let</span> <span class="n">length</span> <span class="o">=</span> <span class="n">min</span> <span class="p">(</span><span class="nn">Array</span><span class="p">.</span><span class="n">length</span> <span class="n">arr</span><span class="p">)</span> <span class="mi">3</span> <span class="k">in</span>
+  <span class="k">let</span> <span class="n">incresements</span> <span class="o">=</span> <span class="p">[</span><span class="o">|</span><span class="mi">1</span><span class="p">;</span> <span class="mi">2</span><span class="p">;</span> <span class="mi">3</span><span class="o">|</span><span class="p">]</span> <span class="k">in</span>
+  <span class="k">let</span> <span class="n">result</span> <span class="o">=</span> <span class="nn">Array</span><span class="p">.</span><span class="n">make</span> <span class="n">length</span> <span class="mi">0</span> <span class="k">in</span> <span class="c">(* 0.0 is initial value *)</span>
+  <span class="k">for</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">to</span> <span class="n">length</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">do</span>
+    <span class="n">result</span><span class="o">.</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">&lt;-</span> <span class="n">arr</span><span class="o">.</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="n">incresements</span><span class="o">.</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+  <span class="k">done</span><span class="p">;</span> <span class="c">(* `a ; b` returns `b` *)</span>
+  <span class="n">result</span>
+
+<span class="k">type</span> <span class="n">mutable_point</span> <span class="o">=</span> <span class="p">{</span> <span class="k">mutable</span> <span class="n">x</span><span class="o">:</span> <span class="kt">float</span><span class="p">;</span> <span class="k">mutable</span> <span class="n">y</span><span class="o">:</span> <span class="kt">float</span> <span class="p">}</span>
+<span class="k">let</span> <span class="n">translate</span> <span class="n">p</span> <span class="n">dx</span> <span class="n">dy</span> <span class="o">=</span>
+  <span class="n">p</span><span class="o">.</span><span class="n">x</span> <span class="o">&lt;-</span> <span class="n">p</span><span class="o">.</span><span class="n">x</span> <span class="o">+.</span> <span class="n">dx</span><span class="p">;</span> <span class="n">p</span><span class="o">.</span><span class="n">y</span> <span class="o">&lt;-</span> <span class="n">p</span><span class="o">.</span><span class="n">y</span> <span class="o">+.</span> <span class="n">dy</span><span class="p">;;</span>
+
+<span class="c">(* OCaml standard library provides references, which mimics mutable variables. *)</span>
+<span class="k">type</span> <span class="k">'</span><span class="n">a</span> <span class="n">reference</span> <span class="o">=</span> <span class="p">{</span> <span class="k">mutable</span> <span class="n">contents</span><span class="o">:</span> <span class="k">'</span><span class="n">a</span> <span class="p">}</span>
+<span class="k">let</span> <span class="n">ref</span> <span class="n">initial_value</span> <span class="o">=</span> <span class="p">{</span> <span class="n">contents</span> <span class="o">=</span> <span class="n">initial_value</span> <span class="p">}</span>
+<span class="k">let</span> <span class="p">(</span><span class="o">:=</span><span class="p">)</span> <span class="n">r</span> <span class="n">new_value</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">contents</span> <span class="o">&lt;-</span> <span class="n">new_value</span>
+<span class="k">let</span> <span class="p">(</span><span class="o">!</span><span class="p">)</span> <span class="n">r</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">contents</span>
+
+<span class="c">(* Store a polymorphic function as a mutable field in a record. *)</span>
+<span class="k">type</span> <span class="n">idref</span> <span class="o">=</span> <span class="p">{</span> <span class="k">mutable</span> <span class="n">id</span><span class="o">:</span> <span class="k">'</span><span class="n">a</span><span class="o">.</span> <span class="k">'</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="k">'</span><span class="n">a</span> <span class="p">}</span>
+
+
+<span class="c">(* MODULE *)</span>
+
+<span class="c">(* OBJECT *)</span>
+<span class="k">class</span> <span class="n">point_1d</span> <span class="n">init</span> <span class="o">=</span>
+  <span class="k">object</span> <span class="p">(</span><span class="n">self</span><span class="p">)</span>
+    <span class="k">val</span> <span class="k">mutable</span> <span class="n">x</span> <span class="o">=</span> <span class="n">init</span>
+    <span class="n">method</span> <span class="n">get_x</span> <span class="o">=</span> <span class="n">x</span>
+    <span class="n">method</span> <span class="n">move</span> <span class="n">d</span> <span class="o">=</span> <span class="n">x</span> <span class="o">&lt;-</span> <span class="n">x</span> <span class="o">+</span> <span class="n">d</span>
+    <span class="c">(* Private methods can only be invoked from other methods of the same object. *)</span>
+    <span class="n">method</span> <span class="n">private</span> <span class="n">move_one</span> <span class="o">=</span> <span class="n">self</span><span class="o">#</span><span class="n">move</span> <span class="mi">1</span>
+    <span class="c">(* Initializer is an anonymous hidden method
+    Initializers cannot be overridden.
+    On the contrary, all initializers are evaluated sequentially.
+    *)</span>
+    <span class="k">initializer</span> <span class="n">print_string</span> <span class="s2">"new 1d point at "</span><span class="p">;</span> <span class="n">print_int</span> <span class="n">x</span><span class="p">;</span> <span class="n">print_newline</span> <span class="bp">()</span>
+  <span class="k">end</span>
+
+<span class="k">class</span> <span class="n">positive_1d_point</span> <span class="n">init</span> <span class="o">=</span>
+  <span class="k">object</span> <span class="p">(</span><span class="n">self</span><span class="p">)</span>
+    <span class="k">inherit</span> <span class="n">point_1d</span> <span class="n">init</span>
+    <span class="c">(* Private methods are inherited (they are by default visible in subclasses),
+    unless they are hidden by signature matching.
+    *)</span>
+    <span class="n">method</span> <span class="k">virtual</span> <span class="n">move_one</span> <span class="o">:</span> <span class="n">_</span>
+    <span class="c">(* Private methods can be made public in a subclass. *)</span>
+    <span class="n">method</span> <span class="n">is_positive</span> <span class="o">=</span> <span class="n">self</span><span class="o">#</span><span class="n">get_x</span> <span class="o">&gt;</span> <span class="mi">0</span>
+  <span class="k">end</span>
+
+<span class="k">let</span> <span class="n">strings</span> <span class="o">=</span> <span class="n">ref</span> <span class="bp">[]</span>
+
+<span class="c">(* Immediate objects are like anonymous classes in Java. *)</span>
+<span class="k">let</span> <span class="n">immediate_object</span> <span class="o">=</span>
+  <span class="k">object</span> <span class="p">(</span><span class="n">self</span><span class="p">)</span> <span class="c">(* `self` could be any identifier. It is a convention to use `self`. *)</span>
+    <span class="k">val</span> <span class="k">mutable</span> <span class="n">x</span> <span class="o">=</span> <span class="s2">"Immediate objects are like anonymous classes in Java."</span>
+    <span class="n">method</span> <span class="n">get_x</span> <span class="o">=</span> <span class="n">x</span>
+    <span class="n">method</span> <span class="n">set_x</span> <span class="n">new_value</span> <span class="o">=</span> <span class="n">x</span> <span class="o">&lt;-</span> <span class="n">new_value</span>
+    <span class="n">method</span> <span class="n">print</span> <span class="o">=</span> <span class="n">print_string</span> <span class="n">self</span><span class="o">#</span><span class="n">get_x</span>
+    <span class="n">method</span> <span class="n">register</span> <span class="o">=</span> <span class="n">strings</span> <span class="o">:=</span> <span class="n">self</span> <span class="o">::</span> <span class="o">!</span><span class="n">strings</span>
+    <span class="c">(* Putting self into an external reference is not allowed,
+    as it would forbid extending the class through inheritance.
+    However, since immediate objects are not extensible,
+    there is no such restriction for immediate objects.
+    *)</span>
+  <span class="k">end</span>
+
+<span class="c">(* Virtual classes are like abstract classes in Java.
+Virtual classes cannot be instantiated.
+*)</span>
+<span class="k">class</span> <span class="k">virtual</span> <span class="n">abstract_number</span> <span class="n">init</span> <span class="o">=</span>
+  <span class="k">object</span> <span class="p">(</span><span class="n">self</span><span class="p">)</span>
+    <span class="k">val</span> <span class="k">mutable</span> <span class="k">virtual</span> <span class="n">x</span> <span class="o">:</span> <span class="kt">int</span>
+    <span class="n">method</span> <span class="k">virtual</span> <span class="n">get_x</span> <span class="o">:</span> <span class="kt">int</span>
+    <span class="n">method</span> <span class="k">virtual</span> <span class="n">move</span> <span class="o">:</span> <span class="kt">int</span> <span class="o">-&gt;</span> <span class="kt">unit</span>
+    <span class="n">method</span> <span class="n">print</span> <span class="o">=</span> <span class="n">print_int</span> <span class="n">self</span><span class="o">#</span><span class="n">get_x</span>
+  <span class="k">end</span>
+
+<span class="c">(* Multiple Inheritance *)</span>
+<span class="k">class</span> <span class="n">painter</span> <span class="p">(</span><span class="n">name</span><span class="o">:</span> <span class="kt">string</span><span class="p">)</span> <span class="o">=</span> <span class="k">object</span>
+  <span class="k">val</span> <span class="k">mutable</span> <span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+  <span class="n">method</span> <span class="n">get_name</span> <span class="o">=</span> <span class="n">name</span>
+  <span class="n">method</span> <span class="n">draw</span> <span class="o">=</span> <span class="n">print_string</span> <span class="s2">"I am painting."</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="n">cowboy</span> <span class="p">(</span><span class="n">name</span><span class="o">:</span> <span class="kt">string</span><span class="p">)</span> <span class="o">=</span> <span class="k">object</span>
+  <span class="k">val</span> <span class="k">mutable</span> <span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+  <span class="n">method</span> <span class="n">get_name</span> <span class="o">=</span> <span class="n">name</span>
+  <span class="n">method</span> <span class="n">draw</span> <span class="o">=</span> <span class="n">print_string</span> <span class="s2">"I am fighting."</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="n">painter_and_cowboy</span> <span class="p">(</span><span class="n">init</span><span class="o">:</span> <span class="kt">string</span><span class="p">)</span> <span class="o">=</span> <span class="k">object</span>
+  <span class="k">inherit</span> <span class="n">painter</span> <span class="p">(</span><span class="n">init</span> <span class="o">^</span> <span class="s2">" as a painter"</span><span class="p">)</span> <span class="k">as</span> <span class="n">painter</span>
+  <span class="c">(* cowboy overrides variable name and method draw of painter.
+  Thus `inherit!` is used instead of `inherit`.
+  *)</span>
+  <span class="k">inherit</span><span class="o">!</span> <span class="n">cowboy</span> <span class="p">(</span><span class="n">init</span> <span class="o">^</span> <span class="s2">" as a cowboy"</span><span class="p">)</span> <span class="k">as</span> <span class="n">cowboy</span>
+  <span class="n">method</span> <span class="n">dual_draws</span> <span class="o">=</span>
+    <span class="n">painter</span><span class="o">#</span><span class="n">draw</span><span class="p">;</span>
+    <span class="n">cowboy</span><span class="o">#</span><span class="n">draw</span>
+<span class="k">end</span>
+
+<span class="c">(* Parameterized Classes *)</span>
+
+<span class="c">(* Classes stores its value as a reference under the hood,
+thus it should be monomorphic or parametric.
+The painter and cowboy classes above are monomorphic.
+*)</span>
+
+<span class="k">class</span> <span class="p">[</span><span class="k">'</span><span class="n">a</span><span class="p">]</span> <span class="c">(* Class type parameters are listed between [ and ]. *)</span> <span class="n">parametric_class</span>
+  <span class="p">(</span><span class="n">init</span><span class="o">:</span> <span class="k">'</span><span class="n">a</span><span class="p">)</span> <span class="o">=</span> <span class="k">object</span>
+    <span class="k">val</span> <span class="k">mutable</span> <span class="n">x</span> <span class="o">=</span> <span class="n">init</span>
+    <span class="n">method</span> <span class="n">get_x</span> <span class="o">=</span> <span class="n">x</span>
+    <span class="n">method</span> <span class="n">set_x</span> <span class="n">new_value</span> <span class="o">=</span> <span class="n">x</span> <span class="o">&lt;-</span> <span class="n">new_value</span>
+  <span class="k">end</span>
+
+<span class="c">(* Constraints *)</span>
+<span class="k">class</span> <span class="p">[</span><span class="k">'</span><span class="n">a</span><span class="p">]</span> <span class="n">circle</span> <span class="p">(</span><span class="n">c</span><span class="o">:</span> <span class="k">'</span><span class="n">a</span><span class="p">)</span> <span class="p">(</span><span class="n">r</span><span class="o">:</span> <span class="kt">float</span><span class="p">)</span> <span class="o">=</span> <span class="k">object</span>
+  <span class="k">constraint</span> <span class="k">'</span><span class="n">a</span> <span class="o">=</span> <span class="o">#</span><span class="n">point_1d</span>
+  <span class="k">val</span> <span class="k">mutable</span> <span class="n">center</span> <span class="o">=</span> <span class="n">c</span>
+  <span class="n">method</span> <span class="n">move</span> <span class="o">=</span> <span class="n">center</span><span class="o">#</span><span class="n">move</span>
+  <span class="n">method</span> <span class="n">perimeter</span> <span class="o">=</span> <span class="mi">2</span><span class="o">.</span><span class="mi">0</span> <span class="o">*.</span> <span class="n">pi</span> <span class="o">*.</span> <span class="n">r</span>
+<span class="k">end</span>
+
+<span class="c">(* Polymorphic Methods *)</span>
+
+<span class="k">class</span> <span class="p">[</span><span class="k">'</span><span class="n">a</span><span class="p">]</span> <span class="n">intlist</span> <span class="p">(</span><span class="n">l</span> <span class="o">:</span> <span class="kt">int</span> <span class="kt">list</span><span class="p">)</span> <span class="o">=</span>
+    <span class="k">object</span>
+      <span class="n">method</span> <span class="n">empty</span> <span class="o">=</span> <span class="p">(</span><span class="n">l</span> <span class="o">=</span> <span class="bp">[]</span><span class="p">)</span>
+      <span class="n">method</span> <span class="n">fold</span> <span class="n">f</span> <span class="p">(</span><span class="n">accu</span> <span class="o">:</span> <span class="k">'</span><span class="n">a</span><span class="p">)</span> <span class="o">=</span> <span class="nn">List</span><span class="p">.</span><span class="n">fold_left</span> <span class="n">f</span> <span class="n">accu</span> <span class="n">l</span>
+    <span class="k">end</span>
+
+<span class="c">(* Objects themselves are not polymorphic,
+so first use of `fold` fixes its type.
+*)</span>
+
+<span class="c">(* To make `fold` polymorphic, annotate its type explicitly: *)</span>
+<span class="k">class</span> <span class="n">intlist'</span> <span class="p">(</span><span class="n">l</span> <span class="o">:</span> <span class="kt">int</span> <span class="kt">list</span><span class="p">)</span> <span class="o">=</span>
+    <span class="k">object</span>
+      <span class="n">method</span> <span class="n">empty</span> <span class="o">=</span> <span class="p">(</span><span class="n">l</span> <span class="o">=</span> <span class="bp">[]</span><span class="p">)</span>
+      <span class="n">method</span> <span class="n">fold</span> <span class="o">:</span> <span class="k">'</span><span class="n">a</span><span class="o">.</span> <span class="p">(</span><span class="k">'</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">int</span> <span class="o">-&gt;</span> <span class="k">'</span><span class="n">a</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="k">'</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="k">'</span><span class="n">a</span> <span class="o">=</span>
+        <span class="k">fun</span> <span class="n">f</span> <span class="n">accu</span> <span class="o">-&gt;</span> <span class="nn">List</span><span class="p">.</span><span class="n">fold_left</span> <span class="n">f</span> <span class="n">accu</span> <span class="n">l</span>
+    <span class="k">end</span>
+
+<span class="c">(* However, type annotation can be omitted if it is already known,
+for example, through type constraints on self.*)</span>
+<span class="k">class</span> <span class="k">type</span> <span class="p">[</span><span class="k">'</span><span class="n">a</span><span class="p">]</span> <span class="n">iterator</span> <span class="o">=</span> <span class="k">object</span>
+  <span class="n">method</span> <span class="n">fold</span> <span class="o">:</span> <span class="p">(</span><span class="k">'</span><span class="n">b</span> <span class="o">-&gt;</span> <span class="k">'</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="k">'</span><span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="k">'</span><span class="n">b</span> <span class="o">-&gt;</span> <span class="k">'</span><span class="n">b</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="n">intlist''</span> <span class="n">l</span> <span class="o">=</span>
+    <span class="k">object</span> <span class="p">(</span><span class="n">self</span> <span class="o">:</span> <span class="kt">int</span> <span class="o">#</span><span class="n">iterator</span><span class="p">)</span> <span class="c">(* implements iterator interface *)</span>
+      <span class="n">method</span> <span class="n">empty</span> <span class="o">=</span> <span class="p">(</span><span class="n">l</span> <span class="o">=</span> <span class="bp">[]</span><span class="p">)</span>
+      <span class="n">method</span> <span class="n">fold</span> <span class="n">f</span> <span class="n">accu</span> <span class="o">=</span> <span class="nn">List</span><span class="p">.</span><span class="n">fold_left</span> <span class="n">f</span> <span class="n">accu</span> <span class="n">l</span>
+    <span class="k">end</span>
+
+<span class="c">(* Another example of interfaces. *)</span>
+
+<span class="k">class</span> <span class="k">type</span> <span class="n">point0</span> <span class="o">=</span> <span class="k">object</span>
+  <span class="n">method</span> <span class="n">get_x</span> <span class="o">:</span> <span class="kt">int</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="n">distance_point</span> <span class="n">x</span> <span class="o">=</span>
+    <span class="k">object</span>
+      <span class="k">inherit</span> <span class="n">point_1d</span> <span class="n">x</span>
+      <span class="c">(* Unlike Java, the type of `other` cannot be `#point0` directly,
+      since the HM type system OCaml uses has difficult to infer subtypes.
+      Just like using parametric types to mark subtyping expilicitly,
+      here `'a. (... as 'a)` is used to mark the extensible part of `#point0`.
+      *)</span>
+      <span class="n">method</span> <span class="n">distance</span> <span class="o">:</span> <span class="k">'</span><span class="n">a</span><span class="o">.</span> <span class="p">(</span><span class="o">#</span><span class="n">point0</span> <span class="k">as</span> <span class="k">'</span><span class="n">a</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">int</span> <span class="o">=</span>
+        <span class="k">fun</span> <span class="n">other</span> <span class="o">-&gt;</span> <span class="n">abs</span> <span class="p">(</span><span class="n">other</span><span class="o">#</span><span class="n">get_x</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span>
+    <span class="k">end</span>
+
+<span class="c">(* Credit: this section uses code examples from OCaml manual. *)</span>
+
+<span class="c">(* In Ocaml, inheritance does not imply subtyping.
+Coercions are required for inherited types,
+as for uninherited types.
+*)</span>
+
+
+<span class="c">(* Labeled Arguments *)</span>
+
+<span class="k">let</span> <span class="n">named_arguments</span> <span class="o">~</span><span class="n">x</span> <span class="o">~</span><span class="n">y</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+
+<span class="c">(* Functions with labeled arguments are nominal, not structral.
+Thus `2 |&gt; (fun ~x -&gt; x)` does not work.
+Same applies to functions with optional arugments (see below),
+except that OCaml can auto transform them
+by passing `None` for all optional arguments.
+*)</span>
+
+<span class="c">(* Optional Arguments *)</span>
+
+<span class="k">let</span> <span class="n">inc_multiple_times</span> <span class="o">?</span><span class="p">(</span><span class="n">times</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">times</span>
+
+<span class="c">(* To avoid ambigulity with partital application,
+optional arguments must be followed by at least one non optional argument.
+*)</span>
+
+<span class="k">let</span> <span class="n">dummy_argument</span> <span class="o">?</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="bp">()</span> <span class="o">=</span> <span class="n">x</span>
+
+
+<span class="k">let</span> <span class="bp">()</span> <span class="o">=</span> <span class="c">(* To ensure the body is side-effect only, i.e. returning unit. *)</span>
+  <span class="k">let</span> <span class="n">a_point</span> <span class="o">=</span> <span class="k">new</span> <span class="n">point_1d</span> <span class="mi">42</span> <span class="k">in</span>
+  <span class="n">print_int</span> <span class="n">a_point</span><span class="o">#</span><span class="n">get_x</span><span class="p">;</span> <span class="n">print_newline</span> <span class="bp">()</span><span class="p">;</span>
+  <span class="n">a_point</span><span class="o">#</span><span class="n">move</span> <span class="mi">1</span><span class="p">;</span>
+
+  <span class="k">let</span> <span class="n">john</span> <span class="o">=</span> <span class="k">new</span> <span class="n">painter_and_cowboy</span> <span class="s2">"john"</span> <span class="k">in</span>
+  <span class="n">print_string</span> <span class="n">john</span><span class="o">#</span><span class="n">get_name</span> <span class="c">(* cowboy *)</span><span class="p">;</span> <span class="n">print_newline</span> <span class="bp">()</span><span class="p">;</span>
+  <span class="n">john</span><span class="o">#</span><span class="n">draw</span> <span class="c">(* cowboy *)</span><span class="p">;</span> <span class="n">print_newline</span> <span class="bp">()</span><span class="p">;</span>
+  <span class="n">john</span><span class="o">#</span><span class="n">dual_draws</span><span class="p">;</span> <span class="n">print_newline</span> <span class="bp">()</span><span class="p">;</span>
+
+  <span class="c">(* Labeled arguments must always be applied with its name. *)</span>
+  <span class="k">let</span> <span class="n">four</span> <span class="o">=</span> <span class="n">named_argumests</span> <span class="o">~</span><span class="n">y</span><span class="o">:</span><span class="mi">2</span> <span class="o">~</span><span class="n">x</span><span class="o">:</span><span class="mi">2</span>
+
+  <span class="c">(* Optional arguments must be either omitted or applied with its name. *)</span>
+  <span class="k">let</span> <span class="n">two</span> <span class="o">=</span> <span class="n">inc_multiple_times</span> <span class="mi">1</span><span class="p">;</span>
+  <span class="k">let</span> <span class="n">five</span> <span class="o">=</span> <span class="n">inc_multiple_times</span> <span class="o">~</span><span class="n">times</span><span class="o">:</span><span class="mi">5</span> <span class="mi">1</span><span class="p">;</span>
+  <span class="k">let</span> <span class="n">one</span> <span class="o">=</span> <span class="n">dummy_argument</span> <span class="bp">()</span><span class="p">;</span>
+  <span class="k">let</span> <span class="n">three</span> <span class="o">=</span> <span class="n">dummy_argument</span> <span class="o">~</span><span class="n">x</span><span class="o">:</span><span class="mi">3</span> <span class="bp">()</span><span class="p">;</span>
+
+  <span class="n">exit</span> <span class="mi">0</span>
+</code></pre></div></div>
+    <div class="footer border-top border-gray-light mt-5 pt-3 text-gray">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start">
+        <form id="site-search" action="https://duckduckgo.com/html/" method="get">
+          <input name="q" type="search" value="site:mmap.page " required pattern="site:mmap\.page\s.+">
+          <input type="submit" value="&#x1F50D;" title="search through site content via DuckDuckGo">
+        </form>
+        <p>
+          <a href="mailto:weakish@gmail.com" title="weakish@gmail.com"><img src="https://icongr.am/feather/mail.svg" alt="Feather Icon Mail"></a>
+          <a href="https://savannah.nongnu.org/people/viewgpg.php?user_id=65699" title="2414 AEA0 EA48 5263 9697  F1BA 55F6 EEC2 EA3F 0A87"><img src="https://icongr.am/feather/key.svg" alt="Feather Icon Key"></a>
+          <a href="https://github.com/weakish/" title="GitHub"><img src="https://icongr.am/feather/github.svg" alt="Feather Icon Github"></a>
+          <a href="https://www.instagram.com/jakukyo/" title="Instagram"><img src="https://icongr.am/feather/instagram.svg" alt="Feather Icon Instagram"></a>
+          <a href="https://twitter.com/weakish" title="Twitter"><img src="https://icongr.am/feather/twitter.svg" alt="Feather Icon Twitter"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml" title="RSS 2.0 Feed"><img src="https://icongr.am/feather/rss.svg" alt="Feather Icon RSS"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/uses/" title="uses"><img src="https://icongr.am/feather/book-open.svg" alt="Feather Icon Book Open"></a>
+          
+          
+          <a href="/Me.ZeroNetwork.bit/?Profile/12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv/1GnJD7CXskmG8GywMbTvbP12wneCFW9XzR/weakish@zeroid.bit" title="ZeroMe"><img src="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/images/zeronet_logo.svg" alt="ZeroNet Logo" width="32" height="32"></a>
+        </p>
+      </div>
+        <p>
+        Permission to use, copy, modify, and/or distribute this site for any purpose with or without fee is hereby granted.
+        This site is provided "as is" without express or implied warranty.
+        </p>
+        <p>
+        This site does not use cookies or tracking codes.
+        The hosting service provider (<a href="https://pages.github.com/">GitHub Pages</a>) probably collects server logs,
+        but I do not have access to them.
+        </p>
+        <p>
+        Site source is <a href="https://github.com/weakish/weakish.github.com/">available</a>
+        and feedback is <a href="https://github.com/weakish/weakish.github.com/issues">welcome</a>.
+        </p>
+        <noscript>
+        <p>
+        This site does not use JavaScript.
+        </p>
+        </noscript>
+    </div>
+  </div>
+</body>
+</html>

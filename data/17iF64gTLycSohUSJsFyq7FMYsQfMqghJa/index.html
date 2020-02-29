@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>NullPaste</title>
+    <style type="text/css" media="screen">
+        <!--
+        div.box {
+            background-color: white;
+            margin-top: 2.5em;
+            padding: 0.3em 1em 0.3em 1em;
+            box-shadow: lightgray 0 1px 2px 1px;
+        }
+        #recentview, #pasteview, #newpaste, #aboutview {
+            display: none;
+        }
+        pre {
+            border: 1px solid lightgray;
+        }
+        input[type="text"] {
+            border: 1px solid lightgray;
+            width: 100%;
+        }
+        button {
+            font-weight: bold;
+            border: 3px solid gray;
+            margin: 1em;
+            box-shadow: 0 1px;
+        }
+        button#delete_button {
+            background: indianred;
+            color: white;
+            display: none;
+        }
+        span.line-num {
+            background: #f7f7f7;
+            margin-right: 0.3em;
+            padding-left: 1em;
+            padding-right: 0.3em;
+            display: block;
+            float: left;
+            border-right: 1px solid #ddd;
+            text-align: right;
+        }
+        span.line-num span {
+            display: block;
+            color: #999;
+        }
+        article.list {
+            margin-top: 1em;
+            margin-bottom: 1em;
+            border-bottom: 1px solid #ddd;
+        }
+        ul.horiz {
+            text-align: right;
+        }
+        ul.horiz li {
+            display: inline-block;
+            margin: 0;
+            padding: 0;
+        }
+        ul.horiz button {
+            margin: 0;
+        }
+        span.enc-indicator {
+            margin-left: 1em;
+            border-bottom: 1px solid lightgray;
+        }
+        span#pasteview_encrypted {
+            display: none;
+        }
+        td {
+            padding-right: 2em;
+        }
+        h2, h3 {
+            color: gray;
+        }
+        div#menu {
+            box-shadow: lightgray 0 1px 1px 1px;
+            text-align: center;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%;
+            padding: 0;
+            background: lightgray;
+            z-index: 9999;
+            overflow: auto;
+        }
+        div#menu ul {
+            margin: 0;
+            padding: 0;
+            list-style-type: none;
+        }
+        div#menu li {
+            width: 13em;
+            display: inline-block;
+            padding: 0.3em;
+            color: black;;
+        }
+        div#menu a li:hover {
+            background: #F5F5F5;
+            text-decoration: underline;
+        }
+        div#menu input {
+            margin: 0;
+            display: inline;
+            width: 8em;
+        }
+        a#about_link {
+            float: right;
+            margin-top: 0.4em;
+            margin-right: 8%;
+        }
+        span#title {
+            margin-top: 0.4em;
+            margin-left: 1em;
+            float: left;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0px 0px 2px darkgray;
+            text-decoration: none;
+        }
+        span.nobr {
+            white-space: nowrap;
+        }
+        -->
+    </style>
+    <!-- uglifyjs lib/codemirror.js addon/mode/loadmode.js addon/mode/simple.js addon/runmode/runmode.js addon/runmode/colorize.js addon/edit/matchbrackets.js mode/meta.js -c -o codemirror.min.js -->
+    <script type="text/javascript" charset="utf-8" src="js/lib/codemirror.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="style/codemirror.css" />
+</head>
+
+<body>
+    <div id="menu">
+        <a href="./"><span id="title">NullPaste</span></a>
+        <a href="?about" id="about_link">About</a>
+        <ul>
+            <a href="./"><li>Create new paste</li></a>
+            <a href="?recent"><li>Recent pastes</li></a>
+            <a href="#" id="yourpastes_link"><li>Your pastes</li></a>
+            <!--<li>Search <input type="text"/></li>-->
+        </ul>
+    </div>
+
+    <div class="box" id="recentview">
+    </div>
+
+    <div class="box" id="newpaste">
+        <input type="text" id="newpaste_description" placeholder="Description (optional)" />
+        <textarea id="newpaste_editor"></textarea>
+
+        <p id="size_disp" style="display: none; float: left; font-size: 80%; padding-top: 0.4em;">
+            Used:
+            <span id="size_current"></span>KB / <span id="size_max"></span>KB
+        </p>
+
+        <p style="text-align: right;">
+            <span class="nobr">
+                Indent width:
+                <select name="tabwidth" id="select_tabwidth">
+                    <option value="4">4</option>
+                    <option value="2">2</option>
+                    <option value="8">8</option>
+                </select>
+                &nbsp;
+            </span>
+            <span class="nobr">
+                Indent with tab:
+                <input type="checkbox" onclick="editor_indent_space = !editor_indent_space;"/>
+                &nbsp;
+            </span>
+            <span class="nobr">
+            Language:
+            <select name="language" id="select_language">
+                <option value="text/plain">Plain text</option>
+                <option value="text/x-csrc">C</option>
+                <option value="text/x-c++src">C++</option>
+                <option value="text/x-csharp">C#</option>
+                <option value="text/x-java">Java</option>
+                <option value="text/x-sh">Shell</option>
+                <option value="text/javascript">JavaScript</option>
+                <option value="text/html">HTML</option>
+                <option value="text/xml">XML</option>
+                <option value="text/css">CSS</option>
+                <option value="application/x-json">JSON</option>
+                <option value="application/x-httpd-php">PHP</option>
+                <option value="text/x-coffeescript">CoffeeScript</option>
+                <option value="text/x-common-lisp">Common Lisp</option>
+                <option value="text/x-d">D</option>
+                <option value="text/x-go">Go</option>
+                <option value="text/x-haskell">Haskell</option>
+                <option value="text/x-perl">Perl</option>
+                <option value="text/x-python">Python</option>
+                <option value="text/x-ruby">Ruby</option>
+                <option value="text/x-rustsrc">Rust</option>
+                <option value="text/x-sql">SQL</option>
+                <option value="text/x-diff">diff</option>
+                <option value="text/x-markdown">Markdown</option>
+                <option value="text/x-gfm">GitHub Flavored Markdown</option>
+
+                <option value="text/apl">APL</option>
+                <option value="application/pgp">PGP</option>
+                <option value="text/x-ttcn-asn">ASN.1</option>
+                <option value="text/x-asterisk">Asterisk</option>
+                <option value="text/x-brainfuck">Brainfuck</option>
+                <option value="text/x-cobol">Cobol</option>
+                <option value="text/x-clojure">Clojure</option>
+                <option value="text/x-clojurescript">ClojureScript</option>
+                <option value="text/x-gss">Closure Stylesheets (GSS)</option>
+                <option value="text/x-cmake">CMake</option>
+                <option value="application/x-cypher-query">Cypher</option>
+                <option value="text/x-cython">Cython</option>
+                <option value="text/x-crystal">Crystal</option>
+                <option value="text/x-cassandra">CQL</option>
+                <option value="text/x-dart">Dart</option>
+                <option value="text/x-django">Django</option>
+                <option value="text/x-dockerfile">Dockerfile</option>
+                <option value="application/xml-dtd">DTD</option>
+                <option value="text/x-dylan">Dylan</option>
+                <option value="text/x-ebnf">EBNF</option>
+                <option value="text/x-ecl">ECL</option>
+                <option value="application/edn">edn</option>
+                <option value="text/x-eiffel">Eiffel</option>
+                <option value="text/x-elm">Elm</option>
+                <option value="application/x-ejs">Embedded Javascript</option>
+                <option value="application/x-erb">Embedded Ruby</option>
+                <option value="text/x-erlang">Erlang</option>
+                <option value="text/x-factor">Factor</option>
+                <option value="text/x-fcl">FCL</option>
+                <option value="text/x-forth">Forth</option>
+                <option value="text/x-fortran">Fortran</option>
+                <option value="text/x-fsharp">F#</option>
+                <option value="text/x-gas">Gas</option>
+                <option value="text/x-feature">Gherkin</option>
+                <option value="text/x-groovy">Groovy</option>
+                <option value="text/x-haml">HAML</option>
+                <option value="text/x-literate-haskell">Haskell (Literate)</option>
+                <option value="text/x-haxe">Haxe</option>
+                <option value="text/x-hxml">HXML</option>
+                <option value="application/x-aspx">ASP.NET</option>
+                <option value="message/http">HTTP</option>
+                <option value="text/x-idl">IDL</option>
+                <option value="text/x-jade">Jade</option>
+                <option value="application/x-jsp">Java Server Pages</option>
+                <option value="application/ld+json">JSON-LD</option>
+                <option value="text/jsx">JSX</option>
+                <option value="text/x-julia">Julia</option>
+                <option value="text/x-kotlin">Kotlin</option>
+                <option value="text/x-less">LESS</option>
+                <option value="text/x-livescript">LiveScript</option>
+                <option value="text/x-lua">Lua</option>
+                <option value="text/mirc">mIRC</option>
+                <option value="text/x-mariadb">MariaDB SQL</option>
+                <option value="text/x-mathematica">Mathematica</option>
+                <option value="text/x-modelica">Modelica</option>
+                <option value="text/x-mumps">MUMPS</option>
+                <option value="text/x-mssql">MS SQL</option>
+                <option value="text/x-mysql">MySQL</option>
+                <option value="text/x-nginx-conf">Nginx</option>
+                <option value="text/x-nsis">NSIS</option>
+                <option value="text/n-triples">NTriples</option>
+                <option value="text/x-objectivec">Objective C</option>
+                <option value="text/x-ocaml">OCaml</option>
+                <option value="text/x-octave">Octave</option>
+                <option value="text/x-oz">Oz</option>
+                <option value="text/x-pascal">Pascal</option>
+                <option value="text/x-pig">Pig</option>
+                <option value="text/x-plsql">PLSQL</option>
+                <option value="text/x-properties">Properties files</option>
+                <option value="text/x-protobuf">ProtoBuf</option>
+                <option value="text/x-puppet">Puppet</option>
+                <option value="text/x-q">Q</option>
+                <option value="text/x-rsrc">R</option>
+                <option value="text/x-rst">reStructuredText</option>
+                <option value="text/x-rpm-changes">RPM Changes</option>
+                <option value="text/x-rpm-spec">RPM Spec</option>
+                <option value="text/x-sass">Sass</option>
+                <option value="text/x-scala">Scala</option>
+                <option value="text/x-scheme">Scheme</option>
+                <option value="text/x-scss">SCSS</option>
+                <option value="application/sieve">Sieve</option>
+                <option value="text/x-slim">Slim</option>
+                <option value="text/x-stsrc">Smalltalk</option>
+                <option value="text/x-smarty">Smarty</option>
+                <option value="text/x-solr">Solr</option>
+                <option value="text/x-soy">Soy</option>
+                <option value="application/sparql-query">SPARQL</option>
+                <option value="text/x-spreadsheet">Spreadsheet</option>
+                <option value="text/x-squirrel">Squirrel</option>
+                <option value="text/x-swift">Swift</option>
+                <option value="text/x-stex">sTeX</option>
+                <option value="text/x-latex">LaTeX</option>
+                <option value="text/x-systemverilog">SystemVerilog</option>
+                <option value="text/x-tcl">Tcl</option>
+                <option value="text/x-textile">Textile</option>
+                <option value="text/x-tiddlywiki">TiddlyWiki </option>
+                <option value="text/tiki">Tiki wiki</option>
+                <option value="text/x-toml">TOML</option>
+                <option value="text/x-tornado">Tornado</option>
+                <option value="text/troff">troff</option>
+                <option value="text/x-ttcn">TTCN</option>
+                <option value="text/x-ttcn-cfg">TTCN_CFG</option>
+                <option value="text/turtle">Turtle</option>
+                <option value="application/typescript">TypeScript</option>
+                <option value="text/x-twig">Twig</option>
+                <option value="text/x-vb">VB.NET</option>
+                <option value="text/vbscript">VBScript</option>
+                <option value="text/velocity">Velocity</option>
+                <option value="text/x-verilog">Verilog</option>
+                <option value="text/x-vhdl">VHDL</option>
+                <option value="application/xquery">XQuery</option>
+                <option value="text/x-yaml">YAML</option>
+                <option value="text/x-z80">Z80</option>
+                <option value="text/x-mscgen">mscgen</option>
+                <option value="text/x-xu">xu</option>
+                <option value="text/x-msgenny">msgenny</option>
+            </select>
+            &nbsp;
+            </span>
+            <button id="publish_button">Select user...</button>
+        </p>
+        <p style="text-align: right;">
+            <img src="img/AJ_Padlock_Silhouette.svg" width="10px"/>
+            <span
+                style="cursor:pointer;"
+                onclick="(function f(e){e.checked=!e.checked})(document.getElementById('newpaste_encryption'))">
+            Private (encrypted and unlisted):</span>
+            <input id="newpaste_encryption" type="checkbox"/>
+        </p>
+    </div>
+
+    <div class="box" id="pasteview">
+        <p style="font-size: 80%;">
+        <a id="pasteview_user"></a> <span id="pasteview_added"></span> <span id="pasteview_language"></span>
+        <span id="pasteview_size"></span> KB
+        <span style="display: none" class="enc-indicator" id="pasteview_encrypted">
+            <img src="img/AJ_Padlock_Silhouette.svg" width="10px"/>
+            Private
+        </span>
+        </p>
+        <p id="pasteview_description"></p>
+        <code><pre style="overflow-x: auto;" id="pasteview_body"></pre></code>
+        <p>
+            <ul class="horiz">
+                <li><button style="width: 5em;" id="clone_button">Clone</button></li>
+                <li><button style="width: 5em;" id="delete_button">Delete</button></li>
+            </ul>
+        </p>
+    </div>
+
+    <div class="box" id="aboutview">
+        <h2>NullPaste</h2>
+        <p>
+            A decentralized pastebin by nullpo
+        </p>
+
+        <p>
+            NullPaste uses <a href="https://codemirror.net/">CodeMirror</a> library written by Marijn Haverbeke
+        </p>
+
+        <p>
+            <h3>Statistics</h3>
+
+            <table>
+                <tr>
+                    <td>Total pastes:</td>
+                    <td><span id="stat_total"></span></td>
+                </tr>
+                <tr>
+                    <td>Encrypted pastes:</td>
+                    <td><span id="stat_encrypted"></span></td>
+                </tr>
+                <tr>
+                    <td>Users:</td>
+                    <td><span id="stat_users"></span></td>
+                </tr>
+            </table>
+        </p>
+    </div>
+
+    <script type="text/javascript" charset="utf-8" src="js/lib/spin.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/utils/ZeroFrame.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/NullPaste.js"></script>
+    <script type="text/javascript">
+        CodeMirror.modeURL = "./js/lib/mode/%N/%N.js";
+    </script>
+</body>
+
+</html>
+

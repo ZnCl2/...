@@ -1,0 +1,118 @@
+{
+	"next_topic_id": 3,
+	"topic": [
+		{
+			"topic_id": 1,
+			"title": "我创建了一个站点，但是optional文件不会在被访问的情况下自动触发下载",
+			"body": "地址是 http://127.0.0.1:43110/1JMf7ZNEsZ4PgYrDD6oGc9hbv8ssTieXNN/\n里面有两个flac的文件，就算浏览器发起了请求，也不会出发ZeroNet下载这两个文件",
+			"added": 1496930554,
+			"parent_topic_uri": "8_1NV87VmSkezRyz8NbFpdkYJsJUSfXx7LJa"
+		},
+		{
+			"topic_id": 2,
+			"title": "开坑 关于大文件分片",
+			"body": "我觉得大文件分片对于ZeroNet的用户体验还是有比较大的意义的。\n不过目前ZeroNet的开发者是否有开发大文件分片的计划？\n另外这里是否也有人对开发大文件分片的功能有兴趣？",
+			"added": 1496992668,
+			"parent_topic_uri": "8_1NV87VmSkezRyz8NbFpdkYJsJUSfXx7LJa"
+		}
+	],
+	"topic_vote": {
+		"8_1PBMVMMVVtSK6FmMbfz4fhEw5fv6eZs5Dn": 1
+	},
+	"next_comment_id": 15,
+	"comment": {
+		"8_1PBMVMMVVtSK6FmMbfz4fhEw5fv6eZs5Dn": [
+			{
+				"comment_id": 1,
+				"body": "> [yuzu](#comment_79_1PBMVMMVVtSK6FmMbfz4fhEw5fv6eZs5Dn): 并不是东方厨，只是正好有个朋友有这个资源罢了。\n\n哇，原来你已经在这边开坑了！今天突然好奇装了zeronet，发现你发了好多帖子……",
+				"added": 1496888685
+			}
+		],
+		"1_1Kr2JfCsBYQU1z96xQsYTshKvJ5nz4mTG3": [
+			{
+				"comment_id": 2,
+				"body": "找到原因了！flac文件和m4a文件作为optional文件的时候，都是不会触发下载的……\n只有mp3作为optional文件的时候，在被请求的时候才会触发下载……",
+				"added": 1496939914
+			},
+			{
+				"comment_id": 3,
+				"body": "> [testapp](#comment_15_17xeFZRG9nokuGNj8WZQU5V9ZdfUGr2gGT): 先说结论：格式不影响触发下载，大小才影响触发下载。原来为了避免在用户不明不白的情况下存储空间爆炸，有一个站点默认大小为 10 MiB 的限制，超出限制后会提示用户增大站点限制，经过一段时间的运行，发现把文件做成可选文件后可以载入远远高于 10 MiB 的内容而用户没有感知。更糟糕的是：ZeroNet 目前没有自带文件分片机制。也就是说：单个文件只会从一个节点上下载，而不是像传统的 P2P 软件那样将文件分成多部分同时从多个节点上下载；下载中断后也不会断点续传，而是重新开始下载；而且在 ZeroNet 会将整个文件下载到内存，验证后才写入存储空间。这使得使用 ZeroNet 直接进行大文件的传输在实际上变得很困难，而且导致 ZeroNet 占用过多内存而被杀掉。（参见：https://github.com/HelloZeroNet/ZeroNet/issues/903）所以，ZeroNet 最近加入了单个文件大小的限制（参见：https://github.com/HelloZeroNet/ZeroNet/commit/aacde3361401f37f895ba2782e9d91ef464111fe），这个限制默认为 10 MiB ，超出文件大小限制后的文件将不会被下载。然而，并没有在由于文件大小超出限制而不被下载时弹出提示，这确实是一个问题。\n\n今天上午翻了ZeroNet的代码的时候也发现了这个问题，目前是可以在zeronet.conf里面加上file_size_limit的选项来修改单文件大小限制。主要还是被坑在没提示文件过大的问题上……",
+				"added": 1496990458
+			},
+			{
+				"comment_id": 6,
+				"body": "> [yuzu1](#comment_2_1LXSmRHtTjeKqDCSrZ8GLJUPRimrL5gGF5): 我记得API中可以获取当前站点已使用空间大小，也就是说每次请求前需要自己检查一下。。\n\n不，是单个文件大小的限制，这个是这里面主要坑的地方……",
+				"added": 1497169103
+			},
+			{
+				"comment_id": 10,
+				"body": "> [deep](#comment_85_1A5Uw4pejzgKx4c3yZkz8whBcqMaypp1Wo): 为什么不内置文件分片续传功能？\n\n看[这个链接](/NewGFWTalk.bit/?Topic:2_1Kr2JfCsBYQU1z96xQsYTshKvJ5nz4mTG3/)",
+				"added": 1497724521
+			}
+		],
+		"2_1Kr2JfCsBYQU1z96xQsYTshKvJ5nz4mTG3": [
+			{
+				"comment_id": 4,
+				"body": "然后我刚刚去ZeroTalk上面也发了[一个帖子](/Talk.ZeroNetwork.bit/?Topic:1_1Kr2JfCsBYQU1z96xQsYTshKvJ5nz4mTG3/)\n问nofish有没有相关的计划（避免重复造车轮）\n大家有兴趣的话也可以帮顶一下……\n只是我的英语水平不好，如果发现了错误也麻烦指出一下，多谢了。",
+				"added": 1497017021
+			}
+		],
+		"103_1DcMmKhgdfkR1GDA6zhWhoFRreaej4wLmW": [
+			{
+				"comment_id": 5,
+				"body": "> [cuda](#comment_32_18Tac6A6tQLGhLRXbP7FafhV7NRbxaboVe): 睡4个小时是SB。真的牛人，应该是1个小时工作，其它时间玩。\n\n比较同意这个……",
+				"added": 1497060408
+			}
+		],
+		"2_1LXSmRHtTjeKqDCSrZ8GLJUPRimrL5gGF5": [
+			{
+				"comment_id": 7,
+				"body": "中心化方法，调用google/百度的翻译api……",
+				"added": 1497272033
+			}
+		],
+		"2_12myEpeiECnxMF6FRWp9sW2DpUaMosSmTw": [
+			{
+				"comment_id": 8,
+				"body": "在zeronet的文件夹下创建一个`zeronet.conf`的文件，内容写上\n```\n[global]\nui_port = 43110\n```\n然后把上面的43110改成你想要的端口就可以了。",
+				"added": 1497333405
+			}
+		],
+		"1_12nosggn5KYWFu3SmxcJUzdi98WGPrKaki": [
+			{
+				"comment_id": 9,
+				"body": "> [shion](#comment_85_1CnPgdHbuiXvD1M9xPU3UiXKmLwLLQKCVV): 别上当，可能是钓鱼用的，不入群就没人知道你玩zeronet，我建议大家搞个tox群，tox通讯使用量子物理中的左右手套加密机制（我没搞错的话），安全性超高现在一个qq能查出你所有的关系链\n\n我没记错的话，经典计算机上应该是无法实现量子加密的……是不是搞错了？",
+				"added": 1497606188
+			}
+		],
+		"2_1fR6dBmXGWzmbHnvzNZt9Joa6mVo7AVob": [
+			{
+				"comment_id": 11,
+				"body": "没有，因为每个文件都有hash，别人获取的时候会判断这个hash是否和content.json文件里所说的一致。\n然后content.json又由发布者用私钥来进行签名，所以也无法被篡改。",
+				"added": 1498025866
+			}
+		],
+		"4_1FJCJm9PPaL2Lcfv64fSCuXXBHQcE4JdGY": [
+			{
+				"comment_id": 12,
+				"body": "> [sibu](#comment_15_1FJCJm9PPaL2Lcfv64fSCuXXBHQcE4JdGY): 没人删帖和封号，这两点足够压倒性的优势了，百度贴吧无故删帖，删到人不想说话，因为辛辛苦苦打了几千字说删就删，根本不尊重人的发言权，我感觉是百度公司背后的势力故意让百度这样的。不过没有删帖和封号，怎么应对故意来捣乱的水军和五毛啊\n\n这个可能需要有足够好的算法来进行这方面的分辨，毕竟是全匿名的网络……",
+				"added": 1498306822
+			}
+		],
+		"3_1LXSmRHtTjeKqDCSrZ8GLJUPRimrL5gGF5": [
+			{
+				"comment_id": 13,
+				"body": "这种讨论页面加载速度还是很快的，主要慢的是板块页面。\n刚才改了一些诊断用的代码，结果是后端数据库查询用了121ms，前端显示内容用了1371ms，也就是说主要性能问题是来自于前端一口气渲染了全部内容，而不是进行懒加载（看到哪渲染到哪）。",
+				"added": 1498618996
+			}
+		],
+		"1_1JCKknei67oHVDJeSCDq3GyRhqTMDVsjeF": [
+			{
+				"comment_id": 14,
+				"body": "这里推崇文膜，武膜，但不推崇暴力膜",
+				"added": 1498794209
+			}
+		]
+	},
+	"comment_vote": {}
+}

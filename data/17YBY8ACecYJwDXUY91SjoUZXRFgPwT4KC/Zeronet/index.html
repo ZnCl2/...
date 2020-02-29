@@ -1,0 +1,421 @@
+
+<!DOCTYPE html>
+
+<html>
+<head>
+ <title>Zeronet Redesign Workup</title>
+ <meta charset="utf-8">
+ <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+ <base href="" target="_top" id="base">
+ <script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+ <!---->
+ <noscript><link rel="stylesheet" href="media/fonts.css" /></noscript>
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+
+ <!-- Inline css... Thanks Google! -->
+ <style id='style'>
+ body { background-color: #FFF; color: #393837; margin: 0px; padding: 0px; font-family: 'Helvetica Neue', 'Roboto', 'Segoe UI', 'Helvetica', 'Open Sans', 'Tahoma', sans-serif; font-weight: 200; padding-bottom: 50px; }
+h1, h2, h3, h4, h5 { font-family: 'Helvetica Neue', 'Roboto', 'Segoe UI', 'Helvetica', 'Open Sans', 'Tahoma', sans-serif; font-weight: 200; font-size: 100px; margin: 20px; padding: 0px; }
+h1 { font-family: 'Text Me One', sans-serif; padding-bottom: 30px; line-height: 100px; }
+h2 { font-size: 35px; line-height: 47px; }
+h3 { font-size: 43px; text-transform: uppercase; }
+h4 { font-size: 24px; }
+h5 { font-size: inherit; color: #6A1CCC; margin: 0px; }
+
+a { border-bottom: 1px solid rgba(255,255,255,0.5); transition: all 0.3s; text-decoration: none; }
+a:hover { border-bottom: 1px solid rgba(255,255,255,1); transition: none; }
+a:active { background-color: rgba(255,255,255,0.1) }
+a:focus { transition: all 0.3s }
+
+.button { padding: 10px 20px; border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 3px; transition: all 0.3s; font-size: 130%; }
+.button:hover { border: 1px solid rgba(255, 255, 255, 1); transition: none; }
+.button-container { display: inline-block; vertical-align: top; text-align: center; }
+
+.block { padding: 20px; min-height: 350px; float: left; box-sizing: border-box; padding-bottom: 0px; transform: TranslateY(100px); opacity: 0; transition: 0.6s cubic-bezier(0.165, 0.84, 0.44, 1); }
+.block-33 { width: 33% }
+.block-34 { width: 34% }
+.block-50 { width: 50% }
+.block-67 { width: 67% }
+.block-100 { width: 100%; -webkit-transform: translateY(0px); transform: translateY(0px); opacity: 1 }
+.block ul { margin: 0px; margin-bottom: -20px; padding: 0px; padding-left: 30px; top: 50%; position: absolute; transform: translateY(-50%); -webkit-transform: translateY(-50%); }
+.block li { font-size: 24px; margin-bottom: 25px; list-style-type: none; border-left: 1px solid #A262F3; padding-left: 15px; padding-right: 20px; }
+.block li:last-child { margin-bottom: 0px }
+.block-detail .button { border-color: rgba(19, 171, 131, 0.24); color: #13A980; margin: 20px; margin-bottom: 10px; display: inline-block; }
+.block-detail .button:hover { border-color: rgba(19, 171, 131, 1); }
+
+.head-top { background: #4962DD; background: linear-gradient(45deg, #6B14D3 0, #7A26E2 25%, #4962DD 60%); color: white; text-align: center; padding: 70px 10px; min-height: 556px; }
+.head-top h1 { display: inline-block; border: 5px solid white; height: 97px; padding: 10px; line-height: 100px; }
+.head-top a { color: white; }
+.head-top .download { margin-top: 44px; line-height: 44px; }
+.head-top .download-windows, .head-top .download-mac, .head-top .download-oldmac, .head-top .download-linux, .head-top .download-android { display: none }
+.platform-windows .head-top .download-windows { display: block }
+.platform-mac .head-top .download-mac { display: block }
+.platform-oldmac .head-top .download-oldmac { display: block }
+.platform-linux .head-top .download-linux { display: block }
+.platform-android .head-top .download-android { display: block }
+.platform-windows .head-top .download-other, .platform-mac .head-top .download-other, .platform-oldmac .head-top .download-other, .platform-linux .head-top .download-other, .platform-android .head-top .download-other { display: none }
+
+
+.block-foot h2 span { display: inline-block; background-color: #6B14D3; color: white; padding: 6px 10px; margin: 1px; background: linear-gradient(45deg, #6B14D3 0, #7A26E2 15%, #4962DD 120%); }
+.block-foot, .block-follow { min-height: 240px; }
+.block-follow { text-align: right; padding: 40px; padding-bottom: 0px }
+.block-follow .icon { margin: 10px; fill: #AAA; transition: all 0.3s; }
+.block-follow .icon:hover { fill: #7A26E2; transition: none; }
+.block-follow .icon:active { fill: #4962DD; transition: none; }
+
+.hosted { font-size: 15px; position: absolute; right: 10px; opacity: 0.7; height: 0px; margin-top: 10px; }
+/* Tabs Start */
+
+.ease {
+	-webkit-transition: all .5s;
+	   -moz-transition: all .5s;
+		 -o-transition: all .5s;
+			transition: all .5s;
+}
+
+.container {
+	width: 100%;
+	max-width: 1000px;
+	margin: 0 auto;
+}
+
+.tabs {
+	background: #333377;
+	position: relative;
+}
+
+.tabs > input,
+.tabs > span {
+	width: 25%;
+	height: 60px;
+	line-height: 60px;
+	position: absolute;
+	top: 0;
+}
+
+.tabs > input {
+	cursor: pointer;
+	filter: alpha(opacity=0);
+	opacity: 0;
+	position: absolute;
+	z-index: 99;
+}
+
+.tabs > span {
+	background: #333377;
+	text-align: center;
+	overflow: hidden;
+}
+
+.tabs > span i,
+.tabs > span {
+	-webkit-transition: all .5s;
+	   -moz-transition: all .5s;
+		 -o-transition: all .5s;
+			transition: all .5s;
+}
+
+.tabs > input:hover + span {
+	background: rgba(255,255,255,.1);
+}
+
+.tabs > input:checked + span {
+	background: #fff;
+}
+
+.tabs > input:checked + span,
+.tabs > input:hover + span {
+	color: #6666cc;
+}
+
+#tab-1, #tab-1 + span {
+	left: 0;
+}
+
+#tab-2, #tab-2 + span {
+	left: 25%;
+}
+
+#tab-3, #tab-3 + span {
+	left: 50%;
+}
+
+#tab-4, #tab-4 + span {
+	left: 75%;
+}
+
+
+.tab-content {
+	padding: 80px 20px 20px;
+	width: 100%;
+	min-height: 340px;
+}
+
+.tab-content section {
+	width: 100%;
+	display: none;
+}
+
+.tab-content section h1 {
+	margin-top: 15px;
+	font-size: 100px;
+	font-weight: 100;
+	text-align: center;
+}
+
+#tab-1:checked ~ .tab-content #tab-item-1  {
+	display: block;
+}
+
+#tab-2:checked ~ .tab-content #tab-item-2  {
+	display: block;
+}
+
+#tab-3:checked ~ .tab-content #tab-item-3  {
+	display: block;
+}
+
+#tab-4:checked ~ .tab-content #tab-item-4  {
+	display: block;
+}
+
+#tab-5:checked ~ .tab-content #tab-item-5  {
+	display: block;
+}
+
+/* effect-1 */
+
+.effect-1 > input:checked + span {
+	background: #f0f0f0;
+}
+
+/* Medium screen */
+@media only screen and (max-width: 1200px) {
+	.block li { font-size: 20px }
+	.block-foot, .block-follow { width: 100%; }
+	.block-follow svg { height: 50px }
+	.block-follow { min-height: 50px }
+}
+
+/* Small screen */
+@media only screen and (max-width: 960px) {
+	.block li { font-size: 20px }
+	.block-33, .block-34, .block-50, .block-67, .block-100 { width: 100%; }
+}
+
+/* Mini screen */
+@media only screen and (max-width: 470px) {
+	.head-top h1 { font-size: 60px; height: 67px; line-height: 70px; width: 196px; }
+	h2 { font-size: 20px; font-size: 16px; line-height: 30px; }
+	h3 { font-size: 35px; }
+	.block-follow svg { width: 25px; height: 25px }
+	.block-follow { min-height: 25px }
+	.download-android .button-outline { font-size: 15px }
+}
+ h2,h3,h4,h5,h6,a,li,ul,small,span { visibility: hidden; } /* Avoid font flicker */
+ h1 { opacity: 0; transition: all 0.3s ease-in-out; }
+ @font-face {
+  font-family: 'Text Me One';
+  font-style: normal;
+  font-weight: 300;
+  src:
+    local('Text Me One'),
+    url(data:application/font-woff2;charset=utf-8;base64,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) format('woff2'),
+    url('font/TextMeOne-Regular.woff') format('woff');
+ }
+
+ </style>
+ <link rel="preload" href="media/fonts.css" as="style">
+
+</head>
+<body>
+
+  <script>
+  if (navigator.appVersion.toLowerCase().indexOf("win")!=-1) document.body.className = "platform-windows";
+  else if (navigator.appVersion.toLowerCase().indexOf("mac os x")!=-1) {
+    osx_version = parseFloat(navigator.appVersion.toLowerCase().match(/os x ([0-9]+_[0-9]+)/)[1].replace("_", ""))
+    if (osx_version >= 11)
+      document.body.className = "platform-mac";
+    else
+      document.body.className = "platform-oldmac";
+  }
+  else if (navigator.appVersion.toLowerCase().indexOf("android")!=-1) document.body.className = "platform-android";
+  else if (navigator.appVersion.toLowerCase().indexOf("linux")!=-1) document.body.className = "platform-linux";
+
+  function download(platform) {
+    var req = new XMLHttpRequest();
+    req.onload = function (res) {
+      window.location = JSON.parse(req.responseText)[0].assets[0].browser_download_url;
+    }
+    req.open("GET", "https://api.github.com/repos/HelloZeroNet/ZeroNet-kivy/releases", true);
+    req.send();
+    return false;
+  }
+  </script>
+
+  <!-- Top -->
+  <div class="block block-100 head-top">
+   <h1>ZeroNet</h1>
+   <h2>A Free, Open, Dynamic Web</h2>
+   <div class="download download-windows">
+    <div class="button-container">
+     <a href="https://github.com/HelloZeroNet/ZeroNet-win/archive/dist/ZeroNet-win.zip" class="button button-outline">Download for Windows</a><br>
+     <small>9.6MB &middot; <span>Unpack &middot; Run ZeroNet.exe</span></small>
+    </div>
+    <div class="button-container" style="margin: 0px 10px">
+     <span style="margin: 0px 10px">or</span>
+     <a href="https://github.com/HelloZeroNet/ZeroNet#user-content-how-to-join">Other platforms and source code</a>
+    </div>
+   </div>
+
+   <div class="download download-mac">
+    <div class="button-container">
+     <a href="https://github.com/HelloZeroNet/ZeroNet-mac/archive/dist/ZeroNet-mac.zip" class="button button-outline">Download for macOS</a><br>
+     <small>8.8MB &middot; <span>Download &middot; Run ZeroNet.app</span></small>
+    </div>
+    <div class="button-container" style="margin: 0px 10px">
+     <span style="margin: 0px 10px">or</span>
+     <a href="https://github.com/HelloZeroNet/ZeroNet#user-content-how-to-join">Other platforms and source code</a>
+    </div>
+   </div>
+
+   <div class="download download-linux">
+    <div class="button-container">
+     <a href="https://github.com/HelloZeroNet/ZeroBundle/raw/master/dist/ZeroBundle-linux64.tar.gz" class="button button-outline">Download for Linux 64bit</a><br>
+     <small>15MB &middot; <span>Unpack &middot; Run ZeroNet.sh</span></small>
+    </div>
+    <div class="button-container" style="margin: 0px 10px">
+     <span style="margin: 0px 10px">or</span>
+     <a href="https://github.com/HelloZeroNet/ZeroNet#user-content-how-to-join">Other platforms and source code</a>
+    </div>
+   </div>
+
+   <div class="download download-android">
+    <div class="button-container">
+     <a href="https://github.com/HelloZeroNet/ZeroNet-kivy/releases/latest" class="button button-outline" onclick="return window.download('android')">Download Android package (experimental)</a><br>
+     <small>14.7MB &middot; <span>Install &middot; Launch ZeroNet</span></small>
+    </div>
+    <div class="button-container" style="margin: 0px 10px">
+     <span style="margin: 0px 10px">or</span>
+     <a href="https://github.com/HelloZeroNet/ZeroNet-kivy">View and help develop Android version</a><br>
+    </div>
+    <div class="button-container" style="margin: 0px 10px">
+     <a href="https://github.com/HelloZeroNet/ZeroNet#user-content-how-to-join">Other platforms and source code</a>
+    </div>
+   </div>
+
+   <div class="download download-other">
+    <div class="button-container">
+     <a href="https://github.com/HelloZeroNet/ZeroNet#user-content-how-to-join" class="button button-outline">Install instructions</a><br>
+     <small>Windows, Linux, Mac supported</small>
+    </div>
+  </div><p></br>
+   <h2>We believe in open, free, and uncensored communication, </br>
+   So we built a network that is:</h2></p>
+   <div class="container">
+<div class="tabs effect-1">
+
+<input type="radio" id="tab-1" name="tab" checked="checked">
+<span href="#tab-item-1">DISTRIBUTED</span>
+<input type="radio" id="tab-2" name="tab">
+<span href="#tab-item-2">SIMPLE</span>
+<input type="radio" id="tab-3" name="tab">
+<span href="#tab-item-3">DYNAMIC</span>
+<input type="radio" id="tab-4" name="tab">
+<span href="#tab-item-4">FREE</span>
+
+<div class="tab-content">
+<section id="tab-item-1">
+<div style="padding:0px 0px 80px 0px"><h2>Share entire sites on a peer to peer basis.</h2></br></div>
+<div>
+<p><ul style="text-align:left;padding:80px 0px 0px 0px"></br>
+ <li>Sites are shared using webtorrent technology:  The more peers access your site, the faster and more reliably it's shared with others!</li>
+ <li>No central point or server vulnerable to shut down.</li>
+ <li>Prove and update your authorship of sites using BIP32- the same cryptography that keeps your bitcoin wallet safe.</li>
+</ul></p></div>
+</section>
+<section id="tab-item-2">
+<div style="padding:0px 0px 80px 0px"><h2>Easy to use for both users and developers.</h2></br></div>
+<div>
+<p><ul style="text-align:left;padding:80px 0px 0px 0px"></br>
+ <li>Download, unpack and get browsing without extra configuration.</li>
+ <li>Use cryptographically safe BIP32 identities in place of passwords.</li>
+ <li>Build your own sites easily and quickly using coffeescript and debug tools.</li>
+ <li>Assign human readable .bit domain names to your sites using Namecoin.</li>
+</ul></p></div>
+</section>
+<section id="tab-item-3">
+<div style="padding:0px 0px 80px 0px"><h2>Create and use multi-user websites updated in real time.</h2></br></div>
+<div>
+<p><ul style="text-align:left;padding:80px 0px 0px 0px"></br>
+ <li>SQL Database support makes developing sites easy.</li>
+ <li>Site functionality is expandable through plugins.</li>
+ <li>Sites are served by visitors and thus scalable without significant costs.</li>
+</ul></p></div>
+</section>
+<section id="tab-item-4">
+<div style="padding:0px 0px 80px 0px"><h2>Privacy friendly and censorship resistant.</h2></br></div>
+<div>
+<p><ul style="text-align:left;padding:80px 0px 0px 0px"></br>
+ <li>Sites are saved locally, so you can keep browsing them even without an active internet connection!</li>
+ <li>No single point of failure- as long as one peer still has a copy to share, your site will remain accessible.</li>
+ <li>Compatible with the modern web browser of your choice- even Tor Browser, to keep your activity private.</li>
+ <li>Open Source -  Everyone can examine and contribute to the source code!</li>
+</ul></p></div>
+</section>
+
+</div>
+</div>
+  </div>
+
+  <!-- Load fonts -->
+  <script>
+    var cb = function() {
+      var l = document.createElement('link'); l.rel = 'stylesheet';
+      l.href = 'media/fonts.css';
+      var h = document.getElementsByTagName('head')[0]; h.parentNode.insertBefore(l, h);
+    };
+    setTimeout(cb, 0);
+    var raf = requestAnimationFrame || mozRequestAnimationFrame ||
+        webkitRequestAnimationFrame || msRequestAnimationFrame;
+    if (raf) raf(cb);
+    else window.addEventListener('load', cb);
+
+    setTimeout(function() {
+      document.getElementById("style").innerHTML += "\nh2 { visibility: visible !important }"
+    }, 800)
+
+    setTimeout(function() {
+      document.getElementById("style").innerHTML += "\nh3,h4,h5,h6,a,li,ul,small,span { visibility: visible !important }"
+    }, 4000)
+
+    setTimeout(function() {
+      document.getElementsByTagName("h1")[0].style.opacity = 1
+      document.getElementsByTagName("h1")[0].style.transform = "none"
+    }, 100)
+  </script>
+  <!-- EOF Load fonts -->
+
+  <!-- EOF block -->
+  <div style="clear: both"></div>
+<div class ="block block-50 block-follow" style="opacity:1; transform:none; text-align:left">
+  <p>Want to explore some of the content on Zeronet before downloading?  <a href="">Browse Through a Proxy</a></br>
+    Want to Learn More?  <a href="">Check out the Manual</a> or <a href="">Review the Presentation</a></br>
+    Want to support our development?  <a href="">Donate Today</a>
+</p></div>
+
+<div class="block block-50 block-follow" style="opacity: 1; transform: none">
+ <a href="">Facebook</a>
+ <a href="">Twitter</a>
+ <a href="">Reddit</a>
+ <a href="">Github</a>
+ <p>This isn't the official Zeronet site, just an experimental redesign mockup based on the original source.</p>
+</div>
+
+<div style="clear: both"></div>
+
+<!-- Hosted -->
+<!-- <h3 class="hosted"><svg class="icon icon-ghost" style="height: 14px; width: 14px; opacity: 0.5; vertical-align: -1px;"><use xlink:href="#icon-ghost"></use></svg> Hosted by the wonderful <a href="http://www.vultr.com/?ref=6955457-3B" target="_blank">Vultr.com</a></h3>
+-->
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE HTML>
+<html lang="ru">
+    <head>
+      <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb</title>
+      <link rel="stylesheet" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/css/main.css"/>
+      <link rel="shortcut icon" type="image/x-icon" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/favicon.ico"/>
+      <link href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/rss.xml" title="Akademic's blog" type="application/rss+xml" rel="alternate"/>
+    </head>
+    <body>
+        <header><h1><a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb" rel="home">akademic.name</a></h1></header>
+        <main class="content">
+            
+<article>
+    <h1>Intel GMA500 &#43; kernel 2.6.31 в ubuntu на dell mini 1010</h1> <time>03.10.2009</time>
+	<p>Поскольку в рунете я информации не нашёл, то пожалуй напишу на эту тему заметку.
+Все операции проделываются на свежеустановленном ubuntu netbook remix 9.04
+Итак это возможно.</p>
+
+<p>Начать надо с посещения сей ссылки:
+<a href="http://www.mydellmini.com/forum/dell-mini-10-discussion/10461-guide-get-ubuntu-display-work-dell-mini-10-not-10v.html"><a href="http://www.mydellmini.com/forum/dell-mini-10-discussion/10461-guide-get-ubuntu-display-work-dell-mini-10-not-10v.html&lt;/a&gt;">http://www.mydellmini.com/forum/dell-mini-10-discussion/10461-guide-get-ubuntu-display-work-dell-mini-10-not-10v.html&lt;/a&gt;</a>
+Там в первом посте описано как сделать, чтобы видео заработало на 2.6.28-15.
+Кратко перескажу:</p>
+
+<p>Создадим файлик с необходимыми репозиториями:
+<pre>sudo nano /etc/apt/sources.list.d/ubuntu-mobile.list</pre></p>
+
+<p>Добавим в него следующие строки:
+<pre>
+deb <a href="http://ppa.launchpad.net/ubuntu-mobile/ppa/ubuntu">http://ppa.launchpad.net/ubuntu-mobile/ppa/ubuntu</a> jaunty main
+deb-src <a href="http://ppa.launchpad.net/ubuntu-mobile/ppa/ubuntu">http://ppa.launchpad.net/ubuntu-mobile/ppa/ubuntu</a> jaunty main
+</pre></p>
+
+<p>Для того, чтобы aptitude признал репозитории, добавим ключ репозитория
+<pre>
+sudo apt-key adv &ndash;keyserver keyserver.ubuntu.com &ndash;recv-keys C6598A30
+</pre></p>
+
+<p>Затем делаем
+<pre>
+sudo aptitude update
+sudo aptitude install poulsbo-driver-2d poulsbo-driver-3d psb-firmware
+</pre></p>
+
+<p>Осталось отредактировать /etc/X11/xorg.conf
+Секцию Device необходимо привести к виду:
+<pre>
+Section &ldquo;Device&rdquo;
+        Identifier      &ldquo;Configured Video Device&rdquo;
+        Option &ldquo;AccelMethod&rdquo; &ldquo;EXA&rdquo;
+        Option &ldquo;MigrationHeuristic&rdquo; &ldquo;greedy&rdquo;
+EndSection
+</pre></p>
+
+<p>Без этого тоже будет работать, но у меня периодически подвисала система. Данные строчки в xorg.conf решили эту проблему.
+Итак графика заработала, но ядро 2.6.28-15 уже не самое последнее.
+Я люблю ставить новые ядра. К тому же хотелось попробовать интерфейс moblin для ubuntu, а он вроде как( непомню уже ) в зависимостях хочет 2.6.31
+Впрочем, пока ограничюсь лишь запуском системы на новом ядре с относительно быстро работающей графикой.</p>
+
+<p>В файлик
+<pre>/etc/apt/sources.list.d/ubuntu-mobile.list</pre>
+добавим репозиторий
+<pre>deb <a href="http://dell-mini.archive.canonical.com/updates">http://dell-mini.archive.canonical.com/updates</a> jaunty-dell-moblin public</pre>
+<pre>sudo aptitude update</pre>
+Отсюда возьмём новое ядро
+<pre>sudo aptitude install linux-image-2.6.31-400-generic</pre>
+Заранее скачайте deb-пакеты из поста по ссылке:
+<a href="http://ubuntuforums.org/showpost.php?p=7773647&amp;postcount=13">http://ubuntuforums.org/showpost.php?p=7773647&amp;postcount=13</a>
+Для скачивания файлов надо зарегистрироваться на форуме.
+Если регистрироваться лень, то можно скачать их с моего сайта:
+<ul>
+    <li><a href="http://akademic.name/file/dell/psb-kernel-headers_4.41.2-0ubuntu1~910um1_all.deb">psb-kernel-headers_4.41.2-0ubuntu1~910um1_all.deb</a></li>
+    <li><a href="http://akademic.name/file/dell/psb-kernel-source_4.41.2-0ubuntu1~910um1_all.deb">psb-kernel-source_4.41.2-0ubuntu1~910um1_all.deb</a></li>
+    <li><a href="http://akademic.name/file/dell/psb-kernel-source_4.41.2-0ubuntu1~910um1.tar.gz">psb-kernel-source_4.41.2-0ubuntu1~910um1.tar.gz</a></li>
+</ul></p>
+
+<p>Теперь нужно перезагрузиться с новым ядром.
+Советую отключить пока старт gdm, чтобы сразу попасть в консоль.</p>
+
+<p>Первые два пакета ставятся командами
+<pre>
+sudo dpkg -i psb-kernel-headers_4.41.2-0ubuntu1~910um1_all.deb
+sudo dpkg -i psb-kernel-source_4.41.2-0ubuntu1~910um1_all.deb
+</pre>
+Выполнять нужно в каталоге, куда сохранили файлы, либо использовать полные пути.</p>
+
+<p>Третий файл понадобится, если установка пакета psb-kernel-source_4.41.2-0ubuntu1~910um1_all.deb окончится неудачей (как произошло у меня).
+Его надо распаковать
+<pre>tar xzvf ./psb-kernel-source_4.41.2-0ubuntu1~910um1.tar.gz</pre></p>
+
+<p>Затем перейти в появившийся каталог
+<pre>cd ./psb-kernel-source_4.41.2-0ubuntu1~910um1</pre></p>
+
+<p>Теперь соберём модули для ядра
+<pre>
+make DRM_MODULES=&ldquo;psb&rdquo;
+</pre></p>
+
+<p>После некоторого ожидания всё будет готово. Надеюсь у вас сборка пройдёт также удачно как и у меня.
+В результате в каталоге появятся файлы psb.ko и drm.ko
+Их необходимо скопировать в /lib/modules/2.6.31-400-generic/updates/char/drm/
+Если каталога updates не существует, его нужно создать(вложенные тоже).</p>
+
+<p>Последняя команда:
+<pre>sudo depmod -a</pre>
+Теперь система сможет найти эти модули.</p>
+
+<p>Однако это ещё не всё.
+X-сервер не запустится, потому как не сможет найти подходящую конфигурацию для дисплея.
+Решает эту проблему опция
+<pre>Option &ldquo;IgnoreACPI&rdquo;</pre>
+в секции Device файла /etc/X11/xorg.conf</p>
+
+<p>Таким образом эта секция будет выглядеть так:
+<pre>
+Section &ldquo;Device&rdquo;
+    Identifier      &ldquo;Configured Video Device&rdquo;
+    Option  &ldquo;IgnoreACPI&rdquo;
+    Option  &ldquo;AccelMethod&rdquo; &ldquo;EXA&rdquo;
+    Option  &ldquo;MigrationHeuristic&rdquo; &ldquo;greedy&rdquo;
+EndSection
+</pre></p>
+
+<p>Вот теперь всё.
+Теперь должно работать.</p>
+
+<p>Уже когда я дописал статью(при этом по этой инструкции все шаги были сделаны и всё работало прекрасно), решил перезагрузиться.
+После этого появился неприятный баг: пункты меню перестали подсвчиваться при наведении мыши.
+Я даже подумал, что тормоза видео вернулись, но это не так.
+Работает по прежнему быстро.</p>
+
+    
+    <span class="next_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2009/k74/index.html" rel="next">В личную коллекцию</a>
+    </span>
+	
+	
+    <span class="prev_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2009/k72/index.html" rel="previous">Chromium</a>
+    </span>
+	
+</article>
+
+        </main>
+        <footer>
+        Будьте внимательны, многое из того, что написано в этом блоге, является личным мнением автора и не претендует на истину.
+        <img src="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/yopiright.jpg" width="12" height="12"/> 2008
+        </footer>
+    </body>
+</html>

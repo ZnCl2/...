@@ -1,0 +1,435 @@
+<!doctype html public "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+
+<head>
+
+<title>Postfix Workarounds</title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+
+</head>
+
+<body bgcolor="#ffffff">
+
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+
+<tr> 
+
+<td align="center" valign="top"> 
+
+<img src="mysza.gif" width="130" height="91" alt="[LOGO]">
+
+<table cellpadding="5" cellspacing="0">
+ 
+<tr> <td> </td> </tr>
+ 
+<tr> <td nowrap align="center" bgcolor="#b2b0b0">
+ 
+<font size="-1"> <strong> QUICK LINKS </strong> </font> </td> </tr>
+ 
+<tr>
+
+<td nowrap bgcolor="#f8eda6" align="left">
+
+<form method="get" action="http://www.google.com/search">
+
+<font size="-1">
+
+<a href="start.html">Home</a> <br>
+
+<strong><a href="announcements.html">Workarounds</a></strong> <br>
+
+<a href="non-english.html">Non-English Info</a> <br>
+
+<a href="features.html">Feature overview </a> <br>
+
+<a href="web-sites.html">Web sites (text)</a> <br>
+
+<a href="download.html">Download (source)</a> <br>
+
+<a href="lists.html">Mailing lists</a> <br>
+
+<a href="press.html">Press and Interviews</a> <br>
+
+<a href="documentation.html">Documentation</a> <br>
+
+<a href="docs.html">Howtos and FAQs</a> <br>
+
+<a href="addon.html">Add-on Software</a> <br>
+
+<a href="packages.html">Packages and Ports</a> <br>
+
+<a href="mirror.html">Becoming a mirror site</a> <br> <br>
+
+<input size="-1" type="submit" value="Search"><br>
+<input type="text" name="q" size="20" maxlength="255" value=""> 
+<input type="hidden" name="sitesearch" value="www.postfix.org">
+
+</font>
+
+</form>
+
+</td> </tr> </table> </td>
+
+<td valign="top" width="100%">
+
+<h1>Postfix Workarounds</h1>
+
+<p> This webpage documents workarounds for bugs in non-Postfix mail
+software. Workarounds may vary from "dumbing down" Postfix, to an
+optional source code patch that automatically enables the workaround.
+</p>
+
+<ul>
+
+<li> <p> <a href="#frontbridge_pipelining_bug">(Resolved: December
+9, 2010) Mail FROM FrontBridge customers does not go through while
+Postfix repeatedly logs "lost connection" errors </a> </p>
+
+</ul>
+
+<h2><a name="frontbridge_pipelining_bug">(Resolved: December 9,
+2010) Mail FROM FrontBridge customers does not go through while
+Postfix repeatedly logs "lost connection" errors.  </a></h2>
+
+<a href="#frontbridge_summary"> summary </a> | <a
+href="#frontbridge_demonstration"> demonstration </a> | <a
+href="#frontbridge_workaround"> workarounds </a> | <a
+href="#frontbridge_background"> background </a>
+
+<h3><a name="frontbridge_summary">Problem summary</a> </h3>
+
+<p> The SMTP service at mail.global.frontbridge.com does not fully
+conform to RFC 2920 which defines the ESMTP PIPELINING extension.
+When the service receives a group of SMTP commands ending with
+QUIT, it ignores all commands in that group except QUIT.  Needless
+to say, this can break SMTP sessions in unexpected ways.  </p>
+
+<p> As one symptom of this defect, mail from FrontBridge customers
+does not go through to Postfix sites, when a Postfix site is
+configured to verify that the sender address is valid (this involves
+connecting to the FrontBridge service).  </p>
+
+<p> Due to the FrontBridge service's non-conformance to RFC 2920,
+the attempt to verify the sender address fails, and Postfix logs
+"<tt>lost connection with mail.global.frontbridge.com[x.x.x.x]
+while sending RCPT TO</tt>". As Postfix is unable to verify the
+sender address, mail from the FrontBridge customer will not go
+through. </p>
+
+<h3><a name="frontbridge_demonstration">Problem demonstration</a> </h3>
+
+<p> The following is a slightly-edited transcript of an SMTP session
+that demonstrates the problem.  The transcript was obtained by
+executing the following commands: </p>
+
+<blockquote>
+<pre>
+# postconf -e debug_peer_list=frontbridge.com
+# postfix reload
+# sendmail -bv receiver@example.com
+</pre>
+</blockquote>
+
+<p> Instead of receiver@example.com specify an email address that
+is hosted by FrontBridge. </p>
+
+<blockquote>
+<pre>
+S: 220 VA3EHSMHS018.bigfish.com Microsoft ESMTP MAIL Service ready at
+       Sun, 28 Nov 2010 19:01:22 +0000
+
+C: EHLO amnesiac.example.com
+
+S: 250-VA3EHSMHS018.bigfish.com Hello [192.0.2.1]
+S: 250-SIZE 157286400
+S: 250-PIPELINING
+S: 250-ENHANCEDSTATUSCODES
+S: 250-STARTTLS
+S: 250-AUTH
+S: 250-8BITMIME
+S: 250-BINARYMIME
+S: 250 CHUNKING
+
+Note: the following client commands are sent in one single TCP segment,
+not in multiple segments back-to-back.
+
+C: MAIL FROM:&lt;sender@example.com> SIZE=338
+C: RCPT TO:&lt;receiver@example.com>
+C: RSET
+C: QUIT
+
+S: 221 2.0.0 Service closing transmission channel
+
+  &lt;Client sees premature TCP close while expecting three more responses&gt;
+</pre>
+</blockquote>
+
+<p> The client sees a premature TCP close, while it expects three
+more server responses. Specifically, the server responses to the
+"MAIL FROM" and "RCPT TO" and "RSET" commands are "lost", and the
+"QUIT" response arrives out-of-order.  One may speculate that the
+issue is not in the FrontBridge server itself, but rather in proxy
+software in front of the FrontBridge server. </p>
+
+<p> As discussed below, the correct behavior would be: </p>
+
+<blockquote>
+<pre>
+C: MAIL FROM:&lt;sender@example.com> SIZE=338
+C: RCPT TO:&lt;receiver@example.com>
+C: RSET
+C: QUIT
+
+S: 250 2.1.0 Sender OK
+S: 250 2.1.5 Recipient OK
+S: 250 2.0.0 Resetting
+S: 221 2.0.0 Service closing transmission channel
+</pre>
+</blockquote>
+
+<h3> <a name="frontbridge_workaround">Workarounds</a> </h3>
+
+<p> A Postfix patch may be made available that turns on workarounds
+automatically,
+by looking at the content of the "220 welcome" server greeting.
+Until that patch is available, workarounds will need to be turned
+on by hand.
+</p>
+
+<ul>
+
+<li> <p> Disable sender address verification. The problem with the
+FrontBridge service triggers with "MAIL FROM/RCPT TO/RSET/QUIT",
+which appears with Postfix sender address verification probes. </p>
+
+<li> <p> Disable SMTP command pipelining for FrontBridge servers,
+Unfortunately, Postfix supports this only by IP address and the
+FrontBridge servers appear to use many IP addresses.  </p>
+
+<blockquote>
+<pre>
+/etc/postfix/main.cf:
+    smtp_discard_ehlo_keyword_address_maps = 
+	cidr:/etc/postfix/discard_ehlo_keywords
+
+/etc/postfix/discard_ehlo_keywords:
+    # This is likely to be incomplete.
+    216.32.0.0/16 silent-discard, pipelining
+    213.199.0.0/16 silent-discard, pipelining
+    65.55.0.0/16  silent-discard pipelining
+    94.245.0.0/16 silent-discard pipelining
+</pre>
+</blockquote>
+
+<li> <p> Disable SMTP command pipelining for all mail. This
+sledgehammer solution will reduce performance for all outbound
+mail, by causing extra network round-trip times. </p>
+
+<blockquote>
+<pre>
+/etc/postfix/main.cf:
+    smtp_discard_ehlo_keywords = silent-discard pipelining
+</pre>
+</blockquote>
+
+</ul>
+
+<h3> <a name="frontbridge_background">Background information</a> </h3>
+
+<p> The SMTP service at mail.global.frontbridge.com does not fully
+conform to RFC 2920 which defines the ESMTP PIPELINING extension.
+When the service receives a group of pipelined SMTP commands ending
+with QUIT, it ignores all commands in that group except QUIT. </p>
+
+<p> In http://tools.ietf.org/html/rfc2920#section-3.1 we see that
+"RSET", "MAIL FROM", and "RCPT TO" are examples of commands that
+can appear anywhere in a pipelined group, while "EHLO", "DATA" and
+"QUIT" are examples of commands that can only appear as the last
+command in a group. </p>
+
+<p> Section 3.2 http://tools.ietf.org/html/rfc2920#section-3.2 specifies
+required server behavior: </p>
+
+<blockquote>
+
+<p> (1) MUST respond to commands in the
+order they are received from the client. </p>
+
+<p> ... </p>
+
+<p> (9) MUST NOT flush or otherwise lose the contents of the TCP
+input buffer under any circumstances whatsoever. </p>
+
+</blockquote>
+
+<p> A correct implementation of RFC 2920 is recorded below from an intranet
+Microsoft Exchange 2007 server. </p>
+
+<blockquote>
+<pre>
+S: 220 exchange.example.com Microsoft ESMTP MAIL Service ready at
+       Sun, 28 Nov 2010 02:41:13 -0500
+
+C: EHLO amnesiac.example.com
+
+S: 250-exchange.example.com Hello [192.0.2.1]
+S: 250-SIZE 29999104
+S: 250-PIPELINING
+S: 250-DSN
+S: 250-ENHANCEDSTATUSCODES
+S: 250-STARTTLS
+S: 250-AUTH
+S: 250-8BITMIME
+S: 250-BINARYMIME
+S: 250-CHUNKING
+S: 250 XEXCH50
+
+Note: the following client commands are sent in one single TCP segment,
+not in multiple segments back-to-back.
+
+C: MAIL FROM:&lt;sender@example.com&gt;
+C: RCPT TO:&lt;recipient@example.com&gt;
+C: RSET
+C: QUIT
+
+S: 250 2.1.0 Sender OK
+S: 250 2.1.5 Recipient OK
+S: 250 2.0.0 Resetting
+S: 221 2.0.0 Service closing transmission channel
+</pre>
+</blockquote>
+
+<p> The four pipelined client commands "MAIL FROM", "RCPT TO", "RSET" and
+"QUIT" are all processed by the Exchange server which correctly returns
+four responses. </p>
+
+<p> The same test against the public MX host for Microsoft's Exchange
+engineering group yields similar results: </p>
+
+<blockquote>
+<pre>
+S: 220 mail7.exchange.microsoft.com Microsoft ESMTP MAIL Service ready
+       at Sat, 27 Nov 2010 23:43:19 -0800
+
+C: EHLO amnesiac.example.com
+
+S: 250-mail7.exchange.microsoft.com Hello [192.0.2.1]
+S: 250-SIZE 104857600
+S: 250-PIPELINING
+S: 250-DSN
+S: 250-ENHANCEDSTATUSCODES
+S: 250-STARTTLS
+S: 250-X-ANONYMOUSTLS
+S: 250-AUTH
+S: 250-X-EXPS NTLM
+S: 250-8BITMIME
+S: 250-BINARYMIME
+S: 250-CHUNKING
+S: 250-XEXCH50
+S: 250 XSHADOW
+
+Note: the following client commands are sent in one single TCP segment,
+not in multiple segments back-to-back.
+
+C: MAIL FROM:&lt;sender@example.com&gt;
+C: RCPT TO:&lt;recipient@example.com&gt;
+C: RSET
+C: QUIT
+
+S: 250 2.1.0 Sender OK
+S: 250 2.1.5 Recipient OK
+S: 250 2.0.0 Resetting
+S: 221 2.0.0 Service closing transmission channel
+</pre>
+</blockquote>
+
+<p> Finally, testing mail.global.frontbridge.com we get non-conformant results
+as discussed above. </p>
+
+<blockquote>
+<pre>
+S: 220 DB3EHSMHS006.bigfish.com Microsoft ESMTP MAIL Service ready at
+       Sun, 28 Nov 2010 07:47:08 +0000
+
+C: EHLO amnesiac.example.com
+
+S: 250-DB3EHSMHS006.bigfish.com Hello [192.0.2.1]
+S: 250-SIZE 157286400
+S: 250-PIPELINING
+S: 250-ENHANCEDSTATUSCODES
+S: 250-STARTTLS
+S: 250-AUTH
+S: 250-8BITMIME
+S: 250-BINARYMIME
+S: 250 CHUNKING
+
+Note: the following client commands are sent in one single TCP segment,
+not in multiple segments back-to-back.
+
+C: MAIL FROM:&lt;sender@example.com&gt;
+C: RCPT TO:&lt;recipient@example.com&gt;
+C: RSET
+C: QUIT
+
+S: 221 2.0.0 Service closing transmission channel
+
+   &lt;Client sees premature TCP close while expecting three more responses&gt;
+</pre>
+</blockquote>
+
+<p> In this case the client's "MAIL FROM", "RCPT TO" and "RSET"
+commands are "lost", and the "QUIT" response arrives out-of-order.
+One may speculate that the issue is not in the FrontBridge server
+itself, but rather in proxy software in front of the FrontBridge
+server. </p>
+
+<p> Significantly, the FrontBridge SMTP servers correctly handle pipelining
+of DOT + QUIT at the end of a delivery transaction, perhaps because this
+"group" is treated specially. </p>
+
+<blockquote>
+<pre>
+S: 220 DB3EHSMHS003.bigfish.com Microsoft ESMTP MAIL Service ready at
+       Sun, 28 Nov 2010 07:27:55 +0000
+
+C: EHLO amnesiac.example.com
+
+S: 250-DB3EHSMHS003.bigfish.com Hello [192.0.2.1]
+S: 250-SIZE 157286400
+S: 250-PIPELINING
+S: 250-ENHANCEDSTATUSCODES
+S: 250-STARTTLS
+S: 250-AUTH
+S: 250-8BITMIME
+S: 250-BINARYMIME
+S: 250 CHUNKING
+
+Note: the following client commands are sent in one single TCP segment,
+not in multiple segments back-to-back.
+
+C: MAIL FROM:&lt;sender@example.com&gt;
+C: RCPT TO:&lt;recipient@example.com&gt;
+C: DATA
+
+S: 250 2.1.0 Sender OK
+S: 250 2.1.5 Recipient OK
+S: 354 Start mail input; end with &lt;CRLF&gt;.&lt;CRLF&gt;
+
+C: [message-content]
+C: .
+C: QUIT
+
+S: 250 2.6.0 &lt;20101128070828.AB036504373@amnesiac.example.com&gt;
+             [InternalId=11073071] Queued mail for delivery
+S: 221 2.0.0 Service closing transmission channel
+</pre>
+</blockquote>
+
+</table>
+
+</body>
+
+</html>

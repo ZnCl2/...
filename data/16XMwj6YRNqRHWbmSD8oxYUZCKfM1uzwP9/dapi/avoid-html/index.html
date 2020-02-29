@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>少写些 HTML mmap.page</title>
+    <link rel="stylesheet" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/css/style.css">
+    <link rel="alternate" type="application/rss+xml" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml">
+    <link rel="alternate" type="application/git+http" href="https://github.com/weakish/weakish.github.com.git"/>
+</head>
+<body>
+  <div class="container-lg px-3 my-5 markdown-body">
+
+    <h1><a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/">mmap.page</a></h1>
+    <h1 id="html">
+        
+        
+          少写些 HTML
+        
+        
+      </h1>
+    
+      <h2 id="html-">
+        
+        
+          HTML 是文本标记语言 <a href="#html-" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>HTML 全称是 HyperText Markup Language, 超文本标记语言。
+顾名思义，HTML 是用来标记文本的，而不是用来描述用户界面。
+虽然后来进行了扩展，但为了和原本的设计兼容，仍然不善于表达用户界面。</p>
+<p>当然了，JavaScript 本来也是用来装饰页面的，用来写一些亮晶晶的小玩意。
+但是不管怎么说，JavaScript 总还是一个通用编程语言，而且 JavaScript 更新的节奏也远远超过 HTML.
+所以两害相权取其轻，宁愿写 JavaScript, 也不愿意写 HTML.</p>
+<p>实际上，真正纯粹用 HTML 的框架并不常见。
+因为 HTML 太不好用了，用 HTML 的框架多少需要加点料，
+比如 <code>*ng</code> (angular) 和 <code>v-</code> (vue) 属性，再比如 JSX (React).
+再不然就是搞一个和 HTML 类似的模板语言。</p>
+<p>其实这种「缝缝补补又三年」的作风，还不如干脆直接写 JavaScript 爽气。</p>
+    
+      <h2 id="kotlin--ceylon-">
+        
+        
+          Kotlin 和 Ceylon 的做法 <a href="#kotlin--ceylon-" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>一些新冒出来的语言直接用原生的结构来表达 HTML.</p>
+<p>比如，Kotlin 里，html 是这样写的：</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">fun</span> <span class="nf">result</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">=</span>
+    <span class="nf">html</span> <span class="p">{</span>
+        <span class="nf">head</span> <span class="p">{</span>
+            <span class="nf">title</span> <span class="p">{+</span><span class="s">"XML encoding with Kotlin"</span><span class="p">}</span>
+        <span class="p">}</span>
+        <span class="nf">body</span> <span class="p">{</span>
+            <span class="nf">h1</span> <span class="p">{+</span><span class="s">"XML encoding with Kotlin"</span><span class="p">}</span>
+            <span class="nf">a</span><span class="p">(</span><span class="n">href</span> <span class="p">=</span> <span class="s">"http://kotlinlang.org"</span><span class="p">)</span> <span class="p">{+</span><span class="s">"Kotlin"</span><span class="p">}</span>
+            <span class="nf">p</span> <span class="p">{</span>
+                <span class="k">for</span> <span class="p">(</span><span class="n">arg</span> <span class="k">in</span> <span class="n">args</span><span class="p">)</span>
+                    <span class="p">+</span><span class="n">arg</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+</code></pre></div></div>
+<p>这可不是什么模板语言。这就是 Kotlin, 原生的。</p>
+<p>Kotlin 提供这样一个语法糖：</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">f</span><span class="p">({</span> <span class="s">"一个匿名函数"</span> <span class="p">})</span>
+</code></pre></div></div>
+<p>可以写成</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">f</span> <span class="p">{</span> <span class="s">"一个匿名函数"</span> <span class="p">}</span>
+</code></pre></div></div>
+<p>所以 <code>html { ... }</code> 就是一个 Kotlin 函数调用，
+<code>{}</code> 里面的其他 html 元素同理。</p>
+<p><code>html</code> 函数的定义大概是这样的这样：</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">fun</span> <span class="nf">html</span><span class="p">(</span><span class="n">init</span><span class="p">:</span> <span class="nc">HTML</span><span class="p">.()</span> <span class="p">-&gt;</span> <span class="nc">Unit</span><span class="p">):</span> <span class="nc">HTML</span> <span class="p">{</span>
+    <span class="kd">val</span> <span class="py">html</span> <span class="p">=</span> <span class="nc">HTML</span><span class="p">()</span>
+    <span class="n">html</span><span class="p">.</span><span class="nf">init</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">html</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>大致上是初始化一个 HTML 实例。</p>
+<p>相应的 HTML 类的定义：</p>
+<pre><code>class HTML : TagWithText(&quot;html&quot;) {
+    fun head(init: Head.() -&gt; Unit) = initTag(Head(), init)
+    fun body(init: Body.() -&gt; Unit) = initTag(Body(), init)
+}
+</code></pre>
+<p>使用原生 Kotlin 语言表达 HTML，意味着我们可以使用所有的 Kotlin 原生语言特性，
+再也不必为 HTML 模板语言表达力不足或者写法奇怪而烦恼。
+同时，自然而然地保证了 HTML 模板的类型安全。</p>
+<p>类似地，ceylon 里 html 是这样写的：</p>
+<div class="language-ceylon highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">Html</span> <span class="o">{</span>
+    <span class="n">doctype</span> <span class="o">=</span> <span class="n">html5</span><span class="o">;</span>
+    <span class="nd">Head</span> <span class="o">{</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s">"Ceylon: home page"</span><span class="o">;</span>
+    <span class="o">};</span>
+    <span class="nd">Body</span> <span class="o">{</span>
+        <span class="nd">H1</span> <span class="o">{</span> <span class="s">"Hello `` req.queryParameter("</span><span class="n">name</span><span class="s">") else "</span><span class="nd">World</span><span class="s">" `` !"</span> <span class="o">}</span>
+    <span class="o">};</span>
+<span class="o">}</span>
+</code></pre></div></div>
+<p>上面用到了 Ceylon 为命名参数提供的语法糖，等价于:</p>
+<div class="language-ceylon highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">Html</span><span class="o">(</span><span class="n">doctype</span> <span class="o">=</span> <span class="n">html5</span><span class="o">,</span> <span class="nd">Head</span><span class="o">(...),</span> <span class="nd">Body</span><span class="o">(...))</span>
+</code></pre></div></div>
+<p><code>Html</code> 是标准库提供的类，<code>Html { ... }</code> 就是初始化，
+(Ceylon 直接通过 <code>C()</code> 构造类的实例，不用 <code>new</code>)
+同样是原生的 Ceylon.
+这和 Kotlin 的思路是类似的。</p>
+    
+      <h2 id="mithril">
+        
+        
+          Mithril <a href="#mithril" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>JavaScript 中，Mithril 框架直接使用 JavaScript 代替 HTML:</p>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">m</span><span class="p">(</span><span class="dl">"</span><span class="s2">main</span><span class="dl">"</span><span class="p">,</span> <span class="p">[</span>
+    <span class="nx">m</span><span class="p">(</span><span class="dl">"</span><span class="s2">h1</span><span class="dl">"</span><span class="p">,</span> <span class="p">{</span><span class="na">class</span><span class="p">:</span> <span class="dl">"</span><span class="s2">title</span><span class="dl">"</span><span class="p">},</span> <span class="dl">"</span><span class="s2">My first app</span><span class="dl">"</span><span class="p">),</span>
+    <span class="nx">m</span><span class="p">(</span><span class="dl">"</span><span class="s2">button</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">A button</span><span class="dl">"</span><span class="p">),</span>
+<span class="p">])</span>
+</code></pre></div></div>
+<p>这就意味着 JavaScript 的各种特性都可以直接用，
+虽然 JavaScript 并不是一门优雅的语言，
+比起 HTML 以及魔改 HTML 的模板语言，不知道高到哪里去了。</p>
+<p>同样，JavaScript 的各种基础设施全部可以直接用，包括 IDE 的错误提示、重构，<a href="https://flow.org">flow</a> 类型检查，等等。
+不需要苦等工具专门支持。</p>
+    
+      <h2 id="section">
+        
+        
+          迁移框架 <a href="#section" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>有人说，直接写 JavaScript 的话，换框架的时候改起来会累死。
+其实写 HTML 换框架不用怎么改，是因为大部分写的是普通 HTML.
+如果真的用模板的特性，写的稍微酷炫一点，改起来一样累死。
+而且一旦有什么地方不小心忘记改了，就变 bug 了。</p>
+<p>而直接写 JavaScript 的话，换框架或者模板其实就是代码的转换，
+也就是解析一种风格的 JavaScript，生成另一种风格的 JavaScript,
+或者另一种模板语言。</p>
+<p>这都可以由程序完成，相比手工修改，不容易出错。
+如果有类型系统辅助的话就更好了，会比较容易发现转换的错误。</p>
+<p>由于复杂的逻辑通常都抽出来包成函数，
+所以实际转换的是一个高度简化的 JavaScript,
+猜想工作量大概和写一个 json 到 yaml 的转换器差不多吧。
+而且，各种 JavaScript 的 parser 库、AST 变换的库等也可以直接使用或参考，
+不用自己从头开始写。</p>
+    
+      <h2 id="section-1">
+        
+        
+          思考题 <a href="#section-1" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Mithril 提供了属性的简写形式。
+以下两段代码是等价的。</p>
+<p>长版：</p>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">m</span><span class="p">(</span><span class="dl">"</span><span class="s2">input</span><span class="dl">"</span><span class="p">,</span> <span class="p">{</span>
+    <span class="na">class</span><span class="p">:</span> <span class="dl">"</span><span class="s2">name</span><span class="dl">"</span><span class="p">,</span>
+    <span class="na">type</span><span class="p">:</span> <span class="dl">"</span><span class="s2">text</span><span class="dl">"</span><span class="p">,</span>
+    <span class="na">placeholder</span><span class="p">:</span> <span class="dl">"</span><span class="s2">First name</span><span class="dl">"</span><span class="p">,</span>
+<span class="p">})</span>
+</code></pre></div></div>
+<p>短版：</p>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">m</span><span class="p">(</span><span class="dl">"</span><span class="s2">input.name[type=text][placeholder=First name]</span><span class="dl">"</span><span class="p">)</span>
+</code></pre></div></div>
+<p>问题：</p>
+<ol>
+<li>属性简写为 <code>[name=value]</code> 好不好？为什么？</li>
+<li><code>class</code> 简写为 <code>element.className</code> 好不好？为什么？</li>
+</ol>
+    <div class="footer border-top border-gray-light mt-5 pt-3 text-gray">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start">
+        <form id="site-search" action="https://duckduckgo.com/html/" method="get">
+          <input name="q" type="search" value="site:mmap.page " required pattern="site:mmap\.page\s.+">
+          <input type="submit" value="&#x1F50D;" title="search through site content via DuckDuckGo">
+        </form>
+        <p>
+          <a href="mailto:weakish@gmail.com" title="weakish@gmail.com"><img src="https://icongr.am/feather/mail.svg" alt="Feather Icon Mail"></a>
+          <a href="https://savannah.nongnu.org/people/viewgpg.php?user_id=65699" title="2414 AEA0 EA48 5263 9697  F1BA 55F6 EEC2 EA3F 0A87"><img src="https://icongr.am/feather/key.svg" alt="Feather Icon Key"></a>
+          <a href="https://github.com/weakish/" title="GitHub"><img src="https://icongr.am/feather/github.svg" alt="Feather Icon Github"></a>
+          <a href="https://www.instagram.com/jakukyo/" title="Instagram"><img src="https://icongr.am/feather/instagram.svg" alt="Feather Icon Instagram"></a>
+          <a href="https://twitter.com/weakish" title="Twitter"><img src="https://icongr.am/feather/twitter.svg" alt="Feather Icon Twitter"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml" title="RSS 2.0 Feed"><img src="https://icongr.am/feather/rss.svg" alt="Feather Icon RSS"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/uses/" title="uses"><img src="https://icongr.am/feather/book-open.svg" alt="Feather Icon Book Open"></a>
+          
+          
+          <a href="/Me.ZeroNetwork.bit/?Profile/12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv/1GnJD7CXskmG8GywMbTvbP12wneCFW9XzR/weakish@zeroid.bit" title="ZeroMe"><img src="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/images/zeronet_logo.svg" alt="ZeroNet Logo" width="32" height="32"></a>
+        </p>
+      </div>
+        <p>
+        Permission to use, copy, modify, and/or distribute this site for any purpose with or without fee is hereby granted.
+        This site is provided "as is" without express or implied warranty.
+        </p>
+        <p>
+        This site does not use cookies or tracking codes.
+        The hosting service provider (<a href="https://pages.github.com/">GitHub Pages</a>) probably collects server logs,
+        but I do not have access to them.
+        </p>
+        <p>
+        Site source is <a href="https://github.com/weakish/weakish.github.com/">available</a>
+        and feedback is <a href="https://github.com/weakish/weakish.github.com/issues">welcome</a>.
+        </p>
+        <noscript>
+        <p>
+        This site does not use JavaScript.
+        </p>
+        </noscript>
+    </div>
+  </div>
+</body>
+</html>

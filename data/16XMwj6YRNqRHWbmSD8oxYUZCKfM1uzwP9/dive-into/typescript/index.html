@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pitfalls of TypeScript mmap.page</title>
+    <link rel="stylesheet" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/css/style.css">
+    <link rel="alternate" type="application/rss+xml" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml">
+    <link rel="alternate" type="application/git+http" href="https://github.com/weakish/weakish.github.com.git"/>
+</head>
+<body>
+  <div class="container-lg px-3 my-5 markdown-body">
+
+    <h1><a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/">mmap.page</a></h1>
+    <h1 id="pitfalls-of-typescript">
+        
+        
+          Pitfalls of TypeScript
+        
+        
+      </h1>
+    
+      <h2 id="excess-property-checking-for-object-literal">
+        
+        
+          Excess Property Checking for Object Literal <a href="#excess-property-checking-for-object-literal" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>TypeScript uses structural typing (to work with typical JavaScript code).</p>
+<div class="language-typescript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">print_height</span><span class="p">(</span><span class="nx">person</span><span class="p">:</span> <span class="p">{</span> <span class="nl">height</span><span class="p">:</span> <span class="nx">number</span> <span class="p">}):</span> <span class="k">void</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">person</span><span class="p">.</span><span class="nx">height</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">const</span> <span class="nx">somebody</span> <span class="o">=</span> <span class="p">{</span> <span class="na">height</span><span class="p">:</span> <span class="mi">150</span><span class="p">,</span> <span class="na">weight</span><span class="p">:</span> <span class="mi">150</span> <span class="p">};</span>
+<span class="nx">print_height</span><span class="p">(</span><span class="nx">somebody</span><span class="p">);</span>
+</code></pre></div></div>
+<p>However, TypeScript has excess property checking for object literal.
+Thus if we inline the <code>somebody</code> declaration above, TypeScript raises an error:</p>
+<div class="language-typescript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">print_height</span><span class="p">({</span> <span class="na">height</span><span class="p">:</span> <span class="mi">150</span><span class="p">,</span> <span class="na">weight</span><span class="p">:</span> <span class="mi">150</span> <span class="p">});</span> <span class="c1">// Error!</span>
+</code></pre></div></div>
+<p>However, partial overlap is still permitted:</p>
+<div class="language-typescript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">type</span> <span class="nx">Point</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="na">x</span><span class="p">:</span> <span class="nx">number</span><span class="p">;</span>
+    <span class="nl">y</span><span class="p">:</span> <span class="nx">number</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="nx">type</span> <span class="nx">Label</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="na">name</span><span class="p">:</span> <span class="nx">string</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kd">const</span> <span class="na">partialOverlap</span><span class="p">:</span> <span class="nx">Point</span> <span class="o">|</span> <span class="nx">Label</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="na">x</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="na">y</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="na">name</span><span class="p">:</span> <span class="dl">"</span><span class="s2">origin</span><span class="dl">"</span>
+<span class="p">}</span>
+<span class="kd">function</span> <span class="nx">print_pl</span><span class="p">(</span><span class="na">pl</span><span class="p">:</span> <span class="nx">Point</span> <span class="o">|</span> <span class="nx">Label</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">pl</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="nx">print_pl</span><span class="p">({</span> <span class="na">x</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="na">y</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="na">name</span><span class="p">:</span> <span class="dl">"</span><span class="s2">origin</span><span class="dl">"</span><span class="p">})</span>
+</code></pre></div></div>
+<p>But overlap with conflicting properties is not permitted:</p>
+<div class="language-typescript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">type</span> <span class="nx">Point</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="na">x</span><span class="p">:</span> <span class="nx">number</span><span class="p">;</span>
+    <span class="nl">y</span><span class="p">:</span> <span class="nx">number</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="nx">type</span> <span class="nx">SPoint</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="na">x</span><span class="p">:</span> <span class="nx">string</span><span class="p">;</span>
+    <span class="nl">y</span><span class="p">:</span> <span class="nx">string</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kd">const</span> <span class="na">conflictingProperties</span><span class="p">:</span> <span class="nx">Point</span> <span class="o">|</span> <span class="nx">SPoint</span> <span class="o">=</span> <span class="p">{</span><span class="na">x</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="na">y</span><span class="p">:</span> <span class="dl">"</span><span class="s2">0</span><span class="dl">"</span><span class="p">}</span>
+</code></pre></div></div>
+    
+      <h2 id="function-overloads">
+        
+        
+          Function Overloads <a href="#function-overloads" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Function type declaration supports overloading.</p>
+<div class="language-typescript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">plus</span><span class="p">(</span><span class="nx">x</span><span class="p">:</span> <span class="nx">number</span><span class="p">,</span> <span class="nx">y</span><span class="p">:</span> <span class="nx">number</span><span class="p">):</span> <span class="nx">number</span><span class="p">;</span>
+<span class="kd">function</span> <span class="nx">plus</span><span class="p">(</span><span class="nx">x</span><span class="p">:</span> <span class="nx">string</span><span class="p">,</span> <span class="nx">y</span><span class="p">:</span> <span class="nx">string</span><span class="p">):</span> <span class="nx">string</span><span class="p">;</span>
+<span class="kd">function</span> <span class="nx">plus</span><span class="p">(</span><span class="nx">x</span><span class="p">:</span> <span class="nx">number</span><span class="p">,</span> <span class="nx">y</span><span class="p">:</span> <span class="nx">number</span><span class="p">):</span> <span class="nx">boolean</span><span class="p">;</span> <span class="c1">// see notes below</span>
+<span class="kd">function</span> <span class="nx">plus</span><span class="p">(</span><span class="nx">x</span><span class="p">:</span> <span class="nx">number</span> <span class="o">|</span> <span class="nx">string</span><span class="p">,</span> <span class="nx">y</span><span class="p">:</span> <span class="nx">number</span> <span class="o">|</span> <span class="nx">string</span><span class="p">):</span> <span class="nx">number</span> <span class="o">|</span> <span class="nx">string</span> <span class="o">|</span> <span class="nx">boolean</span> <span class="p">{</span> <span class="c1">// this line is not overload</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">x</span> <span class="o">==</span> <span class="dl">"</span><span class="s2">number</span><span class="dl">"</span> <span class="o">&amp;&amp;</span> <span class="k">typeof</span> <span class="nx">y</span> <span class="o">==</span> <span class="dl">"</span><span class="s2">number</span><span class="dl">"</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">x</span> <span class="o">+</span> <span class="nx">y</span><span class="p">;</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">x</span> <span class="o">==</span> <span class="dl">"</span><span class="s2">string</span><span class="dl">"</span> <span class="o">&amp;&amp;</span> <span class="k">typeof</span> <span class="nx">y</span> <span class="o">==</span> <span class="dl">"</span><span class="s2">string</span><span class="dl">"</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="s2">`</span><span class="p">${</span><span class="nx">x</span><span class="p">}${</span><span class="nx">y</span><span class="p">}</span><span class="s2">`</span><span class="p">;</span> <span class="c1">// equivalent to `x + y`.</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>In the above example, the third overload will not be matched forever.
+Because TypeScripts looks at the overload list,
+proceeding with the first overload attempts to call the function with the provided parameters.
+If it finds a match, it picks this overload as the correct overload.
+And since intersection type of functions are defined as function overloads in TypeScript,
+this breaks the commutative rule of intersection function.
+Given two function types <code>F</code> and <code>G</code>, <code>F &amp; G</code> and <code>G &amp; F</code> are not equivalent.</p>
+<p>Not surprisingly, it is difficult to check function overloads for type equality.</p>
+<p>With TypeScript's conditional types, testing type equality is intuitive:</p>
+<div class="language-ts highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">type</span> <span class="nx">EqEq</span><span class="o">&lt;</span><span class="nx">T</span><span class="p">,</span> <span class="nx">S</span><span class="o">&gt;</span> <span class="o">=</span> <span class="p">[</span><span class="nx">T</span><span class="p">]</span> <span class="kd">extends</span> <span class="p">[</span><span class="nx">S</span><span class="p">]</span> <span class="p">?</span> <span class="p">([</span><span class="nx">S</span><span class="p">]</span> <span class="kd">extends</span> <span class="p">[</span><span class="nx">T</span><span class="p">]</span> <span class="p">?</span> <span class="kc">true</span> <span class="p">:</span> <span class="kc">false</span><span class="p">)</span> <span class="p">:</span> <span class="kc">false</span>
+</code></pre></div></div>
+<p>But it cannot handle function overloads and function intersection:</p>
+<div class="language-typescript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">type</span> <span class="nx">FunctionOverloadsEquality</span> <span class="o">=</span> <span class="nx">EqEq</span><span class="o">&lt;</span>
+    <span class="p">{</span> <span class="p">(</span><span class="na">x</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="na">y</span><span class="p">:</span> <span class="kc">null</span><span class="p">):</span> <span class="k">void</span><span class="p">;</span> <span class="p">(</span><span class="na">x</span><span class="p">:</span> <span class="nx">number</span><span class="p">,</span> <span class="na">y</span><span class="p">:</span> <span class="kc">null</span><span class="p">):</span> <span class="k">void</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="p">(</span><span class="na">x</span><span class="p">:</span> <span class="nx">number</span><span class="p">,</span> <span class="na">y</span><span class="p">:</span> <span class="kc">null</span><span class="p">):</span> <span class="k">void</span><span class="p">;</span> <span class="p">(</span><span class="na">x</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="na">y</span><span class="p">:</span> <span class="kc">null</span><span class="p">):</span> <span class="k">void</span> <span class="p">}</span><span class="o">&gt;</span> <span class="c1">// true</span>
+
+<span class="nx">type</span> <span class="nx">F</span> <span class="o">=</span> <span class="p">(</span><span class="nx">x</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">y</span><span class="p">:</span> <span class="kc">null</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="k">void</span>
+<span class="nx">type</span> <span class="nx">G</span> <span class="o">=</span> <span class="p">(</span><span class="nx">x</span><span class="p">:</span> <span class="nx">number</span><span class="p">,</span> <span class="nx">y</span><span class="p">:</span> <span class="nx">string</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="k">void</span>
+<span class="nx">type</span> <span class="nx">FunctionIntersectionEquality</span> <span class="o">=</span> <span class="nx">EqEq</span><span class="o">&lt;</span><span class="nx">F</span> <span class="o">&amp;</span> <span class="nx">G</span><span class="p">,</span> <span class="nx">G</span> <span class="o">&amp;</span> <span class="nx">F</span><span class="o">&gt;</span> <span class="c1">// true</span>
+</code></pre></div></div>
+<p>To check function overloads' type equality, use this cleaver implementation by <a href="https://github.com/Microsoft/TypeScript/issues/27024#issuecomment-421529650">Matt McCutchen</a>:</p>
+<div class="language-typescript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">type</span> <span class="nx">EqEqEq</span><span class="o">&lt;</span><span class="nx">X</span><span class="p">,</span> <span class="nx">Y</span><span class="o">&gt;</span> <span class="o">=</span>
+    <span class="p">(</span><span class="o">&lt;</span><span class="nx">T</span><span class="o">&gt;</span><span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">T</span> <span class="kd">extends</span> <span class="nx">X</span> <span class="p">?</span> <span class="mi">1</span> <span class="p">:</span> <span class="mi">2</span><span class="p">)</span> <span class="kd">extends</span>
+    <span class="p">(</span><span class="o">&lt;</span><span class="nx">T</span><span class="o">&gt;</span><span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">T</span> <span class="kd">extends</span> <span class="nx">Y</span> <span class="p">?</span> <span class="mi">1</span> <span class="p">:</span> <span class="mi">2</span><span class="p">)</span> <span class="p">?</span> <span class="kc">true</span> <span class="p">:</span> <span class="kc">false</span><span class="p">;</span>
+
+<span class="nx">type</span> <span class="nx">FunctionOverloads</span> <span class="o">=</span> <span class="nx">EqEqEq</span><span class="o">&lt;</span>
+    <span class="p">{</span> <span class="p">(</span><span class="na">x</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="na">y</span><span class="p">:</span> <span class="kc">null</span><span class="p">):</span> <span class="k">void</span><span class="p">;</span> <span class="p">(</span><span class="na">x</span><span class="p">:</span> <span class="nx">number</span><span class="p">,</span> <span class="na">y</span><span class="p">:</span> <span class="kc">null</span><span class="p">):</span> <span class="k">void</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="p">(</span><span class="na">x</span><span class="p">:</span> <span class="nx">number</span><span class="p">,</span> <span class="na">y</span><span class="p">:</span> <span class="kc">null</span><span class="p">):</span> <span class="k">void</span><span class="p">;</span> <span class="p">(</span><span class="na">x</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="na">y</span><span class="p">:</span> <span class="kc">null</span><span class="p">):</span> <span class="k">void</span> <span class="p">}</span><span class="o">&gt;</span> <span class="c1">// false</span>
+</code></pre></div></div>
+<p>However, it still cannot handle  function intersection:</p>
+<div class="language-typescript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">type</span> <span class="nx">FunctionIntersection</span> <span class="o">=</span> <span class="nx">EqEqEq</span><span class="o">&lt;</span><span class="nx">F</span> <span class="o">&amp;</span> <span class="nx">G</span><span class="p">,</span> <span class="nx">G</span> <span class="o">&amp;</span> <span class="nx">F</span><span class="o">&gt;</span> <span class="c1">// true</span>
+</code></pre></div></div>
+<p>Besides, <code>EqEq</code> considers <code>any</code> to equal to any type except <code>never</code>.
+This makes sense, since unlike <code>Any</code> or <code>Anything</code> in other languages, TypeScript's <code>any</code> is not a top type.
+<code>any</code> is assignable to any type except <code>never</code>.
+<code>EqEqEq</code> is more strict and does not consider <code>any</code> to be identical to other type.</p>
+    
+      <h2 id="literal-string-literal-number-but-unique-symbol">
+        
+        
+          Literal String, Literal Number, But Unique Symbol <a href="#literal-string-literal-number-but-unique-symbol" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>TypeScript has literal strings and literal numbers, but there is no literal symbols.
+Instead, there is unique symbols (only allowed in const declarations).</p>
+<p>In other words:</p>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">let</span> <span class="nx">no_unique_string_type</span><span class="p">:</span> <span class="dl">'</span><span class="s1">non sense but valid</span><span class="dl">'</span> <span class="o">=</span> <span class="dl">'</span><span class="s1">non sense but valid</span><span class="dl">'</span>
+<span class="kd">let</span> <span class="nx">no_literal_symbol</span><span class="p">:</span> <span class="nx">symbol</span> <span class="o">=</span> <span class="nb">Symbol</span><span class="p">(</span><span class="dl">"</span><span class="s2">cannot express Symbol(0) | Symbol(1)</span><span class="dl">"</span><span class="p">)</span>
+</code></pre></div></div>
+    <div class="footer border-top border-gray-light mt-5 pt-3 text-gray">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start">
+        <form id="site-search" action="https://duckduckgo.com/html/" method="get">
+          <input name="q" type="search" value="site:mmap.page " required pattern="site:mmap\.page\s.+">
+          <input type="submit" value="&#x1F50D;" title="search through site content via DuckDuckGo">
+        </form>
+        <p>
+          <a href="mailto:weakish@gmail.com" title="weakish@gmail.com"><img src="https://icongr.am/feather/mail.svg" alt="Feather Icon Mail"></a>
+          <a href="https://savannah.nongnu.org/people/viewgpg.php?user_id=65699" title="2414 AEA0 EA48 5263 9697  F1BA 55F6 EEC2 EA3F 0A87"><img src="https://icongr.am/feather/key.svg" alt="Feather Icon Key"></a>
+          <a href="https://github.com/weakish/" title="GitHub"><img src="https://icongr.am/feather/github.svg" alt="Feather Icon Github"></a>
+          <a href="https://www.instagram.com/jakukyo/" title="Instagram"><img src="https://icongr.am/feather/instagram.svg" alt="Feather Icon Instagram"></a>
+          <a href="https://twitter.com/weakish" title="Twitter"><img src="https://icongr.am/feather/twitter.svg" alt="Feather Icon Twitter"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml" title="RSS 2.0 Feed"><img src="https://icongr.am/feather/rss.svg" alt="Feather Icon RSS"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/uses/" title="uses"><img src="https://icongr.am/feather/book-open.svg" alt="Feather Icon Book Open"></a>
+          
+          
+          <a href="/Me.ZeroNetwork.bit/?Profile/12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv/1GnJD7CXskmG8GywMbTvbP12wneCFW9XzR/weakish@zeroid.bit" title="ZeroMe"><img src="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/images/zeronet_logo.svg" alt="ZeroNet Logo" width="32" height="32"></a>
+        </p>
+      </div>
+        <p>
+        Permission to use, copy, modify, and/or distribute this site for any purpose with or without fee is hereby granted.
+        This site is provided "as is" without express or implied warranty.
+        </p>
+        <p>
+        This site does not use cookies or tracking codes.
+        The hosting service provider (<a href="https://pages.github.com/">GitHub Pages</a>) probably collects server logs,
+        but I do not have access to them.
+        </p>
+        <p>
+        Site source is <a href="https://github.com/weakish/weakish.github.com/">available</a>
+        and feedback is <a href="https://github.com/weakish/weakish.github.com/issues">welcome</a>.
+        </p>
+        <noscript>
+        <p>
+        This site does not use JavaScript.
+        </p>
+        </noscript>
+    </div>
+  </div>
+</body>
+</html>

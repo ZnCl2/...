@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dive into Pyinfra mmap.page</title>
+    <link rel="stylesheet" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/css/style.css">
+    <link rel="alternate" type="application/rss+xml" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml">
+    <link rel="alternate" type="application/git+http" href="https://github.com/weakish/weakish.github.com.git"/>
+</head>
+<body>
+  <div class="container-lg px-3 my-5 markdown-body">
+
+    <h1><a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/">mmap.page</a></h1>
+    <h1 id="dive-into-pyinfra">
+        
+        
+          Dive into Pyinfra
+        
+        
+      </h1>
+<p>Pyinfra features:</p>
+<ol>
+<li>Minimal dependencies for remote system (only shell).</li>
+<li>Write deploy files in Python.</li>
+</ol>
+    
+      <h2 id="install">
+        
+        
+          Install <a href="#install" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip <span class="nb">install </span>pyinfra
+</code></pre></div></div>
+    
+      <h2 id="ad-hoc">
+        
+        
+          Ad-hoc <a href="#ad-hoc" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>I can run ad-hoc commands directly without writing any file.</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">;</span> pyinfra @local pip.packages pyinfra
+<span class="nt">--</span><span class="o">&gt;</span> Loading config...
+<span class="nt">--</span><span class="o">&gt;</span> Loading inventory...
+
+<span class="nt">--</span><span class="o">&gt;</span> Connecting to hosts...
+    <span class="o">[</span>@local] Connected
+
+<span class="nt">--</span><span class="o">&gt;</span> Preparing operation...
+
+<span class="nt">--</span><span class="o">&gt;</span> Proposed changes:
+    Groups: @local
+    <span class="o">[</span>@local]   Operations: 1   Commands: 0
+
+<span class="nt">--</span><span class="o">&gt;</span> Beginning operation run...
+<span class="nt">--</span><span class="o">&gt;</span> Starting operation: Pip/Packages <span class="o">(</span><span class="s1">'pyinfra'</span>,<span class="o">)</span>
+    <span class="o">[</span>@local] No changes
+
+<span class="nt">--</span><span class="o">&gt;</span> Results:
+    Groups: @local
+    <span class="o">[</span>@local]   Successful: 1   Errors: 0   Commands: 0/0
+</code></pre></div></div>
+    
+      <h2 id="deploy-file">
+        
+        
+          Deploy File <a href="#deploy-file" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>The best feature of pyinfra to me is writing deploy files in Python.</p>
+<div class="language-py highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># deploy.py
+</span>
+<span class="kn">from</span> <span class="nn">pyinfra.modules</span> <span class="kn">import</span> <span class="n">pip</span>
+
+<span class="n">pip</span><span class="o">.</span><span class="n">packages</span><span class="p">([</span><span class="s">'pyinfra'</span><span class="p">])</span>
+</code></pre></div></div>
+<p>Execute it:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">;</span> pyinfra deploy.py
+<span class="nt">--</span><span class="o">&gt;</span> Loading config...
+<span class="nt">--</span><span class="o">&gt;</span> Loading inventory...
+
+<span class="nt">--</span><span class="o">&gt;</span> Connecting to hosts...
+    <span class="o">[</span>@local] Connected
+
+<span class="nt">--</span><span class="o">&gt;</span> Preparing operations...
+    Loading: deploy.py
+    <span class="o">[</span>@local] Ready: deploy.py
+
+<span class="nt">--</span><span class="o">&gt;</span> Proposed changes:
+    Groups: @local
+    <span class="o">[</span>@local]   Operations: 1   Commands: 0
+
+<span class="nt">--</span><span class="o">&gt;</span> Beginning operation run...
+<span class="nt">--</span><span class="o">&gt;</span> Starting operation: Pip/Packages <span class="o">(</span><span class="s1">'pyinfra'</span>,<span class="o">)</span>
+    <span class="o">[</span>@local] No changes
+
+<span class="nt">--</span><span class="o">&gt;</span> Results:
+    Groups: @local
+    <span class="o">[</span>@local]   Successful: 1   Errors: 0   Commands: 0/0
+</code></pre></div></div>
+    
+      <h2 id="operations">
+        
+        
+          Operations <a href="#operations" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+    
+      <h3 id="global-arguments">
+        
+        
+          Global Arguments <a href="#global-arguments" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<ul>
+<li><code>sudo</code>: execute with sudo</li>
+<li><code>env</code>: dictionary of environment variables to set</li>
+<li><code>ignore_errors</code></li>
+<li><code>success_exit_codes</code>: list of exit codes to consider a success</li>
+<li><code>timeout</code>: timeout for <em>each</em> command executed during the operation</li>
+<li><code>stdin</code>: string or buffer to send to the stdin of any commands</li>
+<li><code>on_success</code> and <code>on_error</code>: callback functions</li>
+</ul>
+<p>Refer to <a href="https://github.com/Fizzadar/pyinfra/blob/master/pyinfra/api/operation_kwargs.py">pyinfra/api/operation_kwargs.py</a> for a complete list.</p>
+    
+      <h3 id="loops">
+        
+        
+          Loops <a href="#loops" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>Actions are executed in orders, blockingly.
+However, operations in a loop are executed, nonblockingly.</p>
+<p>The following will not work, since multiple <code>apt install</code> commands cannot be run at the same time.</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">[</span><span class="s">'git'</span><span class="p">,</span> <span class="s">'tmux'</span><span class="p">,</span> <span class="s">'fish'</span><span class="p">]:</span>
+    <span class="n">apt</span><span class="o">.</span><span class="n">packages</span><span class="p">([</span><span class="n">p</span><span class="p">])</span>
+</code></pre></div></div>
+<p>pyinfra provides <code>state.preserve_loop_order</code> for serializing execution:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">pyinfra.api</span> <span class="kn">import</span> <span class="n">state</span>
+
+<span class="k">with</span> <span class="n">state</span><span class="o">.</span><span class="n">preserve_loop_order</span><span class="p">([</span><span class="s">'git'</span><span class="p">,</span> <span class="s">'tmux'</span><span class="p">,</span> <span class="s">'fish'</span><span class="p">])</span> <span class="k">as</span> <span class="n">loop_items</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">loop_items</span><span class="p">():</span>
+        <span class="n">apt</span><span class="o">.</span><span class="n">packages</span><span class="p">([</span><span class="n">p</span><span class="p">])</span>
+</code></pre></div></div>
+<p>Note the above example is for demonstration only, the proper way should be:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">apt</span><span class="o">.</span><span class="n">packages</span><span class="p">([</span><span class="s">'git'</span><span class="p">,</span> <span class="s">'tmux'</span><span class="p">,</span> <span class="s">'fish'</span><span class="p">])</span>
+</code></pre></div></div>
+    
+      <h3 id="writing-operations">
+        
+        
+          Writing Operations <a href="#writing-operations" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>Example in Python 3.6:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># pkcon.py
+</span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">pyinfra.api</span> <span class="kn">import</span> <span class="n">operation</span>
+<span class="kn">from</span> <span class="nn">pyinfra.api.state</span> <span class="kn">import</span> <span class="n">State</span>
+<span class="kn">from</span> <span class="nn">pyinfra.api.host</span> <span class="kn">import</span> <span class="n">Host</span>
+
+<span class="o">@</span><span class="n">operation</span>
+<span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">host</span><span class="p">:</span> <span class="n">Host</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]],</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">]:</span>
+    <span class="s">'''Upgrade system via PackageKit console client.'''</span>
+    <span class="n">command</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">'command'</span><span class="p">:</span> <span class="s">'pkcon update --plain --noninteractive'</span><span class="p">,</span>
+        <span class="s">'success_exit_codes'</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>  <span class="c1">## 5: no updates to install
+</span>    <span class="p">}</span>
+    <span class="c1"># operation yields shell commands, so the target machine does not need Python.
+</span>    <span class="k">yield</span> <span class="n">command</span>
+</code></pre></div></div>
+<p>Note, the above code requires the following stub:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># typings/pyinfra/api/operation.pyi
+# import statements omitted for brevity
+</span><span class="k">def</span> <span class="nf">operation</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">State</span><span class="p">,</span> <span class="n">Host</span><span class="p">],</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]],</span> <span class="n">Generator</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">],</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">]]],</span>
+    <span class="n">pipeline_facts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="o">...</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">OperationMeta</span><span class="p">]:</span> <span class="o">...</span>
+</code></pre></div></div>
+<p>Use it as below:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># deploy.py
+</span><span class="kn">import</span> <span class="nn">pkcon</span>
+<span class="n">pkcon</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+</code></pre></div></div>
+<p>Operations can be packaged in deploys:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># unix.py
+</span><span class="kn">from</span> <span class="nn">pyinfra.api</span> <span class="kn">import</span> <span class="n">deploy</span>
+<span class="kn">from</span> <span class="nn">pyinfra.api.state</span> <span class="kn">import</span> <span class="n">State</span>
+<span class="kn">from</span> <span class="nn">pyinfra.api.host</span> <span class="kn">import</span> <span class="n">Host</span>
+<span class="kn">from</span> <span class="nn">pyinfra.modules</span> <span class="kn">import</span> <span class="n">python</span>
+<span class="kn">import</span> <span class="nn">pkcon</span>
+
+<span class="o">@</span><span class="n">deploy</span>
+<span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">host</span><span class="p">:</span> <span class="n">Host</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">host</span><span class="o">.</span><span class="n">fact</span><span class="o">.</span><span class="n">os</span> <span class="o">==</span> <span class="s">'Linux'</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">host</span><span class="o">.</span><span class="n">fact</span><span class="o">.</span><span class="n">linux_distribution</span><span class="p">[</span><span class="s">"release_meta"</span><span class="p">][</span><span class="s">"ID"</span><span class="p">]</span> <span class="o">==</span> <span class="s">'neon'</span><span class="p">:</span>
+            <span class="c1"># nested operations cannot omit state and host parameters
+</span>            <span class="n">pkcon</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">host</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">python</span><span class="o">.</span><span class="n">raise_exception</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="nb">NotImplementedError</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">python</span><span class="o">.</span><span class="n">raise_exception</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="nb">NotImplementedError</span><span class="p">)</span>
+</code></pre></div></div>
+<p>Again, the above code requires the following stub:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># typings/pyinfra/api/deploy.pyi
+# import statements omitted for brevity
+</span><span class="k">def</span> <span class="nf">deploy</span><span class="p">(</span><span class="n">func_or_name</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="bp">None</span><span class="p">],</span><span class="nb">str</span><span class="p">],</span> <span class="n">data_defaults</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="o">...</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="bp">None</span><span class="p">]:</span> <span class="o">...</span>
+</code></pre></div></div>
+<p>Usage:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># deploy.py
+</span><span class="kn">import</span> <span class="nn">unix</span>
+<span class="n">unix</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+</code></pre></div></div>
+    
+      <h2 id="inventory">
+        
+        
+          Inventory <a href="#inventory" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Currently I have only played with pyinfra on localhost.
+But pyinfra can also manage remote machines.</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pyinfra example.com fact os
+</code></pre></div></div>
+<p>To manage multiple servers, list them in <code>inventory.py</code>:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">;</span> <span class="nb">cat </span>inventory.py
+vm <span class="o">=</span> <span class="o">[</span><span class="s2">"a.example.com"</span>, <span class="s2">"b.example.com"</span>, <span class="s2">"c.example.com"</span><span class="o">]</span>
+<span class="p">;</span> pyinfra inventory.py deploy.py
+</code></pre></div></div>
+    
+      <h2 id="similar-projects">
+        
+        
+          Similar Projects <a href="#similar-projects" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<ul>
+<li><a href="https://github.com/sprinkle-tool/sprinkle">Sprinkle</a>, like Pyinfra but deploy files are written in Ruby.</li>
+<li><a href="https://www.cdi.st/">cdist</a>, also written in Python, but deploy files are written in shell.</li>
+</ul>
+    <div class="footer border-top border-gray-light mt-5 pt-3 text-gray">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start">
+        <form id="site-search" action="https://duckduckgo.com/html/" method="get">
+          <input name="q" type="search" value="site:mmap.page " required pattern="site:mmap\.page\s.+">
+          <input type="submit" value="&#x1F50D;" title="search through site content via DuckDuckGo">
+        </form>
+        <p>
+          <a href="mailto:weakish@gmail.com" title="weakish@gmail.com"><img src="https://icongr.am/feather/mail.svg" alt="Feather Icon Mail"></a>
+          <a href="https://savannah.nongnu.org/people/viewgpg.php?user_id=65699" title="2414 AEA0 EA48 5263 9697  F1BA 55F6 EEC2 EA3F 0A87"><img src="https://icongr.am/feather/key.svg" alt="Feather Icon Key"></a>
+          <a href="https://github.com/weakish/" title="GitHub"><img src="https://icongr.am/feather/github.svg" alt="Feather Icon Github"></a>
+          <a href="https://www.instagram.com/jakukyo/" title="Instagram"><img src="https://icongr.am/feather/instagram.svg" alt="Feather Icon Instagram"></a>
+          <a href="https://twitter.com/weakish" title="Twitter"><img src="https://icongr.am/feather/twitter.svg" alt="Feather Icon Twitter"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml" title="RSS 2.0 Feed"><img src="https://icongr.am/feather/rss.svg" alt="Feather Icon RSS"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/uses/" title="uses"><img src="https://icongr.am/feather/book-open.svg" alt="Feather Icon Book Open"></a>
+          
+          
+          <a href="/Me.ZeroNetwork.bit/?Profile/12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv/1GnJD7CXskmG8GywMbTvbP12wneCFW9XzR/weakish@zeroid.bit" title="ZeroMe"><img src="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/images/zeronet_logo.svg" alt="ZeroNet Logo" width="32" height="32"></a>
+        </p>
+      </div>
+        <p>
+        Permission to use, copy, modify, and/or distribute this site for any purpose with or without fee is hereby granted.
+        This site is provided "as is" without express or implied warranty.
+        </p>
+        <p>
+        This site does not use cookies or tracking codes.
+        The hosting service provider (<a href="https://pages.github.com/">GitHub Pages</a>) probably collects server logs,
+        but I do not have access to them.
+        </p>
+        <p>
+        Site source is <a href="https://github.com/weakish/weakish.github.com/">available</a>
+        and feedback is <a href="https://github.com/weakish/weakish.github.com/issues">welcome</a>.
+        </p>
+        <noscript>
+        <p>
+        This site does not use JavaScript.
+        </p>
+        </noscript>
+    </div>
+  </div>
+</body>
+</html>

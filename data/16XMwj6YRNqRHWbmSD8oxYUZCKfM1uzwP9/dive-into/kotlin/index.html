@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>On Design of Kotlin mmap.page</title>
+    <link rel="stylesheet" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/css/style.css">
+    <link rel="alternate" type="application/rss+xml" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml">
+    <link rel="alternate" type="application/git+http" href="https://github.com/weakish/weakish.github.com.git"/>
+</head>
+<body>
+  <div class="container-lg px-3 my-5 markdown-body">
+
+    <h1><a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/">mmap.page</a></h1>
+    <h1 id="on-design-of-kotlin">
+        
+        
+          On Design of Kotlin
+        
+        
+      </h1>
+    
+      <h2 id="good-parts">
+        
+        
+          Good parts <a href="#good-parts" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+    
+      <h3 id="assignments-are-not-expressions">
+        
+        
+          Assignments are not expressions <a href="#assignments-are-not-expressions" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="p">=</span> <span class="m">1</span><span class="p">)</span> <span class="p">{</span> <span class="nf">println</span><span class="p">(</span><span class="m">2</span><span class="p">)</span> <span class="p">}</span>
+<span class="n">error</span><span class="p">:</span> <span class="n">assignments</span> <span class="n">are</span> <span class="n">not</span> <span class="n">expressions</span><span class="p">,</span> <span class="n">and</span> <span class="n">only</span> <span class="n">expressions</span> <span class="n">are</span> <span class="n">allowed</span> <span class="k">in</span> <span class="k">this</span> <span class="n">context</span>
+</code></pre></div></div>
+    
+      <h3 id="not-nullable-by-default">
+        
+        
+          Not nullable by default <a href="#not-nullable-by-default" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>By default values are not nullable. Nullable values are declared as <code>T?</code>.</p>
+    
+      <h2 id="bad-parts">
+        
+        
+          Bad parts <a href="#bad-parts" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+    
+      <h3 id="type-erasure">
+        
+        
+          Type erasure <a href="#type-erasure" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<blockquote>
+<p>Like Java’s, Kotlin’s generics are not retained at runtime,
+i.e. objects do not carry information about actual type arguments
+passed to their constructors, i.e.
+<code>ArrayList&lt;Integer&gt;()</code> is indistinguishable from <code>ArrayList&lt;Character&gt;()</code>.
+This makes it impossible to perform is-checks
+that take generics into account.
+Kotlin only allows is-checks for star-projected generic types.</p>
+</blockquote>
+<p>-- <a href="https://kotlinlang.org/docs/reference/java-interop.html">Kotlin Reference</a></p>
+<p>Because they thought reified generics are expensive on JVM:</p>
+<blockquote>
+<p>on the JVM reified generics are expensive</p>
+</blockquote>
+<p>-- <a href="http://blog.jetbrains.com/kotlin/2014/12/m10-is-out/">Kotlin Blog: M10 is out</a></p>
+<p>But</p>
+<blockquote>
+<p>FTR I am not sure I believe that explanation.
+I was with Gavin a few years ago
+when Andrey Breslav asked us
+if we were going to implement reified generics
+(we had not yet at the time)
+because they were having trouble implementing it
+and so if we were not going to implement it, they would not bother.</p>
+<p>My guess is they tried and failed, strictly based on this conversation.
+It's possible that they really considered it too expensive,
+but I since that's not backed by public experiments
+and our own experiments tell us
+it's not that expensive for the benefits it gives us,
+I don't <em>have</em> to believe them ;)</p>
+</blockquote>
+<p>-- <a href="https://news.ycombinator.com/item?id=10466643">UnFroMage commented on HackerNews</a></p>
+    
+      <h3 id="no-union-types">
+        
+        
+          No union types <a href="#no-union-types" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>No union types yet. (<a href="https://discuss.kotlinlang.org/t/any-thoughts-on-ceylon-style-union-and-intersection-types/547">547</a>)</p>
+    
+      <h3 id="no-checked-exceptions">
+        
+        
+          No checked exceptions <a href="#no-checked-exceptions" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>Kotlin does not support checked exceptions.</p>
+<p>I think the good part of checked exception is
+to force you think about corner cases,
+and the bad part is increasing verbosity.</p>
+<p>Ceylon does not support checked exceptions either.
+But Ceylon supports union types.
+In fact, Java's checked exception mimics union types.</p>
+<p>Kotlin supports neither checked exception, nor union types.
+Thus its type system cannot check whether a function may raise an exception
+(unless the exception is representable as null)
+and what exceptions it may raise.</p>
+<p>However, throwing one exception is a good practice in common situations.</p>
+<blockquote>
+<p>The reason that you would, ideally, want to only throw one type of exception
+is because doing otherwise likely violates the Single Responsibility and
+Dependency Inversion principles.</p>
+<p>...</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="nc">String</span> <span class="nf">getData</span><span class="o">(</span><span class="kt">int</span> <span class="n">id</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">FileNotFoundException</span>
+</code></pre></div></div>
+<p>Now, we have a change in requirements, and our data comes from a database.</p>
+<p>...</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="nc">String</span> <span class="nf">getData</span><span class="o">(</span><span class="kt">int</span> <span class="n">id</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">SQLException</span>
+</code></pre></div></div>
+<p>We would now have to go through all code that uses our method
+and change the exception we have to check for, else the code won't compile.</p>
+<p>Dependency inversion says that we really shouldn't throw either
+of these exceptions
+because they expose internal implementation details
+we are working to encapsulate.
+...
+Instead we should throw an exception
+that conveys the error at the same level of abstraction
+as we are exposing through our API.</p>
+</blockquote>
+<p>-- <a href="http://programmers.stackexchange.com/a/264068/65620">cbojar, 2014-11-29</a></p>
+<p>For a similar reason, Swift just uses <code>throws</code> in function signature,
+to declare a function which may throw exceptions,
+without specifying types of exception.</p>
+<p>Another reason to throw only one exception is Single Responsibility:</p>
+<blockquote>
+<p>As for Single Responsibility, we need to think about code
+that throws multiple, unrelated exceptions.
+Let's say we have the following method:</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="nc">Record</span> <span class="nf">parseFile</span><span class="o">(</span><span class="nc">String</span> <span class="n">filename</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">IOException</span><span class="o">,</span> <span class="nc">ParseException</span>
+</code></pre></div></div>
+<p>What can we say about this method? We can tell just from the signature
+that it opens a file <strong>and</strong> parses it.
+When we see a conjunction, like &quot;and&quot; or &quot;or&quot;
+in the description of a method,
+we know that it is doing more than one thing;
+it has more than one <strong>responsibility</strong>.
+Methods with more than one responsibility are hard to manage
+as they can change if any of the responsibilities change.
+Instead, we should break methods up so they have a single responsibility:</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="nc">String</span> <span class="nf">readFile</span><span class="o">(</span><span class="nc">String</span> <span class="n">filename</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">IOException</span>
+<span class="kd">public</span> <span class="nc">Record</span> <span class="nf">parse</span><span class="o">(</span><span class="nc">String</span> <span class="n">data</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">ParseException</span>
+</code></pre></div></div>
+</blockquote>
+<p>-- <a href="http://programmers.stackexchange.com/a/264068/65620">cbojar, 2014-11-29</a></p>
+    
+      <h2 id="mixed-feelings">
+        
+        
+          Mixed feelings <a href="#mixed-feelings" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+    
+      <h3 id="codereturncode-behaves-differently-in-lambda-and-anonymous-function">
+        
+        
+          <code>return</code> behaves differently in lambda and anonymous function <a href="#codereturncode-behaves-differently-in-lambda-and-anonymous-function" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>Kotlin distinguishes lambda expression and anonymous function.
+In lambda, <code>return</code> returns from the outer function.</p>
+<p>This reminds me of the dark side of Ruby.
+Ruby also distinguishes <code>proc</code> created by lambda expression and <code>Proc.new</code>.
+In Ruby,the <code>return</code> statement in <code>proc</code> created by <code>Proc.new</code>
+will not only returns control just from itself,
+but also from the method enclosing it.</p>
+<p>To be fair, Kotlin is more reasonable than Ruby.
+In Kotlin, lambda does not allow explicit return result expression.</p>
+    
+      <h3 id="use-codewhencode-for-both-codecasecode-and-codecondcode-in-scheme">
+        
+        
+          Use <code>when</code> for both <code>case</code> and <code>cond</code> in Scheme <a href="#use-codewhencode-for-both-codecasecode-and-codecondcode-in-scheme" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>Kotlin uses <code>when</code> for both <code>case</code> (pattern matching)
+and <code>cond</code> (conditional expression) in Scheme.</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">when</span> <span class="p">{</span>
+    <span class="nf">f</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="k">false</span>  <span class="c1">// f = { it == 0}</span>
+    <span class="k">else</span> <span class="p">-&gt;</span> <span class="k">true</span>
+<span class="p">}</span>
+<span class="k">when</span> <span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nf">g</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="k">false</span>  <span class="c1">// g = { if (it == 0) 0 else 1 }</span>
+    <span class="k">else</span> <span class="p">-&gt;</span> <span class="k">true</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Unless you remember the definition of <code>f</code> or <code>g</code>,
+you does not know whether it is pattern matching or conditional expressions
+until you go back to the beginning of the <code>when</code> expression.</p>
+<p>A workaround is to make it explicit using the full expression of condition:</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">when</span> <span class="p">{</span>
+    <span class="nf">f</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">==</span> <span class="k">true</span> <span class="p">-&gt;</span> <span class="k">false</span>  <span class="c1">// f = { it == 0}</span>
+    <span class="k">else</span> <span class="p">-&gt;</span> <span class="k">true</span>
+<span class="p">}</span>
+<span class="k">when</span> <span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nf">g</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="k">false</span>  <span class="c1">// g = { if (it == 0) 0 else 1 }</span>
+    <span class="k">else</span> <span class="p">-&gt;</span> <span class="k">true</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Or use an explicit function name:</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">when</span> <span class="p">{</span>
+    <span class="nf">isZero</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="k">false</span>  <span class="c1">// isZero = { it == 0}</span>
+    <span class="k">else</span> <span class="p">-&gt;</span> <span class="k">true</span>
+<span class="p">}</span>
+<span class="k">when</span> <span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nf">matchesZero</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="k">false</span>  <span class="c1">// matchesZero = { if (it == 0) 0 else 1 }</span>
+    <span class="k">else</span> <span class="p">-&gt;</span> <span class="k">true</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>This workaround does not work when <code>i</code> itself is a <code>Boolean</code>.</p>
+<p>However, if <code>i</code> is a <code>Boolean</code>, usually we will use <code>when</code> as:</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">when</span> <span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">true</span> <span class="p">-&gt;</span> <span class="o">..</span><span class="p">.</span>
+    <span class="k">false</span> <span class="p">-&gt;</span> <span class="o">..</span><span class="p">.</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Ambiguity does exist
+when we match <code>i</code> against <code>Boolean</code> value returned by other functions.</p>
+    
+      <h3 id="boxed-types-in-java">
+        
+        
+          Boxed types in Java <a href="#boxed-types-in-java" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>Some types are boxed in Java, which does not preserve identity, and often preserve equality.</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">val</span> <span class="py">a</span><span class="p">:</span> <span class="nc">Int</span> <span class="p">=</span> <span class="m">10000</span>
+<span class="nf">print</span><span class="p">(</span><span class="n">a</span> <span class="p">===</span> <span class="n">a</span><span class="p">)</span> <span class="c1">// Prints 'true'</span>
+<span class="kd">val</span> <span class="py">boxedA</span><span class="p">:</span> <span class="nc">Int</span><span class="p">?</span> <span class="p">=</span> <span class="n">a</span>
+<span class="kd">val</span> <span class="py">anotherBoxedA</span><span class="p">:</span> <span class="nc">Int</span><span class="p">?</span> <span class="p">=</span> <span class="n">a</span>
+<span class="nf">print</span><span class="p">(</span><span class="n">boxedA</span> <span class="p">===</span> <span class="n">anotherBoxedA</span><span class="p">)</span> <span class="c1">// !!!Prints 'false'!!!</span>
+<span class="nf">print</span><span class="p">(</span><span class="n">boxedA</span> <span class="p">==</span> <span class="n">anotherBoxedA</span><span class="p">)</span> <span class="c1">// Prints 'true'</span>
+</code></pre></div></div>
+<p>This confuses me.
+I understood that interoperability is important, though.</p>
+    
+      <h3 id="string-templates">
+        
+        
+          String templates <a href="#string-templates" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>String templates are supported both inside raw strings and inside escaped strings. If you need to represent a literal <code>$</code> character in a raw string (which does't support backslash escaping), you can use the following syntax):</p>
+<pre><code class="language-koltin">>val price = &quot;&quot;&quot;
+${'$'}9.99
+&quot;&quot;&quot;
+</code></pre>
+<p><code>${'$'}</code> looks ugly to me.
+And dollar signs are common in text for prices.
+And I wonder whether raw strings with templates are truly raw.
+Even if we did need templates in raw string,
+I think restricting it to <code>${var}</code> is better.
+Put this under &quot;mixed feeling&quot; rather than &quot;bad parts&quot;,
+because I think this is trivial after all.</p>
+    
+      <h2 id="conclusion">
+        
+        
+          Conclusion <a href="#conclusion" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Kotlin is an improved Java, featuring interoperability.
+Most features are already in Java as &quot;best practices&quot;.</p>
+<p>On other side, it lost checked exception.</p>
+<p>Read more on my opinions on the design of Kotlin in <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/dive-into/ceylon-kotlin/">Ceylon v.s. Kotlin</a></p>
+    <div class="footer border-top border-gray-light mt-5 pt-3 text-gray">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start">
+        <form id="site-search" action="https://duckduckgo.com/html/" method="get">
+          <input name="q" type="search" value="site:mmap.page " required pattern="site:mmap\.page\s.+">
+          <input type="submit" value="&#x1F50D;" title="search through site content via DuckDuckGo">
+        </form>
+        <p>
+          <a href="mailto:weakish@gmail.com" title="weakish@gmail.com"><img src="https://icongr.am/feather/mail.svg" alt="Feather Icon Mail"></a>
+          <a href="https://savannah.nongnu.org/people/viewgpg.php?user_id=65699" title="2414 AEA0 EA48 5263 9697  F1BA 55F6 EEC2 EA3F 0A87"><img src="https://icongr.am/feather/key.svg" alt="Feather Icon Key"></a>
+          <a href="https://github.com/weakish/" title="GitHub"><img src="https://icongr.am/feather/github.svg" alt="Feather Icon Github"></a>
+          <a href="https://www.instagram.com/jakukyo/" title="Instagram"><img src="https://icongr.am/feather/instagram.svg" alt="Feather Icon Instagram"></a>
+          <a href="https://twitter.com/weakish" title="Twitter"><img src="https://icongr.am/feather/twitter.svg" alt="Feather Icon Twitter"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml" title="RSS 2.0 Feed"><img src="https://icongr.am/feather/rss.svg" alt="Feather Icon RSS"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/uses/" title="uses"><img src="https://icongr.am/feather/book-open.svg" alt="Feather Icon Book Open"></a>
+          
+          
+          <a href="/Me.ZeroNetwork.bit/?Profile/12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv/1GnJD7CXskmG8GywMbTvbP12wneCFW9XzR/weakish@zeroid.bit" title="ZeroMe"><img src="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/images/zeronet_logo.svg" alt="ZeroNet Logo" width="32" height="32"></a>
+        </p>
+      </div>
+        <p>
+        Permission to use, copy, modify, and/or distribute this site for any purpose with or without fee is hereby granted.
+        This site is provided "as is" without express or implied warranty.
+        </p>
+        <p>
+        This site does not use cookies or tracking codes.
+        The hosting service provider (<a href="https://pages.github.com/">GitHub Pages</a>) probably collects server logs,
+        but I do not have access to them.
+        </p>
+        <p>
+        Site source is <a href="https://github.com/weakish/weakish.github.com/">available</a>
+        and feedback is <a href="https://github.com/weakish/weakish.github.com/issues">welcome</a>.
+        </p>
+        <noscript>
+        <p>
+        This site does not use JavaScript.
+        </p>
+        </noscript>
+    </div>
+  </div>
+</body>
+</html>

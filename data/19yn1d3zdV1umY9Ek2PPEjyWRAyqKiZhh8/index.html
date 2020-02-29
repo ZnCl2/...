@@ -1,0 +1,237 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"> 
+	<title>贝塞尔游戏</title>
+	<link rel="stylesheet" type="text/css" href="css/styles.css?1" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" >
+	<meta property="og:url" content="http://bezier.method.ac" /> 
+	<meta property="og:title" content="贝塞尔游戏" />
+	<meta property="og:description" content="帮助您熟练操作钢笔工具的游戏" /> 
+	<meta property="og:image" content="http://bezier.method.ac/images/fbimage.png" /> 
+	<meta charset="utf-8">
+	<meta
+  name="viewport"
+  content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
+</head>
+<body>
+
+<div id="out"></div>
+
+	<div id="game">
+		<div id="ui_controls">
+
+			<div class="ui_control">
+				<div class="ui_button" id="ui_undo"><span class="shortcut">Ctrl+Z</span>撤销</div>
+			</div>
+
+			<div class="ui_control">
+				<div class="ui_button" id="ui_redo"><span class="shortcut">Shift+Ctrl+Z</span>重做</div>
+			</div>
+
+			<div class="ui_control">
+				<div class="ui_button" id="ui_reload"><span class="shortcut">Ctrl+X</span>重玩</div>
+			</div>
+
+			<div class="ui_control">
+				<div class="ui_button" id="ui_undo"><span class="shortcut">Shift</span>吸附角度</div>
+			</div>
+
+			<div class="ui_control">
+				<div class="ui_button" id="ui_redo"><span class="shortcut">Alt / Option</span>解锁控制柄</div>
+			</div>
+
+		</div>
+		
+		<div id="tooltip">
+			<div class="tooltip_body">
+				<div class="tooltip_text" id="tooltip_text"></div>
+			</div>
+		</div>
+
+		<svg id="workspace" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+			<defs>
+				<lineargradient id="tut_key" x1="0%" y1="0%" x2="0%" y2="100%">
+					<stop offset="0%" stop-color="#ddd" />
+					<stop offset="100%" stop-color="#fff" />
+				</lineargradient>
+				<lineargradient id="tut_key_body" x1="0%" y1="0%" x2="0%" y2="100%">
+					<stop offset="0%" stop-color="#fff" stop-opacity="0.8" />
+					<stop offset="100%" stop-color="#fff" stop-opacity="0.4" />
+				</lineargradient>
+				<filter id="innerbevel" x0="-50%" y0="-50%" width="200%" height="200%">
+					<feGaussianBlur in="SourceAlpha" stdDeviation="2" result="blur"/>
+					<feGaussianBlur in="SourceAlpha" stdDeviation="0.5" result="highlight"/>
+					<feOffset dy="-1" dx="0" in="highlight" />
+					<feComposite in2="SourceAlpha" operator="arithmetic"
+							k2="-1" k3="1" result="hlDiff"/>
+					<feFlood flood-color="white" flood-opacity=".1"/>
+					<feComposite in2="hlDiff" operator="in"/>
+					<feComposite in2="SourceGraphic" operator="over" result="withGlow"/>
+
+					<feOffset in="blur" dy="1" dx="0"/>
+					<feComposite in2="SourceAlpha" operator="arithmetic"
+							k2="-1" k3="1" result="shadowDiff"/>
+					<feFlood flood-color="black" flood-opacity="0.8"/>
+					<feComposite in2="shadowDiff" operator="in"/>
+					<feComposite in2="withGlow" operator="over"/>
+				</filter>
+				<marker id="markerCircle" markerWidth="40" markerHeight="40" refx="20" refy="20" markerUnits="userSpaceOnUse">
+	        <circle cx="20" cy="20" r="10" fill="#393F43" id="marker_circle" />
+	    	</marker>
+	    </defs>
+	    <g id="center">
+		    <circle cx="300" cy="300" r="10" id="endpoint" class="hidden" />
+				<circle cx="300" cy="300" r="10" id="startpoint" class="hidden" />
+				<path d="M 300 300 Z" id="bbox" />
+		    <path d="M 300 300 Z" id="problem" filter="url(#innerbevel)" marker-start="url(#markerCircle)" marker-end="url(#markerCircle)" />
+				<path d="M 300 300 Z" class="placeholder" id="placeholder" />
+				<g id="segments"></g>
+				<g id="remaining_nodes">
+		    	<text>还剩 <tspan id ="remaining_text">0</tspan> 个端点</text>
+		   	</g>
+		   	<g id="available_nodes">
+		   	</g>
+		   	<g id="tutorial">
+		   		<image id="tut_cursor" xlink:href="images/penne.png" width="16" height="16" x="0" y="0" transform="translate(-8, 0)" />
+		   		<circle id="tut_click" r="0" cx="0" cy="0" />
+		   		<g id="tut_key" transform="translate(100,100)">
+		   			<rect x="-1" y="10" width="82" height="40" fill="url(#tut_key_body)" opacity=0.3 rx="3" ry="3" />
+		   			<g id="tut_key_move">
+		   				<rect x="0" y="-1" width="80" height="40" fill="white" rx="3" ry="3" />
+		   				<rect x="0" y="0" width="80" height="40" fill="url(#tut_key)" rx="3" ry="3" />
+		   				<text x="10" y="30" id="tut_key_text"></text>
+		   			</g>
+		   		</g>
+		   		<g id="tut_segments"></g>
+		   		<g id="tut_nodes"></g>
+		   	</g>
+		   	
+				<circle id="pulsator_start" r="0" />
+				<circle id="pulsator_end" class="hidden" r="0" />
+				<text id="replay_tutorial">重播教程</text>
+			</g>
+		</svg>
+
+		<div id="final_score" class="hidden">
+			<div class="subtitle">你通关了贝塞尔游戏</div> 
+			<div class="title">还剩 <span id="nodes_to_spare">0</span> 个端点</div>
+			<svg xmlns="http://www.w3.org/2000/svg" width="260" height="60" id="final_score_svg">
+			</svg>
+			<div class="line_button" id="final_score_tweet">推文晒分</div>
+			<div class="note"><a href="/">再玩一次</a></div>
+		</div>
+
+		<div id="stage_score" class="slidden">
+			
+			<div id="stage_score_container">
+			
+				<div class="left">
+					<div class="note">你用了</div>
+					<div class="node_count_title"><span id="nodes_used">0</span> 端点</div>
+					<div class="note">（ <span id="nodes_available">0</span> 端点可用 ）</div>
+				</div>
+				
+				<div class="right">
+
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 156 51" version="1.1" width="156" height="51" class="svg_button" id="ui_next_stage">
+							<text x="20" y="31">下一关</text>
+							<path d="M 1 7.73 C 1 3.44 3.45 1 7.76 1 L 127.27 1 L 155 24.46 L 127.27 50 L 127.27 50 L 7.76 50 C 3.45 50 1 47.56 1 43.27 L 1 7.73 Z" />
+						</svg>
+						<div class="normal hidden message">
+							<div class="note">理想方案用了 <span id="min_nodes">0</span> 个端点。你能做得更好吗？<a href="#" id="stage_try_again">再试一次</a></div>
+						</div>
+				</div>
+			
+			</div>
+
+		</div>
+	  <div id="tut_skip">跳过教程<span></span></div> 
+		<canvas id="canvas"></canvas>
+		<canvas id="scratchpad"></canvas>
+		<div id="contact">
+			联系原作者
+			<a href="mailto:hello@method.ac">hello@method.ac</a><br>
+			<a href="http://127.0.0.1:43110/Mail.ZeroNetwork.bit/?to=tcjy1">TCJY汉化</a>
+			<a href="https://bezier.method.ac/">原版</a><br>
+			<div id="out2"></div>
+		</div>
+	</div>
+
+	<div id="notice">
+		<div class="container">
+			<h1>这个游戏必须要用 <strong>键盘</strong> 和 <strong>鼠标</strong></h1>
+			<p>你似乎在用触控设备，但是我不太确定，请确认：</p>
+				
+			<p><a href="#" class="button continue">我在用键盘鼠标（触摸板）</a>
+				<span class="dimmed">继续贝塞尔游戏</span>
+			</p>
+			<p>
+				<a href="https://boolean.method.ac" class="button">我在用触摸屏</a>
+				<span class="dimmed">进入任何设备都能用的布尔游戏</span>
+			</p>
+			</p>
+		</div>
+	</div>
+
+	<div id="intro">
+		<div class="container">
+				<div id="title">
+					<h1>贝塞尔游戏</h1> 
+					<p>让你成为钢笔 <img src="images/pen-tool.png" width="26" height="22" alt="" /> 大佬</p>
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript">
+			var isTouchDevice = 'ontouchstart' in document.documentElement;
+			var notice = document.getElementById("notice");
+			if (isTouchDevice) {
+				notice.classList.add("visible");
+			}
+
+			var play = notice.querySelector(".continue");
+
+			play.addEventListener("click", function(){
+				notice.classList.remove("visible");
+			})
+		</script>
+		
+		<script type="text/javascript" src="ZeroFrame.js" charset="utf-8"></script>
+
+<script>
+
+class Page extends ZeroFrame {
+	setSiteInfo(site_info) {
+		var sizeKB = site_info.settings.size/1024
+		var updated = new Date(site_info.content.modified*1000)
+		var out = document.getElementById("out")
+		out.innerHTML =
+			"节点数: " + site_info.peers +
+			"<br>数据量: " + sizeKB.toFixed(2) + "KB"
+		var out2 = document.getElementById("out2")
+		out2.innerHTML =
+			"上次更新: " + updated.toLocaleDateString() + " " + updated.toLocaleTimeString()
+	}
+
+	onOpenWebsocket() {
+		this.cmd("siteInfo", [], function(site_info) {
+			page.setSiteInfo(site_info)
+		})
+	}
+
+	onRequest(cmd, message) {
+		if (cmd == "setSiteInfo")
+			this.setSiteInfo(message.params)
+		else
+			this.log("Unknown incoming message:", cmd)
+	}
+}
+page = new Page()
+
+</script>
+
+<script type="text/javascript" src="bezier.bundle.js" charset="utf-8"></script>
+
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE HTML>
+<html lang="ru">
+    <head>
+      <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb</title>
+      <link rel="stylesheet" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/css/main.css"/>
+      <link rel="shortcut icon" type="image/x-icon" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/favicon.ico"/>
+      <link href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/rss.xml" title="Akademic's blog" type="application/rss+xml" rel="alternate"/>
+    </head>
+    <body>
+        <header><h1><a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb" rel="home">akademic.name</a></h1></header>
+        <main class="content">
+            
+<article>
+    <h1>Codeception: Тест отправки формы с массивом чекбоксов</h1> <time>07.05.2014</time>
+	<p>В рамках приобщения к автоматизированному тестированию, начали вторую попытку покрытия тестами биллинга.
+Инструменты тестирования (да и я, по всей видимости тоже) с прошлого раза сильно продвинулись и дело пошло несколько бодрее.</p>
+
+<p>Основным фреймворком, не долго думая, был взят <a href="http://codeception.com/">Codeception</a>.
+Ну как не долго думая&hellip; Почитал весь раздел Guides, выглядело всё действительно интересно.</p>
+
+<p>Однако в реальной работе не всё так радужно, как в документации. Но об этом я напишу, может быть, в одной из следующих статей.</p>
+
+<p>А сейчас к теме.</p>
+
+<p>Основная масса работы в биллинге заключается в заполнении разнообразных форм и нажимании на ссылки.
+И если со ссылками всё более-менее понятно, то тестирование форм не очень-то освещается в документации.</p>
+
+<p>По крайней мере те аспекты, с которыми пришлось столкнуться нам.</p>
+
+<p>Для приёмочного тестирования на данный момент мы используем модуль PhpBrowser.
+И для тестирования форм там есть следующие методы:</p>
+
+<pre><code>fillField()
+checkOption()
+selectOption()
+submitForm()
+</code></pre>
+
+<p>Так что типичный тест формы выглядел следующим образом:</p>
+
+<pre><code>$I-&gt;fillField('input[name=&quot;first&quot;]', 'first_value');
+$I-&gt;fillField('input[name=&quot;second&quot;]', 'second_value');
+$I-&gt;submitForm('form', []);
+</code></pre>
+
+<p>И всё прекрасно работает, незаполненные значения из формы добираются из html и всё прекрасно.
+До тех пор, пока в форме не надо передать массив из чекбоксов.</p>
+
+<p>Итак, есть форма:</p>
+
+<pre><code>&lt;form method=&quot;POST&quot;&gt;
+    &lt;input type=&quot;checkbox&quot; name=&quot;many_fields[]&quot; value=&quot;1&quot; id=&quot;inp_1&quot;&gt;
+    &lt;input type=&quot;checkbox&quot; name=&quot;many_fields[]&quot; value=&quot;2&quot; id=&quot;inp_2&quot;&gt;
+    &lt;input type=&quot;checkbox&quot; name=&quot;many_fields[]&quot; value=&quot;3&quot; id=&quot;inp_3&quot;&gt;
+    &lt;input type=&quot;submit&quot;&gt;
+&lt;/form&gt;
+</code></pre>
+
+<p>Конечно, сама форма гораздо сложнее, а здесь только участок, который вызвал затруднение.</p>
+
+<p>Я предполагал, что это должно работать так:</p>
+
+<pre><code>$I-&gt;checkOption('#inp_1');
+$I-&gt;checkOption('#inp_3');
+$I-&gt;submitForm('form', []);
+</code></pre>
+
+<p>Но вместо этого получалась какая-то ерунда, а именно приходил массив из трёх пустых элементов.
+Если просетать только один чекбокс, то приходил массив из трёх элементов, первый из которых имел значение, но не то, что указано в value.</p>
+
+<p>К счастью, можно спросить об этом автора проекта на <a href="https://github.com/Codeception/Codeception">github</a>.</p>
+
+<p>И вот что оказалось:
+С формами можно работать двумя способами:
+1. Заполнять поля по отдельности и кликать по чекбоксам и кнопкам с помощью соответствующих методов;
+2. Посылать массив данных через submitForm.</p>
+
+<p>Причём смешивать их нельзя.
+Т.е. либо</p>
+
+<ol>
+<li><pre><code>$I-&gt;checkOption('#inp_1');
+$I-&gt;checkOption('#inp_3');
+$I-&gt;click('input[type=&quot;submit&quot;]');
+</code></pre></li>
+
+<li><p>либо</p>
+
+<pre><code>$I-&gt;submitForm('form', ['many_fields' =&gt; [1,2]);
+</code></pre></li>
+</ol>
+
+<p>Хотя в документации на submitForm приводится пример работы с массивами в формах,
+однако имена инпутов при этом разные, т.к. используется массив с индексами.
+Так что было неочевидно, что так тоже можно делать.</p>
+
+<p>Сейчас я использую codeception версии 1.8.4 и первый вариант предпочтительней, т.к. на сервер пошлётся ровно тот массив, который вы ожидаете.
+Во втором варианте будет послан всё равно массив со всеми чекбоксами, но значения будут заполнены только те, которые указаны во втором параметре <code>submitForm</code>.</p>
+
+<p>В версии, которая пока в разработке, это уже исправлено и оба варианта отрабатывают корректно.
+Будем ждать релиза.</p>
+
+    
+    <span class="next_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2014/microtik-951G-2HnD/index.html" rel="next">Роутер Mikrotik 951G-2HnD</a>
+    </span>
+	
+	
+    <span class="prev_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2014/new-blog-engine/index.html" rel="previous">Обновление блога. Опять.</a>
+    </span>
+	
+</article>
+
+        </main>
+        <footer>
+        Будьте внимательны, многое из того, что написано в этом блоге, является личным мнением автора и не претендует на истину.
+        <img src="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/yopiright.jpg" width="12" height="12"/> 2008
+        </footer>
+    </body>
+</html>

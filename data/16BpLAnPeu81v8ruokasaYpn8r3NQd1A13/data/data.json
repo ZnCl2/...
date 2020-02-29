@@ -1,0 +1,22 @@
+{
+	"title": "胡说八道 ",
+	"description": "胡说八道",
+	"links": "- [Source code](https://github.com/HelloZeroNet)",
+	"next_post_id": 5,
+	"demo": false,
+	"modified": 1512886360,
+	"post": [
+		{
+			"post_id": 4,
+			"title": "CentOS 中设置时间",
+			"date_published": 1487811093.875,
+			"body": "在我们使用CentOS系统的时候，也许时区经常会出现问题，有时候改完之后还是会出错，下面我们就来学习一种方法来改变这个状况。如果没有安装，而你使用的是 CentOS系统 那使用命令\n``` yum install ntp```\n\n然后：```ntpdate us.pool.ntp.org ```。\n\n因为CentOS系统是用rhas的源码再编译的，很多地方是完全一样的。\n\nrhas5的时区是以文件形式存在的，当前的时区文件是在/etc/localtime\n\n那么其他时区的文件存放在哪里呢？\n\n在/usr/share/zoneinfo下\n\n我们用东八区，北京，上海的时间\n```\n#cp -f /usr/share/zoneinfo/Asia/Shanghai /etc/localtime\n#reboot\n```\n重启之后，date查看时间、查看当前时区   date -R、查看/修改Linux时区和时间\n\n一、时区\n\n1. 查看当前时区\ndate -R\n\n2. 修改设置时区\n方法(1)\ntzselect\n方法(2) 仅限于RedHat Linux 和 CentOS系统\ntimeconfig\n方法(3) 适用于Debian\ndpkg-reconfigure tzdata\n\n3. 复制相应的时区文件，替换CentOS系统时区文件；或者创建链接文件\ncp /usr/share/zoneinfo/$主时区/$次时区 /etc/localtime\n在中国可以使用：\ncp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime\n\n二、时间\n\n1、查看时间和日期\ndate\n\n2、设置时间和日期\n将CentOS系统日期设定成1996年6月10日的命令\ndate -s 06/22/96\n将CentOS系统时间设定成下午1点52分0秒的命令\ndate -s 13:52:00\n\n3. 将当前时间和日期写入BIOS，避免重启后失效\nhwclock -w\n\n三、定时同步时间\n```\n# /usr/sbin/ntpdate 210.72.145.44 > /dev/null 2>&1\n```\n这样我们就完成了关于设置修改CentOS系统时区的问题了。希望大家可以学习到更多的知识。"
+		},
+		{
+			"post_id": 2,
+			"title": "Mac上使用免费的的NTFS方案",
+			"date_published": 1483971006.474,
+			"body": "- 首先下载[osxfuse](https://github.com/osxfuse/osxfuse/releases),安装\n![](http://www.howtogeek.com/wp-content/uploads/2015/12/ximg_566795113ba73.png.pagespeed.gp+jp+jw+pj+js+rj+rp+rw+ri+cp+md.ic.ogV6k31qLY.png)\n- 安装homebrew,如果已经安装略过\n- 安装ntfs-3g\n```\nbrew install homebrew/fuse/ntfs-3g\n```\n![](http://www.howtogeek.com/wp-content/uploads/2015/12/ximg_56679523d1dc2.png.pagespeed.gp+jp+jw+pj+js+rj+rp+rw+ri+cp+md.ic.Y_PpvZcePP.png)\n- 重启系统，按住Command+R进行恢复模式， Utilities菜单中选择terminal，输入csrutil disable\n![](http://www.howtogeek.com/wp-content/uploads/2015/12/ximg_56678e9c7189d.png.pagespeed.gp+jp+jw+pj+js+rj+rp+rw+ri+cp+md.ic.18mZV4hyx7.jpg)\n- 重启，进入系统选择终端，输入\n```\nsudo mv /sbin/mount_ntfs /sbin/mount_ntfs.original\nsudo ln -s /usr/local/sbin/mount_ntfs /sbin/mount_ntfs\n```\n- 最后进入重启系统，再次进入恢复模式，终端中输入csrutil enable， 启用System Integrity Protection.\n\n####  卸载\nTo undo your changes and uninstall everything, you’ll need to first disable System Integrity Protection. After you do, run the following commands:\n```\nsudo rm /sbin/mount_ntfs\nsudo mv /sbin/mount_ntfs.original /sbin/mount_ntfs\nbrew uninstall ntfs-3g\n```\n\n> 原文：http://www.howtogeek.com/236055/how-to-write-to-ntfs-drives-on-a-mac/"
+		}
+	]
+}

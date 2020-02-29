@@ -1,0 +1,81 @@
+<!doctype html public "-//W3C//DTD HTML 4.01 Transitional//EN"
+      "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+
+<head>
+
+<title> Postfix stable/legacy release 2.7.2, 2.6.8, 2.5.11, and 2.4.15 </title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+
+</head>
+
+<body>
+
+<h1> Postfix stable/legacy release 2.7.2, 2.6.8, 2.5.11, and 2.4.15 </h1>
+
+<p> An on-line version of this announcement is available at <a
+href="http://www.postfix.org/announcements/postfix-2.7.2.html">http://www.postfix.org/announcements/postfix-2.7.2.html</a>
+</p>
+
+<p> The stable release Postfix 2.7.2 addresses the defects described
+below.  These defects are also addressed in the legacy releases
+that are still maintained. </p>
+
+<p> Note: Postfix 2.3 and earlier are no longer updated. Support
+for Postfix 2.4 will end in 2011. </p>
+
+<p> Defects fixed with Postfix 2.7.2, 2.6.8, 2.5.11, and 2.4.15: </p>
+
+<ul>
+
+<li> <p> Postfix no longer automatically appends the system default
+CA (certificate authority) certificates, when it reads the CA
+certificates specified with {smtp, lmtp, smtpd}_tls_CAfile or with
+{smtp, lmtp, smtpd}_tls_CApath.  This prevents third-party certificates
+from getting mail relay permission with the permit_tls_all_clientcerts
+feature.  Unfortunately, this change may cause compatibility problems
+with configurations that rely on certificate verification for other
+purposes.  To get the old behavior, specify "tls_append_default_CA
+= yes". </p>
+
+<li> <p> A prior fix for compatibility with Postfix &lt; 2.3 was
+incomplete.  When pipe-to-command delivery fails with a signal,
+mail is now correctly deferred, instead of being returned to sender.
+</p>
+
+<li> <p> Poor smtpd_proxy_filter TCP performance over loopback
+(127.0.0.1) connections was fixed by adapting the output buffer
+size to the MTU. </p>
+
+<li> <p> The SMTP server no longer applies the reject_rhsbl_helo
+feature to non-domain forms such as network addresses.  This would
+cause false positives with dbl.spamhaus.org.  </p>
+
+<li> <p> The Postfix SMTP server failed to deliver a "421" response
+and hang up the connection after Milter error.  Instead, the server
+delivered a "503 Access denied" response and left the connection
+open, due to some Postfix 1.1 workaround for RFC 2821. </p>
+
+</ul>
+
+<p> Defects fixed with Postfix 2.7.2:  </p>
+
+<ul>
+
+<li> <p> The milter_header_checks parser failed to enable any of
+the actions that have no effect on message delivery (warn, replace,
+prepend, ignore, dunno, and ok). </p>
+
+</ul>
+
+<p> The source code is available from <a
+href="ftp://ftp.porcupine.org/mirrors/postfix-release/index.html">
+ftp://ftp.porcupine.org/mirrors/postfix-release/index.html</a> and
+from the mirrors listed at <a href="http://www.postfix.org/download.html">
+http://www.postfix.org/download.html</a>.  </p>
+
+</body>
+
+</html>

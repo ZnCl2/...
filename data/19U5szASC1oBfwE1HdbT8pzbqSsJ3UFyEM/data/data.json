@@ -1,0 +1,64 @@
+{
+	"title": "Rabbit Hole",
+	"description": "My ZeroBlog about my adventures in ZeroNet land.",
+	"links": "- [Current Time App](/19h2JJ9Vgb1eeypakbv5ucjjXfut8LYfi7)\n- [New ZeroNet Sites](/1LtvsjbtQ2tY7SCtCZzC4KhErqEK3bXD4n)",
+	"next_post_id": 11,
+	"demo": false,
+	"modified": 1455958079,
+	"post": [
+		{
+			"post_id": 10,
+			"title": "Automatic Seed for new sites",
+			"date_published": 1455955850.717,
+			"body": "I found a simple way to start seeding every new site published to New ZeroNet Sites app. \n\nBasically you can query app db, like:\n```\nsqlite3 data/1LtvsjbtQ2tY7SCtCZzC4KhErqEK3bXD4n/data/zerosites.db \"select address from sites order by added desc limit 5;\"\n```\n\nAnd then send an request to ZeroNet UI, like:\n```\ncurl http://127.0.0.1:43110/$SITE_ID > /dev/null\n```\n\nThat's it. ZeroNet daemon will start downloading such site.\n\nFull script will be (`autoseed.sh`):\n```\n#!/bin/sh\nZERO_DIR=~/ZeroNet-master\nZERO_HOST=127.0.0.1\nAPP_ID=1LtvsjbtQ2tY7SCtCZzC4KhErqEK3bXD4n\nNEW_SITES=`sqlite3 $ZERO_DIR/data/$APP_ID/data/zerosites.db \"select address from sites order by added desc limit 5;\"`\nfor SITE in $NEW_SITES; do\n        echo Check site $SITE\n        curl --silent http://$ZERO_HOST:43110/$SITE > /dev/null\ndone\n```\n\nPut it into Cron and you'll help all newbies to spread their sites:\n```\n*/5 * * * * /home/zeronode/autoseed.sh\n```\n\nThank you"
+		},
+		{
+			"post_id": 9,
+			"title": "User content",
+			"date_published": 1455867263.575,
+			"body": "For my [New ZeroNet Sites](/1LtvsjbtQ2tY7SCtCZzC4KhErqEK3bXD4n) app my original idea was to allow any client to add a link to a site, without any authentication or anything. I don't care who posted a link, a long as it's a valid link.\n\nI see that ZeroBoard does allow that. But after quick investigation I realized that it's using a plain old central server for submitting. You send a request to a server in internet, it does update and publish a new `data.json` with your message.\n\nI didn't want to have a central server, of course. There is another example, like here in ZeroBlog, where any visitor can leave a comment. That doesn't require any server. But requires a third party anyway, an authority that will provide a user certificate. Like ZeroID. ZeroID is pretty simple, yes. Take a minute or two to register, but you still need this 3rd party to operate.\n\nLet me tell you how it works. You need a user certificate to sign `content.json` from user directory. If you take a look at sources of this blog, for example, you'll notice a directory `data/users`. Each directory there, it's a user id with user data inside (`content.json` + `data.json`), signed by user similarly to how you publish a zeronet website. Actually you can put here anything you want, just sign it with your key. It's a micro site, basically. Main site (ZeroBlog at this case) does publish it for you, there're a special Javascript API for sign any `content.json` from provided key.\n\nCurrently there is only one source of such certificates - it's ZeroID. I guess in future there will be more such certification authorities. Anyway, I can't say that i'm fully agree with this idea, it's still a centralization, but I don't see any workaround currently."
+		},
+		{
+			"post_id": 8,
+			"title": "Autoseeding",
+			"date_published": 1454251348.371,
+			"body": "One of most important thing should be autoseeding for new sites. Site should have few peers just in 10 minutes after initial publish. Better in few seconds after. Or site creator will lose interest to ZeroNet.\n\nDon't think my NewZeroNetSites app will fix this, at least with current implementation. There should be a way to start downloading a site as soon as node got notified about a new site. Maybe it could be possible to do with admin commands, but still requires my app to be active all the time. That doesn't look right for me.\n\nAnother way, maybe, is to make an ZeroNet server plugin, that will check site database, and start downloading automatically. That's more complicated, but it could nail it down"
+		},
+		{
+			"post_id": 7,
+			"title": "\"New Zero Sites\" app",
+			"date_published": 1454247598.449,
+			"body": "Check this out - http://127.0.0.1:43110/1LtvsjbtQ2tY7SCtCZzC4KhErqEK3bXD4n\nA ZeroNet site to publish and discover new sites.\n\nCan't say it was easy to figure out all ZeroNet internal, but I made it. And it works. Still far from my original idea, but it's a good first step."
+		},
+		{
+			"post_id": 6,
+			"title": "User Content is total mess",
+			"date_published": 1454243655.763,
+			"body": "Still can't figure how it should work. Figured out how to make it working on local machine, with all signatures, rules and permissions, zeroid auth, etc. Thought it works, but other peer can't get user generated content. And it's sooo hard to figure out where is the problem :(\n\n-- Update: figured out"
+		},
+		{
+			"post_id": 5,
+			"title": "Site Discovery",
+			"date_published": 1453978359.155,
+			"body": "One of the problems I faced is how to tell other peers about my site. And where to get other sites, to use or simply to help with seeding. One way is to use [ZeroBoard](/Board.ZeroNetwork.bit). But I guess it's not intended to be used this way. \n\nI'll try to implement a basic ZeroNet site for site discovery and publishing new sites. I think I can do that this weekend."
+		},
+		{
+			"post_id": 4,
+			"title": "Seeding status",
+			"date_published": 1453964699.934,
+			"body": "After few days I got 16 seeders for my test app (which is [Current Time](/19h2JJ9Vgb1eeypakbv5ucjjXfut8LYfi7)). Pretty good number. \n\nIMO 3 seeders is viable minimum, 4-5 is good, and more than that is luxury.\n \nI also setup an ZeroNet node on my Raspberry PI, to help the network. Will see how much traffic and resources it will eat, but I think I can host there about 100gb of ZN sites."
+		},
+		{
+			"post_id": 3,
+			"title": "Current Time",
+			"date_published": 1453726317.182,
+			"body": "My first experiment was Current Time app. Most simple app, that just shows you your current time. See there: http://127.0.0.1:43110/19h2JJ9Vgb1eeypakbv5ucjjXfut8LYfi7\n\nIt was really easy to create such app, just called `python zeronet.py siteCreate` to generate site template. Also this command gave me public/private key pair. You have to remember your private key somewhere, you'll need it to update your site in future (`python zeronet.py siteSign %public_key%`).\n\nWhat wasn't clear for me, that to distribute your zeronet app you need to get few peers, that will download your site on first place. If you try `python zeronet.py sitePublish %publick_key%` it will do nothing, you'll get just `Publishing to 0/0 peers (connected: 0)`. I mean I thought there're some nodes that will listen somehow to _sitePublish_ command.\n\nMaybe kind of chicken and egg problem. Nobody knows about your site, so nobody have it, and nobody can discover it. So you have to publish a link somewhere, on [ZeroBoard](/Board.ZeroNetwork.bit) for example. And wait till someone will decide to visit your site, thereby becoming a seeder."
+		},
+		{
+			"post_id": 2,
+			"title": "First Post",
+			"date_published": 1453650407.432,
+			"body": "Hello Distributed World"
+		}
+	]
+}

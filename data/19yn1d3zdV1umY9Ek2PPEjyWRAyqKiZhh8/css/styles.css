@@ -1,0 +1,632 @@
+html, body {
+	overflow: hidden;
+}
+
+body {
+	background: #393F43;
+	font: 15px/145% '黑体';
+	color: #eee;
+	-webkit-font-smoothing: antialiased;
+}
+
+body.stageStarted {
+	cursor: url(../images/penne.png) 8 0, crosshair;
+}
+
+body.disabled {
+	cursor: not-allowed;
+}
+
+body.disabled #endpoint {
+	cursor: url(../images/penne.png) 8 0, crosshair;
+}
+
+a {
+	color: white;
+}
+
+html, body {
+	overflow: hidden;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+#game {
+	display: none;
+}
+
+#position_call_to_action {
+	position: relative;
+	top: 30%;
+	line-height: 40px;
+}
+
+#position_call_to_action a {
+	text-decoration: none;
+	opacity: 0.5;
+}
+
+#position_call_to_action a:hover {
+	opacity: 1;
+}
+
+#position_call_to_action a#ui_play {
+	display: inline-block;
+	font-size: 24px;
+	font-weight: normal;
+	padding: 0 20px;
+	border: solid white 2px;
+	border-radius: 4px;
+	line-height: 40px;
+	height: auto;
+	opacity: 1;
+	font-family: '宋体';
+	background-color: rgba(255,255,255,0);
+	color: white;
+}
+
+
+#position_call_to_action a#ui_play:hover {
+	background-color: rgba(255,255,255,0.05);
+}
+
+#title {
+	position: absolute;
+	top: 15%;
+	left: 0;
+	right: 0;
+	text-align: center;
+        pointer-events: none;
+}
+
+#title h1 {
+	font-size: 70px;
+	font-weight: normal;
+	margin: 0 0 0.4em 0;
+	letter-spacing: -1px;
+	line-height: 100%;
+}
+
+#title img {
+	vertical-align: middle;
+	margin: -1px 2px 0 2px;
+}
+
+#title p {
+	margin: 0;
+	padding: 0;
+	font-size: 22px;
+	-webkit-font-smoothing: antialiased;
+}
+
+#remaining_nodes {
+	pointer-events: none;
+	opacity: 0;
+	font-size: 13px;
+}
+
+#remaining_nodes rect {
+	fill: rgba(57,63,67,0.7);
+	stroke: none;
+}
+
+#remaining_nodes text {
+	fill: white;
+}
+
+#ui_controls {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: 10;
+	text-align: center;
+}
+
+.ui_control {
+	display: inline-block;
+	margin: 3px 5px 0 0;
+}
+
+.svg_button path {
+	stroke: #fff;
+	stroke-width: 2;
+	fill: rgba(255,255,255,0);
+}
+
+.svg_button path:hover {
+	fill: rgba(255,255,255,0.05);
+}
+
+.svg_button text {
+	fill: white;
+	font-size: 22px;
+}
+
+.ui_button {
+	height: 30px;
+	padding: 0 10px;
+	font: normal 13px/30px '宋体';
+	background-color: #393F43;
+	border-radius: 4px;
+	cursor: pointer;
+	color: rgba(255,255,255,0.5);
+	-webkit-transition: background-color 300ms ease, color 300ms ease;
+	moz-transition: background-color 300ms ease, color 300ms ease;
+	transition: background-color 300ms ease, color 300ms ease;
+}
+
+.ui_button.active {
+	box-shadow: 0 1px 1px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.1) inset;
+	cursor: default;
+}
+
+.ui_button.suggested {
+	background: #09f;
+	color: white;
+}
+
+.ui_button.active:active {
+	position: relative;
+	top: 1px;
+	box-shadow: 0 -1px 1px rgba(0,0,0,0.4), 0 -1px 0 rgba(255,255,255,0.1) inset;
+}
+
+.ui_button span {
+	font: normal 13px/20px sans-serif;
+	margin-right: 5px;
+	vertical-align: baseline;
+	height: 20px;
+	padding: 0 5px;
+	text-transform: uppercase;
+	border-radius: 2px;
+	background: rgba(0,0,0,0.5);
+	display: inline-block;
+}
+
+svg#workspace,
+canvas#canvas {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	width: 100%;
+	height: 100%;
+}
+
+canvas#canvas {
+	z-index: -1;
+	opacity: 0;
+	top: 100%;
+}
+
+line.node {
+	pointer-events: none;
+}
+
+svg .placeholder,
+svg #placeholder,
+svg #segments .placeholder {
+	fill: none;
+	stroke-width: 1;
+	pointer-events: none;
+	opacity: 0.7;
+}
+
+svg #segments path {
+	stroke-width: 3;
+	opacity: 1;
+	fill: none;
+}
+
+.node_group,
+#segments {
+	pointer-events: none;
+}
+
+#problem,
+.problem {
+	stroke: #393F43;
+	stroke-width: 12;
+	fill: none;
+	pointer-events: none;
+}
+
+#endpoint,
+#startpoint,
+.endpoint,
+.startpoint {
+	stroke: none;
+	fill: #393F43;
+}
+
+#startpoint {
+	cursor: url(../images/penne.png) 8 0, crosshair;
+}
+
+#available_nodes line {
+	stroke-width: 3;
+	stroke-linejoin: round;
+	stroke-linecap: round;
+}
+
+#score_text {
+	text-anchor: middle;
+	fill: rgba(255,255,255,0.7);
+}
+
+#score_stats text {
+	text-anchor: start;
+}
+
+
+#score_stats text tspan {
+	fill: white;
+}
+
+#pulsator_start,
+#pulsator_end {
+	opacity: 0;
+	fill: #09f;
+	pointer-events: none;
+}
+
+
+.hidden {
+	display: none;
+}
+
+#problem,
+#segments path,
+.problem,
+.solution {
+	stroke-linejoin: round;
+	stroke-linecap: round;
+}
+
+#final_score_svg line {
+	stroke-linejoin: round;
+	stroke-linecap: round;
+	stroke-width: 3;
+}
+
+#tooltip {
+	opacity: 0;
+	pointer-events: none;
+	position: absolute;
+	z-index: 100;
+	padding: 10px 15px;
+	background: #434;
+	top: 50%;
+	left: 50%;
+}
+
+#tooltip:after {
+	content: '';
+	position: absolute;
+	bottom: 0;
+	left: 50%;
+	border: solid 7px transparent;
+	border-top-color: #434;
+	margin: 0 0 -14px -7px;
+}
+
+#outlines {
+	pointer-events: none;
+}
+
+.line_button {
+	white-space: nowrap;
+	border: solid 2px white;
+	color: white;
+	font-size: 18px;
+	text-align: center;
+	height: 33px;
+	line-height: 30px;
+	clear: both;
+	border-radius: 3px;
+	margin-bottom: 10px;
+	cursor: pointer;
+}
+
+.line_button:hover {
+	background: rgba(255,255,255,0.05);
+}
+
+#stage_score.slidden {
+	-moz-transform: translate(0,100%);
+	-ms-transform: translate(0,100%);
+	-webkit-transform: translate3d(0,100%,0);
+	transform: translate(0,100%);
+	transform: translate3d(0,100%);
+}
+
+#stage_score {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 150px;
+	background: #393F43;
+	z-index: 100;
+	border-top: solid rgba(255,255,255,0.1) 1px;
+	-webkit-transition: ease .5s -webkit-transform;
+	-moz-transition: ease .5s -moz-transform;
+	transition: ease .5s transform;
+}
+
+#stage_score:after {
+	content: '';
+	display: block;
+	height: 20px;
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: -21px;
+	background-image: -ms-linear-gradient(top, #FFFFFF 0%, #00A3EF 100%);
+	background-image: -moz-linear-gradient(top, #FFFFFF 0%, #00A3EF 100%);
+	background-image: -o-linear-gradient(top, #FFFFFF 0%, #00A3EF 100%);
+	background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #FFFFFF), color-stop(1, #00A3EF));
+	background-image: -webkit-linear-gradient(top, #FFFFFF 0%, #00A3EF 100%); 
+	background-image: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.1));
+}
+
+#stage_score_container {
+	width: 470px;
+	margin: 0 auto;
+}
+
+#stage_score_container .left,
+#stage_score_container .right {
+	margin-top: 30px;
+}
+
+#stage_score_container .left {
+	width: 200px;
+	float: left;
+}
+
+#stage_score_container .node_count_title {
+	font-size: 48px;
+	line-height: 50px;
+	letter-spacing: -1px;
+}
+
+#stage_score_container .right {
+	width: 270px;
+	float: right;
+}
+
+
+
+#stage_score_container .note {
+	text-align: left;
+	color: rgba(255,255,255,0.6);
+}
+
+#stage_score_container .note a {
+	color: white;
+}
+
+
+
+
+#final_score {
+	background: #393F43;
+	width: 300px;
+	height: 280px;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	z-index: 10;
+	box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+	margin: -140px 0 0 -150px;
+	padding: 20px;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+}
+
+.note {
+	text-align: center;
+}
+
+.note a {
+	color: rgba(255,255,255,0.7);
+}
+
+#final_score_svg {
+	display: block;
+	position: relative;
+	top: -10px;
+}
+
+#final_score .subtitle {
+	font-size: 18px;
+	white-space: nowrap;
+	color: rgba(255,255,255,0.7);
+}
+
+#final_score .title {
+	line-height: 50px;
+	font-size: 38px;
+	text-align: center;
+	white-space: nowrap;
+}
+
+
+#tutorial {
+	pointer-events: none;
+}
+
+
+#tutorial #tut_nodes rect,
+#tutorial #tut_nodes circle,
+#tutorial #tut_click {
+	fill: white;
+}
+
+#tutorial #tut_nodes g {
+	opacity: 0;
+}
+
+#tutorial #tut_segments path,
+#tutorial #tut_nodes line {
+	fill: none;
+	stroke: white;
+}
+
+#tutorial #tut_key {
+	opacity: 0;
+}
+
+#tut_skip {
+	position: absolute;
+	bottom: 20px;
+	right: 25px;
+	cursor: pointer;
+	background: rgba(0,0,0,0.5);
+	padding: 0 10px 0 20px;
+	font: 18px/36px '宋体';
+	z-index: 10;
+	background-color: #1C1F21;
+}
+
+#tut_skip span {
+	position: absolute;
+	right: -36px;
+	top: 0;
+	border: solid transparent 18px;
+	border-left-color: rgba(0,0,0,0.5);
+}
+
+#tut_skip:hover {
+	background: rgba(0,0,0,0.7);
+}
+
+#tut_skip:hover span {
+	border-left-color: rgba(0,0,0,0.7);
+}
+
+#contact {
+	position: absolute;
+	bottom: 25px;
+	left: 25px;
+	text-align: left;
+	color: rgba(255,255,255,0.6);
+}
+
+#contact a {
+	text-decoration: none;
+}
+
+#contact a:hover {
+	text-decoration: underline;
+}
+
+#replay_tutorial {
+	fill: rgba(255,255,255,0.7);
+	text-decoration: underline;
+	text-anchor: middle;
+	cursor: pointer;
+}
+
+#bbox {
+	opacity: 0;
+	pointer-events: none;
+}
+
+@media only screen and (max-device-width : 768px) and (orientation : portrait)  {
+	#title h1 {
+		font-size: 48px;
+	}
+	#title p {
+		font-size: 18px;
+	}
+	#position_call_to_action {
+		position: static;
+		margin-top: 16px;
+	}
+	#credits {
+		position: static;
+		margin: 8px;
+	}
+	#social {
+		right: 0;
+		text-align: center;
+	}
+	#contact {
+		right: 15px;
+		text-align: center;
+	}
+	#tut_skip {
+		left: 25px;
+		text-align: center;
+		bottom: 15px;
+	}
+	#contact {
+		bottom: 65px;
+	}
+}
+
+#notice {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0,0,0,0.8);
+	z-index: 100;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font: 18px/160% '宋体';
+	display: none;
+	overflow-y: scroll;
+}
+
+#notice.visible {
+	display: block;
+}
+
+#notice .container h1 {
+	line-height: 125%;
+	margin: 0;
+}
+
+#notice p {
+	margin: 1.5em 0;
+}
+
+#notice .button {
+	display: block;
+	background: black;
+	text-decoration: none;
+	text-align: center;
+	line-height: 140%;
+	padding: 16px;
+	border-radius: 8px;
+	margin: 8px 0;
+}
+
+#notice .dimmed {
+	opacity: 0.6;
+} 
+
+#notice .container {
+	background: #393F43;
+	padding: 32px;
+	max-width: 380px;
+}
+
+@media only screen and (max-device-width : 480px) and (orientation : portrait)  {
+	#notice .container {
+		height: 100%;
+		padding: 16px;
+	}
+}
+
+

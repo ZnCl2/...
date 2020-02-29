@@ -1,0 +1,135 @@
+<!DOCTYPE HTML>
+<html lang="ru">
+    <head>
+      <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb</title>
+      <link rel="stylesheet" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/css/main.css"/>
+      <link rel="shortcut icon" type="image/x-icon" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/favicon.ico"/>
+      <link href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/rss.xml" title="Akademic's blog" type="application/rss+xml" rel="alternate"/>
+    </head>
+    <body>
+        <header><h1><a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb" rel="home">akademic.name</a></h1></header>
+        <main class="content">
+            
+<article>
+    <h1>Запуск питонового приложения на nginx через fastcgi</h1> <time>05.04.2009</time>
+	<p>Перевёл свой персональный тестовый сервер на nginx.
+Настроил связку с php через fastcgi.
+Однако, на сервере с давних времён крутится питонячее приложение, решил и его сделать через fastcgi.</p>
+
+<p><style type="text/css">
+    &lt;!&ndash;
+        @page { size: 21cm 29.7cm; margin: 2cm }
+        P { margin-bottom: 0.21cm }
+        A:link { color: #000080; so-language: zxx; text-decoration: underline }
+    &ndash;&gt;
+    </style>
+<p style="margin-bottom: 0cm;">Вот что получилось:</p>
+<p style="margin-bottom: 0cm;"><br />
+</p>
+<p style="margin-bottom: 0cm;"><strong>Конфиг nginx:</strong></p>
+<p style="margin-bottom: 0cm;"><br />
+</p>
+<pre style="margin-bottom: 0cm;">server {</pre>
+<pre style="margin-bottom: 0cm;">        listen   80;</pre>
+<pre style="margin-bottom: 0cm;">        server_name  ip-адрес сервера;</pre>
+<pre style="margin-bottom: 0cm;"><br /> </pre>
+<pre style="margin-bottom: 0cm;">        access_log  /var/log/nginx/localhost.access.log;</pre>
+<pre style="margin-bottom: 0cm;">        error_log   /var/log/nginx/error.log debug;</pre>
+<pre style="margin-bottom: 0cm;"><br /> </pre>
+<pre style="margin-bottom: 0cm;">        index index.html index.htm index.py;</pre>
+<pre style="margin-bottom: 0cm;"><br /> </pre>
+<pre style="margin-bottom: 0cm;">#секция для имитации userdir</pre>
+<pre style="margin-bottom: 0cm;">location ~ /~([a-zA-Z0-9]<em>)/(.</em>) {</pre>
+<pre style="margin-bottom: 0cm;">            # the [a-zA-Z0-9] is for the greedy .</pre>
+<pre style="margin-bottom: 0cm;">            root        /home/$1;</pre>
+<pre style="margin-bottom: 0cm;">            index index.html index.htm index.py;</pre>
+<pre style="margin-bottom: 0cm;">            set $homedir $1;</pre>
+<pre style="margin-bottom: 0cm;">            set $filedir $2;</pre>
+<pre style="margin-bottom: 0cm;">            set $trailingslashes $3;</pre>
+<pre style="margin-bottom: 0cm;">            rewrite ^/~([a-zA-Z0-9]<em>)/(.</em>)$ /$1/public_html/$2;</pre>
+<pre style="margin-bottom: 0cm;">        }</pre>
+<pre style="margin-bottom: 0cm;"><br /> </pre>
+<pre style="margin-bottom: 0cm;">#секция для запуска питонового приложения через fastcgi</pre>
+<pre style="margin-bottom: 0cm;">#просто скопировал аналогичную секцию для php и поменял  fastcgi_pass</pre>
+<pre style="margin-bottom: 0cm;">location ~ .py$ {</pre>
+<pre style="margin-bottom: 0cm;">    #fastcgi_pass   127.0.0.1:8000;</pre>
+<pre style="margin-bottom: 0cm;">    fastcgi_pass   unix:/tmp/fcgi_wsgi.socket;</pre>
+<pre style="margin-bottom: 0cm;">    fastcgi_index  index.py;</pre>
+<pre style="margin-bottom: 0cm;">    fastcgi_param  SCRIPT_FILENAME  /home$fastcgi_script_name;</pre>
+<pre style="margin-bottom: 0cm;">    fastcgi_param  QUERY_STRING     $query_string;</pre>
+<pre style="margin-bottom: 0cm;">    fastcgi_param  REQUEST_METHOD   $request_method;</pre>
+<pre style="margin-bottom: 0cm;">    fastcgi_param  CONTENT_TYPE     $content_type;</pre>
+<pre style="margin-bottom: 0cm;">    fastcgi_param  CONTENT_LENGTH   $content_length;</pre>
+<pre style="margin-bottom: 0cm;">    include        fastcgi_params;</pre>
+<pre style="margin-bottom: 0cm;">}</pre>
+<p style="margin-bottom: 0cm;"><br />
+</p>
+<p style="margin-bottom: 0cm;"><strong>init-скрипт для зупуска/останова в debian</strong></p>
+<pre style="margin-bottom: 0cm;">PY_SCRIPT=&quot;sudo -u www-data python /путь/к/запускаемому/файлу/index.py&quot;</pre>
+<pre style="margin-bottom: 0cm;">RETVAL=0</pre>
+<pre style="margin-bottom: 0cm;">case &quot;$1&quot; in</pre>
+<pre style="margin-bottom: 0cm;">    start)</pre>
+<pre style="margin-bottom: 0cm;">      $PY_SCRIPT&amp;</pre>
+<pre style="margin-bottom: 0cm;">      RETVAL=$?</pre>
+<pre style="margin-bottom: 0cm;">  ;;</pre>
+<pre style="margin-bottom: 0cm;">    stop)</pre>
+<pre style="margin-bottom: 0cm;">      killall -9 python</pre>
+<pre style="margin-bottom: 0cm;">      rm /tmp/fcgi_wsgi.socket</pre>
+<pre style="margin-bottom: 0cm;">      RETVAL=$?</pre>
+<pre style="margin-bottom: 0cm;">  ;;</pre>
+<pre style="margin-bottom: 0cm;">    restart)</pre>
+<pre style="margin-bottom: 0cm;">   #у меня всего одно приложение, так что вот</pre>
+<pre style="margin-bottom: 0cm;">      killall -9 python</pre>
+<pre style="margin-bottom: 0cm;">      rm /tmp/fcgi_wsgi.socket</pre>
+<pre style="margin-bottom: 0cm;">      $PY_SCRIPT&amp;</pre>
+<pre style="margin-bottom: 0cm;">      RETVAL=$?</pre>
+<pre style="margin-bottom: 0cm;">  ;;</pre>
+<pre style="margin-bottom: 0cm;">    *)</pre>
+<pre style="margin-bottom: 0cm;">      echo &quot;Usage: fcgi_wsgi {start|stop|restart}&quot;</pre>
+<pre style="margin-bottom: 0cm;">      exit 1</pre>
+<pre style="margin-bottom: 0cm;">  ;;</pre>
+<pre style="margin-bottom: 0cm;">esac</pre>
+<pre style="margin-bottom: 0cm;">exit $RETVAL</pre>
+<p style="margin-bottom: 0cm;"><br />
+</p>
+<p style="margin-bottom: 0cm;"><strong>Внутри приложения:</strong></p>
+<pre style="margin-bottom: 0cm;">from flup.server.fcgi import WSGIServer</pre>
+<pre style="margin-bottom: 0cm;">WSGIServer(app, bindAddress=(&lsquo;/tmp/fcgi_wsgi.socket&rsquo;)).run()</pre>
+<p style="margin-bottom: 0cm;"><br />
+</p>
+<p style="margin-bottom: 0cm;">Естественно, приложение должно соответствовать стандарту wsgi.</p>
+<p style="margin-bottom: 0cm;"><br />
+</p>
+<p style="margin-bottom: 0cm;"><strong>Что не понравилось в решении.</strong></p>
+<p style="margin-bottom: 0cm;">Получается, что программа должна иметь одну точку входа, либо придётся заводить по fastcgi-серверу на каждую точку входа. Как-то странно это, для php гораздо удобнее сделано. Может есть более нормальные решения?</p>
+<p style="margin-bottom: 0cm;"><br />
+</p>
+<p style="margin-bottom: 0cm;">Немного поясню почему неудобно. Вот есть у меня в домашней директории каталог public_html и настроена работа ссылок вида <a href="http://exmple.com/~user/"><a href="http://exmple.com/~user/&lt;/a&gt;">http://exmple.com/~user/&lt;/a&gt;</a>. Кладу новую php-шку, наример, script.php. <a href="http://exmple.com/~user/script.php"><a href="http://exmple.com/~user/script.php&lt;/a&gt;">http://exmple.com/~user/script.php&lt;/a&gt;</a> прекрасно сразу заработает. А для такого решения с питоном придётся в конфиге заводить для каждой программы по секции и плюс запускать её как fastcgi на новом сокете. Т.е. Если я захочу что-то быстро проверить, то быстро не получится, ибо там пропиши, здесь запусти&hellip;</p>
+<p style="margin-bottom: 0cm;"><br />
+</p>
+<p style="margin-bottom: 0cm;"><strong>Ссылки</strong></p>
+<p style="margin-bottom: 0cm;"><a href="http://pyobject.ru/blog/2007/02/05/deploying-wsgi-app/">Развертываем WSGI-приложение</a></p>
+<p style="margin-bottom: 0cm;"><a href="http://www.developers.org.ua/archives/mlk/2008/04/08/python-webdev-no-frameworks-p1/">Python: Веб-разработка без фреймворков</a>&nbsp;</p></p>
+
+    
+    <span class="next_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2009/k71/index.html" rel="next">Chromium в debian</a>
+    </span>
+	
+	
+    <span class="prev_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2008/k69/index.html" rel="previous">Пациент скорее...</a>
+    </span>
+	
+</article>
+
+        </main>
+        <footer>
+        Будьте внимательны, многое из того, что написано в этом блоге, является личным мнением автора и не претендует на истину.
+        <img src="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/yopiright.jpg" width="12" height="12"/> 2008
+        </footer>
+    </body>
+</html>

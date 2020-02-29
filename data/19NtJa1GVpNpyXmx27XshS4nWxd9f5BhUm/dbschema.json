@@ -1,0 +1,148 @@
+{
+    "db_name": "ngZeroBlog",
+    "db_file": "data/zeroblog.db",
+    "version": 2,
+    "maps": {
+        "users/.+/data.json": {
+            "to_table": [ "message" ]
+        },   
+        "users/.+/content.json": {
+            "to_keyvalue": [ "cert_user_id" ]
+        },
+        "users/.+/post_vote.json": {
+            "to_table": [ "post_vote" ],
+            "to_keyvalue": [ "next_id"]
+        },
+        "users/.+/comment.json":{
+            "to_table": ["comment"],
+            "to_keyvalue": ["next_comment_id"]
+        },
+        "category.json":{
+            "to_table": ["category"],
+            "to_keyvalue": ["next_category_id"]
+        },        
+        "config.json": {
+            "to_table": [ "config" ],
+            "to_keyvalue" : ["next_item_id"]            
+        },
+        "menu_item": {
+            "to_table": ["menu_item"],
+            "to_keyvalue": ["next_menu_item_id"]
+        },
+        "post.json": {
+            "to_table": [ "post" ],
+            "to_keyvalue" : ["next_post_id"]
+        },
+        "tag.json": {
+            "to_table": [ "tag" ],
+            "to_keyvalue" : ["next_tag_id"]
+        }
+    },
+    "tables": {
+        "category": {
+            "cols": [
+                ["category_id", "INTEGER"],
+                ["category_title", "TEXT"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX category_key ON category(json_id, category_id)"],
+            "schema_changed": 1
+        }, 
+        "comment": {
+            "cols": [
+                ["comment_id", "INTEGER"],
+                ["post_id", "INTEGER"],
+                ["user_id", "INTEGER"],
+                ["body", "TEXT"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX comment_key ON comment(json_id, date_added)"],
+            "schema_changed": 1
+        },        
+        "config": {
+            "cols": [
+                ["config_id", "INTEGER"],
+                ["config_name", "TEXT"],
+                ["title", "TEXT"],
+                ["description", "TEXT"],
+                ["author_id", "TEXT"],
+                ["author_name", "TEXT"],
+                ["author_about", "TEXT"],
+                ["bg_color", "TEXT"],
+                ["fg_color", "TEXT"],
+                ["header_bg_color", "TEXT"],
+                ["header_text_color", "TEXT"],
+                ["text_color", "TEXT"],
+                ["link_color", "TEXT"],
+                ["bg_image", "TEXT"],
+                ["bg_image_header", "TEXT"],
+                ["logo", "TEXT"],
+                ["current", "INTEGER"],
+                ["postsPerPage", "INTEGER"],
+                ["postsOrderBy", "INTEGER"],
+                ["postsOrderDir","INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX config_key ON config(json_id, config_id)"],
+            "schema_changed": 1
+        },
+        "menu_item":{
+            "cols": [
+                ["menu_item_id","INTEGER"],
+                ["view_type","TEXT"],
+                ["view_item_id","INTEGER"],
+                ["label","TEXT"],
+                ["active","INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX menu_item_key ON menu_item(json_id, menu_item_id)"],
+            "schema_changed": 1            
+        },
+        "message": {
+            "cols": [
+                ["body", "TEXT"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX message_key ON message(json_id, date_added)"],
+            "schema_changed": 1
+        },
+        "post": {
+            "cols": [
+                ["post_id", "INTEGER"],
+                ["category_id","INTEGER"],
+                ["user_id", "TEXT"],
+                ["title", "TEXT"],
+                ["image","TEXT"],
+                ["body", "TEXT"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX post_key ON post(json_id, date_added)"],
+            "schema_changed": 1
+        },
+        "post_vote": {
+            "cols": [
+                ["post_vote_id", "INTEGER"],
+                ["post_id", "INTEGER"],
+                ["user_id", "TEXT"],
+                ["vote", "INTEGER"],
+                ["date_added", "INTEGER"],                
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX post_vote_key ON post_vote(json_id, post_vote_id)"],
+            "schema_changed": 1
+        },
+        "tag": {
+            "cols": [
+                ["tag_id", "INTEGER"],
+                ["name","TEXT"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX tag_key ON tag(json_id, tag_id)"],
+            "schema_changed": 1
+        }       
+    }
+}

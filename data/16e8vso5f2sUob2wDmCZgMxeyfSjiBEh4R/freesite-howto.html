@@ -1,0 +1,274 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  
+  
+  <meta name="description" content="Freenet 中文新闻、教程和链接">
+  
+  <title>自由网中文站</title>
+  <link rel="stylesheet" href="css/normalize.css?type=text/css&amp;maybecharset=utf-8" type="text/css">
+  <link rel="stylesheet" href="css/syntax.css?type=text/css&amp;maybecharset=utf-8" type="text/css">
+  <link rel="stylesheet" href="css/solo.css?type=text/css&amp;maybecharset=utf-8" type="text/css">
+
+</head>
+<body>
+  <div class="container">
+    <div class="nav">
+      <a href="index.html">首页</a> | <a href="2015-10-18-chinese-resources.html">中文资源</a> | <a href="about.html">关于</a>
+    </div>
+    <h1>如何制作 Freenet 上的网站（Freesite）</h1>
+    <p>本教程翻译自《<a href="/USK@8r-uSRcJPkAr-3v3YJR16OCx~lyV2XOKsiG4MOQQBMM,P42IgNemestUdaI7T6z3Og6P-Hi7g9U~e37R3kWGVj8,AQACAAE/freesite-HOWTO/4/">Freesite HOWTO</a>》，教您如何制作 Freenet 上的网站，也称为 Freesite。制作 Freesite 的过程类似于普通网站，但是由于 Freenet 的延迟和存储模型等因素，两者还是有一些不同的地方。我还会给您一些技巧，让您的 Freesite 能够尽可能长久的被尽可能多的人访问，以及如何更有效率的发布它。我假设您懂得一些 HTML。</p>
+
+<h2 id="fproxy">FProxy</h2>
+<p>FProxy 让您能够使用标准的 Web 浏览器浏览 Freesite。</p>
+
+<p>Freenet 节点让您能够将文件储存在 Freenet 网络中，包括 HTML 文件。但是它不懂 Web 浏览器与 Web 服务器通讯所使用的 HTTP （超文本传输）协议。FProxy，是 Freenet Web Proxy（代理服务器）的缩写，是一个介于您的浏览器和 Freenet 节点间的 Web 代理服务器，将来自浏览器的 HTTP 请求翻译成 Freenet 节点可以理解的文件请求。
+FProxy 是 Freenet 主程序的一部分，默认是启用的。它监听本地端口 8888。（普通的网站使用端口 80。）要使用它，您只需打开浏览器，并访问网址 <strong><em>http://localhost:8888</em></strong>/。</p>
+
+<p>如果您有电脑在本地网络运行 Freenet 节点，您可以像这样在另一台电脑上访问 FProxy：<strong><em>http://mynode:8888/</em></strong>，其中 <em>mynode</em> 是运行 Freenet 节点的电脑的 IP 或主机名。您需要在 <a><!-- freenet.client.filter.CommentException: 错误的 URL (相对路径): There is no @ in that URI! (config/fproxy) -->FProxy 配置页面</a>修改“<strong>绑定的 IP 地址</strong>”参数。</p>
+
+<p>Freenet 在 FProxy 中配置了一些默认页面，用来管理您的节点。其中包括：查看文件传输队列、您的好友、统计信息等。</p>
+
+<p>如果某人给您了一个 Freesite 的 USK 键值，您可以将其添加到 FProxy 网址的后面，就可以访问这个 Freesite，就像这样：<br />
+<strong>http://localhost:8888/USK@yGvI…U79s,AQACAAE/toad/10/</strong></p>
+
+<p>如果您使用一个 USK 键值，就像上面那样，Freenet 会自动查找改网站的最新版本。如果您使用类似的 SSK 键值，Freenet 只会请求您指定的版本。</p>
+
+<h2 id="freesite-">Freesite 网址</h2>
+<p>普通的网站一般都有一个好记的网址，比如 www.google.com，它们的域名都在一个中心化的机构授权注册。Freenet 是去中心化的，因此上述途径无法实现。作为替代，Freesite 的网址是由它们的内容决定，或是由 Freesite 的拥有者持有的私钥决定。这种方式的不足之处就是，Freesite 网址由大约 100 个看上去随机的字符组成。但是如果您只是在 HTML 网页中链接它们，类似 &lt;a href="/USK@d5K…./myfreesite/4/"&gt;，那么这就不是一个问题。</p>
+
+<p>Freesite 的网址也称为键值（keys），因为它们能够用来定位和解密它们指向的文件。Freenet 有两种基本类型的键值：CHK（Content Hash Key，内容哈希键值）和 SSK（Signed Subspace Key，已签名子空间键值）。这些键值包含大约 100 个看上去随机的字符。键值的一个部分指明（加密的）文件最可能在网络中的何处储存，另一部分用来在获取文件后将它们解密。</p>
+
+<h3 id="chk-">CHK 内容哈希键值</h3>
+<p>内容哈希键值完全根据它们指向的文件内容决定：如果两个人分别向 Freenet 插入了相同的文件，那么他们会得到相同的 CHK 键值用以从网络获取该文件。CHK 键值示例：</p>
+
+<blockquote>
+  <p>CHK@b7j……/myfreesite.html</p>
+</blockquote>
+
+<p>您可能不会使用 CHK 作为 Freesite 的网址，因为每次您修改了网站，重新插入到 Freenet 后，您会获得一个完全不同的键值。</p>
+
+<h3 id="ssk-">SSK 已签名子空间键值</h3>
+<p>SSK 是由一个只有您知道的秘钥签名而得到的键值，这样人们便可以确认某个文件的确是您插入的。这样您可以您便可以插入两个不同的文件到 Freenet，人们通过查看它们的 SSK 键值知道它们的确是由同一个人插入的。</p>
+
+<p>要插入一个以 SSK 标识的文件到 Freenet，首先您需要生成一个 <strong>SSK 键值对</strong>。键值对由两个 SSK 键值组成，一个是保密的，仅为您自己插入文件所用。另一个键值是公开的 SSK 字符串，人们用它来访问或下载您的文件。本文稍后您会了解到一款名为 jSite 的程序，可以为您生成 SSK 键值对。</p>
+
+<p>这种方式对 Freesite 特别有用，因为您肯定是要更新自己的网站的。当您为自己的 Freesite 插入了第二个版本，人们需要知道这个版本和第一版本的作者是同一个人。因此假设您的第一版本是如下键值：</p>
+
+<blockquote>
+  <p>SSK@d5K……/myfirstfreesite.html</p>
+</blockquote>
+
+<p>那么您的第二版网站可以使用相同的秘钥签名，就像下面的键值：</p>
+
+<blockquote>
+  <p>SSK@d5K……/mysecondfreesite.html</p>
+</blockquote>
+
+<p>不过这有一个问题。因为文件名不同，很难自动查找您的 Freesite 的新版本。因此，我们约定在一个明确的地方使用一个数字来表示版本号：</p>
+
+<blockquote>
+  <p>SSK@d5K……/myfreesite-1/index.html<br />
+SSK@d5K……/myfreesite-2/index.html<br />
+SSK@d5K……/myfreesite-3/index.html</p>
+</blockquote>
+
+<p>现在要查找您的网站是否有新版本，人们就可以简单的将后面的版本号数字加一。但是这样还是有些麻烦，Freenet 节点能否自动帮我查找新版本呢？毕竟电脑是用来让生活更轻松的，不是吗？因此，我们有了 <strong>USK（Updateable Subspace Key，可更新子空间键值）</strong>。</p>
+
+<h3 id="usk-">USK 可更新子空间键值</h3>
+<p>USK 和 SSK 基本一致——他们指向相同的数据。不同之处是当您使用一个 USK 键值请求某个文件时，它会在您的 Freenet 节点启动一个进程，自动查找最新的版本。版本号的格式和 SSK 相比也有些许不同。如果某人要请求您的网站的第四版本，那么键值为：</p>
+
+<blockquote>
+  <p>USK@d5K……/myfreesite/4/index.html</p>
+</blockquote>
+
+<p>如果您已经插入了更新的第五和第六版本，那么网站访问者的节点会自动将最新版本的键值发送到他们的浏览器，而不是他们请求的版本：</p>
+
+<blockquote>
+  <p>USK@d5K……/myfreesite/<span style="color:red;">6</span>/index.html</p>
+</blockquote>
+
+<p>您应该使用一个 SSK 秘钥插入您的 Freesite，然后使用相应的 USK 宣传和链接您的网站。这样，人们总会访问到您网站的最新版本，即使某些地方还是链接到老的版本。</p>
+
+<h2 id="freesite">设计您的 Freesite</h2>
+<p>您可以使用您最拿手的工具设计您的网站：文本编辑器、Dreamweaver、Blusfish 都没问题。将网站的所有文件都储存在一个目录下。如果您喜欢，您也可以使用子目录。您可以使用图片和 Favicon 网页图标。</p>
+
+<p>您可以使用 HTML 和 CSS。但是一切可能导致访问 Freesite 的浏览器连接到 Freenet 网络外资源的行为，都会被 FProxy 过滤。这是因为当浏览器访问外部资源时，您的 IP 地址可能会被泄露，您将不再匿名。过滤的内容包括 Javascript、到普通网站的链接、储存在普通网站上的图片，以及像 Flash 动画那样的嵌入对象。因此请不要使用它们。</p>
+
+<h3 id="section">保持简单</h3>
+<p>Freenet 的延迟比较高，意味着每次您需要等一段时间才能下载好并浏览某个网站。已经习惯了宽带的您可能会不太适应。这是为了保证您的匿名性必须付出的代价。</p>
+
+<p>为了尽可能减少延迟，您应该尽可能的保持 Freesite 的苗条，不要包含太多的导航链接和层级。具体来说：</p>
+
+<ul>
+  <li>避免使用太多的图片，尽可能使用小图片。</li>
+  <li>使用 CSS 样式，避免使用内嵌的 HTML 属性。</li>
+  <li>如果某个 Freesite 太大，将它分成数个子网站。</li>
+  <li>使用少量的大页面，而不是大量的小页面。</li>
+</ul>
+
+<p>请记住 Freenet 每个数据块的大小为 32kB。因此粗略的讲，您每添加 32kB 的数据到您的 Freesite，Freenet 就会多花几秒钟下载您的网站。</p>
+
+<p>当您在一个 SSK 键值下插入了多个文件到 Freenet，您的节点会自动将文件打包并压缩，以节约空间。打的这些包被称为<strong>容器</strong>，能够储存大约 4MB 的文件。您无法直接控制哪些文件可以被组合在一汽，因此您最好将您的 Freesite 控制在 4MB 以内。4MB 不小了，需要花不少时间下载，所以您的网站越小越好。</p>
+
+<h3 id="section-1">图像</h3>
+<p>请注意您的网站根目录，USK 键值前面的部分就是 FProxy 的网址。因此要在您自己的 Freesite 插入图片，使用下面的语法（不要在开始插入斜杠）：</p>
+
+<pre><code class="language-html"><span class="nt">&lt;img</span> <span class="na">src=</span><span class="s">"mypic.jpg"</span> <span class="na">alt=</span><span class="s">"图像描述"</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;img</span> <span class="na">src=</span><span class="s">"images/mypic.jpg"</span> <span class="na">alt=</span><span class="s">"图像描述"</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;img</span> <span class="na">src=</span><span class="s">"../mypic.jpg"</span> <span class="na">alt=</span><span class="s">"图像描述"</span><span class="nt">/&gt;</span></code></pre>
+
+<p>在最后一个示例中，请注意图片所在的 HTML 网页应该在一个子目录中。请记得使用 alt 属性，因为很多人为了提高访问速度，会关闭图像加载，或者无法获取图像。</p>
+
+<p>您可以插入其他 Freesite 中的图片——事实上我们鼓励您这么做——参见本文 Activelink 一节。使用如下语法插入其他网站的图片：</p>
+
+<pre><code class="language-html"><span class="nt">&lt;img</span> <span class="na">src=</span><span class="s">"/USK@d5K..../othersite/5/otherimage.jpg"</span> <span class="na">alt=</span><span class="s">"图像描述"</span><span class="nt">/&gt;</span> </code></pre>
+
+<p>强烈建议您在每张图像中使用 alt 属性，因为有些人可能禁用了浏览器的图像加载功能，或是使用一个文本网络浏览器，或者图像需要花一段时间下载下来，或者他们可能是盲人，使用屏幕阅读器听网页。</p>
+
+<h3 id="activelink-">Activelink 图像</h3>
+<p>Activelink 非常重要，它可以确保某个 Freesite 可以在合理的时间内加载。因此请为您的网站制作一张。Activelink 其实就是一张图像，其他网站会使用它链接到您的网站。在普通的网站这通常称为“友情链接”图像。在 Freenet 中这张“友情链接”图像会带来很多好处。</p>
+
+<p>最大的好处是，如果其他网站添加了您的 Activelink 图像，那么在人们访问那些网站时，也会把您的网站的大部分下载到他们的 Freenet 缓存中。这是因为 Freenet 用来组合文件的<strong>容器</strong>包含了这个 Activelink 图像。</p>
+
+<p>根据约定，Activelink 图像储存在您网站的根目录，文件名为 <strong>activelink.png</strong>，大小为 108x36 像素。建议您最好遵从此约定，否则其他人和 Freenet 蜘蛛将很难抓取到您的 Activelink。本站的 Activelink 为：</p>
+
+<p><img src="activelink.png" alt="" /></p>
+
+<p>如果您想在自己的 HTML 网页中链接到本站，您可以使用如下代码：</p>
+
+<pre><code class="language-html"><span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"/USK@v9~gYwOIosp4hkpqkOBeEKLDGlI21iQ5mfTmskCtZvk,i3ZnqwW0l-tjuzvJj5s6JlcXD-mBhJVjoNgayspHl5E,AQACAAE/freenet_cn/12/"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;img</span> <span class="na">src=</span><span class="s">"/USK@v9~gYwOIosp4hkpqkOBeEKLDGlI21iQ5mfTmskCtZvk,i3ZnqwW0l-tjuzvJj5s6JlcXD-mBhJVjoNgayspHl5E,AQACAAE/freenet_cn/12/activelink.png"</span> <span class="na">alt=</span><span class="s">"自由网中文站"</span> <span class="na">width=</span><span class="s">"108"</span> <span class="na">height=</span><span class="s">"36"</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;/a&gt;</span> </code></pre>
+
+<p>没有 Activelink 的 Freesite 一般存活时间都要比有 Activelink 的 Freesite 要短，除非该网站非常流行。</p>
+
+<p>如果您的网站很大，请考虑将其分割成多个网站（您仍然可以为所有网站使用相同的键值，只需要更改网站名称），并使用 Activelink 互相链接他们。</p>
+
+<h3 id="favicon-">Favicon 网站图标</h3>
+<p>Favicon 网站图标不是必需的，但是会为您的网站增色不少。它是个小图标，显示在浏览器的收藏夹、地址栏旁边和标签栏上。例如，Google 的 Favicon 是一个彩色的 G。</p>
+
+<p>使用您喜欢的图像处理程序，如 Photoshop，创建一个特别的 .ico 文件，命名为 favicon.ico，16x16像素大小。将它放入您的 Freesite，然后在网页的 Head 中添加如下代码即可：</p>
+
+<pre><code class="language-html"><span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">"shortcut icon"</span> <span class="na">href=</span><span class="s">"images/favicon.ico"</span> <span class="nt">/&gt;</span> </code></pre>
+
+<h3 id="section-2">链接</h3>
+<p>虽然为了保护您的匿名性，Freesite 无法链接到外部网站，但是很显然它可以链接到其他的 Freesite。使用如下语法创建链接：</p>
+
+<pre><code class="language-html"><span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"/USK@d5K..../othersite/5/otherpage.html"</span><span class="nt">&gt;</span>一个链接<span class="nt">&lt;/a&gt;</span> </code></pre>
+
+<p>请注意开头的斜杠是非常重要的，否则浏览器会认为您是链接到您自己网站中的名为 USK@d5K…./othersite/5/otherimage.html 的文件。</p>
+
+<p>要链接到您自己的 Freesite 中的其他页面，则不需要添加 USK 部分：</p>
+
+<pre><code class="language-html"><span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"myotherpage.html"</span><span class="nt">&gt;</span>
+<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"subsection/myotherpage.html"</span><span class="nt">&gt;</span>
+<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"../myotherpage.html"</span><span class="nt">&gt;</span> </code></pre>
+
+<h3 id="css">CSS</h3>
+<p>CSS 全称为 Cascading Style Sheets，层叠样式表。它们用来将 HTML 中逻辑标签（段落、标题等）与样式标签（颜色、字体、尺寸等）区分开来。</p>
+
+<p>如果您的网站有多个页面，您可以让他们共享 CSS 样式，以缩小网站的总体大小，也便于您更新样式。您可以将样式信息储存在一个名如 <strong>styles/main.css</strong> 的文件中，并在 HTML 的 head 中添加如下代码：</p>
+
+<pre><code class="language-html"><span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">"stylesheet"</span> <span class="na">href=</span><span class="s">"styles/main.css"</span> <span class="na">type=</span><span class="s">"text/css"</span><span class="nt">/&gt;</span></code></pre>
+
+<p>但是如果您的网站只有一个文件，有可能出现浏览器先下载了 HTML 文件，然后才加载 CSS 文件。因此如果是这种情况，您可以选择将 CSS 样式直接插入到您的 HTML 文件，如下：</p>
+
+<pre><code class="language-html"><span class="nt">&lt;style </span><span class="na">type=</span><span class="s">"text/css"</span><span class="nt">&gt;</span>
+    <span class="nt">h1</span> <span class="p">{</span> <span class="nl">color</span><span class="p">:</span><span class="m">#FF00000</span><span class="p">;</span> <span class="p">}</span>
+    <span class="nt">p</span> <span class="p">{</span> <span class="nl">font-size</span><span class="p">:</span><span class="n">small</span><span class="p">;</span> <span class="p">}</span>
+<span class="nt">&lt;/style&gt;</span> </code></pre>
+
+<h3 id="title-">Title 标签</h3>
+<p>每个 Freesite 都应该在 HTML 的 head 中添加<strong>网页标题</strong>。这样蜘蛛就会为您的网站显示一个有意义的标题。示例代码如下：</p>
+
+<pre><code class="language-html"><span class="nt">&lt;title&gt;</span>这是我的 Freesite 的标题<span class="nt">&lt;/title&gt;</span></code></pre>
+
+<h3 id="meta-">描述 Meta 标签</h3>
+<p>有些自动化的蜘蛛可以抓取 Freesite 的链接并生成 Freesite 的网址站。他们使用 meta 标签中的描述来介绍网站。因此请在您的 Freesite head 中插入如下一行：</p>
+
+<pre><code class="language-html"><span class="nt">&lt;meta</span> <span class="na">name=</span><span class="s">"description"</span> <span class="na">content=</span><span class="s">"这是我的 Freesite 的简短描述。"</span><span class="nt">/&gt;</span> </code></pre>
+
+<h3 id="meta--1">语言 Meta 标签</h3>
+<p>Freesite 可能有多种语言。让浏览器和蜘蛛知道您的网站是哪种语言，是个不错的主意。您可以在网页的 head 中添加一个语言 Meta 标签来实现：</p>
+
+<pre><code class="language-html"><span class="nt">&lt;meta</span> <span class="na">http-equiv=</span><span class="s">"Content-Language"</span> <span class="na">content=</span><span class="s">"zh"</span><span class="nt">/&gt;</span></code></pre>
+
+<p>如果您的网站使用 XHTML，您也可以修改 html 标签为：</p>
+
+<pre><code class="language-html"><span class="nt">&lt;html</span> <span class="na">xml:lang=</span><span class="s">"zh-CN"</span> <span class="na">xmlns=</span><span class="s">"http://www.w3.org/1999/xhtml"</span> <span class="na">lang=</span><span class="s">"zh-CN"</span><span class="nt">&gt;</span></code></pre>
+
+<h3 id="meta--2">字符集 Meta 标签</h3>
+<p>和网页语言密切联系的是<strong>字符集</strong>。它用来设置网页中每个字节说关联的字符的编码。FProxy 默认使用 UTF-8 作为网页的字符集，这是一个好选择。因为 UTF-8 几乎可以显示所有语言的文字，Freenet 内部也使用这个编码。</p>
+
+<p>如果因为某些原因，您需要使用不同的字符集，或是脱离 FProxy 浏览网站，您也可以在 HTML 文件内指定字符集。指定字符集是有必要的，这样浏览器就会很明确，而不是猜测网页到底用了哪个字符集。使用如下代码指定字符集：</p>
+
+<pre><code class="language-html"><span class="nt">&lt;meta</span> <span class="na">http-equiv=</span><span class="s">"Content-Type"</span> <span class="na">content=</span><span class="s">"text/html; charset=utf-8"</span> <span class="nt">/&gt;</span></code></pre>
+
+<p>如果您使用了单字节字符集，如 ISO-8859-1，而不是 UTF-8，那么您网站的一些非标准字符可能在浏览器中无法正常显示。</p>
+
+<h3 id="meta--3">分类 Meta 标签</h3>
+<p>某些网址站，例如 <a href="/USK@0I8gctpUE32CM0iQhXaYpCMvtPPGfT4pjXm01oid5Zc,3dAcn4fX2LyxO6uCnWFTx-2HKZ89uruurcKwLSCxbZ4,AQACAAE/Ultimate-Freenet-Index/64/howto.html">The Ultimate Freenet Index</a>，会使用一个 Meta 标签来为您的网站分类。在 head 中使用如下代码为您的网站归类：</p>
+
+<pre><code class="language-html"><span class="nt">&lt;meta</span> <span class="na">name=</span><span class="s">"category"</span> <span class="na">content=</span><span class="s">"flog,games,movies"</span><span class="nt">/&gt;</span></code></pre>
+
+<h3 id="section-3">“添加到书签”链接</h3>
+<p>您可以在网站中提供一个可点击的链接，方便浏览者将网站加到他们的 FProxy 首页（<strong>http://localhost:8888/</strong>）中。这样当您的网站更新后，他们会收到通知。如果您制作了 Activelink 图像，它也可以显示在他们的书签列表中。这样您的网站在他们访问 Freenet 首页时就会缓存到他们的硬盘。</p>
+
+<p>要创建“添加到书签”链接，可以使用如下代码：</p>
+
+<pre><code class="language-html"><span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"/?newbookmark=USK@...AAE/myfreesite/4/&amp;amp;desc=我的 Freesite 描述"</span><span class="nt">&gt;</span>收藏我的网站<span class="nt">&lt;/a&gt;</span></code></pre>
+
+<h3 id="freesite-1">验证您的 Freesite</h3>
+<p>您可以使用离线 HTML 验证工具或是在线工具（如 <strong>http://htmlhelp.com/tools/validator/offline/index.html.en</strong>）来检查您的页面是否有错误以及是否符合标准。</p>
+
+<h2 id="freesite-2">上传您的 Freesite</h2>
+<p>现在所有困难的工作都已完成，该上传您的 Freesite 到 Freenet 了。</p>
+
+<p>您可以使用 Freenet 文件上传工具上传，但是我推荐您使用 <strong>jSite</strong>，因为它专为上传 Freesite 设计。</p>
+
+<h3 id="jsite">jSite</h3>
+<p>jSite 是一个 Java 应用程序，简化了将 Freesite 上传到 Freenet 的步骤。您可以在<a href="/USK@1waTsw46L9-JEQ8yX1khjkfHcn--g0MlMsTlYHax9zQ,oYyxr5jyFnaTsVGDQWk9e3ddOWGKnqEASxAk08MHT2Y,AQACAAE/jSite/-9/">这里</a>下载最新版本的 jSite。下载完成后，双击 jSite.jar 文件（Windows 或 Mac 下），或者使用如下命令行运行（Linux 下）：</p>
+
+<pre><code class="language-bash"><span class="gp">$ </span>java -jar jSite.jar &amp;</code></pre>
+
+<p>点击 <strong>Add Project</strong> 按钮，他会为您创建一个新项目，并生成 SSK 键值对。<strong>Request URI</strong> 是您网站公开地址。<strong>Insert URI</strong> 是私钥，未来您需要它来更新自己的 Freesite。（译者注：新版本的 jSite 需要点击 <strong>Manage Keys</strong> 按钮查看私钥。）</p>
+
+<p><img src="/USK@8r-uSRcJPkAr-3v3YJR16OCx~lyV2XOKsiG4MOQQBMM,P42IgNemestUdaI7T6z3Og6P-Hi7g9U~e37R3kWGVj8,AQACAAE/freesite-HOWTO/4/images/jsite-1.png" alt="" /></p>
+
+<p>现在为您的项目添加一个名称（<strong>Name</strong>）和描述（<strong>Description</strong>）。名称和描述仅供您自己参考整理用，不是公开信息。<strong>Local path</strong> 用来定位您的网站文件所在目录。<strong>Path</strong> （译者注：新版本更名为 <strong>Freenet Path</strong>）输入框让您指定您网站的公开名称，位于 SSK 键值和版本号之间。</p>
+
+<p>如果按下图设置，您的最终项目的 Freesite 网址为 USK@…iroho7Kg~RvM~s,AQACAAE/my-test-project/0/。</p>
+
+<p><img src="/USK@8r-uSRcJPkAr-3v3YJR16OCx~lyV2XOKsiG4MOQQBMM,P42IgNemestUdaI7T6z3Og6P-Hi7g9U~e37R3kWGVj8,AQACAAE/freesite-HOWTO/4/images/jsite-2.png" alt="" /></p>
+
+<p>接下来点击 <strong>Next</strong> 按钮。在下一屏中您可以为您的 Freesite 设置默认文件，这样如果网址中没有指定文件名，该文件将被加载。您还可以为某些文件指定 MIME 类型，或是指定外部生成的键值。我们现在只需要选择 index.html 并选中 <strong>Default file</strong> 复选框。</p>
+
+<p><img src="/USK@8r-uSRcJPkAr-3v3YJR16OCx~lyV2XOKsiG4MOQQBMM,P42IgNemestUdaI7T6z3Og6P-Hi7g9U~e37R3kWGVj8,AQACAAE/freesite-HOWTO/4/images/jsite-3.png" alt="" /></p>
+
+<p>最后，点击 <strong>Insert Now</strong> 按钮，等待 jSite 为您插入 Freesite 到 Freenet。</p>
+
+<p><img src="/USK@8r-uSRcJPkAr-3v3YJR16OCx~lyV2XOKsiG4MOQQBMM,P42IgNemestUdaI7T6z3Og6P-Hi7g9U~e37R3kWGVj8,AQACAAE/freesite-HOWTO/4/images/jsite-4.png" alt="" /></p>
+
+<p>上传根据您网站的大小，需要数分钟时间。完成后，点击 <strong>Copy URI to Clipboard</strong> 按钮将您的 Freesite 网址复制到剪贴板。点击 <strong>Next</strong> 可以返回到 jSite 主屏幕，在那里您也可以执行类似的操作。</p>
+
+<h2 id="freesite-3">推广您的 Freesite</h2>
+<p>如果您已经有 Freesite，且您不在意人们知道两个网站的主人都是您，那么您可以在第一个网站中添加新网站的 Activelink。这样网址站的蜘蛛就会索引到您的新网站。</p>
+
+<p>另外，您也可以将自己的网站发到 Freenet 的论坛系统，如 Frost 或 FMS。蜘蛛喜爱如下格式的帖子：</p>
+
+<blockquote>
+  <p>Name: 我的网站<br />
+Location: USK@…RvM~s,AQACAAE/my-test-project/0/<br />
+Activelink: USK@…RvM~s,AQACAAE/my-test-project/0/activelink.png<br />
+Description: 这是我的 freesite 测试站。 <br />
+Categories: freenet,testing</p>
+</blockquote>
+
+<p>期待您成功上传自己的 Freesite，祝您好运！</p>
+
+  </div>
+
+</body>
+</html>

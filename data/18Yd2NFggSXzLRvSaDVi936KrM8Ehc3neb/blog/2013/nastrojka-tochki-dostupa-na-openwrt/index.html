@@ -1,0 +1,92 @@
+<!DOCTYPE HTML>
+<html lang="ru">
+    <head>
+      <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb</title>
+      <link rel="stylesheet" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/css/main.css"/>
+      <link rel="shortcut icon" type="image/x-icon" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/favicon.ico"/>
+      <link href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/rss.xml" title="Akademic's blog" type="application/rss+xml" rel="alternate"/>
+    </head>
+    <body>
+        <header><h1><a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb" rel="home">akademic.name</a></h1></header>
+        <main class="content">
+            
+<article>
+    <h1>Настройка точки доступа на openwrt</h1> <time>17.11.2013</time>
+	<p>Снова дошли руки поиграть с отличным устройством: TP-Link TL-WR703N.
+И в качестве разминки решил настроить на нём wifi точку доступа.</p>
+
+<p>Я раньше уже настраивал её. Однако сегодня возникли проблемы, решением которых хотелось бы поделиться.</p>
+
+<p>Итак, <a href="http://wiki.openwrt.org/doc/uci/wireless">в документации</a> всё довольно просто.</p>
+
+<pre><code>config 'wifi-iface'
+        option 'device'     'wl0'
+        option 'network'    'lan'
+        option 'mode'       'ap'
+        option 'ssid'       'MyWifiAP'
+        option 'encryption' 'psk2'
+        option 'key'        'secret passphrase'
+</code></pre>
+
+<p>И так раньше у меня работало.
+Проблема же в том, что я решил переназвать интерфейсы, т.к. в будущем у меня не будет чёткого деления на wan и lan. И я назвал их eth и wifi.</p>
+
+<p>Соответственно эти интерфейсы определены в /etc/config/network</p>
+
+<pre><code>config interface 'wifi'
+        option ifname 'wlan0'
+        option proto 'static'
+        option ipaddr '192.168.3.1'
+        option netmask '255.255.255.0'
+</code></pre>
+
+<p>В /etc/config/wireless я заменил
+option &lsquo;network&rsquo;    &lsquo;lan&rsquo;
+на
+option &lsquo;network&rsquo;    &lsquo;wifi&rsquo;</p>
+
+<p>Теперь для того, чтобы при соединении с этой сетью автоматически выдавались ip, надо завести секцию в @/etc/config/dhcp@:</p>
+
+<pre><code>config dhcp wifi
+        option interface        wifi
+        option start    151
+        option limit    50
+        option leasetime        12h
+</code></pre>
+
+<p>И казалось бы всё. Но не работает. Авторизацию клиенты проходят, а IP не получают.
+В официальной документации забыли упомянуть про файрвол. Т.к. в их примере интерфейс называется lan, а для него есть запись в @/etc/config/firewall@, то их пример работает, а мой нет.
+Надо просто создать новую зону wifi в /etc/config/firewall:</p>
+
+<pre><code>config zone
+        option name             wifi
+        option network          'wifi'
+        option input            ACCEPT
+        option output           ACCEPT
+        option forward          REJECT
+</code></pre>
+
+<p>Теперь всё заработало.</p>
+
+    
+    <span class="next_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2013/gugl-molodec-yandeks-tormoz/index.html" rel="next">гугл молодец, а яндекс - тормоз</a>
+    </span>
+	
+	
+    <span class="prev_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2013/btsync-i-utechka-pamyati/index.html" rel="previous">Btsync и утечка памяти</a>
+    </span>
+	
+</article>
+
+        </main>
+        <footer>
+        Будьте внимательны, многое из того, что написано в этом блоге, является личным мнением автора и не претендует на истину.
+        <img src="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/yopiright.jpg" width="12" height="12"/> 2008
+        </footer>
+    </body>
+</html>

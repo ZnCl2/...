@@ -1,0 +1,1737 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title> mmap.page</title>
+    <link rel="stylesheet" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/css/style.css">
+    <link rel="alternate" type="application/rss+xml" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml">
+    <link rel="alternate" type="application/git+http" href="https://github.com/weakish/weakish.github.com.git"/>
+</head>
+<body>
+  <div class="container-lg px-3 my-5 markdown-body">
+
+    <h1><a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/">mmap.page</a></h1>
+    <p>Hello ZeroMe! (Hmm, I can follow myself!)</p>
+<p>-- 2016-08-13</p>
+<p><a href="http://127.0.0.1:43110/1Mbwaw4Uxp1sq5GzWo3SCmYFTk7mgSWNmw">SetupList</a> is online! (SetupList is a 0List clone for sharing software/hardware you are using.)</p>
+<p>-- 2016-08-18</p>
+<p>20191123: instructions updated for recent zeronet versions</p>
+<p>If zeronet's file server port is closed on your machine, you can use an ssh tunnel to accelerate publishing your zites:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ssh <span class="nt">-n</span> <span class="nt">-N</span> <span class="nt">-R</span> 15441:127.0.0.1:15441 root@REMOTE_IP
+</code></pre></div></div>
+<p>Replace <code>15441</code> with the real file server port and fill the <code>REMOTE_IP</code> in the file server external ip of <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/Config">ZeroNet Config</a>.</p>
+<p>Note you need to enable <code>AllowTcpForwarding</code> and <code>GatewayPorts</code> of sshd service on the remote machine beforehand.</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>sh <span class="nt">-c</span> <span class="s1">'echo AllowTcpForwarding yes'</span> <span class="o">&gt;&gt;</span> /etc/ssh/sshd_config
+<span class="nb">sudo </span>sh <span class="nt">-c</span> <span class="s1">'echo GatewayPorts yes'</span> <span class="o">&gt;&gt;</span> /etc/ssh/sshd_config
+<span class="nb">sudo </span>service sshd restart  <span class="c"># On some OSes, replace `sshd` with `ssh`.</span>
+</code></pre></div></div>
+<p>-- 2016-08-18</p>
+<p>Zite (ZeroSite) publish procedure:</p>
+<ol>
+<li>publish your site (better with 15441 open)</li>
+<li>browser your site via <a href="https://bit.no.com:43110/">ZeroNet proxy</a> to make sure everything is O.K.</li>
+<li>publish your site on <a href="http://127.0.0.1:43110/0list.bit">0list</a>, <a href="http://127.0.0.1:43110/1Dt7FR5aNLkqAjmosWh8cMWzJu633GYN6u">Zero Central</a> and <a href="http://127.0.0.1:43110/1LtvsjbtQ2tY7SCtCZzC4KhErqEK3bXD4n">New 0Net Sites</a>.</li>
+</ol>
+<p>-- 2016-08-18</p>
+      <h2 id="how-to-backup-your-favorite-sites">
+        
+        
+          How to backup your favorite sites <a href="#how-to-backup-your-favorite-sites" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>tl;tr Favorite sites are stored in LocalStorage only. Switching browser or clearing browser data will reset all favorite sites.</p>
+<ol start="0">
+<li>You are browsing a ZeroNet site.</li>
+<li>Open &quot;Web Developer Tool&quot; (or something similar) &gt; Application &gt; Storage &gt; LocalStorage &gt; http://127.0.0.1:43110</li>
+<li>Find the key starting with <code>site.1HeLLo4uzjaLetFx6NH3PMwFP3qbRbTf3D</code></li>
+<li>Copy its value <code>{&quot;sites_orderby&quot;:&quot;peers&quot;,&quot;favorite_sites&quot;:{&quot;1MeFqFfFFGQfa1J3gJyYYUvb5Lksczq7nH&quot;:true,...}}</code></li>
+<li>Save its value to a safe place (a txt file on computer, a mail to yourself, etc)</li>
+</ol>
+<p>Restore: Right-click the value <code>Edit &quot;value&quot;</code> and replace with your backup.</p>
+<p>-- 2016-08-20</p>
+<p>Considering a variant of <a href="http://semver.org">semver</a> major.nth_feature_introduced.YYMM</p>
+<p>-- 2016-08-20</p>
+<p>TeXmacs is still unstable. Make sure auto save is turned on.</p>
+<p>-- 2016-08-25</p>
+<p>Google Buzz, Google Wave, Google Reader, Google Code. Now Google Chrome App (by 2018, except on ChromeOS).</p>
+<p>-- 2016-08-27</p>
+<p>Today I was bitten by <code>Refused to execute script from ... because its MIME type (text/plain) is not executable, and strict MIME type checking is enabled</code> when hot-linking a js file hosted on GitHub.</p>
+<p>Then I found out that <code>raw.github.com</code> is not truely raw access to file asset,
+but a view rendered by Rails.
+So accessing <code>raw.github.com</code> is much heavier than needed.
+I don't know why <code>raw.github.com</code> is implemented as a Rails view.
+Instead of fix this route issue, GitHub added a <code>X-Content-Type-Options: nosniff</code> header.</p>
+<p>It sounds like a hot fix to me:</p>
+<ul>
+<li><strong>A:</strong> Let's just make raw a Rails view, so it is simple to write routing code.</li>
+<li><strong>B:</strong> But this hurts performance.</li>
+<li><strong>A:</strong> No, programming time is more valuable than processing time. If more human beings view the raw, let's just convince VCs to invest more money for more machines since we are so successful that we have some many views.</li>
+<li><strong>B:</strong> But there are sites use GitHub to host scripts.</li>
+<li><strong>A:</strong> No, they should not do this because Rails view is heavy. Let's block them by adding an HTTP header. It's simple.</li>
+</ul>
+<p>Workaround:</p>
+<ul>
+<li>Put the script to <code>user.github.io/repo</code></li>
+<li>Use a third party CDN like rawgit.com.</li>
+</ul>
+<p>-- 2016-08-27</p>
+<p>List of all known ZeroMe hubs: https://weakish.github.io/ZeroMeHubList/</p>
+<p>-- 2016-08-27</p>
+<p>Duokan (ebook app) exports highlights and notes to Evernote <strong>without page numbers</strong>.</p>
+<p>-- 2016-08-29</p>
+<p>I think hg may fit ipfs more well than git. Like git's dumb http, hg supports <a href="https://www.mercurial-scm.org/wiki/StaticHTTP">static http</a>. Unlike git's changing-all-the-time packfile, hg's revlog is predictable. So hosting hg repos on ipfs is simpler (no need to unpack objects manually), and saves bandwidth (git repos with unpacked objects is usually larger than hg).</p>
+<p>-- 2016-08-29</p>
+<p>&quot;IPFS is the Distributed Web ... aims to replace HTTP&quot;. WTF! A web of GET and PUT only HTTP? And FS is not file system but web?</p>
+<p>-- 2016-08-29</p>
+<p>The web flame: pretend that you cannot find exciting, new, modern technologies outside web.</p>
+<p>-- 2016-08-29</p>
+<p>Cloned site private key recovery:</p>
+<p>If <code>This is my site</code> in site menu does not works, you can try manually recover cloned site private key (they are generated from your master key in BIP32).</p>
+<p><strong>Warning</strong>: untested</p>
+<ul>
+<li>Make sure you are seeding your LostSite.</li>
+<li>Stop Zeronet.</li>
+<li>Get LostSite <code>address_index</code> in <code>data/LostSiteID/content.json</code>.</li>
+<li>Get your master key <code>master_seed</code> in <code>data/users.json</code>.</li>
+<li>Edit <code>Actions.main(self)</code> in <code>src/main.py</code>,  see below.</li>
+<li>Now start Zeronet, you will see site private key in output. Record it.</li>
+<li>Stop Zeronet. Delete recovery code added above.</li>
+<li>Edit <code>data/users.json</code>,  fill the record value (quoted) in <code>privatekey</code> at LostSiteID.</li>
+<li>Edit <code>data/sites.json</code>, set <code>own</code> in LostSiteID to <code>true</code>.</li>
+<li>Start Zeronet. Now you should be able to edit/publish your site.</li>
+</ul>
+<p>Added code in <code>src/main.py</code>:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Actions</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+     <span class="c1"># code omitted
+</span>     <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+          <span class="c1"># code omitted
+</span>          <span class="c1"># Add code below.
+</span>          <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">"--------------------DEBUG: Recovery Begin--------------------"</span><span class="p">)</span>
+          <span class="kn">from</span> <span class="nn">Crypt</span> <span class="kn">import</span> <span class="n">CryptBitcoin</span>
+          <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">CryptBitcoin</span><span class="o">.</span><span class="n">hdPrivatekey</span><span class="p">(</span><span class="s">"YOUR_master_seed"</span><span class="p">,</span> <span class="n">YOUR_address_index</span><span class="p">))</span>
+          <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">"------------------- DEBUG: Recovery End--------------------"</span><span class="p">)</span>
+          <span class="c1"># Added code ended here.
+</span>          
+          <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">"Starting servers...."</span><span class="p">)</span>
+          <span class="c1"># code omitted
+</span></code></pre></div></div>
+<p>-- 2016-08-30</p>
+<p>Just add a 0BSD style license on my profile page: Permission to use, copy, modify, and/or distribute all my posts and comments at ZeroMe for any purpose with or without fee is hereby granted.</p>
+<p>-- 2016-08-30</p>
+<p><a href="http://127.0.0.1:43110/ZAlex.bit/photos/index.html">An example of ZeroSite of photos</a></p>
+<p>-- 2016-08-31</p>
+<p>Wish every programming language website has <a href="http://ceylon-lang.org/documentation/1.2/introduction/">a gentle introduction like  Ceylon</a>, demostrating both basic usage and advanced features, but not lengthy.</p>
+<p>-- 2016-09-01</p>
+<p>I used to confuse coding style with formatting style. Formatting style like <code>using n spaces to indent</code> and <code>closing brace on its own line</code> are unlikely to affect readability of code, and they can be auto adjusted via IDE or command line tools. What really matter is coding style, like <code>if (a=0)</code> and <code>++i</code>. PEP 8 for Python talks a lot about formatting style. This is a cost of Python's layout based (indentation sensitive) syntax: possibly cleaner for small pieces of code, while hard or impossible to be auto formatted by tools like IDEs (crucial for a large code base).</p>
+<p>-- 2016-09-03</p>
+<p><code>i++</code> should be a pure side effect, a.k.a. <code>void</code>, just like <code>b = c</code> should be <code>void</code> (invalidating <code>if (a = 0)</code>).</p>
+<p>-- 2016-09-04</p>
+<p>IDEs for static typed languages are so powerful, particularly for refactoring. The dark side is making me less acclimatized to dynamic typed languages IDEs, e.g. even PyCharm and RubyMine cannot match IntelliJ or Eclipse.</p>
+<p>-- 2016-09-07</p>
+<p>In Python, whitespace (space or tab) can be used: (use dot to indicate whitespace)</p>
+<p>to <strong>indedent</strong> code (removing will cause error)</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="o">....</span><span class="k">return</span> <span class="n">x</span>
+</code></pre></div></div>
+<p>and <strong>align</strong> code (can be safely removed)</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">x</span><span class="o">.............=</span> <span class="mi">1</span>
+<span class="n">long_variable</span> <span class="o">=</span> <span class="mi">2</span>
+</code></pre></div></div>
+<p>Thus I think it is a good idea to distinguish them with different characters: use <code>tab</code> for <strong>indentation</strong>, and <code>space</code> for <strong>alignment</strong>.</p>
+<p>PEP 8 has a different opinion:</p>
+<ul>
+<li>Use <code>space</code> for indentation.</li>
+<li>Keep code unaligned.</li>
+</ul>
+<p>-- 2016-09-09</p>
+<p>Relieased that I have forgotten what does Hallelujah mean. To me it means some beautiful nonsense in music.</p>
+<p>-- 2016-09-11</p>
+<p><code>camelCaseAreHardToReadIfThereAreMoreThanThreeWords</code></p>
+<p><code>under_line_is_much_easier_to_read</code></p>
+<p>Exceptions:</p>
+<ul>
+<li><code>TypeName</code> since <code>TypeNamesWithMoreThanThreeWords</code> should be avoided.</li>
+<li><code>FooBar fooBar</code> so wherever we see <code>fooBar</code>, we know it is of type <code>FooBar</code>.</li>
+</ul>
+<p>-- 2016-09-12</p>
+<p>There are currently 18 ZeroMe hubs (excluding empty hubs with no registered user). And I am seeding 5.  via <a href="https://weakish.github.io/zerome-crawler/">zerome-crawler</a></p>
+<p>-- 2016-09-16</p>
+<p>An ugly workaround of TypeScript's structural typing:</p>
+<div class="language-typescript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">type</span> <span class="nx">Kind1P</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">1p</span><span class="dl">"</span><span class="p">;</span>
+<span class="nx">type</span> <span class="nx">Kind2P</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">2p</span><span class="dl">"</span><span class="p">;</span>
+<span class="nx">type</span> <span class="nx">KindHUStrNum</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">string | number</span><span class="dl">"</span><span class="p">;</span>
+
+<span class="kd">function</span> <span class="nx">f</span><span class="p">(</span><span class="nx">x</span><span class="p">:</span> <span class="nx">number</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">x</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kd">function</span> <span class="nx">g</span><span class="p">(</span><span class="nx">x</span><span class="p">:</span> <span class="nx">number</span><span class="p">,</span> <span class="nx">y</span><span class="p">:</span> <span class="nx">number</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">x</span> <span class="o">+</span> <span class="nx">y</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kd">let</span> <span class="nx">no_f</span><span class="p">:</span> <span class="p">(</span><span class="nx">x</span><span class="p">:</span> <span class="nx">number</span><span class="p">,</span> <span class="nx">y</span><span class="p">:</span> <span class="nx">number</span><span class="p">,</span> <span class="nx">kind</span><span class="p">:</span> <span class="nx">Kind2P</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">number</span><span class="p">;</span>
+<span class="kd">function</span> <span class="nx">wrap_g</span><span class="p">(</span><span class="nx">x</span><span class="p">:</span> <span class="nx">number</span><span class="p">,</span> <span class="nx">y</span><span class="p">:</span> <span class="nx">number</span><span class="p">,</span> <span class="nx">kind</span><span class="p">:</span> <span class="nx">KInd2P</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">2p</span><span class="dl">"</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">g</span><span class="p">(</span><span class="nx">x</span><span class="p">,</span> <span class="nx">y</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="nx">no_f</span> <span class="o">=</span> <span class="nx">wrap_g</span><span class="p">;</span>
+
+<span class="kd">function</span> <span class="nx">higher</span><span class="p">(</span>
+        <span class="nx">f</span><span class="p">:</span> <span class="p">(</span><span class="nx">x</span><span class="p">:</span> <span class="nx">string</span> <span class="o">|</span> <span class="nx">number</span><span class="p">,</span> <span class="nx">kind</span><span class="p">:</span> <span class="nx">K1P</span><span class="p">,</span> <span class="nx">kindH</span><span class="p">:</span> <span class="nx">KUStrNum</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">string</span><span class="p">,</span>
+        <span class="nx">y</span><span class="p">:</span> <span class="nx">string</span> <span class="o">|</span> <span class="nx">number</span>
+        <span class="p">)</span> <span class="p">{</span>
+	<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">`calling </span><span class="p">${</span><span class="nx">f</span><span class="p">}</span><span class="s2">`</span><span class="p">);</span>
+	<span class="k">return</span> <span class="nx">f</span><span class="p">(</span><span class="nx">y</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">sub</span><span class="p">(</span><span class="nx">x</span><span class="p">:</span> <span class="nx">number</span><span class="p">):</span> <span class="nx">string</span> <span class="p">{</span>
+	<span class="k">return</span> <span class="s2">`</span><span class="p">${</span><span class="nx">x</span> <span class="o">*</span> <span class="nx">x</span><span class="p">}</span><span class="s2">`</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="c1">// higher will not accept `sub`!</span>
+</code></pre></div></div>
+<p>-- 2016-09-17</p>
+<p>All my todos are on wunderlist, which is down now. And I can hardly remember what to do. If wunderlist is implemented as a ZeroSite ...</p>
+<p>-- 2016-09-21</p>
+<p><a href="https://github.com/weakish/0me-hubs-snapshots">Snapshots of all current, non empty, functional ZeroMe hubs</a>,
+powered by <a href="https://github.com/weakish/0net-snapshot">0net-snapshot</a>.</p>
+<p>-- 2016-09-22</p>
+<p><code>A then B else C</code> in Ceylon feels confusing to me.</p>
+<p><code>A then B else C</code> looks like <code>A ? B : C</code> in other languages, but they are <strong>not the same</strong>:</p>
+<ol>
+<li>
+<p><code>A then B else C</code> is actually <code>(A then B) else C</code>:</p>
+<pre><code>  * `A then B` evaluates to `B` if `A` is not `null`, otherwise evaluates to `null`.
+  * `X else Y` evaluates to `X` if `X` is not `null`, otherwise evaluates to `Y`.
+</code></pre></li>
+<li>
+<p>Thus the type of <code>B</code> is <code>T given T satisfies Object</code>, i.e. requires to not be <code>null</code>.</p>
+</li>
+</ol>
+<p>I think <code>if (A) then B else C</code> is much cleaner.</p>
+<p>-- 2016-09-25</p>
+<p>Found an old macro (in a lisp like language) I wrote a year ago. Now I have difficulties to understand it.</p>
+<p>-- 2016-09-29</p>
+<p>GitHub helps spreading Git. But there is no balanced competitor currently. This is anti-decentred for a DVCS.</p>
+<p>-- 2016-09-30</p>
+<p>Finally iPhones get water resistent.</p>
+<p>-- 2016-10-02</p>
+<p>Visual Studio Code: &quot;Code editing. Redefined.&quot; How a code editor borrowed a lot from SublimeText and TextMate dare to declare this?</p>
+<p>-- 2016-10-03</p>
+<p>vscode is open source (MIT) and Visual Studio Code is proprietary. So confusing the names!</p>
+<p>-- 2016-10-06</p>
+<p>Thought there was something wrong with the sound configuration on my machine. Then I found out the mp3 I was playing is 32kbps.</p>
+<p>-- 2016-10-07</p>
+<p>September 2015 Evernote Food shutdown. dianping.com (restaurant review site in China) also shutdown its public API service (individual developers cannot apply API access, APIs are only available to a few parterners) on that month.</p>
+<p>-- 2016-10-08</p>
+<p>Windows Mobile does not support two factor auth, you have to use an app password. Now app password does not work on my phone (used to work on previous versions of Windows Mobile 10). I have to turn off two factor auth. Not too old Android versions support two factor auth out of the box.</p>
+<p>-- 2016-10-10</p>
+<p>Programming languages are clearer than natural languages. So &quot;well-commented code&quot; may not be well-written.</p>
+<p>To reduce commenting:</p>
+<ul>
+<li>Use meaningful function and variable/value name.</li>
+<li>Declare local variable near its usage.</li>
+<li>Avoid deep nested function call expression. Extract meaningful immediate value declaration.</li>
+</ul>
+<p>Here 'commenting' mainly refers to inline comments,
+i.e. comments explaining implementation details.
+Doc annotation of public modules and functions on their usage is fine.</p>
+<p>-- 2016-10-13</p>
+<p>I prefer explicit else branch over fall through flow.</p>
+<p>For example:</p>
+<div class="language-ceylon highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">Boolean</span> <span class="n">if_else</span><span class="o">(</span><span class="nd">Integer</span> <span class="n">x</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">if</span> <span class="o">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">if</span> <span class="o">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="n">if</span> <span class="o">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">10</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div></div>
+<p>It is short, but difficult to figure out the control flow.</p>
+<p>Rewrite it more explicitly, without omitting else branch:</p>
+<div class="language-ceylon highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">Boolean</span> <span class="n">if_else</span><span class="o">(</span><span class="nd">Integer</span> <span class="n">x</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">if</span> <span class="o">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// This is for demonstration only.
+</span>        <span class="c1">// `if (x &gt; 0, x &lt; 10)` is clearer.
+</span>        <span class="c1">// Pretend there were more complex branching here.
+</span>        <span class="n">if</span> <span class="o">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="n">if</span> <span class="o">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">10</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+<p>Also, avoid using <code>variable</code> to save else branch.</p>
+<p>For example:</p>
+<div class="language-ceylon highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">variable</span> <span class="nd">Integer</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+<span class="n">if</span> <span class="o">(</span><span class="n">condition</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="mi">1</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div></div>
+<p>can be rewritten to</p>
+<div class="language-ceylon highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">Integer</span> <span class="n">x</span><span class="o">;</span>
+<span class="n">if</span> <span class="o">(</span><span class="n">condition</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="mi">1</span><span class="o">;</span>
+<span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div></div>
+<p>-- 2016-10-18</p>
+<p>In Ceylon, cases in <code>switch</code> need to be both disjoint and exhausted. Using a strict form helps to reduce bugs.</p>
+<p>For example, suppose we have the following code:</p>
+<div class="language-ceylon highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">Path</span> <span class="n">path</span> <span class="o">=</span> <span class="n">current</span><span class="o">;</span>
+<span class="n">if</span> <span class="o">(</span><span class="k">is</span> <span class="nd">Directory</span> <span class="n">path</span><span class="o">)</span> <span class="o">{</span> <span class="c1">// typo, should be `path.resource`.
+</span>    <span class="c1">// ...
+</span><span class="o">}</span> <span class="k">else</span> <span class="o">{</span> <span class="c1">// dead code
+</span>    <span class="c1">// ...
+</span><span class="o">}</span>
+</code></pre></div></div>
+<p>There is a typo in the above code, <code>path</code> should be <code>path.resource</code>.
+So the above code will never go into the else branch,
+since a Path is always not a Directory.</p>
+<p>However, if we use switch with explicit cases:</p>
+<div class="language-ceylon highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">switch</span> <span class="o">(</span><span class="n">path</span><span class="o">)</span>
+<span class="k">case</span> <span class="o">(</span><span class="k">is</span> <span class="nd">Directory</span><span class="o">)</span> <span class="o">{</span>
+    <span class="c1">// ...
+</span><span class="o">}</span>
+<span class="k">case</span> <span class="o">(</span><span class="k">is</span> <span class="nd">File</span><span class="o">|</span><span class="nd">Link</span><span class="o">|</span><span class="nd">Nil</span><span class="o">)</span> <span class="o">{</span>
+    <span class="c1">// ...
+</span><span class="o">}</span>
+</code></pre></div></div>
+<p>The compiler will refuse to compile, saying cases are not exhausted.</p>
+<p>-- 2016-10-21</p>
+<p>citibank's &quot;change password&quot; gives misleading error info (&quot;must contain at least 1 digit and 1 letter&quot;) if new password contains some special characters like <code>@</code>.</p>
+<p>-- 2016-10-23</p>
+<p>The main audience of code is human beings, not tests. Improving testability should not harm readability.</p>
+<p>-- 2016-10-25</p>
+<p>WTF! New generation of MacBook Pro!</p>
+<p>It's Pro so it does not need to be so thin that it uses  a painful to type keyboard as on MacBook. Unified type-C is too cool to connect other devices. Even Apple self's devices are not unified, so you cannot charge iPhones without an adapter. Also replacing MagSafe with type-C is obivously a regression. And the 13&quot; version only has two slots! Also the price is much expensive than older genrations.</p>
+<p>In fact, Apple now effectly does not sell laptops. MacBook and MacBook Air only has 4 or 8GB unupgradable RAM. Now they ruied MacBook Pro, the only series of sufficient RAM.</p>
+<p>-- 2016-10-28</p>
+<p>mp3.163.com (a music distribution site in China) does not have any API. In fact it even encryptes post params with some home made algorithm (the algorithm is different on different clients and is evolving, the current API in web UI is based on AES, RSA and MD5) on HTTP (it does not support HTTPS). That's why I have never registered an account on it.</p>
+<p>-- 2016-10-29</p>
+<p>The email to onfirm email address on dida365.com (Chinese version of TickTick) does not show any explicit url link. The link it is hide in HTML. It is wrong to assume every email client renders HTML correctly.</p>
+<p>-- 2016-10-31</p>
+<p>Although Python still does not understand type hints, at least IDEs will give a warning. Or you can check types via <code>mypy</code>.</p>
+<p>-- 2016-11-02</p>
+<p>All Linux distributions where UEFI Secure Boot works out of the box (e.g. Fedora, OpenSuse, Ubuntu) are using systemd! #WTF</p>
+<p>-- 2016-11-03</p>
+<p>For any one want to pick up programming language , I recommend <a href="https://www.amazon.com/Little-Schemer-Daniel-P-Friedman/dp/0262560992">The Little Schemer</a>，less than 200 pages and can be finished in a weekend. It starts from zero and gradually introduces concepts like recursion, higher-order functions, curry, Church encoding, halting problem, lambda calculus,  fixed point, Y combinator, continuation, CPS, Godel Incompleteness Theorem, and a basic interperator for a simplified progarmming language.</p>
+<p>If you think The Little Schemer is expensive, you can try <a href="https://leanpub.com/coffeescript-ristretto">CoffeeScript Ristretto</a>, somehow a translation of The Little Schemer to CoffeeScript, which can be read on line for free.</p>
+<p>Do not worry the above books do not use a language you are going to use in your work. After all, the right approach to pick the certain programming language you are going to use is to focus on  semantics, instead of syntax; focus on concepts, instead of concrete details; focus on good parts, instead of all parts; also learning the implemantation of the language is a good way, since modeling is an effective way of learning (no need a full implement, also not worry about performance, just implement basic and import concepts).  The Littele Schemer fully conforms to this approach. Once you learned the scheme language with it, you know how to learn a new languge, and you know essential concepts of programing language. Then you can just pick up any language you are going to use in the same way. And because you only need to understand new semantics and concepts of the new language, it will be fast. For syntax, just use a good IDE or setup your editor properly.</p>
+<p>-- 2016-11-03</p>
+<p>A quick review of germ.io:</p>
+<p>What is cool:</p>
+<ul>
+<li>Distinguish ideation with action.</li>
+<li>Distinguish completed with not taken.</li>
+<li>Nested sub list.</li>
+<li>In action view, tasks(germs) with sub-tasks actionable are marked with a lock icon.</li>
+</ul>
+<p>Missing:</p>
+<ul>
+<li>No export data.</li>
+<li>No mobile client.</li>
+<li>Status (Ideation, action, etc) is unclikable on overview.</li>
+<li>Note markup is Rich text, no option for markdown.</li>
+<li>No markup for code block.</li>
+<li>When change status from ideation to action, assign to no one by default, should assign to the one change status by default.</li>
+<li>No way to hide completed and not taken tasks.</li>
+</ul>
+<p>-- 2016-11-04</p>
+<p>Use registery to swap keys under Windows.</p>
+<p>For example, use Caps Lock key as an addtional Escape key.</p>
+<pre><code class="language-reg">>Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Keyboard Layout]
+&quot;Scancode Map&quot;=hex:00,00,00,00,00,00,00,00,02,00,00,00,01,00,3a,00,00,00,00,00
+</code></pre>
+<p>Notes:</p>
+<ul>
+<li><code>00,00,00,00,00,00,00,00</code>: header.</li>
+<li><code>02</code>: data length (<code>n + 1</code> where <code>n</code> is numer of mapped keys).</li>
+<li><code>00,00,00</code>: end of data length.</li>
+<li><code>01,00</code>: Esc.</li>
+<li><code>3a,00</code>: Caps.</li>
+<li><code>00,00,00,00,00</code>: end.</li>
+</ul>
+<p>-- 2016-11-13</p>
+<p>Windows 8.1's Microsoft Pinyin input method:</p>
+<ol>
+<li>cannot change double pinyin schema</li>
+<li>no keyboard shortcut to switch between traditional Chinese and simplified Chinese</li>
+<li>no option to set default to English</li>
+</ol>
+<p>-- 2016-11-14</p>
+<p>After repositioning Windows 8.1's task bar to left, right, or top, hovering cursor to bottom left corner still reveals the windows start icon.</p>
+<p>-- 2016-11-15</p>
+<p>JavaScript's ASI (auto semicolon insertion) is confusing. However, if I prefer to not omit semicolons, I only need to remember one rule: not  breaking line after <code>throw</code>. (There are other rules, but I am unlikely to write code related to other rules, e.g. <code>i\n++\nb</code>.)</p>
+<p>On the other side,  if I prefer to omit semicolons, I need to remember additional rules:</p>
+<ul>
+<li><code>(</code></li>
+<li><code>[</code></li>
+<li><code>.</code></li>
+<li><code>,</code></li>
+<li><code>+</code>, <code>-</code>, <code>*</code>, <code>/</code></li>
+<li><code>for</code> and <code>while</code></li>
+</ul>
+<p>Thus my choice is not omitting semicolons.</p>
+<p>-- 2016-11-16</p>
+<p>Quora hides posts/answers to force you to register/login. Now its Chinese clone Zhihu finally borrows this &quot;feature&quot;.</p>
+<p>-- 2016-11-17</p>
+<p>TypeScript 2.0 brings in more fix of the poorly designed type system:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>tsc <span class="nt">--strictNullChecks</span> <span class="nt">--noImplicitThis</span> <span class="nt">--noUnusedParameters</span> <span class="nt">--noUnusedLocals</span>
+</code></pre></div></div>
+<p>-- 2016-11-20</p>
+<p><a href="https://reason.com/blog/2016/11/18/watch-trumps-reported-pick-to-run-the-ci">Watch Trump's Pick to Run the CIA Call Edward Snowden a 'Traitor' Who Should Be 'Given a Death Sentence'</a>.</p>
+<p>I said before the election result came out that Trump is evil. &quot;Make America great again!&quot; This sounds like what Beijing announced  in 2012: &quot;The Chinese Dream is the great rejuvenation of the Chinese nation.&quot;</p>
+<p>Bradley Manning is aleray in prison. Assange hides in Ecuadorian Embassy, and Snowden has been kept in Russia for 3 years.
+Make America great again so the great U.S. government could brought back Assange and Snowden and given them due process?</p>
+<p>I bet the greatest archivement of Trump would be what he had done before elected as U.S. President: stopping Hillary.</p>
+<p>-- 2016-11-22</p>
+<p>Flaws of TypeScript's type system:</p>
+<ul>
+<li>functions with fewer parameters are assignable to functions that take more parameters,</li>
+<li>non-void functions are assignable to void functions,</li>
+<li>all types are assignable to empty interfaces, and</li>
+<li>TypeScript cannot infer expected type with unused parameter in generics.</li>
+</ul>
+<p>-- 2016-11-23</p>
+<p>Overloading an operator should be consistent to all types supporting the operator.</p>
+<p>-- 2016-11-24</p>
+<p>Kotlin uses <code>Array&lt;T&gt;</code> for <code>vararg p: T</code> (variadic functions) underhood, but:</p>
+<ul>
+<li>Basic types are special, e.g. <code>IntArray</code> for <code>vararg p: Int</code>.</li>
+<li><code>p: Array&lt;T&gt;</code> and <code>vararg p: T</code> behaves differently. In other words, given a function <code>Array&lt;T&gt; -&gt; Unit</code>, we do not know how to invoke it just from its signature. (<code>Array&lt;T&gt; -&gt; Unit</code> may be an infix function, but all infix functions can be invoked as normal functions.)</li>
+</ul>
+<p>-- 2016-11-25</p>
+<p>Black Friday sales for VPS: https://www.lowendtalk.com/categories/offers</p>
+<p>-- 2016-11-26</p>
+<p>Tunanota and ProtonMail looks promising, but they do not work with others, i.e. Tunanota users cannot exchange encrypted mails with ProtonMail users. Also, Tunanota and ProtonMail do not work with GPG users. Encryption is important, but openness is also important. And GPG is a good example of implementating encryption without reducing openness.</p>
+<p>An conterexample is Scryptmail, which supports import and export of GPG keys.</p>
+<p>-- 2016-11-27</p>
+<p><a href="http://www.vultr.com/?ref=7046521-3B">$20 credit for new users of Vultr</a> (KVM VPS with SSD, billed hourly/monthly, located in US, EU, Austrilia, Singapore, and Japan).</p>
+<p>Vultr v.s. DigitalOcean: They are quite similar except that Vultr has slightly more RAM for $5/m plan, and Vultr's snapshots are still free right now.</p>
+<p>-- 2016-11-29</p>
+<p>Firefox version 41 to 50 (including 45 ESR used by the latest version of the Tor browser) has a memory corruption vulnerability allows malicious code to be executed on Windows, thus deanonymize Tor users.</p>
+<p>To protect yourself from similar possible future vulnerabilities:</p>
+<ol>
+<li>
+<p>the ultimate 2 physical machine solution: use two physical machine A and B. A has only one lan card to connect to B (make sure A does not have a wireless card, or has a physical switch to turn off wireless card).  B has 2 lan card, one for A, one for Internet. Running the browser on A and Tor on B,  and the connection between A and B is configured as NAT only. So A can only connect to Internet via Tor, and possible vulnerability in browser can only leak IP/MAC etc of A, not B. For max security, do not buy A online, incase the online seller may record A's hardware information together with your identity/address.</p>
+</li>
+<li>
+<p>the 2 virtual machine solution: similarly to the solution above, but use two Virtual machine instead. This does not protect you from virtual emualtor's escape vul­nerabilities though. However, virtual emualtor's escape vulnerabilities are rare (and your machine need to encounter both virtual emualtor's escape vulnerability and browser's vulnerability at the same time to leak the information of physical machine).</p>
+</li>
+<li>
+<p>Less secure than the above solutions, but the easiest: Use Tor Browser with JavaScript off, or at least block JavaScript by default, and whitelist sites you trusted.</p>
+</li>
+</ol>
+<p>-- 2016-11-30</p>
+<p>ZeroNet's answer to CDN/cloud hosting industry: kill it. I think this is one of the most charming part of technology: rather than sloving a problem, make the problem irrelevant.</p>
+<p>-- 2016-12-01</p>
+<p>Brace formatting style</p>
+<p>I used to prefer Java style (braces on the same line) over Allman style (braces on their own line). I use large fonts on a small screen, thus a condensed style is preferred.</p>
+<p>However, I recently found out that although Java style is clean for simple code, it does not work well with long parameter/conditional list. For example:</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="n">starts_with</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">home</span><span class="p">,</span> <span class="n">path_size</span><span class="p">,</span> <span class="n">home_path_size</span><span class="p">)</span> <span class="o">||</span>
+    <span class="n">check_with</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">home</span><span class="p">,</span> <span class="n">path_size</span><span class="p">,</span> <span class="n">home_path_size</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">recreate</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">home</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">home_path_size</span><span class="p">;</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>The simple statement <code>return 0</code> in else branch is clear.
+But I cannot tell whether <code>recreate(path, home)</code> belongs to the conditional list or the function body at a glance.</p>
+<p>On the other side, I can get the whole structure at a glance with Allman style:</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="n">starts_with</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">home</span><span class="p">,</span> <span class="n">path_size</span><span class="p">,</span> <span class="n">home_path_size</span><span class="p">)</span> <span class="o">||</span>
+    <span class="n">check_with</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">home</span><span class="p">,</span> <span class="n">path_size</span><span class="p">,</span> <span class="n">home_path_size</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">recreate</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">home</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">home_path_size</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="k">else</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Also, since I use large fonts on small screen,
+I can not read <code>if (long || next_line ) {</code> at once.
+So the Java style requires me to move my eyes to right, then move my eyes back to next line, which is slow.
+With Allman style, to get an overview of structure,
+I only need to focus on the left half of the code block, and no eye movements are needed. This makes up the wasted lines.</p>
+<p>I guess for large screens a few wasted lines is affordable for clarity.</p>
+<p>Maybe the Java style is suitable for a setup with small fonts on a small screen, provided the syntax highlight scheme distinguishes braces clearly?</p>
+<p>-- 2016-12-02</p>
+<p><a href="https://www.youtube.com/watch?v=8DOnAn_PX6M">911 The new pearl harbor</a> Politicians do not have imagination is totally a stereotype!</p>
+<p>-- 2016-12-03</p>
+<p>mypy is still incomplete.</p>
+<p>-- 2016-12-05</p>
+<p>ZeroMail does not hide sender (and effectively timestamp and conversations may reveal receipt).</p>
+<p>Similarly, MaidSafe Email does not hide receipt.</p>
+<p>-- 2016-12-06</p>
+<p>@zeronetuseri6293 asked how to explain Systemd is bad &quot;like I am five&quot;. I just prepare some text to brainwash five-year-old &quot;Systemd is bad&quot;:</p>
+<p>You are five. You do not know how to cook pasta, how to bake bread, and how to clean the window, etc. Fortunately there are a lot of volunteers to help you to do all these things.</p>
+<p>The problem is these volunteers tend to commit suicide because of intrinsic depression. (They think helping a five year old may helps to reduce depression.)  And you are lazy and shy. You do not want to manage them yourself. There is a magician called Sysfive. When you go to sleep, Sysfive will kill those volunteers (not let them go home to avoid  traffic jam), and when you awake, Sysfive will reborn those volunteers. Also if you find some volunteer killed themselves, you can ask Sysfive to reborn them.</p>
+<p>These volunteers speak a language named Gnome. You happen to speak this language, too. And all those volunteers are from the same nation Debian. Debian is located at a continent called Linux. The continent Linux is located at a planet called unix.</p>
+<p>Your friends have volunteers speaking different languages like KDE and Xfce, from different places like OpenSUSE (also on Linux continent) and FreeBSD (on the BSD continent), and different magicians like OpenRC and RunIt (one magician can work for a lot of children.) You talked with your friends, and found out that you can find volunteers speaking Gnome from any nation and continent. Also, although volunteers from some certain countries only have experience with some magicians, all magicians can reborn volunteers from any country with some effort. &quot;This is good. Maybe one day I will ask FreeBSD volunteers to help me. One of my friends said FreeBSD volunteers are cool.&quot; You thought. &quot;And maybe one day I can ask RunIt the master to reborn volunteers for me. I heard that Sysfive the master is too old.&quot;</p>
+<p>Until one day, you learned that Systemd the master can only reborn volunteers from the Linux continent. Systemd refuses to reborn any volunteer from other continents such as BSD and Solaris.</p>
+<p>Also you learned that soon volunteers speaking Gnome can only be reborn by Systemd. They refuse to be reborn by other magicians.</p>
+<p>Also, there used to be different volunteers to do different things, for example, one helps you to do accounting (e.g. how much ham you have eaten, eating ham is bad for your health), and one configures your smart phone (smart phones are too smart to configure for a five year old). But
+Systemd said: &quot;I am very very powerful. I will do all these things. Send those volunteers away.&quot;</p>
+<p>You as a five year old may not think Systemd is bad.
+But I hope you understand why some people consider Systemd as &quot;bad&quot;.</p>
+<p>-- 2016-12-07</p>
+<p>C is a hacky language. For example, string in C. If you think string in C is an array of characters, then you cannot put some characters in string (such as Unicode character) and you can put some noncharacters into string. If you think string is an an array of bytes, like a buffer, then you cannot put the byte <code>\0</code> into string. So string in C is inconsistent viewed from both high level and low level.</p>
+<p>Go, advertised as modern C, inherits C's hacky mindset:</p>
+<ul>
+<li>
+<p>Error handling. Go uses multiple return values to represent union type <code>Result | SomeError</code> or optional type <code>Result | Null</code>: returning either <code>{result, nil}</code> or <code>{nil, error}</code>. The ordering of <code>result</code> and <code>error</code>, and one and only one of them must be <code>nil</code> is just a convention followed by programmers, not enforced by type system.</p>
+</li>
+<li>
+<p>For variable declaration without initialization, instead of checking it is correctly initialized later, Go just implicitly initialize it with a zero value. Even worse, Go uses <code>nil</code> as zero value for pointers, slices, interfaces, maps, channels, and functions.</p>
+</li>
+</ul>
+<p>-- 2016-12-08</p>
+<p>Go back to use paper to manage my todos. (Some todos are still in WunderList, e.g. shopping list, cause I do not want to bring paper and pencil to supermarkets.)</p>
+<p>-- 2016-12-09</p>
+<p>When the function parameter is a function pointer, CLion (2016.3) cannot auto complete function name as parameter, like IntelliJ Idea for Java.</p>
+<p>-- 2016-12-10</p>
+<p>Lesson learned: when your <code>data.json</code> local copy is outdated (e.g. rollback to an old version manually because of file system issue), do not post new content to the zite that outdated <code>data.json</code> belongs to. Otherwise you will publish your &quot;deletions&quot;.</p>
+<p>-- 2016-12-11</p>
+<p>Visual Studio Code only provides 32 bit downloads for Windows.</p>
+<p>-- 2016-12-12</p>
+<p>Yandex mail smtp refuses to send a GPG encrypted mail saying it looks like spam...</p>
+<p>-- 2016-12-14</p>
+<p><a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/setuplist.0web.bit/">SetupList</a> now has its .bit domain <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/setuplist.0web.bit/">setuplist.0web.bit</a>.</p>
+<p>P.S. If you want to register a .bit domain, but do not want to setup a full namecoin node on your machine, you may get a .bit domain for your zeronet site at <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/0web.bit/">0web.bit</a> for 0.001BTC/0.1XMR.</p>
+<p>-- 2016-12-15</p>
+<p>Currently FaceBook Message and Google Allo has optional end to end encryption. And WhatsApp has end to end encryption enabled for all messages. On the other hand, WeChat still uses http.  #ThisIsChina</p>
+<p>-- 2016-12-16</p>
+<p>Just launched <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/0git.bit">0git.bit</a>, a list of git repositories on ZeroNet.</p>
+<p>I wrote it based on <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/Blog.ZeroNetwork.bit/">the ZeroChat tutorial on ZeroBlog</a>.</p>
+<p>Features:</p>
+<ul>
+<li>Also supports Kaffie ID.</li>
+<li>Responsive card based layout.</li>
+<li>Minimal design.</li>
+<li>Under 200 lines of code.</li>
+<li>Licensed under 0BSD.</li>
+</ul>
+<p>Its source code is hosted at ZeroNet, <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/0git.0git.bit">browsable and cloneable</a>.</p>
+<p>P.S. editing posts is not implemented yet.</p>
+<p>-- 2016-12-18</p>
+<p>Problems of StorJ:</p>
+<ul>
+<li>Semi-central: storage is distributed, but the abstract object layer and payment is central.</li>
+<li>For every dollar a renter paid to StorJ, the host finally get 60 cents, StorJ keeps 40 cents.</li>
+</ul>
+<p>-- 2016-12-19</p>
+<p>Problems of Sia:</p>
+<ol>
+<li>It supports proof of storage but not proof of bandwidth.</li>
+<li>The Sia developers mined the first 100 blocks of Sia.</li>
+<li>3.9% of all successful storage contract payouts go to Siafund, of which 87.5% is owned by Sia's parent company.</li>
+</ol>
+<p>-- 2016-12-20</p>
+<p><a href="https://beakerbrowser.com/">Beaker</a> is similar to ZeroNet. Their difference:</p>
+<ul>
+<li>Beaker does not host visited sites.  (You can enable it manually.)</li>
+<li>Beaker sites support versioning.</li>
+<li>Beaker API is much simpler than ZeroNet, no select user (id), no optional file, no encryption, etc. So dynamic sites are easier to create via ZeroNet.</li>
+<li>ZeroNet uses namecoin <code>.bit</code>. Beaker uses regular domain names (via <code>TXT</code> record. It's experimental, not man-in-the-middle attack proof ).</li>
+</ul>
+<p>Also, because Beaker requires  a customized browser:</p>
+<ul>
+<li>it uses <code>dat://</code> schema.</li>
+<li>Beaker sites need to ask user permission to access clearnet.</li>
+</ul>
+<p>(These are not substantial differences since anyone can make a customized browser for Zeronet.)</p>
+<p>Other differences are technical details, like ZeroNet is written in Python, while Beaker is written in JavaScript, and ZeroNet uses base58 encoded site address (compatible with bitcoin), while Beaker uses hex encoded address.</p>
+<p>-- 2016-12-21</p>
+<p>PyCharm 2016.3 claims to support Python 3.6's f-strings (formatted literal). But in fact it just supports syntax highlight. All PyCharm's intelligent features are not enabled for code embedded in f-strings.</p>
+<p>-- 2016-12-22</p>
+<p>Opened software manager in OpenSUSE and found in &quot;rpm groups&quot; there are <code>application</code> and <code>applications</code>, <code>developement</code> and <code>development</code>.</p>
+<p>-- 2016-12-23</p>
+<p>Just fried some peanuts, which increased the PM 2.5 by 8 ug/m^3 in kitchen. So frying will not be a source of local air pollution  if you have extractor hood opened and keep the oil temperature low.</p>
+<p>-- 2016-12-24</p>
+<p>The confusing^W smarty Kotlin</p>
+<p>What would be the type of <code>f</code> in the following line?</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">val</span> <span class="py">s</span><span class="p">:</span> <span class="nc">Int</span> <span class="p">=</span> <span class="nf">f</span><span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">)</span>
+</code></pre></div></div>
+<p>Not considering subtyping and generic,
+the type f may be one of:</p>
+<ol>
+<li><code>(Int, Int, Int) -&gt; Int</code>, the most  intuitive one</li>
+<li><code>(IntArray) -&gt; Int</code>, a variadic function</li>
+<li><code>f</code>, an object named <code>f</code> with an <code>invoke</code> method</li>
+</ol>
+<p>-- 2016-12-27</p>
+<p>USB 3 external disks are 10-20% slower on VirtualBox.</p>
+<p>-- 2016-12-28</p>
+<p>Apache Portable Runtime is originally supporting library for Apache web server. Thus it uses memory pool heavily. So it may not be suitable to use APR as a standard library for general C programming.</p>
+<p>-- 2016-12-31</p>
+<p>Just found some old notes on K&amp;R C book.</p>
+<p>The ink (I used a cheap ballpoint pen) is fading but still readable with some efforts.  Most notes are tricky parts of C, which are somehow irrelevant now (either being familiar with them or found out I rarely use them). Some notes I cannot agree now, e.g. &quot;Union really looks like a dirty hack on struct.&quot;  on p. 125. However, on p.89, there is a note on <code>while (*s++ = *t++)</code> saying &quot;Take me minutes to understand.&quot; Currently it would still take me minutes to understand it. Proud of it.^W^W^W</p>
+<p>-- 2017-01-01</p>
+<p>Yoda expressions are useful for tests in C, such as in <code>assert(true == ...</code> and <code>assert(false == ...</code>.</p>
+<p>-- 2017-01-02</p>
+<p>Miss <code>finally</code> or <code>defer</code> in C.</p>
+<p>-- 2017-01-03</p>
+<p>If you run ZeroNet on a remote machine, the doc recommends enabling <code>UiPassword</code>. But if your are using an unsafe network (public wifi, evil ISP, etc), password is transferred over insecure HTTP protocol. So for safety, you need to configure a reverse proxy with SSL for ZeroNet.</p>
+<p>Alternatively, you can just start ZeroNet on remote machine as normal,
+without <code>--ui_ip</code>, <code>UiPassword</code>, reverse proxy, SSL, etc.
+And run this command at local machine:</p>
+<pre><code>ssh -L 43110:127.0.0.1:43110 -N username@remote
+</code></pre>
+<p>Then you can just access <code>http://127.0.0.1:43110/</code> on your local machine, securely.</p>
+<p>-- 2017-01-04</p>
+<p>new History().repeat</p>
+<p>There is no first class functions in Java, so to pass functions, we wrap functions in classes. Now there is no first class function types in TypedRacket, so <a href="https://stackoverflow.com/a/27866496">to predicate function types, we wrap functions in structs</a>.</p>
+<p>P.S. Same applies to TypeScript, Flow, Kotlin, and Swift. Ceylon's function type is first class, though.</p>
+<p>-- 2017-01-05</p>
+<p>&quot;A Little Java, A Few Patterns&quot; uses a special coding style to remark mutability:</p>
+<p>Put semicolon on its own line.</p>
+<p>For example:</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="o">;</span> <span class="c1">// Future references to `x` after this line reflect the change.</span>
+<span class="n">anArray</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span>
+<span class="o">;</span> <span class="c1">// Same as above.</span>
+</code></pre></div></div>
+<p>-- 2017-01-06</p>
+<p>vscode's refactoring is still much less powerful than WebStorm, even for TypeScript.</p>
+<p>-- 2017-01-07</p>
+<p>Install ZeroNet as an auto-start service on FreeBSD:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pkg <span class="nb">install </span>zeronet
+sysrc <span class="nv">zeronet_enable</span><span class="o">=</span><span class="s2">"YES"</span>
+service zeronet start
+</code></pre></div></div>
+<p>Run ZeroNet command:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>su <span class="nt">-m</span> nobody zeronet siteCreate
+</code></pre></div></div>
+<p>-- 2017-01-08</p>
+<blockquote>
+<p>the ideas enshrined in the Ubuntu Manifesto:
+that software should be available free of charge,
+that software tools should be usable by people in their local language
+and despite any disabilities,
+and that people should have the freedom to customize and alter their software
+in whatever way they see fit.</p>
+</blockquote>
+<p>This is what Ubuntu put on its front page about 10 years ago.</p>
+<p>Nowadays these words are missing from the entire site of ubuntu.com
+(the only place left is the handbook of LTS, maybe no one bothered to update the preface of the handbook?)</p>
+<p>And this is what now on the front page of ubuntu.com:</p>
+<blockquote>
+<p>Ubuntu is an open source software platform that runs from the cloud, to the smartphone, to all your things.</p>
+</blockquote>
+<p>Mark Shuttleworth used to think &quot;the next big thing&quot; is &quot;build a platform so people can share free (as in freedom) things such as software, music, etc&quot;.</p>
+<p>Later &quot;the next big thing&quot; of Ubuntu gradually changed to &quot;universal user experience on all devices&quot;, which is less uncertain since Apple has already been a successful example.
+(Apple is determined to make Mac OS X more and more like iOS, and make Apple laptops more and more like iPads.)</p>
+<p>Not know how well Ubuntu will do in next 10 years.
+Anywhere, &quot;universal user experience&quot; has nothing to do with the  original Nguni Bantu word &quot;Ubuntu&quot;.</p>
+<p>-- 2017-01-09</p>
+<p>Sign and publish your posts/comments from command line:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>zeronet.py siteSign site-address-of-other-people <span class="nt">--inner_path</span> data/users/address-of-myself/content.json <span class="nt">--publish</span>
+</code></pre></div></div>
+<p>It will asks the private key,
+unless you happen to be the site owner,
+fill in your cert's auth key.</p>
+<p>For example, if you are signed in with <code>you@zeroid.bit</code>, then you can find <code>certs</code>-&gt;<code>zeroid.bit</code>-&gt;<code>auth_privatekey</code> in <code>data/users.json</code>.</p>
+<p>Thanks to @nofish for this tip.</p>
+<p>-- 2017-01-10</p>
+<p>The so called whatsapp 'backdoor' was documented in the <a href="https://whispersystems.org/blog/whatsapp-complete/">blog post of Open Whisper Systems on 05 Apr 2016</a>.</p>
+<p>I think the notification on security code for a contact changing should be &quot;opt out&quot; instead of &quot;opt in&quot;. I guess Facebook made this &quot;opt in&quot; so users having no idea of public key encryption will not get confused by the security code change notification. They could make it &quot;opt out&quot; with a detailed explanation on first notification of security code change instead, in my own opinion.</p>
+<p>I would rather call it a less secure design choice. Anyway, no matter you think it is a backdoor or not, it is not news.</p>
+<p>-- 2017-01-16</p>
+<p>A programmer's client (a local cinema) website got hacked, with racist messages posted. The policy suspected the programmer hacked the site, and got a warrant to seize the programmer's computer. Then they sent <strong>21 armed polices</strong>, 3 of them to seize the computer, and <strong>18 of them as witness</strong>.</p>
+<p>On early morning, these polices <strong>broke in</strong> the programmer's home, and <strong>shot dead</strong> the programmer when he is talking to his lawyer on the phone (<strong>4 shots on chest and face</strong>).
+And the <strong>18 witness polices</strong> witnessed that the programmer fired a crossbow bolt at one of them (that police was protected by Kevlar thus slightly injured).</p>
+<p>This is <em>not</em> something happening in a magic realism novel or an absurdist  movie. This is what happened on <strong>December 23rd 2016</strong>, <strong>London, Ontario, Canada</strong>.</p>
+<p>The programmer is <strong>Sam Maloney</strong>, the creator of <a href="https://morph.is/">morphis</a> (a free open source p2p distributed datastore), a husband and a father of two children.</p>
+<p>News reports:</p>
+<ol>
+<li><a href="http://news.nationalpost.com/news/canada/lawyer-tells-client-on-phone-during-predawn-raid-theyre-going-to-shoot-you-sam-put-your-hands-up">first news report on nationalpost.com</a></li>
+<li><a href="https://motherboard.vice.com/read/why-did-police-kill-an-alleged-small-time-hacker-canada-sam-maloney">more recent report on Motherboard</a> (<a href="http://127.0.0.1:43110/1uEc35aRpkDgVmJ35jcMEHm4D2JCcEejp/motherboard/">ZeroNet mirror</a>)</li>
+</ol>
+<p>-- 2017-01-18</p>
+<p>cdrtools author's viewpoint on <a href="http://cdrtools.sourceforge.net/private/linux-dist.html">controversy of cdrtools license compatibility</a>.</p>
+<p>-- 2017-01-22</p>
+<p>Encountered ads with only one sentence &quot;Only bricks produced by The Lego Group are Lego ® bricks.&quot; and one Lego logo. This is advertising of silliness. No sense and no design.</p>
+<p>-- 2017-01-24</p>
+<p>Used openSUSE Leap 42.2 for a few days. You have to add a few repositories to install things like mp3, flash, and input methods. You have to configure mounting NTFS partitions yourself (via YaST or manually editing <code>/etc/fstab</code>). Default fonts setting for Chinese is terrible. Other things work out of the box mostly. KDE Plasma 5.8.2 roughly catches up the polishness of recent versions of Windows.</p>
+<p>-- 2017-01-26</p>
+<p>Lantern only provides binary package in deb format for Linux. To install lantern on rpm based Linux distributions, first install <code>rpmbuild</code>, <code>alien</code> (to convert deb to rpm) and <code>libappindicator3-1</code> (lantern's dependency), then use <code>alien</code> to convert the deb to rpm, and finally install the converted rpm.</p>
+<p>-- 2017-01-27</p>
+<p>A recent Windows update forced me to re-select options like no personalized ad, ruined my registry key for a customized keyboard layout (dvorak and swap esc &amp; caps), and pined the Mail app on my taskbar. This is more like a regression than an update to me. (To be fair, it does allow me to launch some Windows applications under WSL.)</p>
+<p>-- 2017-08-21</p>
+<p><code>sh</code> is the only language I am using that has dynamic scoping for variables. (Privacy leaked: I do not use Emacs.)</p>
+<p>-- 2017-08-25</p>
+<p>&quot;Go to definition&quot; does not work for shell scripts in vscode. <code>*</code> (from vscodevim extension) can be used as a workaround.</p>
+<p>-- 2017-08-25</p>
+<p>about.me has not been about me for a long time.</p>
+<p>about.me was a simple profile page before 2016.</p>
+<p>Now it is supposed to direct bandwidth to the site matters most to the user. about.me called it &quot;personal pages with a purpose&quot;. While this feature may be useful, this is not the original about.me anymore. The original purpose of about.me is you can insert a <code>about.me/you</code> link in bios of other sites, less to type and easier to update.</p>
+<p>-- 2017-08-27</p>
+<p>Failed to understand the <code>fmap</code> signature in Haskell in about 15 minutes:</p>
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">class</span> <span class="kt">Functor</span> <span class="n">f</span> <span class="kr">where</span>
+    <span class="n">fmap</span> <span class="o">::</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span>
+</code></pre></div></div>
+<p>It took me about 15 minutes to realize that
+I have seen too many curried functions
+so my brain instantly parses</p>
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span>
+</code></pre></div></div>
+<p>as</p>
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">((</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">),</span> <span class="nf">f</span><span class="p">(</span><span class="n">a</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="nf">f</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+</code></pre></div></div>
+<p>instead of the intended</p>
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="nf">f</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nf">f</span><span class="p">(</span><span class="n">b</span><span class="p">))</span>
+</code></pre></div></div>
+<p>So I have to:</p>
+<ol>
+<li>either admit that my brain is blunt</li>
+<li>or  profess that the currying way of ML/Haskell languages is confusing</li>
+</ol>
+<p>As an ignorant person, obviously  I chose 2.</p>
+<p>-- 2017-08-27</p>
+<p>Finally, concepts such as polymorphism, generics, type variable/parameter, overloading, and type class are united in my brain.</p>
+<p>-- 2017-08-28</p>
+<p>Powershell aliases still do not support tab completion.</p>
+<p>-- 2017-09-01</p>
+<p>MIT scheme taught me a chuunibyou way to say goodbye: &quot;Moriturus te saluto.&quot;</p>
+<p>-- 2017-09-02</p>
+<p>To stop EME (Encrypted Media Extension) from entering W3C Standard, FSF asked people to <strong>dial up</strong> Tim Berners-Lee. First, asking people to dial up a person is not protest but <strong>DDOS</strong>. Second, no one cares W3C standard today. If Apple (safari), Google (chrome), Mozilla (firefox) and Microsoft (Edge) were dead-set, then the story is over. Neither W3C nor Tim Berners-Lee can do anything about it. (Fortunately Mozilla is not dead-set on EME, although Firefox Desktop has implemented it years ago.)</p>
+<p>-- 2017-09-03</p>
+<p>Now mail.google.com redirects to www.google.com/gmail/about/, which has a fancy design. I miss the simple UI with a login form and storage space counter.</p>
+<p>-- 2017-09-04</p>
+<p>Baidu Map iOS keeps requesting location on background when location info is not available, draining batteries and heating device very quickly.</p>
+<p>-- 2017-09-05</p>
+<p>The intuition behind Curry-Howard correspondence:</p>
+<ol>
+<li>Staring from propositions (types of parameters),  we construct proof (function) to get other proposition (type of return value).</li>
+<li>The rule to construct proof (function) is called logic (type system).</li>
+<li>It is hard to construct a proof (function). But once the proof (function) has been constructed, it is easy to verify the proof is valid (the function does return the value of specified type).</li>
+</ol>
+<p>Notes:</p>
+<ol>
+<li>In practice, the verification of proof is not always easy, because real word proof tends to omit a lot of implicit knowledge and intermediate steps.</li>
+<li>The verification of returned type of function is so easy that we do not need to verify that manually, the interpreter/compiler will verify that for us automatically.</li>
+<li>The Curry-Howard correspondence is the basis of theorem prover such as Coq.</li>
+</ol>
+<p>-- 2017-09-08</p>
+<p>I think sometimes a ML/Haskell like syntax may be a better alternative for math notation than lisp. Lisp is unambiguous but slightly harder to type manually (I am too lazy to use the lisp IDE/mode and copy-paste, or extend the editor to support auto completion in code blocks.) Compared to C like syntax, ML/Haskell saves some typing of commas and parenthesis.</p>
+<p>-- 2017-09-09</p>
+<p>Years passed, and Google Contact still does not support exporting contacts. It still redirects me to the &quot;old version&quot; for exporting.</p>
+<p>-- 2017-09-09</p>
+<p>I found out that I could not understand some code I wrote 8 months ago.</p>
+<p>Then I checked the git commit message 8 months ago.
+The commit message said</p>
+<blockquote>
+<p>I hope I implemented the algorithm right.</p>
+</blockquote>
+<p>So this is the fault of the previous version of me myself. If the previous version of me myself truly understood the algorithm, then I would have resumed or reinvented the algorithm quickly now.</p>
+<p>-- 2017-09-12</p>
+<p>iPhone X shows that machine learning can be done on client side, without talking to a remote server. This is encouraging for privacy concerned services and users.</p>
+<p>I am not sure about the long term impact of animoji. Will it make people's  countenance more exaggerated in real life?</p>
+<p>iPhone {X, 8, 8P, 7, 7P, 6S, 6SP, SE}. Consumers need to choose one from <strong>eight</strong> models. Not sure if this is good or bad for consumers, but this is definitely not the Apple way.</p>
+<p>-- 2017-09-13</p>
+<p>I always prefer a small screen mobile device, which is easier to carry. I do not read/browse/view a lot with the mobile phone, since either neck or shoulders are in an unnatural angle.</p>
+<p>-- 2017-09-14</p>
+<p>Microsoft had suspended my outlook mail account for several weeks , saying my account is used to send a lot of junk mails, or violates their TOS in <em>unspecified</em> way.</p>
+<p>I totally have no idea what violates their TOS (I had not sent mails using this account, let alone junk mails). To unblock my account, I need a cellphone. I am very upset about the assumption that you have to have a cellphone.</p>
+<p>And to get help from Microsoft support for my locked account issue I need to have a working account. This is a deadlock. Thus I decide to stop use Microsoft account.</p>
+<p>Then I asked myself what will happen if the same thing happens to my gmail account? Then I realized the fact that I did not bother set up my own domain for emails put me into danger.</p>
+<p>-- 2017-09-24</p>
+<p><a href="https://github.com/tutao/tutanota/blob/ea1c1ef1c70c8f3c48dcfaa70f91cd41b7fbdd95/flow/libs.js#L86">tutanota client side source code</a> contains Flow type definition for Mithril.</p>
+<p>-- 2017-10-01</p>
+<p>Recently I started to read a book during wait time when I had taken a bag with me (a thin book is light and there is no more worries for short of battery), or just let my mind fly away when I had not. A win-win strategy for the life of my neck and the life of mobile phone battery.</p>
+<p>-- 2017-10-06</p>
+<p>Moving one icon on my mobile phone, all icons between the old place and the new place of the moved icon, will shift their places.</p>
+<p>I am really upset by this.</p>
+<p>Image in an insane programming lanuage, there is a list, say,</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">l</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">g</span><span class="p">]</span>
+</code></pre></div></div>
+<p>And when you eval <code>l[0] = l[6]</code>, the list becomes:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">l</span> <span class="o">=</span> <span class="p">[</span><span class="n">g</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">f</span><span class="p">]</span>
+</code></pre></div></div>
+<p>What a big surprise!</p>
+<p>In such a programming language, imaging how many statements you have to write to accomplish simple tasks such as swaping <code>a</code> and <code>g</code>.</p>
+<p>On the other side, in any sane programming language, to swap <code>a</code> and <code>g</code>, you just need to write something like:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">tmp</span> <span class="o">=</span> <span class="n">l</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">l</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">l</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span>
+<span class="n">l</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmp</span>
+</code></pre></div></div>
+<p>That is basically the behavior of desktop shortcuts of old-fashioned desktop operating systems.</p>
+<p>I encountered this design fault on iOS devices before.
+And now it infects my Android phone.
+(Not sure whether Android 8.0 or the mobile phone producer introduced this design fault.)</p>
+<p>My workaround: Only put icons most frequently used on the first screen. Put all other icons in folders. And arrange those folders by their names, pretending that they cannot be arranged freely.</p>
+<p>-- 2018-02-21</p>
+<p>Backing up to USB 3 external hard disk with <code>borg create -C lz4</code> is very fast.</p>
+<p>-- 2018-02-27</p>
+<p>extensiontest.com (test if a chrome extension is compatible with firefox) is not 100% accurate. Just encountered an chrome extension passing extensiontest.com but not usable in Firefox.</p>
+<p>-- 2018-03-02</p>
+<p>Compared to wine and tea, chocolate is inexpensive. The most expensive chocolate I've eaten is Amedei CRU, which is still affordable.</p>
+<p>-- 2018-03-09</p>
+<p>Just published my first Firefox extension: <a href="https://addons.mozilla.org/en-US/firefox/addon/arxiv-url/">arxiv-url</a>, a Firefox addon to replace arxiv pdf links to corresponding abstract links.</p>
+<p>Writing a firefox extension is actually easier than I thought. If you'd like to write one yourself, just follow mozilla's <a href="https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Your_first_WebExtension">doc</a>.</p>
+<p>Note:</p>
+<ol>
+<li>If you do not want to install <code>web-ext</code> (it depends on node and some npm packages) for <code>web-ext build</code>, you can just zip your extension.</li>
+<li>Submit the zip file to  <a href="https://addons.mozilla.org">AMO</a> directly. No need to <code>web-ext sign</code> it (if you did so, the signature will be replaced with AMO after all.)</li>
+</ol>
+<p>-- 2018-03-09</p>
+<p>Very pessimistic about mobile phones I would have to buy in future:</p>
+<ul>
+<li>Android: With the recent release of Xperia XZ2 Compact (5&quot;), Android phones finally stepped into the no more phones under 5&quot; era.</li>
+<li>GNU/Linux: Librem 5, as its name told, is a 5&quot; phone.</li>
+<li>iOS: Unfortunately it seems the only choice left, Defective by Design.</li>
+</ul>
+<p>-- 2018-03-10</p>
+<p>One of my favorite poem of Li Ch'ing-chao (李清照) is &quot;As in a Dream&quot; (如夢令）.</p>
+<p>Light rain and gusty wind last night. （昨夜雨疏風驟）
+Sound sleep did not dispel the slight drunkenness. （濃睡不消殘酒）
+I ask the one rolling up the curtain,　（試問卷簾人）
+but she answers: &quot;The cherry-apple trees are the same.&quot;　（卻道海棠依舊）
+&quot;Don't you know? Don't you know? The red should languish while the green should plump.&quot;　（知否，知否，應是綠肥紅瘦）</p>
+<p>(I am a native speaker of Chinese but not a native speaker of English. I tried my best to translate it. Any feedback on translation is welcome.)</p>
+<p>&quot;The red should languish while the green should plump&quot; reveals the tenderness of the poet, while &quot;should&quot; implies the firmness of the poet.</p>
+<p>&quot;Don't you know? Don't you know?&quot; That is the reality distortion field of a groggy poet.</p>
+<p>-- 2018-03-13</p>
+<p>I learnt typing on a typewriter, so membrane keyboards, especially membrane keyboards with short key travel, feel unnatural to me. However, I found out that my fingers are more tired when typing a lot on mechanical keyboards. (Have not tried Topre keyboards.)</p>
+<p>-- 2018-03-14</p>
+<p>Saw &quot;novel blockchain gameplay&quot; in an elevator ad of a browser game. This reminds me of a time when a lot of products advertise themselves using &quot;novel nano-meter technology&quot;.</p>
+<p>-- 2018-03-18</p>
+<p>Almost all smart phones today use a non-removable battery. And most smart phones do not use all-day battery. What an insane design combination!</p>
+<p>-- 2018-03-26</p>
+<p>debian.org is not available in CN (not sure whether it has been blocked by the great firewall or just some routing issue).</p>
+<p>-- 2018-03-28</p>
+<p>Digg Reader was dead at the end of last month (March 2018).</p>
+<p>-- 2018-04-02</p>
+<p>Both &quot;<strong>Three</strong> Billboards Outside Ebbing, Missouri&quot; and &quot;The <strong>Third</strong> Murder&quot; talk about the problems of the environment and the feeling of hopelessness, though in distinct (American/Japanese) ways.</p>
+<p>-- 2018-04-08</p>
+<p>My personal choices to score movies:</p>
+<ol>
+<li>WTF</li>
+<li>I do not want to waste my time on this</li>
+<li>to kill some time</li>
+<li>I probably will not watch it again, but I am not object to</li>
+<li>I will watch it again</li>
+</ol>
+<p>So forgive me for being harsh to a lot of movies,
+I am poor, thus:</p>
+<ul>
+<li>I am busy with earning a living, not having time to watch so many movies;</li>
+<li>I have to limit the money spending on extra movie tickets.</li>
+</ul>
+<p>However, I still watch quite a lot of movies after all.
+Thanks to my just the right amount of poverty, I can afford buying movie tickets, and cannot afford some other more expensive forms of entertainment. In fact I am not sure, movie is entertainment to me. Maybe it is rather a form of escaping of the desert of reality? Or, maybe all forms of entertainment are ways of escaping to me?</p>
+<p>-- 2018-04-13</p>
+<blockquote>
+<p>God made a woman from the rib he had taken out of the man (Genesis 2:22)</p>
+</blockquote>
+<p>So heterosexual intercourse is excitation of one's own body part, i.e. self-gratification?</p>
+<p>-- 2018-04-16</p>
+<p>Just figured out why some people are so excited about Flutter (a mobile framework for Android/iOS in Dart by Google).</p>
+<p>Because Dart's FAQ said &quot;Isn’t Dart a lot like Java&quot;, thus Dart ~= Java.</p>
+<p>If Dart is counted as Java, then Java becomes an alternative full stack language:</p>
+<ul>
+<li>Node.js (backend) + JavaScript (web) + React Native (mobile)</li>
+<li>Vert.x (backend) + Dart (web) + Flutter (mobile)</li>
+</ul>
+<p>(To me, this is not excited at all, though. ;-)</p>
+<p>-- 2018-04-18</p>
+<p>Recently I found out that MUJI French Linen shirts/pants have raw (undyed) color for adults.</p>
+<p>-- 2018-05-14</p>
+<p>Microsoft is acquiring GitHub. GitHub in fact has an (maybe unintended) use: as a bootstrap mechanism to download tunnel software/tools to bypass firewall. After acquired by Microsoft, I doubt those  tunnel software/tools may be unavailable within the firewall.</p>
+<p>-- 2018-06-05</p>
+<p>How not to waste time on matching socks, i.e. O(1) to pick out socks to wear? Make all socks the same. How?</p>
+<ol>
+<li>Buy only one kind of socks.</li>
+<li>Shift your mind to realize that all socks are the same, regardless of their shapes and colors.</li>
+</ol>
+<p>I myself had shifted my mind and treated all socks equally without discrimination, from the beginning of my undergraduate.</p>
+<p>-- 2018-06-11</p>
+<p>I am really confused with those color modes with monitors. Cannot them show color temperature instead?</p>
+<p>-- 2018-06-12</p>
+<p>My Razer DeathAdder has blue LED on wheel and logo, feeling very disturbing to me. Thanks to <a href="http://bues.ch/cms/hacking/razercfg.html">razercfg</a>, I can turn them off under Linux.</p>
+<p>(I am not a game player. I bought this mouse just because there are not many left hand mouse available on my area.)</p>
+<p>-- 2018-06-16</p>
+<p>Suddenly I wanted to eat tempura, but it is unavailable from the menu of the izakaya I went. So I ate some fried salmon sushi instead.</p>
+<p>-- 2018-06-24</p>
+<p>languagedetective.com predicts your native language with English text you wrote as input. I tested with <a href="https://weakish.github.io/StutteringTalkaholic/web/html-history/">one of my blog post</a> and the result is: 70.6% Native, 29.4% Non-Native. Bingo!
+But it is not good at predicting my native language: 37.9% Arabic, 16.1% Korean, 14.7% Hindi, 11.1% Chinese, 8.6% German, 6.5% Turkish, 2.1% Japanese, 1.6% French, 0.7% Italian, 0.7% Spanish.</p>
+<p>My native language is Chinese.</p>
+<p>-- 2018-07-28</p>
+<p>Not sure whether BDFL's retirement is good or bad, but personally I dislike PEP 572 (I dislike a lot of aspects of Python, though).</p>
+<p>-- 2018-07-30</p>
+<p>I want to install an extension of JupyterLab (toc), then I found out that installing JupyterLab extensions requires nodejs (because JupyterLab extensions are npm packages). So I install nodejs via <code>conda</code>, which automatically downgrading my JupyterLab from v0.33 to v0.28. After all of this, I am about to install the extension, but it turns out it requires JupyterLab v0.33! :-( The Jupyter blog said JupyterLab is ready for users on Feb. 2018 ...</p>
+<p>-- 2018-08-10</p>
+<p>Not sure when GitHub changed its front page (they call it dashboard), slow to load. I miss the old GitHub front page, loaded almost instantly.</p>
+<p>-- 2018-08-11</p>
+<p>Google Photo's &quot;free up device space&quot; (delete already backed up photos from device) and recover storage (compress already uploaded photos from original to high quality) applies to ALL photos. I cannot free up / recover storage selectively, for example, only archived photos or photos within certain albums.</p>
+<p>-- 2018-08-11</p>
+<p>vscode does not have built-in syntax highlighting for Haskell, while it does support F# out of the box.</p>
+<p>-- 2018-08-12</p>
+<p>Learning ML/Haskell deepened my understanding of typing.</p>
+<p>-- 2018-08-18</p>
+<p>When will Java have &quot;real&quot; function type? What Java uses interface to mimic is <strong>nominal</strong>, not <strong>structural</strong>.</p>
+<p>-- 2018-08-23</p>
+<p>Gists are second class citizen of GitHub. For example, GitHub API does not support searching gists (in both old v3 REST API and the new v4 GraphQL API).</p>
+<p>-- 2018-08-23</p>
+<p>Refactoring with statically typed code (using Python's type hint) is an enjoyable process. To switch an  upstream library, I just replaced one import statement, one type definition, and one invoking statement. Then I just fix all the typing problems reported by PyCharm. After that, I run the program and find out that it just works! No &quot;find usage&quot; or &quot;search and replace&quot;. And the project does not have any test (I am too lazy to write one.) Static typing is the preservative to slow down the inevitable decaying of code.</p>
+<p>-- 2018-09-01</p>
+<p>Programming needs practice. And I think &quot;how many lines of source code I have <strong>deleted</strong>&quot; estimates my experience on programming better (than how many lines I have written).</p>
+<p>A shell-fu to calculate how many lines I have deleted in a git repository:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git log <span class="nt">--shortstat</span> <span class="nt">--no-merges</span> <span class="nt">--author</span><span class="o">=</span><span class="si">$(</span><span class="nb">whoami</span><span class="si">)</span> | <span class="nb">grep</span> <span class="s1">'files\? changed'</span> | <span class="nb">awk</span> <span class="s1">'{deleted+=$6} END {print deleted}'</span>
+</code></pre></div></div>
+<p>-- 2018-09-11</p>
+<p>Go advertises first-class function, but to pass a function, you have to match the exact signature. No sub-typing of functions. Yes, even Java supports covariant return result (no contravariant parameter though), but Go supports neither.</p>
+<p>-- 2018-09-12</p>
+<p>Oops, <code>python -m SimpleHTTPServer</code> does not support range request.</p>
+<p>The following three lines (not counting import statements etc.) of Go turns out to support range request out of box:</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">err</span> <span class="o">:=</span> <span class="n">http</span><span class="o">.</span><span class="n">ListenAndServe</span><span class="p">(</span><span class="s">":8000"</span><span class="p">,</span>
+    <span class="n">http</span><span class="o">.</span><span class="n">FileServer</span><span class="p">(</span><span class="n">http</span><span class="o">.</span><span class="n">Dir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">Getwd</span><span class="p">())))</span>
+  <span class="n">log</span><span class="o">.</span><span class="n">Fatal</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>-- 2018-09-14</p>
+<p>The new palm phone reveals how ugly big today's phones are.</p>
+<p>3.3-inch, 445-ppi LCD display, 62.5 grams weight, IP68, cool! Type C, Android 8.1, 3GB RAM, 32GB storage, O.K. $349.99, expansive but still acceptable. Verizon Only, ShareNumber only, BAD!</p>
+<p>Photo credit: <a href="https://www.theverge.com/2018/10/15/17974850/new-palm-smartphone-android-lifemode-time-well-spent-verizon">theverge.com</a></p>
+<p><img src="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/log/1540394982.jpg" alt="attached image" /></p>
+<p>-- 2018-10-24</p>
+<p>I've seen a lot of note applications/services' export function does not support exporting attachments. Vivaldi Browser is just another example (its sync all feature does not include attachments of notes).</p>
+<p>-- 2018-11-03</p>
+<p>IBM bought RedHat as a cloud computing company, thus irrelevant projects originally sponsored by RedHat may not receive bandwidth from IBM in future. Fortunately:</p>
+<ol>
+<li>Ceylon: it begins to migrate to Eclipse last year</li>
+<li>Cygwin: nowadays WSL seems a better option (if I have the opportunity to use Windows in future)</li>
+<li>Gnome: I switched to KDE last year</li>
+</ol>
+<p>-- 2018-11-03</p>
+<p>Upgraded KDE Neon from 16.04 to 18.04 today via its built-in &quot;Distribution Upgrade&quot; GUI. The whole process is mostly smooth, except it reports a mysterious error &quot;installArchives() Failed&quot; before restart. I just ignored it and had not discovered anything wrong.</p>
+<p>The system feels the same, without any dramatic change. I have not noticed any difference until I decided to change the wallpaper:</p>
+<ol>
+<li>Plasma Wallpaper now allows to use Bing's Picture of the Day.</li>
+<li>Plasma Mouse Actions now supports configuring all mouse buttons.</li>
+</ol>
+<p>I used to rebind middle key to forward button (so I can press it via my thumb, instead of clicking the hard-to-press wheel) via <code>xinput set-button-map</code>. I knew I had to add it to my startup script, but because: 1) I am lazy; 2) I seldom restart my computer these days; I did not write it. Now I do not need to write it -- another example of advantage of &quot;lazy evaluation&quot;. ;-)</p>
+<p>-- 2018-11-03</p>
+<p>Flickr will limit free users' photos to 1000 (extra photos will get deleted in next year). Upon hearing this I am quite depressed, because downloading photos and uploading to a new platform (provided that I can find an alternative) will take a lot of time and effort.</p>
+<p>Later I learned that flickr will not delete old photos licensed under Creative Commons. Thank goodness! Almost all my photos on flickr are under cc-by-sa or public domain.</p>
+<p>Today I just checked my flickr account and found out that I only have less than five hundreds photos there...</p>
+<p>-- 2018-11-16</p>
+<p>Ansible advertises itself as agent-less, but:</p>
+<ol>
+<li>The agent/client machine still needs to have a (compatible version of) python preinstalled.</li>
+<li>SaltStack supports an equivalent server-only  model (also requiring python). And SaltStack is more flexible since it also supports server-agent  and agent-only models.</li>
+</ol>
+<p>On the other hand, Patchwork (based on fabric) is true agentless (sending shell calls). Its functions is quite limited and it lacks high-level abstractions though.</p>
+<p>BTW, the cloud provider modules from both Ansible and SaltStack are disorderly and unsystematic. Some use cloud providers' SDK, some use libcloud (a unified interface for different cloud APIs), and some directly use requests.</p>
+<p>-- 2018-11-16</p>
+<p>Two exotic project ideas occurred to me on the bed. After getting up and turning on the computer, I found out that I had already forgot one of them.</p>
+<p>-- 2018-11-17</p>
+<p>It is such a surprise for me that GitHub does not have any public available issue tracker for itself!</p>
+<p>Some users have created one (<a href="https://github.com/isaacs/github">isaacs/github</a>). To  use it, you need to open an issue on it and email a copy to  support@github.com, then manually post replies from github staff. :-(</p>
+<p>-- 2018-11-17</p>
+<p>The image support of ZeroMe feels quite hacky to me:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"post_id"</span><span class="p">:</span><span class="w"> </span><span class="err">...</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"body"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"date_added"</span><span class="p">:</span><span class="w"> </span><span class="err">...</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"meta"</span><span class="p">:</span><span class="w"> </span><span class="s2">"{</span><span class="se">\"</span><span class="s2">img</span><span class="se">\"</span><span class="s2">:</span><span class="se">\"</span><span class="s2">900,600,bddbaaedafc5ea9db5b85b97eba543766888111965754446,01233014420125671882171769A111BABCDC9BAABB7CEC9DAAAA69AC9AAABBA9FF9BBB</span><span class="se">\"</span><span class="s2">}"</span><span class="w">
+</span><span class="p">}</span><span class="err">,</span><span class="w">
+</span></code></pre></div></div>
+<p>-- 2018-12-04</p>
+<p>Wrote a simple script (<a href="https://github.com/weakish/zerome2md">zerome2md</a>) to dump ZeroMe posts to a markdown file (for backup or publish eleswhere).</p>
+<p>Images are supported. Comments are not supported yet (patch welcome).</p>
+<p>The &quot;exported&quot; markdown file can be consumed by static site builders like Jekyll, e.g. a static mirror of my ZeroMe posts on clearnet: <a href="https://mmap.page/log/">mmap.page/log/</a></p>
+<p>-- 2018-12-06</p>
+<p>I use <a href="https://github.com/jethrokuan/z">the fish port of z</a> (alternative to autojump) and remap the command name to <code>h</code> (<code>set -U Z_CMD &quot;h&quot;</code>). <code>h</code> is easier to type (on dvorak keyboard layout) and remember (&quot;head to&quot;).</p>
+<p>-- 2019-01-12</p>
+<p>Recently the term &quot;headless CMS&quot; and &quot;decoupled CMS&quot; gain a lot of popularity. But these two terms are rather confusing to me.</p>
+<p>To me, &quot;headless CMS&quot; sounds like some system mainly intended to be used with <code>curl</code> etc. on command line, like <a href="http://ix.io/">ix.io</a> the headless pastebin. However, obviously most people use the term &quot;headless CMS&quot; in a different way.</p>
+<p>| What people say | What I would call it |
+| - | - |
+| headless CMS | decoupled CMS |
+| decoupled CMS | decoupled CMS with default UI and templates |</p>
+<p>BTW, I wish the next generation of website will be both frontend agnostic and gateway agnostic. That is, a user of a website can directly access those micro-services. And optionally they may provide some default gateways and/or frontends. Just like a user of a programming library/framework can directly access those low-level functions/classes. And optionally the library/framework may provide some high level APIs and/or examples.</p>
+<p>-- 2019-01-24</p>
+<p>RubyGems has a so-called  <em>twiddle-wakka</em> shortcut <code>~&gt;</code>. Therefore, assuming in a semver setup, you can write <code>~&gt; 2.2</code> instead of the verbose <code>['&gt;= 2.2.0', '&lt; 3.0']</code>. Seems neat, isn't it?</p>
+<p>However, later Alice reported a bug about the software, and Bob found out that the bug is caused by a bug from the library it depends, which has already be fixed in <code>2.2.2</code>. So Bob changed the dependency to <code>~&gt; 2.2.2</code>. The bug was gone, all tests passed, and everything looked great.</p>
+<p>However, <code>~&gt; 2.2.2</code> is not equivalent to  <code>['&gt;= 2.2.2', '&lt; 3.0']</code> (Bob thought so), but <code>['&gt;= 2.2.2', '&lt; 2.3.0']</code>!</p>
+<p>-- 2019-02-12</p>
+<p>The abandonware nuclide has a distinct feature &quot;<a href="https://nuclide.io/docs/features/remote/">Remote Development</a>&quot; (use a remote machine as the workspace for compiling/building and language services via ssh).</p>
+<p>Unfortunately none of Atom, VS Code and JetBrains IDEs has support for this feature yet.</p>
+<p>-- 2019-02-15</p>
+<p>Google Play Store lacks the &quot;ignore this update/version of app&quot; function.</p>
+<p>-- 2019-02-23</p>
+<p>小学时候写篇 300 字作文，常常绞尽脑汁，觉得怎么字数还不够啊，现在却为了把豆瓣短评控制在 350 字内大费周章（考虑空格和标点，大概等价于小学时代的 300 字）。</p>
+<p>Alita: Battle Angel (2019) 短评（恰好 350 字）：</p>
+<p>尽管神还原了原作中的许多经典画面，但恰如并不 Scrap 的 Iron City 一般，整部电影明快的调子，完全不同于 Gun Dream 的阴郁风味。强行分明善恶，操作粗暴，改编也有太多草率之处，甚至留下不少漏洞，比如原作中心脏仅为大脑提供养分，所以 Alita 用自己的心连接 Hugo 的头颅情理之中，而电影中将心脏改为发动机，实在让人很难假设它还有一个没交代的提供大脑养分的辅助功能；原作 Grewishka 有赏格，一众猎人只是畏其实力不敢出手，电影改成受上层庇护，那么 Hugo 被工厂通缉时，Alita 本应先质疑工厂是否弄虚作假；最后 Hugo 向上攀爬，电影中 Alita 劝解的话分明是对原作中执念破灭、一心求死的 Hugo 而说，对电影中逃避通缉求生的 Hugo，只需简单交代有防御轮即可。幸赖 CG 视效硬拉上五星，避免本片沦为 Ghost in the Shell 2017 一样的平庸之作。</p>
+<p>-- 2019-02-24</p>
+<p>Looks like there will be no more compact mobile phones. :-(</p>
+<p>Well, at least there are compact pad (Huawei Mate X) and compact camera/audio player (Sony Xperia 1) in 2019.</p>
+<p>-- 2019-02-26</p>
+<p>Currently I'm using a tree based todo manager, roughly something like:</p>
+<div class="language-lisp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">[task1</span>
+  <span class="nv">[subtask1</span>
+   <span class="nv">subtask2</span>
+     <span class="nv">subsubtask1</span>
+  <span class="o">...</span><span class="nv">]]]</span>
+ <span class="nv">task</span> <span class="mi">2</span>
+ <span class="o">...</span><span class="nv">]</span>  
+</code></pre></div></div>
+<p>I'm quite satisfied with it for a few months, and found that it is much more expressive than former flat todo managers I've used.</p>
+<p>But today I find out that I need to express something like this:</p>
+<div class="language-lisp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">[task1</span>
+  <span class="p">(</span><span class="nv">cond1</span>
+      <span class="nv">[subtask1</span>
+       <span class="nv">subtask2</span>
+          <span class="p">(</span><span class="nv">cond1.1</span>
+             <span class="nv">[subsubtask1</span>
+              <span class="nv">subsubtask2]</span>
+             <span class="nv">[othersubtask1</span>
+              <span class="nv">othersubtask2]</span><span class="p">)</span>
+       <span class="nv">subtask3]</span>
+      <span class="nv">[othersubtask1</span>
+       <span class="nv">othersubtask2</span>
+<span class="o">...</span>
+</code></pre></div></div>
+<p>Hmm, tree based todos are cool. But eventually I will need an AST (abstract syntax tree) to manage todos?</p>
+<p>-- 2019-02-28</p>
+<p>Go advertises itself as having first class functions:</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">return</span> <span class="n">alternativeImpl</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span>
+    <span class="k">func</span> <span class="p">(</span><span class="n">a</span> <span class="kt">int</span><span class="p">,</span> <span class="n">b</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span> <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="p">},</span>
+    <span class="k">func</span> <span class="p">(</span><span class="n">a</span> <span class="kt">int64</span><span class="p">,</span> <span class="n">b</span> <span class="kt">int64</span><span class="p">)</span> <span class="kt">int64</span> <span class="p">{</span> <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="p">},</span>
+    <span class="n">big</span><span class="o">.</span><span class="n">NewInt</span><span class="p">(</span><span class="m">0</span><span class="p">)</span><span class="o">.</span><span class="n">Add</span><span class="p">)</span>
+</code></pre></div></div>
+<p>With operator function and overloading/generics, this could have been shortened to:</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">return</span> <span class="n">alternativeImpl</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">+</span><span class="p">,</span> <span class="n">big</span><span class="o">.</span><span class="n">NewInt</span><span class="p">(</span><span class="m">0</span><span class="p">)</span><span class="o">.</span><span class="n">Add</span><span class="p">)</span>
+</code></pre></div></div>
+<p>BTW:</p>
+<ul>
+<li><code>big.NewInt(0).Add</code> looks wired to me. It is not something like <code>curriedAdd = add 0</code>, but means initialize a big.Int (here <code>0</code> is the empty value on initialization, and Go forces to assign an empty value on initialization) which receives the result of Add.</li>
+<li>GoLand is not very good at analyzing these higher order functions. Sometimes GoLand reported &quot;No problems found&quot; but actually the code does not compile.</li>
+</ul>
+<p>-- 2019-03-03</p>
+<p>I read the first 4 items of Effective Java 2nd. edition several years ago, and had an impression that the book better renamed to Ineffective Java. There are 78 items total in the Effective Java 2nd. editon. Today I just learned that Effective Java updated to 3rd. edition on the end of 2017, targeting Java 9 (2nd. edition is target at Java 6). Now there are 90 items in the book. I am wondering does this imply that Java is more ineffective now? Or maybe People have finally discovered far more pitfalls of Java, thus although recent versions of Java fixed some issues, the net known ineffectiveness increases?</p>
+<p>-- 2019-03-08</p>
+<p>GraalVM's native image feature is impressive to me:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">;</span> <span class="nb">du</span> <span class="nt">-sh</span> default<span class="k">*</span>
+11M     default  <span class="c"># stand alone</span>
+2.8M    default.jar <span class="c"># not counting the size of JVM</span>
+<span class="p">;</span> bench <span class="s1">'/usr/bin/java -jar default.jar'</span> <span class="s1">'./default'</span> 
+benchmarking bench//usr/bin/java <span class="nt">-jar</span> default.jar
+<span class="nb">time                 </span>118.3 ms   <span class="o">(</span>115.1 ms .. 120.1 ms<span class="o">)</span>
+                     1.000 R²   <span class="o">(</span>0.999 R² .. 1.000 R²<span class="o">)</span>
+mean                 120.4 ms   <span class="o">(</span>119.3 ms .. 122.7 ms<span class="o">)</span>
+std dev              2.331 ms   <span class="o">(</span>1.086 ms .. 3.812 ms<span class="o">)</span>
+variance introduced by outliers: 11% <span class="o">(</span>moderately inflated<span class="o">)</span>
+
+benchmarking bench/./default
+<span class="nb">time                 </span>1.512 ms   <span class="o">(</span>1.493 ms .. 1.531 ms<span class="o">)</span>
+                     0.999 R²   <span class="o">(</span>0.999 R² .. 1.000 R²<span class="o">)</span>
+mean                 1.502 ms   <span class="o">(</span>1.495 ms .. 1.511 ms<span class="o">)</span>
+std dev              26.17 μs   <span class="o">(</span>20.76 μs .. 34.28 μs<span class="o">)</span>
+</code></pre></div></div>
+<p>The startup time of a Java program is faster than a Python script, at the same level of Lua and Go.</p>
+<p>Currently GraalVM only supports amd64 linux/osx (there is preview distribution for Windows). No FreeBSD, no arm, etc.</p>
+<p>Also, native image for JVM languages other than Java are primitive. In fact the <code>default.jar</code> above is a Ceylon hello world program (generated via <code>ceylon fat-jar</code>). And the native image is generated from the following command:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>native-image <span class="nt">--report-unsupported-elements-at-runtime</span> <span class="nt">--static</span> <span class="nt">-jar</span> default.jar
+</code></pre></div></div>
+<p>(This is undocumented at GraalVM's official documentation. Thanks to <a href="https://stackoverflow.com/a/55068578/">Lucas Werkmeister</a> to supply the command.)</p>
+<p>However, currently this only works for simple Ceylon programs.</p>
+<p>But graal does looks promising to me.</p>
+<p>-- 2019-03-09</p>
+<p>Saw this piece of Go code when watching <a href="https://www.youtube.com/watch?v=yszygk1cpEc">Advanced Testing With Go</a> by Mitchell Hashimoto:</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">testChdir</span><span class="p">(</span><span class="n">t</span> <span class="o">*</span><span class="n">testing</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">dir</span> <span class="kt">string</span><span class="p">)</span> <span class="k">func</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">old</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">os</span><span class="o">.</span><span class="n">Getwd</span><span class="p">()</span>
+  <span class="c">// change directory and handle potential errors</span>
+  <span class="k">return</span> <span class="k">func</span><span class="p">()</span> <span class="p">{</span> <span class="n">os</span><span class="o">.</span><span class="n">Chdir</span><span class="p">(</span><span class="n">old</span><span class="p">)</span> <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="n">TestThing</span><span class="p">(</span><span class="n">t</span> <span class="o">*</span><span class="n">testing</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">defer</span> <span class="n">testChdir</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s">"/other"</span><span class="p">)()</span>
+  <span class="c">// ...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p><code>defer testChdir(t, &quot;/other&quot;)()</code> is a clever trick:</p>
+<ol>
+<li><code>defer</code> got <code>testChdir(t, &quot;/other&quot;)()</code>, and to figure out what to register, <code>testChdir(t, &quot;/other&quot;)</code> got evaluated. This let side effects contained in <code>testChdir</code> executed now.</li>
+<li>After the evaluation, <code>defer</code> registered the anonymous function <code>testChdir</code> returns, whose execution will be deferred.</li>
+</ol>
+<p>Just one line, brief and clever. But I think this is too brief and too clever.</p>
+<p>A quick google revealed that someone else already pointed out this pattern (<code>defer db.connect()()</code>) as <a href="https://blog.learngoprogramming.com/gotchas-of-defer-in-go-1-8d070894cb01">bad practice</a>. Besides, they also listed <a href="https://blog.learngoprogramming.com/5-gotchas-of-defer-in-go-golang-part-ii-cc550f6ad9aa">other</a> 14 <a href="https://blog.learngoprogramming.com/5-gotchas-of-defer-in-go-golang-part-iii-36a1ab3d6ef1">gotchas</a> of <code>defer</code>.</p>
+<p>This makes me wondering whether the benefit of introducing <code>defer</code> justify its confusion and complexity.</p>
+<p>BTW, another reason that <code>defer testChdir(t, &quot;/other&quot;)()</code> smells to me is it is error-prone. What if forget to type <code>()</code>? After all, <code>defer f()</code> looks quite innocent during a code review.</p>
+<p>The 15 gotchas author suggested an alternative style, which is clearer and less error-prone:</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">close</span> <span class="o">:=</span> <span class="n">db</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+<span class="k">defer</span> <span class="nb">close</span><span class="p">()</span>
+</code></pre></div></div>
+<p>But I do not feel nature that <code>connect()</code> should return a function on how to closing it. Thus I prefer the dumb way:</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">db</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+<span class="k">defer</span> <span class="n">db</span><span class="o">.</span><span class="nb">close</span><span class="p">()</span>
+</code></pre></div></div>
+<p>-- 2019-03-10</p>
+<p>Hmm, just noticed that <a href="https://www.w3.org/">w3.org</a> still uses &quot;old-fashioned&quot; XHTML 1.0 Strict.</p>
+<p>-- 2019-03-16</p>
+<p>In golden old days, a simple web page has an index.html, linking to an index.js. I can just open the index.html in a web browser to see the effect. And after some edits of index.html or index.js, I just refresh the page to see the effect. Once I am satisfied, I can copy the directory to any static hosting space.</p>
+<p>Nowadays, a simple web application has an index.html, liking to an index.js, which may import a lot of npm packages. Assuming these npm dependencies are already fulfilled (via <code>npm install --save</code>), <a href="https://parceljs.org/">parcel</a> bring me back to the golden old time:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>parcel index.html
+</code></pre></div></div>
+<p>Then I can just check the effect at http://localhost:1234/. And once I made an edit to index.html or index.js, it will get rebuilt and refresh automatically.</p>
+<p>Once the development is done, I just run <code>parcel build index.html</code>, then deploy/copy the <code>dist/</code> directory to any static hosting space.</p>
+<p>And if I get bored, I can replace index.js with index.ts, and start coding in TypeScript. This works out of box with parcel. This also applies to CoffeeScript, or Elm, or even Rust (via WebAssembly).</p>
+<p>None of webpack, browserify, and rollup is as zero configuration as parcel.</p>
+<p>-- 2019-03-16</p>
+<p>Just read an insightful blog post by <a href="https://staltz.com">André Staltz</a> talking about <a href="https://staltz.com/the-web-began-dying-in-2014-heres-how.html">the dying web</a> replaced by the GOOG-FB-AMZN Trinet.</p>
+<p>Actually the web is dying faster in China, where FB = Tencent, AMZN = Ali. Baidu tries to follow Google's strategy, shifting from a search oriented company to an AI oriented one. But apparently it is a failure.</p>
+<p>Reasons why web is dying faster in China:</p>
+<ol>
+<li>As a developing country, mobile phones are the only devices to connect to Internet for a lot of people. And a lot of people first go online through mobile applications. And most likely these mobile applications are directly owned by Tencent or Ali, or by companies controlled by Tencent or Ali.</li>
+<li>Mobile payment is far more ubiquitous in China. (Unsurprisingly, the two most popular mobile payment methods are Ali's Alipay and Tencent's WeChat Pay.)</li>
+<li>Both Tencent and Ali make their products very inconvenient to use on the web, lacking a lot of important features. They force user to use the mobile application instead. And there is no  regulation preventing them to do so.</li>
+<li>On the other side, regulation requires every user to bind a mobile phone number to use every web service.</li>
+<li>And obviously the authority dislike the open and free web. It is inconvenient and somehow dangerous to host an ordinary website. Want to host a forum? Even harder. Want to host a video site? No way! (Well, technically it is possible if you are a giant company or have strong connections with government.)</li>
+</ol>
+<p>-- 2019-03-17</p>
+<p>Finally gandi.net added support for <code>ALIAS</code>.</p>
+<p>-- 2019-03-24</p>
+<p>With the <a href="https://github.com/Microsoft/pyright">pyright</a> extension, vscode can check type annotations of Python code.</p>
+<p>-- 2019-03-24</p>
+<p>Although Flask is widely used to build REST API servers, <a href="https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Your_first_WebExtension">its official documentation</a> still cannot afford a dedicated page for REST APIs.</p>
+<p>I recommend go direct to check <a href="https://flask-restful.readthedocs.io/en/latest/quickstart.html#full-example">the full example of the  quick start guide</a> of Flask-RESTful extension. Take a look at the code example and start coding within 15 minutes.</p>
+<p>Life is short. Pick up tools and libraries fast.</p>
+<p>-- 2019-03-27</p>
+<p>manjaro's advertise for developers features Godot, KDevelop, Geany.</p>
+<p>solus's advertise for developers features Atom, Idea, GNOME Builder, Qt Creator, Visual Studio Code.</p>
+<p>Seems there are two different groups of developers under Linux desktop.</p>
+<p>-- 2019-03-28</p>
+<p>The download page of Manjaro offers 11 favors, xfce, kde, cinnamon, openbox, awesome, budgie, mate, I3, Architect (text), Deepin, Gnome. And there are tabs (it turns out these are actually pretended checkboxes) like &quot;beginner-friendly&quot;, &quot;resource-efficient&quot;, &quot;traditionally-workflow&quot;.</p>
+<p>I clicked the &quot;resource-efficient&quot; tab, and there are 10 favors. In other words, only Gnome is considered as resource inefficient!</p>
+<p>So, according to Manjaro, all Linux Graphical Desktop Environments are efficient (and none Graphical Desktop Environment is also efficient, of course), except for Gnome.</p>
+<p>This must be joking.</p>
+<p>(I used KDE for two or three years and haven't used recent versions of Gnome, so I am unsure if Gnome is resource inefficient nowadays. If it is, then the resource inefficient Gnome is joking; if it is not, then Manjaro is making a joke about Gnome. That's why this must be joking. ;-)</p>
+<p>-- 2019-03-29</p>
+<p>Recently I learned a new notion (or buzzword, if you prefer), <a href="https://en.wikipedia.org/wiki/Edge_computing">edge computing</a>:</p>
+<blockquote>
+<p>Edge computing brings memory and computing power closer to the location where it is needed.</p>
+</blockquote>
+<p>Hmm, this let me rethink the statement that ZeroNet is uncensored.</p>
+<p>Maybe ZeroNet is not uncensored, instead, it is <em>edge censored</em>.</p>
+<p>Let me cite the definition of censorship from Wikipedia:</p>
+<blockquote>
+<p>Censorship is the suppression of speech, public communication, or other information, on the basis that such material is considered objectionable, harmful, sensitive, or &quot;inconvenient&quot;.</p>
+</blockquote>
+<p>Such material is objectionable, harmful, sensitive, or &quot;inconvenient&quot; to who? To me, the content consumer. So, inspired by the idea of edge computing, the censorship system should bring memory and computing power closer to me, the location where censorship is needed.</p>
+<p>That is what ZeroNet does, <strong>edge censorship</strong>. Let the user/client/node/hub decide to mute and ban what content and which content producer.</p>
+<p>-- 2019-03-29</p>
+<p>Briefly tried Manjaro:</p>
+<p>The installation is smooth and it works out of the box.</p>
+<p>But it is problematic with package dependencies:</p>
+<ol>
+<li>The dependencies declaration of Arch package is less rigid, compared to Debian/Fedora/Opensuse, etc.</li>
+<li>New arch packages are postponed to enter Manjaro's repository, which causes missing dependencies.</li>
+</ol>
+<p>-- 2019-03-30</p>
+<p>https://defend.wikileaks.org/2019/04/11/emergency-julian-assange-has-been-arrested/</p>
+<p>-- 2019-04-12</p>
+<p>Most web video player lacks the feature of full browser window. Fortunately, with xrandr under Linux, we can split the physical monitor into multiple virtual monitors.</p>
+<p>For example, given a monitor 1920x1080 (476mm x 268mm) connected as <code>HDMI-1</code>, the following commands will split into two virtual monitors:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>xrandr <span class="nt">--setmonitor</span> left 960/254x1080/286+0+0 HDMI-1
+xrandr <span class="nt">--setmonitor</span> right 960/254x1080/286+960+0 none
+</code></pre></div></div>
+<p>Note that not all window managers respect this setting though. For example, I have no luck with KWin (KDE) and Mutter (Gnome). On the other hand, xfce and openbox do respect this.</p>
+<p>-- 2019-04-14</p>
+<p>I <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/?Post/12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv/1GnJD7CXskmG8GywMbTvbP12wneCFW9XzR/1553695047">complained about</a> Flask's official documentation lacks a dedicated page for REST APIs and suggested to use Flask-RESTful extension instead.</p>
+<p>But without using the extension, it is still possible to learn enough Flask to write your first REST API service in Flask within 30 minutes.</p>
+<ol>
+<li><a href="http://flask.pocoo.org/docs/1.0/testing/#testing-json-apis">The sample code</a> showing how to do REST API and test it.</li>
+<li><a href="http://flask.pocoo.org/docs/1.0/quickstart/#variable-rules">path variable</a></li>
+<li><a href="http://flask.pocoo.org/docs/1.0/quickstart/#the-request-object">request method and parameters</a></li>
+<li><a href="http://flask.pocoo.org/docs/1.0/patterns/apierrors/">implement API exceptions</a></li>
+<li><a href="http://flask.pocoo.org/docs/1.0/quickstart/#a-minimal-application">launch the application</a></li>
+</ol>
+<p>Unfortunately, figuring out these five sections in three chapters (&quot;quickstart&quot;, &quot;testing&quot;, &quot;pattern&quot;) are the relative pieces for a quick start of REST API service already costs me more than 30 minutes. :-(</p>
+<p>-- 2019-04-20</p>
+<p>Android's Messages app does not provide a &quot;delete all&quot; function. Fortunately, most popular third-party sms apps all support &quot;delete all&quot; or &quot;select all then delete&quot;, e.g. chompSMS, Handcent Next SMS, Textra.</p>
+<p>Considering the fact that in early versions of Android, the messaging app does have this feature, my conspiracy theory is Google do not like us to delete our SMS, which could be analyzed by Google to build smarter AI and sell more ads.</p>
+<p>-- 2019-04-20</p>
+<p>Just came across a video titled <a href="https://youtu.be/yE9v9rt6ziw">Learn Python Programming Language in 2 Hours</a>.</p>
+<p>The speaker argues that the first reason to use Python is:</p>
+<blockquote>
+<p>Solve complex problems in <strong>less time</strong> and <strong>fewer lines of code</strong></p>
+</blockquote>
+<p>with the following example:</p>
+<pre><code>C# str.Substring(0, 3)
+JavaScript str.substr(0, 3)
+Python str[0:3]
+</code></pre>
+<p>I do not want to talk about technical details like C# 8.0 supports slicing notation (<code>str[0..3]</code>) and <code>substr</code> is a legacy function in JavaScript (use <code>slice</code> instead). What I want to say is that all of the three languages take one line of code to solve the problem, and with a decent editor/IDE, all three lines take equal time to type. Even assuming we all do programming with a basic text editor like Notepad on Windows or Leafpad in Linux, this example still has nothing to do with solving complex problems in less time. This problem is not complex at all. And most time of programming is not spent on typing.</p>
+<p>Currently this video has 411k views, 8.1k upvotes (less than 200 downvotes) on YouTube. I think this is a good example of why learning to code is hard: so many poor and popular teaching materials on Internet.</p>
+<p><img src="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/log/1555771818.jpg" alt="attached image" /></p>
+<p>-- 2019-04-20</p>
+<p>Just tried the first three quizs of <a href="https://stepik.org/course/238">Python introduction course on stepik</a>, which is included in JetBrains' PyCharm Educational (I tried it with the EduTools plugin on IntelliJ).</p>
+<p>The first quiz is:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">print</span><span class="p">(</span><span class="s">"Hello, world! My name is type your name"</span><span class="p">)</span>
+</code></pre></div></div>
+<p>So easy.</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">print</span><span class="p">(</span><span class="s">"Hello, world! My name is weakish."</span><span class="p">)</span>
+</code></pre></div></div>
+<p>Failed! It turns out that the auto answer detection system thinks it is wired that my name is <code>weakish.</code>! Obviously the first quiz is to teach you just follow the instruction brainlessly. &quot;My name ...&quot; starts with a capital character, so it is a sentence. It is reasonable to end a sentence with a period (<code>.</code>), although this will fail the quiz.</p>
+<p>The second quiz introduces comments, without telling the learner comment is used for what.</p>
+<p>And the third quiz introduces variable, but its first line is:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">a</span> <span class="o">=</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">2</span>
+</code></pre></div></div>
+<p>What? Introducing chained assignment before normal variable assignment (<code>a = 2</code>)?</p>
+<p>Chained assignment is not often used in practice. And I do not think it is necessary to introducing it to beginners.</p>
+<p>In fact it is not only unnecessary, but confusing.</p>
+<p>A beginner may guess that <code>a = b = 2</code> is equivalent to:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">a</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">b</span> <span class="o">=</span> <span class="mi">2</span>
+</code></pre></div></div>
+<p>For a value <code>2</code>, they are indeed equivalent, but:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">random</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">b</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
+</code></pre></div></div>
+<p>is not equivalent to:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">a</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
+</code></pre></div></div>
+<p>And programmers from other languages such as C and JavaScript, may think <code>a = b = 2</code> is equivalent to <code>a = (b = 2)</code> where <code>b = 2</code> evaluates to <code>2</code>. But this is not true in Python.</p>
+<p>And the course mentioned nothing about these quirks.</p>
+<p>I guess the author may think <code>a = 2</code> is too boringly obvious to introduce, thus turns to introducing chain assignment directly. No! In fact, considering that in Python variables are reassignable, they are not boring for beginners at all.</p>
+<p>Considering the following lines:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">a</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">a</span> <span class="o">=</span> <span class="mi">3</span>
+</code></pre></div></div>
+<p>This is not boring for a beginner. How can <code>a</code> be equal to both <code>2</code> and <code>3</code>? Seems mathematically impossible!</p>
+<p>This is what the author really have to talk about, not chain assignment.</p>
+<p>I myself learned Python via reading the A Byte of Python book years ago. I am not sure if I should recommend it to beginners. Compared to <a href="https://htdp.org/">HtDP</a> for the exotic Scheme language and the outdated <a href="https://poignant.guide/">Why's Guide to Ruby</a>, it is somehow a boring book. And Python's official tutorial is well written. But at least it does not have such flaws.</p>
+<p>-- 2019-04-20</p>
+<p>And the first koan of &quot;Kotlin Koans&quot; from stepik and JetBrains annoyed me again.</p>
+<p>It requires to write a function returning <code>&quot;OK&quot;</code>, given the following hint:</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">fun</span> <span class="nf">start</span><span class="p">():</span> <span class="nc">String</span> <span class="p">=</span> <span class="nc">TODO</span><span class="p">()</span>
+</code></pre></div></div>
+<p>So easy (sounds familiar?)</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">fun</span> <span class="nf">start</span><span class="p">():</span> <span class="nc">String</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="s">"OK"</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>No, the EduTools plugin does not allow me to delete <code>=</code>!</p>
+<p>So I have to write the expected answer to pass the koan.</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">fun</span> <span class="nf">start</span><span class="p">():</span> <span class="nc">String</span> <span class="p">=</span> <span class="s">"OK"</span>
+</code></pre></div></div>
+<p>Hmm, stupid auto answer detection system. And I wonder why introduce learners the special single expression function in the very beginning, before the normal and more common used function with block body? A lot of functions are hard, if not impossible, to declare as a single expression function. Besides, learners familiar with other programming languages will pick up the normal function with block body syntax almost immediately. Why burden their progress insanely?</p>
+<p>-- 2019-04-20</p>
+<p>React has so many opt-in, legacy, experimental features. Thus I suggest taking a look at ReasonReact first, which has a much smaller API surface. After a glance of ReasonReact, you can probably pick up React quickly by skipping a lot of concepts. I guess this will be faster than learning React directly, particularly when you are already familiar with some static typed functional languages such as OCaml, F#, and Haskell.</p>
+<p>Though I do not suggest diving deep into ReasonReact and actually write code in it, since TypeScript has a far more better ecosystem.</p>
+<p>-- 2019-04-25</p>
+<p>Just came across a <a href="https://www.zhihu.com/question/320757143/answer/663749715">Q&amp;A</a> on zhihu (a quora clone in CN):</p>
+<blockquote>
+<p>Q: What to do when I encountered a man better than my boyfriend?
+A: Three men living together is pretty good, isn't it?</p>
+</blockquote>
+<p>Brilliant! Never forget to check the presumption under the question first.</p>
+<p>-- 2019-04-26</p>
+<p>It seems the Japanese new era is not very welcome yet:</p>
+<ul>
+<li>glibc has a <a href="https://github.com/bminor/glibc/commit/466afec30896585b60c2106df7a722a86247c9f3#diff-33e83cd438ad668f1ff09e8680f6bf11">commit</a> about 30 days ago, but there is no release yet. RHEL 7 and Fedora Stable has backported this about ten days ago. Debian Unstable has backported this about one week ago.</li>
+<li>Firefox Nightly still considers today is in 平成31年.</li>
+<li>Google Chrome Dev welcomes the new era (But only the dev channel, beta and stable still consider today is in 平成31年).</li>
+</ul>
+<p><img src="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/log/1556715169.jpg" alt="attached image" /></p>
+<p>-- 2019-05-01</p>
+<p>Just watched the <a href="https://youtu.be/yE9v9rt6ziw">The Tragedy of systemd</a>, which I thought is very misleading.</p>
+<p>Particularly, the video tries to justify systemd via connecting it with launchd. But although systemd is inspired by launchd,  launchd is not that bloated as systemd.  Also, besides macOS, iOS also uses launchd. However the video does not explain why Android (nowadays the majority of linux users are Android users) does not use systemd if systemd is as elegant as the video claims.</p>
+<p>And the video also talks about docker and containers, without realizing that containers make systemd irrelevant. On the server side, services are packaged as containers, which are managed by docker, k8s, etc. Technically there is still an init daemon starting the service program inside the container and communicating with <code>docker</code>, but this is somehow implementation detail not interested by developers. And to reduce resource overhaul, a lot of containers use alpine linux as base image, and alpine linux does not use systemd at all. Even if you intend to use Ubuntu or CentOS as base image for your container, Docker recommend you to use <a href="https://github.com/krallin/tini-images">pre-built images with the tini init</a>.</p>
+<p>To be honest, I like neither android, docker, nor systemd. I am not sure the fact that both android and docker are not in favor of systemd makes me more depressive or less depressive.</p>
+<p>-- 2019-05-03</p>
+<p>To those who dislikes systemd:</p>
+<ol>
+<li>Debian/Ubuntu/Fedora/OpenSUSE: try devuan</li>
+<li>Arch: try Void Linux</li>
+<li>Gentoo: Gentoo uses OpenRC by default</li>
+<li>Slackware:  Slackware is still systemd free</li>
+</ol>
+<p>-- 2019-05-04</p>
+<p>Just realized that I can look at the bright side of JavaScript's switch structure. JavaScript's switch <strong>statement</strong> is <strong>fall-through</strong>, which sounds like a scream: &quot;Don't break! Return! Wrap me into a function!&quot;</p>
+<p>-- 2019-05-06</p>
+<p>egghand's subtitles are auto generated (at least on some videos I watched), but they are not marked as such confusingly (unlike YouTube).</p>
+<p>-- 2019-05-08</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">first</span><span class="p">,</span> <span class="o">*</span><span class="n">rest</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>  <span class="c1"># first -&gt; 1, rest -&gt; [2, 3]  (1)
+</span><span class="k">lambda</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>  <span class="c1"># (2) 
+</span></code></pre></div></div>
+<p>Python 3 supports <code>(1)</code> but not <code>(2)</code>, and Python 2 supports <code>(2)</code> but not <code>(1)</code>.</p>
+<p>What a pity! If there is a python version supports both (Python 6?), I can write something like:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">lambda</span> <span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="o">*</span><span class="n">rest</span><span class="p">):</span> <span class="o">...</span>
+</code></pre></div></div>
+<p>-- 2019-05-10</p>
+<p>Do not under stand why Beta users need to accept <a href="https://help.github.com/en/articles/github-pre-release-program">Confidentiality agreement</a> of keeping special information secret. Isn't beta means public? It seems GitHub redefines Beta.</p>
+<p>I sign up for a Beta program because I am an impatient person, not want to wait for the official release. As such an impatient person, I do not bother reading these lengthy and senseless legal terms. I will check it again after it is officially released.</p>
+<p>-- 2019-05-11</p>
+<p>This patch to the legacy marriage framework just got approved today and will be merged into the <code>release</code> branch very soon! Congratulations! First patch of this kind in Asia!</p>
+<div class="language-diff highlighter-rouge"><div class="highlight"><pre class="highlight"><code>     func isMarriable(x Taiwanese, y Taiwanese) bool {
+<span class="gd">-      if x.sex == y.sex {
+-        return false
+-      }
+</span></code></pre></div></div>
+<p>-- 2019-05-17</p>
+<p>Just find out that web developer tools of modern browsers (Firefox &amp; Chrome)  can recognize webpack and typescript. Debugging on the original typescript source is much easier than on the generated JavaScript code.</p>
+<p>-- 2019-06-29</p>
+<p>Future programmers may use different abstractions. Today we can write bytes to a file, and tomorrow we may write to a <a href="https://godoc.org/gocloud.dev/blob">blob</a>. Whether the blob is ultimately a file or some cloud storage service is just implementation details.</p>
+<p>On writing this, it occurred to me that maybe these abstractions are not very different. Afterall, a <em>file</em> itself is quite abstract (e.g. <code>/dev/stderr</code> under Linux).</p>
+<p>-- 2019-07-02</p>
+<p>How I stop using proxy extension in Firefox?</p>
+<ol>
+<li>Use clash. Usually I'd rather add a rule in clash config, instead of switch proxy.</li>
+<li>Occasionally, when I need to switch proxy, I just press alt+home to open the proxy settings, because I have set homepage to <code>chrome://browser/content/preferences/connection.xul</code>.</li>
+</ol>
+<p>-- 2019-07-25</p>
+<p>The current version of IntelliJ (2019.2) has a built-in sublime keymap. And I once heard a JetBrainer referred to <code>ctrl+shift+a</code> as &quot;command palette&quot; (although actually IntelliJ introduced the &quot;find any action&quot; feature prior to Sublime). FYI, Micosoft released an extension &quot;Sublime Text Keymap and Settings Importer&quot; for vscode on 2016.</p>
+<p>Such an influential editor, Sublime Text.</p>
+<p>-- 2019-07-27</p>
+<p>Looks like the development of Ceylon has ceased. The latest commit is on <a href="https://github.com/eclipse/ceylon/commit/7e653a1cd0ff54e7b773f92e26af8ba56b85f308">May 22, 2019</a>, removing words like &quot;crap&quot;, &quot;shit&quot;, &quot;fucked up&quot; from code comment. And the penultimate commit is on <a href="https://github.com/eclipse/ceylon/commit/d3994d6cd120c4df85952cd9432123b413cfd65a">Feb 11, 2019</a>, fixing the CI build.</p>
+<p>-- 2019-07-29</p>
+<p>After recent update of KDE Neon, the bluetooth adapter will power off after each hibernation. Unfortunately I need a mouse to turn on the bluetooth in KDE UI, but I use a bluetooth mouse.</p>
+<p>Finally, I found a way to turn on bluetooth via command line (I use a wired keyboard), entering <code>power on</code> in the bluetoothctl shell.</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">;</span> bluetoothctl
+<span class="o">[</span>bluetooth]# power on
+<span class="o">[</span>bluetooth]# <span class="nb">exit</span>
+</code></pre></div></div>
+<p>-- 2019-08-01</p>
+<p>The dark theme of Spark (a mail client on osx) is a disaster. I've to change the setting to &quot;always use light theme&quot;. The reason is few mail clients (including those Web Clients) have considered dark background in designing default HTML email templates. And it seems that Spark has not implement some smart algorithm to swap colors.</p>
+<p>The old fashioned plain text emails play nicely with dark theme. Another example of simple design is more future proof.</p>
+<p>-- 2019-08-04</p>
+<p>Touch bar does have some advantages:</p>
+<ol>
+<li>providing context aware UI controls, like buttons, slides, etc</li>
+<li>showing explicitly the state of the button, e.g. the mute/unmute button</li>
+</ol>
+<p>But there is a long way to go:</p>
+<ol>
+<li>The touch bar need to provide more physical like feedback.</li>
+<li>The application need to allow user to configure controls, to keep some common operations in a fixed position, e.g. F5 (refresh) for browsers.</li>
+<li>The application need to pay great attention to design the touch bar controls, to offer a consistent and convenient  UI. For example, in Spark (an email client on Mac OS X), if I click the move button in the toolbar, the popup menu will list suggested folders first. However, if I press the move button on the touch bar, the touch bar just shows the full list (I have to slide for more folders), and the suggested list is missing.</li>
+</ol>
+<p>-- 2019-08-07</p>
+<p>The IRL podcast by mozilla is not only boring but also burning (it burns RAM very quickly under Firefox).</p>
+<p>-- 2019-08-07</p>
+<p>Just learned a new word &quot;Xi-ple&quot; today. To my surprise, this word is ungoogleable.</p>
+<p>-- 2019-08-14</p>
+<p>BitBucket is <a href="https://bitbucket.org/blog/sunsetting-mercurial-support-in-bitbucket">dropping hg support</a>. This reminds me the time when Macintosh computers dropped PowerPC CPUs.</p>
+<p>-- 2019-08-21</p>
+<p>Sam Hartman sent the <a href="https://lists.debian.org/debian-devel-announce/2019/09/msg00001.html">Bits from the DPL (August 2019)</a> letter yesterday (Sep 19, 2019). In the letter, Sam talked a lot about the complexity and anxiety on init system diversity within the  Debian project.</p>
+<p>-- 2019-09-20</p>
+<p>Just discovered the Files app (an android app by Google) is translated to Files Geek (文件极客) in Chinese UI.</p>
+<p>-- 2019-09-21</p>
+<p>Just upgrade to 0net-py3:</p>
+<ol>
+<li>Install from source.</li>
+<li>Copy the data directory from my old 0net-py2 directory.</li>
+</ol>
+<p>Seemingly it works fine.</p>
+<p>-- 2019-10-16</p>
+<p>For parsing simplicity, the existential operator from CoffeeScript turns into something like <code>foo ?? bar()</code>, <code>a?.[1]</code>, and <code>f.(x)</code> in JavaScript (stage 3), to avoid confusion with ternary expression (<code>a ? [b] :c</code>).</p>
+<p>IMO <code>??</code> is acceptable, but <code>a?.[1]</code> is really very ugly. And in fact this reveals a fundamental problem of JavaScript:</p>
+<p>JavaScript sucks. Thus people add more features as workarounds. But people cannot remove features from it (otherwise it may become a bigger tragedy than Python 2/3). So JavaScript still sucks, and becomes more bloated and uglier at the same time.</p>
+<p>-- 2019-11-13</p>
+<p>Updated the jekyll templates of my personal website to get rid of JavaScript. Now mmap.page on <a href="https://mmap.page">clearnet</a> and <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/">zeronet</a> is JavaScript free. ^_^</p>
+<p>If you want to deploy a minimalistic JavaScript free site to GitHub Pages and/or ZeroNet, then you can checkout <a href="https://mmap.page/micro-gh-page/">my Jekyll template</a>.</p>
+<p>-- 2019-11-23</p>
+<p>React components and hooks are just functions, nothing magical:</p>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">SimpleReact</span> <span class="o">=</span> <span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">state</span>
+    <span class="k">return</span> <span class="p">{</span>
+      <span class="nx">render</span><span class="p">(</span><span class="nx">Component</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">const</span> <span class="nx">C</span> <span class="o">=</span> <span class="nx">Component</span><span class="p">()</span>
+        <span class="nx">C</span><span class="p">.</span><span class="nx">render</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nx">C</span>
+      <span class="p">},</span>
+      <span class="nx">useState</span><span class="p">(</span><span class="nx">initialValue</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">state</span> <span class="o">=</span> <span class="nx">state</span> <span class="o">||</span> <span class="nx">initialValue</span>
+        <span class="kd">function</span> <span class="nx">setState</span><span class="p">(</span><span class="nx">newValue</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">state</span> <span class="o">=</span> <span class="nx">newValue</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="p">[</span><span class="nx">state</span><span class="p">,</span> <span class="nx">setState</span><span class="p">]</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">})()</span>
+
+<span class="kd">const</span> <span class="nx">useState</span> <span class="o">=</span> <span class="nx">SimpleReact</span><span class="p">.</span><span class="nx">useState</span>
+<span class="kd">const</span> <span class="nx">render</span> <span class="o">=</span> <span class="nx">SimpleReact</span><span class="p">.</span><span class="nx">render</span>
+
+<span class="kd">function</span> <span class="nx">useCountCharacters</span><span class="p">(</span><span class="nx">str</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">const</span> <span class="p">[</span><span class="nx">text</span><span class="p">,</span> <span class="nx">setText</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useState</span><span class="p">(</span><span class="nx">str</span><span class="p">)</span>
+    <span class="kd">const</span> <span class="nx">len</span> <span class="o">=</span> <span class="nx">text</span><span class="p">.</span><span class="nx">length</span>
+    <span class="k">return</span> <span class="p">[</span><span class="nx">len</span><span class="p">,</span> <span class="nx">setText</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">Component</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">const</span> <span class="p">[</span><span class="nx">len</span><span class="p">,</span> <span class="nx">setLen</span><span class="p">]</span> <span class="o">=</span> <span class="nx">useCountCharacters</span><span class="p">(</span><span class="dl">""</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span>
+      <span class="na">type</span><span class="p">:</span> <span class="nx">txt</span> <span class="o">=&gt;</span> <span class="nx">setLen</span><span class="p">(</span><span class="nx">txt</span><span class="p">),</span>
+      <span class="na">render</span><span class="p">:</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">({</span> <span class="nx">len</span> <span class="p">})</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">let</span> <span class="nx">App</span> <span class="o">=</span> <span class="nx">render</span><span class="p">(</span><span class="nx">Component</span><span class="p">)</span> <span class="c1">// { len: 0 }</span>
+<span class="nx">App</span><span class="p">.</span><span class="nx">type</span><span class="p">(</span><span class="dl">'</span><span class="s1">hello</span><span class="dl">'</span><span class="p">)</span>
+<span class="nx">App</span> <span class="o">=</span> <span class="nx">render</span><span class="p">(</span><span class="nx">Component</span><span class="p">)</span> <span class="c1">// { len: 5 }</span>
+</code></pre></div></div>
+<p>-- 2019-11-24</p>
+<p>The ancient Chinese saying &quot;steal the whole country and they make you a prince, steal a hook and they hang you&quot; (竊國者侯，竊鉤者誅) probably describes integer overflow. In a system people with a positive sin value will be punished and those with a negative sin value will be rewarded, one who stole the whole country gained a lot of sin value, causing a sin value overflow.</p>
+<p>-- 2019-12-05</p>
+<p>Just downloaded my Translator Toolkit data via Google Takeout. Google Translator Toolkit was shutdown on December 4, 2019. Yet another good service I used to be shutdown by Google.</p>
+<p>-- 2019-12-05</p>
+<p>On December 14, 2019, all yahoo groups become private (based on Yahoo Mails), the yahoo groups website will be shutdown and <strong>all yahoo groups content will be deleted</strong>!</p>
+<p>-- 2019-12-05</p>
+<p>Years ago I noticed that WebStorm (2016.3) was very slow to detect type errors with Flow, while vscode (with vscode-flow-ide extension) checked error on saving file instantly.</p>
+<p>Today I found out that <code>// @ts-check</code> against JSDoc comments works out of box with vscode, while WebStorm (2019.3) cannot recognize <code>@template</code> with <code>@typedef</code>.</p>
+<p>This is yet another example that WebStrom is becoming more and more less relevant in JavaScript development these years.</p>
+<p>-- 2019-12-07</p>
+<p>The three most popular style guides in JavaScript community (airbnb, standard, google) are all unnecessarily lengthy.</p>
+<p>For example, they all contain a lot of rules on spacing. Is spacing that important? If so, why not just use prettier? If not, why bother to list them in a style guide?</p>
+<p>Another example is they all tell you to write <code>let arr = [];</code> instead of <code>let arr = new Array()</code>. I personally tend to write <code>[]</code> but if a ~~Java~~ developer writes <code>new Array()</code> instead, what's wrong with that? It is totally harmless.</p>
+<p>Style guides should keep focus on a dozen of matters truly important, in other words, pitfalls of JavaScript design, e.g. using <code>===</code> instead of <code>==</code>.</p>
+<p>-- 2019-12-14</p>
+<p>I am not a fan of uniformed code formatting (like <code>gofmt</code>). I do not think issues like CamlCase v.s. snake_case or spaces are important. But I myself use <a href="https://prettier.io/">Prettier</a> because I am too lazy to type tabs and semicolons. :-)</p>
+<p>-- 2019-12-15</p>
+<p>Firefox Notes does not support markdown. It only captures some key presses like <code># h1</code> to mimic Markdown but directly pasting <code># h1</code> does not work (Yes, the browser distinguishes key press event and text input event). Also there is only three levels of heading.  And the worst thing is it does not support code block! :-(</p>
+<p>-- 2019-12-16</p>
+<p>It seems that the story writer of MonsterMatch need to learn more physics.</p>
+<p><img src="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/log/1577540089.jpg" alt="attached image" /></p>
+<p>-- 2019-12-28</p>
+<p><a href="https://bellard.org/">bellard.org</a> still uses html 4, as <a href="https://www.debian.org/">debian.org</a> and <a href="http://www.netbsd.org/">netbsd.org</a> does. They have an attitude.</p>
+<p>-- 2020-01-09</p>
+<p>json-diff hung for one day to compare two big json files (~100 MB in file size, and ~40 k objects), while jsondiffpatch finished the comparison in less  than 20 seconds.</p>
+<p>-- 2020-01-10</p>
+<p>I am a bit uncertain about the future of JetBrains. They put a lot of efforts to ship great IDEs. But new languages are very serious about tooling and development productivity to attract more users. vscode has greater out of box support for TypeScript than WebStrom. And the Rust extension of vscode is developed by the IDE and editors team of the Rust language people (yes, they have a dedicated team for this).</p>
+<p>There is a conflict of interest for JetBrains. For new languages, language sever is the way to go. It is very difficult for JetBrains to develop an alternative competitive code intelligence system, particularly when new languages like TypeScript and Rust are evolving very fast. So the only choice of JetBrains is to embrace the language sever. But language server is neutral to all editors and IDEs, thus it will not give JetBrains any advantage. And to earn money from those &quot;professional&quot; versions, JetBrains may deliberately remove features from free versions. For example, <a href="https://areweideyet.com/#intellij">debugger and profiler for Rust are only available in their nonfree CLion IDE</a>.</p>
+<p>The same thing happens to JetBrains' own language, Kotlin. Android Studio/IntelliJ have greatest support for Kotlin, and Eclipse have decent support for Kotlin. But JetBrains people are not willing to support other editors or develop a language server. There is a conflict of interest: to attract more developers to use Kotlin, they need to support more IDEs and editors, while to attract more developers to use their IDEs, they'd better only support their own IDEs.</p>
+<p>JetBrains IDEs still have the state of art IDEs for languages such as Java, Python, Go. But their language servers may catch up in future, puting JetBrains IDEs in an awkward situation.</p>
+<p>-- 2020-01-12</p>
+<ol>
+<li>Open your browser, click <code>ctrl+L</code> to focus on address bar.</li>
+<li>Type <code>data:,anything you plan to do</code> (data and semicolon and comma)</li>
+<li>Click <code>ctrl+D</code> to bookmark it.</li>
+</ol>
+<p>That't it. A todo manager with browser bookmarks.
+You can use folders to organize your todos (projects or lists).
+And todos can be exported as an HTML file, or get synced with multiple devices (e.g. you can check your todos on the browser of your mobile device).</p>
+<p>Bonus: If you need to input non-ascii characters, type <code>data:text/plain;charset=UTF-8,any content</code> instead.</p>
+<p>-- 2020-01-20</p>
+<p>golint is very noisy, and it gives a lot of false positive results. I just switched to the peaceful <code>staticcheck</code> instead.</p>
+<p>-- 2020-01-22</p>
+<p>On Apple laptops released in recent years, every key is a power button, and there is NO WAY to turn it off.</p>
+<p>-- 2020-03-11</p>
+<p>The new MacBook Air has the best keyboard in current Apple laptops: scissor mechanism without touchbar.</p>
+<p>-- 2020-03-20</p>
+<p>Just discovered this in <a href="https://sentry.io/terms/">Sentry's ToS</a>:</p>
+<blockquote>
+<ol start="5">
+<li>Restrictions
+... you may not: ...  (e) build a competitive product or service, or copy any features or functions of the Site or the Services</li>
+</ol>
+</blockquote>
+<p>-- 2020-03-28</p>
+<p>The opening of Stanford's CS106A is full of propaganda and buzzwords http://web.stanford.edu/class/cs106a/lectures/1-Welcome/1-Welcome.pdf</p>
+<p>-- 2020-04-12</p>
+<p>Haven't checked the RSS reader for two or three years. The RSS reader reported that about fifty RSS feeds are unreachable. By clicking the htmlUrl and googling author name and old post content, I managed to recover 17 blogs.</p>
+<p>-- 2020-04-12</p>
+<p><a href="https://github.com/rime/home/wiki/ComboPinyin">Combo Pinyin</a> is an interesting Chinese input method, which is similar to chord-typing (pressing multiple keys at the same time to input a character). However, I find it difficult to type. For example, to type guang, I have to type five keys (F-U-K-L-SPC) at the same time, which is very difficult to my fingers.</p>
+<p>-- 2020-04-25</p>
+<p><a href="https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell">GitHub action/workflow</a> offers these shells: cmd, sh, bash, power shell, and <strong>python</strong>.</p>
+<p>-- 2020-05-14</p>
+<p>I though TED talks are amazing. Recently I listened a lot of TED talks and found out that TED talks on average are <em>not</em> interesting to me. Previously I have only listened popular TED talks shared on social networks where I only follow people I find interesting. That's why I had this wrong impression.</p>
+<p>-- 2020-05-20</p>
+<p>Go 1.14 allows <a href="https://github.com/golang/proposal/blob/master/design/6977-overlapping-interfaces.md">embedding interfaces with identical method names</a>, as long as these methods have <strong>identical signatures</strong>.</p>
+<p>Again, Go avoided to attack the function subtyping problem.</p>
+<p>-- 2020-05-23</p>
+<p>It's  2020, and twitter &amp; github still do not support IPv6.</p>
+<p>-- 2020-06-12</p>
+<p>Go is influenced by Python. Now Go also influences Python, e.g. black (<code>go fmt</code>) and pytest (<code>go test</code>).</p>
+<p>-- 2020-06-15</p>
+<p>Recently I watched <a href="https://youtu.be/fzLz3LBMHz4">Openbook 2019 talk by Audrey Tang on YouTube</a>. The talk is given in Chinese and here is some notes I have taken.</p>
+    
+      <h2 id="assistant-intelligence">
+        
+        
+          Assistant Intelligence <a href="#assistant-intelligence" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Audrey regards AI as Assistant Intelligence instead of Artificial Intelligence.</p>
+    
+      <h2 id="reading">
+        
+        
+          Reading <a href="#reading" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Audrey finds the following reading methods help her to understand the content:</p>
+<ol>
+<li>Translation or abstract translation.</li>
+<li>Taking notes and doodling with pens.</li>
+</ol>
+<p>When not having a pen at hand, Audrey will scan the book or pdf quickly (about 0.2s per page). Then she will rest for a while, maybe drinking some tea, and &quot;review&quot; those pages in mind with her eyes closed. If something occurred to her, she will note them down.</p>
+<p>When having a lot of materials to read, she will quickly scan them before sleep, and absorb them in sleep. She found out an 8 hour sleep can absorb around 400 pages of material.</p>
+<p>Audrey did most of her reading  on an iPad Pro (with a pen).
+She uses the kindle app for iPad, but she converts all books she bought from different channels using calibre.</p>
+    
+      <h2 id="emoji-as-a-universal-language">
+        
+        
+          Emoji as a universal language <a href="#emoji-as-a-universal-language" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Audrey thinks emoji is a more universal language than English.</p>
+<p>However, I think while it is cool to <a href="https://speakerdeck.com/audreyt/reinventing-democracy">making slides in pictures and emoji</a>. It is difficult to express complex ideas only with emoji. For example, can you <a href="https://paper.dropbox.com/doc/Reinventing-Democracy-EbWGsC1m7MTUqaxNNAmdC">guess what these slides mean</a>?</p>
+    
+      <h2 id="humor-over-rumor">
+        
+        
+          Humor over Rumor <a href="#humor-over-rumor" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Audrey introduces the disinformation definition in Taiwan: intentional harmful untruth (harmful to the public). To counter disinformation, clarification need to take a humorous form, to become a meme spreading faster and wider than the disinformation. Also, humor helps to counter the irrational anger which motivates people to spread the disinformation.</p>
+    
+      <h2 id="icloud">
+        
+        
+          iCloud <a href="#icloud" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Unfortunately, although Audrey is a <a href="https://sandstorm.io/about">key sponsor</a> of <a href="https://sandstorm.io/">sandstorm</a> (self hosted platform for open source applications), and introduces sandstorm to Taiwan government, she herself still relies on iCloud to sync personal files.</p>
+<p>-- 2020-07-02</p>
+<blockquote>
+<p>FastAPI is a modern, fast (high-performance), web framework for building APIs with Python 3.6+ based on standard Python type hints.</p>
+<p>-- <a href="https://fastapi.tiangolo.com">https://fastapi.tiangolo.com</a></p>
+</blockquote>
+<p><strong>&quot;based on standard Python type hints&quot;</strong>, so Let's just check the source code:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">FastAPI</span><span class="p">(</span><span class="n">Starlette</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">False</span><span class="p">,</span>
+        <span class="n">routes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseRoute</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
+        <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s">"FastAPI"</span><span class="p">,</span>
+        <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s">""</span><span class="p">,</span>
+        <span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s">"0.1.0"</span><span class="p">,</span>
+        <span class="n">openapi_url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s">"/openapi.json"</span><span class="p">,</span>
+        <span class="n">openapi_tags</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
+        <span class="n">servers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]]</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
+        <span class="n">default_response_class</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Response</span><span class="p">]</span> <span class="o">=</span> <span class="n">JSONResponse</span><span class="p">,</span>
+        <span class="n">docs_url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s">"/docs"</span><span class="p">,</span>
+        <span class="n">redoc_url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s">"/redoc"</span><span class="p">,</span>
+        <span class="n">swagger_ui_oauth2_redirect_url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s">"/docs/oauth2-redirect"</span><span class="p">,</span>
+        <span class="n">swagger_ui_init_oauth</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
+        <span class="n">middleware</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Middleware</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
+        <span class="n">exception_handlers</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Type</span><span class="p">[</span><span class="nb">Exception</span><span class="p">]],</span> <span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
+        <span class="n">on_startup</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
+        <span class="n">on_shutdown</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
+        <span class="n">openapi_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s">""</span><span class="p">,</span>
+        <span class="n">root_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s">""</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">extra</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span> <span class="o">...</span>
+</code></pre></div></div>
+<p><code>routes</code>, <code>middleware</code>, <code>exception_handlers</code>, <code>on_startup</code>, <code>on_shutdown</code> should be 'Optional', and types of <code>swagger_ui_init_oauth</code>, <code>exception_handlers</code>, <code>on_startup</code>, <code>on_shutdown</code> are inaccurate.</p>
+<p>It is 2020 and sadly the only mainstream dynamic programming language with a community which treats typing seriously is JavaScript.</p>
+<p>-- 2020-07-04</p>
+<p><a href="http://sinatrarb.com/">Sinatra</a> in Ruby:</p>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">require</span> <span class="s1">'sinatra'</span>
+<span class="n">get</span> <span class="s1">'/'</span> <span class="k">do</span>
+      <span class="s1">'Hello, World!'</span>
+<span class="k">end</span>
+</code></pre></div></div>
+<p>In Python (a.k.a. Flask):</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span>
+<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+<span class="o">@</span><span class="n">app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s">'/'</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">hello_world</span><span class="p">():</span>
+    <span class="k">return</span> <span class="s">'Hello, World!'</span>
+</code></pre></div></div>
+<p>In JavaScript (a.k.a. Express):</p>
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">express</span><span class="dl">'</span><span class="p">)</span>
+<span class="kd">const</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">()</span>
+<span class="kd">const</span> <span class="nx">port</span> <span class="o">=</span> <span class="mi">3000</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="kd">get</span><span class="p">(</span><span class="dl">'</span><span class="s1">/</span><span class="dl">'</span><span class="p">,</span> <span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">res</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="dl">'</span><span class="s1">Hello World!</span><span class="dl">'</span><span class="p">))</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="nx">port</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">`Example app listening at http://localhost:</span><span class="p">${</span><span class="nx">port</span><span class="p">}</span><span class="s2">`</span><span class="p">))</span>
+</code></pre></div></div>
+<p>In Java (a.k.a. Javalin):</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">io.javalin.Javalin</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">HelloWorld</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">Javalin</span> <span class="n">app</span> <span class="o">=</span> <span class="nc">Javalin</span><span class="o">.</span><span class="na">create</span><span class="o">(</span><span class="n">config</span> <span class="o">-&gt;</span> <span class="n">config</span><span class="o">.</span><span class="na">defaultContentType</span> <span class="o">=</span> <span class="s">"application/json"</span><span class="o">).</span><span class="na">start</span><span class="o">(</span><span class="mi">7000</span><span class="o">);</span>
+        <span class="n">app</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="s">"/"</span><span class="o">,</span> <span class="n">ctx</span> <span class="o">-&gt;</span> <span class="n">ctx</span><span class="o">.</span><span class="na">json</span><span class="o">(</span><span class="s">"Hello, World!"</span><span class="o">));</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+<p>In Go (a.k.a. Gin):</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+<span class="k">import</span> <span class="s">"github.com/gin-gonic/gin"</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">r</span> <span class="o">:=</span> <span class="n">gin</span><span class="o">.</span><span class="n">Default</span><span class="p">()</span>
+	<span class="n">r</span><span class="o">.</span><span class="n">GET</span><span class="p">(</span><span class="s">"/"</span><span class="p">,</span> <span class="k">func</span><span class="p">(</span><span class="n">c</span> <span class="o">*</span><span class="n">gin</span><span class="o">.</span><span class="n">Context</span><span class="p">)</span> <span class="p">{</span>
+		<span class="n">c</span><span class="o">.</span><span class="n">JSON</span><span class="p">(</span><span class="m">200</span><span class="p">,</span> <span class="n">gin</span><span class="o">.</span><span class="n">H</span><span class="p">{</span>
+			<span class="s">"hello"</span><span class="o">:</span> <span class="s">"world"</span><span class="p">,</span>
+		<span class="p">})</span>
+	<span class="p">})</span>
+	<span class="n">r</span><span class="o">.</span><span class="n">Run</span><span class="p">()</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>-- 2020-07-05</p>
+<p>Shame on me: I had not checked whether the producer violates GPL before buying an ebook reader.</p>
+<p><a href="https://www.reddit.com/r/linux/comments/hl09g7/onyx_boox_chinese_company_will_not_share_their/">Reddit: Onyx Boox will not share their linux kernel source code</a></p>
+<p>-- 2020-07-11</p>
+<p>First impression on <a href="https://app.hey.com/">hey email</a>:</p>
+<ol>
+<li>I cannot write an email in plain text. There are no options in settings. All emails are HTML.</li>
+<li>To organize in emails in &quot;Imbox&quot;/&quot;The Feed&quot;/&quot;Paper Trail&quot;, I have to manually classify them, or set up that all mails from a certain address go to one of these categories. I expected there will be something fancy magic based on the so called machine learning here, but there is not. And at least in Gmail I can create filters based on more conditions (e.g. subject or body content).</li>
+<li>I can select text in email and click &quot;save clips&quot;. But they are only shown in the clips menu, there is no highlight in the original email. And in the clips page, I cannot click the clipped text to go to the exact position of the original email (I can only go to the beginning of the email). Therefore context is lost during clipping.</li>
+<li>I do not think a dedicated new mail services is necessary to implement most of the UX features hey offered.</li>
+</ol>
+<p>-- 2020-07-11</p>
+<blockquote>
+<p>Also, vertical KDE panel is not supported under i3, so do not buy them.</p>
+</blockquote>
+<p>Oh, I must be very sleepy to write the above sentence. And maybe I dislike KDE subconsciously?</p>
+<p>-- 2020-07-14</p>
+<p>suitezero.archive posted their collection, a pair of fake Nike sneakers on <a href="https://www.instagram.com/p/B3Ig37PlQqB/">instagram</a>. Unlike most other fake Nike shoes, this pair has its own brand 登云 (meaning climbing the clouds in Chinese) and is produced by 上海皮鞋一厂 (Shanghai No.1 Leather Shoe Factory), a Chinese government-owned enterprise.</p>
+<p><img src="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/log/1596041471.jpg" alt="attached image" /></p>
+<p>-- 2020-07-29</p>
+<p>According to Uniqlo's size chart, the perfect height is around 165 cm and 150 cm. A person of 165 cm height can choose from both Men's Clothing and Women's Clothing, and a person of 150 cm height can choose from both Women's Clothing and Kids' Clothing.</p>
+<p>-- 2020-08-06</p>
+<p>There is no options in <a href="https://podcasts.google.com">Google Podcasts</a> to export subscriptions in OPML. Even Google Takeout does not include Google Podcasts subscriptions. (violation of GDPR?)</p>
+<p>-- 2020-08-18</p>
+<p>The English words &quot;Republic of China&quot; is still preserved on the redesigned Taiwan passport. They are in a much smaller font wrapping around the national emblem, unnoticeable at a quick glance.</p>
+<p>IMHO, keeping it simple and stupid is much better using these creative tricks. The English words  &quot;Republic of China&quot; and all  Chinese words (including &quot;Republic of China&quot;) should be removed. Also, national emblem can be replaced with Prunus mume (just like the design of the Japanese passport).</p>
+<p>-- 2020-09-02</p>
+<p>Macbook Pro 13 (2019) claimed to support &quot;up to 10 hours wireless web&quot;, but in my daily use (two browsers with dozens of tabs, two IDEs, one electron based editor, one mail client, two IM applications, using both the internal and an external monitor) it can only last about 3 hours.</p>
+<p>-- 2020-10-24</p>
+<p>Why the KISS (Keep it simple, stupid) principle looks so seductive to me? Because the world is too vast to explore.</p>
+<p>-- 2020-10-25</p>
+<p>Burmese names do not have surnames. And traditionally Bamars can change their name at will, often with no government oversight. In other words, Burmese names are both screen names and real names.</p>
+<p>-- 2020-10-28</p>
+<p><a href="https://github.com/txthinking/nico">nico</a> is a minimalistic zero-configuration HTTP server. It can be used as a reverse proxy or a static file server, with auto applied SSL certificates. Nico have no options to configure. You can not even specify the ports to listen (it always listen on 80/443).</p>
+<p>The binary size on Linux amd64: 6.5 M (for comparison, Caddy is 35 M).</p>
+<p>-- 2020-11-15</p>
+<p>Q: Why I do not have faith in God?</p>
+<p>A: As Larry Wall paraphrased, faith is just two bits away:</p>
+<blockquote>
+<ol>
+<li>God exists, and</li>
+<li>God is good to people who really look for him</li>
+</ol>
+</blockquote>
+<p>I am not able to prove the first bit is true but let me just assume the first bit is true.</p>
+<p>The second bit is I have to really look for the God. Jesus said you only have to have faith the size of a mustard seed. But no matter how small the size of the faith is, it is <strong>still an opt-in option</strong>. If God is really good, then why faith is <strong>not an opt-out option</strong>?</p>
+<p>Because we are sinners. And the sensible default option for sinners is no faith and going to hell. Salvation is a <strong>gift</strong> from the God.</p>
+<p>However, <strong>a gift is something declinable by its very definition</strong>. Thus I can choose to <strong>decline this gift and keep on the default option</strong>. I did so.</p>
+<p>Although I do not have faith in God, I am still grateful to God. <strong>Thank God for allowing such a sinner as I to have the free will to decline his gift</strong>.</p>
+<p>And what if the first bit is not true? Then I would like to thank god for being nonexistent.</p>
+<p>-- 2020-11-21</p>
+<p>surge.sh still focuses on static site hosting (Netlify used to focus on static site hosting but they added a lot of dynamic features later), with a command line UI (now.sh (rebranded as vercel now) used to feature this but now their documentation encourages you to do things via their web dashboard).</p>
+<p>-- 2020-11-28</p>
+<p>Trying to manually resolve a dependencies conflict broken my KDE desktop. Almost all KDE applicants do not work. It seems that KDE Neon assumes you will never uninstall those preinstalled KDE packages and specifies their dependencies causally. Fortunately I can still log into the i3 session (previously I used i3 as the window manager of the KDE session), but I still miss dolphin (temporarily using nautilus) and konsole (temporarily using hyper).</p>
+<p>Maybe this is a good time to try out other distributions or even operating systems, e.g. Pop!_OS?</p>
+<p>-- 2020-12-17</p>
+<p>JAMStack is another buzzword targeting clients using LAMP stack (e.g. wordpress) to host their website. Static website generator will not work because it will confuse those clients: &quot;Static website? Our site was static N years ago and we use FTP to upload those static web pages to the server. Didn't you told us that static website is outdated with limited features? Why go back to a static site?&quot;</p>
+<p>I do not think it is a good idea to switch from one shitty language (PHP) to another shitty language (JavaScript), particularly when this switch usually means more CO2 emissions.</p>
+<p>-- 2020-12-19</p>
+<p><a href="https://pop.system76.com/">Pop!_OS</a> is a Ubuntu based distribution which features:</p>
+<ul>
+<li>A tiling extension for gnome shell (I am a happy i3 user and if you really want to use GNOME, you can install this extension yourself on Ubuntu).</li>
+<li>Flatpak (Although Ubuntu have snap preinstalled, you can still use Flatpak on Ubuntu, just as on most other Linux distributions).</li>
+<li>Automatic full-disk encryption during installation. (I'm astonished that Ubuntu still requires manual setup to enable full-disk encryption during installation in 2020. But to be honest, manual setup is not hard.)</li>
+</ul>
+<p>So nothing exciting here. But to be fair, &quot;just works out of the box&quot; is a big feature. Particularly, out of the box full-disk encryption is very important for inexperienced users to adapt it.</p>
+<p>Pop!_OS is what Ubuntu should have been.</p>
+<p>-- 2020-12-20</p>
+<p>Fedora Silverblue uses <a href="https://ostreedev.github.io/ostree/">OSTree</a> for its base system, and it is the most mature distribution with an OSTree based base system.</p>
+<p>Since the base system is immutable, new software are installed via Flatpak (sandboxed GUI applications with all its dependencies packaged in) or toolbox (command line programs running inside docker like containers). There are a few exceptions (shell, drivers, etc.) need to be installed via layered rpm packages, which require a reboot.</p>
+<p>I think this is a cool idea. However, I am still unsure whether it is worth to trade in extra disk space and incompatibilities with some software for the confidence that I can  rollback to a usable base system quickly (just reboot) anytime (not require a Internet connection).</p>
+<p>-- 2020-12-20</p>
+<p>While immature distributions (Arch, Ubuntu, Fedora, etc.) dropped x86 support between 2017-2019, a lot of serious distributions (Slackware, Debian, Gentoo, OpenSUSE, Alpine, etc.) still support old x86 computers.</p>
+<p>FYI, CRUX dropped x86 support on <a href="https://crux.nu/Main/ReleaseNotes3-0">2013</a>.</p>
+<p>-- 2020-12-22</p>
+<p>The fish shell improves user experience a lot, both for interactive usage and scripting usage.</p>
+<p>For example, to convert some SVG wallpapers to JPG (I use feh to display wallpapers under the i3 window manage, and feh does not recognize SVG files):</p>
+<pre><code class="language-fish">>for i in /usr/share/wallpapers/**/1920x1080.svg
+  convert $i (string split &quot;/&quot; $i)[5].jpg
+end
+</code></pre>
+<p>Concise and clear.</p>
+<p>-- 2020-12-23</p>
+<p>Pop!_OS advertises itself as a developer friendly Linux distribution. However, it uses flatpak, whose sandbox system has a lot of issues with IDEs and editors (they typically need to access system commands and files).</p>
+<p>Personally I prefer AppImage. It solves the &quot;with dependencies packaged in and run on any Linux distributions&quot; problem in a simple way and does not rely on  a centric distribution channel. If I want to use AppImage packaged programs in sandbox, I can use firejail. &quot;Do one thing and do it well.&quot; AppImage respects the old unix philosophy.</p>
+<p>-- 2020-12-26</p>
+<p>LinkedIn forces me to login &amp; bind my mobile phone number to <strong>just view</strong> its content. Today I discovered an alternative way to check someone's work &amp; education background, search &quot;NAME site:rocketreach.co&quot; or &quot;NAME COMPANY site:rocketreach.co&quot; in search engines.</p>
+<p>-- 2021-01-23</p>
+<p>Shell scripting is a very bad programming language. But YAML is worse.</p>
+<p>-- 2021-01-24</p>
+<p>From 20200702, the Internet has around 16 months to <a href="https://blog.torproject.org/v2-deprecation-timeline">migrate from onion services v2 to v3</a> once and for all. Now there are less than half a year left, and <a href="https://onion.torproject.org">onion services run by the Tor projec itself still use v2</a>.</p>
+<p>Also, the future v2 deprecation will turn all existing v2 tor URLs to dead links. This incompatibility is really bad.</p>
+<p>-- 2021-01-26</p>
+    <div class="footer border-top border-gray-light mt-5 pt-3 text-gray">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start">
+        <form id="site-search" action="https://duckduckgo.com/html/" method="get">
+          <input name="q" type="search" value="site:mmap.page " required pattern="site:mmap\.page\s.+">
+          <input type="submit" value="&#x1F50D;" title="search through site content via DuckDuckGo">
+        </form>
+        <p>
+          <a href="mailto:weakish@gmail.com" title="weakish@gmail.com"><img src="https://icongr.am/feather/mail.svg" alt="Feather Icon Mail"></a>
+          <a href="https://savannah.nongnu.org/people/viewgpg.php?user_id=65699" title="2414 AEA0 EA48 5263 9697  F1BA 55F6 EEC2 EA3F 0A87"><img src="https://icongr.am/feather/key.svg" alt="Feather Icon Key"></a>
+          <a href="https://github.com/weakish/" title="GitHub"><img src="https://icongr.am/feather/github.svg" alt="Feather Icon Github"></a>
+          <a href="https://www.instagram.com/jakukyo/" title="Instagram"><img src="https://icongr.am/feather/instagram.svg" alt="Feather Icon Instagram"></a>
+          <a href="https://twitter.com/weakish" title="Twitter"><img src="https://icongr.am/feather/twitter.svg" alt="Feather Icon Twitter"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml" title="RSS 2.0 Feed"><img src="https://icongr.am/feather/rss.svg" alt="Feather Icon RSS"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/uses/" title="uses"><img src="https://icongr.am/feather/book-open.svg" alt="Feather Icon Book Open"></a>
+          
+          
+          <a href="/Me.ZeroNetwork.bit/?Profile/12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv/1GnJD7CXskmG8GywMbTvbP12wneCFW9XzR/weakish@zeroid.bit" title="ZeroMe"><img src="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/images/zeronet_logo.svg" alt="ZeroNet Logo" width="32" height="32"></a>
+        </p>
+      </div>
+        <p>
+        Permission to use, copy, modify, and/or distribute this site for any purpose with or without fee is hereby granted.
+        This site is provided "as is" without express or implied warranty.
+        </p>
+        <p>
+        This site does not use cookies or tracking codes.
+        The hosting service provider (<a href="https://pages.github.com/">GitHub Pages</a>) probably collects server logs,
+        but I do not have access to them.
+        </p>
+        <p>
+        Site source is <a href="https://github.com/weakish/weakish.github.com/">available</a>
+        and feedback is <a href="https://github.com/weakish/weakish.github.com/issues">welcome</a>.
+        </p>
+        <noscript>
+        <p>
+        This site does not use JavaScript.
+        </p>
+        </noscript>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,176 @@
+﻿<!--
+by leaflet@ZeroID.bit
+-->
+<meta HTTP-EQUIV="Content-Type" Content="text-html; charset=UTF-8">
+<style>
+td {
+width:35px;
+height:35px;
+border:1px solid #888;
+font-weight:bold;
+text-align:center;
+cursor:hand;
+background-color:#feff99;
+}
+
+table {
+border-collapse:collapse;
+}
+</style>
+
+<script>
+function dw(s){document.write(s);}
+function $(s){return document.getElementById(s);}
+
+var sQ=new String(location.search);
+if(sQ.substr(0,1)=="?"){
+	sQ=sQ.substr(1);
+}
+else{
+	sQ=11;
+}
+var cN=new Number(sQ);
+if(isNaN(cN))
+	cN=11;
+cN=Math.round(cN)	
+if(cN<1)
+	cN=11; 
+
+var qpT=cN+2;
+var qpN=qpT-1;
+var aQP=new Array(qpT);
+
+
+for(i=0;i<aQP.length;i++){
+	aQP[i]=new Array(qpT);
+	for(j=0;j<aQP[i].length;j++)
+		aQP[i][j]=-1;
+}
+
+for(i=1;i<qpN;i++)	
+	for(j=1;j<qpN;j++)
+		aQP[i][j]=0;
+		
+
+
+function setTD(chr,i,j){
+	var sRe="<td  title=\"位置："+i+"行，"+j+"列\">"+chr+"</td>";
+	return sRe;
+}
+
+function showQP(a,x,y,L){
+	var sbuff="";
+	sbuff+="<table>";
+	for(var i=x;i<x+L;i++){
+		sbuff+="<tr>"
+		for(var j=y;j<y+L;j++){			
+			sbuff+=setTD(aQP[i][j],i,j);			
+			}
+		sbuff+="</tr>";}
+	sbuff+="</table>";
+	return sbuff;
+}
+/* n=11 特解
+function set121(a){
+	for(i=0;i<11;i++){
+		if(i>=0&&i<=5) 
+			a[i][i]=1+44*i-4*i*i; 
+		else 
+			a[i][i]=21+40*i-4*i*i;
+	} 
+	for(i=0;i<11;i++) 
+		for(j=0;j<11;j++){ 
+			if(i+j<=10&&i<=j) 
+				a[i][j]=a[i][i]+j-i; 
+			else if(i+j<=10&&i>j) 
+				a[i][j]=a[j+1][j+1]+j-i; 
+			else if(i+j>10&&i<=j) 
+				a[i][j]=a[j][j]+i-j; 
+			else 
+				a[i][j]=a[i][i]+i-j;
+		} 
+}
+*/
+
+//N通解
+function setN(x,y,arr,iStart){
+	var i=x,j=y+1;
+	arr[x][y]=iStart;
+	
+	while(arr[i][j]==0){
+		arr[i][j]=arr[i][j-1]+1;
+		j++;
+		}
+	j--;
+	i++;
+	
+	while(arr[i][j]==0){
+		arr[i][j]=arr[i-1][j]+1;
+		i++;
+		}
+	i--;
+	j--;	
+	
+	while(arr[i][j]==0){
+		arr[i][j]=arr[i][j+1]+1;
+		j--;
+		}
+	j++;
+	i--;
+	
+	while(arr[i][j]==0){
+		arr[i][j]=arr[i+1][j]+1;
+		i--;
+		}
+	i++;
+	j++;
+	var x1=i,y1=j;			
+	if(arr[i][j]==0)
+		setN(x1,y1,arr,arr[i][j-1]+1);
+}
+
+setN(1,1,aQP,1);
+
+
+
+function rSet(){
+	var cN=new Number($("t1").value);
+	if(isNaN(cN))
+		return 0;
+	cN=Math.round(cN)	
+	if(cN<1)
+		return 0;
+			
+	qpT=cN+2;
+	qpN=qpT-1;
+	aQP=new Array(qpT);
+
+	for(var i=0;i<aQP.length;i++){
+		aQP[i]=new Array(qpT);
+		for(var j=0;j<aQP[i].length;j++)
+			aQP[i][j]=-1;
+	}
+
+	for(var i=1;i<qpN;i++)	
+		for(var j=1;j<qpN;j++)
+			aQP[i][j]=0;
+			
+	setN(1,1,aQP,1);
+	
+	$("divQP").innerHTML=showQP(aQP,1,1,qpT-2);
+}
+
+</script>
+
+<center>
+<div><h1>N循环</h1>
+<form>
+循环长度 <input id="t1" type="text"> <input type="button" onclick="rSet()" value="Go">
+</form>
+</div>
+<div id="divQP">
+<script>
+dw(showQP(aQP,1,1,qpT-2));
+</script>
+</div>
+</center>

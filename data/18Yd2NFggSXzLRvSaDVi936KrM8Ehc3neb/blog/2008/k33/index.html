@@ -1,0 +1,89 @@
+<!DOCTYPE HTML>
+<html lang="ru">
+    <head>
+      <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb</title>
+      <link rel="stylesheet" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/css/main.css"/>
+      <link rel="shortcut icon" type="image/x-icon" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/favicon.ico"/>
+      <link href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/rss.xml" title="Akademic's blog" type="application/rss+xml" rel="alternate"/>
+    </head>
+    <body>
+        <header><h1><a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb" rel="home">akademic.name</a></h1></header>
+        <main class="content">
+            
+<article>
+    <h1>BlueTooth-гарнитура в Linux</h1> <time>17.03.2008</time>
+	<p>Купил я себе вот такую радость.
+<img src="http://shop.key.ru/photo/items/38415.jpg">
+Буду теперь слухать музычку с телефона и болтать, не отмораживая уши и руки.
+А теперь немного о том как заставить это дело работать в линухе.</p>
+
+<p>Собственно, с некоторой стороны делалось всё по вот <a href="http://wiki.bluez.org/wiki/HOWTO/AudioDevices">этому руководству.</a><br />
+Только ребята не уточнили, что перед тем как делать всё, что там написано, надо спарить девайс.<br />
+А это значит, что надо перевести гарнитуру в режим спаривания, как-нибудь к нй обратиться с компа и ввести правильный код из руководства. Ибо почему-то этот процесс сам по себе не происходит при попытке присоединить гарнитуру.<br />
+Ну хорошо, всё проделал, попытавшись внужный момент подцепить ritmix как Input Device. Ввёл код. Но это ещё не всё.<br />
+Надо активировать девайс. Сам он опять же просто так не захотел.<br />
+Кстати, немного в сторону. По неизвестной причине bluez-utils не притащили с собой демон sdpd.<br />
+Перекомпилировал с USE=&quot;alsa cups examples gstreamer hal old-daemons test-programs usb&quot;, появился.<br />
+Думаю сыграл юз old-daemons. Смешно, основной демон, который нужен, а уже в old.<br />
+<br />
+Вернёмся к активации.<br />
+Из-под рута пришлось проделать следующее:<br />
+<br />
+<pre class="wiki"><pre>dbus-send &ndash;system &ndash;print-reply &ndash;dest=org.bluez /org/bluez org.bluez.Manager.ActivateService string:audio</pre>
+<br />
+<pre>dbus-send &ndash;system &ndash;type=method_call &ndash;print-reply &ndash;dest=&quot;:X.Y&quot; &lt;/pre&gt;
+<pre>/org/bluez/audio org.bluez.audio.Manager.CreateDevice string:00:11:22:33:44:55</pre>
+</pre>
+<p>Вместо X.Y надо вставить цифирки, которые получатся в результате предыдущей команды, а вместо </p>
+<p>00:11:22:33:44:55 адрес девайса.</p>
+<p>Эта команда также выдаст адрес типа /что-то/что-тотам/ещёчтото</p>
+<p>И тут главное не теряться, а ввести команду</p>
+<pre class="wiki">dbus-send &ndash;system &ndash;type=method_call &ndash;print-reply &ndash;dest=&quot;:X.Y&quot; &lt;br /&gt;&quot;device_object_path&quot; org.bluez.audio.Sink.Connect<br /></pre>
+<p>Вместо X.Y те же цифирки, а вместо device_object_path то, что отдаст предыдущая команда.<br />
+</p>
+<pre class="wiki"><br /></pre>
+<p>У себя в хоумдире необходимо создать/отредактировать файл .asoundrc</p>
+<p><br />
+</p>
+<pre class="wiki"><pre>pcm.bluetooth {</pre>
+<pre>   type bluetooth</pre>
+<pre>        device &quot;XX:XX:XX:XX:XX:XX&quot; #optional, connects to specific device instead the default one</pre>
+<pre>        profile &quot;auto&quot;             #optional, supported profiles are: auto, hifi and voice </pre>
+<pre>}</pre>
+<br />
+<br />
+</pre>
+<p>Для теста можно сиграть что-н с помощью mplayer</p>
+<pre class="wiki"><pre>mplayer -ao alsa:device=bluetooth /path/to/music</pre>
+<br />
+</pre>
+Если все операции прошли без ошибок, то в наушниках должен появиться звук. Однако незадача. Те три команды, что приведены выше, необходимо вводить перед каждым подключением гарнитуры. Досадно. На то в руководстве приведён скрипт на питоне, который делает то же самое.<br />
+<br />
+<pre>import dbus<br />bus = dbus.SystemBus()<br />manager = dbus.Interface(bus.get_object(&lsquo;org.bluez&rsquo;, &lsquo;/org/bluez&rsquo;), &lsquo;org.bluez.Manager&rsquo;)<br />bus_id = manager.ActivateService(&lsquo;audio&rsquo;)<br />audio = dbus.Interface(bus.get_object(bus_id, &lsquo;/org/bluez/audio&rsquo;), &lsquo;org.bluez.audio.Manager&rsquo;)<br /><br />path = audio.CreateDevice(&lsquo;00:11:22:33:44:55&rsquo;) #заменить на правильный адрес<br />#audio.ChangeDefaultDevice(path) #change the device to be used by default<br />sink = dbus.Interface (bus.get_object(bus_id, path), &lsquo;org.bluez.audio.Sink&rsquo;)<br />sink.Connect()<br /></pre>
+<br />
+Его и запускаем перед соединением.<br />
+Да чуть не забыл, всякие параметры bluetooth устройств можно выяснять с помощью<br />
+<pre>hcitool scan (а далее man hcitool), hciconfig<br /><br /><br />//бестрегардс</pre></p>
+
+    
+    <span class="next_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2008/k34/index.html" rel="next">Hald</a>
+    </span>
+	
+	
+    <span class="prev_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2008/k32/index.html" rel="previous">БСС</a>
+    </span>
+	
+</article>
+
+        </main>
+        <footer>
+        Будьте внимательны, многое из того, что написано в этом блоге, является личным мнением автора и не претендует на истину.
+        <img src="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/yopiright.jpg" width="12" height="12"/> 2008
+        </footer>
+    </body>
+</html>

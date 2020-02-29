@@ -1,0 +1,60 @@
+{
+	"next_topic_id": 2,
+	"topic": [
+		{
+			"topic_id": 1,
+			"title": "新注册ID，Tor状态一直是waiting",
+			"body": "通过在TOR浏览器开启全部脚本才注册成功。使用其他浏览器转TOR一直各种报错，目前为止，0net的Tor状态仍然是WAITING，有朋友知道怎么解决吗？",
+			"parent_topic_uri": "8_1NV87VmSkezRyz8NbFpdkYJsJUSfXx7LJa",
+			"added": 1459219831
+		}
+	],
+	"topic_vote": {},
+	"next_comment_id": 9,
+	"comment": {
+		"1_1HaUUvXrUEEtZr7CxXydnbT52oGgxnGYL1": [
+			{
+				"comment_id": 1,
+				"body": "Q:怎么确认zeronet已经通过TOR连接？主页TOR状态一直是WAITING。",
+				"added": 1459220100
+			},
+			{
+				"comment_id": 2,
+				"body": "> [fatsweat](#comment_1_1Bp8y8VCE45FREtCGnRBLTPhZMeD3fHAGH): Q:怎么确认zeronet已经通过TOR连接？主页TOR状态一直是WAITING。\n\nF：自问自答了，我用的win，右下的图标邮件能看到当前IP，不幸的是，仍然是真实IP，\nQ2:怎么带套？必须要PY命令行吗？",
+				"added": 1459221804
+			}
+		],
+		"1_1Bp8y8VCE45FREtCGnRBLTPhZMeD3fHAGH": [
+			{
+				"comment_id": 3,
+				"body": "> [zerodog](#comment_2_151WPNwj3iBqVoFtMNxfqdFFrj546SoW3t): ZeroBundle\\ZeroNet\\tools\\tor里有个manual_install.txt介绍了怎么做。不是用tor浏览器，而是下载  expert bundle，只有tor的那个包。将tor内的文件解压到 ZeroBundle\\ZeroNet\\tools\\tor。将data包内的geoip啥的解压到 ZeroBundle\\ZeroNet\\tools\\tor\\data。\n\nthanks alot ,\n看到zeronet的在线DOC里提过manual_install，一直没有理解该怎么做。现在明白了。我尝试将tor_browser的torrc文件与zero的配置用文件合并。用#注释掉了冲突的选项，path添加了tor的目录，貌似正在连接。",
+				"added": 1459299266
+			},
+			{
+				"comment_id": 4,
+				"body": "> [nassau](#comment_1_1M6V4wECbz5e1aUmuij2BB72ensHCYNFmd): 我的tor browser 是要配置代理才能连接网络的， 但配置在 0net 里的tor则没有配置也能直接连接， 费解\n\n你确信，你的0net通过了tor？",
+				"added": 1459301044
+			},
+			{
+				"comment_id": 5,
+				"body": "该如何配制TOR？\n即在torrc文件中增加obfs bridge和前置代理的方法？> \n\n[p2p],[nassau],",
+				"added": 1459313761
+			},
+			{
+				"comment_id": 6,
+				"body": "我也尝试了直接用browser的torrc，需要补充的是，应该把torrc-default中的东西添加到torrc中，再使用start.cmd启用。\n我现在的实际做法是将tor和data还有pluggabletransports都过来，改torrc如下：\n```###################################################################################\n# torrc-defaults for Tor Browser\n#\n# This file is distributed with Tor Browser and should not be modified (it\n# may be overwritten during the next Tor Browser update). To customize your\n# Tor configuration, shut down Tor Browser and edit the torrc file.\n#\n# If non-zero, try to write to disk less frequently than we would otherwise.\nAvoidDiskWrites 1\n# Where to send logging messages.  Format is minSeverity[-maxSeverity]\n# (stderr|stdout|syslog|file FILENAME).\n\n# Bind to this address to listen to connections from SOCKS-speaking\n# applications.\n\n\n# fteproxy configuration\nClientTransportPlugin fte exec .\\PluggableTransports\\fteproxy --managed\n\n# obfs4proxy configuration\nClientTransportPlugin obfs2,obfs3,obfs4,scramblesuit exec .\\PluggableTransports\\obfs4proxy\n\n## meek configuration\nClientTransportPlugin meek exec .\\PluggableTransports\\terminateprocess-buffer .\\PluggableTransports\\meek-client-torbrowser -- .\\PluggableTransports\\meek-client\n###################################################################################\n# Tor config for ZeroNet\n\nDataDirectory .\\data\nDirReqStatistics 0\nGeoIPFile .\\data\\geoip\nGeoIPv6File .\\data\\geoip6\n\nLog notice file .\\data\\notice.log #开启了日志\n\nControlPort 49051 /#为zeronet中torrc文件默认开启的端口，没有更改。\nSOCKSPort 49050\n#HTTPPROXY 127.0.0.1:1080\n#HTTPsPROXY 127.0.0.1:1080\n#socks5proxy 127.0.0.1:1080        我关闭了前置代理                                      \nCookieAuthentication 1\n\n#bridge congfig\nBridge obfs4 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx【 #此部分网桥是通过bridge邮件要到的，请自行申请，放入torbrowser，连接成功后从torrc中复制出来。】\nBridge obfs4 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\nBridge obfs4 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\nHiddenServiceStatistics 0\nUseBridges 1\n#############################################################################```\n文件结束\n从notice.log看，最后提示：\n\n>'Apr 01 14:26:00.000 [notice] Tor has successfully opened a circuit. Looks like client functionality is working.'\n>Apr 01 14:26:00.000 [notice] Bootstrapped 100%: Done\n\n已经成功连接。\n\n不过zeronet的提示依然不正常，我不知道是哪里的问题了。",
+				"added": 1459492816
+			}
+		],
+		"12_1NwWoM1qGUV9gjLG7QGyhqsRxKKga2rhtf": [
+			{
+				"comment_id": 8,
+				"body": "手机客户端怎么连？必须开网页么？",
+				"added": 1465194783
+			}
+		]
+	},
+	"comment_vote": {
+		"3_1M6V4wECbz5e1aUmuij2BB72ensHCYNFmd": 1
+	}
+}

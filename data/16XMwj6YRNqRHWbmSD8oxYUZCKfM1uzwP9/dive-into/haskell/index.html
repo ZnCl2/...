@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Haskell: Laziness, Type Class, and Monad mmap.page</title>
+    <link rel="stylesheet" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/css/style.css">
+    <link rel="alternate" type="application/rss+xml" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml">
+    <link rel="alternate" type="application/git+http" href="https://github.com/weakish/weakish.github.com.git"/>
+</head>
+<body>
+  <div class="container-lg px-3 my-5 markdown-body">
+
+    <h1><a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/">mmap.page</a></h1>
+    <h1 id="haskell-laziness-type-class-and-monad">
+        
+        
+          Haskell: Laziness, Type Class, and Monad
+        
+        
+      </h1>
+    
+      <h2 id="laziness">
+        
+        
+          Laziness <a href="#laziness" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<blockquote>
+<p>A function is <strong>strict</strong> in an argument
+if the result is undefined
+whenever an undefined value is passed to this argument.
+For instance, <code>(+)</code> is strict in both arguments,
+while (&amp;&amp;) is strict in its first only.
+Recall that it is defined by</p>
+<pre><code>True &amp;&amp; x = x
+False &amp;&amp; x = False
+</code></pre>
+<p>...</p>
+<p>If a function is not strict in an argument,
+we say that it is <strong>non-strict</strong> or <strong>lazy</strong> in that argument.</p>
+</blockquote>
+<p>-- Haskell: The Craft of Function Programming (3e):517</p>
+    
+      <h3 id="infinite-list">
+        
+        
+          Infinite List <a href="#infinite-list" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">fibs</span> <span class="o">::</span><span class="p">[</span><span class="kt">Integer</span><span class="p">]</span>
+<span class="n">fibs</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">:</span> <span class="mi">1</span> <span class="o">:</span> <span class="n">zipWith</span> <span class="p">(</span><span class="o">+</span><span class="p">)</span> <span class="n">fibs</span> <span class="p">(</span><span class="n">tail</span> <span class="n">fibs</span><span class="p">)</span>
+<span class="n">take</span> <span class="mi">3</span> <span class="n">fibs</span>
+</code></pre></div></div>
+    
+      <h3 id="mutual-recursion">
+        
+        
+          Mutual Recursion <a href="#mutual-recursion" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>Unlike OCaml, mutual recursion in Haskell does not need to use <code>let rec</code> (because of laziness).</p>
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">isEven</span> <span class="o">::</span> <span class="kt">Int</span> <span class="o">-&gt;</span> <span class="kt">Bool</span>
+<span class="n">isEven</span> <span class="mi">0</span> <span class="o">=</span> <span class="kt">True</span>
+<span class="n">isEven</span> <span class="n">n</span> <span class="o">=</span> <span class="n">isOdd</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="n">isOdd</span> <span class="o">::</span> <span class="kt">Int</span> <span class="o">-&gt;</span> <span class="kt">Bool</span>
+<span class="n">isOdd</span> <span class="mi">0</span> <span class="o">=</span> <span class="kt">False</span>
+<span class="n">isOdd</span> <span class="n">n</span> <span class="o">=</span> <span class="n">isEven</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+</code></pre></div></div>
+    
+      <h2 id="type-class">
+        
+        
+          Type Class <a href="#type-class" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">quickSort</span> <span class="o">::</span> <span class="kt">Ord</span> <span class="n">a</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="n">a</span><span class="p">]</span>
+
+<span class="n">quickSort</span> <span class="kt">[]</span>     <span class="o">=</span> <span class="kt">[]</span>
+<span class="n">quickSort</span> <span class="p">(</span><span class="n">x</span><span class="o">:</span><span class="n">xs</span><span class="p">)</span> <span class="o">=</span> <span class="n">quickSort</span> <span class="o">[</span><span class="n">e</span><span class="o">|</span>e&lt;-xs,e&lt;=x] ++ [x] ++ quickSort [e|e&lt;-xs, e&gt;x]
+</code></pre></div></div>
+<p><code>Ord</code> is a type class (interface),
+and <code>[e|e&lt;-xs,e&lt;=x]</code> is list comprehension.</p>
+<p>Function signatures defined in type class are similar to overloading in other languages.</p>
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">class</span> <span class="kt">Eq</span> <span class="n">a</span> <span class="kr">where</span>
+  <span class="p">(</span><span class="o">==</span><span class="p">)</span> <span class="o">::</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">Bool</span>
+</code></pre></div></div>
+<p><code>instance</code> of type class is similar to classes implemented interface in other languages.</p>
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">instance</span> <span class="kt">Monad</span> <span class="kt">Maybe</span> <span class="kr">where</span>
+    <span class="n">return</span> <span class="n">x</span> <span class="o">=</span> <span class="kt">Just</span> <span class="n">x</span>
+    <span class="kt">Nothing</span> <span class="o">&gt;&gt;=</span> <span class="n">f</span> <span class="o">=</span> <span class="kt">Nothing</span>
+    <span class="kt">Just</span> <span class="n">x</span> <span class="o">&gt;&gt;=</span> <span class="n">f</span>  <span class="o">=</span> <span class="n">f</span> <span class="n">x</span>
+    <span class="n">fail</span> <span class="kr">_</span> <span class="o">=</span> <span class="kt">Nothing</span>
+</code></pre></div></div>
+<p>But what is Monad? Read on.</p>
+    
+      <h2 id="monad">
+        
+        
+          Monad <a href="#monad" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Monad is like a box.
+It keeps tracking of some extra content and makes code cleaner (but not necessary clearer).</p>
+    
+      <h3 id="maybe-monad">
+        
+        
+          Maybe Monad <a href="#maybe-monad" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>The Maybe monad chains (<code>&gt;&gt;=</code>) sequences of operations and hides failure handling (extra context) in a monad.</p>
+<p>Let's revisit the definition of Maybe from this perspective:
+(<code>--</code> starts a comment in Haskell)</p>
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">instance</span> <span class="kt">Monad</span> <span class="kt">Maybe</span> <span class="kr">where</span>
+    <span class="c1">-- `return` is a function to wrap x as `Just x`.</span>
+    <span class="n">return</span> <span class="n">x</span> <span class="o">=</span> <span class="kt">Just</span> <span class="n">x</span>
+    <span class="c1">-- As soon as one fails, the rest are ignored and the final result is `Nothing`.</span>
+    <span class="kt">Nothing</span> <span class="o">&gt;&gt;=</span> <span class="n">f</span> <span class="o">=</span> <span class="kt">Nothing</span>
+    <span class="c1">-- Only apply `f` when x is `Just x`， not `Nothing`.</span>
+    <span class="kt">Just</span> <span class="n">x</span> <span class="o">&gt;&gt;=</span> <span class="n">f</span>  <span class="o">=</span> <span class="n">f</span> <span class="n">x</span>
+    <span class="c1">-- Throw a failure.</span>
+    <span class="n">fail</span> <span class="kr">_</span> <span class="o">=</span> <span class="kt">Nothing</span>
+</code></pre></div></div>
+    
+      <h3 id="monadic-classes">
+        
+        
+          Monadic Classes <a href="#monadic-classes" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>The type class of Monad is defined as below:</p>
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">class</span> <span class="kt">Monad</span> <span class="n">m</span> <span class="kr">where</span>
+    <span class="c1">-- core functions of Monad</span>
+    <span class="p">(</span><span class="o">&gt;&gt;=</span><span class="p">)</span>  <span class="o">::</span> <span class="n">m</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">b</span>
+    <span class="n">return</span> <span class="o">::</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">a</span>
+
+    <span class="c1">-- other functions</span>
+    <span class="p">(</span><span class="o">&gt;&gt;</span><span class="p">)</span>   <span class="o">::</span> <span class="n">m</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">b</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">b</span>
+    <span class="n">m</span> <span class="o">&gt;&gt;</span> <span class="n">k</span> <span class="o">=</span> <span class="n">m</span> <span class="o">&gt;&gt;=</span> <span class="nf">\</span><span class="kr">_</span> <span class="o">-&gt;</span> <span class="n">k</span> <span class="c1">-- `\_ -&gt; k` is a lambda</span>
+
+    <span class="n">fail</span>   <span class="o">::</span> <span class="kt">String</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">a</span>
+    <span class="n">fail</span> <span class="n">s</span> <span class="o">=</span> <span class="n">error</span> <span class="n">s</span>
+</code></pre></div></div>
+<p><code>fail</code> is like <code>throw</code> in other languages.
+Haskell uses it to in pattern matching to enable failure.
+We do not write them explicitly in code.</p>
+<p><code>&gt;&gt;</code> is a syntax sugar to throw away the result of <code>m a</code>.
+Thus <code>putStr &quot;foo&quot; &gt;== \_ -&gt; putStr &quot;bar&quot;</code> can be expressed as
+<code>putStr &quot;foo&quot; &gt;&gt; putStr &quot;bar&quot;</code>.</p>
+<p><code>&gt;&gt;=</code> chains tow computations,
+passing the result of the first computation to the second computation,
+by wrapping the second computation in a function,
+and passing the first result as its parameter.</p>
+<p>Unlike other languages, in Haskell, <code>return</code> wraps date in a monad.</p>
+<p>Let's revisit the definition of Maybe monad under the perspective of monadic class.</p>
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">instance</span> <span class="kt">Monad</span> <span class="kt">Maybe</span> <span class="kr">where</span>
+    <span class="n">return</span> <span class="o">::</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">Maybe</span> <span class="n">a</span>
+    <span class="n">return</span> <span class="n">x</span> <span class="o">=</span> <span class="kt">Just</span> <span class="n">x</span>
+    <span class="o">&gt;&gt;=</span> <span class="o">::</span> <span class="kt">Maybe</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">Maybe</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Maybe</span> <span class="n">b</span>
+    <span class="kt">Nothing</span> <span class="o">&gt;&gt;=</span> <span class="n">f</span> <span class="o">=</span> <span class="kt">Nothing</span>
+    <span class="kt">Just</span> <span class="n">x</span> <span class="o">&gt;&gt;=</span> <span class="n">f</span>  <span class="o">=</span> <span class="n">f</span> <span class="n">x</span>
+    <span class="n">fail</span> <span class="o">::</span> <span class="kt">String</span> <span class="o">-&gt;</span> <span class="kt">Maybe</span> <span class="n">a</span>
+    <span class="n">fail</span> <span class="kr">_</span> <span class="o">=</span> <span class="kt">Nothing</span>
+</code></pre></div></div>
+    
+      <h3 id="do-notation">
+        
+        
+          Do Notation <a href="#do-notation" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">helloWorld</span> <span class="o">::</span> <span class="kt">IO</span> <span class="nb">()</span>
+<span class="n">helloWorld</span> <span class="o">=</span>
+    <span class="kr">do</span>
+        <span class="n">putStr</span> <span class="s">"Hello"</span>
+        <span class="n">putStr</span> <span class="s">" "</span>
+        <span class="n">putStrLn</span> <span class="s">"world!"</span>
+</code></pre></div></div>
+<p>Haskell syntax is layout sensitive,
+in other words, it conforms to offside rule.
+Although Haskell does support braces and semicolons,
+this alternative style is rare in the Haskell community.</p>
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">do</span> <span class="p">{</span> <span class="n">putStr</span> <span class="s">"Hello"</span><span class="p">;</span> <span class="n">putStr</span> <span class="s">" "</span><span class="p">;</span> <span class="n">putStrLn</span> <span class="s">"world!"</span><span class="p">;</span> <span class="p">}</span>
+</code></pre></div></div>
+<p>Within a do notation, <code>&lt;-</code> binds the result to a name.</p>
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">echo</span> <span class="o">::</span> <span class="kt">IO</span> <span class="nb">()</span>
+<span class="n">echo</span> <span class="o">=</span>
+    <span class="kr">do</span>
+        <span class="n">line</span> <span class="o">&lt;-</span> <span class="n">getLine</span>
+        <span class="n">putStrLn</span> <span class="n">line</span>
+</code></pre></div></div>
+<p>In fact, do notation is an alternative syntax for monad:</p>
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">putStr</span> <span class="s">"Hello"</span> <span class="o">&gt;&gt;</span> <span class="n">putStr</span> <span class="s">" "</span> <span class="o">&gt;&gt;</span> <span class="n">putStrLn</span> <span class="s">"world!"</span>
+
+<span class="n">echo</span> <span class="o">::</span> <span class="kt">IO</span> <span class="nb">()</span>
+<span class="n">echo</span> <span class="o">=</span> <span class="n">getLine</span> <span class="o">&gt;&gt;=</span> <span class="n">putStrLn</span>
+</code></pre></div></div>
+    <div class="footer border-top border-gray-light mt-5 pt-3 text-gray">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start">
+        <form id="site-search" action="https://duckduckgo.com/html/" method="get">
+          <input name="q" type="search" value="site:mmap.page " required pattern="site:mmap\.page\s.+">
+          <input type="submit" value="&#x1F50D;" title="search through site content via DuckDuckGo">
+        </form>
+        <p>
+          <a href="mailto:weakish@gmail.com" title="weakish@gmail.com"><img src="https://icongr.am/feather/mail.svg" alt="Feather Icon Mail"></a>
+          <a href="https://savannah.nongnu.org/people/viewgpg.php?user_id=65699" title="2414 AEA0 EA48 5263 9697  F1BA 55F6 EEC2 EA3F 0A87"><img src="https://icongr.am/feather/key.svg" alt="Feather Icon Key"></a>
+          <a href="https://github.com/weakish/" title="GitHub"><img src="https://icongr.am/feather/github.svg" alt="Feather Icon Github"></a>
+          <a href="https://www.instagram.com/jakukyo/" title="Instagram"><img src="https://icongr.am/feather/instagram.svg" alt="Feather Icon Instagram"></a>
+          <a href="https://twitter.com/weakish" title="Twitter"><img src="https://icongr.am/feather/twitter.svg" alt="Feather Icon Twitter"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml" title="RSS 2.0 Feed"><img src="https://icongr.am/feather/rss.svg" alt="Feather Icon RSS"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/uses/" title="uses"><img src="https://icongr.am/feather/book-open.svg" alt="Feather Icon Book Open"></a>
+          
+          
+          <a href="/Me.ZeroNetwork.bit/?Profile/12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv/1GnJD7CXskmG8GywMbTvbP12wneCFW9XzR/weakish@zeroid.bit" title="ZeroMe"><img src="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/images/zeronet_logo.svg" alt="ZeroNet Logo" width="32" height="32"></a>
+        </p>
+      </div>
+        <p>
+        Permission to use, copy, modify, and/or distribute this site for any purpose with or without fee is hereby granted.
+        This site is provided "as is" without express or implied warranty.
+        </p>
+        <p>
+        This site does not use cookies or tracking codes.
+        The hosting service provider (<a href="https://pages.github.com/">GitHub Pages</a>) probably collects server logs,
+        but I do not have access to them.
+        </p>
+        <p>
+        Site source is <a href="https://github.com/weakish/weakish.github.com/">available</a>
+        and feedback is <a href="https://github.com/weakish/weakish.github.com/issues">welcome</a>.
+        </p>
+        <noscript>
+        <p>
+        This site does not use JavaScript.
+        </p>
+        </noscript>
+    </div>
+  </div>
+</body>
+</html>

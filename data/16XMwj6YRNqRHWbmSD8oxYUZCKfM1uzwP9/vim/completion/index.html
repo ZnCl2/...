@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VIM Completion Configuration mmap.page</title>
+    <link rel="stylesheet" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/css/style.css">
+    <link rel="alternate" type="application/rss+xml" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml">
+    <link rel="alternate" type="application/git+http" href="https://github.com/weakish/weakish.github.com.git"/>
+</head>
+<body>
+  <div class="container-lg px-3 my-5 markdown-body">
+
+    <h1><a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/">mmap.page</a></h1>
+    <h1 id="vim-completion-configuration">
+        
+        
+          VIM Completion Configuration
+        
+        
+      </h1>
+    
+      <h2 id="built-in">
+        
+        
+          Built-in <a href="#built-in" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Vim has built-in support for completions in insert or replace modes.
+See <code>:help ins-completion</code>.</p>
+<p>By default, Vim uses separate Emacs style key bindings (<code>&lt;C-x C-key&gt;</code>)
+for different kinds of completions.</p>
+<p>There are two plugins to use a single <code>Tab</code> key for completions:</p>
+<ul>
+<li><a href="https://github.com/ervandew/supertab">SuperTab</a></li>
+<li><a href="https://github.com/ajh17/VimCompletesMe">VimCompletesMe</a></li>
+</ul>
+<p>There is also <a href="http://www.vim.org/scripts/script.php?script_id=1879">AutoComplPop</a> to automatically pop up completions.</p>
+    
+      <h3 id="vimcompletesme">
+        
+        
+          VimCompletesMe <a href="#vimcompletesme" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+    
+      <h4 id="why">
+        
+        
+          Why <a href="#why" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h4>
+<p>Count source lines of code (VimScript comments start with <code>&quot;</code>):</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">;</span> <span class="nb">cat </span>supertab.vim | egrep <span class="nt">-v</span> <span class="s1">'^("|([[:blank:]]*$))'</span> | <span class="nb">wc</span> <span class="nt">-l</span>
+923
+<span class="p">;</span> <span class="nb">cat </span>VimCompletesMe.vim  | egrep <span class="nt">-v</span> <span class="s1">'^("|([[:blank:]]*$))'</span> | <span class="nb">wc</span> <span class="nt">-l</span>
+82
+</code></pre></div></div>
+<p>Period.</p>
+    
+      <h4 id="configuration">
+        
+        
+          Configuration <a href="#configuration" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h4>
+<p>Without any configuration, the Tab key will, depending on the context, offer:</p>
+<ul>
+<li>Vim's local keyword completion (Ctrl-X_Ctrl-N)</li>
+<li>File path completion when typing a path (Ctrl-X_Ctrl-F)</li>
+<li>Omni-completion after typing a period or an arrow operator (Ctrl-X_Ctrl-O)</li>
+</ul>
+<p>With a <code>b:vcm_tab_complete</code> variable,
+you can set the Tab key to use the following type of completions:</p>
+<ul>
+<li>Dictionary words (Ctrl-X_Ctrl-K)</li>
+<li>User-defined completion (Ctrl-X_Ctrl-U)</li>
+<li>Tags (Ctrl-X_Ctrl-])</li>
+<li>Vim command line (Ctrl-X_Ctrl-V)</li>
+<li>Omni completion (Ctrl-X_Ctrl-O)</li>
+</ul>
+<p>If any of above types of completions fails to return any results,
+hitting Tab again will switch back to Vim's local keyword completion.</p>
+<p>You can set the b:vcm_tab_complete variable interactively, or in <code>~/.vimrc</code>:</p>
+<div class="language-vim highlighter-rouge"><div class="highlight"><pre class="highlight"><code>autocmd <span class="nb">FileType</span> text<span class="p">,</span>markdown <span class="k">let</span> <span class="nv">b:vcm_tab_complete</span> <span class="p">=</span> <span class="s1">'dict'</span>
+</code></pre></div></div>
+    
+      <h3 id="autocomplpop">
+        
+        
+          AutoComplPop <a href="#autocomplpop" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>Use <code>Enter</code> to commit completion.
+Use arrow keys (<code>Up|Down</code>) to select completions.</p>
+<p>It works well for certain file types,
+while distracting on other types such as text.</p>
+    
+      <h2 id="external-engine">
+        
+        
+          External engine <a href="#external-engine" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+    
+      <h3 id="a-hrefhttpvalloricgithubioyoucompletemeyoucompletemea">
+        
+        
+          <a href="http://valloric.github.io/YouCompleteMe/">YouCompleteMe</a> <a href="#a-hrefhttpvalloricgithubioyoucompletemeyoucompletemea" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>YouCompleteMe is a fast, as-you-type, fuzzy-search code completion engine.
+It has several completion engines:</p>
+<ul>
+<li>an identifier based engine that works with every programming language,</li>
+<li>a Clang based engine that provides native semantic completion
+for C-family languages,</li>
+<li>a Jedi-based completion engine for Python 2 and 3,</li>
+<li>an OmniSharp-based completion engine for C#,</li>
+<li>a combination of Gocode and Godef semantic engines for Go,</li>
+<li>a TSServer-based completion engine for TypeScript,</li>
+<li>a Tern-based completion engine for JavaScript,</li>
+<li>a racer-based completion engine for Rust,</li>
+<li>and an omnifunc-based completer for many other languages</li>
+</ul>
+<p>YCM also provides semantic IDE-like features in a number of languages:</p>
+<ul>
+<li>finding declarations, definitions, usages, etc. of identifiers,</li>
+<li>displaying type information for classes, variables, functions etc.,</li>
+<li>displaying documentation for methods, members, etc. in the preview window,</li>
+<li>fixing common coding errors, like missing semi-colons, typos, etc.,</li>
+<li>semantic renaming of variables across files (JavaScript only).</li>
+</ul>
+<p>Tho downside is it consumes a lot of RAM.</p>
+    
+      <h3 id="a-hrefhttpsgithubcomshougoneocompletevimneocompletea">
+        
+        
+          <a href="https://github.com/Shougo/neocomplete.vim">neocomplete</a> <a href="#a-hrefhttpsgithubcomshougoneocompletevimneocompletea" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>neocomplete maintains a cache of keywords in the current buffer.
+It requires Vim 7.3.885+ with Lua enabled.
+It sometimes be slower than YCM, but requires much less RAM.</p>
+<p>You can configure it to use Tab key to complete,
+and/or automatically pops up completion menu.</p>
+    
+      <h2 id="conclusions">
+        
+        
+          Conclusions <a href="#conclusions" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<ul>
+<li>If we need basic completions that works out of box:
+VimCompletesMe;</li>
+<li>If we need auto-pop basic completions:
+AutoComplPop and VimCompletesMe;</li>
+<li>IDE like features: YouCompleteMe;</li>
+<li>a balance between features and resources: neocomplete.</li>
+</ul>
+    <div class="footer border-top border-gray-light mt-5 pt-3 text-gray">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start">
+        <form id="site-search" action="https://duckduckgo.com/html/" method="get">
+          <input name="q" type="search" value="site:mmap.page " required pattern="site:mmap\.page\s.+">
+          <input type="submit" value="&#x1F50D;" title="search through site content via DuckDuckGo">
+        </form>
+        <p>
+          <a href="mailto:weakish@gmail.com" title="weakish@gmail.com"><img src="https://icongr.am/feather/mail.svg" alt="Feather Icon Mail"></a>
+          <a href="https://savannah.nongnu.org/people/viewgpg.php?user_id=65699" title="2414 AEA0 EA48 5263 9697  F1BA 55F6 EEC2 EA3F 0A87"><img src="https://icongr.am/feather/key.svg" alt="Feather Icon Key"></a>
+          <a href="https://github.com/weakish/" title="GitHub"><img src="https://icongr.am/feather/github.svg" alt="Feather Icon Github"></a>
+          <a href="https://www.instagram.com/jakukyo/" title="Instagram"><img src="https://icongr.am/feather/instagram.svg" alt="Feather Icon Instagram"></a>
+          <a href="https://twitter.com/weakish" title="Twitter"><img src="https://icongr.am/feather/twitter.svg" alt="Feather Icon Twitter"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml" title="RSS 2.0 Feed"><img src="https://icongr.am/feather/rss.svg" alt="Feather Icon RSS"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/uses/" title="uses"><img src="https://icongr.am/feather/book-open.svg" alt="Feather Icon Book Open"></a>
+          
+          
+          <a href="/Me.ZeroNetwork.bit/?Profile/12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv/1GnJD7CXskmG8GywMbTvbP12wneCFW9XzR/weakish@zeroid.bit" title="ZeroMe"><img src="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/images/zeronet_logo.svg" alt="ZeroNet Logo" width="32" height="32"></a>
+        </p>
+      </div>
+        <p>
+        Permission to use, copy, modify, and/or distribute this site for any purpose with or without fee is hereby granted.
+        This site is provided "as is" without express or implied warranty.
+        </p>
+        <p>
+        This site does not use cookies or tracking codes.
+        The hosting service provider (<a href="https://pages.github.com/">GitHub Pages</a>) probably collects server logs,
+        but I do not have access to them.
+        </p>
+        <p>
+        Site source is <a href="https://github.com/weakish/weakish.github.com/">available</a>
+        and feedback is <a href="https://github.com/weakish/weakish.github.com/issues">welcome</a>.
+        </p>
+        <noscript>
+        <p>
+        This site does not use JavaScript.
+        </p>
+        </noscript>
+    </div>
+  </div>
+</body>
+</html>

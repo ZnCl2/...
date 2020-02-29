@@ -1,0 +1,93 @@
+<!doctype html public "-//W3C//DTD HTML 4.01 Transitional//EN"
+      "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+
+<head>
+
+<title> Postfix legacy releases 2.7.3, 2.6.9, 2.5.12 and 2.4.16
+</title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+
+</head>
+
+<body>
+
+<h1> Postfix legacy releases 2.7.3, 2.6.9, 2.5.12 and 2.4.16 </h1>
+
+<p> [An on-line version of this announcement will be available at
+<a href="http://www.postfix.org/announcements/postfix-2.7.3.html">
+http://www.postfix.org/announcements/postfix-2.7.3.html</a>] </p>
+
+<p> Postfix legacy releases 2.7.3, 2.6.9, 2.5.12 and 2.4.16 are
+available.  These releases contain a fix for CVE-2011-0411 which
+allows plaintext command injection with SMTP sessions over TLS.
+This defect was introduced with Postfix version 2.2. </p>
+
+<blockquote> <p> Note: CVE-2011-0411 is an issue only for the
+minority of SMTP clients that actually verify server certificates.
+Without server certificate verification, clients are always vulnerable
+to man-in-the-middle attacks that allow attackers to inject plaintext
+commands or responses into SMTP sessions, and more. <br> <br> For
+more details see: <br> <a
+href="http://www.postfix.org/CVE-2011-0411.html">
+http://www.postfix.org/CVE-2011-0411.html</a> <a
+href="http://www.kb.cert.org/vuls/id/555316"> <br>
+http://www.kb.cert.org/vuls/id/555316</a>.  </p> </blockquote>
+
+<p> Postfix 2.8 and 2.9 are not affected. </p>
+
+<p> The following problems were fixed with the Postfix legacy
+releases: </p>
+
+<ul>
+
+<li> <p> Fix for CVE-2011-0411: discard buffered plaintext input,
+  after reading the SMTP "STARTTLS" command or response. </p>
+
+<li> <p> Fix to the local delivery agent: look up the "unextended"
+  address in the local aliases database, when that address has a
+  malformed address extension.  </p>
+
+<li> <p> Fix to virtual alias expansion: report a tempfail error,
+  instead of silently ignoring recipients that exceed the
+  virtual_alias_expansion_limit or the virtual_alias_recursion_limit.
+  </p>
+
+<li> <p> Fix for Solaris: the Postfix event engine was deaf for
+  SIGHUP and SIGALRM signals after the switch from select() to
+  /dev/poll.  Symptoms were delayed "postfix reload" response, and
+  killed processes with watchdog timeout values under 100 seconds. </p>
+
+<li> <p> Fix for HP-UX: the Postfix event engine was deaf for SIGALRM
+  signals.  Symptoms were killed processes with watchdog timeout
+  values under 100 seconds. </p>
+
+<li> <p> Fix for BSD-ish mkdir() to prevent maildir directories
+  from inheriting their group ownership from the parent directory. </p>
+
+<li> <p> Fix to the SMTP client: missing support for mail to
+  [ipv6:ipv6addr] address literal destinations.  </p>
+
+<li> <p> FreeBSD back-ported closefrom() from FreeBSD 8x to 7x,
+  breaking Postfix builds retroactively. </p>
+
+</ul>
+
+<p> Historical note: </p>
+
+<blockquote> <p> Wietse Venema discovered the problem two weeks
+before the Postfix 2.8 release, and silently fixed it pending further
+investigation.  While investigating the problem's scope and impact,
+Victor Duchovni found that many other TLS applications were also
+affected.  At that point, CERT/CC was asked to coordinate with the
+problem's resolution.  </p> </blockquote>
+
+<p> You can find the updated Postfix source code at the mirrors
+listed at <a href="http://www.postfix.org/">http://www.postfix.org/</a>.
+</p>
+
+</body>
+
+</html>

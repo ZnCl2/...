@@ -1,0 +1,107 @@
+<!DOCTYPE HTML>
+<html lang="ru">
+    <head>
+      <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb</title>
+      <link rel="stylesheet" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/css/main.css"/>
+      <link rel="shortcut icon" type="image/x-icon" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/favicon.ico"/>
+      <link href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/rss.xml" title="Akademic's blog" type="application/rss+xml" rel="alternate"/>
+    </head>
+    <body>
+        <header><h1><a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb" rel="home">akademic.name</a></h1></header>
+        <main class="content">
+            
+<article>
+    <h1>Вывод звука через колонки на сервере и только на сервере</h1> <time>12.05.2013</time>
+	<p>Предыстория:
+На столе имеется три компьютера: мой, жены и &ldquo;сервер&rdquo;.
+Кроме этого ещё 2 монитора, роутер, два пилота, клавиатуры и одна пара колонок.</p>
+
+<p>Как видно места уже очень мало свободного, колонки одни, а музыку хотят слушать все.</p>
+
+<p>Вот и решил я сделать так, чтобы не покупать новые колонки, а совместно слушать через одни.
+Для этой цели колонки я воткнул в звуковуху &ldquo;сервера&rdquo;.</p>
+
+<p>На всех компьютерах установлен debian.</p>
+
+<p>А теперь настраиваем.</p>
+
+<p>В свете недавнего исправления дёрганья звука в chromium при проигрывании ютуба и всякого другого флеша установкой pulseaudio, решил настраивать всё через него.</p>
+
+<p>Итак схема проста: клиент вещает звук на сервер, а тот играет его в колонки.</p>
+
+<h2>Настройка сервера:</h2>
+
+<p>На сервере надо будет отредактировать три файла:</p>
+
+<p>/etc/pulse/daemon.conf
+/etc/default/pulseaudio
+/etc/pulse/system.pa</p>
+
+<p>В /etc/pulse/daemon.conf надо прописать <code>system-instance = yes</code>
+так как я хочу, чтобы сервис запускался при старте системы и работал без залогиненых пользователей.</p>
+
+<p>В /etc/default/pulseaudio надо прописать параметр <code>PULSEAUDIO_SYSTEM_START=1</code>
+По умолчанию он установлен в 0. Если этого не сделать, то pulseaudio всё равно будет запускаться в режиме per-user.</p>
+
+<p>Ну и, наконец, в /etc/pulse/system.pa надо прописать доступ к звуковому серверу по сети.</p>
+
+<p>Делается это при помощи директивы load-module.</p>
+
+<p>Следующие строки надо дописать в конец файла:</p>
+
+<pre><code>### Enable network
+load-module module-native-protocol-tcp auth-ip-acl=127.0.0.1;192.168.0.0/24 auth-anonymous=1
+</code></pre>
+
+<p>192.168.0.0/24 - моя домашняя сеть, доступ разрешён всем компьютерам данной сети
+auth-anonymous=1 - насколько я понял, это нужно чтобы не происходила авторизация по .pulse-cookie. Мне в данном случае нужно только по IP</p>
+
+<p>После всех изменений надо убить все инстансы pulseaudio на сервере:</p>
+
+<p><code>pulseaudio --kill</code></p>
+
+<p>И запустить системный инстанс:</p>
+
+<p><code>service pulseaudio start</code></p>
+
+<p>С сервером всё - он готов к проигрыванию звука.</p>
+
+<h2>Теперь на клиенте</h2>
+
+<p>Тут всё вообще просто.
+Открываем файл /etc/pulse/client.conf и прописываем в нём строчку:</p>
+
+<p><code>default-server = tcp4:192.168.0.2</code></p>
+
+<p>Где 192.168.0.2 тот сервер, который мы настраивали в первой части этого поста.</p>
+
+<p>После этого надо перезапустить Xorg, чтобы он подхватил новые настройки.</p>
+
+<p>Теперь весь звук пойдёт на сервер и будет воспроизводиться через колонки подключенные к нему.</p>
+
+<p>Если подключить колонки локально, то звука не будет.</p>
+
+<p>Как это исправить, я напишу в следующей статье.</p>
+
+    
+    <span class="next_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2013/deb-paket-dlya-btsync/index.html" rel="next">.deb пакет для btsync</a>
+    </span>
+	
+	
+    <span class="prev_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2012/drozhzhashaya-realnost/index.html" rel="previous">Дрожжащая реальность</a>
+    </span>
+	
+</article>
+
+        </main>
+        <footer>
+        Будьте внимательны, многое из того, что написано в этом блоге, является личным мнением автора и не претендует на истину.
+        <img src="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/yopiright.jpg" width="12" height="12"/> 2008
+        </footer>
+    </body>
+</html>

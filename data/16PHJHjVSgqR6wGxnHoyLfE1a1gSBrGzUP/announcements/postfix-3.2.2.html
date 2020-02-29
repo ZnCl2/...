@@ -1,0 +1,86 @@
+<!doctype html public "-//W3C//DTD HTML 4.01 Transitional//EN"
+   "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+
+<head>
+
+<title> Postfix stable release 3.2.2 and legacy releases 3.1.6, 3.0.10
+and 2.11.10 </title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+
+</head>
+
+<body>
+
+<h1> Postfix stable release 3.2.2 and legacy releases 3.1.6, 3.0.10 and
+2.11.10 </h1>
+
+<p> [An on-line version of this announcement will be available at
+<a href="http://www.postfix.org/announcements/postfix-3.2.2.html">
+http://www.postfix.org/announcements/postfix-3.2.2.html</a>] </p>
+
+<p> This announcement (June 13, 2017) includes changes that were
+released with an earlier update (June 10, 2017). The announcement
+was postponed to avoid confusion due to repeated notification. </p>
+
+<p> Fixed in all supported releases: </p>
+
+<ul>
+
+<li> <p> Security: Berkeley DB versions 2 and later try to read settings
+from a file DB_CONFIG in the current directory. This undocumented
+feature may introduce undisclosed vulnerabilities resulting in privilege
+escalation with Postfix set-gid programs (postdrop, postqueue) before
+they chdir to the Postfix queue directory, and with the postmap and
+postalias commands depending on whether the user's current directory is
+writable by other users. This fix does not change Postfix behavior for
+Berkeley DB versions &lt; 3, but it does reduce postmap and postalias
+'create' performance with Berkeley DB versions 3.0 .. 4.6.
+
+</ul>
+
+<p> Fixed in Postfix 3.2 and later: </p>
+
+<ul>
+
+<li> <p> The SMTP server receive_override_options were not restored
+at the end of an SMTP session, after the options were modified by
+an smtpd_milter_maps setting of "DISABLE". Milter support remained
+disabled for the life time of the smtpd process. </p>
+
+<li> <p> After the Postfix 3.2 address/domain table lookup overhaul,
+the check_sender_access and check_recipient_access features ignored
+a non-default parent_domain_matches_subdomains setting. </p>
+
+</ul>
+
+<p> Fixed in Postfix 3.1 and later: </p>
+
+<ul>
+
+<li> <p> Compatibility: some Milter applications do not recognize
+single-character macro names when Postfix sends these as {name}.
+Postfix now sends such macros without {} as it has done historically.
+</p>
+
+</ul>
+
+<p> Fixed in Postfix 3.0 and later: </p>
+
+<ul>
+
+<li> <p> Compatibility: prevent MIME downgrade of Postfix-generated
+message/delivery status. It's supposed to be 7bit, therefore
+quoted-printable encoding is not expected, and can result in users
+seeing garbled non-delivery reports. </p>
+
+</ul>
+
+<p> You can find the updated Postfix source code at the mirrors listed
+at <a href="http://www.postfix.org/">http://www.postfix.org/</a>. </p>
+
+</body>
+
+</html>

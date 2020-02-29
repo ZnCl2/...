@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Flutter试玩 mmap.page</title>
+    <link rel="stylesheet" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/css/style.css">
+    <link rel="alternate" type="application/rss+xml" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml">
+    <link rel="alternate" type="application/git+http" href="https://github.com/weakish/weakish.github.com.git"/>
+</head>
+<body>
+  <div class="container-lg px-3 my-5 markdown-body">
+
+    <h1><a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/">mmap.page</a></h1>
+    <h1 id="flutter">
+        
+        
+          Flutter试玩
+        
+        
+      </h1>
+    
+      <h2 id="android-studio">
+        
+        
+          安装依赖（Android Studio） <a href="#android-studio" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>flutter依赖Android Studio解决Android平台支持，
+即使你使用其他编辑器编写flutter程序，一样要装Android Studio。</p>
+<p>64位Ubuntu上，Android Studio依赖一些32位库：</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>apt <span class="nb">install </span>libc6:i386 libncurses5:i386 libstdc++6:i386 lib32z1 libbz2-1.0:i386
+</code></pre></div></div>
+<p>安装KVM（Android Studio依赖KVM实现虚拟机加速）：</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>apt <span class="nb">install </span>qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils
+</code></pre></div></div>
+<p>至<a href="https://developer.android.com/studio/index.html">Android Studio官网</a>下载zip包，解压至钟意的目录（比如<code>/opt</code>）。</p>
+<p>访问<code>android-studio/bin/</code>，执行<code>studio.sh</code>。</p>
+<p>初次运行会自行下载安装Android SDK，如遇到网络问题，会弹出代理设置对话框。</p>
+    
+      <h2 id="flutter-1">
+        
+        
+          安装Flutter <a href="#flutter-1" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>由于网络原因，CN内需要使用镜像：</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">PUB_HOSTED_URL</span><span class="o">=</span>https://pub.flutter-io.cn
+<span class="nb">export </span><span class="nv">FLUTTER_STORAGE_BASE_URL</span><span class="o">=</span>https://storage.flutter-io.cn
+</code></pre></div></div>
+<p>从GitHub代码仓库安装：</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone <span class="nt">-b</span> dev https://github.com/flutter/flutter.git
+<span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span><span class="s2">"</span><span class="nv">$PWD</span><span class="s2">/flutter/bin:</span><span class="nv">$PATH</span><span class="s2">"</span> <span class="o">&gt;&gt;</span> <span class="nv">$HOME</span>/.bash_profile
+<span class="nb">source</span> <span class="nv">$HOME</span>/.bash_profile
+<span class="nb">cd</span> ./flutter
+</code></pre></div></div>
+<p>关闭报告：</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>flutter config <span class="nt">--no-analytics</span>
+</code></pre></div></div>
+<p>运行<code>flutter doctor</code>检查依赖：</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>flutter doctor
+</code></pre></div></div>
+    
+      <h3 id="section">
+        
+        
+          配置开发环境 <a href="#section" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>flutter官方推荐的开发环境是Android Studio和Visual Studio Code.
+作为全家桶受害者，我选择Android Studio.</p>
+<p>其实没什么需要配置的，只需安装一个<code>Flutter</code>插件。</p>
+<p>还有就是Android开发常规的配置虚拟机：</p>
+<ol>
+<li>确保机器开了VM加速（如果机器不是太老的话，一般都开了）</li>
+<li>Android Studio &gt; Tools &gt; Android &gt; AVD Manager: 选择Create Virtual Device</li>
+<li>选择你钟意的机型（屏幕尺寸和Android版本），注意选择<code>x86</code>或<code>x86_64</code>版本，否则会很慢。如果你之前没使用过这个“机型”的话，需要下载镜像，请耐心等待。</li>
+<li>点Next继续配置，Emulated Performance选择<strong>Hardware - GLES 2.0</strong>开启硬件加速。</li>
+<li>点Finish创建。之后试着运行下，看看有没有问题。</li>
+</ol>
+<p>然后跑一下自带的示例，看看能不能跑通。</p>
+<ol>
+<li>File &gt; New Flutter Project: 项目类型选Flutter application</li>
+<li>右上方工具栏选择刚才创建的虚拟机（如果之前测试的时候开了虚拟机，但没关闭的话，需要先关掉再进行这一步）。</li>
+<li>工具栏点击运行（初次编译需要初始化环境，请耐心等待）。</li>
+</ol>
+<p>flutter支持hot-reload。修改代码后<code>ctrl+s</code>(save all)或点击工具栏的闪电图标，即可在虚拟机上实时看到效果。</p>
+<p>当然，也可以在真机上调试。设备开启<strong>Developer options</strong>和<strong>USB debugging</strong>，然后连接计算机即可。</p>
+    
+      <h2 id="hello-world">
+        
+        
+          Hello, World! <a href="#hello-world" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>好了，总算把环境搭好了。下面开始写代码啰。</p>
+<p>我打算做一个显示PM 2.5的应用。在<code>lib/main.dart</code>内写入：</p>
+<div class="language-dart highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Material应用</span>
+<span class="kn">import</span> <span class="s">'package:flutter/material.dart'</span><span class="o">;</span>
+
+<span class="c1">// 入口函数（函数体只有一行时，可以用`=&gt;`代替{ ... }）</span>
+<span class="kt">void</span> <span class="nf">main</span><span class="p">(</span><span class="o">)</span> <span class="o">=&gt;</span> <span class="n">runApp</span><span class="o">(</span><span class="k">new</span> <span class="n">MyApp</span><span class="o">());</span>
+
+<span class="c1">// 继承StatelessWidget（Stateless意味着不需要mutable状态）</span>
+<span class="c1">// 使MyApp本身也成为一个Widget.</span>
+<span class="c1">// 在Flutter下，几乎一切都是Widget.</span>
+<span class="kd">class</span> <span class="nc">MyApp</span> <span class="kd">extends</span> <span class="n">StatelessWidget</span> <span class="o">{</span>
+  <span class="nd">@override</span>
+  <span class="n">Widget</span> <span class="n">build</span><span class="o">(</span><span class="n">BuildContext</span> <span class="n">context</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="n">MaterialApp</span><span class="o">(</span>
+      <span class="nl">title:</span> <span class="s">'PM 2.5'</span><span class="o">,</span>
+      <span class="nl">home:</span> <span class="k">new</span> <span class="n">Scaffold</span><span class="o">(</span>
+        <span class="nl">appBar:</span> <span class="k">new</span> <span class="n">AppBar</span><span class="o">(</span>
+          <span class="nl">title:</span> <span class="k">new</span> <span class="n">Text</span><span class="o">(</span><span class="s">'未知城市'</span><span class="o">),</span>
+        <span class="o">),</span>
+        <span class="nl">body:</span> <span class="k">new</span> <span class="n">Center</span><span class="o">(</span>
+          <span class="nl">child:</span> <span class="k">new</span> <span class="n">Text</span><span class="o">(</span><span class="s">'-1'</span><span class="o">),</span>
+        <span class="o">),</span>
+      <span class="o">),</span>
+    <span class="o">);</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+<p>效果是这样的：</p>
+<p><img src="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/dapi/img/flutter/Screenshot_0.png" alt="hello-world" /></p>
+    
+      <h2 id="flutter-2">
+        
+        
+          使用Flutter包 <a href="#flutter-2" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>上面我们的应用显示PM 2.5值为<code>-1</code>，表示没有数据。
+下面，让我们的应用从后端获取数据。</p>
+<p>我们通过HTTP协议获取数据，这需要用到Flutter包<code>http</code>。</p>
+<p>首先，我们声明依赖，在<code>pubspec.yaml</code>中加入<code>http</code>：</p>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">dependencies</span><span class="pi">:</span>
+  <span class="na">flutter</span><span class="pi">:</span>
+    <span class="na">sdk</span><span class="pi">:</span> <span class="s">flutter</span>
+
+  <span class="na">http</span><span class="pi">:</span> <span class="s">^0.11.0</span>
+</code></pre></div></div>
+<p>在Android Studio中点击<code>Packages get</code>拉取<code>http</code>包。</p>
+<p>接着在<code>lib/main.dart</code>内引入：</p>
+<div class="language-dart highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="s">'dart:async'</span><span class="o">;</span>
+<span class="kn">import</span> <span class="s">'dart:convert'</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="s">'package:http/http.dart'</span> <span class="k">as</span> <span class="n">http</span><span class="o">;</span>
+</code></pre></div></div>
+<p>除了<code>http</code>之外，我们还引入了<code>dart:async</code>（异步获取结果，避免网络请求阻塞UI响应）和<code>dart:convert</code>（转换JSON）。</p>
+<p>编写异步函数，访问网络，解码JSON：</p>
+<div class="language-dart highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// 异步函数（`async`和`await`为关键字）</span>
+<span class="n">Future</span><span class="o">&lt;</span><span class="n">AQI</span><span class="o">&gt;</span> <span class="n">fetchAQI</span><span class="o">()</span> <span class="n">async</span> <span class="o">{</span>
+  <span class="c1">// Android模拟器可以通过10.0.2.2访问主机。</span>
+  <span class="kt">String</span> <span class="n">url</span> <span class="o">=</span> <span class="s">"http://10.0.2.2:8000/aqis.json"</span><span class="o">;</span>
+  <span class="kd">final</span> <span class="n">response</span> <span class="o">=</span> <span class="n">await</span> <span class="n">http</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">url</span><span class="o">);</span>
+  <span class="kd">final</span> <span class="n">responseJson</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="na">decode</span><span class="o">(</span><span class="n">response</span><span class="o">.</span><span class="na">body</span><span class="o">);</span>
+
+  <span class="k">return</span> <span class="k">new</span> <span class="n">AQI</span><span class="o">.</span><span class="na">fromJson</span><span class="o">(</span><span class="n">responseJson</span><span class="o">);</span>
+<span class="o">}</span>
+
+<span class="c1">// Flutter用不了dartson（dart下的gson）之类的需要运行时反射的库，</span>
+<span class="c1">// 所以简单的json结构手工解析，复杂的json结构通过生成代码解析。</span>
+<span class="kd">class</span> <span class="nc">AQI</span> <span class="o">{</span>
+  <span class="kd">final</span> <span class="kt">int</span> <span class="n">pm2_5</span><span class="o">;</span>
+
+  <span class="n">AQI</span><span class="o">({</span><span class="k">this</span><span class="o">.</span><span class="na">pm2_5</span><span class="o">});</span>
+  <span class="c1">// json.decode返回Map&lt;String, dynamic&gt;</span>
+  <span class="c1">// 这意味着，直到运行时才能确定具体类型</span>
+  <span class="kd">factory</span> <span class="n">AQI</span><span class="o">.</span><span class="na">fromJson</span><span class="o">(</span><span class="n">Map</span><span class="o">&lt;</span><span class="kt">String</span><span class="o">,</span> <span class="kd">dynamic</span><span class="o">&gt;</span> <span class="n">json</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="n">AQI</span><span class="o">(</span>
+      <span class="nl">pm2_5:</span> <span class="n">json</span><span class="o">[</span><span class="s">'pm2_5'</span><span class="o">],</span>
+    <span class="o">);</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+<p>界面代码，只需改动<code>body</code>部分：</p>
+<div class="language-dart highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   <span class="nl">body:</span> <span class="k">new</span> <span class="n">Center</span><span class="o">(</span>
+          <span class="nl">child:</span> <span class="k">new</span> <span class="n">FutureBuilder</span><span class="o">&lt;</span><span class="n">AQI</span><span class="o">&gt;(</span>
+            <span class="nl">future:</span> <span class="n">fetchAQI</span><span class="o">(),</span>
+            <span class="nl">builder:</span> <span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">snapshot</span><span class="o">)</span> <span class="o">{</span> <span class="c1">// 匿名函数</span>
+              <span class="k">if</span> <span class="o">(</span><span class="n">snapshot</span><span class="o">.</span><span class="na">hasData</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="k">new</span> <span class="n">Text</span><span class="o">(</span><span class="s">"</span><span class="si">${snapshot.data.pm2_5}</span><span class="s">"</span><span class="o">);</span>
+              <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">snapshot</span><span class="o">.</span><span class="na">hasError</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="k">new</span> <span class="n">Text</span><span class="o">(</span><span class="s">"</span><span class="si">${snapshot.error}</span><span class="s">"</span><span class="o">);</span>
+              <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="k">new</span> <span class="n">CircularProgressIndicator</span><span class="o">();</span>
+              <span class="o">}</span>
+            <span class="o">},</span>
+          <span class="o">)</span>
+        <span class="o">),</span>
+</code></pre></div></div>
+    
+      <h2 id="section-1">
+        
+        
+          完整代码 <a href="#section-1" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>好了，到此为止，我们已经有了一个可以显示当前PM 2.5值的应用了。
+我们也大概知道Flutter应用是什么样子的了。</p>
+<p>完整代码如下：</p>
+<div class="language-dart highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="s">'dart:async'</span><span class="o">;</span>
+<span class="kn">import</span> <span class="s">'dart:convert'</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="s">'package:flutter/material.dart'</span><span class="o">;</span>
+<span class="kn">import</span> <span class="s">'package:http/http.dart'</span> <span class="k">as</span> <span class="n">http</span><span class="o">;</span>
+
+<span class="n">Future</span><span class="o">&lt;</span><span class="n">AQI</span><span class="o">&gt;</span> <span class="n">fetchAQI</span><span class="o">()</span> <span class="n">async</span> <span class="o">{</span>
+  <span class="kt">String</span> <span class="n">url</span> <span class="o">=</span> <span class="s">"http://10.0.2.2:8000/aqis.json"</span><span class="o">;</span>
+  <span class="kd">final</span> <span class="n">response</span> <span class="o">=</span> <span class="n">await</span> <span class="n">http</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">url</span><span class="o">);</span>
+  <span class="kd">final</span> <span class="n">responseJson</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="na">decode</span><span class="o">(</span><span class="n">response</span><span class="o">.</span><span class="na">body</span><span class="o">);</span>
+
+  <span class="k">return</span> <span class="k">new</span> <span class="n">AQI</span><span class="o">.</span><span class="na">fromJson</span><span class="o">(</span><span class="n">responseJson</span><span class="o">);</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">AQI</span> <span class="o">{</span>
+  <span class="kd">final</span> <span class="kt">int</span> <span class="n">pm2_5</span><span class="o">;</span>
+
+  <span class="n">AQI</span><span class="o">({</span><span class="k">this</span><span class="o">.</span><span class="na">pm2_5</span><span class="o">});</span>
+
+  <span class="kd">factory</span> <span class="n">AQI</span><span class="o">.</span><span class="na">fromJson</span><span class="o">(</span><span class="n">Map</span><span class="o">&lt;</span><span class="kt">String</span><span class="o">,</span> <span class="kd">dynamic</span><span class="o">&gt;</span> <span class="n">json</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="n">AQI</span><span class="o">(</span>
+      <span class="nl">pm2_5:</span> <span class="n">json</span><span class="o">[</span><span class="s">'pm2_5'</span><span class="o">],</span>
+    <span class="o">);</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+
+
+
+<span class="kt">void</span> <span class="nf">main</span><span class="p">(</span><span class="o">)</span> <span class="o">=&gt;</span> <span class="n">runApp</span><span class="o">(</span><span class="k">new</span> <span class="n">MyApp</span><span class="o">());</span>
+
+<span class="kd">class</span> <span class="nc">MyApp</span> <span class="kd">extends</span> <span class="n">StatelessWidget</span> <span class="o">{</span>
+  <span class="nd">@override</span>
+  <span class="n">Widget</span> <span class="n">build</span><span class="o">(</span><span class="n">BuildContext</span> <span class="n">context</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="n">MaterialApp</span><span class="o">(</span>
+      <span class="nl">title:</span> <span class="s">'PM 2.5'</span><span class="o">,</span>
+      <span class="nl">home:</span> <span class="k">new</span> <span class="n">Scaffold</span><span class="o">(</span>
+        <span class="nl">appBar:</span> <span class="k">new</span> <span class="n">AppBar</span><span class="o">(</span>
+          <span class="nl">title:</span> <span class="k">new</span> <span class="n">Text</span><span class="o">(</span><span class="s">'PM 2.5'</span><span class="o">),</span>
+        <span class="o">),</span>
+        <span class="nl">body:</span> <span class="k">new</span> <span class="n">Center</span><span class="o">(</span>
+          <span class="nl">child:</span> <span class="k">new</span> <span class="n">FutureBuilder</span><span class="o">&lt;</span><span class="n">AQI</span><span class="o">&gt;(</span>
+            <span class="nl">future:</span> <span class="n">fetchAQI</span><span class="o">(),</span>
+            <span class="nl">builder:</span> <span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">snapshot</span><span class="o">)</span> <span class="o">{</span>
+              <span class="k">if</span> <span class="o">(</span><span class="n">snapshot</span><span class="o">.</span><span class="na">hasData</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="k">new</span> <span class="n">Text</span><span class="o">(</span><span class="s">"</span><span class="si">${snapshot.data.pm2_5}</span><span class="s">"</span><span class="o">);</span>
+              <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">snapshot</span><span class="o">.</span><span class="na">hasError</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="k">new</span> <span class="n">Text</span><span class="o">(</span><span class="s">"</span><span class="si">${snapshot.error}</span><span class="s">"</span><span class="o">);</span>
+              <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="k">new</span> <span class="n">CircularProgressIndicator</span><span class="o">();</span>
+              <span class="o">}</span>
+            <span class="o">},</span>
+          <span class="o">)</span>
+        <span class="o">),</span>
+      <span class="o">),</span>
+    <span class="o">);</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+<p>注意，PM 2.5数据从后端得到，实际项目中，后端将是一个提供数据的REST API服务。
+最简单的“模拟”后端的方法就是在本地放一个json文件<code>aqis.json</code>，内容如下：</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"pm2_5"</span><span class="p">:</span><span class="w"> </span><span class="mi">37</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+<p>然后在<code>aqis.json</code>所在目录开一个http服务，比如通过python</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python2 <span class="nt">-m</span> SimpleHTTPServer
+</code></pre></div></div>
+    
+      <h2 id="section-2">
+        
+        
+          练习 <a href="#section-2" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<ol>
+<li>把字号调大。</li>
+<li>根据污染程度显示不同的颜色。</li>
+<li>根据污染程度提供健康建议。</li>
+<li>显示城市、监测点信息。</li>
+<li>选择城市、监测点。</li>
+<li>默认根据当前位置自动选择城市、监测点。</li>
+</ol>
+<p><strong>提示</strong> PM 2.5数据可从以下途径获得：</p>
+<ol>
+<li>国际： <a href="https://docs.openaq.org">OpenAQ</a></li>
+<li>国内： <a href="http://www.pm25.in/api_doc">pm25.in</a>、<a href="https://github.com/geoinsights/ChinaAQIData/">中国环境检测总站</a></li>
+</ol>
+    <div class="footer border-top border-gray-light mt-5 pt-3 text-gray">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start">
+        <form id="site-search" action="https://duckduckgo.com/html/" method="get">
+          <input name="q" type="search" value="site:mmap.page " required pattern="site:mmap\.page\s.+">
+          <input type="submit" value="&#x1F50D;" title="search through site content via DuckDuckGo">
+        </form>
+        <p>
+          <a href="mailto:weakish@gmail.com" title="weakish@gmail.com"><img src="https://icongr.am/feather/mail.svg" alt="Feather Icon Mail"></a>
+          <a href="https://savannah.nongnu.org/people/viewgpg.php?user_id=65699" title="2414 AEA0 EA48 5263 9697  F1BA 55F6 EEC2 EA3F 0A87"><img src="https://icongr.am/feather/key.svg" alt="Feather Icon Key"></a>
+          <a href="https://github.com/weakish/" title="GitHub"><img src="https://icongr.am/feather/github.svg" alt="Feather Icon Github"></a>
+          <a href="https://www.instagram.com/jakukyo/" title="Instagram"><img src="https://icongr.am/feather/instagram.svg" alt="Feather Icon Instagram"></a>
+          <a href="https://twitter.com/weakish" title="Twitter"><img src="https://icongr.am/feather/twitter.svg" alt="Feather Icon Twitter"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml" title="RSS 2.0 Feed"><img src="https://icongr.am/feather/rss.svg" alt="Feather Icon RSS"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/uses/" title="uses"><img src="https://icongr.am/feather/book-open.svg" alt="Feather Icon Book Open"></a>
+          
+          
+          <a href="/Me.ZeroNetwork.bit/?Profile/12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv/1GnJD7CXskmG8GywMbTvbP12wneCFW9XzR/weakish@zeroid.bit" title="ZeroMe"><img src="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/images/zeronet_logo.svg" alt="ZeroNet Logo" width="32" height="32"></a>
+        </p>
+      </div>
+        <p>
+        Permission to use, copy, modify, and/or distribute this site for any purpose with or without fee is hereby granted.
+        This site is provided "as is" without express or implied warranty.
+        </p>
+        <p>
+        This site does not use cookies or tracking codes.
+        The hosting service provider (<a href="https://pages.github.com/">GitHub Pages</a>) probably collects server logs,
+        but I do not have access to them.
+        </p>
+        <p>
+        Site source is <a href="https://github.com/weakish/weakish.github.com/">available</a>
+        and feedback is <a href="https://github.com/weakish/weakish.github.com/issues">welcome</a>.
+        </p>
+        <noscript>
+        <p>
+        This site does not use JavaScript.
+        </p>
+        </noscript>
+    </div>
+  </div>
+</body>
+</html>

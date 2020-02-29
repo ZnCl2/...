@@ -1,0 +1,181 @@
+<!DOCTYPE HTML>
+<html lang="ru">
+    <head>
+      <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb</title>
+      <link rel="stylesheet" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/css/main.css"/>
+      <link rel="shortcut icon" type="image/x-icon" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/favicon.ico"/>
+      <link href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/rss.xml" title="Akademic's blog" type="application/rss+xml" rel="alternate"/>
+    </head>
+    <body>
+        <header><h1><a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb" rel="home">akademic.name</a></h1></header>
+        <main class="content">
+            
+<article>
+    <h1>Раздача интернета через ethernet-порт tp-link tl-wr703n</h1> <time>03.10.2012</time>
+	<p>Уже больше месяца у меня дома нет проводного интернета.
+Оплата линка от Элтела, купленного Билайном подошла к концу, а <a href="http://www.sknt.ru">Скайнет</a> уже подобрался очень близко.
+Не хотелось тратить лишних денег и решено было подождать родного провайдера.</p>
+
+<p>Однако бюрократические заморочки не закончились до сих пор, так и сижу с телефонным 3G.</p>
+
+<p>А вот сегодня уже припёрло основательно: надо получить интернет на стационарном компе, т.к. сделать дело на телефоне не представляется возможным.
+А на телефоне интернет есть. Как бы его доставить до станционарника?</p>
+
+<p>В этом мне поможет замечательная коробочка tl-wr703n с openwrt на борту.</p>
+
+<h2>Расстановка сил</h2>
+
+<p>Имеется локальная сеть внутри квартиры, которую поддерживает роутер linksys wrt54gc.
+В роутер воткнут более неживой кабель от провайдера в аплинковый порт.
+В роутер воткнут стационарный компьютер.</p>
+
+<p>Имеется телефон htc desire с прошивкой leedroid и &ldquo;безлимитным&rdquo; интернетом от оператора сотовой связи.
+На телефоне имеется приложение, которое может сделать из него wifi-точку доступа, которая будет раздавать интернет.</p>
+
+<p>Имеется tl-wr703n с прошивкой openwrt, встроенным wifi и портом ethernet.</p>
+
+<h2>Основная идея</h2>
+
+<p>Идея собственно заключается в том, чтобы wr703n стал клиентом по wifi для телефона с интернетом, а также стал аплинком для роутера linksys.</p>
+
+<p>Т.е. всё примерно так:</p>
+
+<pre><code>+-----------+             +---------+             +-----------+           +------------+         +----------+   
+| компьютер | --кабель--&gt; | linksys | --кабель--&gt; | tl-wr703n | --wifi--&gt; | htc desire | --3G--&gt; | интернет |
++-----------+             +---------+             +-----------+           +------------+         +----------+   
+</code></pre>
+
+<h2>Предостережение</h2>
+
+<p>Повторяя описанные далее действия вы сами за себя отвечаете. Неправильная настройка сетевых интерфейсов может привести к невозможности соединения по сети с wr703n.
+Как поступать в таком случае описано на <a href="http://wiki.openwrt.org/toh/tp-link/tl-wr703n#failsafe.mode">вики openwrt(failsafe mode)</a></p>
+
+<p>Я сначала производил настройку подключения по wifi, не трогая проводное. Потому что сам был подключен к устройству по ethernet.
+Затем, когда убедился, что соединение wifi работает стабильно, и я могу соединиться с устройством через этот линк, стал настраивать проводное подключение.</p>
+
+<p>Для получения возможности соединяться с wr703n по ssh через wifi, надо сначала выполнить пункт про настройку firewall. А именно создать зону wwan.</p>
+
+<p>Для возможности настраивать wr703n через уже работающий wifi, хорошо бы иметь ноутбук с wifi.
+Нужно это, чтобы подключиться по wifi к точке доступа на телефоне (к которой также подключается wr703n). А то с телефона очень неудобно редактировать конфиги.</p>
+
+<h2>Реализация</h2>
+
+<p>В моём случае linksys уже настроен на получение параметров сети по dhcp, так что единственное, что надо сделать, это настроить клиента wifi на wr703n и сделать раздачу адресов на eth0 на нём же.</p>
+
+<p>Как настроить клиента wifi на данном девайсе, я <a href="/blog/2012/nastrojka-klienta-wifi-v-proshivke-openwrt-na-tp-link-tl-wr703n/">рассказывал ранее</a></p>
+
+<p>Приведу лишь конфиг:</p>
+
+<pre><code>    config wifi-iface
+        option device 'radio0'
+        option network 'wwan'
+        option mode 'sta'
+        option ssid '&lt;имя wifi-точки на телефоне&gt;'
+        option encryption 'psk2'
+        option key '&lt;пароль от wifi точки на телефоне&gt;'
+</code></pre>
+
+<p>Это надо добавить в /etc/config/wireless к уже находящемуся там описанию wifi-device.
+Для получения IP по dhcp от телефона htc desire, надо в /etc/config/network добавить секцию:</p>
+
+<pre><code>    config interface 'wwan'               
+        option ifname 'wlan0'         
+        option proto 'dhcp'
+</code></pre>
+
+<p>Для раздачи интернета на eth0 надо сделать немного больше.</p>
+
+<ol>
+<li><p>настроить статический ip на интерфейсе.</p>
+
+<p>В файл /etc/config/network добавить:</p>
+
+<pre><code>    config interface 'lan'                
+        option ifname 'eth0'          
+        option proto 'static'         
+        option ipaddr '192.168.3.1'   
+        option netmask '255.255.255.0'
+</code></pre></li>
+
+<li><p>настроить dnsmasq
+Для этого отредактировать файл /etc/config/dhcp. Проследить чтобы в нём были следующие настройки:</p>
+
+<pre><code>    config dhcp lan
+        option interface        lan
+        option start    100
+        option limit    150
+        option leasetime        12h
+    config dhcp wwan
+        option interface        wwan
+        option ignore   1
+</code></pre>
+
+<p>Секция для lan как раз определяет какие ip будут розданы клиентам на порту, который приписан к интерфейсу lan в файле /etc/config/network</p>
+
+<p>Секция для wwan показывает откуда надо брать настройки для маскарадинга.</p></li>
+
+<li><p>Для пропускания трафика настроить firewall
+Для этого редактируем файл /etc/config/firewall
+Для секции lan убеждаемся, что option forward ACCEPT. Без этого пакеты из проводной сети не будут попадать в wifi:</p>
+
+<pre><code>   config zone
+        option name             lan
+        option network          'lan'
+        option input            ACCEPT
+        option output           ACCEPT
+        option forward          ACCEPT
+</code></pre>
+
+<p>Добавляем секцию wwan:</p>
+
+<pre><code>    config zone
+        option name             wwan
+        option network          'wwan'
+        option input            ACCEPT
+        option output           ACCEPT
+        option forward          REJECT
+        option masq             1
+        option mtu_fix          1
+</code></pre></li>
+</ol>
+
+<p>Перезапуск настроенных сервисов:</p>
+
+<pre><code>/etc/init.d/dnsmasq restart
+/etc/init.d/firewall restart
+/etc/init.d/network restart
+</code></pre>
+
+<p>Теперь осталось соединить кабелем wr703n и uplink(wan) порт linksys.
+Linksys при этом надо заставить переполучить ip-адрес.
+Это можно сделать из админки роутера. Либо можно просто его перезагрузить, выдернув питание.</p>
+
+<h2>Послесловие</h2>
+
+<p>Вот таким образом у меня всё и заработало.
+Наверное, можно было бы сделать bridge вместо очередного ната. А то и так их уже три есть: провайдерский, на телефоне, на роутере linksys. Но так мне понятнее, к тому же части настроек уже были обкатаны, так что проблем не возникло.
+А переделывать лень пока работает.
+Через такой инет я написал сейчас этот пост.</p>
+
+    
+    <span class="next_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2012/drozhzhashaya-realnost/index.html" rel="next">Дрожжащая реальность</a>
+    </span>
+	
+	
+    <span class="prev_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2012/array-rublej/index.html" rel="previous">Array рублей</a>
+    </span>
+	
+</article>
+
+        </main>
+        <footer>
+        Будьте внимательны, многое из того, что написано в этом блоге, является личным мнением автора и не претендует на истину.
+        <img src="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/yopiright.jpg" width="12" height="12"/> 2008
+        </footer>
+    </body>
+</html>

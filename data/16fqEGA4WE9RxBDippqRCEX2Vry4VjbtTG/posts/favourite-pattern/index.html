@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="referrer" content="no-referrer">
+        <title>rf - My Favourite Programming Pattern</title>
+        <link rel="stylesheet" href="../../css/default.css" />
+        <link rel="shortcut icon" href="favicon.ico.html" type="image/x-icon"><link rel="shortcut icon" href="../../images/favicons/favicon32.png"><link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../images/favicons/favicon144.png"><link rel="apple-touch-icon-precomposed" sizes="114x114" href="../../images/favicons/favicon114.png"><link rel="apple-touch-icon-precomposed" sizes="72x72" href="../../images/favicons/favicon72.png"><link rel="apple-touch-icon-precomposed" sizes="57x57" href="../../images/favicons/favicon57.png">
+    </head>
+    <body>
+        <header>
+            <div class="logo">
+                <a href="../../index.html">Regular Flolloping</a>
+            </div>
+            <nav class="navbar">
+                <a href="../../index.html">Home</a>
+                <a href="../../about/index.html">About</a>
+                <a href="../../contact/index.html">Contact</a>
+                <a href="../../archive/index.html">Archive</a>
+            </nav>
+        </header>
+
+        <main role="main">
+            <h1>My Favourite Programming Pattern</h1>
+            <article>
+    <section class="header">
+        Posted on August 29, 2018
+        
+    </section>
+    <section>
+        <p>so at work we were talking about interviewer questions for graduates, and one of them was the standard simple test to weed out graduates who faked it till they made it. it went something like this:</p>
+<blockquote>
+<p>you are given a list of characters, please return the list with commas seperating each element. do not leave a trailing comma.</p>
+</blockquote>
+<p>there may have been language restrictions or something, honestly i wasnt paying a huge amount of attention, but it got me thinking about my honest answer to that, and here is what i came up with.</p>
+<p>in my favourite language of course, Haskell:</p>
+<pre><code>join' :: [Char] -&gt; ([Char] -&gt; [Char])
+join' (x:xs) = (x:) . dropLast . (join' xs)
+   where
+      dropLast = if (xs /= []) then (',':) else (id)
+join' [] = id
+
+answer :: [Char] -&gt; [Char]
+answer x = join' x $ []</code></pre>
+<p>for people who don’t know haskell, heres a quick run down of the important parts.</p>
+<p>the function will look at the first character in the list, and partially apply it to the prepend function <code>:</code></p>
+<p>in haskell you can partially apply functions, which means if you have a function taking two arguments, only give it one, and get back a new function that takes a single argument.</p>
+<p>in the case of prepend, <code>x:</code> is a function that will take another list, and return that list prepended with <code>x</code>, ie</p>
+<pre><code>'a' : ['b', 'c', 'd'] == &quot;abcd&quot; == ['a', 'b', 'c', 'd']</code></pre>
+<p>we then compose that function with one of two functions returned by <code>dropLast</code>, dependending on whether <code>x</code> is the last character in the list.</p>
+<p>composing is done with <code>.</code>, and simply is a way to chain functions together. ie:</p>
+<pre><code>(f . g)(x) == f(g(x))</code></pre>
+<p>if the character we’re looking at isn’t the last, then we add another prepend for a comma. if it is the last, we add the <code>id</code> function into the mix, which just returns the input unchanged.</p>
+<p>after that we recurse with the tail of the list.</p>
+<p>at the end of this we aren’t given a comma seperated list like you’d think, we’re given a function. for the input <code>"abcd"</code> our function is something like:</p>
+<pre><code>'a' : ',' : 'b' : ',' : 'c' : ',' : 'd' : id</code></pre>
+<p>which is a function that takes a list of characters, and returns a list of characters. to get our answer we need to give this function an argument, and the argument we want is an empty list.</p>
+<p>the steps this function goes through build up the list from the back, prepending one character at a time, until we get our answer:</p>
+<pre><code>&quot;a,b,c,d&quot;</code></pre>
+<h2 id="but-why">but… why?</h2>
+<p>i like this pattern for a few reasons, whether they’re valid or not is up to you.</p>
+<h3 id="its-not-super-slow.">its not super slow.</h3>
+<p>this one is more applicable to haskell, but the naive way to do this (outside of using a prebuilt function) would be to use <code>++</code> and just go through each character adding it and a comma to a final output string.</p>
+<p>strings in haskell are lists, and lists are linked lists under the hood. so appending anything requires traversing the entire list, and doing so in the way described above ends up being <code>O(n^2)</code></p>
+<p>the prepend function method, however, is much faster. prepending takes constant time, so doing so as shown only ends up being <code>O(n)</code> which is far <em>far</em> better.</p>
+<h3 id="it-uses-id">it uses id</h3>
+<p>this is one of the few times i get to honestly use the <code>id</code> function for something other than teaching how lambda calculus works, so it gets points for that.</p>
+<h3 id="its-fun-and-different">its fun and different</h3>
+<p>you can’t discount this, programming is a hobby and therefore should be fun. not much more to say about that.</p>
+<h2 id="where-else">where else?</h2>
+<p>another time this method is great, and possibly a cooler example, is for getting the traversal of a tree.</p>
+<p>this has the same problem when done naively of being an <code>O(n^2)</code> operation due to all the list appending, however we can convert it to create a prepend function chain which cuts it down to <code>O(n)</code>. yay :)</p>
+<p>the idea here is to recursively go down the tree, like you would normally, but at each node instead of recursing left, appending the root, then recursing right, we instead compose an extra prepend operation, and as a base case, when there is no child we instead prepend <code>id</code> and keep going.</p>
+<hr />
+<p>i really like this pattern, it is in fact my favourite. someone please come up with a nice name for it i can’t.</p>
+<p>thanks for listening.</p>
+<p>close this world. txen eht nepo</p>
+    </section>
+</article>
+
+        </main>
+
+        <footer>
+            powered by <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </footer>
+    </body>
+</html>

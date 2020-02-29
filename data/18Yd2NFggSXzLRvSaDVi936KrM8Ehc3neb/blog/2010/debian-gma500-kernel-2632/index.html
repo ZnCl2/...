@@ -1,0 +1,122 @@
+<!DOCTYPE HTML>
+<html lang="ru">
+    <head>
+      <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb</title>
+      <link rel="stylesheet" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/css/main.css"/>
+      <link rel="shortcut icon" type="image/x-icon" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/favicon.ico"/>
+      <link href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/rss.xml" title="Akademic's blog" type="application/rss+xml" rel="alternate"/>
+    </head>
+    <body>
+        <header><h1><a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb" rel="home">akademic.name</a></h1></header>
+        <main class="content">
+            
+<article>
+    <h1>debian &#43; GMA500 &#43; kernel 2.6.32</h1> <time>07.03.2010</time>
+	<p>Вот и надоела мне глючащая убунта и я, наконец, решился на установку дебиана на свой многострадальный нетбук Dell Inspirion 1010.</p>
+
+<p>В-общем, собственно установка проблем не вызывает. Всё как всегда. Но вот видео - это проблема. GMA 500 всё так же не имеет нормальных дров для линукс. Да и виндузятники сетуют.
+Пару недель назад нашёл я руководство для сборки полного комплекта модулей для GMA500 для Debian sid.
+Вот и ссылочка на него:
+<a href="http://blogs.koolwal.net/2009/11/05/howto-compiling-intel-atom-poulsbo-gma-500-graphics-driver-on-debian/">http://blogs.koolwal.net/2009/11/05/howto-compiling-intel-atom-poulsbo-gma-500-graphics-driver-on-debian/</a></p>
+
+<p>Автор руководства даже собрал пакеты для debian. Отличная новость. Удобнее всего воспользоваться ими. Но вот только ядра для которого собран модуль уже нет в репозитории, да и модуль для xorg также требует отсутствующий пакет.</p>
+
+<p>Все эти проблемы я успешно решил. Сейчас расскажу как.</p>
+
+<p>Модуль для ядра придётся собрать самостоятельно.</p>
+
+<p>Ставим linux-headers для текущего ядра. В моём случае это ядро 2.6.32.
+Скачиваем исходники модуля ядра как описано в руководстве по ссылке, либо другим способом.
+Распаковываем и вводим в директории, куда распаковали команду:</p>
+
+<p><code>make DRM_MODULES=&quot;psb&quot;</code></p>
+
+<p>Должна начаться сборка. Может повезти как автору англоязычного руководства. А может не повезти как мне.</p>
+
+<p>При компиляции вылезут ошибки.
+Первая из них что-то про struct agp_memory.
+В этом случае надо открыть файл /usr/src/linux-headers-2.6.32-2-common/include/linux/agp_backend.h (он из пакета linux-headers-common).
+В-общем, находим в этом файле struct agp_memory и добавляем в эту структуру строчку</p>
+
+<p><code>unsigned long *memory;</code></p>
+
+<p>Теперь компиляция продвинется дальше, но снова возможно вылезут ошибки.
+Ошибки и решения я нашёл здесь:
+<a href="http://ubuntuforums.org/showthread.php?t=1330751">http://ubuntuforums.org/showthread.php?t=1330751</a></p>
+
+<p>В выводе первой ошибки есть ключевое слово phys_to_gart
+Для её исправления надо открыть файл drm_agpsupport.c (он находятся в исходниках модуля ядра, который мы пытаемся собрать)
+Проблемная строчка <code>mem-&gt;pages[mem-&gt;page_count++] = phys_to_gart(page_to_phys(*cur_page));</code> это где-то в районе 527 строки.
+Надо подняться выше к началу функции (где-то строка 509) и добавить строчку</p>
+
+<p><code>#define phys_to_gart(x) (x)</code></p>
+
+<p>Вторая ошибка в файле <code>drm_edid.c</code> в строке</p>
+
+<p><code>printk(KERN_ERR PREFIX &quot;Invalid _DDC data\n&quot;);</code></p>
+
+<p>PREFIX нигде не определён, поэтому надо его определить.
+Можно прямо перед проблемной строкой добавить</p>
+
+<p><code>#define PREFIX &quot;PSB(edid) &quot;</code></p>
+
+<p>Это решит проблему.</p>
+
+<p>После этих манипуляций модуль ядра у меня собрался.</p>
+
+<p>Делаем <code>make install</code>
+Потом <code>modpobe psb</code></p>
+
+<p>Консоль стала в нативном разрешении. Далее вопрос с модулем для xorg.
+Собираться у меня модуль отказался, поэтому пришлось искать подходящий xorg.
+Нашёл я его в убунте.</p>
+
+<p>Добавляем репозиторий убунты <code>deb http://ru.archive.ubuntu.com/ubuntu/ karmic main</code>
+и ставим оттуда xserver-xorg 1:7.4+3ubuntu7 и xserver-xorg-core 2:1.6.4-2ubuntu4 и соответственно нужные модули xserver-xorg-input-{kbd,mouse,synaptics}</p>
+
+<p>После чего ставим все пакеты из англоязычного руководства, кроме модуля ядра.
+Настраиваем xorg.conf как написано там же и наслаждаемся работающей графикой.</p>
+
+<p>На всякий случай выкладываю все пакеты здесь.</p>
+
+<p><a href="http://akademic.name/media/files/dell/debian/libdrm-poulsbo-dev_2.3.0-1squeeze1_i386.deb">libdrm-poulsbo-dev_2.3.0-1squeeze1_i386.deb</a>
+<a href="http://akademic.name/media/files/dell/debian/libdrm-poulsbo1-dbg_2.3.0-1squeeze1_i386.deb">libdrm-poulsbo1-dbg_2.3.0-1squeeze1_i386.deb</a>
+<a href="http://akademic.name/media/files/dell/debian/libdrm-poulsbo1_2.3.0-1squeeze1_i386.deb">libdrm-poulsbo1_2.3.0-1squeeze1_i386.deb</a>
+<a href="http://akademic.name/media/files/dell/debian/libva-dev_0.29-1squeeze1_i386.deb">libva-dev_0.29-1squeeze1_i386.deb</a>
+<a href="http://akademic.name/media/files/dell/debian/libva1_0.29-1squeeze1_i386.deb">libva1_0.29-1squeeze1_i386.deb</a>
+<a href="http://akademic.name/media/files/dell/debian/poulsbo-driver-2d_1.1-1squeeze1_all.deb">poulsbo-driver-2d_1.1-1squeeze1_all.deb</a>
+<a href="http://akademic.name/media/files/dell/debian/poulsbo-driver-3d_1.1-1squeeze1_all.deb">poulsbo-driver-3d_1.1-1squeeze1_all.deb</a>
+<a href="http://akademic.name/media/files/dell/debian/psb-firmware_0.30-1squeeze1_all.deb">psb-firmware_0.30-1squeeze1_all.deb</a>
+<a href="http://akademic.name/media/files/dell/debian/psb-kernel-headers_4.41.1-1squeeze1_all.deb">psb-kernel-headers_4.41.1-1squeeze1_all.deb</a>
+<a href="http://akademic.name/media/files/dell/debian/psb-kernel-source_4.41.1-1squeeze1_all.deb">psb-kernel-source_4.41.1-1squeeze1_all.deb</a>
+<a href="http://akademic.name/media/files/dell/debian/xpsb-glx_0.18-1squeeze1_i386.deb">xpsb-glx_0.18-1squeeze1_i386.deb</a>
+<a href="http://akademic.name/media/files/dell/debian/xserver-xorg-video-psb_0.31.0-1squeeze1_i386.deb">xserver-xorg-video-psb_0.31.0-1squeeze1_i386.deb</a></p>
+
+<p>Заодно и дебы xorg&rsquo;а, а то исчезнут опять, замучаешься искать:
+<a href="http://akademic.name/media/files/dell/debian/xserver-xorg-core_2-1.6.4-2ubuntu4_i386.deb">xserver-xorg-core_2-1.6.4-2ubuntu4_i386.deb</a>
+<a href="http://akademic.name/media/files/dell/debian/xserver-xorg_1-7.4+3ubuntu7_i386.deb">xserver-xorg_1-7.4+3ubuntu7_i386.deb</a></p>
+
+<p>P.S. Статью эту заствил себя написать уже через две недели после того как всё это проделал. Так что мог что-то пропустить. В любом случае у вас уже больше информации, чем у меня, когда я начал.</p>
+
+    
+    <span class="next_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2010/pechat-i-skanirovanie-na-mfu-samsung-scx-4220-podklyuchennomu-k-/index.html" rel="next">Печать и сканирование на МФУ Samsung scx-4220 подключенном к серверу</a>
+    </span>
+	
+	
+    <span class="prev_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2010/raskladka-mashinopis-dlya-ktouch/index.html" rel="previous">Раскладка &#34;машинопись&#34; для ktouch</a>
+    </span>
+	
+</article>
+
+        </main>
+        <footer>
+        Будьте внимательны, многое из того, что написано в этом блоге, является личным мнением автора и не претендует на истину.
+        <img src="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/yopiright.jpg" width="12" height="12"/> 2008
+        </footer>
+    </body>
+</html>

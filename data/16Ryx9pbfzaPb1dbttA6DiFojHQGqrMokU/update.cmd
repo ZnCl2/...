@@ -1,0 +1,1 @@
+wget --mirror -k -nH --html-extension http://www.decentralizedweb.net

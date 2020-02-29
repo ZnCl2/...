@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>i3 Quick Start mmap.page</title>
+    <link rel="stylesheet" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/css/style.css">
+    <link rel="alternate" type="application/rss+xml" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml">
+    <link rel="alternate" type="application/git+http" href="https://github.com/weakish/weakish.github.com.git"/>
+</head>
+<body>
+  <div class="container-lg px-3 my-5 markdown-body">
+
+    <h1><a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/">mmap.page</a></h1>
+    <h1 id="i3-quick-start">
+        
+        
+          i3 Quick Start
+        
+        
+      </h1>
+    
+      <h2 id="keybindings">
+        
+        
+          Keybindings <a href="#keybindings" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>When starting i3 without a config file, i3-config-wizard will let you choose Alt or Win as the Modifier, and generate a configure file.
+However, it will generate keybindings based on the key <strong>positions</strong> of QWERTY layout.
+Since I am using dvorak, so I copied <code>/etc/i3/config to ~/.config/i3/config</code> and replaced <code>Mod1</code> (<code>Alt</code>) with <code>Mod4</code> (<code>Win</code>) instead.</p>
+<p>| $mod+key                 | function                           |
+| ------------------------ | ---------------------------------- |
+| Enter                    | terminal                           |
+| d                        | dmenu                              |
+| Arrow Keys               | move focus                         |
+| Shift+Arrow Keys         | move window                        |
+| 0-9                      | switch workspace 10,1,...,9        |
+| Shift+0-9                | switch workspace 10,1,...,9        |
+| a                        | navigate one container up the tree |
+| h/v                      | split container splith/v           |
+| e                        | toggle splith/v                    |
+| f                        | toggle fullscreen                  |
+| s/w                      | stacking/tabbed                    |
+| Shift+Space              | toggle floating                    |
+| Shift+q                  | close window                       |
+| Shift+r                  | restart i3                         |
+| Shift+e                  | exit i3                            |
+| Secondary mouse button   | adjust window size                 |
+| r                        | enter resize mode                  |</p>
+<p>Notes:</p>
+<ol>
+<li>By default i3 uses <code>dmenu_run</code>, displaying all commands in <code>$PATH</code>. To only display applications shipping a <code>.desktop</code> file, replace <code>dmenu_run</code> with <code>i3-dmenu-desktop</code> instead.</li>
+<li>Multiple screens share workspaces. Workspace will be bound to the focused screen on its creation. Switching to a workspace will focus its screen.</li>
+<li>In resize mode, press arrow keys (or <code>jkl;</code> to resize focused window: Left/Right: shirk/grow width; Up/Down: shrink/grow height; Esc: escape resize mode.</li>
+</ol>
+    
+      <h2 id="configurations">
+        
+        
+          Configurations <a href="#configurations" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Edit <code>~/.config/i3/config</code>:</p>
+<pre><code># No title bar, window borders
+default_border none
+# For old versions
+# new_window none
+# When already on workspace N, $mod+N will switch to the previous focused workspace
+workspace_auto_back_and_forth yes
+# Hide i3bar
+bar {
+    mode hide
+    status_command i3status
+}
+# Lock screen
+# keybinding inspired by macOS
+bindsym Mod4+Ctrl+q exec --no-startup-id &quot;i3lock -i $HOME/Pictures/wallpaper/F14-final-wallpaper-updated.png&quot;
+# i3lock-img is a shell script of the above i3lock command line
+exec_always --no-startup-id &quot;xautolock -time 1 -locker i3lock-img&quot;
+</code></pre>
+    
+      <h2 id="layouts">
+        
+        
+          Layouts <a href="#layouts" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>A container contains windows or containers.</p>
+<p>A container has one of the following layouts:</p>
+<p>| switch keys | layout | move focus |
+| - | - | - |
+| <code>$mod+e</code> | tiling (it toggles splitv/splith) | <code>$mod+up/down/left/right</code> (depends on orientation) |
+| <code>$mod+s</code> | stacking | <code>$mod+up/down</code> |
+| <code>$mod+w</code> | tabbed | <code>$mod+left/right</code> |</p>
+<p>And <code>$mod+f</code> will toggle fullscreen mode of the current window.</p>
+<p>A new opened window will appear in the current container, next to the current window:</p>
+<ul>
+<li>tiling: right/below</li>
+<li>stacking: below</li>
+<li>tabbed: right</li>
+</ul>
+<p>A new container can be created explicitly by splitting the current container vertically (<code>$mod+v</code>) or horizontally (<code>$mod+h</code>).
+And moving windows may implicitly create containers.</p>
+<p>For example, suppose we have three windows in a splith container (window c is focused):</p>
+<pre><code>|a|b|c*|
+</code></pre>
+<p><code>$mod+Shift+Up</code> results in the following layout:</p>
+<pre><code>|  c*   |
+| a | b |
+</code></pre>
+<p>Here window a and b are in an implicitly created new container.
+That is,</p>
+<pre><code>splith             splitv
+ / | \    ---&gt;      /   \
+a  b  c            c   splith
+                        /  \
+                       a    b
+</code></pre>
+<p>Similarly, if we focus window a (<code>$mod+Down</code>), and move it up (<code>$mod+Shift+Up</code>):</p>
+<pre><code>| c  |
+| a* |
+| b  |
+</code></pre>
+<p>then move it left (<code>$mod+Shift+Left</code>), we will get the following layout:</p>
+<pre><code>|    | c |
+| a* |
+|    | b |
+</code></pre>
+<p>Let's review the whole process:</p>
+<pre><code>|a|b|c*|  --&gt; |  c*   |  --&gt; | c  | --&gt; |    | c |
+              | a | b |      | a* |     | a* |   |
+                             | b  |     |    | b |
+
+splith             splitv             splitv           splith
+ / | \    ---&gt;      /   \       ---&gt;   / | \   ---&gt;     /   \
+a  b  c            c   splith         a  b  c          a    splitv
+                        /  \                                 /  \
+                       a    b                               c    b
+</code></pre>
+    
+      <h2 id="kde">
+        
+        
+          KDE <a href="#kde" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>You can use i3 with other desktop environments such as <a href="https://userbase.kde.org/Tutorials/Using_Other_Window_Managers_with_Plasma">KDE</a>.</p>
+<p>If you use i3 in KDE, you may want to uncomment the <code>xautolock</code> line above to lock screen via kDE.
+Also, vertical KDE panel is not supported under i3.</p>
+    <div class="footer border-top border-gray-light mt-5 pt-3 text-gray">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start">
+        <form id="site-search" action="https://duckduckgo.com/html/" method="get">
+          <input name="q" type="search" value="site:mmap.page " required pattern="site:mmap\.page\s.+">
+          <input type="submit" value="&#x1F50D;" title="search through site content via DuckDuckGo">
+        </form>
+        <p>
+          <a href="mailto:weakish@gmail.com" title="weakish@gmail.com"><img src="https://icongr.am/feather/mail.svg" alt="Feather Icon Mail"></a>
+          <a href="https://savannah.nongnu.org/people/viewgpg.php?user_id=65699" title="2414 AEA0 EA48 5263 9697  F1BA 55F6 EEC2 EA3F 0A87"><img src="https://icongr.am/feather/key.svg" alt="Feather Icon Key"></a>
+          <a href="https://github.com/weakish/" title="GitHub"><img src="https://icongr.am/feather/github.svg" alt="Feather Icon Github"></a>
+          <a href="https://www.instagram.com/jakukyo/" title="Instagram"><img src="https://icongr.am/feather/instagram.svg" alt="Feather Icon Instagram"></a>
+          <a href="https://twitter.com/weakish" title="Twitter"><img src="https://icongr.am/feather/twitter.svg" alt="Feather Icon Twitter"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml" title="RSS 2.0 Feed"><img src="https://icongr.am/feather/rss.svg" alt="Feather Icon RSS"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/uses/" title="uses"><img src="https://icongr.am/feather/book-open.svg" alt="Feather Icon Book Open"></a>
+          
+          
+          <a href="/Me.ZeroNetwork.bit/?Profile/12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv/1GnJD7CXskmG8GywMbTvbP12wneCFW9XzR/weakish@zeroid.bit" title="ZeroMe"><img src="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/images/zeronet_logo.svg" alt="ZeroNet Logo" width="32" height="32"></a>
+        </p>
+      </div>
+        <p>
+        Permission to use, copy, modify, and/or distribute this site for any purpose with or without fee is hereby granted.
+        This site is provided "as is" without express or implied warranty.
+        </p>
+        <p>
+        This site does not use cookies or tracking codes.
+        The hosting service provider (<a href="https://pages.github.com/">GitHub Pages</a>) probably collects server logs,
+        but I do not have access to them.
+        </p>
+        <p>
+        Site source is <a href="https://github.com/weakish/weakish.github.com/">available</a>
+        and feedback is <a href="https://github.com/weakish/weakish.github.com/issues">welcome</a>.
+        </p>
+        <noscript>
+        <p>
+        This site does not use JavaScript.
+        </p>
+        </noscript>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>A Basic Guide for New Marionettists mmap.page</title>
+    <link rel="stylesheet" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/css/style.css">
+    <link rel="alternate" type="application/rss+xml" href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml">
+    <link rel="alternate" type="application/git+http" href="https://github.com/weakish/weakish.github.com.git"/>
+</head>
+<body>
+  <div class="container-lg px-3 my-5 markdown-body">
+
+    <h1><a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/">mmap.page</a></h1>
+    <h1 id="a-basic-guide-for-new-marionettists">
+        
+        
+          A Basic Guide for New Marionettists
+        
+        
+      </h1>
+    
+      <h2 id="tldr">
+        
+        
+          TLDR <a href="#tldr" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>This article only covers the so-called masterless mode, a.k.a. <code>puppet apply</code>,
+because the <a href="https://puppet.com/docs/puppet/6.7/architecture.html">master-slave mode</a> is <a href="https://bugs.python.org/issue34605">unethical</a> and <a href="https://puppet.com/products/bolt">bolt</a> sounds violent. On the other hand, <code>puppet apply</code> plays the role of both master and slave, which is considered not unlikely inoffensive.</p>
+<p>Puppet uses a declarative DSL, i.e. describing the state of puppets. Below is an example from <a href="https://puppet.com/docs/puppet/6.7/intro_puppet_language_and_code.html">the official document</a>:</p>
+<div class="language-puppet highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">case</span> <span class="nv">$operatingsystem</span> <span class="p">{</span>
+  <span class="n">centos</span><span class="p">,</span> <span class="n">redhat</span><span class="p">:</span> <span class="p">{</span> <span class="nv">$service_name</span> <span class="o">=</span> <span class="s1">'ntpd'</span> <span class="p">}</span>
+  <span class="n">debian</span><span class="p">,</span> <span class="n">ubuntu</span><span class="p">:</span> <span class="p">{</span> <span class="nv">$service_name</span> <span class="o">=</span> <span class="s1">'ntp'</span> <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">package</span> <span class="p">{</span> <span class="s1">'ntp'</span><span class="p">:</span>
+  <span class="py">ensure</span> <span class="p">=&gt;</span> <span class="n">installed</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">service</span> <span class="p">{</span> <span class="s1">'ntp'</span><span class="p">:</span>
+  <span class="py">name</span>      <span class="p">=&gt;</span> <span class="nv">$service_name</span><span class="p">,</span>
+  <span class="py">ensure</span>    <span class="p">=&gt;</span> <span class="n">running</span><span class="p">,</span>
+  <span class="py">enable</span>    <span class="p">=&gt;</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="kp">subscribe</span> <span class="p">=&gt;</span> <span class="nc">File</span><span class="p">[</span><span class="s1">'ntp.conf'</span><span class="p">],</span>
+<span class="p">}</span>
+
+<span class="n">file</span> <span class="p">{</span> <span class="s1">'ntp.conf'</span><span class="p">:</span>
+  <span class="py">path</span>    <span class="p">=&gt;</span> <span class="s1">'/etc/ntp.conf'</span><span class="p">,</span>
+  <span class="py">ensure</span>  <span class="p">=&gt;</span> <span class="n">file</span><span class="p">,</span>
+  <span class="kp">require</span> <span class="p">=&gt;</span> <span class="nc">Package</span><span class="p">[</span><span class="s1">'ntp'</span><span class="p">],</span>
+  <span class="py">source</span>  <span class="p">=&gt;</span> <span class="s2">"puppet:///modules/ntp/ntp.conf"</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>This guide applies to Puppet 6.7.</p>
+    
+      <h2 id="quick-start">
+        
+        
+          Quick Start <a href="#quick-start" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>Install the <code>puppet-agent</code> package (which provides <code>puppet apply</code>),
+following the <a href="https://puppet.com/docs/puppet/6.7/install_agents.html">instructions at official document</a>.</p>
+<p>As an oversimplified example, I wrote a script to ensure git is installed:</p>
+<div class="language-puppet highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># filename: laptop.pp
+</span><span class="n">package</span> <span class="p">{</span><span class="s1">'git'</span><span class="p">:</span>
+  <span class="py">ensure</span> <span class="p">=&gt;</span> <span class="n">installed</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Validate its syntax:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>puppet parser validate laptop.pp
+</code></pre></div></div>
+<p>In practice, this is mainly for CI,
+since a decent editor should have warned you if you made some syntax mistakes.</p>
+<p>Rehearse the play (dry run):</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>puppet apply <span class="nt">--noop</span> laptop.pp
+</code></pre></div></div>
+<p>It's show time: (run as root since installing package usually requires root permission)</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>puppet apply laptop.pp
+</code></pre></div></div>
+<p>You can also pass a directory instead of a file to <code>puppet apply</code>.
+But in this case Puppet combines all files under that directory as one script,
+without isolated scope.
+Thus I prefer use one file.</p>
+    
+      <h2 id="puppet-dsl">
+        
+        
+          Puppet DSL <a href="#puppet-dsl" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+    
+      <h3 id="style">
+        
+        
+          Style <a href="#style" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>The Puppet community prefers <code>snake_case</code> and two spaces soft tab.</p>
+    
+      <h3 id="selector-expression">
+        
+        
+          Selector Expression <a href="#selector-expression" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>Selector expression returns a value.
+For example, the case &quot;statement&quot; in the beginning code sample:</p>
+<div class="language-puppet highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">case</span> <span class="nv">$operatingsystem</span> <span class="p">{</span>
+  <span class="n">centos</span><span class="p">,</span> <span class="n">redhat</span><span class="p">:</span> <span class="p">{</span> <span class="nv">$service_name</span> <span class="o">=</span> <span class="s1">'ntpd'</span> <span class="p">}</span>
+  <span class="n">debian</span><span class="p">,</span> <span class="n">ubuntu</span><span class="p">:</span> <span class="p">{</span> <span class="nv">$service_name</span> <span class="o">=</span> <span class="s1">'ntp'</span> <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>can be rewritten as:</p>
+<div class="language-puppet highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$service_name</span> <span class="o">=</span> <span class="nv">$operatingsystem</span> <span class="err">?</span> <span class="p">{</span>
+  <span class="n">centos</span><span class="p">,</span> <span class="py">redhat</span> <span class="p">=&gt;</span> <span class="s1">'ntpd'</span><span class="p">,</span>
+  <span class="n">debian</span><span class="p">,</span> <span class="py">ubuntu</span> <span class="p">=&gt;</span> <span class="s1">'ntp'</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Strictly speaking, they are not semantically equivalent.
+If the os failed to match, the former will do nothing,
+while the later will refuse to compile.</p>
+<p>However, the <code>if</code> and <code>case</code> &quot;statements&quot; are actually expressions,
+returning the value of the last expression in the executed block
+or <code>undef</code> when no block was executed.</p>
+    
+      <h3 id="puppet-defaults">
+        
+        
+          Puppet Defaults <a href="#puppet-defaults" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>Puppet DSL has a wired syntax (capitalizing type name) for declaring defaults for a specific type of puppet:</p>
+<div class="language-puppet highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Set default values for the path attribute of the exec puppet.
+</span><span class="nc">Exec</span> <span class="p">{</span>
+  <span class="py">path</span> <span class="p">=&gt;</span> <span class="s1">'/usr/bin:/bin:/usr/sbin:/sbin'</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>The more wired part is, puppet defaults are <strong>dynamically scoped</strong>!</p>
+<p>Therefore, using per-expression defaults is preferred.
+Below is an example from <a href="https://puppet.com/docs/puppet/6.7/lang_resources.html#resource-declaration-default-attributes">the official document</a>:</p>
+<div class="language-puppet highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">file</span> <span class="p">{</span>
+  <span class="k">default</span><span class="p">:</span>
+    <span class="py">ensure</span> <span class="p">=&gt;</span> <span class="n">file</span><span class="p">,</span>
+    <span class="py">owner</span>  <span class="p">=&gt;</span> <span class="s2">"root"</span><span class="p">,</span>
+    <span class="py">group</span>  <span class="p">=&gt;</span> <span class="s2">"wheel"</span><span class="p">,</span>
+    <span class="py">mode</span>   <span class="p">=&gt;</span> <span class="s2">"0600"</span><span class="p">,</span>
+  <span class="p">;</span>
+  <span class="p">[</span><span class="s1">'ssh_host_dsa_key'</span><span class="p">,</span> <span class="s1">'ssh_host_key'</span><span class="p">,</span> <span class="s1">'ssh_host_rsa_key'</span><span class="p">]:</span>
+    <span class="c"># use all defaults
+</span>  <span class="p">;</span>
+  <span class="p">[</span><span class="s1">'ssh_config'</span><span class="p">,</span> <span class="s1">'ssh_host_dsa_key.pub'</span><span class="p">,</span> <span class="s1">'ssh_host_key.pub'</span><span class="p">,</span> <span class="s1">'ssh_host_rsa_key.pub'</span><span class="p">,</span> <span class="s1">'sshd_config'</span><span class="p">]:</span>
+    <span class="c"># override mode
+</span>    <span class="py">mode</span> <span class="p">=&gt;</span> <span class="s2">"0644"</span><span class="p">,</span>
+  <span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+    
+      <h3 id="puppet-collector">
+        
+        
+          Puppet Collector <a href="#puppet-collector" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>This is sometimes called the &quot;spaceship operator&quot;,
+which selects a group of puppets via attribute searching:</p>
+<div class="language-puppet highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">User</span> <span class="p">&lt;|</span> <span class="n">groups</span> <span class="o">==</span> <span class="s1">'wheel'</span> <span class="p">|&gt;</span>
+</code></pre></div></div>
+<p>Besides <code>==</code>, there are other operators, <code>!=</code>, <code>and</code>, and <code>or</code>.</p>
+    
+      <h3 id="lazy-puppet">
+        
+        
+          Lazy Puppet <a href="#lazy-puppet" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h3>
+<p>The at (<code>@</code>) prefix marks a puppet declaration as lazy:</p>
+<div class="language-puppet highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">@</span><span class="n">user</span> <span class="p">{</span><span class="s1">'ubuntu'</span><span class="p">:</span>
+  <span class="py">uid</span> <span class="p">=&gt;</span> <span class="m">1000</span><span class="p">,</span>
+  <span class="py">comment</span> <span class="p">=&gt;</span> <span class="s1">'default user'</span><span class="p">,</span>
+  <span class="py">group</span> <span class="p">=&gt;</span> <span class="n">wheel</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Lazy puppets will not be applied until:</p>
+<ol>
+<li>explicitly realized, e.g. <code>realize User['ubuntu']</code>, or</li>
+<li>implicitly realized by a matched collector, e.g. <code>User &lt;| group == wheel |&gt;</code>.</li>
+</ol>
+    
+      <h2 id="glossary">
+        
+        
+          Glossary <a href="#glossary" class="anchor-hash" title="link to this heading">#</a>
+        
+        
+      </h2>
+<p>This guide uses different terms to the official Puppet documentation.
+These are just my personal preference.
+For example, the <em>script</em> term used in this guide is called <strong>manifest</strong> in the official Puppet documentation.
+In my opinion, <em>script</em> makes more sense than <strong>manifest</strong>.
+In fact, <a href="https://www.chef.io/">chef</a> refers to the similar notation as <a href="https://docs.chef.io/recipes.html">recipe</a>.</p>
+<ul>
+<li><strong>agent</strong> Puppet actually uses the term agent instead of <em>slave</em>, but this is just a euphemism.</li>
+<li><strong>catalog</strong> In master <em>slave</em> mode, catalog are compiled by master with <em>stage</em> specific information. In <code>puppet apply</code> mode, it is just unimportant mid-product.</li>
+<li><strong>class</strong> A <em>set</em> of puppets. And a <strong>subclass</strong> is <em>an extended set</em> of puppets base on another <em>set</em> of puppets, a.k.a. a class <code>inherits</code> another class.</li>
+<li><strong>environment</strong> A <em>play</em>.</li>
+<li><strong>fact</strong> A <em>detail</em> about the <em>stage</em>.</li>
+<li><strong>Facter</strong> The <em>stage manager</em> can tell you <em>details</em> about the <em>stage</em>.</li>
+<li><strong>filebucket</strong> A repository for file backups.</li>
+<li><strong>Hiera</strong> A built-in key-value database for puppet.</li>
+<li><strong>lambda</strong> In Puppet, a lambda can only be used in function calls. That is, it can only be passed to functions, but cannot be assigned to variables. To some extent, it is more like Ruby's block.</li>
+<li><strong>manifest</strong> The <em>script</em> used by a marionettist. Puppet refers to the entry point as <strong>main manifest</strong> or <strong>site manifest</strong>. <code>puppet apply</code> only cares about the <em>script</em> passed to it on the command line.</li>
+<li><strong>node</strong> The <em>stage</em> for the show. In <code>puppet apply</code> mode, the local machine is the only <em>stage</em>.</li>
+<li><strong>resource</strong> A <em>puppet</em> controlled by the marionettist. Puppet uses the term <strong>virtual resource</strong> to refer to <em>lazy puppet</em>.</li>
+</ul>
+    <div class="footer border-top border-gray-light mt-5 pt-3 text-gray">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start">
+        <form id="site-search" action="https://duckduckgo.com/html/" method="get">
+          <input name="q" type="search" value="site:mmap.page " required pattern="site:mmap\.page\s.+">
+          <input type="submit" value="&#x1F50D;" title="search through site content via DuckDuckGo">
+        </form>
+        <p>
+          <a href="mailto:weakish@gmail.com" title="weakish@gmail.com"><img src="https://icongr.am/feather/mail.svg" alt="Feather Icon Mail"></a>
+          <a href="https://savannah.nongnu.org/people/viewgpg.php?user_id=65699" title="2414 AEA0 EA48 5263 9697  F1BA 55F6 EEC2 EA3F 0A87"><img src="https://icongr.am/feather/key.svg" alt="Feather Icon Key"></a>
+          <a href="https://github.com/weakish/" title="GitHub"><img src="https://icongr.am/feather/github.svg" alt="Feather Icon Github"></a>
+          <a href="https://www.instagram.com/jakukyo/" title="Instagram"><img src="https://icongr.am/feather/instagram.svg" alt="Feather Icon Instagram"></a>
+          <a href="https://twitter.com/weakish" title="Twitter"><img src="https://icongr.am/feather/twitter.svg" alt="Feather Icon Twitter"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/rss.xml" title="RSS 2.0 Feed"><img src="https://icongr.am/feather/rss.svg" alt="Feather Icon RSS"></a>
+          <a href="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/uses/" title="uses"><img src="https://icongr.am/feather/book-open.svg" alt="Feather Icon Book Open"></a>
+          
+          
+          <a href="/Me.ZeroNetwork.bit/?Profile/12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv/1GnJD7CXskmG8GywMbTvbP12wneCFW9XzR/weakish@zeroid.bit" title="ZeroMe"><img src="/16XMwj6YRNqRHWbmSD8oxYUZCKfM1uzwP9/assets/images/zeronet_logo.svg" alt="ZeroNet Logo" width="32" height="32"></a>
+        </p>
+      </div>
+        <p>
+        Permission to use, copy, modify, and/or distribute this site for any purpose with or without fee is hereby granted.
+        This site is provided "as is" without express or implied warranty.
+        </p>
+        <p>
+        This site does not use cookies or tracking codes.
+        The hosting service provider (<a href="https://pages.github.com/">GitHub Pages</a>) probably collects server logs,
+        but I do not have access to them.
+        </p>
+        <p>
+        Site source is <a href="https://github.com/weakish/weakish.github.com/">available</a>
+        and feedback is <a href="https://github.com/weakish/weakish.github.com/issues">welcome</a>.
+        </p>
+        <noscript>
+        <p>
+        This site does not use JavaScript.
+        </p>
+        </noscript>
+    </div>
+  </div>
+</body>
+</html>

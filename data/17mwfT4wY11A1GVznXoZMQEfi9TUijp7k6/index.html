@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+	<link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+	<div id="gallery">this website require ipfs to work properly</div>
+
+	<script>
+		function getQueryVariable(variable) {
+    var query = window.location.search.substring(1);
+    var vars = query.split('&');
+    for (var i = 0; i < vars.length; i++) {
+        var pair = vars[i].split('=');
+        if (decodeURIComponent(pair[0]) == variable) {
+            return decodeURIComponent(pair[1]);
+        }
+    }
+	return -1;
+}
+
+var xmlhttp = new XMLHttpRequest();
+var url = "images.json";
+
+function getUrl(path, contents) {
+	contents.forEach( function(element, index, array) {
+		if (element.type == "directory") {
+			getUrl(path + '/' + element.name, element.contents);
+		}
+		else {
+			if (element.name.indexOf(".mp4") > 0 || element.name.indexOf(".webm") > 0)
+				document.getElementById("gallery").innerHTML += '<video style="width: 25%;" controls="true" src="http://localhost:8080/ipfs/QmeC2QgeLCQ8LmCFmhsJJm3S7GVsFch46D8RqFPyzK88Sz/' + path + '/' + element.name + '" />';
+			else
+				document.getElementById("gallery").innerHTML += '<img style="width: 25%;" src="http://localhost:8080/ipfs/QmeC2QgeLCQ8LmCFmhsJJm3S7GVsFch46D8RqFPyzK88Sz/' + path + '/' + element.name + '" />';
+		}
+	});
+}
+
+xmlhttp.onreadystatechange = function() {
+    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+        var images = JSON.parse(xmlhttp.responseText);
+		document.getElementById("gallery").innerHTML = '';
+		images[0].contents.forEach( function(element, index, array) {
+			if (getQueryVariable("star") == -1) {
+				document.getElementById("gallery").innerHTML += '<a href="?star=' + element.name + '">' + element.name + '</a><br />'; 
+			} else {
+				if (element.name == getQueryVariable("star"))
+					getUrl(element.name, element.contents);
+			}
+		});
+    }
+};
+xmlhttp.open("GET", url, true);
+xmlhttp.send();
+
+	</script>
+</body>
+
+</html>

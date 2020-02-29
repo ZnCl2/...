@@ -1,0 +1,120 @@
+<!DOCTYPE HTML>
+<html lang="ru">
+    <head>
+      <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb</title>
+      <link rel="stylesheet" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/css/main.css"/>
+      <link rel="shortcut icon" type="image/x-icon" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/favicon.ico"/>
+      <link href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/rss.xml" title="Akademic's blog" type="application/rss+xml" rel="alternate"/>
+    </head>
+    <body>
+        <header><h1><a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb" rel="home">akademic.name</a></h1></header>
+        <main class="content">
+            
+<article>
+    <h1>Вывод звука через колонки на сервере и на клиенте</h1> <time>18.05.2013</time>
+	<p>Как и обещал, продолжаю тему вывода звука на колонки.</p>
+
+<p>Предыдущее решение <a href="/blog/2013/vyvod-zvuka-cherez-kolonki-na-servere/">Вывод звука через колонки на сервере и только на сервере</a> направляло все аудиопотоки на сервер.</p>
+
+<p>А что если сервер сломается или что-то будет с роутером и колонки надо будет подключать локально? Придётся лезть в конфиг /etc/pulse/client.conf, комментировать строчку и всё перезапускать. Только после этого звук пойдёт в локальную звуковуху.</p>
+
+<p>Но есть решение лучше.</p>
+
+<p>Можно настроить одновременный вывод звука и на сервер и в локально.
+В этом случае куда бы не были подключены колонки, звук будет.</p>
+
+<p>Сервер настраиваем по инструкции в предыдущей &ldquo;статье(Вывод звука через колонки на сервере)&rdquo;:/blog/2013/vyvod-zvuka-cherez-kolonki-na-servere/</p>
+
+<h2>А на клиенте делаем следующее:</h2>
+
+<p>Редактируем файл /etc/pulse/default.pa
+В его конец добавляем следующие строчки:</p>
+
+<pre><code>#my network config
+load-module module-tunnel-sink server=&lt;server_ip&gt;
+load-module module-combine sink_name=combined slaves=&quot;tunnel-sink.&lt;server_ip&gt;,alsa_output.pci-0000_00_1b.0.analog-stereo&quot;
+set-default-sink combined
+</code></pre>
+
+<p>Что здесь что:
+&lt;server_ipgt; это IP сервера, к которому подключены колонки</p>
+
+<p>Строчка load-module module-tunnel-sink server=&amp;ltserver_ip&gt; создаёт виртуальное устройство вывода звука, которое выводит его на сервере.</p>
+
+<p>Строчка load-module module-combine sink_name=combined slaves=&ldquo;tunnel-sink.&lt;server_ip&gt;,alsa_output.pci-0000_00_1b.0.analog-stereo&rdquo; создаёт комбинированное виртуальное устройство вывода звука, которое выводит звук в два других устройства. Эти устройства задаются параметром slaves.
+tunnel-sink.&lt;server_ip&gt; это имя устройства, созданного в первой строке.</p>
+
+<p>alsa_output.pci-0000_00_1b.0.analog-stereo - имя звуковой карты на данном компьютере.
+Узнать его можно командой pacmd list-sinks.</p>
+
+<p>Её вывод даст что-то вроде:</p>
+
+<pre><code>index: 0
+        name: &lt;alsa_output.pci-0000_00_1b.0.analog-stereo&gt;
+        driver: &lt;module-alsa-card.c&gt;
+        ....
+</code></pre>
+
+<p>Строчка set-default-sink combined делает комбинированное звуковое устройство - устройством вывода по-умолчанию.</p>
+
+<h2>По поводу tunnel-sink.&lt;server_ip&gt;</h2>
+
+<p>В интернете я встречал разное имя этого устройства, поэтому хорошо бы выяснить его на месте.</p>
+
+<p>Как это сделать?</p>
+
+<p>Все строчки, которые я прописал в конфиг можно передать на вход команде pacmd.
+Вот так:</p>
+
+<p><code>pacmd load-module module-tunnel-sink server=&lt;server_ip&gt;</code></p>
+
+<p>Затем командой pacmd list-sinks посмотреть доступные устройства. Там будет что-то такое:</p>
+
+<pre><code>index: 0
+        name: &lt;alsa_output.pci-0000_00_1b.0.analog-stereo&gt;
+        driver: &lt;module-alsa-card.c&gt;
+        ...
+index: 1
+        name: &lt;tunnel-sink.192.168.2.30&gt;
+        driver: &lt;module-tunnel.c&gt;
+        ...
+</code></pre>
+
+<h2>Дополнительные настройки KDE4</h2>
+
+<p>Для того чтобы звук действительно выводился в комбинированное устройство надо зайти в System Settings -&gt; Multimedia и для всех пунктов в закладке Приоритет устройств поставить устройство Simultaneous output&hellip; первым в списке.</p>
+
+<h2>Конец</h2>
+
+<p>Теперь убиваем pulseaudio и перезапускаем X-сервер.
+Всё должно заработать.</p>
+
+<h2>Послесловие</h2>
+
+<p>Все эти телодвижения я делал ради того, чтобы можно было пользоваться одними колонками с нескольких компьютеров дома. Однако на втором компьютере у меня нормально не заработало. Звук есть, но прерывистый.
+Причём прерывистый и в локальных колонках и в сервере. Прерывистость появляется когда я создаю simultanous устройство и исчезает, когда я его удаляю.</p>
+
+<p>Я проверил и конфиги и версии пакетов - всё совпадает. Грешу пока что на то, что второй компьютер подключен по Wi-Fi. Пока не было возможности протестить на проводе.</p>
+
+    
+    <span class="next_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2013/btsync-i-utechka-pamyati/index.html" rel="next">Btsync и утечка памяти</a>
+    </span>
+	
+	
+    <span class="prev_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2013/deb-paket-dlya-btsync/index.html" rel="previous">.deb пакет для btsync</a>
+    </span>
+	
+</article>
+
+        </main>
+        <footer>
+        Будьте внимательны, многое из того, что написано в этом блоге, является личным мнением автора и не претендует на истину.
+        <img src="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/yopiright.jpg" width="12" height="12"/> 2008
+        </footer>
+    </body>
+</html>

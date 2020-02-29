@@ -1,0 +1,122 @@
+<!DOCTYPE HTML>
+<html lang="ru">
+    <head>
+      <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb</title>
+      <link rel="stylesheet" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/css/main.css"/>
+      <link rel="shortcut icon" type="image/x-icon" href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/favicon.ico"/>
+      <link href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/rss.xml" title="Akademic's blog" type="application/rss+xml" rel="alternate"/>
+    </head>
+    <body>
+        <header><h1><a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb" rel="home">akademic.name</a></h1></header>
+        <main class="content">
+            
+<article>
+    <h1>Роутер Mikrotik 951G-2HnD</h1> <time>11.05.2014</time>
+	<p>Надоели мне глюки TP-Link&rsquo;а и приобрёл я себе роутер фирмы Mikrotik, название которого приведено в заголовке.
+За него выступали операторский бэкграунд производителя, советы коллег, широта настроек и цена.</p>
+
+<p>Поначалу меня немного отпугнуло не столько даже количество пунктов в меню, сколько обилие непонятных мне слов в этом самом меню и на страницах, которые открываются по нажатию на пункты меню.
+Надо сказать, что и до сих пор пугает.</p>
+
+<p>Можно было бы подумать, что простые домашние пользователи потеряны для этого устройства. Но это не так.
+И сейчас я поесню почему.
+А главным козырем является страница по-умолчанию доступная сразу при подключении к устройству.
+Называется она QuickSet и выглядит вот так (фотку взял из интернета - лень скриншот делать и что-то там замазывать):</p>
+
+<p><img src="quickset.png" alt="Быстрые настройки роутера" />
+</p>
+
+<p>Да поначалу кажется, что тут много всего непонятного. Но на самом деле на этой странице просто приведены все настройки,
+которые достаточно выставить обычного домашнего использования устройства. Причём по-умолчанию всё выставлено сразу как надо.
+Единственное, что мне пришлось выставить - это название wifi, пароль wifi и страну. Ну и пароль для доступа в админку.
+Причём, можно было бы вообще ничего не настраивать, интернет и wifi начинают работать сразу после подключения проводов и питания.
+Но не здорово жить без пароля на wifi и особенно на интерфейс для настройки устройства - вдруг какой нехороший человек всё поломает.</p>
+
+<p>Дальше, правда я поменял больше настроек, но это уже необходимо было для моих специфичных нужд.
+Я сменил сеть, раздаваемую по dhcp, на принятую в моей сети, уменьшил диапазон выдаваемых IP.
+Настроил port-forwarding, добавил static-arp и static-dhcp для сервера, настроил доступ к интерфейсу администрирования.</p>
+
+<h2>Краткие итоги обновки:</h2>
+
+<ol>
+<li>Всё заработало сразу и без проблем</li>
+
+<li><p>Wifi работает лучше, чем было. Это было основной целью замены роутера. Но всё равно забавно, потому что у микротика две встроенные антенны, а у TP-Link&rsquo;а три внешние.
+Вот картинки для сравнения:
+<img src="mikrotik-951g-2hnd.jpg" alt="MikroTik RB951G-2HnD" />
+
+<img src="tl-wr1043nd.jpg" alt="TP-Link TL-WR1043nd" />
+</p>
+
+<p>При этом с TP-Link&prime;ом раньше были мёртвые зоны, где wifi не работал, а теперь и в них тоже уверенный приём.</p></li>
+
+<li><p>На столе стало больше свободного места.</p></li>
+
+<li><p>Думаю, чего бы ещё интересного понастраивать.</p></li>
+</ol>
+
+<h2>Форвардинг DNS</h2>
+
+<p>Также настроил форвардинг DNS по условию. Это просто классная штука!</p>
+
+<p>Суть в следующем: Проблема в том, что провайдерский DNS-сервер выдаёт неправильные адреса для некоторых доменов.
+И поэтому я хочу, чтобы DNS-запросы о некоторых доменных именах попадали на определённый DNS-сервер, который отличается от предоставляемого провайдером.
+Делается это при помощи настройки файрвола на роутере, который умеет работать в том числе на 7м уровне.</p>
+
+<p>Реализацию хотелки я нашёл в этой статье: <a href="https://www.dalemacartney.com/2012/12/29/dns-conditional-forwarders-with-mikrotik-routeros/">DNS Conditional forwarders with Mikrotik RouterOS</a>
+Чтобы информация не пропала, продублирую настройки и здесь.</p>
+
+<p>Итак, допустим у нас есть роутер Mikrotik с адресом <code>10.0.0.254</code>.
+И мы хотим, чтобы DNS-запрос для домена <code>example.com</code> был направлен на DNS-сервер с адресом <code>10.0.1.11</code>.</p>
+
+<p>Достичь этого можно, выполнив следующие команды на роутере:</p>
+
+<pre><code>[admin@RouterOS] &gt; /ip firewall layer7-protocol add name=example.com regexp=example.com
+[admin@RouterOS] &gt; /ip firewall mangle add chain=prerouting dst-address=10.0.0.254 layer7-protocol=example.com action=mark-connection new-connection-mark=example.com-forward protocol=tcp dst-port=53
+[admin@RouterOS] &gt; /ip firewall mangle add chain=prerouting dst-address=10.0.0.254 layer7-protocol=example.com action=mark-connection new-connection-mark=example.com-forward protocol=udp dst-port=53
+[admin@RouterOS] &gt; /ip firewall nat add action=dst-nat chain=dstnat connection-mark=example.com-forward to-addresses=10.0.1.11
+[admin@RouterOS] &gt; /ip firewall nat add action=masquerade chain=srcnat connection-mark=example.com-forward
+</code></pre>
+
+<p>Разберу по порядку, что здесь происходит:</p>
+
+<ol>
+<li>Заводим &ldquo;новый протокол седьмого уровня&rdquo;, которым считаем все пакеты, в которых встречается подстрока <code>example.com</code>.
+Подстрока для проверки вставляется после <code>regexp=</code></li>
+<li>В следующих двух строках маркируем пакеты приходящие на 53й порт протоколов tcp и udp нашего роутера, относящиеся к нашему &ldquo;новому протоколу&rdquo;.
+Это DNS-запросы о домене example.com</li>
+<li>Перенаправляем эти помеченные DNS-запросы на желаемый DNS-сервер.</li>
+<li>Ответы от этого DNS-сервера подставляем как ответы роутера.</li>
+</ol>
+
+<p>Как это работает:</p>
+
+<ol>
+<li>Компьютеры, подключенные к роутеру, получают в качестве адреса DNS-сервера адрес роутера.</li>
+<li>Роутер распознаёт DNS-запросы об определённом домене и перенаправляет их на заданный DNS-сервер.</li>
+<li>Ответ от того DNS-сервера, передаёт клиентам, подменяя его обратный адрес был тот же, что и у роутера.</li>
+<li>Таким образом красиво получается сделать правильный доступ к заданным сайтам для всех устройств подключенных через данный роутер.</li>
+</ol>
+
+    
+    <span class="next_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2014/perehod-na-php5.6/index.html" rel="next">Переход на php5.6 c php5.4</a>
+    </span>
+	
+	
+    <span class="prev_blog_post">
+    <a href="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/blog/2014/codeception_checkbox/index.html" rel="previous">Codeception: Тест отправки формы с массивом чекбоксов</a>
+    </span>
+	
+</article>
+
+        </main>
+        <footer>
+        Будьте внимательны, многое из того, что написано в этом блоге, является личным мнением автора и не претендует на истину.
+        <img src="/18Yd2NFggSXzLRvSaDVi936KrM8Ehc3neb/i/yopiright.jpg" width="12" height="12"/> 2008
+        </footer>
+    </body>
+</html>

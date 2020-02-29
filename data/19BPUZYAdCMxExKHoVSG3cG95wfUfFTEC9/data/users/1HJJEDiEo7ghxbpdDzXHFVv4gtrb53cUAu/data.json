@@ -1,0 +1,91 @@
+{
+	"next_topic_id": 2,
+	"topic": [
+		{
+			"topic_id": 1,
+			"title": "【已解决】如何在 Apache 2.4 搭反向代理来访问ZeroNet？",
+			"body": "## 1. 问题\n要的效果就是像bit.no.com:43110一样，可以支持SSL，然后可以在公网上访问。\n  \n我大概知道是因为Websocket没有走代理，网上搜了一圈都没有找到解决的办法，不知道是哪里出问题。\n  \n这个的配置**是有问题的**，整个背景颜色可以显示出来，然后什么也加载不出，显示`Connection with UiServer Websocket was lost. Reconnecting...`\n  \n\n  \n**（已经解决，请看下面更新）**\n\n```\n# 这个配置是有问题的，不能用\n<VirtualHost *:443>\n        ServerName zeronet.example.com\n\n        ProxyRequests off\n        ProxyPreserveHost on\n        ProxyPass /Websocket ws://127.0.0.1:43110/\n        ProxyPassReverse /Websocket ws://127.0.0.1:43110/\n        ProxyPass / http://127.0.0.1:43110/\n        ProxyPassReverse / http://127.0.0.1:43110/\n\n        SSLEngine on\n        SSLProxyEngine on\n        SSLCertificateFile /etc/certs/cert.pem\n        SSLCertificateKeyFile /etc/certs/privkey.pem\n        SSLCertificateChainFile /etc/certs/chain.pem\n</VirtualHost>\n```\n\n## 2. 更新\n\n后来我Google了好久，别人的解决办法一个一个试，最终这样的配置可以使用了，贴在这里：\n```\n# 这个配置我试了，是可以的\n<VirtualHost *:443>\n\n        ServerName zeronet.example.com\n\n        ProxyRequests off\n        ProxyPreserveHost on\n        ProxyPass / http://127.0.0.1:43110/\n        ProxyPassReverse / http://127.0.0.1:43110/\n\n        <Location /Websocket>\n\n                ProxyPass ws://127.0.0.1:43110/Websocket\n                ProxyPassReverse ws://127.0.0.1:43110/Websocket\n        </Location>\n\n\n        SSLEngine on\n        SSLProxyEngine on\n        SSLCertificateFile /etc/certs/cert.pem\n        SSLCertificateKeyFile /etc/certs/privkey.pem\n        SSLCertificateChainFile /etc/certs/chain.pem\n</VirtualHost>\n```",
+			"added": 1475611200,
+			"parent_topic_uri": "8_1NV87VmSkezRyz8NbFpdkYJsJUSfXx7LJa"
+		}
+	],
+	"topic_vote": {
+		"1_1HJJEDiEo7ghxbpdDzXHFVv4gtrb53cUAu": 1,
+		"1_16fBiub5fLCTcrkSU4s4w8MRrmbBVQeLrM": 1,
+		"33_1NwWoM1qGUV9gjLG7QGyhqsRxKKga2rhtf": 1,
+		"181_1DcMmKhgdfkR1GDA6zhWhoFRreaej4wLmW": 1,
+		"157_1DcMmKhgdfkR1GDA6zhWhoFRreaej4wLmW": 1,
+		"294_1DcMmKhgdfkR1GDA6zhWhoFRreaej4wLmW": 1,
+		"4_157kFKiaEbRUds2HCBUpv33t4Unezi6dR6": 1
+	},
+	"next_comment_id": 11,
+	"comment": {
+		"1_1958F7oCppj78MP966AfojMQwHg2WUupzq": [
+			{
+				"comment_id": 1,
+				"body": "这能忍。。我昨天也碰到了这个问题",
+				"added": 1463656424
+			}
+		],
+		"1_19He6wf3X6APdeNEgcMmoPmzEcNAVgxXzg": [
+			{
+				"comment_id": 2,
+				"body": "可以的，支持下！",
+				"added": 1470462521
+			}
+		],
+		"3_18auMMS7rP3JjNjE2iP7nTFQ52crNfgDjM": [
+			{
+				"comment_id": 3,
+				"body": "@ssrchat",
+				"added": 1472267047
+			},
+			{
+				"comment_id": 4,
+				"body": "频道 @shadowsocksr",
+				"added": 1472267072
+			}
+		],
+		"2_1A9MdUkuquN8mbRxbThroreNxVHFMRGqie": [
+			{
+				"comment_id": 5,
+				"body": "感谢分享哦～",
+				"added": 1475592186
+			}
+		],
+		"1_1HJJEDiEo7ghxbpdDzXHFVv4gtrb53cUAu": [
+			{
+				"comment_id": 6,
+				"body": "> [p2p](#comment_908_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): 你可以在ZeroHello首页的搜索框里搜索apache或Nginx，有前人搞过的\n\n搞定了搞定了，配置：\n\n```\n<VirtualHost *:443>\n        ServerName zeronet.example.com\n\n        ProxyRequests off\n        ProxyPreserveHost on\n        ProxyPass / http://127.0.0.1:43110/\n        ProxyPassReverse / http://127.0.0.1:43110/\n\n        <Location /Websocket>\n                ProxyPass ws://127.0.0.1:43110/Websocket\n                ProxyPassReverse ws://127.0.0.1:43110/Websocket\n        </Location>\n\n\n        SSLEngine on\n        SSLProxyEngine on\n        SSLCertificateFile /etc/certs/cert.pem\n        SSLCertificateKeyFile /etc/certs/privkey.pem\n        SSLCertificateChainFile /etc/certs/chain.pem\n</VirtualHost>\n```",
+				"added": 1475635071
+			},
+			{
+				"comment_id": 7,
+				"body": "> [p2p](#comment_910_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): 什么叫就差一点点？到底有没有搞定？\n\n搞定了，这个可以的",
+				"added": 1475670609
+			},
+			{
+				"comment_id": 8,
+				"body": "> [p2p](#comment_911_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ): 这个是哪个？建议你编辑一下那条回复和主贴，且标题添加“已解决”\n\n不好意思，我的话真的很混乱嘛？",
+				"added": 1475686760
+			}
+		],
+		"1_15Z67QmyH6MTfk3pDfBR635kVie5DaokHd": [
+			{
+				"comment_id": 9,
+				"body": "简单语言说明就是有那么一个服务器专门存储节点列表，也就是说虽然是去中心化，这样一个中心服务器还是要有的，当然啦谁都可以建这样一个中心服务器，不是一定要作者来维护",
+				"added": 1476548140
+			}
+		],
+		"1_1EFRUQjydLVFKNFBiF2LW5rpQeqEr8EA6M": [
+			{
+				"comment_id": 10,
+				"body": "好厉害啊",
+				"added": 1476838481
+			}
+		]
+	},
+	"comment_vote": {
+		"7_1HJJEDiEo7ghxbpdDzXHFVv4gtrb53cUAu": 1
+	}
+}
