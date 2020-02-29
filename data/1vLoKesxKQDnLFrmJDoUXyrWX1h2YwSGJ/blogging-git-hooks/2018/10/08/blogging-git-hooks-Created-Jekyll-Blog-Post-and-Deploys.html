@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>blogging-git-hooks: Created Jekyll Blog Post and Deploys - LiberIT Blog</title>
+  <link rel="stylesheet" href="/1vLoKesxKQDnLFrmJDoUXyrWX1h2YwSGJ/css/main.css">
+  <!--   Syntax highlighting is only needed for posts -->
+  
+  <link rel="stylesheet" href="/1vLoKesxKQDnLFrmJDoUXyrWX1h2YwSGJ/css/syntax-highlighter.css">
+  
+  <link href="//fonts.googleapis.com/css?family=Space+Mono|Work+Sans:700" rel="stylesheet">
+
+</head>
+<body>
+
+<input type="checkbox" id="hamburger" name="hamburger">
+<label id="label-ham" for="hamburger"></label>
+<div class="menu-container">
+  <div class="menu"></div>
+  <div class="links">
+      <a href="/1vLoKesxKQDnLFrmJDoUXyrWX1h2YwSGJ/"><i class="fa fa-home"></i>&nbsp;Home</a>
+      <a href="/1vLoKesxKQDnLFrmJDoUXyrWX1h2YwSGJ/about/"><i class="fa fa-user"></i>&nbsp;About</a>
+      <a href="/1vLoKesxKQDnLFrmJDoUXyrWX1h2YwSGJ/hme_c/"><i class="fa fa-user"></i>&nbsp;Magic
+        Spells</a>
+      <a href="/1vLoKesxKQDnLFrmJDoUXyrWX1h2YwSGJ/archive/"><i class="fa fa-file-zip-o"></i>&nbsp;Archive</a>
+      <a href="/1vLoKesxKQDnLFrmJDoUXyrWX1h2YwSGJ/contact/"><i class="fa fa-address-book-o"></i>&nbsp;Contact</a>
+      <a href="https://github.com/sharu725/krishna"><i class="fa fa-code-fork"></i>&nbsp;Project</a>
+  </div>
+</div>
+
+<div class="content">
+<header>
+     <a href="/1vLoKesxKQDnLFrmJDoUXyrWX1h2YwSGJ/"><h1 class="site-title">LiberIT Blog</h1></a>
+</header>
+  <div class="post-title">
+    
+    <div class="title">
+        <h2>blogging-git-hooks: Created Jekyll Blog Post and Deploys</h2>
+        
+        <span>
+            <time datetime="">
+                   October 08, 2018
+            </time>
+        </span>
+        
+    </div>
+</div>
+
+
+<div class="highlighter-rouge"><pre class="highlight"><code>Managed to get it to create a Jekyll blog post and deploy to website.
+Still have to get it to deploy to docker, and then docker-machine
+docker-compose pull on the servers.
+Also need to get it to post to github the new post.
+</code></pre>
+</div>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>+++ b/blogging-git-hook.sh
++# get differences
++headVersion=$(git log |grep ^commit |head -n 1| awk '{print $2}')
++previousVersion=$(git log |grep ^commit |head -n 2 |tail -n 1 | awk '{print $2}')
++newContent=$(git diff "$previousVersion" "$headVersion" |grep ^+|more)
++projectName=$(pwd|sed -e 's/.*\///')
++title="$projectName: $(git log -n 1|head -n 5|tail -n 1|sed -e 's/^ *//')"
++author=$(git log -n 1| grep Author| sed -e 's/.*://')
++description=$(tail -n $(($(git log -n 1 |wc -l)-5)))
++blogPWD="$HOME/Documents/blog/liberit-blog"
++# shellcheck disable=SC2001
++safeTitle=$(echo "$title"| sed -e 's/ /-/g') 
++filename="$(date -I)-$safeTitle.md"
++# generate entry
++{
++echo "---"
++echo "layout: post"
++echo "title: \"$title\""
++echo "author: $author"
++echo "date: $(date --iso-8601=seconds)"
++echo "categories: $projectName"
++echo "---"
++echo "$description"
++# shellcheck disable=SC2016
++echo '```'
++echo "$newContent"
++# shellcheck disable=SC2016
++echo '```'
++echo "This post was automatically generated from a git commit"
++} &gt; "$blogPWD/_posts/$filename"
++
++# publish
++
++zronhwephbis="$HOME/ZeroNet"
++hnim="1vLoKesxKQDnLFrmJDoUXyrWX1h2YwSGJ"
++
++cd "$blogPWD" || exit 1
++bundle exec jekyll build || exit 1
++
++# make docker image
++docker build -t liberit/blog
++
++
++# add to zeronet
++rsync -av _site/ "$zronhwephbis/data/$hnim"
++cd "$zronhwephbis" || exit 1
++./zeronet.py siteSign $hnim
++./zeronet.py sitePublish $hnim
++rsync -av "$zronhwephbis/data/$hnim" zeronet@liberit.ca:data/
++
++# post to twitter
+</code></pre>
+</div>
+<p>This post was automatically generated from a git commit</p>
+
+  
+<!--    <footer>
+      Made with <span style="color: palevioletred">❤</span> by <a href="http://webjeda.com">webjeda</a>
+</footer>-->
+</div>
+  <!-- Calling Fontawesome at the end to avoid delay in loading --> 
+  <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<!-- Google Analytics Tracking code -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', '', 'auto');
+  ga('send', 'pageview');
+
+</script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+{
+	"title": "0點の記憶",
+	"description": "不知道写什么而准备的地方\n但也许某天这里就长满了回忆\n希望借助0网让记忆长久一些吧\n<a href=\"/1NAMEz7stUPZErkV1d3yLkVWQFa4PTqDNv/install/\"><img src=\"nameyo.png\"></a>\n本站域名：[0clock.yo](http://127.0.0.1:43110/0clock.yo)",
+	"links": "[NS研究](http://127.0.0.1:43110/12bD4na9Ux7fbfzcmfBRuLWbjMWTAiuaLk/?zeronet_peers=121.237.61.180:15441,123.119.72.84:15441,220.168.57.2:15441,222.197.182.108:22336,58.20.41.145:13759,114.91.29.89:23761,171.221.229.252:15441,117.57.64.245:15441,5rzlm5lnvxubwk4e.onion:38254,ch5yqtzesoe6hvmm.onion:2008,fcvaztn2fh54tou6.onion:10838,mcdtu7izbcgspyui.onion:15441,ndjciskqmke2tr7n.onion:18490,nwl5gfm43tmldutb.onion:12049,sj35apdvr33j5hnc.onion:31630,u6a4qlgbm3glrm2i.onion:29829,zqnllblszxpbz3pm.onion:26910,xum3haxsmnwmsl77.onion:14871,xokcxnttgfwokbhk.onion:12753,yxqy3ra5dfwqlm2k.onion:34726)",
+	"next_post_id": 23,
+	"demo": false,
+	"modified": 1622706755,
+	"post": [
+		{
+			"post_id": 22,
+			"title": "群晖NAS配置ZERONET使用tor网桥笔记",
+			"date_published": 1622694645.971,
+			"body": "## 前言\n> 有NAS的人越来越多了，手机不好安装zeronet，那就应该充分利用手头的NAS为zeronet做个个人代理，做到随时随地都可以访问！（本文内容不仅对代理有用，对流畅安全使用本地zeronet也有参考价值。）\n\n---\n\n##  安装zeronet\n当然首先得保证NAS有一个可访问的web地址，这个用DDNS就可以做到，不再赘述。\n\n最简单的方式是采用Docker安装，建议使用源：`nofish/zeronet` 这个，使用nas UI来安装：\n![](img/upload/zero1.png)\n\n点击`启动`，然后进入`高级设置`：\n![](img/upload/zero2.png)\n\n设置卷，装载路径为`/root/data`，并设置自己相应的宿主文件夹：\n![](img/upload/zero3.png)\n\n设置端口（这里可以先保持默认，后面可以更改）：\n![](img/upload/zero4.png)\n\n**重点** 设置环境，添加以下环境变量，设置域名，访问密码等，**并修改执行命令**：\n![](img/upload/zero5.png)\n\n![](img/upload/zero6.png)\n\n将命令修改为\n```shell\n/bin/sh -c '(! ${ENABLE_TOR} || tor&) && python3 zeronet.py --ui_ip 0.0.00 --fileserver_port ${FILESERVER_PORT} --ui_host ${HOST} --ui_password ${PASSWORD}'`\n```\n\n> 这里有一个坑，zeronet默认是不启用password插件的，所以这里使用password参数会造成容器启动失败，需要将zeronet的plugins中的 disabled-UiPassword 文件夹去掉前面的disabled，改为 UiPassword，才能使用。但容器启动失败，无法进入容器进行修改。我使用了笨方法：用find命令找到docker文件存放的实际位置进行了修改，如果你有其他方法请告诉我。当然如果你不想用password可以省略掉 `--ui_password`参数……\n\n## 设置反向代理\n群晖NAS设置代理很简单，只需要在`应用程序门户`中做相应设置就可以了，但要记住主机名要和HOST环境变量的值一致，并添加`自定义标题`：\n![](img/upload/zero7.png)\n\n## tor的设置\nzeronet自带了一个tor客户端，但众所周知，在中国大陆基本上是不可能直接使用tor的，必须得通过tor网桥，但这是另一个软件，并没有包含在zeronet里面，希望下一个版本能够带上吧，不过安装也相当简单，首先进入zeronet容器，用~~NAS的UI界面~~或者SSH登录。\n\n1. 群晖默认使用的是`/bin/bash`，所以从UI界面是打不开容器终端的，从SSH终端进入容器：\n```shell\ndocker exec -it 容器ID /bin/sh\n```\n\n2. 获取网桥软件：\n```shell\napk add obfs4proxy --update-cache --repository http://dl-4.alpinelinux.org/alpine/edge/testing/ --allow-untrusted\n```\n\n3. 修改tor配置文件（`vi /etc/tor/torrc`）：\n```json\nUseBridges 1\nClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy managed\nBridge obfs4 （网桥地址及验证码，具体地址自行获取，后面说明获取方法）\nBridge obfs4 （可以添加多个）\nNewCircuitPeriod 900\nControlPort 9051\nCookieAuthentication 1\n```\n\n4. 获取obfs4网桥\n\n记得以前可以通过邮件获得，现在不知道还行不行，知道的朋友说一下吧，下面是通过tor浏览器来得到网桥的。\n\n首先在PC上安装tor-browser……😂，零网下载地址：[转自nintendo-switch论坛](http://127.0.0.1:43110/12bD4na9Ux7fbfzcmfBRuLWbjMWTAiuaLk/?Topic:1622380717_1Fcvuso49sa7PXuYqxBBnSAnSdF6U7p5Ta/tor+browser+zeroup+unlimited)\n\ntor浏览器第一次启动时，会询问是否使用网桥，可以选择内置网桥或者选择从torproject.org获取，如果没有翻墙从torproject直接获取一般是不会成功的，这个时候选择内置网桥，里面有一个适合China地区的，先选择它连接tor网络成功后再换成从torproject获取obfs4网桥。\n![](img/upload/zero8.png)\n\n将获取的obfs4地址信息复制到torrc文件中（Bridge后面）\n\n最后，在zeronet中进行设置：\n![](img/upload/zero9.png)\n\n 重新启动容器\nenjoy!\n\n> 提示，请使用一个有大量节点的Trackers文件",
+			"date_modified": 1622706755.482
+		},
+		{
+			"post_id": 21,
+			"title": "更换pip源",
+			"date_published": 1598634652,
+			"body": "python 在使用pip安装的时候，一些小一点的还好，安装一些大的包的时候，会非常的慢，这时我们就可以使用清华大学的镜像来安装，打开cmd\n\n`pip install 要安装的包 -i https://pypi.tuna.tsinghua.edu.cn/simple`\n\n比如说要安装selenium包,可以这样写\n\n`pip install selenium -i https://pypi.tuna.tsinghua.edu.cn/simple`\n\n可以把清华源设置为默认源\n首先要把pip升级到10以上\n\n`pip install pip -U`\n\n设置为默认源\n\n`pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple`\n\npip国内的一些镜像\n\n  阿里云 https://mirrors.aliyun.com/pypi/simple/\n  中国科技大学 https://pypi.mirrors.ustc.edu.cn/simple/\n  豆瓣(douban) http://pypi.douban.com/simple/\n  清华大学 https://pypi.tuna.tsinghua.edu.cn/simple/\n  中国科学技术大学 http://pypi.mirrors.ustc.edu.cn/simple/",
+			"date_modified": 1621993766.422
+		},
+		{
+			"post_id": 20,
+			"title": "PS4 6.72破解",
+			"date_published": 1598632485,
+			"body": "转自91WII\n\n6.72各路大神发布的破解已经越来越完美，破解速度和方法都比较快，所谓的断电和重启和报故障代码基本上都是操作方法错误和破解程序选择上的问题，建议各位5.05的战们，快点选择6.72破解吧。\n\n\n\n现总结下，以最简单、快捷的方法离线破解6.72，希望都能顺利破解6.72。\n\n1、6.72以下版本，选择6.72升级包即可，不用开机进安全模式，直接升级即可。除非你要换硬盘，不然没必要用完整固件包。\n\n\n2、升级成功后关闭PS4自动更新。\n\n\n3、用PS4连接好家里的WIFI\n\n---\n\n4、重点：查看PS4的wifi地址，在自己的路由器里先设置屏蔽机器上网。\n\n\n5、破解步骤开始。。。\n\n一、安卓手机破解（现在最方便，最简单的破解）\n\n\n\n1、手机下载MiniWebServer后用路由器上网\n\n\n2、破解程序放入手机根目录，比如/Storage/emulated/0/ps4jb\n\n\n3、MiniWebServer本地路径指向这个目录\n\n\n4、MiniWebServer勾选目录索引和IPv6选项，点启动服务器即可，这样手机端就设置好了。\n\n\n5、PS4开浏览器，三清后，输入MiniWebServer里的URL地址，这里要连端口一起输入，比如http://192.168.3.120:8081\n\n\n6、PS4浏览器打开的网页即是离线网页，好好，开始破解吧\n\n\n\n二、局域网破解（用电脑，比较麻烦点，和手机破解类似）\n\n\n\n1、电脑现在基本上都是win7或win10，先安装IIS，具体安装方法可以问度娘。\n\n\n\n\n2、网站建好后，先用电脑测试是否正常。\n3、PS4开浏览器，三清后，输入建好的网站地址，这里要连端口一起输入，比如http://192.168.3.122:8081\n\n\n4、PS4浏览器打开的网页即是离线网页，好好，开始破解吧，你发觉破解其实很简单\n\n\n\n现破解大神不断提供更新破解大法，个人收集了下，大概分这几种：\n\n第一种：https://github.com/zerofo/ps4jb\n第二种：https://github.com/sleirsgoevy/ps4jb       个人推荐这个做离线破解程序，程序小而简单可靠！几乎完美破解！\n第三种：https://github.com/DarkModderVC/PS4JB\n第四种：https://github.com/Leeful/leeful.github.io\n\n以上都可以自行下载最新的更新打包ZIP，用于离线破解。\n\n还有豆子哥、苍神的自动离线破解，当然这需要PS4设定好DNS\n\n 这个是网站自己的：\n\nhttp://ps4.psdump.com/\n\n下面收集的\n\n第一种：66lsmm.coding-pages.com\n第二种：cbepx.f3322.net/php/672/\n第三种：https://zerofo.gitee.io/leeful_jb/\n\n\n以上为网页破解，需要上网！！！",
+			"date_modified": 1598632781.082
+		},
+		{
+			"post_id": 18,
+			"title": "JupyterLab安装",
+			"date_published": 1596459696.786,
+			"body": "\n　　推荐使用miniconda，相比于anaconda更加简洁，下载连接：https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/\n\n## 安装\n```\npip install jupyterlab\n```\n\n## 配置启动目录\n ```\njupyter notebook --generate-config\n```\n会生产一个配置文件 默认路径`C:\\Users\\用户名\\.jupyter\\jupyter_notebook_config.py`\n\n修改其中的几个配置项 并取消前面的注释 \n\n---\n\n```\nipython  \nIn [1]: from notebook.auth import passwd\nIn [2]: passwd() \nEnter password: \nVerify password: \nOut[2]: 'sha1:f704b702aea2:01e2bd991f9c7208ba177b46f4d10b6907810927'  \n```\n```shell\n# 配置启动目录\nc.NotebookApp.notebook_dir = 'E:/Projects'\n# 配置chrom的本地启动功能，让lab像IDE一样在本地打开\nc.NotebookApp.browser = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe --app=%s' \n# 将ip设置为*，意味允许任何IP访问\nc.NotebookApp.ip = '*'\n# 这里的密码就是上边我们生成的那一串\nc.NotebookApp.password = 'sha1:f704b702aea2:01e2bd991f9c7208ba177b46f4d10b6907810927' \n# 服务器上并没有浏览器可以供Jupyter打开 \nc.NotebookApp.open_browser = False \n# 监听端口设置为8888或其他自己喜欢的端口 \nc.NotebookApp.port = 8888\n# 允许远程访问 \nc.NotebookApp.allow_remote_access = True  \n```\n \n\n ## 打开\n ```\njupyter-lab\n```\n\n## 配置扩展插件\n　　打开：settings->Advanced Settings Editor \n\n　　右侧填写：{\"enabled\": true}，开启插安装插件：\n\n## 插件安装\n　　在搜素栏中搜索对于的插件，点击安装即可，build成功后需要重新加载lab\n\n## 配置虚拟环境\n conda安装虚拟环境后 需要在进入虚拟环境安装一些jupyter所必须的模块，该模块为nb_conda\n```\nconda install nb_conda\n```\n然后需要将虚拟环境的信息写入到jupyter配置文件 安装nb_conda后ipython会作为依赖自动安装\n```\nipython kernel install --user --name your_name\n```\n重新打开lab 会显示新的环境\n",
+			"date_modified": 1596461066.623
+		},
+		{
+			"post_id": 17,
+			"title": "青出于蓝胜于蓝，这是一款脱胎于JupyterNotebook的新型编程环境",
+			"date_published": 1581112622.615,
+			"body": "选自fast.ai\n作者：Jeremy Howard\n机器之心编译\n参与：魔王、蛋酱\n\n>不久前，fast.ai 创始研究员 Jeremy Howard 撰文介绍了 fast.ai 最近提出的新型编程环境 nbdev，它基于 Jupyter Notebook 构建，并将 IDE 编辑器的优点带入 Jupyter Notebook，可以在 Notebooks 中开发而不影响整个项目生命周期。\n\n[nbdev GitHub 地址链接](https://github.com/fastai/nbdev/)\n[nbdev 文档链接](https://nbdev.fast.ai/)\n\n---\n\n> 「我认为，nbdev 是编程环境的一项巨大进步。」——Swift、LLVM 以及 Swift Playgrounds 创造者 Chris Lattner\n\n近年来，我和同事 Sylvain Gugger 一直为热爱的事情而努力工作，它就是 Python 编程环境 nbdev。nbdev 允许用户在 Jupyter Notebook 中创建包含测试和丰富文档系统的完整 Python 包。我们已使用 nbdev 编写了一个大型编程库（fastai v2）以及多个小型项目。",
+			"date_modified": 1581113856.62
+		},
+		{
+			"post_id": 16,
+			"title": "这是幻觉么",
+			"date_published": 1580931651.317,
+			"body": "每当向窗外看去，整个城市空空荡荡的，偶尔的行人和车辆也像幽灵一般…，心里面总是不由自主地泛起古怪的感觉。\n\n一种病毒能够将这么大的国家变成这样，以前只在小说、电影中看到，还是特别荒诞的那种，没想到会成为眼前活生生的现实……",
+			"date_modified": 1580931736.846
+		},
+		{
+			"post_id": 8,
+			"title": "梦",
+			"date_published": 1565749859.658,
+			"body": "凌晨梦醒时分，我不情愿的睁开眼睛，脑子里还满是梦中的甜蜜。\n\n无数次的想拥你到怀里，又无数次的却步。\n\n我想，如果能默默的陪伴着最美好的岁月就已经满足了。\n\n可是，在你最悲伤的时候，我却不能给你安慰，那这种陪伴实在也是一种悲伤。\n\n---\n\n![](img/upload/IMG_1994.jpg)",
+			"date_modified": 1571501892.267
+		},
+		{
+			"post_id": 7,
+			"title": "停电了",
+			"date_published": 1565404089.366,
+			"body": "附近地铁施工，昨天停了一整天的电。据说早有通知，但我一向不太关心这些事。\n\n幸好买了充电宝型的氧气机，也幸好是夏天，要不然那些热带鱼就挂了……\n\n手机没多少余电，要留着接电话，用平板看了几乎一天的网络小说，其实我下载了不少电影，但不知咋了，一直提不起劲儿……也许是觉得看书是一个人的事，而看电影电视是两个人才能干的事儿？",
+			"date_modified": 1565714270.537
+		},
+		{
+			"post_id": 6,
+			"title": "闷",
+			"date_published": 1564998795.507,
+			"body": ">瘴疠浮三蜀，风云暗百蛮。\n卷帘唯白水，隐几亦青山。\n猿捷长难见，鸥轻故不还。\n无钱从滞客，有镜巧催颜。\n——_杜甫_\n\n想不到诗圣有题为“闷”的作品……，看来古往今来，圣人俗士都会有郁结的时候啊。\n",
+			"date_modified": 1565001128.587
+		},
+		{
+			"post_id": 4,
+			"title": "Resilio Sync 被墙修改hosts解决方案",
+			"date_published": 1564667822.137,
+			"body": "##软件下载\n[Resilio Sync for Windows 64bit](http://127.0.0.1:43110/1uPLoaDwKzP6MCGoVzw48r4pxawRBdmQc/data/users/1Fcvuso49sa7PXuYqxBBnSAnSdF6U7p5Ta/1564740684-Resilio-Sync_x64.zip)\n\nSync启动后在界面下方出现🔺惊叹号，点击提示“无法获得跟踪器”，其实就是无法从Resilio下载到Trackers节点，当然也就无法下载文件了。\n\n经分析，应该是`config.getsync.com` 和 `config.resilio.com` 这两个域名被GFW污染，所以要获取正确的ip地址。\n\n---\n\n##第一步\n打开网址<a href=\"https://tools.ipip.net/ping.php\" target=\"_blank\">Ping查询</a>，输入上面提到的2个地址之一，选择港澳台，**ping**一下，就会出现地址列表。\n![ ](img/upload/t.jpg )\n##第二步\n选择一个延迟小的ip地址，然后在本地也ping一下，保证它能用，比如，在控制台（命令行）下输入指令：\n```\nping 13.224.161.8\n正在 Ping 13.224.161.8 具有 32 字节的数据:\n来自 13.224.161.8 的回复: 字节=32 时间=335ms TTL=237\n来自 13.224.161.8 的回复: 字节=32 时间=333ms TTL=237\n来自 13.224.161.8 的回复: 字节=32 时间=346ms TTL=237\n```\n有响应时间就说明可以用。\n\n##第三步\n打开hosts文件进行修改，（Windows下这个文件在C:\\Windows\\System32\\drivers\\etc位置，linux在/etc/hosts）\n加入ip地址和对应的域名即可，比如\n```\n13.35.37.19 config.getsync.com\n13.35.37.26 config.resilio.com\n```\n\n##最后\n用域名再ping一下，看看改动是否成功。\n\n>最新版（2.6.3 for win）似乎可以直接使用了，但是我通过群晖源安装的是2.6.2版，还是需要改hosts。",
+			"date_modified": 1564892927.283
+		},
+		{
+			"post_id": 2,
+			"title": "VSCODE删除空行",
+			"date_published": 1564641234.167,
+			"body": "按下ctrl+h键进行正则匹配:`^\\s*(?=\\r?$)\\n`然后直接替换",
+			"date_modified": 1564643252.896
+		},
+		{
+			"post_id": 1,
+			"title": "第一篇",
+			"date_published": 1433033779.604,
+			"body": "###累\n因为实在没想好写些什么，所以取了这样一个标题，实在有懒惰的~~嫌疑~~（实锤）啊……\n\n---\n\n现在已经是凌晨1点多了，折腾着刚刚把blog弄完，依然没有睡意，突然想到要不要让小Y来看看呢？前些天刚刚教会用TG，但是却没见怎么用，也许zeronet更适合吗？\n\n嗯，还是早点（**不早了……**）睡觉吧，明天还要去接人呢，可不想出什么交通意外。",
+			"date_modified": 1564644980.287
+		}
+	],
+	"tag": [
+		{
+			"value": "随笔",
+			"post_id": 1
+		},
+		{
+			"value": "编程学习",
+			"post_id": 2
+		},
+		{
+			"value": "软件",
+			"post_id": 4
+		},
+		{
+			"value": "随笔",
+			"post_id": 6
+		},
+		{
+			"value": "随笔",
+			"post_id": 7
+		},
+		{
+			"value": "随笔",
+			"post_id": 8
+		},
+		{
+			"value": "随笔",
+			"post_id": 16
+		},
+		{
+			"value": "编程学习",
+			"post_id": 17
+		},
+		{
+			"value": "软件",
+			"post_id": 18
+		},
+		{
+			"value": "破解",
+			"post_id": 20
+		},
+		{
+			"value": "编程学习",
+			"post_id": 21
+		},
+		{
+			"value": "软件",
+			"post_id": 22
+		}
+	]
+}

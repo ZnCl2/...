@@ -1,0 +1,137 @@
+<html>
+<head>
+	<title>تقتل امك</title>	
+	<link 	href="css/videojs.css" rel="stylesheet" />
+    <script src="js/video.min.js"></script>
+    <link 	href="css/videoBlocCoq.css" rel="stylesheet" />
+    <script src="js/TweenLite.min.js"></script>
+	<script src="js/Draggable.min.js"></script>
+	<script src="js/CSSPlugin.min.js"></script>
+
+	<script type="text/javascript">
+
+		function fixElement(e, data) {
+			e.style.position = "absolute";
+			e.style.left = data.left + "px";
+			e.style.top = data.top + "px";
+			e.style.zIndex = data.zIndex;
+			if( data.scale != 1) {
+
+				e.style.width = (data.width * data.scale) + "px";
+				e.style.height = (data.height * data.scale) + "px";
+			}
+			Draggable.create(e, {
+				type:"top,left",
+				//edgeResistance: 0.5,
+				cursor: 'inherit'
+			});
+		}
+		function loadVideos(videos) {
+			for(var i = 0; i < videos.length; i++) {
+				// Check if element already exists, modify this element.
+				var data = videos[i];
+				var video = document.getElementById(data.name);
+				if(!video) {
+					video = document.createElement('video');
+					video.id = data.name;
+					video.setAttribute('class', 'video-js videoBlocCoq');
+					video.poster = 'img/' + data.name + ".jpg";
+					video.controls = true;
+					video.preload = 'none';
+					video.width = data.width;
+					video.height = data.height;
+					var source = document.createElement('source');
+					source.src = 'http://lo2jnb7p4cvfxyae.onion/1qyRZgfeRstryNAKPFQJnNtRdNaSY1n1B/mp4/' + data.name + '.mp4';
+					source.type = 'video/mp4';
+
+					video.appendChild(source);
+					document.body.appendChild(video);
+
+					videojs(video, {language: "fr", bcData : data}, function() {
+						fixElement(this.el(), this.options_.bcData);
+						this.on('firstplay', function() {this.loadingSpinner.addClass('pasPrete')});
+						this.on('playing', function(){this.loadingSpinner.removeClass('pasPrete')});
+						this.on('error', function(){
+							this.loadingSpinner.removeClass('pasPrete');
+							var error = (this.errorDisplay.el()).getElementsByClassName('vjs-modal-dialog-content')[0];
+							error.innerHTML = error.innerText;
+						});
+						this.on('canplay', function() {
+							this.loadingSpinner.removeClass('pasPrete');
+						})
+					});
+				}  else {
+					fixElement(video, data);
+				}
+
+				
+				
+			}
+		}
+
+		//add new language
+		videojs.addLanguage('fr', {
+			"Play": "Lecture",
+			"Pause": "Pause",
+			"Current Time": "Temps actuel",
+			"Duration Time": "Durée",
+			"Remaining Time": "Temps restant",
+			"Stream Type": "Type de flux",
+			"LIVE": "DIRECT",
+			"Loaded": "Prêt",
+			"Progress": "Progression",
+			"Fullscreen": "Plein écran",
+			"Non-Fullscreen": "Fenêtré",
+			"Mute": "Sourdine",
+			"Unmuted": "Son activé",
+			"Playback Rate": "Vitesse",
+			"Subtitles": "Sous-titres",
+			"subtitles off": "Sous-titres désactivés",
+			"Captions": "Sous-titres",
+			"captions off": "Sous-titres désactivés",
+			"Chapters": "Chapitres",
+			"You aborted the video playback": "Vous avez interrompu la lecture de la vidéo.",
+			"A network error caused the video download to fail part-way.": "Une erreur de réseau a interrompu le téléchargement de la vidéo.",
+			"The media could not be loaded, either because the server or network failed or because the format is not supported.": "Oups !! Ça marche pas. Soit parce que l'oignon est dead, soit que tor a besoin d'un massage, ou soit ton proxy est pas bien setté. Besoin d'aide pour le proxy ? Par <a href=\"/bloccoq.bit/\">ici</a> yo.",
+			"The video playback was aborted due to a corruption problem or because the video used features your browser did not support.": "La lecture de la vidéo a été interrompue à cause d'un problème de corruption ou parce que la vidéo utilise des fonctionnalités non prises en charge par votre navigateur.",
+			"No compatible source was found for this video.": "Ton navigateur est pourri. <a href=\"/bloccoq.bit/\">Fait quelque chose.</a>"
+		});
+
+
+		function loadBody() {
+			loadVideos([
+
+				{name: "6a88ba746a8b8c36af025d79eebf227a",						width: 320,		height: 240, 		top: 217,		left: 226, 		zIndex: 10, 			scale: 1},
+				{name: "19e98d5894840a29ff70c606e5290caf",						width: 400,		height: 310, 		top: 113,		left: 1063, 	zIndex: 11, 			scale: 1},
+				{name: "165faac329d5976239c495d3e7e1643d",						width: 200,		height: 248, 		top: 416,		left: 371, 		zIndex: 12, 			scale: 1},
+				{name: "771d10edbd14226f404293ab7a931deb",						width: 200,		height: 152, 		top: 718,		left: 1367, 	zIndex: 45, 			scale: 1},
+				{name: "d8d4ccdd35b0929e42205d8a993c6871",						width: 400,		height: 288, 		top: -27,		left: 308, 		zIndex: 14, 			scale: 1},
+				{name: "d7925f29ba3c3b55955d11b8358a3f7c",						width: 432,		height: 300, 		top: 22,		left: 659, 		zIndex: 15, 			scale: 1},
+				{name: "1a975b628c172c70a078d0d3011c64fa",						width: 360,		height: 226, 		top: 861,		left: -2, 		zIndex: 16, 			scale: 1},
+				{name: "1e3ee9292b36ae1b73b07e329184ea39",						width: 160,		height: 300, 		top: 961,		left: 282, 		zIndex: 17, 			scale: 1},
+				{name: "7dbf471b8cd0363cec18151d799983ed",						width: 300,		height: 228, 		top: 905,		left: 817, 		zIndex: 41, 			scale: 1},
+				{name: "96aef72bb4aa5a1e4aaedc77f68dddd7",						width: 160,		height: 304, 		top: 569,		left: 1697, 	zIndex: 40, 			scale: 1},
+				{name: "511b068f78e252fc6d638aa68c9916d8",						width: 404,		height: 224, 		top: 362,		left: 1538, 	zIndex: 20, 			scale: 1},
+				{name: "524ed1498698da323a9bc7670fb9ab93-1",					width: 500,		height: 376, 		top: 695,		left: 1352, 	zIndex: 21, 			scale: 1},
+				{name: "524ed1498698da323a9bc7670fb9ab93-2",					width: 500,		height: 376, 		top: 22,		left: 1366, 	zIndex: 4, 				scale: 1},
+				{name: "524ed1498698da323a9bc7670fb9ab93-3",					width: 500,		height: 376, 		top: 764,		left: 1032, 	zIndex: 24, 			scale: 1},
+				{name: "524ed1498698da323a9bc7670fb9ab93-4",					width: 500,		height: 376, 		top: 813,		left: 415, 		zIndex: 25, 			scale: 1},
+				{name: "524ed1498698da323a9bc7670fb9ab93-5",					width: 500,		height: 376, 		top: 383,		left: 1225, 	zIndex: 26, 			scale: 1},
+				{name: "524ed1498698da323a9bc7670fb9ab93-6",					width: 250,		height: 188, 		top: 724,		left: 901, 		zIndex: 27, 			scale: 1},
+				{name: "524ed1498698da323a9bc7670fb9ab93-7",					width: 360,		height: 376, 		top: 400,		left: 962, 		zIndex: 28, 			scale: 1},
+				{name: "524ed1498698da323a9bc7670fb9ab93-8",					width: 500,		height: 376, 		top: 369,		left: 10, 		zIndex: 0, 				scale: 1},
+				{name: "524ed1498698da323a9bc7670fb9ab93-9",					width: 500,		height: 376, 		top: 501,		left: 485, 		zIndex: 1,	 			scale: 1},
+				{name: "524ed1498698da323a9bc7670fb9ab93-10",					width: 500,		height: 376, 		top: 647,		left: 59, 		zIndex: 3, 				scale: 1},
+				{name: "c3ef9537602571461b0fdc8dc2d31ff8",						width: 160,		height: 304, 		top: 28,		left: 164, 		zIndex: 2, 				scale: 1}
+
+			]);
+			return true;
+		}
+	</script>
+</head>
+<body  onload="return loadBody();">
+	<div id="tuetamere" style="background-color:black;color:yellow;font-size:3em;width:500px;height:250px;padding:50px;text-align:center;border: solid 3px yellow;z-index:100;position:absolute;top:200px;left:500px;">
+		<h1>تقتل امك</h1>
+	</div>
+</body>
+</html>

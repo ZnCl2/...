@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VR and AR wearable Arduino glove keyboard - LiberIT Blog</title>
+  <link rel="stylesheet" href="/1vLoKesxKQDnLFrmJDoUXyrWX1h2YwSGJ/css/main.css">
+  <!--   Syntax highlighting is only needed for posts -->
+  
+  <link rel="stylesheet" href="/1vLoKesxKQDnLFrmJDoUXyrWX1h2YwSGJ/css/syntax-highlighter.css">
+  
+  <link href="//fonts.googleapis.com/css?family=Space+Mono|Work+Sans:700" rel="stylesheet">
+
+</head>
+<body>
+
+<input type="checkbox" id="hamburger" name="hamburger">
+<label id="label-ham" for="hamburger"></label>
+<div class="menu-container">
+  <div class="menu"></div>
+  <div class="links">
+      <a href="/1vLoKesxKQDnLFrmJDoUXyrWX1h2YwSGJ/"><i class="fa fa-home"></i>&nbsp;Home</a>
+      <a href="/1vLoKesxKQDnLFrmJDoUXyrWX1h2YwSGJ/about/"><i class="fa fa-user"></i>&nbsp;About</a>
+      <a href="/1vLoKesxKQDnLFrmJDoUXyrWX1h2YwSGJ/hme_c/"><i class="fa fa-user"></i>&nbsp;Magic
+        Spells</a>
+      <a href="/1vLoKesxKQDnLFrmJDoUXyrWX1h2YwSGJ/archive/"><i class="fa fa-file-zip-o"></i>&nbsp;Archive</a>
+      <a href="/1vLoKesxKQDnLFrmJDoUXyrWX1h2YwSGJ/contact/"><i class="fa fa-address-book-o"></i>&nbsp;Contact</a>
+      <a href="https://github.com/sharu725/krishna"><i class="fa fa-code-fork"></i>&nbsp;Project</a>
+  </div>
+</div>
+
+<div class="content">
+<header>
+     <a href="/1vLoKesxKQDnLFrmJDoUXyrWX1h2YwSGJ/"><h1 class="site-title">LiberIT Blog</h1></a>
+</header>
+  <div class="post-title">
+    
+    <div class="title">
+        <h2>VR and AR wearable Arduino glove keyboard</h2>
+        
+        <span>
+            <time datetime="">
+                   December 16, 2017
+            </time>
+        </span>
+        
+    </div>
+</div>
+
+
+<p>Glove keyboards have been in the common imagination for decades.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>He was eager as he touched the switch. His glasses flickered to life. Once again
+his fingers carved into the empty air and began clicking together. ... 
+The contacts on his fingers connected, and the letters appeared in the
+lens of his glasses like ghosts in the air.
+-- excerpt from "Digital Fortress" (1998) by Dan Brown
+</code></pre>
+</div>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>Her fingers twitch in conversation with her exo-nervous system—the silver wires
+filigreeing her fingers.
+-- excerpt from "Hel's Bet" (2016) by Doug Sharp
+</code></pre>
+</div>
+
+<p>However currently there is somewhat of a void in the wearable keyboard department.
+While many attempts have been made over the years with a variety of keyers, few
+have met with any success.</p>
+
+<h3 id="tap-wearable">TAP wearable</h3>
+
+<p>The most successful thus far is the <a href="https://www.tapwithus.com/">TAP wearable</a>,
+though successful in this instance means an effective marketing campaign. It has
+a previous iteration that also had good marketing but never made it into
+customers hands.  This time there are at least some beta-testers. While they
+promise to start shipping this month, we’ll see what happens.</p>
+
+<p>The TAP is a very complicated piece of proprietary machinery. While I can’t
+vouch for it’s reliability, in general the more complex something is, the more
+often it brakes.</p>
+
+<p>Also I haven’t read any sci-fi featuring the TAP, or any kind of tapping on your
+leg kind of keyboards. In all the examples I saw people were sitting down, or
+tapping on a surface, which is different from the typical mobile use-case of
+people walking and standing.</p>
+
+<p>Another issue with the TAP, is that being a single-handed thing, much like the
+<a href="http://www.keyglove.net/">KeyGlove</a> it is probably limited to 32 or so input
+letters.  Meaning it is only really useful for texting, and not for formatting
+documents, gaming or computer programming.</p>
+
+<h3 id="simple-glove-keyboards">Simple Glove Keyboards</h3>
+
+<p>My proposed alternative is a very simple wearable glove keyboard.</p>
+
+<p>Here is an example prototype description</p>
+
+<ol>
+  <li>Take a pair of anti-static polyester gloves</li>
+  <li>Sew conductive fabric onto all the finger tips</li>
+  <li>Sew an independent conductive connection to each finger tip, with snap
+connectors at the wrist. 
+4 Repeat for both hands.</li>
+  <li>Snap a 6 wire ribbon (with 5 live wires) to the glove,</li>
+  <li>connect  the thumbs to ground,  and
+the fingers to digital pins with input high..</li>
+  <li>with a bluetooth module, and a little software it’s a keyboard,
+where each hand is responsible for 4 bits. A 1 is when finger touches ground,
+indexfinger is lowest place.</li>
+</ol>
+
+<p>The Ctrl, Alt and Super keys are the only ones that may need special treatment, as may
+have to press them, click some other letter, and then press them again to
+release.</p>
+
+<p>Otherwise it’s all pretty straight keyboard stuff. May also need to put in some
+time delay, in case not all the contacts hit at the same time.</p>
+
+<h4 id="mouse-control">Mouse Control</h4>
+
+<p>Since standard keyboard codes start at 8, can do mouse controls underneath.</p>
+
+<p>For VR, 3, 6, and 7 can be left, right, and middle click respectively.</p>
+
+<p>For AR, 1, 2, 4, 5 can be left, right, down and up respectively. 
+Can follow the <a href="http://www.semicomplete.com/projects/keynav">keynav</a> or a more
+traditional style with acceleration based on preference.</p>
+
+<h3 id="software">Software</h3>
+
+<p>The easiest to implement would be using standard 
+<a href="https://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes">keycodes</a>,
+that way would have maximum compatibility with ordinary keyboards.</p>
+
+<p>0x41 (ring finger touching thumb on left hand, and index touching thumb on right
+hand) would be ‘a’.</p>
+
+<p>0x42 (same with left hand, and middle touching thumb on right) ‘b’
+0x43 (same left, both index and middle touching thumb on right) ‘c’</p>
+
+<p>and so on.</p>
+
+<p>An alternative would be to use direct encodings like ASCII or UTF16 for input
+Though may need to do some arduino side conversion so that it would appear to 
+the computer to be a standard keyboard.  The alternative would be making a 
+whole new driver which would be much more work. Though the
+<a href="http://joy2chord.sourceforge.net/">joy2chord</a> seems like it may be
+possible to use as a basis, at least for Linux based systems.</p>
+
+<p>UTF16 based system would be most useful for Chinese, since they have around 3000
+common chracters. All of which could be entered with “two keystrokes”, or
+touching fingers together twice in appropriate arrangement.</p>
+
+<p>Most other languages that have less than 67 letters alongside the standard
+numbers and symbols would be able to fit in a single touch.</p>
+
+
+  
+<!--    <footer>
+      Made with <span style="color: palevioletred">❤</span> by <a href="http://webjeda.com">webjeda</a>
+</footer>-->
+</div>
+  <!-- Calling Fontawesome at the end to avoid delay in loading --> 
+  <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<!-- Google Analytics Tracking code -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', '', 'auto');
+  ga('send', 'pageview');
+
+</script>
+</body>
+</html>

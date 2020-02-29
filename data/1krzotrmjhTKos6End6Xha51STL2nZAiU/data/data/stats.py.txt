@@ -1,0 +1,82 @@
+#!/usr/env python
+#
+# v1.0.0 - 2021-02-16
+#
+# Get ZeroTalk Polska user stats
+# Just put that script into data/1GRYnz73jSXoMMZNU3nSmbCFA3twuitcoo/data/users/
+# and run
+#    python stats.py
+
+import json
+import glob
+import os
+import datetime
+
+content_files = glob.glob("./*/content.json")
+
+users = []
+
+for f in content_files:
+    with open(f, "r", encoding="utf-8") as json_file:
+        json_content = json.loads(json_file.read())
+
+        if "cert_user_id" not in json_content:
+            continue
+
+        if "modified" not in json_content:
+            continue
+
+        user_id = json_content["cert_user_id"]
+        last_activity = int(json_content["modified"])
+
+    no_topics = 0
+    no_comments = 0
+    no_topic_votes = 0
+    no_comment_votes = 0
+
+    jf = os.path.dirname(f) + "/data.json"
+
+    try:
+        with open(jf, "r", encoding="utf-8") as json_file:
+            json_content = json.loads(json_file.read())
+
+            if "topic" in json_content:
+                no_topics = len(json_content["topic"])
+
+            if "comment" in json_content:
+                no_comments = len(json_content["comment"])
+
+            if "topic_vote" in json_content:
+                no_topic_votes = len(json_content["topic_vote"])
+
+            if "comment_vote" in json_content:
+                no_comment_votes = len(json_content["comment_vote"])
+    except FileNotFoundError as e:
+        pass
+
+    users.append({
+        "user_id": user_id,
+        "last_activity": last_activity,
+        "no_topics": no_topics,
+        "no_comments": no_comments,
+        "no_topic_votes": no_topic_votes,
+        "no_comment_votes": no_comment_votes
+    })
+
+
+users = sorted(users, key=lambda x: x["last_activity"], reverse=True)
+
+if len(users) == 0:
+    exit()
+
+
+print("%4s  %-30s  %20s %-9s %-11s %-14s %-16s" % ("id", "username", "last_activity",
+    "no_topics", "no_comments", "no_topic_votes", "no_comment_votes"))
+
+_ = 1
+for user in users:
+    activity = datetime.datetime.fromtimestamp(user["last_activity"])
+    print("%4d  %-30s  %20s %9d %11d %14d %16d" % (_, user["user_id"], activity,
+        user["no_topics"] ,user["no_comments"] ,user["no_topic_votes"],
+        user[ "no_comment_votes"]))
+    _ = _ + 1

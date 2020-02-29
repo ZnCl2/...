@@ -1,0 +1,374 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+<title>Morphis FAQ</title>
+
+<style type="text/css">
+    body { font-size: 15px; 
+	       font-family:sans-serif; }
+	h1 { font-size: 25px;
+         font-weight: bold; }
+	h2 { font-size: 20px;
+         font-weight: bold; }
+</style>
+
+</head>
+
+
+<body>
+
+<h1>Morphis FAQ, 2nd draft WIP</h1>
+<br>
+<br>
+<a href="#whatIsMorphis">What is Morphis, and how does it work?</a>
+<br>
+<a href="#whatIsDmail">What is Dmail, and how does it work?</a>
+<br>
+<a href="#interfaces">What interfaces does Morphis provide?</a>
+<br>
+<a href="#removalOfFiles">How do uploaders remove files from the network?</a>
+<br>
+<a href="#runOutOfStorage">What happens when the network runs out of storage space?</a>
+<br>
+<a href="#scaling">How does Morphis scale with the number of nodes in the network?</a>
+<br>
+<a href="#sybilResistance">What makes Morphis resistant to Sybil attacks?</a>
+<br>
+<a href="#morphisPlugin">Where are you getting all these http://localhost:4251/'s from?</a>
+<br>
+<a href="#noscript">Morphis doesn't work with Noscript!</a>
+<br>
+<br>
+<h2 id="whatIsMorphis">What is Morphis, and how does it work?</h2>
+<p>Morphis is a Distributed Hash Table (similar to Bittorrent) over a 
+custom SSH protocol that allows users to upload files to and download 
+files from the network. It is a very fast, encrypted, uncensorable and 
+decentralized datastore that is resistant to Sybil attacks. It uses <a href="http://pdos.csail.mit.edu/%7Epetar/papers/maymounkov-kademlia-lncs.pdf">Kademlia's</a> routing algorithm (the XOR metric etc.) - the <a href="http://xlattice.sourceforge.net/components/protocol/kademlia/specs.html">specification</a> is much more useful than the previous link - but not it's network algorithm.
+<br>
+<br>
+Every node on the network generates an RSA-4096 private/public keypair 
+on creation, and the public key is hashed with SHA-512 to give the 
+node's ID. Each node devotes some storage space to the network - 1gb by 
+default, this can be changed by running morphis with <code>python3 node.py --dssize X</code>, where X is in megabytes.
+<br>
+<br>
+The URL used to download files/pages is the static or updateable key created when uploading it. So, with <a href="http://localhost:4251/sp1nara3xhndtgswh7fznt414we4mi3y">http://localhost:4251/sp1nara3xhndtgswh7fznt414we4mi3y</a>,
+ sp1nara.. is the key. A static key is the root hash of the Merkle tree 
+of all the (unencrypted) blocks that make up the file (explained below) -
+ if the file changes, so does the key.
+<br>
+An updateable key is the public half of a private/public key pair 
+generated on the fly for each upload (different from the node's RSA 
+keypair) - the key doesn't depend on the data being uploaded, which 
+means the data can be updated after being uploaded and still be accessed
+ at the same address.
+<br>
+<br>
+In either case, the whole file is broken into 32 kilobyte blocks if it's
+ bigger than 32k. The hash of the hash of each block is the block ID. 
+The blocks are stored on nodes that have node IDs closest to the block 
+ID. Because any hash is unpredictable, blocks are stored randomly across
+ the network. They are also stored on a minimum of 3 different nodes 
+across the network (the uploading node doesn't count itself as one of 
+the 3).
+<br>
+The encryption key for each block is just the hash of the block. The 
+block is encrypted (again with AES-256), and the key thrown away. It is 
+assumed that anything uploaded is unencrypted, because there is no way 
+to conclusively prove that data has been encrypted. If nodes thought all
+ uploads were already encrypted, unencrypted data could be passed to the
+ network, which would be forced to store it. This unencrypted data could
+ be illegal to possess. The only way to be sure that this can't happen 
+is for storing nodes to assume it's all unecrypted, and encrypt the 
+blocks themselves.
+<br>
+<br>
+The static/updateable key is hashed, like the individual blocks, to give
+ the file ID. This ID is searched for, the blocks relating to it are 
+found, downloaded and decrypted, and the file is reassembled.
+Morphis itself actually only handles and stores the 32k blocks, the rest
+ is done by a different file, <i>multipart.py</i>
+<br>
+<br>
+Morphis has a feature called prefix key search. This means that, unlike 
+the regular internet, you don't need to type a page or file's full 
+address to access it, just a few characters (7 minimum). For the page 
+above, <a href="http://localhost:4251/sp1nara">http://localhost:4251/sp1nara</a> is enough to access the page. The network will find the full key just as fast as if you'd typed the full thing in.
+<br>
+<br>
+A seeding feature will soon be made, where your node will check the 
+availablility of blocks it stores over time and ensure that they remain 
+on the network. This feature will also allow you to essentially 'like' 
+any link, file or webpage and then your node will contribute to storing 
+that file, as well as maintain it's existence on the network.
+<br>
+<br>
+Morphis not being completely a carbon copy of Kademlia, but only based 
+off of it is important; if you read the specification there (it's not 
+long), you will see this in a note under STORE:
+</p><blockquote>As the transport may be UDP, the message needs to also 
+contain at least the nodeID of the sender, and the reply [needs] the 
+nodeID of the recipient. </blockquote>
+
+Obviously, this is a massive anonymity failure, and it's what allows and
+ requires the list of seeders and leechers to be visible for any given 
+Bittorrent file. Morphis does this a bit differently, similar to how Tor
+ works; If you read <a href="https://www.torproject.org/about/overview.html.en#thesolution">how Tor works</a>,
+ you'll see the way they route messages from Alice to Bob is by Alice 
+picking the route through the network to Bob, and encrypting the route 
+so that every intermediate node only knows who the next receipient is. 
+Because Morphis is based off Kademlia, where every block is stored 
+relates to the block itself, nodes <i>don't</i> need to route their request through the network; it's done automatically by the intermediate nodes. A route will look like <code>requester -&gt; node 1 -&gt; node 2 -&gt; storing node</code>. 
+<br>
+Every download request in Morphis consists of the block ID to be 
+downloaded, and 512 bit ID of the request. It is sent to the storing 
+node through a series of intermediate nodes. 
+With Kademlia, for the request to be returned the storing node needs to 
+know who requested it. In Morphis, all a node does is reply to whoever 
+send it to them when it was being relayed to the storing node the first 
+time: <code>storing node -&gt; node 2 -&gt; node 1 -&gt; requester</code>
+ - they find this out by comparing the request IDs. In this way, no node
+ needs to know who made the original request. Not even the first node 
+that receives the request can know or figure out that they received it 
+from the requester; it looks identical either way.  You could say that 
+it's onion routing without the onions.
+<br>
+You can think of it like this: I want to ask your mother's boss' dog a 
+question, so I ask you, you ask your mother, your mother asks her boss, 
+and her boss asks his dog. His dog will tell him the answer, who tells 
+your mother the answer, who tells you, and you tell me. Neither you, 
+your mother, your mother's boss or your mother's boss' dog know how 
+originally asked the question.
+<br>
+<i>This</i> is what makes Morphis different, and allows it to combine 
+the speed and reliability of Kademlia-based DHTs with the anonymity of 
+Tor.
+<p></p>
+
+<br>
+
+<h2 id="whatIsDmail">What is dmail, and how does it work?</h2>
+<p>Dmail is Morphis' built-in email system, and is inherently spam 
+proof, encrypted (with AES-256 at present) and pseudonymous, with 
+authenticated senders.
+<br>
+<br>
+Dmail is a bit like Bitcoin in that it also uses proof of work, although a sligtly different kind:</p>
+
+<ul>
+<li>
+Every dmail address is random, and looks like y3j4lkcadotgk4534c... (the
+ full address is 512 bits and 103 characters long). They have an 
+associated RSA-4096 private key (different from the node's keypair), a 
+public key that signs every sent dmail, and a Diffie-Hellman 
+private/public keypair (different from either RSA keypair).
+</li>
+
+<br>
+
+<li>
+Every address publishes a target_key, which is a random 88 bits long 
+stream of characters like 93727bhahieuuhbx6fsph...., and a difficulty, 
+in bits (the default is 20). The above public keys, the target_key and 
+the difficulty are published on a site on morphis with an updateable key
+ (which is just the dmail address) so that the public data can be 
+changed without changing the site address - the site for 
+y3j4lkcadotgk4534c.. would be accessed at 
+http://localhost:4251/y3j4lkcadotgk4534c (this isn't a real link or 
+dmail address).
+</li>
+
+<br>
+
+<li>
+Every time the difficulty increases by 1, it becomes twice as hard to 
+hash the data + nonce to the correct value, so it's twice as hard to 
+send the dmail. An increase of 10 is 1024x as hard, and 20 takes about 
+30 seconds. This means a difficulty of 30 will take 30*1024 seconds, 
+which is 8 and a half hours.
+</li>
+
+<br>
+
+<li>
+A study has shown that spam only gets a response from 1 in every 12.5 
+million emails they send 
+(http://news.bbc.co.uk/1/hi/technology/7719281.stm). This means in 
+morphis it would take 12 years for spammers to make a sale, if everyone 
+left their address at the default setting, making spamming completely 
+unfeasible. To reduce the number the emails they get, if processing 
+power increases massively, they can just increase the difficulty: 75 
+means it would take more than the age of the universe to send a dmail at
+ current processing power. The maximum is 512, which gives more than 
+googol times the age of the universe. A silly amount of time.
+</li>
+
+<br>
+
+<li>
+To send them a dmail, your client first goes to the site specified by 
+the dmail address they wish to send a dmail to, and grabs the needed 
+information - the RSA public key, the DH public key, the target_key and 
+the difficulty.
+<br>
+The client makes a data block of the message's contents and its metadata
+ (time sent, sender, etc), signs it with their RSA private key (if 
+they're not sending it anonymously), encrypts it and the signature with a
+ random AES-256 key, derives the shared DH secret from the receiver's 
+public DH key and their own private key, encrypts the AES key with that,
+ attaches the encrypted AES key and their public DH key. The client 
+finally attaches a header (called the TargetedBlock) - the hash of the 
+[data + target_key + nonce] - to the whole data block. The target_key is
+ included in the header to prevent dmail spam - otherwise, a malicious 
+node could calculuate the hash of a [data + nonce] TargetedBlock, and 
+upload it, without caring what hash it makes. This step is called the 
+Dpush load for this step is entirely on the sender, not the receiver or 
+the network.
+<br>
+The nonce is increased until the hash starts with 9372 - what the 
+receiver said they would search in. The [TargetedBlock + data] is 
+uploaded as one to the network.
+</li>
+
+<br>
+
+<li>
+To find any dmails sent to it, a node will search for hashes that match 
+the published target_key to the required number of bits - say, 9372 - 
+and doesn't even see any that don't match, so it doesn't waste time in 
+discarding them. Then, using the prefix key search, the rest of the 
+target_key is filled in, and the dmail has been received.
+<br>
+Once it's been received, the node does the reverse of what the sender 
+does: they derive the same shared DH secret as the sender - with their 
+own private DH key and the sender's public DH key - decrypts the AES key
+ using it, decrypts the dmail and finally checks the signature with the 
+sender's public RSA key (if the dmail wan't sent anonymously) - that 
+they get from the site on morphis which comes from the address metadata 
+in the header.
+</li>
+</ul>
+
+<br>
+
+<h2 id="interfaces">What interfaces does Morphis provide?</h2>
+<p>Morphis provides a few different interfaces:
+</p><ol>
+
+<li>HTTP: The default, most used interface is HTTP; open localhost:4251 in a browser</li>
+<li>SSH: SSH can be connected to with <code>ssh 127.0.0.1 -p 4250</code>. <code>ssh 127.0.0.1:4250</code> won't work, so don't try it. </li>
+<li><i>mcc.py</i>: You can also run <i>mcc.py</i> to control a node</li>
+</ol>
+<p></p>
+
+<br>
+
+<h2 id="removalOfFiles">How do uploaders remove files from the network?</h2>
+<p>Currently you can only do this with updateable keys. To remove a file
+ from the network, just go to the appropriate upload page, don't select a
+ file, path or mime-type, and press "Upload". Your client will then 
+upload the empty byte string to network, and any nodes that store the 
+previous version will overwrite it with the now-empty new version. You 
+might have to do this multiple times, because offline nodes obviously 
+won't see your update.</p>
+
+<br>
+
+<h2 id="runOutOfStorage">What happens when the network runs out of storage space?</h2>
+<p>As of today, the oldest data stored by a node will be deleted once 
+their storage space becomes full. Once this happens, nodes only accept 
+new keys that are closer to itself, and throw out keys that are further 
+away, increasing the accuracy of the network. In the future, once that 
+distance becomes small enough ("enough" is based on the size of the 
+network) they will overwrite data according to when it was last 
+requested, how much it was requested, etc. The above seeding feature 
+will ensure that certain data will never drop off the network even if it
+ is rarely requested, as long as someone is seeding it; only the 
+redundancy would decrease (possibly only the seeding node would store 
+it) until it gets requested/popular again.</p>
+
+<br>
+
+<h2 id="scaling">How does Morphis scale with the number of nodes in the network?</h2>
+<p>Morphis, like Kademlia, lets you control the routing table expansion.
+ The routing table gets bigger with log(base (2^b)), and 3 to 5 are 
+reasonable values for b. This enables O( log(base (2^b)) ) efficiency, 
+so with the lower value of 3 for b, the scaling is log(base 8). That 
+means, with 1000 nodes, the load would be 3.3, but only 10.9 with 7 
+billion nodes, one for each person.</p>
+<p>By the time there are 7 billion nodes, the amount of memory and 
+processing speed will have increased, so b can be raised to 5, giving a 
+load of 6.54 with 7 billion nodes.</p>
+
+<br>
+
+<h2 id="sybilResistance">What makes Morphis resistant to Sybil attacks?</h2>
+<p>Morphis is not yet invulnerable to Sybil attacks, just resistant to 
+them. Node IDs aren't RSA public keys, but the SHA-512 hash of the 
+public key, which makes it much harder to forge a specific node ID. 
+Morphis also tunnels stable connections with <a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.65.5783">tit-for-tat fairness</a>:
+ a node uploads data to a small set of neighbouring peers which are 
+providing it with the best download rates, discouraging freeriding 
+(downloading without uploading) and promoting fairness (the ratio of the
+ amount downloaded by a node to what it uploads).
+<br>
+Nodes, as normal behaviour, relay upload and download requests from 
+other, close, nodes, as well as generating their own requests. The 
+closeness of a node is determined by xor-ing their own node ID with the 
+other node's ID. To prove whether a node is generating a request 
+themself, or just relaying it, a malicious attacker must then create 
+many nodes with IDs that are close to that of the target. This allows 
+them to see if requests from the node were relayed to it, as they would 
+likely be the one who would relay it to them.
+<br>
+As was said above, it is hard to forge specific node IDs - there are 
+2^512 different IDs. This greatly reduces the chances of nodes being 
+deanonymised, and is why Morphis can be described as pseudonymous. 
+Similar to the regular Internet, anonymity can be built on top of 
+Morphis, like Tor and Freenet provide.
+<br>
+<br>
+Using the horrific analogy from earlier at the end of the 1st question, 
+one of the only ways you would know if I was the one who asked the 
+original would be to surround me with loads of your friends so you would
+ know if someone else had asked me the question first and I was just 
+relaying it to you. The other way would be to follow the chain of 
+communication and see that it stops with me - i.e. I don't relay the 
+question or the answer to someone else.</p>
+
+<br>
+
+<h2 id="morphisPlugin">Where are you getting all these http://localhost:4251/'s from?</h2>
+<p>You can access Morphis and the files on the network through localhost:port (the default is 4251, and set in <i>maalstroom_server.py</i>). The Maalstroom plugin converts <i>localhost:port</i> into <i>http://localhost:4251/</i>, so download that. It's only for Firefox at the moment though.</p>
+<p>If you want to change the port SSH listens on, meanwhile, run morphis with <code>python3 node.py --bind *:4250</code>, and change the 4250 to any number beside 4251.</p>
+
+<br>
+<br>
+
+<h2 id="noscript">Morphis doesn't work with Noscript!</h2>
+It doesn't, until you put in a few things to Noscript's options:
+Open Noscript's options, go to "Advanced", then XSS, and put 
+"http://localhost:4251/" at the bottom of the text box. Then, go to 
+"ABE", click on the "System" ruleset, and make it look like:
+
+<p>
+	# Prevent Internet sites from requesting LAN resources.
+<br>
+	Site LOCAL
+<br>
+	Accept from LOCAL
+<br>
+<br>
+	Site http://localhost:4251/
+<br>
+	Accept from http://localhost:4251/
+<br>
+<br>
+	Deny
+</p>
+
+<br>	
+
+
+
+
+</body></html>

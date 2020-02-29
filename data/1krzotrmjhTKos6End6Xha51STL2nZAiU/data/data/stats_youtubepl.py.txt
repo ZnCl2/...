@@ -1,0 +1,78 @@
+#!/usr/env python
+#
+# v1.0.0 - 2021-02-16
+#
+# Get YouTube PL user stats
+# Just put that script into data/15Lr9YZ4DC9ZF2BSwZc7S1wDr9hTDx9w5h/data/users/
+# and run
+#    python stats.py
+
+import json
+import glob
+import os
+import datetime
+
+content_files = glob.glob("./*/content.json")
+
+users = []
+
+for f in content_files:
+    with open(f, "r", encoding="utf-8") as json_file:
+        json_content = json.loads(json_file.read())
+
+        if "cert_user_id" not in json_content:
+            continue
+
+        if "modified" not in json_content:
+            continue
+
+        user_id = json_content["cert_user_id"]
+        last_activity = int(json_content["modified"])
+
+    no_files = 0
+    no_comments = 0
+    total_size = 0
+
+    jf = os.path.dirname(f) + "/data.json"
+
+    try:
+        with open(jf, "r", encoding="utf-8") as json_file:
+            try:
+                json_content = json.loads(json_file.read())
+            except:
+                continue
+
+            if "file" in json_content:
+                no_files = len(json_content["file"])
+                # total_size = sum([int(_["size"]) for _ in json_content["file"]])
+                total_size = sum([int(v["size"]) for k, v in json_content["file"].items()])
+
+            if "comment" in json_content:
+                no_comments = sum([len(json_content["comment"][_]) for _ in json_content["comment"]])
+    except FileNotFoundError as e:
+        pass
+
+    users.append({
+        "user_id": user_id,
+        "last_activity": last_activity,
+        "no_files": no_files,
+        "no_comments": no_comments,
+        "total_size": total_size,
+    })
+
+
+users = sorted(users, key=lambda x: x["last_activity"], reverse=True)
+
+if len(users) == 0:
+    exit()
+
+
+print("%4s  %-30s  %20s %-8s %-11s %-10s" % ("id", "username", "last_activity",
+    "no_files", "no_comments", "total_size (MB)"))
+
+_ = 1
+for user in users:
+    activity = datetime.datetime.fromtimestamp(user["last_activity"])
+    print("%4d  %-30s  %20s %8d %11d %15.2f" % (_, user["user_id"], activity,
+        user["no_files"], user["no_comments"], user["total_size"]/1024/1024))
+    _ = _ + 1

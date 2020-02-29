@@ -1,0 +1,106 @@
+<!DOCTYPE html><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title> UVa787: Max Sub-sequence Product</title><meta name="description" content=" （以下複雜度均不包含大數乘法運算） 網路上找到的解法大多是用 dp 以 O(n^2) 的方式 brute force 出來，但個人直覺想到的方法是先 greedy 的全部乘開，若是正數即回傳，做是負數便分別去掉左、右元素，遞迴取 max。而遇到 0 時，便在該處 split，遞迴取兩邊的 max。這樣的複雜度最差... "><link rel="stylesheet" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/assets/main.css"><link rel="canonical" href="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/07/30/uva787-max-sub-sequence-product.html"><link rel="alternate" type="application/rss+xml" title="Nerde Nolzda" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/feed.xml"><header role="banner"> <a class="site-title" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/">Nerde Nolzda</a><nav> <a href="#" class="menu-icon">&#9776;</a><div class="trigger"> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/about/">About</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/keys/">Keys</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/mirrors/">Mirrors</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/">Tags</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/feed.xml">RSS</a></div></nav></header><main><article itemscope itemtype="http://schema.org/BlogPosting"><header><h1 itemprop="name headline"> <a itemprop="mainEntityOfPage url" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/07/30/uva787-max-sub-sequence-product.html"> UVa787: Max Sub-sequence Product </a></h1><p class="post-meta"> <time datetime="2016-07-30T09:38:56+08:00" itemprop="datePublished"> Jul 30, 2016 </time> • <time datetime="2018-08-22T21:49:24+08:00" itemprop="dateModified"> Aug 22, 2018 </time> • <span itemprop="author publisher" itemscope itemtype="http://schema.org/Person"> <span itemprop="name">WillyPillow</span> </span> • <span itemprop="keywords"> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/en.html" rel="tag">en</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/zh.html" rel="tag">zh</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/bilingual.html" rel="tag">bilingual</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/uva.html" rel="tag">UVa</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/cpp.html" rel="tag">cpp</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/competitive-coding.html" rel="tag">competitive-coding</a></span> • <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/sigs/posts/2016-07-30-uva787-max-sub-sequence-product.md.asc"> Signature </a></p></header><div itemprop="articleBody text"><p>（以下複雜度均不包含大數乘法運算）<br /> 網路上找到的解法大多是用 dp 以 <code>O(n^2)</code> 的方式 brute force 出來，但個人直覺想到的方法是先 greedy 的全部乘開，若是正數即回傳，做是負數便分別去掉左、右元素，遞迴取 max。而遇到 0 時，便在該處 split，遞迴取兩邊的 max。這樣的複雜度最差仍然是 <code>O(n^2)</code>，但大多數時候應該會比較快些，在 UVa 上的 Runtime 是 0.000。另外，因為乘積可能非常大，因此需要實作一部分的 BigInt 功能。</p><p>(Time complexity notations in the following analysis do not include the cost of multpling big integers.)<br /> A lot of the solutions found on the Internet uses dynamic programming and brute forces the results in <code>O(n^2)</code>. However, the first way that came into mind is to greedily get the product of all the elements. If the product is negative, we remove the leftmost and rightmost element respectively and recursively get the maximum value. If 0 is encountered, split the array, and recursively get the maximum of the two sides. The time complexity of this algorithm still has a worst case of <code>O(n^2)</code>, but is usually faster, resulting in a runtime of 0.000 on UVa.</p><p><a href="https://uva.onlinejudge.org/index.php?option=com_onlinejudge&amp;Itemid=8&amp;page=show_problem&amp;problem=728">UVa Link</a></p><pre><code class="language-cpp">#include &lt;cstdio&gt;
+
+const int SIZE = 100, BASE = 100000;
+int in[SIZE];
+
+struct Product {
+  int sign = 0; // 0 for positive, 1 for negative
+  long long data[SIZE] = { 0 }; // Int overflows!
+  // Calculate the product of in[start] to in[end-1]
+  void mult(int in[], int start, int end) {
+    if (in[start] &lt; 0) {
+      data[0] = -in[start];
+      sign = 1 - sign;
+    } else data[0] = in[start];
+    for (int i = start + 1; i &lt; end; i++) {
+      int carry = 0, multiplier;
+      if (in[i] &lt; 0) {
+        multiplier = -in[i];
+        sign = 1 - sign;
+      } else multiplier = in[i];
+      for (int j = 0; j &lt; SIZE; j++) {
+        data[j] *= multiplier;
+        data[j] += carry;
+        carry = data[j] / BASE;
+        data[j] %= BASE;
+      }
+    }
+  }
+  // 1 if this &gt; y, 0 if this == y, -1 if this &lt; y
+  int cmp(Product y) {
+    if (sign == 0 &amp;&amp; y.sign == 1) return 1;
+    if (sign == 1 &amp;&amp; y.sign == 0) return -1;
+    int flip = sign ? -1 : 1;
+    for (int i = SIZE - 1; i &gt;= 0; i--) {
+      if (data[i] == 0 &amp;&amp; y.data[i] != 0) return -1 * flip;
+      if (data[i] != 0 &amp;&amp; y.data[i] == 0) return 1 * flip;
+      if (data[i] != 0 &amp;&amp; y.data[i] != 0) {
+        if (data[i] == y.data[i]) continue;
+        else return (data[i] &gt; y.data[i]) ? 1 * flip : -1 * flip;
+      }
+    }
+    return 0;
+  }
+  void prnt() {
+    if (sign) printf("-");
+    int i;
+    for (i = SIZE - 1; i &gt;= 0 &amp;&amp; data[i] == 0; i--);
+    if (i == -1) printf("%d\n", 0);
+    else {
+      printf("%lld", data[i--]);
+      for (int j = i; j &gt;= 0; j--) printf("%05lld", data[j]);
+      printf("\n");
+    }
+  }
+  int isZero() {
+    int res = 1;
+    for (int i = 0; i &lt; SIZE; i++) {
+      if (data[i] != 0) {
+        res = 0;
+        break;
+      }
+    }
+    return res;
+  }
+} zero;
+
+Product solve(int in[], int start, int end) {
+  int newStart, newEnd;
+  for (newStart = start; newStart &lt; end &amp;&amp; in[newStart] == 0; newStart++);
+  for (newEnd = end; newEnd &gt; newStart &amp;&amp; in[newEnd-1] == 0; newEnd--);
+  if (newStart != start || newEnd != end) {
+    Product q = solve(in, newStart, newEnd);
+    return (q.cmp(zero) == 1) ? q : zero;
+  } // Remove 0 at the beginning and end to avoid too much recursion
+  Product p;
+  if (start == end) return p;
+  p.mult(in, start, end);
+  if (start + 1 == end) return p;
+  if (p.sign == 1) {
+    Product q = solve(in, start + 1, end), r = solve(in, start, end - 1);
+    return (q.cmp(r) == 1) ? q : r;
+  } else if (p.isZero() == 1) {
+    int i;
+    for (i = start; i &lt; end &amp;&amp; in[i] != 0; i++);
+    Product q = solve(in, start, i), r = solve(in, i + 1, end);
+    if (q.sign == 1 &amp;&amp; r.sign == 1) return zero;
+    else return (q.cmp(r) == 1) ? q : r;
+  } else return p;
+}
+
+int main() {
+  int tmpIn;
+  while (scanf("%d", &amp;tmpIn) != EOF) {
+    int n = 0;
+    in[n++] = tmpIn;
+    while (1) {
+      scanf("%d", &amp;tmpIn);
+      if (tmpIn == -999999) break;
+      else in[n++] = tmpIn;
+    }
+    Product p = solve(in, 0, n);
+    p.prnt();
+  }
+  return 0;
+}
+</code></pre></div><div><h1>Related Posts</h1><ul><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/12/uva108-maximum-sum.html"> UVa108: Maximum Sum </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/12/uva10696-f91.html"> UVa10696: f91 </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/12/uva10298-power-strings.html"> UVa10298: Power Strings </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/12/uva455-periodic-strings.html"> UVa455: Periodic Strings </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/09/uva299-train-swapping.html"> UVa299: Train Swapping </a></ul></div><div><h1><span itemprop="commentCount">0</span> comments</h1><h2>Post a comment</h2><p> Send an email to <a href="mailto:comment@nerde.pw">comment@nerde.pw</a>.</p></div></article></main><footer itemscope itemtype="http://schema.org/Person"><ul><li itemprop="name">WillyPillow<li><a itemprop="email" href="mailto:wp@nerde.pw">wp@nerde.pw</a><li> Gitlab: <a href="https://gitlab.com/willypillow">WillyPillow</a><li> BitBucket: <a href="https://bitbucket.org/WillyPillow">WillyPillow</a><li> Github: <a href="https://github.com/WillyPillow">WillyPillow</a><li> Diaspora*: <a href="https://diasporing.ch/people/7abf8850bce50134011e7a163e59d8f4">WillyPillow</a><li> Reddit: <a href="https://www.reddit.com/user/WillyPillow/">WillyPillow</a><li>Bitcoin: 15ii2SMbgZSyzKxVSYwim7KtT2uqdSdjVm<li>Namecoin: NES89UkGDutphGbVYNUkGkQuRGs6vFQk6h</ul></footer>

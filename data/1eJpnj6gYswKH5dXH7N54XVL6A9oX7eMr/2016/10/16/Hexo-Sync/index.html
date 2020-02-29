@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+
+  
+  <meta name="description" content="为什么需要自动部署？在之前的教程里，每一次写了新文章都需要手动把 md 文件拷贝至为 Zeronet 配置的 Hexo 文件夹里，然后再生成页面 -&amp;gt; 拷贝文件 -&amp;gt; 手动签名 -&amp;gt; 发布
+这一点都不优雅！！
+所以，我制作了一个自动化部署脚本，可以一键部署你的 Hexo 到 Zer" />
+  
+
+  
+
+  
+  
+
+  
+  <title>Hexo 新手向教程 4 自动化部署 | Rainlime`s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="为什么需要自动部署？在之前的教程里，每一次写了新文章都需要手动把 md 文件拷贝至为 Zeronet 配置的 Hexo 文件夹里，然后再生成页面 -&amp;gt; 拷贝文件 -&amp;gt; 手动签名 -&amp;gt; 发布
+这一点都不优雅！！
+所以，我制作了一个自动化部署脚本，可以一键部署你的 Hexo 到 Zeronet 和一般平台
+
+因为这个脚本使用来 rsync 和 bash 所以似乎没法在 Windows">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo 新手向教程 4 自动化部署">
+<meta property="og:url" content="http://127.0.0.1:43110/2016/10/16/Hexo-Sync/index.html">
+<meta property="og:site_name" content="Rainlime`s Blog">
+<meta property="og:description" content="为什么需要自动部署？在之前的教程里，每一次写了新文章都需要手动把 md 文件拷贝至为 Zeronet 配置的 Hexo 文件夹里，然后再生成页面 -&amp;gt; 拷贝文件 -&amp;gt; 手动签名 -&amp;gt; 发布
+这一点都不优雅！！
+所以，我制作了一个自动化部署脚本，可以一键部署你的 Hexo 到 Zeronet 和一般平台
+
+因为这个脚本使用来 rsync 和 bash 所以似乎没法在 Windows">
+<meta property="og:updated_time" content="2016-10-16T18:19:11.311Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Hexo 新手向教程 4 自动化部署">
+<meta name="twitter:description" content="为什么需要自动部署？在之前的教程里，每一次写了新文章都需要手动把 md 文件拷贝至为 Zeronet 配置的 Hexo 文件夹里，然后再生成页面 -&amp;gt; 拷贝文件 -&amp;gt; 手动签名 -&amp;gt; 发布
+这一点都不优雅！！
+所以，我制作了一个自动化部署脚本，可以一键部署你的 Hexo 到 Zeronet 和一般平台
+
+因为这个脚本使用来 rsync 和 bash 所以似乎没法在 Windows">
+  
+  
+    <link rel="icon" href="/1eJpnj6gYswKH5dXH7N54XVL6A9oX7eMr/css/images/favicon.ico">
+  
+  <link rel="stylesheet" href="/1eJpnj6gYswKH5dXH7N54XVL6A9oX7eMr/css/style.css">
+  
+
+
+  <!-- baidu webmaster push
+  <script src='//push.zhanzhang.baidu.com/push.js'></script>
+  -->
+</head>
+
+<body class="home blog custom-background custom-font-enabled single-author">
+  <div id="page" class="hfeed site">
+      <header id="masthead" class="site-header" role="banner">
+    <hgroup>
+      <h1 class="site-title">
+        <a href="/1eJpnj6gYswKH5dXH7N54XVL6A9oX7eMr/" title="Rainlime`s Blog" rel="home">Rainlime`s Blog</a>
+      </h1>
+    </hgroup>
+
+    <nav id="site-navigation" class="main-navigation" role="navigation">
+            <button class="menu-toggle">菜单</button>
+            <a class="assistive-text" href="/#content" title="跳至内容">跳至内容</a><!--TODO-->
+            <div class="menu-main-container">
+                <ul id="menu-main" class="nav-menu">
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/1eJpnj6gYswKH5dXH7N54XVL6A9oX7eMr/">Home</a></li>
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/1eJpnj6gYswKH5dXH7N54XVL6A9oX7eMr/archives">Archives</a></li>
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="http://127.0.0.1:43110/1EASVbkmLbnXwsu4jVybxD2ZixU69b7984">Forum</a></li>
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="http://127.0.0.1:43110/1PcTeSbVvCVuXhCSWgQFeBuxLhZ6HYoLme">Wiki</a></li>
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/1eJpnj6gYswKH5dXH7N54XVL6A9oX7eMr/about">About</a></li>
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/1eJpnj6gYswKH5dXH7N54XVL6A9oX7eMr/link">Link</a></li>
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="http://127.0.0.1:43110/1eJpnj6gYswKH5dXH7N54XVL6A9oX7eMr/website/zeronet.io-zh-cn/">Zeronet.io-zh-cn</a></li>
+                
+                </ul>
+            </div>
+    </nav>
+</header>
+
+      <div id="main" class="wrapper">
+        <div id="primary" class="site-content"><div id="content" role="main"><article id="post-Hexo-Sync" class="post-Hexo-Sync post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title article-title">
+      Hexo 新手向教程 4 自动化部署
+    </h1>
+  
+
+        
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <h2 id="为什么需要自动部署？"><a href="#为什么需要自动部署？" class="headerlink" title="为什么需要自动部署？"></a>为什么需要自动部署？</h2><p>在之前的教程里，每一次写了新文章都需要手动把 md 文件拷贝至为 Zeronet 配置的 Hexo 文件夹里，然后再生成页面 -&gt; 拷贝文件 -&gt; 手动签名 -&gt; 发布</p>
+<p>这一点都不优雅！！</p>
+<p>所以，我制作了一个自动化部署脚本，可以一键部署你的 Hexo 到 Zeronet 和一般平台</p>
+<blockquote>
+<p>因为这个脚本使用来 rsync 和 bash 所以似乎没法在 Windows 中运行</p>
+<p>运行之前请务必先阅读代码，至少要知道这个脚本在干什么，因为它所带来的一些更改可能不是你希望的</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line">#! /bin/bash</div><div class="line"></div><div class="line">zerobundle_dir=&quot;&quot;</div><div class="line"># ZeroBundle 所在目录</div><div class="line">site_address=&quot;&quot;</div><div class="line"># 你的站点地址</div><div class="line">blog_dir=&quot;&quot;</div><div class="line"># 一般的 hexo/blog 路径</div><div class="line">blog_for_zeronet_dir=&quot;&quot;</div><div class="line"># 为 Zeronet 所创建副本的 hexo/blog 路径</div><div class="line">key=&quot;&quot;</div><div class="line">#站点私钥</div><div class="line"></div><div class="line"># 修改以上内容 注意使用绝对路径</div><div class="line"></div><div class="line"></div><div class="line">rsync -av $blog_dir/source/ $blog_for_zeronet_dir/source</div><div class="line"># 同步原目录的 source 目录</div><div class="line">cd $blog_for_zeronet_dir</div><div class="line">hexo g</div><div class="line"># 生成静态页面</div><div class="line">rm -r $zerobundle_dir/ZeroNet/data/$site_address/*</div><div class="line"># 清空原有文件</div><div class="line">rsync -av $blog_for_zeronet_dir/public/* $zerobundle_dir/ZeroNet/data/$site_address/</div><div class="line"># 拷贝新生成的静态页面</div><div class="line">cd $zerobundle_dir/ZeroNet</div><div class="line">$zerobundle_dir/Python/python $zerobundle_dir/ZeroNet/zeronet.py siteSign $site_address $key</div><div class="line">$zerobundle_dir/Python/python $zerobundle_dir/ZeroNet/zeronet.py sitePublish  $site_address</div><div class="line"># 签名并发布</div><div class="line">cd $blog_dir</div><div class="line">hexo g</div><div class="line">hexo d</div><div class="line"># 部署至一般平台</div></pre></td></tr></table></figure>
+<p>把上面的内容保存为一个 .sh 文件，然后 <code>chmod +x xxx.sh</code> 赋予执行权限<br>再使用 ./xxx.sh 运行</p>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/1eJpnj6gYswKH5dXH7N54XVL6A9oX7eMr/2016/10/16/Hexo-Sync/">
+    <time datetime="2016-10-16T16:05:12.000Z" class="entry-date">
+        2016-10-16
+    </time>
+</a>
+    
+    
+    </footer>
+</article>
+
+
+    
+<nav class="nav-single">
+    <h3 class="assistive-text">文章导航</h3>
+    
+    
+        <span class="nav-next"><a href="/1eJpnj6gYswKH5dXH7N54XVL6A9oX7eMr/2016/10/14/Hexo-3/" rel="next">Hexo 新手向教程 3 部署至 Zeronet <span class="meta-nav">→</span></a></span>
+    
+</nav><!-- .nav-single -->
+
+
+
+
+
+
+
+</div></div>
+        <div id="secondary" class="widget-area" role="complementary">
+  
+    
+  
+    
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget-content">
+      <ul>
+        
+          <li>
+            <a href="/1eJpnj6gYswKH5dXH7N54XVL6A9oX7eMr/2016/10/16/Hexo-Sync/">Hexo 新手向教程 4 自动化部署</a>
+          </li>
+        
+          <li>
+            <a href="/1eJpnj6gYswKH5dXH7N54XVL6A9oX7eMr/2016/10/14/Hexo-3/">Hexo 新手向教程 3 部署至 Zeronet</a>
+          </li>
+        
+          <li>
+            <a href="/1eJpnj6gYswKH5dXH7N54XVL6A9oX7eMr/2016/10/11/Hexo-2/">Hexo 新手向教程 2 部署至 Github Pages</a>
+          </li>
+        
+          <li>
+            <a href="/1eJpnj6gYswKH5dXH7N54XVL6A9oX7eMr/2016/10/10/Hexo-1/">Hexo 新手向教程 1 安装并美化</a>
+          </li>
+        
+      </ul>
+    </div>
+  </aside>
+
+  
+    
+  
+</div>
+      </div>
+      <footer id="colophon" role="contentinfo">
+    <p>&copy; 2016 rainlime
+    All rights reserved.</p>
+    <p>傲娇的使用 <a href="http://hexo.io/" target="_blank">Hexo</a></p>
+</footer>
+
+    
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+  <link rel="stylesheet" href="/1eJpnj6gYswKH5dXH7N54XVL6A9oX7eMr/fancybox/jquery.fancybox.css">
+  <script src="/1eJpnj6gYswKH5dXH7N54XVL6A9oX7eMr/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/1eJpnj6gYswKH5dXH7N54XVL6A9oX7eMr/js/script.js"></script>
+
+<script src="/js/navigation.js"></script>
+
+<div id="bg"></div>
+
+  </div>
+</body>
+</html>

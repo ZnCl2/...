@@ -1,0 +1,50 @@
+{
+	"next_topic_id": 3,
+	"topic": [
+		{
+			"topic_id": 1530173795,
+			"title": "Ссылки по теме в ZeroNet",
+			"body": "- [DIY@Balancer](/1ApsfuUfnyJm19qZguDzzqj7se41Ggxzrt/) — блог.",
+			"added": 1530173794
+		},
+		{
+			"topic_id": 1535871645,
+			"title": "ESP8266 <-> Arduino Mega для RGB LCD матрицы",
+			"body": "> [trooper](/1ApsfuUfnyJm19qZguDzzqj7se41Ggxzrt/?Post:17:Px+marices+with+ESP8266#comment_1_1Nyvgpgzk7BEEHs1TeTRwAtEDhF2txevSe): По какому протоколу Вы передавали команды на Мега? Я так понимаю, какой то самописный? Интересно было бы взглянуть.\n\nДа, самописный. В идеале надо сделать под Мегу простенький Форт, тогда можно будет очень гибко управлять, Форт для управления по последовательному каналу просто идеален, но я очень мало этим занимаюсь сейчас, так что слепил простейший протокол на базе JSON. Т.е. ESP8266 запихивает команты в JSON-формате, Mega парсит.\n\n![](/1ApsfuUfnyJm19qZguDzzqj7se41Ggxzrt/data/img/post_7_IMG_20171024_205906-200.jpg)\n*<http://127.0.0.1:43110/1ApsfuUfnyJm19qZguDzzqj7se41Ggxzrt/?Post:7:RGB+LED+matrix+64x32>*\n\nКоманды вида:\n```\n[{c:sz,s:1},{c:c,r:0,g:0,b:0},{c:go,x:2,y:24},{c:fr,x:0,y:24,w:32,h:8},{c:c,r:0,g:0,b:3},{c:p,t:\\\"24'c\\\"}]\n```\n\nСмысл, типа:\n\n- `{c:sz,s:1}`: command: `size` (размер шрифта); `size=1`\n- `{c:c,r:0,g:0,b:0}`: `c` = `color`, цвет. Аргументы - R, G и B от 0 до 7.\n- `{c:go,x:2,y:24}`: `go` = позиционирование курсора в пикселах\n- `{c:fr,x:0,y:24,w:32,h:8}`: `fr` = frame, рисовать заполненный прямоугольник по координатам x, y размерами w, h. В данном случае — очистка экрана (ранее — чёрный цвет).\n- `{c:c,r:0,g:0,b:3}` — делаем бледный синий цвет\n- `{c:p,t:\"24'c\"}` — `p` = print, печать текста.\n\nПарсер очень примитивный:\n\n```cpp\n    jsonBuffer.clear();\n    JsonArray& root = jsonBuffer.parseArray(str);\n\n    if(!root.success())\n    {\n      Serial.println(\"parseObject() failed\");\n      continue;\n    }\n\n    for(auto &cmd : root)\n    {\n      String command = cmd[\"c\"];\n\n      if(command == \"p\")\n          cmd_print(cmd);\n      else if(command == \"go\")\n          cmd_goxy(cmd);\n      else if(command == \"c\")\n          cmd_color(cmd);\n      else if(command == \"cls\")\n          cmd_cls(cmd);\n      else if(command == \"hl\")\n          cmd_hline(cmd);\n      else if(command == \"vl\")\n          cmd_vline(cmd);\n      else if(command == \"dr\")\n          cmd_dr(cmd);\n      else if(command == \"fr\")\n          cmd_fr(cmd);\n      else if(command == \"sz\")\n          cmdTextSize(cmd);\n      else\n          Serial.println(\"Unknown command: [\"+command+\"]\");\n    }\n\n```\n\nКосяков пока много, всё руки не доходят допилить как надо… Как допилю, надо будет и кодом поделиться, можно сразу в ZN в Git Center :)",
+			"added": 1535871643
+		}
+	],
+	"topic_vote": {},
+	"next_comment_id": 5,
+	"comment": {
+		"1530176700_1L4dZcDF2maSKHDy788yhxpYnBWnXadUtS": [
+			{
+				"comment_id": 1,
+				"body": "It all depends on the kind of electronic circuits. When I was in the childhood engaged in electronics on radio tubes - it was quite dangerous. There are 300 V anodes and capacitors of large capacity. A couple of times I was shocked very strongly :) Even more dangerous high-voltage converters. Supply of magnetrons in microwave ovens, Jacob's Ladder, etc. toys. There can be death from a single touch of a current source. I did not contact such things :)\n\nIn modern digital technology, impulse power supplies can be dangerous if something is done with them. But if you use only 3.3V / 5V / 12V voltage, then there is nothing dangerous for life, no matter what capacitors there are not used.",
+				"added": 1530178257
+			}
+		],
+		"1530176328_1L4dZcDF2maSKHDy788yhxpYnBWnXadUtS": [
+			{
+				"comment_id": 2,
+				"body": "I did an uncomplicated test scheme on components with AliExpress:\n\n- [Solar Panel](http://s.click.aliexpress.com/e/CFPj12Y) (up to 6V, 1W)\n- [Lithium battery charging board](https://www.aliexpress.com/item/VK-FREESHIPPING-5V-1A-Micro-USB-18650-Lithium-Battery-Charging-Board-Charger-Module-Protection-Dual/32649296417.html)\n\nThe battery output is connected to the \"+\" and \"-\" terminals near the USB connector, and the battery is connected to the \"B +\" and \"B-\" outputs. This is enough to charge the battery. Further, to power their circuits, the battery outputs need to solder a module like this:\n\n- [Charger step up power module](https://www.aliexpress.com/item/1PCS-0-9V-5V-to-5V-600MA-USB-Output-charger-step-up-Power-Module-Mini-DC/32654513204.html)\n\nThe general scheme will look something like this:\n\n[![](https://gateway.ipfs.io/ipfs/QmYqA7ZeU8RiYuqiv6HwwEuVDD26zizMgbPnq2N96kByGn/1wyGQQZj7kkSwR5C2gTG-800x.png)](https://gateway.ipfs.io/ipfs/QmdsQaWRV4DFeDxE42njLGaPTprLR8r8MEcxaRuNQK5JuY/1wyGQQZj7kkSwR5C2gTG.png)\n\nIn this scheme, it seems that there is a dual solar panel that produces 9-12V at maximum illumination, so its voltage was limited by the diode on which the voltage drop occurs. I used one solar panel, so no restriction was required. But charging was only at a high level of illumination. Probably, it is necessary to put two modules and an additional voltage converter dc-dc step-down. Then the charge will also go at a relatively low voltage.",
+				"added": 1530179428
+			},
+			{
+				"comment_id": 3,
+				"body": "6V is the maximum voltage that the solar panel give in bright light. With low lighting, the voltage drops and charging stops. If we take two panels connected in series, then even in low light, charging can be carried out.\n\nIn fact, I did not correctly understand. On the diagram, most likely, the same solar panel, as at me, on 6V. Simply the circuit designer was afraid to apply 6V to the input of the module, which is designed for 5V and therefore lowers the voltage at the input of the module by 1V using a diode. I think it's wasteful :)\n\nIt is necessary to take two panels and put an effective converter DC-DC Step Down to 5V.",
+				"added": 1530263452
+			}
+		],
+		"1542776840_16dEowtNbV89NxPcDrAKkmnuXtiJVoVcDm": [
+			{
+				"comment_id": 4,
+				"body": "They say it cannot be done at the Arduino IDE level, only at a lower level. Here is an example of a Wi-Fi project - a repeater on the ESP8266:\n\nhttps://github.com/martin-ger/esp_wifi_repeater/\n\nThey write that pulls up to 3 Mbit/s, and with a good internal rate - up to 6-7 Mbit/s.",
+				"added": 1542806713
+			}
+		]
+	},
+	"comment_vote": {
+		"1_1LvGFs28pbTRSvaM94DNRK1z1Z6CaoAFZ7": 1
+	}
+}

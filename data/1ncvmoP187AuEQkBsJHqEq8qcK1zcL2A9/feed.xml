@@ -1,0 +1,505 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.3">Jekyll</generator><link href="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/feed.xml" rel="self" type="application/atom+xml" /><link href="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/" rel="alternate" type="text/html" /><updated>2018-08-24T10:02:08+08:00</updated><id>http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/</id><title type="html">Nerde Nolzda</title><subtitle>Nerde Nolzda, &quot;Geek Palace&quot; in lojban, is a blog about computers, programming, technology, and a bit of everything else.
+</subtitle><author><name>WillyPillow</name></author><entry><title type="html">Setting Up Yubikey &amp;amp; NMC + Zeronet Update</title><link href="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2018/08/24/setting-up-yubikey.html" rel="alternate" type="text/html" title="Setting Up Yubikey &amp; NMC + Zeronet Update" /><published>2018-08-24T09:00:00+08:00</published><updated>2018-08-24T09:31:10+08:00</updated><id>http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2018/08/24/setting-up-yubikey</id><content type="html" xml:base="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2018/08/24/setting-up-yubikey.html">&lt;p&gt;First of all, I want to apologize for forgetting to update my Namecoin domain and Zeronet mirror for such a long time.&lt;/p&gt;
+
+&lt;p&gt;Anyway, I will be off to another city soon, leaving my Qubes OS desktop behind. However, due to performance and battery life concerns, I probably will not be running Qubes on my (rather old) laptop. This means that I need another way to manage PGP keys and such instead of VMs.&lt;/p&gt;
+
+&lt;p&gt;I had been eyeing the &lt;a href=&quot;https://www.yubico.com/&quot;&gt;Yubikey&lt;/a&gt; (and similar hardware security keys) for a long time, so I thought I might as well try it out. I got the regular Yubikey 4 instead of the Neo because of the price and that some say that the Neo does not support 4096 bit RSA keys. (Again, some seem to say that they do, so if you want to get a Neo, you might want to do some research on this.)&lt;/p&gt;
+
+&lt;h2 id=&quot;packaging&quot;&gt;Packaging&lt;/h2&gt;
+&lt;p&gt;It comes in &lt;a href=&quot;https://twitter.com/peterktodd/status/987229304185589760&quot;&gt;tamper-evident&lt;/a&gt; packaging, so you might want to inspect that before opening.&lt;/p&gt;
+
+&lt;h2 id=&quot;u2f&quot;&gt;U2F&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Universal_2nd_Factor&quot;&gt;U2F&lt;/a&gt; is a two-factor authenication standard that also protects against phishing.&lt;/p&gt;
+
+&lt;p&gt;To test the U2F (and also &lt;a href=&quot;https://developers.yubico.com/OTP/OTPs_Explained.html&quot;&gt;OTP&lt;/a&gt;) functionality, &lt;a href=&quot;https://demo.yubico.com/&quot;&gt;the official demo site&lt;/a&gt; can be used.&lt;/p&gt;
+
+&lt;p&gt;Setting up and logging in via U2F is pretty straightforward and supported by &lt;a href=&quot;https://www.dongleauth.info/&quot;&gt;a lot of major sites&lt;/a&gt;. Just enable it in the website’s settings, plug the key in, and touch the metallic button.&lt;/p&gt;
+
+&lt;p&gt;On Firefox, you may need to follow &lt;a href=&quot;https://www.yubico.com/2017/11/how-to-navigate-fido-u2f-in-firefox-quantum/&quot;&gt;this guide&lt;/a&gt; to enable U2F. Also, due to &lt;a href=&quot;https://bugzilla.mozilla.org/show_bug.cgi?id=1409573&quot;&gt;some implementation incompatibilities&lt;/a&gt;, Chrome / Chromium is needed to add keys to Google, though logging in can still be done with Firefox.&lt;/p&gt;
+
+&lt;h2 id=&quot;pgp--ssh&quot;&gt;PGP / SSH&lt;/h2&gt;
+&lt;p&gt;Before getting the Yubikey, I have no idea that PGP keys can also double as SSH authentication keys.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/drduh/YubiKey-Guide&quot;&gt;There is a pretty nice guide&lt;/a&gt; about setting up PGP and SSH. Note that while the &lt;a href=&quot;https://www.yubico.com/product/yubikey-4-series/&quot;&gt;product page&lt;/a&gt; claims that ECC is supported, it is actually referring to &lt;a href=&quot;https://developers.yubico.com/PIV/&quot;&gt;PIV&lt;/a&gt;, and only RSA keys (&amp;lt;= 4096 bits) are supported in PGP.&lt;/p&gt;
+
+&lt;p&gt;Like the guide suggested, only my sub-keys are transferred to the Yubikey, while the encrypted master key lies on a USB drive and is accessed with &lt;a href=&quot;https://tails.boum.org/&quot;&gt;Tails&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;There are only three PGP key slots: signature, encryption, and authentication. However, it seems that they are not limited to the stated purpose, e.g. you can sign with the authentication key and vice versa.&lt;/p&gt;
+
+&lt;h2 id=&quot;oath&quot;&gt;OATH&lt;/h2&gt;
+&lt;p&gt;The Yubikey also supports &lt;a href=&quot;https://developers.yubico.com/OATH/&quot;&gt;TOTP and HOTP&lt;/a&gt; (i.e. the numeric codes in &lt;a href=&quot;https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;amp;hl=en_us&quot;&gt;Google Authenticator&lt;/a&gt;), though since using it on my phone would be a bit inconvenient, I am still just using an app right now.&lt;/p&gt;
+
+&lt;h2 id=&quot;backing-up&quot;&gt;Backing Up&lt;/h2&gt;
+&lt;p&gt;Yubico (the company that manufactures Yubikeys) advised &lt;a href=&quot;https://www.yubico.com/2017/04/backup-recovery-plan/&quot;&gt;having a backup device&lt;/a&gt;, but since for U2F I can still use TOTP on my phone while for PGP my master keys are already stored elsewhere, I find it unnecessary.&lt;/p&gt;
+
+&lt;h2 id=&quot;end-notes&quot;&gt;End Notes&lt;/h2&gt;
+&lt;p&gt;In conclusion, I think it is a great purchase. The security benefits of isolating confidential data on a separate device aside, the hardware is compact and sturdy, and the overall user experience is pretty nice. U2F is definitely more convenient and secure than TOTP, and using PGP is sort of like split-GPG in Qubes, but with touching a physical button instead of clicking in a dialog.&lt;/p&gt;
+
+&lt;p&gt;On the other hand, after my purchase&lt;sup id=&quot;fnref:1&quot;&gt;&lt;a href=&quot;#fn:1&quot; class=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;, there was &lt;a href=&quot;https://pwnaccelerator.github.io/2018/webusb-yubico-disclosure.html&quot;&gt;this scandal&lt;/a&gt; about Yubico, which kind of sucks. Also, &lt;a href=&quot;https://news.ycombinator.com/item?id=10478932&quot;&gt;some say that it is not as indestructible as it claims to be&lt;/a&gt;, though that is about an older version, and at least &lt;a href=&quot;https://forum.yubico.com/viewtopicaa6f.html?f=35&amp;amp;t=2730&quot;&gt;newer versions&lt;/a&gt; mitigates the acetone attack. Last but not least, some might dislike that a part of it, including the PGP portion, &lt;a href=&quot;https://news.ycombinator.com/item?id=11690774&quot;&gt;is closed source&lt;/a&gt;. These are probably things to consider if you are thinking of getting one.&lt;/p&gt;
+
+&lt;div class=&quot;footnotes&quot;&gt;
+  &lt;ol&gt;
+    &lt;li id=&quot;fn:1&quot;&gt;
+      &lt;p&gt;Yes, I bought it a few months ago. To be honest this article is way overdue ;-) &lt;a href=&quot;#fnref:1&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/div&gt;</content><author><name>WillyPillow</name></author><category term="en" /><category term="security" /><category term="gpg" /><category term="encryption" /><category term="yubikey" /><category term="zeronet" /><category term="namecoin" /><summary type="html">First of all, I want to apologize for forgetting to update my Namecoin domain and Zeronet mirror for such a long time.</summary></entry><entry><title type="html">Revoking My GPG Keys</title><link href="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/10/23/revoking-my-gpg-keys.html" rel="alternate" type="text/html" title="Revoking My GPG Keys" /><published>2017-10-23T23:10:00+08:00</published><updated>2018-06-02T22:25:20+08:00</updated><id>http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/10/23/revoking-my-gpg-keys</id><content type="html" xml:base="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/10/23/revoking-my-gpg-keys.html">&lt;style&gt; pre, code { white-space: pre-wrap; } &lt;/style&gt;
+
+&lt;pre&gt;&lt;code&gt;-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
+
+Unfortunately, it seemed that I remembered the passphrase to my GPG master key incorrectly, effectively losing access to it. As such, I have no option but to revoke my old keys (luckily, I had the revocation certificate backed up) and create a new one.
+
+The revocation certificate is as follows:
+
+```
+- -----BEGIN PGP PUBLIC KEY BLOCK-----
+Comment: A revocation certificate should follow
+
+iQQfBCABCgAJBQJYhE6mAh0AAAoJEOtNMmSjGHPLnWkf/jIz44PZefbBrTGHmCDO
+eGxd/g6nKASjc4TClK69OpQPswR94Lbl1Ia+bV67VPbf05xMXSEViFSOHvgqOjv1
+GJ7vybh3hE/9l8dH3WkellaR/yR9eCknqFl/e48z+P+bnbJ9CG7uw0rxFHvFO6/I
+4/4etj1pIpAGXe6mw2t+HIomOuu9zlp4KcKkE0dqfrpF8wn+E+n6U298nnW51EBB
+RInfQrED726+jc1uROTsUqCbfMF0NBpJwYXRHbpQtR+SZXXVU+JLrF4fpxPqhC5S
+XocFGXB8bK2ELA97CUzJflUaGV4P2KeuvG6kaNPG8gd6ep6KVKQClS8l3NTvtb0p
+pUKW0VdO7CMrw3GiqUoRZ5KpfVnbQHbHVVlel7iIJizFS2uJ2xMwPx0YNnVxWE26
+UHeQgJiwhy9KvlU0byi2zV2BCAX8ezJBG/noa3+nmZknclv/CI4QVjXf0fw02xch
+vrYRYvc5S9cnbNp2+4iwHS4i3V3nH4nN3EpwVsaHQ6giK0nM5GOlKLJG1ohM0Vy4
+iSukzwCcHgrkEsE0ybrnQrBSZ1w/lilemwSIWYYmqCNsZ2ied6vL6G0dUVXz+ipZ
+yw5M22tIMFcSPfBZJir5otf6e7WSygm75QRH54yKHedXD2fKiFcdSi+jA2lF66io
+OVe8dIFrS6om6NNjEoxr7Ejg5eA2j/yxHEEKGKFGSBnuQMvKTnHAXrM/JwtSO5pq
+naSpiURbSQlgMJRUmpFtjOTodJ3bqT7kHo5c7Y2L3HdqS4Biiqukx63PQqd3UBdb
+h//UiukPu+njDiJf1wsbw4BJIwJDa3SD/ceXiikP2gLKTX6UR9HfDpokNiAnmm+o
+GR8+H24OB8XEFwCKYu7QQ5NyykJa2+KukBwEkt22hk+srjlfmlOIsD78+x3V3QGn
+uLj3HfiHpuKc0djJnDroG6uppi3G2sVG4UU4UOEcD2L9RtAL8w3km+iPJe9hnHrZ
+ifk35RzDjJmezzzx4+IqV6fAVTj+KYTZUN/uKzCgT+Y8XwqXrvmxXOy7CGji5zKK
+FDLU1jrN3f/rrPounoBtzc6oNUK5pJ0Zpvtb2f4kh0jjMvHA+v6zZ48M7DC0qUHB
+tA7g/G7+pETfb93JXrXCL0rzK2bV7aahp9ylZI2BlPmU2Cw+/VfQx70eeQEcF5hu
+K17++wLlbWweZwqX+vvP0ImtoKEj8UkbNzJUSOtqNd94VMsTurZVeXzSAkHtLS8E
+66Rv76Nu1EtTrARr2IcnpORuktc/zr9xIhuH5RfqJbDnEE7Gfv0+qdsOwhKHvE42
+zyu3eALTUR5JXSiLxQvn6snTVr79M2RF0RS4RGj9DsB75OHZXVjHaeg86/dvzZpK
+hzw=
+=D2/M
+- -----END PGP PUBLIC KEY BLOCK-----
+```
+
+The new public keys are as follows:
+
+```
+pub   4096R/E7C31C84 2017-10-23
+      Key fingerprint = 6CCF 3FC7 32AC 9D83 D154  217F 1C16 C70E E7C3 1C84
+uid       [ultimate] WillyPillow (https://blog.nerde.pw/) &amp;lt;wp@nerde.pw&amp;gt;
+sig 3    N   E7C31C84 2017-10-23  WillyPillow (https://blog.nerde.pw/) &amp;lt;wp@nerde.pw&amp;gt;
+   Signature notation: comment_en@openpgp-notations.org=Master Signing Key
+sub   4096R/B1415A9C 2017-10-23
+      Key fingerprint = 2EF5 D56D 9574 A58B A2A8  F60C 3839 E194 B141 5A9C
+sig      N   E7C31C84 2017-10-23  WillyPillow (https://blog.nerde.pw/) &amp;lt;wp@nerde.pw&amp;gt;
+   Signature notation: comment_en@openpgp-notations.org=Code Signing Key
+sub   4096R/C56F2FE7 2017-10-23 [expires: 2018-10-23]
+      Key fingerprint = 504E 5836 D13E 824D C4D6  4621 C12A E5AC C56F 2FE7
+sig      N   E7C31C84 2017-10-23  WillyPillow (https://blog.nerde.pw/) &amp;lt;wp@nerde.pw&amp;gt;
+   Signature notation: comment_en@openpgp-notations.org=Email Signing Key
+sub   4096R/F72D8561 2017-10-23 [expires: 2018-10-23]
+      Key fingerprint = 549D 6337 A26D D92A 1197  5613 4C66 C9AE F72D 8561
+sig      N   E7C31C84 2017-10-23  WillyPillow (https://blog.nerde.pw/) &amp;lt;wp@nerde.pw&amp;gt;
+   Signature notation: comment_en@openpgp-notations.org=Email Encryption Key
+```
+
+Note that the master key is 4096-bit instead of 8192. This is because I am convinced that [the latter is not significantly stronger than the former](https://www.reddit.com/r/GnuPG/comments/3h36qz/why_no_large_8192_16384_bit_pgp_keys_in_practice/) and is not worth the trouble (the generation process being more complex) and performance hit.
+
+The subkeys are now tagged via notations to indicate their usage, and can be viewed by `gpg --list-sigs --list-options=show-notation`.
+
+In addition, the master key is generated and used on a Qubes OS vault instead of the air gap I used before due to the following reasons:
+
+* The air gap is an old laptop that is extremely sluggish and annoying to use
+* As it is quite aged, I am concerned that it might die suddenly
+* Transferring data from it to the main box is quite difficult (currently using Data Matrix codes)
+* The wireless chips might pose security risks (no BIOS options to disable; difficult to find removal instructions online due to its age; do not have confidence in my hardware-hacking skills)
+* Need additional passphrases (for either FDE or the key), which are prone to being forgotten
+
+I will soon update my profiles online to reflect this change.
+
+This post, aside from being signed with my Git subkey, is also being signed explicitly by my email key as additional evidence to prove my identity.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJZ7gTuAAoJEKQZmDSlCA9O0z8QAK5aMfC81jXdUB1mUvXyA1kG
+1Dr0TOBSS6K04p2fdxduT5uCoVz4ATkt5FFzpIuYHTZKz5mLpEIRq3ogDijdiQ9P
+lu5a42gB0Quf0eh6VMT0SHrsHBfoCN7NHF66SuivGtTe8Kq4mq60C7uAIfQyzxJC
+kaZ69t/NRrGzVuivqQbh9Rmc1AVT6RC5M7VfYEC87YY3oNcOjtNBRcDzn/vn3O81
+ESGQosnT9T+KixWJYKXX8jTRTxeAm0Yd/r9A88in0k/t3GcINo7swKsclXKVgDH0
+6FPlmHjzkPHHszyXzvtU1gB4rt482yMQvANg5abBqqFBZ5nq8/CKksLmU5WyoUfz
+Rn+o8zPi5ebq664gIcKdQhvqyLobpHg12Jccq9qo9wuRrbPTqTiN1Mh9SZF/8Ef0
+gFzUDYr1Rv2kcCYgqb6gJGvDLwkwUNrmtcMSNzTupOwTxsd/bXWzBr5jAQ55jf8X
+I1ZpcYN+B+kGVqdXkCvTZkHy9stm/f+qbXed72U+BxXFzaLKlOywI2ZFxwE4zvnl
+Lgb6eITYfTEgJMAJ58j8JTjG0OWvpfPEkw+fzX9amUWLWhnzDe52lRH7f2Aw/lQg
+FskaI2M44dbpkwYvOY81Xt833lCfEsDwUZ7BzvhtdK0Rn/TCy2KAC3ksTL+Ckl5m
+QPjAkVfe6TkT6hQCY3uh
+=tL8r
+-----END PGP SIGNATURE-----
+&lt;/code&gt;&lt;/pre&gt;</content><author><name>WillyPillow</name></author><category term="en" /><category term="gpg" /><category term="encryption" /><category term="security" /><summary type="html"></summary></entry><entry><title type="html">Persistent Segment Tree In Scala</title><link href="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/07/04/persistent-segment-tree-in-scala.html" rel="alternate" type="text/html" title="Persistent Segment Tree In Scala" /><published>2017-07-04T19:30:00+08:00</published><updated>2018-08-22T20:51:10+08:00</updated><id>http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/07/04/persistent-segment-tree-in-scala</id><content type="html" xml:base="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/07/04/persistent-segment-tree-in-scala.html">&lt;p&gt;I’ve always thought that persistent segment trees, also known as “functional segment trees” in Chinese, are more elegant than traditional ones, since I can essentially treat them as immutable objects. So recently, I decided to code an implementation in Scala, a functional language.&lt;/p&gt;
+
+&lt;p&gt;Without further ado, here’s the code:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-scala&quot;&gt;object PersistentSegTree {
+  def init(l: Int, r: Int): TreeNode = {
+    val mid = (l + r) &amp;gt;&amp;gt;&amp;gt; 1
+    if (l != r) Node(0, init(l, mid), init(mid + 1, r))
+    else Leaf(0)
+  }
+
+  sealed trait TreeNode {
+    val sum: Int
+
+    def modify(pos: Int, v: Int, l: Int, r: Int): TreeNode
+
+    def queryKthSmallest(old: TreeNode, k: Int, l: Int, r: Int): Int
+  }
+
+  case class Node(sum: Int, lc: TreeNode, rc: TreeNode) extends TreeNode {
+    def modify(pos: Int, v: Int, l: Int, r: Int): TreeNode = {
+      val mid = (l + r) &amp;gt;&amp;gt;&amp;gt; 1
+      if (pos &amp;lt;= mid) Node(sum + v, lc.modify(pos, v, l, mid), rc)
+      else Node(sum + v, lc, rc.modify(pos, v, mid + 1, r))
+    }
+
+    def queryKthSmallest(old: TreeNode, k: Int, l: Int, r: Int): Int = {
+      val nOld = old.asInstanceOf[Node]
+      val (lSum, mid) = (lc.sum - nOld.lc.sum, (l + r) / 2)
+      if (k &amp;lt;= lSum) lc.queryKthSmallest(nOld.lc, k, l, mid)
+      else rc.queryKthSmallest(nOld.rc, k - lSum, mid + 1, r)
+    }
+  }
+
+  case class Leaf(sum: Int) extends TreeNode {
+    def modify(pos: Int, v: Int, l: Int, r: Int): TreeNode = Leaf(sum + v)
+
+    def queryKthSmallest(old: TreeNode, k: Int, l: Int, r: Int): Int = l
+  }
+}
+
+object Main extends App {
+  var Array(n, m) = io.StdIn.readLine().split(&quot; &quot;).map(_.toInt)
+  val arr = io.StdIn.readLine().split(&quot; &quot;).map(_.toInt)
+  // map the array to an id ranged 0 ~ n
+  val dict = arr.distinct.sorted.zipWithIndex.toMap
+  // build the tree
+  val roots = (0 until n).foldLeft(List(PersistentSegTree.init(1, n))) { (lis, cur) =&amp;gt;
+    lis.head.modify(dict(arr(cur)) + 1, 1, 1, n) :: lis
+  }.reverse.toSeq
+  while ({ m -= 1; m &amp;gt;= 0 }) {
+    val Array(i, j, k) = io.StdIn.readLine().split(&quot; &quot;).map(_.toInt)
+    println(roots(j).queryKthSmallest(roots(i - 1), k, 1, n))
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;As long as you know how persistent segment trees work, the code should be pretty self-explanatory.&lt;/p&gt;
+
+&lt;p&gt;Once I finished the code, I submitted it to &lt;a href=&quot;http://www.spoj.com/problems/MKTHNUM/&quot;&gt;MKTHNUM on SPOJ&lt;/a&gt; for testing, and got a TLE. It turned out that the tree building process, after optimization, took about 0.6 ~ 0.7 seconds on my laptop (CPU: Intel i5-2520M), which, unfortunately, is a bit too long.&lt;/p&gt;
+
+&lt;p&gt;Recalling that the JVM might need some warmup due to JIT optimizations, I added a loop that ran the building process ~20 times before the benchmark, and sure enough, the time went down to 0.1 ~ 0.2 seconds.&lt;/p&gt;
+
+&lt;p&gt;Of course, it’s impossible to apply the method on online judges. As such, I can sort of understand why most OJs give Java programs a longer time limit.&lt;/p&gt;</content><author><name>WillyPillow</name></author><category term="en" /><category term="scala" /><category term="competitive-coding" /><category term="persistent-ds" /><category term="segment-tree" /><summary type="html">I’ve always thought that persistent segment trees, also known as “functional segment trees” in Chinese, are more elegant than traditional ones, since I can essentially treat them as immutable objects. So recently, I decided to code an implementation in Scala, a functional language.</summary></entry><entry><title type="html">Codechef PREFIXOR: Prefix XOR</title><link href="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/07/04/codechef-prefixor.html" rel="alternate" type="text/html" title="Codechef PREFIXOR: Prefix XOR" /><published>2017-07-04T19:30:00+08:00</published><updated>2018-08-22T21:02:49+08:00</updated><id>http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/07/04/codechef-prefixor</id><content type="html" xml:base="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/07/04/codechef-prefixor.html">&lt;p&gt;&lt;a href=&quot;https://www.codechef.com/problems/PREFIXOR&quot;&gt;Codechef Link&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;This is a problem from the Codechef SnackDown Elimination Round 2017. During the contest, I read the statements, and immediately started coding a plain segment tree, thinking it would work, only to find that I couldn’t merge the left and right segments at around 10 LOC or so. Anyway, a few days ago, I decided to give the problem another try.&lt;/p&gt;
+
+&lt;p&gt;My first observation is that, for each &lt;code&gt;l&lt;/code&gt;, if we can find the maximum &lt;code&gt;r&lt;/code&gt; so that the pair &lt;code&gt;(l, r)&lt;/code&gt; is permissible (i.e. &lt;code&gt;a[l] &amp;lt;= a[l] ^ a[l + 1] &amp;lt;= ... &amp;lt;= a[l] ^ a[l + 1] ^ ... a[r]&lt;/code&gt;), then &lt;code&gt;(l, k)&lt;/code&gt; is also permissible iff &lt;code&gt;l &amp;lt;= k &amp;lt;= r&lt;/code&gt;. As such, let the maximum &lt;code&gt;r&lt;/code&gt; for each &lt;code&gt;l&lt;/code&gt; be &lt;code&gt;maxDst[l]&lt;/code&gt;, then the answer for the segment &lt;code&gt;(l, r)&lt;/code&gt; is &lt;code&gt;sum { min(maxDst[k], r) - k + 1 | l &amp;lt;= k &amp;lt;= r }&lt;/code&gt;. This query can be done &lt;code&gt;O(log n)&lt;/code&gt; on a segment tree with a merge-split treap in each node by splitting each treap by &lt;code&gt;maxDst[k] == r&lt;/code&gt;, and adding up &lt;code&gt;sum { maxDst[k] - k + 1 }&lt;/code&gt; and &lt;code&gt;sum { r - k + 1 }&lt;/code&gt; for the left and right side respectively. However, since no updates are needed, we can just use a merge-sort tree, with prefix sums for &lt;code&gt;maxDst[k] - k + 1&lt;/code&gt; and suffix sums for &lt;code&gt;- k + 1&lt;/code&gt; in each node. (The latter is summed with &lt;code&gt;r * [NUMBER OF ELEMENTS]&lt;/code&gt; during the query.)&lt;/p&gt;
+
+&lt;p&gt;The problem is then transformed into solving the &lt;code&gt;maxDst&lt;/code&gt; array. We can see that when &lt;code&gt;k == 1&lt;/code&gt;, we have to calculate the relations of &lt;code&gt;a[1], a[1] ^ a[2], ... , a[1] ^ a[2] ^ ... a[n]&lt;/code&gt;, and when &lt;code&gt;k == 2&lt;/code&gt;, the sequence turns into &lt;code&gt;a[2], a[2] ^ a[3], ...&lt;/code&gt;. Note that we can just drop the first element from the former and xor all the elements with &lt;code&gt;a[1]&lt;/code&gt; to get the latter. In other words, we have to track the relations while supporting modifications that xor all the elements with a certain integer.&lt;/p&gt;
+
+&lt;p&gt;Looking into how xor works, we can observe that &lt;code&gt;x &amp;lt;= y&lt;/code&gt; becomes &lt;code&gt;x ^ k &amp;gt; y ^ k&lt;/code&gt; iff the most significant bit that differs between &lt;code&gt;x&lt;/code&gt; and &lt;code&gt;y&lt;/code&gt; is xored with &lt;code&gt;1&lt;/code&gt;. Thus, we can categorize the relations into 32 sets, and turn this into a modal where we have a sequence of 0s and 1s, standing for &lt;code&gt;&amp;lt;=&lt;/code&gt; and &lt;code&gt;&amp;gt;&lt;/code&gt; respectively. For each xor operation, we flip some certain sets of elements according to the binary representation of the number so that we can track the relations. Then, if we can query the sum of a segment, we can know whether the sequence is increasing by checking whether the sum is zero, thus solving &lt;code&gt;maxDst&lt;/code&gt; via binary search.&lt;/p&gt;
+
+&lt;p&gt;In order to do the operations mentioned above, the first thing that came into mind are segment trees. However, since the modifications are non-continuous, we have to use multiple segment trees, one for each set, querying and modifying them separately. Unfortunately, this method is too slow and gets TLEs. On further inspection, it can be observed that the only modifications are the flipping, which are only done on the root. In other words, none of the nodes, except the roots, are modified. As such, we can turn to prefix sums and maintain a boolean array on whether a set is flipped. If the set is flipped, the query returns &lt;code&gt;N - ans&lt;/code&gt;, where &lt;code&gt;ans&lt;/code&gt; is the original return value, and &lt;code&gt;N&lt;/code&gt; is the total number of elements in the segment, which can be determined by another prefix sum array.&lt;/p&gt;
+
+&lt;p&gt;To recap, the procedure is as follows:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Create an array of &lt;code&gt;a[1], a[1] ^ a[2], ... a[1] ^ a[2] ^ ... a[n]&lt;/code&gt; and record the relations between every pair &lt;code&gt;(a[i], a[i + 1])&lt;/code&gt;. (&lt;code&gt;O(n)&lt;/code&gt;)&lt;/li&gt;
+  &lt;li&gt;Place each relation into two prefix sums (one for tracking the &lt;code&gt;&amp;gt;&lt;/code&gt; count, and the other for tracking the number of elements) according to their binary representation (one of the 32 sets). (&lt;code&gt;O(n)&lt;/code&gt;)&lt;/li&gt;
+  &lt;li&gt;Scan from left to right. For each &lt;code&gt;l&lt;/code&gt;, binary search the minimum &lt;code&gt;r&lt;/code&gt; so that the segment &lt;code&gt;(l, r)&lt;/code&gt; has a sum &amp;gt; 0 on the prefix sum (querying the 32 sets separately). &lt;code&gt;maxDst[l]&lt;/code&gt; can then be updated to &lt;code&gt;r&lt;/code&gt;. Then, do the modification by xorring with &lt;code&gt;a[l]&lt;/code&gt;, i.e. flip the sets whose corresponding bit in &lt;code&gt;a[l]&lt;/code&gt; is 1. (&lt;code&gt;O(n * log n * log C)&lt;/code&gt;)&lt;/li&gt;
+  &lt;li&gt;Build a merge-sort tree. In each node, maintain not only &lt;code&gt;maxDst[]&lt;/code&gt; but also the prefix sums of &lt;code&gt;maxDst[k] - k + 1&lt;/code&gt; and suffix sums of &lt;code&gt;-k + 1&lt;/code&gt;. (&lt;code&gt;O(n * log n)&lt;/code&gt;)&lt;/li&gt;
+  &lt;li&gt;For each query &lt;code&gt;(l, r)&lt;/code&gt;, search the segment on the merge-sort tree. For each node hit, binary search &lt;code&gt;maxDst&lt;/code&gt; for &lt;code&gt;r&lt;/code&gt;, and sum up the prefix sums left of &lt;code&gt;r&lt;/code&gt; and suffix sums right of &lt;code&gt;r&lt;/code&gt; together with &lt;code&gt;r * [NUMBER OF ELEMENTS ON THE RIGHT]&lt;/code&gt;. (&lt;code&gt;O(q * log^2 n)&lt;/code&gt;)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Total time complexity: &lt;code&gt;O(n * log n * log C + q * log^2 n)&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Code is as follows:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-cpp&quot;&gt;#include &amp;lt;bits/stdc++.h&amp;gt;
+using namespace std;
+
+const int MAXN = 4E5 + 10;
+
+int sum[32][MAXN][2], arr[MAXN], xorred[MAXN], maxDst[MAXN], n, queryR;
+bool isRev[32] = { false };
+vector&amp;lt;int&amp;gt; typeToIdx[32];
+vector&amp;lt;int64_t&amp;gt; msPreSum[MAXN * 4], msSufSum[MAXN * 4];
+vector&amp;lt;pair&amp;lt;int, int&amp;gt; &amp;gt; msTree[MAXN * 4];
+
+bool queryMulti(int l, int r) {
+  for (int i = 0; i &amp;lt; 32; i++) {
+    int t = sum[i][r][0] - sum[i][l - 1][0];
+    if (isRev[i]) {
+      if (sum[i][r][1] - sum[i][l - 1][1] != t) return false;
+    } else {
+      if (t != 0) return false;
+    }
+  }
+  return true;
+}
+
+void modifyMulti(int x) {
+  for (int i = 0; i &amp;lt; 32; i++) {
+    if (x &amp;amp; (1 &amp;lt;&amp;lt; i)) isRev[i + 1] = !isRev[i + 1];
+  }
+}
+
+void buildMs(int id, int l, int r) {
+  if (l == r) {
+    msTree[id].push_back({ maxDst[l], maxDst[l] - l + 1 });
+    msPreSum[id] = { 0, maxDst[l] - l + 1 };
+    msSufSum[id] = { l, 0 };
+  } else {
+    int m = (l + r) &amp;gt;&amp;gt; 1;
+    buildMs(id &amp;lt;&amp;lt; 1, l, m); buildMs(id &amp;lt;&amp;lt; 1 | 1, m + 1, r);
+    msTree[id].resize(msTree[id &amp;lt;&amp;lt; 1].size() + msTree[id &amp;lt;&amp;lt; 1 | 1].size());
+    merge(msTree[id &amp;lt;&amp;lt; 1].begin(), msTree[id &amp;lt;&amp;lt; 1].end(),
+        msTree[id &amp;lt;&amp;lt; 1 | 1].begin(), msTree[id &amp;lt;&amp;lt; 1 | 1].end(),
+        msTree[id].begin());
+    msPreSum[id].resize(msTree[id].size() + 1);
+    for (int i = 1; i &amp;lt;= (int)msTree[id].size(); i++) {
+      msPreSum[id][i] = msPreSum[id][i - 1] + msTree[id][i - 1].second;
+    }
+    msSufSum[id].resize(msTree[id].size() + 1);
+    for (int i = msTree[id].size(); i &amp;gt;= 1; i--) {
+      msSufSum[id][i - 1] = msSufSum[id][i] +
+        (msTree[id][i - 1].first - msTree[id][i - 1].second + 1);
+    }
+  }
+}
+
+int64_t queryMs(int id, int l, int r, int qL, int qR) {
+  if (qL &amp;lt;= l &amp;amp;&amp;amp; r &amp;lt;= qR) {
+    int idx = lower_bound(msTree[id].begin(), msTree[id].end(),
+        make_pair(queryR, 0)) - msTree[id].begin();
+    return msPreSum[id][idx] +
+      (int64_t)(msTree[id].size() - idx) * (queryR + 1) - msSufSum[id][idx];
+  } else {
+    int m = (l + r) &amp;gt;&amp;gt; 1;
+    int64_t t = 0;
+    if (qL &amp;lt;= m) t += queryMs(id &amp;lt;&amp;lt; 1, l, m, qL, min(m, qR));
+    if (m &amp;lt; qR) t += queryMs(id &amp;lt;&amp;lt; 1 | 1, m + 1, r, max(qL, m), qR);
+    return t;
+  }
+}
+
+int32_t main() {
+#ifdef OJ_DEBUG
+  freopen(&quot;out2&quot;, &quot;r&quot;, stdin);
+#endif
+  std::cin.tie(0);
+  std::ios_base::sync_with_stdio(0);
+  cin &amp;gt;&amp;gt; n;
+  for (int i = 1; i &amp;lt;= n; i++) cin &amp;gt;&amp;gt; arr[i];
+  for (int i = 1; i &amp;lt;= n; i++) xorred[i] = xorred[i - 1] ^ arr[i];
+  for (int i = 1; i &amp;lt; n; i++) {
+    int j;
+    for (j = 31; j &amp;gt;= 0; j--) {
+      if ((xorred[i] &amp;amp; (1 &amp;lt;&amp;lt; j)) != (xorred[i + 1] &amp;amp; (1 &amp;lt;&amp;lt; j))) {
+        typeToIdx[j + 1].push_back(i);
+        if (xorred[i] &amp;gt; xorred[i + 1]) sum[j + 1][i][0]++;
+        sum[j + 1][i][1]++;
+        break;
+      }
+    }
+    if (j &amp;lt; 0) {
+      typeToIdx[0].push_back(i);
+      sum[0][i][1]++;
+    }
+  }
+  for (int i = 0; i &amp;lt; 32; i++) {
+    for (int j = 1; j &amp;lt;= n; j++) {
+      sum[i][j][0] += sum[i][j - 1][0];
+      sum[i][j][1] += sum[i][j - 1][1];
+    }
+  }
+  for (int i = 1; i &amp;lt; n; i++) {
+    int l = i, r = n;
+    while (l != r) {
+      int m = (l + r) &amp;gt;&amp;gt; 1;
+      if (queryMulti(i, m)) l = m + 1;
+      else r = m;
+    }
+    maxDst[i] = l;
+    modifyMulti(arr[i]);
+  }
+  maxDst[n] = n;
+  buildMs(1, 1, n);
+  int q;
+  int64_t lastAns = 0;
+  cin &amp;gt;&amp;gt; q;
+  while (q--) {
+    int l, r; cin &amp;gt;&amp;gt; l &amp;gt;&amp;gt; r;
+    l = (l + lastAns) % n + 1;
+    queryR = r = (r + lastAns) % n + 1;
+    lastAns = queryMs(1, 1, n, l, r);
+    cout &amp;lt;&amp;lt; lastAns &amp;lt;&amp;lt; '\n';
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;</content><author><name>WillyPillow</name></author><category term="en" /><category term="cpp" /><category term="codechef" /><category term="competitive-coding" /><category term="segment-tree" /><category term="merge-sort-tree" /><category term="bitwise-xor" /><summary type="html">Codechef Link</summary></entry><entry><title type="html">Freenet On Qubes</title><link href="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/02/06/freenet-on-qubes.html" rel="alternate" type="text/html" title="Freenet On Qubes" /><published>2017-02-06T18:15:00+08:00</published><updated>2018-06-02T22:25:17+08:00</updated><id>http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/02/06/freenet-on-qubes</id><content type="html" xml:base="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/02/06/freenet-on-qubes.html">&lt;p&gt;As a fan of &lt;a href=&quot;https://freenetproject.org/&quot;&gt;Freenet&lt;/a&gt; due to its decentralization and anonymity and an user of &lt;a href=&quot;https://www.qubes-os.org/&quot;&gt;Qubes OS&lt;/a&gt;, I wanted to combine these two to achieve better security. Specifically, my goal is to make it work like &lt;a href=&quot;https://freenetproject.org/&quot;&gt;Whonix&lt;/a&gt;, splitting it into a “Freenet Gateway” and “Freenet Workstation”, with the latter not being able to connect to other places except the gateway.&lt;/p&gt;
+
+&lt;h2 id=&quot;steps&quot;&gt;Steps&lt;/h2&gt;
+&lt;ol&gt;
+  &lt;li&gt;Create a firewallVm as the gateway, with the Freenet software installed on it.&lt;/li&gt;
+  &lt;li&gt;Create an appVm that uses the gateway as its firewallVm. This will act as the workstation.&lt;/li&gt;
+  &lt;li&gt;Right click the workstation entry in the VM manager, click “VM Settings”, and take note of the “IP” and “Gateway” address. These will be referred to as &lt;code&gt;[IP]&lt;/code&gt; and &lt;code&gt;[GATEWAY]&lt;/code&gt; respectively in the following steps.&lt;br /&gt;
+ &lt;img src=&quot;/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/assets/freenet-on-qubes/1.png&quot; alt=&quot;VM Settings&quot; /&gt;&lt;/li&gt;
+  &lt;li&gt;Navigate to the “Firewall rules” tab in the workstation settings, choose “Deny network access except…”, and untick all three boxes on the right.&lt;br /&gt;
+ &lt;img src=&quot;/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/assets/freenet-on-qubes/2.png&quot; alt=&quot;Firewall rules&quot; /&gt;&lt;/li&gt;
+  &lt;li&gt;In the webUI of Freenet (on the gateway), navigate to “Configuration -&amp;gt; Web Interface”&lt;br /&gt;
+ &lt;img src=&quot;/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/assets/freenet-on-qubes/3.png&quot; alt=&quot;Web Interface Config&quot; /&gt;&lt;/li&gt;
+  &lt;li&gt;Change “IP address to bind to” to &lt;code&gt;[GATEWAY]&lt;/code&gt;&lt;br /&gt;
+ &lt;img src=&quot;/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/assets/freenet-on-qubes/4.png&quot; alt=&quot;IP to Bind to&quot; /&gt;&lt;/li&gt;
+  &lt;li&gt;Change “Hostnames or IP addresses that are allowed to connect to the web interface” to &lt;code&gt;127.0.0.1,[IP],[GATEWAY]&lt;/code&gt;.&lt;/li&gt;
+  &lt;li&gt;Change “Hosts having a full access to the Freenet web interface” to &lt;code&gt;127.0.0.1,[GATEWAY]&lt;/code&gt;.&lt;br /&gt;
+ &lt;img src=&quot;/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/assets/freenet-on-qubes/5.png&quot; alt=&quot;Allowed Hosts&quot; /&gt;&lt;/li&gt;
+  &lt;li&gt;In the gateway, run the following commands:
+    &lt;pre&gt;&lt;code&gt; echo 'iptables -I INPUT -s [GATEWAY0]/24 -d [GATEWAY] -p tcp --dport 8888 -j ACCEPT' | sudo tee -a /rw/config/qubes-firewall-user-script
+ sudo chmod +x /rw/config/qubes-firewall-user-script
+&lt;/code&gt;&lt;/pre&gt;
+    &lt;p&gt;&lt;img src=&quot;/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/assets/freenet-on-qubes/6.png&quot; alt=&quot;Iptables&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Reboot the gateway&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;This way, Freenet can be accessed in the workstation VM at &lt;code&gt;http://[GATEWAY]:8888/&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Also, note that, due to how networking in Qubes works, you may have to start the workstation VM before launching Freenet on the gateway.&lt;/p&gt;</content><author><name>WillyPillow</name></author><category term="en" /><category term="security" /><category term="qubes" /><category term="freenet" /><summary type="html">As a fan of Freenet due to its decentralization and anonymity and an user of Qubes OS, I wanted to combine these two to achieve better security. Specifically, my goal is to make it work like Whonix, splitting it into a “Freenet Gateway” and “Freenet Workstation”, with the latter not being able to connect to other places except the gateway.</summary></entry><entry><title type="html">Zeronet Offline Sign</title><link href="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/01/30/zeronet-offline-sign.html" rel="alternate" type="text/html" title="Zeronet Offline Sign" /><published>2017-01-30T10:36:00+08:00</published><updated>2018-06-02T22:25:16+08:00</updated><id>http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/01/30/zeronet-offline-sign</id><content type="html" xml:base="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/01/30/zeronet-offline-sign.html">&lt;p&gt;As can be seen &lt;a href=&quot;/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/mirrors/&quot;&gt;here&lt;/a&gt;, this site now has a &lt;a href=&quot;https://zeronet.io/&quot;&gt;Zeronet&lt;/a&gt; mirror. In the process of creating the mirror, I figured it would be nice to sign the site (&lt;code&gt;content.json&lt;/code&gt;) on a separate vault VM in &lt;a href=&quot;https://www.qubes-os.org/&quot;&gt;Qubes OS&lt;/a&gt; so that the chances of the private key leaking is minimalized. However, there did not seem to be any articles about achieving such a thing at the time. As such, I will document my method in the following article.&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Create a (vault) VM and install Zeronet on it&lt;br /&gt;
+The official insturctions are &lt;a href=&quot;https://github.com/HelloZeroNet/ZeroNet#manual-install-for-debian-linux&quot;&gt;here&lt;/a&gt;. It is recommended, however, that you use &lt;code&gt;git clone https://github.com/HelloZeroNet/ZeroNet.git&lt;/code&gt; to clone the repo and verify the signatures before running.&lt;br /&gt;
+To verify the signature of the repo:
+    &lt;pre&gt;&lt;code&gt;cd ZeroNet/
+# Fetch the keys, the hex string is the public key at the time of writing
+gpg --recv-keys 960FFF2D6C145AA613E8491B5B63BAE6CB9613AE
+# Get latest commit
+COMMIT=`git log --oneline | head -n 1 | cut -f 1 -d ' '`
+# Verify the signature
+git verify-commit &quot;$COMMIT&quot;
+# If the command above outputs &quot;Good signature&quot;, checkout the commit
+git checkout $COMMIT
+&lt;/code&gt;&lt;/pre&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Cut off Internet access to the VM (i.e. set firewallVm to none)&lt;/li&gt;
+  &lt;li&gt;Create a key pair
+    &lt;pre&gt;&lt;code&gt;# Remember to save the private key somewhere safe
+./zeronet.py siteCreate
+&lt;/code&gt;&lt;/pre&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Modify the site&lt;br /&gt;
+Copy the files to &lt;code&gt;data/[YOUR-PUBLIC-KEY]&lt;/code&gt;.&lt;/li&gt;
+  &lt;li&gt;Sign the site
+    &lt;pre&gt;&lt;code&gt;# This will ask for your private key
+./zeronet.py siteSign [YOUR-PUBLIC-KEY]
+&lt;/code&gt;&lt;/pre&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Install Zeronet on another VM (You may have to have your port opened. &lt;a href=&quot;https://zeronet.readthedocs.io/en/latest/faq/#do-i-need-to-have-a-port-opened&quot;&gt;Link&lt;/a&gt; and &lt;a href=&quot;https://www.qubes-os.org/doc/firewall/&quot;&gt;link&lt;/a&gt;)&lt;/li&gt;
+  &lt;li&gt;Copy your site directory (&lt;code&gt;data/[YOUR-PUBLIC-KEY]&lt;/code&gt;) from the vault to the same directory on the Internet-connected VM&lt;/li&gt;
+  &lt;li&gt;Publish the site
+    &lt;pre&gt;&lt;code&gt;./zeronet.py sitePublish [YOUR-PUBLIC-KEY]
+&lt;/code&gt;&lt;/pre&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;And you’re finished. In theory, it should be possible to use &lt;a href=&quot;https://www.qubes-os.org/doc/qrexec3/&quot;&gt;qrexec&lt;/a&gt; and create something similar to &lt;a href=&quot;https://www.qubes-os.org/doc/split-gpg/&quot;&gt;split GPG&lt;/a&gt; in order to make the process simpler, and is definitely something I should look into.&lt;/p&gt;</content><author><name>WillyPillow</name></author><category term="en" /><category term="encryption" /><category term="security" /><category term="qubes" /><category term="zeronet" /><summary type="html">As can be seen here, this site now has a Zeronet mirror. In the process of creating the mirror, I figured it would be nice to sign the site (content.json) on a separate vault VM in Qubes OS so that the chances of the private key leaking is minimalized. However, there did not seem to be any articles about achieving such a thing at the time. As such, I will document my method in the following article.</summary></entry><entry><title type="html">GPG Setup</title><link href="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/01/30/gpg-setup.html" rel="alternate" type="text/html" title="GPG Setup" /><published>2017-01-30T09:19:00+08:00</published><updated>2018-06-02T22:25:15+08:00</updated><id>http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/01/30/gpg-setup</id><content type="html" xml:base="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/01/30/gpg-setup.html">&lt;p&gt;As mentioned &lt;a href=&quot;/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/01/23/software-and-site-changes.html#gnupg&quot;&gt;earlier&lt;/a&gt;, this is an article in which I’ll mention how my GPG keys are set up.&lt;/p&gt;
+
+&lt;h2 id=&quot;master-key&quot;&gt;Master Key&lt;/h2&gt;
+&lt;p&gt;My master key is generated and used on an air-gapped old laptop running a &lt;a href=&quot;https://tails.boum.org/&quot;&gt;Tails OS&lt;/a&gt; live USB. The key never left the device except for a few CD and &lt;a href=&quot;http://www.jabberwocky.com/software/paperkey/&quot;&gt;Paperkey&lt;/a&gt; encryped backups.&lt;/p&gt;
+
+&lt;h2 id=&quot;subkeys&quot;&gt;Subkeys&lt;/h2&gt;
+&lt;p&gt;The subkeys (i.e. for code signing, email encryption, …etc) are generated on the air gap, encrypted with a random passphrase, and made into &lt;a href=&quot;https://en.wikipedia.org/wiki/Data_Matrix&quot;&gt;Data Matrix&lt;/a&gt; patterns via &lt;a href=&quot;https://packages.debian.org/search?keywords=dmtx-utils&quot;&gt;dmtx-utils&lt;/a&gt;. The matrices are then read by my smartphone and copied to my main box running &lt;a href=&quot;https://www.qubes-os.org/&quot;&gt;Qubes OS&lt;/a&gt; via a USB drive. The data is copied from the UsbVm to a network-less VM, where its SHA512 checksum is compared and the content decrypted. The keys are then moved to corresponding vault VMs, and are later used via &lt;a href=&quot;https://www.qubes-os.org/doc/split-gpg/&quot;&gt;Split GPG&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Note that due to the reasons mentioned &lt;a href=&quot;https://blog.invisiblethings.org/keys/&quot;&gt;here&lt;/a&gt;, the keys use empty passphrases.&lt;/p&gt;
+
+&lt;h2 id=&quot;public-key-distribution&quot;&gt;Public Key Distribution&lt;/h2&gt;
+&lt;p&gt;The following are the places where I share my public keys. Note that if you’re verifying this blog, you should not trust the list blindly since an attacker messing around with the blog can always modify the list.&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/mirrors/&quot;&gt;Mirrors of this site&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://gitlab.com/willypillow&quot;&gt;Gitlab profile&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/WillyPillow&quot;&gt;Github profile&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://bitbucket.org/snippets/WillyPillow/54zqn&quot;&gt;Bitbucket snippet&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;http://myanimelist.net/profile/TheWP&quot;&gt;MyAnimeList profile&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://diasporing.ch/people/7abf8850bce50134011e7a163e59d8f4&quot;&gt;Diaspora* profile&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.reddit.com/r/publickeyexchange/comments/5q3i3z/uwillypillow/&quot;&gt;Reddit /r/publicexchange&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;DNS records (&lt;code&gt;wp._pka.nerde.pw TXT&lt;/code&gt;) (&lt;a href=&quot;https://mxtoolbox.com/SuperTool.aspx?action=txt%3awp.%5Fpka.nerde.pw&amp;amp;run=toolpage&quot;&gt;MX toolbox link&lt;/a&gt;)&lt;/li&gt;
+  &lt;li&gt;Namecoin (&lt;code&gt;d/nerde&lt;/code&gt;) (&lt;a href=&quot;https://namecha.in/name/d/nerde&quot;&gt;Namechain link&lt;/a&gt;)&lt;/li&gt;
+  &lt;li&gt;Blockstack (&lt;code&gt;willypillow.id&lt;/code&gt;) (&lt;a href=&quot;https://onename.com/willypillow&quot;&gt;Onename link&lt;/a&gt;)&lt;/li&gt;
+  &lt;li&gt;Email Signature (Can be found at mailing lists that I frequent, e.g. &lt;a href=&quot;https://groups.google.com/forum/#!forum/qubes-users&quot;&gt;qubes-users&lt;/a&gt; and &lt;a href=&quot;https://groups.google.com/forum/#!forum/qubes-devel&quot;&gt;qubes-devel&lt;/a&gt;)&lt;/li&gt;
+  &lt;li&gt;Keyservers (e.g. &lt;code&gt;pgp.mit.edu&lt;/code&gt;, &lt;code&gt;sks-keyservers.net&lt;/code&gt;)&lt;/li&gt;
+&lt;/ul&gt;</content><author><name>WillyPillow</name></author><category term="en" /><category term="gpg" /><category term="encryption" /><category term="security" /><category term="qubes" /><summary type="html">As mentioned earlier, this is an article in which I’ll mention how my GPG keys are set up.</summary></entry><entry><title type="html">Jekyll Optimize Site</title><link href="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/01/27/jekyll-optimize-site.html" rel="alternate" type="text/html" title="Jekyll Optimize Site" /><published>2017-01-27T19:58:00+08:00</published><updated>2018-06-02T22:25:14+08:00</updated><id>http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/01/27/jekyll-optimize-site</id><content type="html" xml:base="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/01/27/jekyll-optimize-site.html">&lt;p&gt;I used to use &lt;a href=&quot;https://gitlab.com/willypillow/JekyllGulp&quot;&gt;Gulp&lt;/a&gt; for optimizing the pages on the site for speed. However, because I moved to Netlify for hosting and building the site, I didn’t want to use something that not only required quite a few dependencies but was also rather slow. In the article below, I will list the tools I am using as alternatives right now.&lt;/p&gt;
+
+&lt;h2 id=&quot;css-minify&quot;&gt;CSS Minify&lt;/h2&gt;
+&lt;p&gt;This is actually pretty easy, since it turns out that &lt;code&gt;sass&lt;/code&gt;, which Jekyll use to generate CSS files, has an option that does exactly this. Just add the following to &lt;code&gt;_config.yml&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;sass:
+  style: compressed
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;html-minify&quot;&gt;HTML Minify&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&quot;https://github.com/penibelst/jekyll-compress-html&quot;&gt;This layout&lt;/a&gt; does the job nicely. Basically, just throw &lt;code&gt;compress.html&lt;/code&gt; in &lt;code&gt;_layouts&lt;/code&gt;, set the layout of &lt;code&gt;default.html&lt;/code&gt; to &lt;code&gt;compress&lt;/code&gt;, and optionally tweak the settings in &lt;code&gt;_config.yml&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;A special thing about this is that it was completely written in Liquid, without requiring any extra plugins. Thus, it can also work with Github Pages, where the automatic building of Jekyll sites does not support plugins.&lt;/p&gt;
+
+&lt;h2 id=&quot;css-inline&quot;&gt;CSS Inline&lt;/h2&gt;
+&lt;p&gt;As written &lt;a href=&quot;https://developers.google.com/speed/docs/insights/InlineCSS&quot;&gt;on Google&lt;/a&gt; and a lot of other websites, it is generally recommended to inline (small enough) CSS files in HTML documents since it eliminates an additional request that potentially blocks the display of content.&lt;/p&gt;
+
+&lt;p&gt;A lot of articles I’ve read recommended moving &lt;code&gt;main.scss&lt;/code&gt; to &lt;code&gt;_includes/&lt;/code&gt; and replacing &lt;code&gt;&amp;lt;link rel=&quot;stylesheet&quot;...&lt;/code&gt; line in &lt;code&gt;head.html&lt;/code&gt; with the following code:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;{% capture scss %}{% include main.scss %}{% endcapture %}
+{{ scss | scssify }}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;However, I realized that &lt;code&gt;scssify&lt;/code&gt; is called for each post, resulting in a lot of redundant computations. Therefore, I came up with &lt;a href=&quot;https://gitlab.com/willypillow/NerdeNolzda/blob/master/_plugins/inline_css.rb&quot;&gt;a simple Ruby plugin&lt;/a&gt; that essentially replaces the CSS import line in the generated HTML files with the CSS content itself. This way, the CSS is only generated once, drastically improving the speed (about a 60% speedup).&lt;/p&gt;
+
+&lt;h2 id=&quot;removing-redundant-css&quot;&gt;Removing Redundant CSS&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;UnCSS&lt;/code&gt; was used to remove unused or redundant CSS rules in the Gulp script. However, there doesn’t seem to be an Jekyll/Ruby-only equivalent. Thus, I just manually compared the raw styles and the ones processed by UnCSS, commenting out the rules I didn’t use. Admittedly, this isn’t as complete as the previous solution, since my Gulp script optimizes the CSS for each HTML file separately, but I guess it works well enough.&lt;/p&gt;
+
+&lt;h2 id=&quot;not-implemented&quot;&gt;Not Implemented&lt;/h2&gt;
+&lt;p&gt;The following are the functionalities in the script that I deemed unnecessary, thus did not search for alternatives:&lt;/p&gt;
+
+&lt;h3 id=&quot;optimize-images&quot;&gt;Optimize Images&lt;/h3&gt;
+&lt;p&gt;There aren’t many images on this site to begin with, and I could always manually compress them if needed.&lt;/p&gt;
+
+&lt;h3 id=&quot;optimize-xml&quot;&gt;Optimize XML&lt;/h3&gt;
+&lt;p&gt;Again, there aren’t a lot of XML files on this site, and most of them are usually processed by servers that aren’t that sensitive about bandwidth anyway.&lt;/p&gt;</content><author><name>WillyPillow</name></author><category term="en" /><category term="site" /><category term="jekyll" /><summary type="html">I used to use Gulp for optimizing the pages on the site for speed. However, because I moved to Netlify for hosting and building the site, I didn’t want to use something that not only required quite a few dependencies but was also rather slow. In the article below, I will list the tools I am using as alternatives right now.</summary></entry><entry><title type="html">Jekyll GPG Signature</title><link href="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/01/27/jekyll-gpg-signature.html" rel="alternate" type="text/html" title="Jekyll GPG Signature" /><published>2017-01-27T08:27:00+08:00</published><updated>2018-06-02T22:25:13+08:00</updated><id>http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/01/27/jekyll-gpg-signature</id><content type="html" xml:base="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/01/27/jekyll-gpg-signature.html">&lt;p&gt;As mentioned &lt;a href=&quot;/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/keys/&quot;&gt;here&lt;/a&gt;, the Git repo of this blog is PGP signed. However, I realized that it isn’t exactly convenient to verify the signatures since you have to clone the whole repo. Thus, I started searching for a way to serve the signatures along with the HTML.&lt;/p&gt;
+
+&lt;p&gt;Most of the solutions I’ve found (e.g. &lt;a href=&quot;https://github.com/kormoc/jekyll-gpg_clearsign&quot;&gt;jekyll-gpg_clearsign&lt;/a&gt; and &lt;a href=&quot;http://blog.merovius.de/2014/01/23/signed-blog-posts.html&quot;&gt;another one that only signs the Markdown files&lt;/a&gt;) all require the private key in the building process, which is not optimal for me since this site is built on a third party server (i.e. Netlify). In addition, they both embed the signature directly in the HTML, which kind of wastes bandwidth for the majority of users who don’t care about verifying.&lt;/p&gt;
+
+&lt;p&gt;Therefore, I decided to roll my own solution. In a nutshell, the signed Markdown files are placed in a different directory, which are then linked to from the article (i.e. the &lt;code&gt;Signature&lt;/code&gt; link just below the title).&lt;/p&gt;
+
+&lt;p&gt;Implementing it is fairly simple. Basically, it boils down to writing a pre-commit hook that signs changed files (much like &lt;a href=&quot;/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/09/jekyll-last-modified-date.html&quot;&gt;my modified date mechanism&lt;/a&gt;) and editing the page layout to include the link.&lt;/p&gt;
+
+&lt;p&gt;For the pre-commit hook, see &lt;a href=&quot;https://gitlab.com/willypillow/NerdeNolzda/commit/8c3238af192cdd3bfc7158a62d38d2d75c59b18e&quot;&gt;this commit&lt;/a&gt; (lines 8~15). As for the layout, see &lt;a href=&quot;https://gitlab.com/willypillow/NerdeNolzda/commit/258907261be144444a6cb7263e8c5deb822de62e&quot;&gt;this commit&lt;/a&gt; (&lt;code&gt;_layouts/page.html&lt;/code&gt; and &lt;code&gt;_layouts/post.html&lt;/code&gt;).&lt;/p&gt;
+
+&lt;p&gt;As you can see from the hook, only &lt;code&gt;*.md&lt;/code&gt; files are signed. This is due to the fact that those files are mainly posts, while other files (e.g. &lt;code&gt;*.html&lt;/code&gt;) are mainly layouts, config, ..etc.&lt;/p&gt;
+
+&lt;p&gt;One interesting thing is that Jekyll seems to treat files under &lt;code&gt;*/_posts/&lt;/code&gt; as posts rather than plain static files. Thus, I had to jump through a few hoops, replacing &lt;code&gt;_posts&lt;/code&gt; with &lt;code&gt;posts&lt;/code&gt; in the path of the signature file, and modify the link to it accordingly.&lt;/p&gt;
+
+&lt;h2 id=&quot;verifying&quot;&gt;Verifying&lt;/h2&gt;
+&lt;p&gt;To verify the signature, just download it and pass it to &lt;code&gt;gpg&lt;/code&gt;. For example, for this page, you can run the following:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;curl http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/sigs/posts/2017-01-27-jekyll-gpg-signature.md.asc | gpg
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;which outputs the Markdown content and whether it is properly signed or not.&lt;/p&gt;
+
+&lt;p&gt;It is important to note that, since the HTML is not signed, an attacker might modify it, making it different from the Markdown file. As a result, even if the Markdown file’s signature is valid, it does NOT mean that you can trust the web page. Instead, only the Markdown content that is outputed by GPG is guranteed not to be modified.&lt;/p&gt;</content><author><name>WillyPillow</name></author><category term="en" /><category term="site" /><category term="gpg" /><category term="encryption" /><category term="security" /><summary type="html">As mentioned here, the Git repo of this blog is PGP signed. However, I realized that it isn’t exactly convenient to verify the signatures since you have to clone the whole repo. Thus, I started searching for a way to serve the signatures along with the HTML.</summary></entry><entry><title type="html">URL Change</title><link href="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/01/24/url-change.html" rel="alternate" type="text/html" title="URL Change" /><published>2017-01-24T07:13:00+08:00</published><updated>2018-06-02T22:25:12+08:00</updated><id>http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/01/24/url-change</id><content type="html" xml:base="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/01/24/url-change.html">&lt;p&gt;As decribed in &lt;a href=&quot;/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/01/23/software-and-site-changes.html&quot;&gt;this post&lt;/a&gt;, I’ve moved away from Cloudflare, and turned back to Namecheap, where I bought the domain, for DNS managing.&lt;/p&gt;
+
+&lt;p&gt;However, it turned out that Namecheap does not support CNAME flattening. That is, I can’t use a CNAME record on the naked domain (i.e. nerde.pw) without breaking email MX records. (See &lt;a href=&quot;https://serverfault.com/questions/613829/why-cant-a-cname-record-be-used-at-the-apex-aka-root-of-a-domain&quot;&gt;this link&lt;/a&gt; for more details)&lt;/p&gt;
+
+&lt;p&gt;As such, the URL of this site will be changed to &lt;a href=&quot;https://blog.nerde.pw/&quot;&gt;https://blog.nerde.pw/&lt;/a&gt;. The old URL &lt;a href=&quot;http://nerde.pw/&quot;&gt;http://nerde.pw/&lt;/a&gt; will still redirect to the new page, but keep in mind that the old one does not allow HTTPS connections due to Namecheap URL forwarding not supporting it.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;EDIT: I created a dummy Netlify site, which accepts HTTPS, at &lt;a href=&quot;https://nerde.pw/&quot;&gt;https://nerde.pw/&lt;/a&gt; that redirects to the current one. However, it is still advised that you use the new URL in case of future changes.&lt;/p&gt;
+
+&lt;p&gt;The perspicacious reader might see that if I could create a site at the old URL, I could put this site there in the first place. However, the DNS records at the two domains are actually quite different. For the redirector at the naked domain, I only used an A record pointing to one of Netlify’s US servers. This potentially makes loading speeds slower, since it’s not taking full advantage of Netlify’s CDN. On the other hand, &lt;code&gt;blog.nerde.pw&lt;/code&gt; uses CNAME record that points to Netlify’s domain, allowing it to return different IPs based on your location.&lt;/p&gt;</content><author><name>WillyPillow</name></author><category term="en" /><category term="site" /><summary type="html">As decribed in this post, I’ve moved away from Cloudflare, and turned back to Namecheap, where I bought the domain, for DNS managing.</summary></entry></feed>

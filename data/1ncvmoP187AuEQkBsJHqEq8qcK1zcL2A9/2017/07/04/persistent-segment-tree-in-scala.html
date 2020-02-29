@@ -1,0 +1,52 @@
+<!DOCTYPE html><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title> Persistent Segment Tree In Scala</title><meta name="description" content=" I’ve always thought that persistent segment trees, also known as “functional segment trees” in Chinese, are more elegant than traditional ones, since I can e... "><link rel="stylesheet" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/assets/main.css"><link rel="canonical" href="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/07/04/persistent-segment-tree-in-scala.html"><link rel="alternate" type="application/rss+xml" title="Nerde Nolzda" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/feed.xml"><header role="banner"> <a class="site-title" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/">Nerde Nolzda</a><nav> <a href="#" class="menu-icon">&#9776;</a><div class="trigger"> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/about/">About</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/keys/">Keys</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/mirrors/">Mirrors</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/">Tags</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/feed.xml">RSS</a></div></nav></header><main><article itemscope itemtype="http://schema.org/BlogPosting"><header><h1 itemprop="name headline"> <a itemprop="mainEntityOfPage url" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/07/04/persistent-segment-tree-in-scala.html"> Persistent Segment Tree In Scala </a></h1><p class="post-meta"> <time datetime="2017-07-04T19:30:00+08:00" itemprop="datePublished"> Jul 4, 2017 </time> • <time datetime="2018-08-22T20:51:10+08:00" itemprop="dateModified"> Aug 22, 2018 </time> • <span itemprop="author publisher" itemscope itemtype="http://schema.org/Person"> <span itemprop="name">WillyPillow</span> </span> • <span itemprop="keywords"> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/en.html" rel="tag">en</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/scala.html" rel="tag">scala</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/competitive-coding.html" rel="tag">competitive-coding</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/persistent-ds.html" rel="tag">persistent-ds</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/segment-tree.html" rel="tag">segment-tree</a></span> • <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/sigs/posts/2017-07-04-persistent-segment-tree-in-scala.md.asc"> Signature </a></p></header><div itemprop="articleBody text"><p>I’ve always thought that persistent segment trees, also known as “functional segment trees” in Chinese, are more elegant than traditional ones, since I can essentially treat them as immutable objects. So recently, I decided to code an implementation in Scala, a functional language.</p><p>Without further ado, here’s the code:</p><pre><code class="language-scala">object PersistentSegTree {
+  def init(l: Int, r: Int): TreeNode = {
+    val mid = (l + r) &gt;&gt;&gt; 1
+    if (l != r) Node(0, init(l, mid), init(mid + 1, r))
+    else Leaf(0)
+  }
+
+  sealed trait TreeNode {
+    val sum: Int
+
+    def modify(pos: Int, v: Int, l: Int, r: Int): TreeNode
+
+    def queryKthSmallest(old: TreeNode, k: Int, l: Int, r: Int): Int
+  }
+
+  case class Node(sum: Int, lc: TreeNode, rc: TreeNode) extends TreeNode {
+    def modify(pos: Int, v: Int, l: Int, r: Int): TreeNode = {
+      val mid = (l + r) &gt;&gt;&gt; 1
+      if (pos &lt;= mid) Node(sum + v, lc.modify(pos, v, l, mid), rc)
+      else Node(sum + v, lc, rc.modify(pos, v, mid + 1, r))
+    }
+
+    def queryKthSmallest(old: TreeNode, k: Int, l: Int, r: Int): Int = {
+      val nOld = old.asInstanceOf[Node]
+      val (lSum, mid) = (lc.sum - nOld.lc.sum, (l + r) / 2)
+      if (k &lt;= lSum) lc.queryKthSmallest(nOld.lc, k, l, mid)
+      else rc.queryKthSmallest(nOld.rc, k - lSum, mid + 1, r)
+    }
+  }
+
+  case class Leaf(sum: Int) extends TreeNode {
+    def modify(pos: Int, v: Int, l: Int, r: Int): TreeNode = Leaf(sum + v)
+
+    def queryKthSmallest(old: TreeNode, k: Int, l: Int, r: Int): Int = l
+  }
+}
+
+object Main extends App {
+  var Array(n, m) = io.StdIn.readLine().split(" ").map(_.toInt)
+  val arr = io.StdIn.readLine().split(" ").map(_.toInt)
+  // map the array to an id ranged 0 ~ n
+  val dict = arr.distinct.sorted.zipWithIndex.toMap
+  // build the tree
+  val roots = (0 until n).foldLeft(List(PersistentSegTree.init(1, n))) { (lis, cur) =&gt;
+    lis.head.modify(dict(arr(cur)) + 1, 1, 1, n) :: lis
+  }.reverse.toSeq
+  while ({ m -= 1; m &gt;= 0 }) {
+    val Array(i, j, k) = io.StdIn.readLine().split(" ").map(_.toInt)
+    println(roots(j).queryKthSmallest(roots(i - 1), k, 1, n))
+  }
+}
+</code></pre><p>As long as you know how persistent segment trees work, the code should be pretty self-explanatory.</p><p>Once I finished the code, I submitted it to <a href="http://www.spoj.com/problems/MKTHNUM/">MKTHNUM on SPOJ</a> for testing, and got a TLE. It turned out that the tree building process, after optimization, took about 0.6 ~ 0.7 seconds on my laptop (CPU: Intel i5-2520M), which, unfortunately, is a bit too long.</p><p>Recalling that the JVM might need some warmup due to JIT optimizations, I added a loop that ran the building process ~20 times before the benchmark, and sure enough, the time went down to 0.1 ~ 0.2 seconds.</p><p>Of course, it’s impossible to apply the method on online judges. As such, I can sort of understand why most OJs give Java programs a longer time limit.</p></div><div><h1>Related Posts</h1><ul><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/07/04/codechef-prefixor.html"> Codechef PREFIXOR: Prefix XOR </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/11/10/c-stl-hash.html"> C++ STL Hash </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/12/uva108-maximum-sum.html"> UVa108: Maximum Sum </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/12/uva10696-f91.html"> UVa10696: f91 </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/12/uva10298-power-strings.html"> UVa10298: Power Strings </a></ul></div><div><h1><span itemprop="commentCount">0</span> comments</h1><h2>Post a comment</h2><p> Send an email to <a href="mailto:comment@nerde.pw">comment@nerde.pw</a>.</p></div></article></main><footer itemscope itemtype="http://schema.org/Person"><ul><li itemprop="name">WillyPillow<li><a itemprop="email" href="mailto:wp@nerde.pw">wp@nerde.pw</a><li> Gitlab: <a href="https://gitlab.com/willypillow">WillyPillow</a><li> BitBucket: <a href="https://bitbucket.org/WillyPillow">WillyPillow</a><li> Github: <a href="https://github.com/WillyPillow">WillyPillow</a><li> Diaspora*: <a href="https://diasporing.ch/people/7abf8850bce50134011e7a163e59d8f4">WillyPillow</a><li> Reddit: <a href="https://www.reddit.com/user/WillyPillow/">WillyPillow</a><li>Bitcoin: 15ii2SMbgZSyzKxVSYwim7KtT2uqdSdjVm<li>Namecoin: NES89UkGDutphGbVYNUkGkQuRGs6vFQk6h</ul></footer>

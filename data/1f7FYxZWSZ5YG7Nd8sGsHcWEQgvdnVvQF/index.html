@@ -1,0 +1,117 @@
+<!-- Copyright (C) RVRE Team 2016 -->
+<html>
+
+<head>
+    <title>RVRE</title>
+    <link rel="stylesheet" href="main.css" />
+    <!-- script src="js/main.js" async> </script> -->
+    <script type="text/javascript" src="js/ZeroFrame.js"></script>
+    <script>
+        var database;
+        class Rare extends ZeroFrame {
+          onOpenWebsocket() {
+            this.cmd("wrapperSetTitle", "RVRE");
+            this.cmd("siteInfo", {}, (function(_this) {
+              return function(site_info) {
+                var operationStart = new Date();
+                _this.cmd("fileGet", "data.json", function(data) {
+                    database = JSON.parse(data);
+                    ziteCount = database.zites.length;
+                    cacheDone = true;
+                    if (initDone)
+                        document.getElementById("lower").innerHTML = "Currently hosted by <span class=\"highlight\">" + peerCount + "</span> peers, indexing around <span class=\"highlight\">" + ziteCount + "</span> zites.";
+                    logTime("Database caching", 75, 150, operationStart);
+
+                    // Display the page
+                    document.getElementsByTagName("body")[0].style.display = "block";
+
+                    if (getUrlParam("q") != undefined && document.getElementById("search-bar-results") != undefined) {
+                        document.getElementById("search-bar-results").value = getUrlParam("q");
+                        executeFind();
+                    }
+                    document.getElementById("lower").innerHTML = "Currently hosted by <span class=\"highlight\">" + site_info.peers + "</span> peers, indexing around <span class=\"highlight\">" + ziteCount + "</span> zites.";
+                initDone = true;
+                });
+                operationStart = new Date();
+                _this.cmd("fileGet", "changelog.json", function(data) {
+                    var content = JSON.parse(data);
+                    
+                    document.getElementById("changelogtitle").innerHTML = content.title;
+                    document.getElementById("changelogtext").innerHTML = content.changes;
+                    
+                    logTime("Changelog pop-up", 75, 150, operationStart);
+                });
+                return;
+              };
+            })(this));
+          }
+        }
+        rareInstance = new Rare();
+    </script>
+    <script src="js/util.min.js"></script>
+    <script src="js/main-beta.js"></script>
+    </script>
+
+    <meta name="keywords" content="bwoi,search,engine,free,simple">
+    <meta charset="UTF-8">
+</head>
+
+<body style="margin: 0; display: none;" onload="onPageStart()" onclick="hideOmnibox()">
+    <div id="container">
+        <div id="notification-wrap" onclick="hideNotification()">
+            <div id="notification">
+                <div id="notification-header"></div>
+                <div id="notification-body"></div>
+            </div>
+        </div>
+        <div id="wrap">
+            <div id="search_home" style="display: default;">
+                <span id="logo">RVRE</span><span style="display: inline-block" class="sub"><div class="notif-dot" onclick="window.location = 'rebrand.html'"></div></span><br>
+                <span id="lower">Currently hosted by <span class="highlight">????</span> peers.</span><br>
+                <input id="search-bar" placeholder="Search" onkeyup="showSearch()" autofocus focused/>
+                <span style="font-size:32pt;margin-left:5px;position:relative;top:10px;left:15px;"><a href="how.html">?</a></span><br>
+                <!--<span class="warning">RVRE is now open source and available on <a id="bloglink"  href="/138gTyQ4isdbn8hjLfNqbXCHKuXqctGv6E">Git Center</a>!</span>-->
+                <div class="popup-wrap" id="changelog" onclick="hideChangelog()">
+                    <div class="popup">
+                        <a id="changelogtitle"></a>
+                        <div id="changelogtext"></div>
+                    </div>
+                </div>
+                <div id="preferences" style="display:none;">
+                    Themes<br>
+                    <div class="theme" style="border: 1px solid #f44b42; background-color: white;" onclick="setTheme(0)">Default</div>
+                    <div class="theme" style="border: 1px solid #f44b42; background-color: #222; color: white;" onclick="setTheme(1)">Dark</div>
+                    <div class="theme" style="border: 1px solid black; background-color: white;" onclick="setTheme(2)">High-contrast</div>
+                    <div class="theme" style="border: 1px solid gray; background-color: white;" onclick="setTheme(3)">Gloomy</div>
+                    <div class="theme" style="border: 1px solid #1147a3; background-color: white;" onclick="setTheme(4)">Blues</div>
+                    <div class="theme" style="border: 1px solid #D816E9; background-color: #1C2F41; color: white;" onclick="setTheme(5)">Retro</div>
+                    <div class="theme" style="border: 1px solid #af3bff; background-color: white;" onclick="setTheme(6)">ZeroNet</div>
+                    <div style="height: 10px;"></div>
+                    <a onclick="saveSettings()">Save settings</a>
+                </div>
+            </div>
+            <div id="search_results" style="display: none;">
+                <div id="top">
+                    <a onclick="goHome()"><span id="logo-small">RVRE</span></a>
+                    <input id="search-bar-results" onkeyup="updateSearch(event)" placeholder="Search..." />
+                    <div id="omnibox"></div>
+                </div>
+                <div id="results">
+                    Searching for zites... Please hold on while we catch up!
+                </div>
+            </div>
+            <div id="footer">
+                <div id="footer_left">
+                    <a href="/domains4free.bit">Domains</a><a href="/Mail.ZeroNetwork.bit/?to=bwoi">Contact</a>
+                    <a href="namecoin:N12oRnD4RFPLJxjUNnMKwY59YYVTYmxKPx">Donate</a>
+                </div>
+                <div id="footer_right">
+                    <a href="#" onClick="showChangelog()">Changelog</a>
+                    <a href="#" onClick="togglePrefs()">Preferences</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

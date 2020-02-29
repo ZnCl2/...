@@ -1,0 +1,188 @@
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<title>Index of Zites [alpha]</title>
+
+<script src="zites.js"></script>
+
+<script src="js/handlebars.min-latest.js"></script>
+<script src="js/list.js"></script>
+<script src="js/list.pagination.js"></script>
+<script src="js/date-format.js"></script>
+<script src="js/underscore-min.js"></script>
+
+<link href="css/style.css" rel="stylesheet" />
+<link href="css/font-awesome.css" rel="stylesheet" />
+</head>
+
+<body>
+<noscript><strong>Enable JavaScript</strong><br />Site is dynamically generated</noscript>
+
+<h1>Index of Zites [alpha]</h1>
+
+<h3>Search:</h3>
+<input id="search-bar" oninput="search(this.value)" placeholder="Search">
+
+<div class="sort">
+<h3>Sort by:</h3>
+<div class="sort-column"><i class="fa fa-group"></i>seeds
+<a class="sort-arrow" href="javascript:void(0)" value="desc" onclick="sortBy('seeds', 'desc')"><i class="fa fa-long-arrow-down"></i></a>
+<a class="sort-arrow" href="javascript:void(0)" value="asc" onclick="sortBy('seeds', 'asc')"><i class="fa fa-long-arrow-up"></i></a></div>
+
+<div class="sort-column"><i class="fa fa-clock-o"></i>modified
+<a class="sort-arrow" href="javascript:void(0)" value="desc" onclick="sortBy('modified', 'desc')"><i class="fa fa-long-arrow-down"></i></a>
+<a class="sort-arrow" href="javascript:void(0)" value="asc" onclick="sortBy('modified', 'asc')"><i class="fa fa-long-arrow-up"></i></a></div>
+
+<div class="sort-column"><i class="fa fa-font"></i>title
+<a class="sort-arrow" href="javascript:void(0)" value="desc" onclick="sortBy('title', 'desc')"><i class="fa fa-long-arrow-down"></i></a>
+<a class="sort-arrow" href="javascript:void(0)" value="asc" onclick="sortBy('title', 'asc')"><i class="fa fa-long-arrow-up"></i></a></div>
+
+<div class="sort-column"><i class="fa fa-floppy-o"></i>size
+<a class="sort-arrow" href="javascript:void(0)" value="desc" onclick="sortBy('size', 'desc')"><i class="fa fa-long-arrow-down"></i></a>
+<a class="sort-arrow" href="javascript:void(0)" value="asc" onclick="sortBy('size', 'asc')"><i class="fa fa-long-arrow-up"></i></a></div>
+
+<div class="sort-column"><i class="fa fa-files-o"></i>files
+<a class="sort-arrow" href="javascript:void(0)" value="desc" onclick="sortBy('files', 'desc')"><i class="fa fa-long-arrow-down"></i></a>
+<a class="sort-arrow" href="javascript:void(0)" value="asc" onclick="sortBy('files', 'asc')"><i class="fa fa-long-arrow-up"></i></a></div>
+</div>
+
+<div id="zite-list">
+	<ul class="pagination paginationTop"></ul>
+	<ul class="list"></ul>
+	<ul class="pagination paginationBottom"></ul>
+</div>
+
+<div style="display:none;">
+	<hr>
+	<li id="zite-item">
+	</li>
+</div>
+
+
+
+
+<script>
+Handlebars.registerHelper({
+	'date': function(unixtime){
+		d = new Date(unixtime * 1000)
+		return d.format('yyyy-mm-dd hh:mm')
+	},
+	'bool': function(bool) {
+		return bool ? 'Yes' : 'No'
+	},
+	'mb': function(bytes) {
+		return Math.round(( (bytes / 1024 / 1024) + 0.00001) * 100) / 100
+	}
+});
+
+var template = Handlebars.compile('<div id="{{address}}" class="zite">' +
+	'<h2><a href="/{{address}}" target="_blank">{{title}}</a></h2>' +
+	'<span>{{desc}}</span><br /><br />' +
+	'<table><tr><td class="stats">' +
+	'<i class="fa fa-group"></i> {{seeds}}<br />' +
+	'<i class="fa fa-clock-o"></i> {{date modified}}<br />' +
+	'<i class="fa fa-floppy-o"></i> {{mb size}} {{#if size_opt}}(+ {{mb size_opt}}){{/if}} MiB<br />' +
+	'<i class="fa fa-files-o"></i> {{files}} {{#if files_opt}}(+ {{files_opt}}){{/if}} files</td>' +
+	'<td class="other">' +
+	'{{#if domain}}Domain: <a href="/{{domain}}" target="_blank">/{{domain}}</a><br />{{/if}}' +
+	'Address: {{address}}<br />' +
+	'Cloneable: {{bool cloneable}}<br />' +
+	'{{#if cloned_from}}Cloned from: {{cloned_from}}<br />{{/if}}</td></tr></table>' +
+'</div>');
+
+
+var paginationTopOptions = {
+	paginationClass: "paginationTop",
+	outerWindow: 5,
+	innerWindow: 50,
+};
+
+var paginationBottomOptions = {
+	paginationClass: "paginationBottom",
+	outerWindow: 5,
+	innerWindow: 50,
+};
+
+
+var options = {
+	valueNames: [
+		'title',
+		'desc',
+		'seeds',
+		'modified',
+		'files',
+		'files_opt',
+		'size',
+		'size_opt',
+		'address'
+	],
+
+	item: 'zite-item',
+	page: 100,
+	plugins: [
+		ListPagination(paginationTopOptions),
+		ListPagination(paginationBottomOptions)
+	],
+};
+
+
+function search(query){
+	ziteList.search(query)
+}
+
+function sortBy(type, order){
+	var list = zites
+
+	if (type === 'size'){
+		var sorted = _.sortBy(list, function(zite){
+                	if (zite.size && !zite.size_opt){
+				return zite.size
+			}
+                	else if (zite.size && zite.size_opt){
+				return zite.size + zite.size_opt
+			}
+                	else {
+				return 0
+			}
+		})
+	}
+	else if (type === 'files'){
+		var sorted = _.sortBy(list, function(zite){
+			if (zite.files && !zite.files_opt){
+				return zite.files
+			}
+			else if (zite.file_count && zite.files_opt){
+				return zite.files + zite.files_opt
+			}
+			else {
+				return 0
+			}
+		})
+	}
+	else if (type === 'modified'){
+		var sorted = _.sortBy(list, 'modified')
+	}
+	else if (type === 'title'){
+		var sorted = _.sortBy(list, 'title')
+	}
+	else if (type === 'seeds'){
+		var sorted = _.sortBy(list, 'seeds')
+	}
+	else {
+		return
+	}
+
+	if (order === 'desc'){
+		sorted = sorted.reverse()
+	}
+
+	ziteList.clear()
+	ziteList.add(sorted)
+	ziteList.search(document.querySelector('#search-bar').value)
+}
+
+var ziteList = new List('zite-list', options, _.sortBy(zites, 'seeds').reverse());
+
+</script>
+</body>
+</html>

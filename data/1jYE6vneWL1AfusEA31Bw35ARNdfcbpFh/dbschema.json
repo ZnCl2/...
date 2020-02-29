@@ -1,0 +1,58 @@
+{
+  "db_name": "ZeroGallery",
+  "db_file": "merged-ZeroGallery/ZeroGallery.db",
+  "version": 3,
+  "maps": {
+    ".+/galleries/.+/manifest.json": {
+      "to_json_table": [ "title", "added", "type", "lang", "cover", "description" ],
+      "to_table": [ {"node": "tags", "table": "tags"} ]
+    },
+    ".+/user/.+/data.json": {
+      "to_table": [
+        "comments"
+      ]
+    },
+    ".+/user/.+/content.json": {
+      "to_keyvalue": [ "cert_user_id" ]
+    }
+  },
+  "tables": {
+    "json": {
+      "cols": [
+        ["json_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+        ["site", "TEXT"],
+        ["directory", "TEXT"],
+        ["file_name", "TEXT"],
+        ["title", "TEXT"],
+        ["type", "TEXT"],
+        ["lang", "TEXT"],
+        ["cover", "TEXT"],
+        ["description", "TEXT"],
+        ["added", "INTEGER"]
+      ],
+      "indexes": ["CREATE UNIQUE INDEX path ON json (directory, site, file_name)", "CREATE INDEX added ON json (added)"],
+      "schema_changed": 15
+    },
+    "tags": {
+      "cols": [
+        ["id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+        ["namespace", "TEXT"],
+        ["name", "TEXT"],
+        ["json_id", "INTEGER REFERENCES json (json_id)"]
+      ],
+      "indexes": ["CREATE INDEX json_id ON tags (json_id)", "CREATE INDEX name ON tags (name)", "CREATE INDEX q_name ON tags (namespace, name)"],
+      "schema_changed": 9
+    },
+    "comments": {
+      "cols": [
+        ["comment_id", "INTEGER"],
+        ["gallery", "TEXT"],
+        ["body", "TEXT"],
+        ["added", "INTEGER"],
+        ["json_id", "INTEGER REFERENCES json (json_id)"]
+      ],
+      "indexes": ["CREATE INDEX gallery ON comments(gallery)"],
+      "schema_changed": 5
+    }
+  }
+}

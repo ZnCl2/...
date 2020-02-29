@@ -1,0 +1,87 @@
+{
+	"db_name": "irc",
+	"db_file": "data/irc.db",
+	"version": 2,
+	"maps": {
+		"users/.+/content.json": {
+			"to_json_table": ["cert_user_id", "publicKey"],
+			"to_table": [
+				{
+					"node": "invites",
+					"table": "invites"
+				}
+			]
+		},
+		"users/.+/23_.*.json": {
+			"to_table": [
+				{
+					"node": "messages",
+					"table": "channels"
+				}
+			]
+		},
+		"users/.+/2b_.*.json": {
+			"to_table": [
+				{
+					"node": "messages",
+					"table": "groups"
+				}
+			]
+		},
+		"users/.+/40_.*.json": {
+			"to_table": [
+				{
+					"node": "messages",
+					"table": "users"
+				}
+			]
+		}
+	},
+	"tables": {
+		"json": {
+			"cols": [
+				["json_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+				["directory", "TEXT"],
+				["file_name", "TEXT"],
+				["cert_user_id", "TEXT"],
+				["publicKey", "TEXT"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX path ON json(directory, file_name)"],
+			"schema_changed": 3
+		},
+		"channels": {
+			"cols": [
+				["hash", "TEXT"],
+				["message", "TEXT"],
+				["json_id", "INTEGER"]
+			],
+			"indexes": ["CREATE INDEX channel_hash ON channels(hash)"],
+			"schema_changed": 2
+		},
+		"groups": {
+			"cols": [
+				["hash", "TEXT"],
+				["message", "TEXT"],
+				["json_id", "INTEGER"]
+			],
+			"indexes": ["CREATE INDEX group_hash ON groups(hash)"],
+			"schema_changed": 2
+		},
+		"users": {
+			"cols": [
+				["hash", "TEXT"],
+				["message", "TEXT"],
+				["json_id", "INTEGER"]
+			],
+			"schema_changed": 2
+		},
+		"invites": {
+			"cols": [
+				["for_self", "TEXT"],
+				["for_invitee", "TEXT"],
+				["json_id", "INTEGER"]
+			],
+			"schema_changed": 1
+		}
+	}
+}

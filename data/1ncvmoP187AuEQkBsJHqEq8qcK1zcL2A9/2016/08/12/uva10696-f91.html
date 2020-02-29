@@ -1,0 +1,90 @@
+<!DOCTYPE html><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title> UVa10696: f91</title><meta name="description" content=" 簡單的以附於頁尾的程式計算，會發現當 n &amp;lt;= 100 時 f91(n) = 91。由於就算如此運算時間仍不甚理想，故使用了一些 I/O 優化，才能用 0.000 sec 完成。 Using the simple program at the end of this page, you’ll find ou... "><link rel="stylesheet" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/assets/main.css"><link rel="canonical" href="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/12/uva10696-f91.html"><link rel="alternate" type="application/rss+xml" title="Nerde Nolzda" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/feed.xml"><header role="banner"> <a class="site-title" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/">Nerde Nolzda</a><nav> <a href="#" class="menu-icon">&#9776;</a><div class="trigger"> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/about/">About</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/keys/">Keys</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/mirrors/">Mirrors</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/">Tags</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/feed.xml">RSS</a></div></nav></header><main><article itemscope itemtype="http://schema.org/BlogPosting"><header><h1 itemprop="name headline"> <a itemprop="mainEntityOfPage url" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/12/uva10696-f91.html"> UVa10696: f91 </a></h1><p class="post-meta"> <time datetime="2016-08-12T08:35:11+08:00" itemprop="datePublished"> Aug 12, 2016 </time> • <time datetime="2018-06-02T22:25:05+08:00" itemprop="dateModified"> Jun 2, 2018 </time> • <span itemprop="author publisher" itemscope itemtype="http://schema.org/Person"> <span itemprop="name">WillyPillow</span> </span> • <span itemprop="keywords"> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/en.html" rel="tag">en</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/zh.html" rel="tag">zh</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/bilingual.html" rel="tag">bilingual</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/cpp.html" rel="tag">cpp</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/uva.html" rel="tag">UVa</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/competitive-coding.html" rel="tag">competitive-coding</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/io.html" rel="tag">io</a></span> • <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/sigs/posts/2016-08-12-uva10696-f91.md.asc"> Signature </a></p></header><div itemprop="articleBody text"><p>簡單的以附於頁尾的程式計算，會發現當 <code>n &lt;= 100</code> 時 <code>f91(n) = 91</code>。由於就算如此運算時間仍不甚理想，故使用了一些 I/O 優化，才能用 0.000 sec 完成。<br /> Using the simple program at the end of this page, you’ll find out that <code>f91(n) = 91</code> if <code>n &lt;= 100</code>. The execution time, however, is still quite high when this is applied. Thus, I used some I/O optimizations to make the execution time 0.000 seconds.</p><p><a href="https://uva.onlinejudge.org/index.php?option=com_onlinejudge&amp;Itemid=8&amp;page=show_problem&amp;category=24&amp;problem=1637&amp;mosmsg=Submission+received+with+ID+17825333">UVa Link</a></p><pre><code class="language-cpp">#include &lt;iostream&gt;
+
+static inline int fast_atoi(const char *p, unsigned int len) {
+  int res = 0;
+  switch (len) {
+    case 7: res += (*p++ &amp; 15) * 1000000;
+    case 6: res += (*p++ &amp; 15) * 100000;
+    case 5: res += (*p++ &amp; 15) * 10000;
+    case 4: res += (*p++ &amp; 15) * 1000;
+    case 3: res += (*p++ &amp; 15) * 100;
+    case 2: res += (*p++ &amp; 15) * 10;
+    case 1: res += (*p &amp; 15);
+  }
+  return res;
+}
+
+bool getInt(int *res) {
+  char numBuf[11], tmp;
+  unsigned int i = 0;
+  while (true) {
+    static char buf[1 &lt;&lt; 20], *p = buf, *end = buf;
+    if (p == end) {
+      if ((end = buf + fread(buf, 1, 1 &lt;&lt; 20, stdin)) == buf) break;
+      p = buf;
+    }
+    tmp = *p++;
+    if ((unsigned)(tmp - '0') &gt; 10u &amp;&amp; i) break;
+    numBuf[i++] = tmp;
+  }
+  if (!i) return false;
+  *res = fast_atoi(numBuf, i);
+  return true;
+}
+
+static inline int intLen(int n) {
+  if (n &gt;= 1000000) return 7;
+  if (n &gt;= 100000) return 6;
+  if (n &gt;= 10000) return 5;
+  if (n &gt;= 1000) return 4;
+  if (n &gt;= 100) return 3;
+  if (n &gt;= 10) return 2;
+  return 1;
+}
+
+static inline void itoa(int n, char *dst) {
+  int len = intLen(n);
+  dst[len] = '\0';
+  switch (len) {
+    case 7: dst[6] = n % 10 + '0'; n /= 10;
+    case 6: dst[5] = n % 10 + '0'; n /= 10;
+    case 5: dst[4] = n % 10 + '0'; n /= 10;
+    case 4: dst[3] = n % 10 + '0'; n /= 10;
+    case 3: dst[2] = n % 10 + '0'; n /= 10;
+    case 2: dst[1] = n % 10 + '0'; n /= 10;
+    case 1: dst[0] = n % 10 + '0';
+  }
+}
+
+int main() {
+  int n;
+  while (getInt(&amp;n) &amp;&amp; n) {
+    char numStr[11];
+    fputs("f91(", stdout);
+    itoa(n, numStr);
+    fputs(numStr, stdout);
+    if (n &gt; 100) {
+      fputs(") = ", stdout);
+      itoa(n - 10, numStr);
+      fputs(numStr, stdout);
+      putchar('\n');
+    } else {
+      fputs(") = 91\n", stdout);
+    }
+  }
+}
+</code></pre><h3 id="calculating-f91n-for-n-100">Calculating f91(n) for n &lt;=100</h3><pre><code class="language-cpp">#include &lt;iostream&gt;
+
+int f91(int n) {
+  if (n &gt; 100) return n - 10;
+  return f91(f91(n + 11));
+}
+
+int main() {
+  std::cout &lt;&lt; "int arr[] = {";
+  for (int i = 0; i &lt;= 100; i++) {
+    std::cout &lt;&lt; f91(i) &lt;&lt; ", ";
+  }
+  std::cout &lt;&lt; "};";
+}
+</code></pre></div><div><h1>Related Posts</h1><ul><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/12/uva108-maximum-sum.html"> UVa108: Maximum Sum </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/12/uva10298-power-strings.html"> UVa10298: Power Strings </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/12/uva455-periodic-strings.html"> UVa455: Periodic Strings </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/09/uva299-train-swapping.html"> UVa299: Train Swapping </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/09/uva1586-molar-mass.html"> UVa1586: Molar Mass </a></ul></div><div><h1><span itemprop="commentCount">0</span> comments</h1><h2>Post a comment</h2><p> Send an email to <a href="mailto:comment@nerde.pw">comment@nerde.pw</a>.</p></div></article></main><footer itemscope itemtype="http://schema.org/Person"><ul><li itemprop="name">WillyPillow<li><a itemprop="email" href="mailto:wp@nerde.pw">wp@nerde.pw</a><li> Gitlab: <a href="https://gitlab.com/willypillow">WillyPillow</a><li> BitBucket: <a href="https://bitbucket.org/WillyPillow">WillyPillow</a><li> Github: <a href="https://github.com/WillyPillow">WillyPillow</a><li> Diaspora*: <a href="https://diasporing.ch/people/7abf8850bce50134011e7a163e59d8f4">WillyPillow</a><li> Reddit: <a href="https://www.reddit.com/user/WillyPillow/">WillyPillow</a><li>Bitcoin: 15ii2SMbgZSyzKxVSYwim7KtT2uqdSdjVm<li>Namecoin: NES89UkGDutphGbVYNUkGkQuRGs6vFQk6h</ul></footer>

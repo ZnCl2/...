@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>(Genetic Programmer in less than 400 lines of C) Evolutionary Programmer Training: Teaching Two - LiberIT Blog</title>
+  <link rel="stylesheet" href="/1vLoKesxKQDnLFrmJDoUXyrWX1h2YwSGJ/css/main.css">
+  <!--   Syntax highlighting is only needed for posts -->
+  
+  <link rel="stylesheet" href="/1vLoKesxKQDnLFrmJDoUXyrWX1h2YwSGJ/css/syntax-highlighter.css">
+  
+  <link href="//fonts.googleapis.com/css?family=Space+Mono|Work+Sans:700" rel="stylesheet">
+
+</head>
+<body>
+
+<input type="checkbox" id="hamburger" name="hamburger">
+<label id="label-ham" for="hamburger"></label>
+<div class="menu-container">
+  <div class="menu"></div>
+  <div class="links">
+      <a href="/1vLoKesxKQDnLFrmJDoUXyrWX1h2YwSGJ/"><i class="fa fa-home"></i>&nbsp;Home</a>
+      <a href="/1vLoKesxKQDnLFrmJDoUXyrWX1h2YwSGJ/about/"><i class="fa fa-user"></i>&nbsp;About</a>
+      <a href="/1vLoKesxKQDnLFrmJDoUXyrWX1h2YwSGJ/archive/"><i class="fa fa-file-zip-o"></i>&nbsp;Archive</a>
+      <a href="/1vLoKesxKQDnLFrmJDoUXyrWX1h2YwSGJ/contact/"><i class="fa fa-address-book-o"></i>&nbsp;Contact</a>
+      <a href="https://github.com/sharu725/krishna"><i class="fa fa-code-fork"></i>&nbsp;Project</a>
+  </div>
+</div>
+
+<div class="content">
+<header>
+     <a href="/1vLoKesxKQDnLFrmJDoUXyrWX1h2YwSGJ/"><h1 class="site-title">LiberIT Blog</h1></a>
+</header>
+  <div class="post-title">
+    
+    <div class="title">
+        <h2>(Genetic Programmer in less than 400 lines of C) Evolutionary Programmer Training: Teaching Two</h2>
+        
+        <span>
+            <time datetime="">
+                   September 11, 2017
+            </time>
+        </span>
+        
+    </div>
+</div>
+
+
+<p>In <a href="http://127.0.0.1:43110/1vLoKesxKQDnLFrmJDoUXyrWX1h2YwSGJ/prom/2017/09/07/Evolutionary-Programmer-Training-Ration-One.html">Teaching
+One</a>
+the algorithm was frugal with only one ceremony per person and one generation. 
+A randomly generated plus-one program was demonstrated.</p>
+
+<p>Now there is support for multiple ceremonies per person and can evolve over many
+generations, using transmutation, and random generation for best results. 
+For the plus-six example, it takes ~140 generations to do it using only random
+selection, if only transmutation it can go many hundreds without finding a
+solution, but using both, the answer is often found in under 15 generations.</p>
+
+<p>Code changes will be discussed below.</p>
+
+<h3 id="cardinal-ceremony">Cardinal Ceremony</h3>
+
+<p>First the cardinal ceremony, to get a glance of the metamorphosis.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code> int main() {
+ #define TRAINING_SERIES_LONG 3
+   const uint16_t training_series_long = TRAINING_SERIES_LONG;
+   const uint16_t training_series[TRAINING_SERIES_LONG][2] = {
+-      {'1', '2'}, {'2', '3'}, {'3', '4'}}; // return input
++      {'1', '7'}, {'2', '8'}, {'3', '9'}}; // return input
+</code></pre>
+</div>
+<p>Training series became more challenging.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>+  uint32_t random_seed = time(NULL);
++  printf("0x%X  random_seed\n", random_seed); 
+</code></pre>
+</div>
+
+<p>Using a variable random seed.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>+  uint16_t generation = 0;
++  uint16_t iteration = 0;
++  uint64_t champion_iteration_series[POPULATION_LONG] = {0};
++  uint32_t champion_health = 0;
++  uint32_t retrospective_champion_health = 0;
++  uint16_t champion_iteration = 0;
++  uint16_t transmutation_probability = 0x800;
+</code></pre>
+</div>
+
+<p>Champions are given in a series from fittest to weakest.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>+  population_establish(random_seed, ceremony_long, ceremony, max_program_long, 
++      population_long, population);
++  for (generation = 0; generation &lt; 0xFFFF; ++generation) {
+</code></pre>
+</div>
+<p>Multiple generations accommodated.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>+    population_quiz(population_long, population, training_series_long,
++                    training_series, program_output, population_health);
++    champion_choose(population_long, population_health, champion_iteration_series);
++    champion_iteration = champion_iteration_series[0];
++    //DEBUGPRINT("0x%X chamption_iteration", champion_iteration);
++    champion_health = population_health[champion_iteration];
++    if ((champion_health &gt;&gt; (INCOMPLETE_HEALTH_TIDBIT_LONG + 
++            PROGRAM_ECONOMY_TIDBIT_LONG)) &gt;= training_series_long
++        &amp;&amp; champion_health == retrospective_champion_health) {
++      champion_print(population[champion_iteration], 
++          population_health[champion_iteration], generation);
++      break;
++    } else {
++      for (iteration = 0; iteration &lt; population_long/5; ++iteration) {
++        champion_iteration = champion_iteration_series[iteration];
++        champion_health = population_health[champion_iteration];
++        v16us_print(population[champion_iteration]);
++        printf("has 0x%X health in %d generation\n", champion_health, generation);
++      }
++      ++random_seed;
++      population_refresh(transmutation_probability, random_seed, ceremony_long, 
++          ceremony, max_program_long, population_long, champion_iteration_series, 
++          population, fresh_population);
++      population_copy(population_long, fresh_population, population); 
+</code></pre>
+</div>
+<p>Population refresh is where new generations are made.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>+    }
++    //DEBUGPRINT("0x%X champion_health, 0x%X retrsopective_champion_health\n",
++    //    champion_health, retrospective_champion_health);
++        champion_iteration = champion_iteration_series[0];
++        champion_health = population_health[champion_iteration];
++    retrospective_champion_health = champion_health;
++  }
+   return 0;
+ }
+</code></pre>
+</div>
+
+<h4 id="population">Population</h4>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>+#define POPULATION_TIDBIT_LONG 8
++#define POPULATION_MASK 0xFF
+</code></pre>
+</div>
+<p>Island population lid was set to 256, since isotopes above 208 are unstable,
+Uranium is 238.<br />
+Similarly humans can only monitor of 100-200 human relations at a time.</p>
+
+<p>There can be multiple islands to multiply probability of reaching global
+champion.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>+#define INCOMPLETE_HEALTH_TIDBIT_LONG 0x12
++#define INCOMPLETE_HEALTH_MASK 0xFFF
++#define PROGRAM_ECONOMY_TIDBIT_LONG 0x4
++#define PROGRAM_ECONOMY_MASK 0xF
+
++
+ void health_assess(const uint16_t training_series_long,
+                    const uint16_t training_series[][2],
+-                   const uint16_t *program_output, uint16_t *health) {
++                   const v16us program,
++                   const uint16_t *program_output, uint32_t *health) {
+   assert(training_series_long &gt; 0);
+   assert(training_series != NULL);
+   assert(program_output != NULL);
+   assert(health != NULL);
+   uint16_t iteration = 0;
+   uint16_t health_collector = 0;
++  uint32_t incomplete_health_collector = 0;
++  uint8_t program_economy = 0;
++  uint8_t program_long = 0;
++  uint8_t max_program_long = 16;
+   for (iteration = 0; iteration &lt; training_series_long; ++iteration) {
+     if (training_series[iteration][1] == program_output[iteration]) {
+       ++health_collector;
++      //DEBUGPRINT("0x%X health_collector\n", health_collector);
++    } else {
++      // TODO fix incomplete health collector to fit within health mask
++      incomplete_health_collector +=  (uint16_t) (INCOMPLETE_HEALTH_MASK -
++          abs(program_output[iteration] - training_series[iteration][1]));//*
++          //INCOMPLETE_HEALTH_MASK/
++          //((1 &lt;&lt; sizeof(program_output[iteration])*8) -1));
++
++      //DEBUGPRINT("0x%X incomplete_health_collector\n", incomplete_health_collector);
+     }
+   }
+-  *health = health_collector;
+</code></pre>
+</div>
+
+<p>ceremony for incomplete health measurement was added.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>+  // find program length
++  for (iteration = 0; iteration &lt; max_program_long; ++iteration) {
++    if (v16us_read(iteration, program) != 0) {
++      ++program_long;
++    } else {
++      break;
++    }
++  }
++  // calculate program economy mask, so lower size has higher fitness.
++  program_economy = PROGRAM_ECONOMY_MASK - 
++    ((program_long*PROGRAM_ECONOMY_MASK) / max_program_long);
+</code></pre>
+</div>
+
+<p>ceremony for program economy health was added.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>+  *health = 0;
++  *health = health_collector &lt;&lt; (INCOMPLETE_HEALTH_TIDBIT_LONG + 
++      PROGRAM_ECONOMY_TIDBIT_LONG) ;
++  *health += incomplete_health_collector &lt;&lt; PROGRAM_ECONOMY_TIDBIT_LONG;
++  *health += program_economy;
++  //DEBUGPRINT("0x%X health\n", *health);
+ }
+</code></pre>
+</div>
+
+<p>the original health collector is the most important, followed by the partial,
+followed by the program economy.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>-void population_establish(const uint16_t ceremony_long, const v16us *ceremony,
+-                          const uint16_t population_long, v16us *population) {
+-  uint16_t iteration = 0;
+-  srand(5);
+-  for (iteration = 0; iteration &lt; population_long; ++iteration) {
+-    population[iteration] = ceremony[rand() % 3];
++void population_establish(const uint32_t random_seed, 
++    const uint16_t ceremony_long, const uint16_t *ceremony,
++                          const uint8_t max_program_long,
++                          const uint8_t population_long, v16us *population) {
++  uint16_t person_iteration = 0;
++  uint8_t ceremony_iteration = 0;
++  uint8_t program_long = 0;
++  assert(max_program_long &lt;= V16_LONG); // while each person is confined to a v16us
++  srand(random_seed);
++  for (person_iteration = 0; person_iteration &lt; population_long; ++person_iteration) {
++    program_long = rand() % max_program_long;
++    for (ceremony_iteration = 0; ceremony_iteration &lt; program_long; ++ceremony_iteration) {
++      v16us_write(ceremony_iteration, ceremony[rand() % ceremony_long],
++          population + person_iteration);
++    }
+   }
+ }
+</code></pre>
+</div>
+
+<p>Population establish accomodates multiple ceremonies per person.</p>
+
+<h4 id="program-interpret">Program Interpret</h4>
+
+<div class="highlighter-rouge"><pre class="highlight"><code> void program_interpret(const v16us program, const uint16_t input,
+                        uint16_t *output) {
+-  uint16_t activity = program.s0;
+-  assert(activity != 0);
+-  switch (activity) {
+-  case plus_WORD:
+-    *output = input + 1;
+-    break;
+-  case return_WORD:
+-    *output = input;
+-    break;
+-  case invert_WORD:
+-    *output = ~input;
+-    break;
+-  default:
+-    assert(1 == 0);
++  const uint8_t max_program_long = V16_LONG;
++  uint8_t iteration = 0;
++  uint16_t variable = input;
++  uint16_t done = lie_WORD;
++  for (iteration = 0; iteration &lt; max_program_long; ++iteration) {
++    uint16_t activity = v16us_read(iteration, program);
++    switch (activity) {
++    case plus_WORD:
++      variable = variable + 1;
++      break;
++    case return_WORD:
++      //variable = variable;
++      done = truth_WORD;
++      break;
++    case invert_WORD:
++      variable = ~variable;
++      break;
++    case 0x0:
++      done = truth_WORD;
++      break;
++    default:
++      printf("0x%X activity", activity);
++      assert(1 == 0);
++    }
++    if (done == truth_WORD) {
++      break;
++    }
+   }
++  *output = variable;
+ }
+</code></pre>
+</div>
+
+<p>Program interpret accomodates multiple ceremonies per program.</p>
+
+<h3 id="champion">Champion</h3>
+<div class="highlighter-rouge"><pre class="highlight"><code>+void champion_print(v16us champion, uint32_t health, uint16_t generation){
++  v16us_print(champion);
++  printf(" is champion, 0x%X is health, %d is generation\n", health, generation);
++}
++
++void champion_copy(const uint8_t population_long, 
++    const v16us* population, const uint64_t *champion_iteration_series, 
++      const uint8_t population_ration, v16us *fresh_population) {
++  assert(population_ration &lt; population_long);
++  assert(fresh_population != NULL);
++  uint8_t iteration = 0;
++  for (iteration = 0; iteration &lt; population_ration; ++iteration) {
++    fresh_population[iteration] = 
++      population[champion_iteration_series[iteration]];
++  }
++}
++int champion_comparison (const void * a, const void * b)
++{
++   return ( (*(uint64_t*)b &gt;&gt; POPULATION_TIDBIT_LONG) - (*(uint64_t*)a &gt;&gt; 
++         POPULATION_TIDBIT_LONG) );
++}
++
++void champion_choose(const uint8_t population_long,
++                     const uint32_t *population_health,
++                     uint64_t *champion_iteration_series) {
++  // sort iteration series based on health
++  assert(champion_iteration_series != NULL); // assumed to be population_long
+   assert(population_health != NULL);
+   uint16_t iteration = 0;
+   uint16_t fittest_health = 0;
+   uint16_t fittest_iteration = 0; // expand to array for multiple fittest
+   uint16_t health = 0;
+   for (iteration = 0; iteration &lt; population_long; ++iteration) {
+-    health = population_health[iteration];
+-    if (health &gt; fittest_health) {
+-      fittest_iteration = iteration;
+-      fittest_health = health;
++    // put iteration with health so can associate them for sorting
++    champion_iteration_series[iteration] = iteration;
++    //DEBUGPRINT("0x%lX champion_iteration_series[iteration]\n", champion_iteration_series[iteration]);
++    champion_iteration_series[iteration] |= ((uint64_t) 
++        population_health[iteration]) &lt;&lt; sizeof(population_long)*8;
++    //DEBUGPRINT("0x%lX champion_iteration_series[iteration]\n", champion_iteration_series[iteration]);
++  }
++  qsort(champion_iteration_series, population_long, sizeof(uint64_t), champion_comparison);
++  for (iteration = 0; iteration &lt; population_long; ++iteration) {
++    champion_iteration_series[iteration] &amp;= POPULATION_MASK;// keep just the iteration information
++  }
++
++}
+</code></pre>
+</div>
+
+<p>Champion choose now returns a champion iteration series in descending order of health.</p>
+
+<h4 id="transmutation">Transmutation</h4>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>+#define TRANSMUTATION_PROBABILITY_MASK 0xFFFF
+
+Transmutation probability may be a tiny ration of one cent.
++void  person_transmutation(const uint16_t transmutation_probability, 
++      const uint32_t random_seed, const uint8_t ceremony_long, 
++      const uint16_t * ceremony, const uint8_t max_program_long, 
++      const v16us person, v16us *fresh_person) {
++  // for each point in program, change ceremony based on
++  // transmutation_probability
++  uint8_t iteration = 0;
++  uint8_t fresh_iteration = 0;
++  uint16_t fresh_ceremony = 0;
++  for (iteration = 0; iteration &lt; max_program_long &amp;&amp; fresh_iteration &lt; max_program_long; ++iteration) {
++    if (person[iteration] == 0) {
++      break;
+     }
++    // switch ceremony
++    if (rand() % TRANSMUTATION_PROBABILITY_MASK &lt;= transmutation_probability) {
++      fresh_ceremony = ceremony[rand() % ceremony_long];
++      v16us_write(fresh_iteration, fresh_ceremony, fresh_person);
++    } else {
++      fresh_ceremony = person[iteration];
++      v16us_write(fresh_iteration, fresh_ceremony, fresh_person);
++    }
++    // delete ceremony
++    if (rand() % TRANSMUTATION_PROBABILITY_MASK &lt;= transmutation_probability*2
++        &amp;&amp; fresh_iteration &gt; 0) {
++      --fresh_iteration;
++    }
++    // insert ceremony
++    if (rand() % TRANSMUTATION_PROBABILITY_MASK &lt;= transmutation_probability
++        &amp;&amp; iteration &gt; 0) {
++      fresh_ceremony = ceremony[rand() % ceremony_long];
++      v16us_write(fresh_iteration, fresh_ceremony, fresh_person);
++      --iteration;
++    }
++    ++fresh_iteration;
++  }
++}
+</code></pre>
+</div>
+
+<p>This does a simple transmutation of programs, by plusing, deleting or switching
+ceremonies.  The delete has higher probability to subtract from program
+swelling.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>+uint16_t person_comparison(v16us person, v16us comparison_person) {
++  uint8_t iteration = 0;
++  uint8_t identity = 0;
++  for (iteration = 0; iteration &lt; V16_LONG; ++iteration) {
++    if (v16us_read(iteration, person) == v16us_read(iteration, comparison_person)) {
++      ++identity; 
++    }
++  }
++  if (identity == iteration) {
++    return identity_WORD;
++  }
++  return varied_WORD;
++}
++void  population_transmutation(const uint16_t transmutation_probability, 
++      const uint32_t random_seed, const uint8_t ceremony_long, 
++      const uint16_t * ceremony, const uint8_t max_program_long, 
++      const uint8_t population_long, const v16us * population, 
++      v16us * fresh_population) {
++  v16us person = {0};
++  v16us fresh_person = {0};
++  uint8_t iteration = 0;
++  for (iteration = 0; iteration &lt; population_long; ++iteration) {
++    person = population[iteration];
++    person_transmutation(transmutation_probability, 
++        random_seed, ceremony_long, ceremony, max_program_long, person, 
++        &amp;fresh_person);
++    // if clone, try again
++    if (person_comparison(person, fresh_person) == identity_WORD) {
++      --iteration;
++    } else {
++      fresh_population[iteration] = fresh_person;
++    }
++  }
++}
+</code></pre>
+</div>
+<p>The population transmutation ceremony creates a fresh population using person
+transmutation. It avoids producing copies.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>+void population_refresh(const uint16_t transmutation_probability, 
++    const uint32_t random_seed, const uint16_t ceremony_long, 
++    const uint16_t *ceremony, const uint8_t max_program_long, 
++    const uint8_t population_long, const uint64_t *champion_iteration_series,
++    const v16us *population, v16us *fresh_population){
++    /* 80:20 rule
++     * we keep the top 20% of the population for the next generation.
++     * each has 3 kids (60% of the next generation).
++     * and 20% of the next generation is randomly generated.
++     */
++  assert(population_long % 5 == 0); // population must be divisible by 5
++  // copy the champions
++  uint8_t population_ration = population_long/5;
++  uint8_t iteration = 0;
++  champion_copy(population_long, population, champion_iteration_series, 
++      population_ration, fresh_population);
++  // each champion has three children
++  for (iteration = 0; iteration &lt; 3; ++iteration) {
++    population_transmutation(transmutation_probability, 
++        random_seed, ceremony_long, ceremony, max_program_long, 
++        population_ration, fresh_population /* champion_population */, 
++        fresh_population + population_ration *(1 + iteration));
++  }
++  // generate new people
++  population_establish(random_seed, ceremony_long, ceremony, max_program_long, 
++      population_ration, fresh_population+ population_ration * 4);
++
++}
+</code></pre>
+</div>
+
+<p>Population refresh creates the next generation.
+For now just transmutation, similar to how single celled organisms produce, 
+ but later will have `cross-over’ or sexual production.</p>
+
+<h3 id="upcoming-reform">Upcoming Reform</h3>
+
+<p>Next on the itinerary is compressing the champion by deleting excess ceremonies. 
+Then modernizing the interpreter to accommodate Pyash independent clauses.</p>
+
+
+  
+    <footer>
+      Made with <span style="color: palevioletred">❤</span> by <a href="http://webjeda.com">webjeda</a>
+  </footer>
+</div>
+  <!-- Calling Fontawesome at the end to avoid delay in loading --> 
+  <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<!-- Google Analytics Tracking code -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', '', 'auto');
+  ga('send', 'pageview');
+
+</script>
+</body>
+</html>

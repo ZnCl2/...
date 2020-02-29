@@ -1,0 +1,57 @@
+<!DOCTYPE html><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title> UVa1586: Molar Mass</title><meta name="description" content=" 以字元為單位讀取，並依照儲存的狀態進行處理。之所以會使用 isBlank 及 EOF 判斷結束而略過一開始的測資數量，是因為使用了優化過的 getChr()，而它不能與 cin 交替使用。當然，寫完後馬上意識到因為 cin 是在所有的 getChr() 呼叫之前，故就算使用了也沒有影響。 Read the inp... "><link rel="stylesheet" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/assets/main.css"><link rel="canonical" href="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/09/uva1586-molar-mass.html"><link rel="alternate" type="application/rss+xml" title="Nerde Nolzda" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/feed.xml"><header role="banner"> <a class="site-title" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/">Nerde Nolzda</a><nav> <a href="#" class="menu-icon">&#9776;</a><div class="trigger"> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/about/">About</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/keys/">Keys</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/mirrors/">Mirrors</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/">Tags</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/feed.xml">RSS</a></div></nav></header><main><article itemscope itemtype="http://schema.org/BlogPosting"><header><h1 itemprop="name headline"> <a itemprop="mainEntityOfPage url" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/09/uva1586-molar-mass.html"> UVa1586: Molar Mass </a></h1><p class="post-meta"> <time datetime="2016-08-09T18:19:17+08:00" itemprop="datePublished"> Aug 9, 2016 </time> • <time datetime="2018-06-02T22:25:01+08:00" itemprop="dateModified"> Jun 2, 2018 </time> • <span itemprop="author publisher" itemscope itemtype="http://schema.org/Person"> <span itemprop="name">WillyPillow</span> </span> • <span itemprop="keywords"> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/en.html" rel="tag">en</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/zh.html" rel="tag">zh</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/bilingual.html" rel="tag">bilingual</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/cpp.html" rel="tag">cpp</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/uva.html" rel="tag">UVa</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/competitive-coding.html" rel="tag">competitive-coding</a></span> • <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/sigs/posts/2016-08-09-uva1586-molar-mass.md.asc"> Signature </a></p></header><div itemprop="articleBody text"><p>以字元為單位讀取，並依照儲存的狀態進行處理。之所以會使用 <code>isBlank</code> 及 EOF 判斷結束而略過一開始的測資數量，是因為使用了優化過的 <code>getChr()</code>，而它不能與 <code>cin</code> 交替使用。當然，寫完後馬上意識到因為 <code>cin</code> 是在所有的 <code>getChr()</code> 呼叫之前，故就算使用了也沒有影響。<br /> Read the input character-by-character, and process according to the saved state. The reason for using <code>isBlank</code> and EOF for detecting the end of the input instead of just reading the input count on the first line is because an optimized <code>getChr()</code>, which can not be used together. Of course, as soon as I finished this program, I realized that since the <code>cin</code> is called before all the <code>getChr()</code> calls occur, it doesn’t really matter even if I used it.</p><p><code>getChr()</code> 這個函式內部用 <code>fread</code> 存了一個 buffer，加速了字元讀取，但也因此不能與其他的 stdin 函式交替使用。<br /> The function <code>getChr()</code> utilizes an internal buffer in order to accelerate the reading of characters. Because of this, however, it can’t be used together with normal stdin functions.</p><p><a href="https://uva.onlinejudge.org/index.php?option=com_onlinejudge&amp;Itemid=8&amp;category=24&amp;page=show_problem&amp;problem=4461">UVa Link</a></p><pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;iomanip&gt;
+#include &lt;cstdio&gt;
+
+static inline double toMass(char c) {
+  switch (c) {
+  case 'C':
+    return 12.01;
+  case 'H':
+    return 1.008;
+  case 'O':
+    return 16.00;
+  case 'N':
+    return 14.01;
+  }
+}
+
+int getChr() {
+  static char buf[1 &lt;&lt; 20], *p = buf, *end = buf;
+  if (p == end) {
+    if ((end = buf + fread(buf, 1, 1 &lt;&lt; 20, stdin)) == buf) return -1;
+    p = buf;
+  }
+  return *p++;
+}
+
+int main() {
+  std::cin.tie(0);
+  std::ios_base::sync_with_stdio(0);
+  int add = 0;
+  double sum = 0;
+  bool isBlank = true;
+  char c, lastE = '\0';
+  std::cout &lt;&lt; std::fixed &lt;&lt; std::setprecision(3);
+  while (getChr() != '\n');
+  while ((c = getChr()) != -1) {
+    if (isupper(c)) {
+      isBlank = false;
+      if (isupper(lastE)) {
+        sum += toMass(lastE) * (add ? add : 1);
+        add = 0;
+      }
+      lastE = c;
+    } else if (isdigit(c)) {
+      isBlank = false;
+      add = add * 10 + (c - '0');
+    } else if (!isBlank) {
+      if (isupper(lastE)) sum += toMass(lastE) * (add ? add : 1);
+      std::cout &lt;&lt; sum &lt;&lt; '\n';
+      sum = 0;
+      add = 0;
+      lastE = '\0';
+      isBlank = true;
+    }
+  }
+}
+</code></pre></div><div><h1>Related Posts</h1><ul><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/12/uva108-maximum-sum.html"> UVa108: Maximum Sum </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/12/uva10696-f91.html"> UVa10696: f91 </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/12/uva10298-power-strings.html"> UVa10298: Power Strings </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/12/uva455-periodic-strings.html"> UVa455: Periodic Strings </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/09/uva299-train-swapping.html"> UVa299: Train Swapping </a></ul></div><div><h1><span itemprop="commentCount">0</span> comments</h1><h2>Post a comment</h2><p> Send an email to <a href="mailto:comment@nerde.pw">comment@nerde.pw</a>.</p></div></article></main><footer itemscope itemtype="http://schema.org/Person"><ul><li itemprop="name">WillyPillow<li><a itemprop="email" href="mailto:wp@nerde.pw">wp@nerde.pw</a><li> Gitlab: <a href="https://gitlab.com/willypillow">WillyPillow</a><li> BitBucket: <a href="https://bitbucket.org/WillyPillow">WillyPillow</a><li> Github: <a href="https://github.com/WillyPillow">WillyPillow</a><li> Diaspora*: <a href="https://diasporing.ch/people/7abf8850bce50134011e7a163e59d8f4">WillyPillow</a><li> Reddit: <a href="https://www.reddit.com/user/WillyPillow/">WillyPillow</a><li>Bitcoin: 15ii2SMbgZSyzKxVSYwim7KtT2uqdSdjVm<li>Namecoin: NES89UkGDutphGbVYNUkGkQuRGs6vFQk6h</ul></footer>

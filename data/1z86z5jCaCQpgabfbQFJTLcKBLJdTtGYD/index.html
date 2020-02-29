@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Zero86</title>
+
+        <meta name="description" content="Decentralized x86 virtualization in ZeroNet" />
+
+        <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png" />
+        <link rel="manifest" href="site.webmanifest" />
+        <link rel="mask-icon" href="icons/safari-pinned-tab.svg" color="#343a40" />
+        <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+        <link rel="shortcut icon" type="image/svg+xml" href="favicon.svg" />
+        <meta name="msapplication-TileColor" content="#2b5797" />
+        <meta name="msapplication-config" content="browserconfig.xml" />
+        <meta name="theme-color" content="#ffffff" />
+
+        <meta charset="utf-8" />
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=0.8" />
+
+        <link rel="stylesheet" href="css/all.css?site_modified={site_modified}" />
+
+        <base href="" target="_top" id="base" />
+        <script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+        <style>.custom-file-input ~ .custom-file-label::after { content: "Browse"; }</style>
+    </head>
+
+    <body class="{themeclass}">
+        <header>
+            <div class="navbar navbar-dark bg-dark shadow-sm">
+                <div class="container d-flex justify-content-between">
+                    <div class="navbar-brand d-flex align-items-center">
+                        <img src="favicon.svg" width="20" height="20" class="mr-2" />
+                        <strong>Zero86</strong>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main role="main">
+            <!-- Site description -->
+            <section class="jumbotron text-center">
+                <div class="container">
+                    <h1 class="jumbotron-heading">Zero86</h1>
+
+                    <p class="lead text-muted">
+                        This project provides a decentralized ZeroNet site with x86 virtualization.
+                        <br /><br />
+                        It uses <a href="https://github.com/copy/v86/">Copy's v86</a> which emulates an x86-compatible CPU and hardware.
+                        The site is hosted on ZeroNet and it uses big files for image and snapshot storage.
+                        <br /><br />
+                        Users of the site can also exchange their own systems, images and snapshots.
+
+                    </p>
+
+                    <p>
+                        <a href="#" id="btn-browse-systems" class="btn btn-secondary mt-2">Browse systems</a>
+                        <a href="#" id="btn-create-system" class="btn btn-secondary mt-2">Create system</a>
+                    </p>
+
+                    <p>
+                        <a href="#" id="btn-logged-user" class="btn btn-sm">Not logged in</a>
+                    </p>
+                </div>
+            </section>
+
+            <!-- Browse systems -->
+            <div id="browse-systems" class="py-5">
+                <div class="container">
+                    <div id="systems" class="row">
+                        <template id="system-template">
+                            <div class="col-md-4 system-card">
+                                <div class="card mb-4 shadow-sm">
+                                    <div class="card-body">
+                                        <h5 id="system-template-title" class="card-title"></h5>
+                                        <p id="system-template-description" class="card-text"></p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="btn-group">
+                                                <button type="button" id="system-template-run" class="btn btn-sm btn-outline-primary">Run</button>
+                                            </div>
+                                            <div id="system-template-manage" class="btn-group d-none">
+                                                <button type="button" id="system-template-edit" class="btn btn-sm btn-outline-secondary">Edit</button>
+                                                <button type="button" id="system-template-delete" class="btn btn-sm btn-outline-secondary">Delete</button>
+                                            </div>
+                                            <small class="text-muted">By <span id="system-template-author"></span></small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manage system -->
+            <div id="manage-system" class="py-5 d-none">
+                <div class="container">
+                    <div class="p-2 w-50">
+                        <div class="pb-2">
+                            <h2>Create custom system</h2>
+                        </div>
+
+                        <form id="custom-system-form">
+                            <div class="form-group">
+                                <label>System title:</label>
+                                <input type="text" id="custom-system-title" class="form-control" />
+                            </div>
+
+                            <div class="form-group">
+                                <label>System description:</label>
+                                <textarea id="custom-system-description" class="form-control"></textarea>
+                            </div>
+
+                            <hr />
+
+                            <div class="form-group">
+                                <label>Enable filesystem exchange:</label>
+                                <select class="form-control" id="custom-system-filesystem">
+                                    <option value="1">Yes</option>
+                                    <option value="0" selected>No</option>
+                                </select>
+                            </div>
+
+                            <hr />
+
+                            <div class="form-group">
+                                <label>Boot order:</label>
+                                <select class="form-control" id="custom-system-boot-order">
+                                    <option value="213">CD / Floppy / Hard Disk</option>
+                                    <option value="123">CD / Hard Disk / Floppy</option>
+                                    <option value="231">Floppy / CD / Hard Disk</option>
+                                    <option value="321">Floppy / Hard Disk / CD</option>
+                                    <option value="312">Hard Disk / Floppy / CD</option>
+                                    <option value="132">Hard Disk / CD / Floppy</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>CD image:</label>
+                                <div class="custom-file">
+                                    <input type="file" id="custom-system-cd-image" class="custom-file-input" />
+                                    <label class="custom-file-label" for="custom-system-cd-image">Choose file</label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Floppy disk image:</label>
+                                <div class="custom-file">
+                                    <input type="file" id="custom-system-floppy-image" class="custom-file-input" />
+                                    <label class="custom-file-label" for="custom-system-floppy-image">Choose file</label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Hard drive disk image:</label>
+                                <div class="custom-file">
+                                    <input type="file" id="custom-system-hard-disk-image" class="custom-file-input" />
+                                    <label class="custom-file-label text-truncate" for="custom-system-hard-disk-image">Choose file</label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Snapshot:</label>
+                                <div class="custom-file">
+                                    <input type="file" id="custom-system-snapshot" class="custom-file-input" />
+                                    <label class="custom-file-label text-truncate" for="custom-system-snapshot">Choose file</label>
+                                </div>
+                            </div>
+
+                            <hr />
+
+                            <div class="form-group">
+                                <label>Memory size:</label>
+                                <input type="number" id="custom-system-memory" class="form-control" value="128" min="16" max="2048" step="16" />
+                            </div>
+
+                            <div class="form-group">
+                                <label>Video memory size:</label>
+                                <input type="number" id="custom-system-video-memory" class="form-control" value="8" min="1" max="128" step="1" />
+                            </div>
+
+                            <hr />
+
+                            <div class="form-group">
+                                <button type="button" id="custom-system-start" class="btn btn-md btn-outline-secondary">Start emulation</button>
+                                <button type="button" id="custom-system-publish" class="btn btn-md btn-outline-secondary">Publish system</button>
+                                <button type="button" id="custom-system-cancel" class="btn btn-md btn-outline-secondary">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Run system -->
+            <div id="run-system" class="py-5 d-none">
+                <div class="container">
+                    <div>
+                        <h2 id="system-title"></h2>
+                        <p id="system-description"></p>
+                    </div>
+
+                    <pre id="system-loading" class="d-flex justify-content-center d-none"></pre>
+
+                    <div class="row d-none">
+                        <div id="system-screen" class="col-md-8 m-1 d-flex align-items-center justify-content-center screen">
+                            <div class="screen-text"></div>
+                            <canvas class="screen-graphic"></canvas>
+                            <div style="position: absolute; top: 0; z-index: 10">
+                                <textarea class="screen-keyboard"></textarea>
+                            </div>
+                        </div>
+
+                        <div id="information" class="col-md p-2 m-1 panel">
+                            <div id="information-general" class="d-none">
+                                <strong>General:</strong><br />
+                                Running time: <span id="information-general-running-time"></span><br />
+                                Speed: <span id="information-general-speed"></span> kIPS<br />
+                                Average speed: <span id="information-general-average-speed"></span> kIPS<br />
+                                <br />
+                            </div>
+
+                            <div id="information-storage" class="d-none">
+                                <strong>IDE device (HDA or CDROM):</strong><br />
+                                Sectors read: <span id="information-storage-sectors-read"></span><br />
+                                Bytes read: <span id="information-storage-bytes-read"></span><br />
+                                Sectors written: <span id="information-storage-sectors-written"></span><br />
+                                Bytes written: <span id="information-storage-bytes-written"></span><br />
+                                Status: <span id="information-storage-status"></span><br />
+                                <br />
+                            </div>
+
+                            <div id="information-filesystem" class="d-none">
+                                <strong>9p Filesystem:</strong><br />
+                                Bytes read: <span id="information-filesystem-bytes-read"></span><br />
+                                Bytes written: <span id="information-filesystem-bytes-written"></span><br />
+                                Last file: <span id="information-filesystem-last-file" style="word-wrap: break-word"></span><br />
+                                Status: <span id="information-filesystem-status"></span><br />
+                                <br />
+                            </div>
+
+                            <div id="information-network" class="d-none">
+                                <strong>Network:</strong><br />
+                                Bytes received: <span id="information-network-bytes-received"></span><br />
+                                Bytes transmitted: <span id="information-network-bytes-transmitted"></span><br />
+                                <br />
+                            </div>
+
+                            <div id="information-vga" class="d-none">
+                                <strong>VGA:</strong><br />
+                                Mode: <span id="information-vga-mode"></span><br />
+                                Resolution: <span id="information-vga-resolution"></span><br />
+                                BPP: <span id="information-vga-bpp"></span><br />
+                                Mouse: <span id="information-vga-mouse"></span><br />
+                                <br />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row d-none">
+                        <div class="col-md-8 p-0 m-1 d-none">
+                            <textarea id="system-serial" class="serial" rows="12"></textarea>
+                        </div>
+
+                        <div id="filesystem" class="col-md p-2 m-1 panel d-none">
+                            <div class="form-row p-2">
+                                <label>Send file to emulator:</label>
+                                <div class="custom-file">
+                                    <input type="file" id="filesystem-send-file" class="custom-file-input" multiple />
+                                    <label class="custom-file-label text-truncate" for="filesystem-send-file">Choose files</label>
+                                </div>
+                            </div>
+
+                            <br />
+
+                            <div class="form-row p-2">
+                                <label>Get file from emulator:</label>
+                                <input type="text" id="filesystem-get-file" class="form-control" placeholder="Absolute path" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row justify-content-center d-none">
+                        <div class="btn-group m-1">
+                            <button type="button" id="system-control" class="btn btn-md btn-outline-secondary" data-command="pause">Pause</button>
+                            <button type="button" id="system-reset" class="btn btn-md btn-outline-secondary">Reset</button>
+                            <button type="button" id="system-exit" class="btn btn-md btn-outline-secondary">Exit</button>
+                        </div>
+
+                        <div class="btn-group m-1">
+                            <button type="button" id="system-send-ctrl-alt-delete" class="btn btn-md btn-outline-secondary">Send Ctrl-Alt-Delete</button>
+                            <button type="button" id="system-send-alt-tab" class="btn btn-md btn-outline-secondary">Send Alt-Tab</button>
+                        </div>
+
+                        <div class="btn-group m-1">
+                            <button type="button" id="system-get-cdrom-image" class="btn btn-md btn-outline-secondary">Get cdrom image</button>
+                            <button type="button" id="system-save-state" class="btn btn-md btn-outline-secondary">Save state</button>
+                            <button type="button" id="system-load-state" class="btn btn-md btn-outline-secondary">Load state</button>
+                            <button type="button" id="system-memory-dump" class="btn btn-md btn-outline-secondary">Memory dump</button>
+                        </div>
+                    </div>
+
+                    <div class="row justify-content-center d-none">
+                        <div class="btn-group m-1">
+                            <button type="button" id="system-control-mouse" class="btn btn-md btn-outline-secondary" data-command="disable">Disable mouse</button>
+                            <button type="button" id="system-lock-mouse" class="btn btn-md btn-outline-secondary">Lock mouse</button>
+                        </div>
+
+                        <div class="btn-group m-1">
+                            <button type="button" id="system-fullscreen" class="btn btn-md btn-outline-secondary">Go fullscreen</button>
+                            <button type="button" id="system-screenshot" class="btn btn-md btn-outline-secondary">Take screenshot</button>
+                        </div>
+
+                        <div class="input-group m-1 scale-input">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Scale</span>
+                            </div>
+                            <input type="number" id="system-scale" class="form-control" min="0.25" step="0.25" value="1" />
+                        </div>
+                    </div>
+
+                    <div class="row justify-content-center d-none">
+                        <div class="btn-group m-1">
+                            <button type="button" id="system-clone" class="btn btn-md btn-outline-secondary">Clone system</button>
+                            <button type="button" id="system-edit" class="btn btn-md btn-outline-secondary">Edit system</button>
+                            <button type="button" id="system-delete" class="btn btn-md btn-outline-secondary">Delete system</button>
+                        </div>
+
+                        TODO: Button states
+
+                        Pause / Run
+                        Reset
+                        Exit
+
+                        Send Ctrl-Alt-Delete
+                        Send Alt-Tab
+
+                        Get cdrom image
+                        Save state
+                        Load state
+                        Memory dump
+
+                        Disable mouse / Enable mouse
+                        Lock mouse
+
+                        Go fullscreen
+                        Take screenshot
+
+                        Scale
+
+                        Clone system
+                        Edit system
+                        Delete system
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="text-muted">
+            <center>
+                <p>Decentralized x86 virtualization in ZeroNet</p>
+
+                <p>
+                    <small>Source code licensed under the <a href="https://github.com/filips123/Zero86/blob/develop/LICENSE">MIT license</a> and available <a href="https://github.com/filips123/Zero86/">on GitHub</a>.</small>
+                    <small>Icon licensed unter the <a href="https://visualpharm.com/free-icons/x86-595b40b75ba036ed117d9010">Linkware license</a>.</small>
+                </p>
+            </center>
+        </footer>
+
+        <script src="js/all.js?lang={lang}&site_modified={site_modified}"></script>
+    </body>
+</html>

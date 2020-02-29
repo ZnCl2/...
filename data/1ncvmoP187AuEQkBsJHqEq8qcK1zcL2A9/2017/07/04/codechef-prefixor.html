@@ -1,0 +1,122 @@
+<!DOCTYPE html><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title> Codechef PREFIXOR: Prefix XOR</title><meta name="description" content=" Codechef Link "><link rel="stylesheet" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/assets/main.css"><link rel="canonical" href="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/07/04/codechef-prefixor.html"><link rel="alternate" type="application/rss+xml" title="Nerde Nolzda" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/feed.xml"><header role="banner"> <a class="site-title" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/">Nerde Nolzda</a><nav> <a href="#" class="menu-icon">&#9776;</a><div class="trigger"> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/about/">About</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/keys/">Keys</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/mirrors/">Mirrors</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/">Tags</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/feed.xml">RSS</a></div></nav></header><main><article itemscope itemtype="http://schema.org/BlogPosting"><header><h1 itemprop="name headline"> <a itemprop="mainEntityOfPage url" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/07/04/codechef-prefixor.html"> Codechef PREFIXOR: Prefix XOR </a></h1><p class="post-meta"> <time datetime="2017-07-04T19:30:00+08:00" itemprop="datePublished"> Jul 4, 2017 </time> • <time datetime="2018-08-22T21:02:49+08:00" itemprop="dateModified"> Aug 22, 2018 </time> • <span itemprop="author publisher" itemscope itemtype="http://schema.org/Person"> <span itemprop="name">WillyPillow</span> </span> • <span itemprop="keywords"> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/en.html" rel="tag">en</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/cpp.html" rel="tag">cpp</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/codechef.html" rel="tag">codechef</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/competitive-coding.html" rel="tag">competitive-coding</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/segment-tree.html" rel="tag">segment-tree</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/merge-sort-tree.html" rel="tag">merge-sort-tree</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/bitwise-xor.html" rel="tag">bitwise-xor</a></span> • <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/sigs/posts/2017-07-04-codechef-prefixor.md.asc"> Signature </a></p></header><div itemprop="articleBody text"><p><a href="https://www.codechef.com/problems/PREFIXOR">Codechef Link</a></p><p>This is a problem from the Codechef SnackDown Elimination Round 2017. During the contest, I read the statements, and immediately started coding a plain segment tree, thinking it would work, only to find that I couldn’t merge the left and right segments at around 10 LOC or so. Anyway, a few days ago, I decided to give the problem another try.</p><p>My first observation is that, for each <code>l</code>, if we can find the maximum <code>r</code> so that the pair <code>(l, r)</code> is permissible (i.e. <code>a[l] &lt;= a[l] ^ a[l + 1] &lt;= ... &lt;= a[l] ^ a[l + 1] ^ ... a[r]</code>), then <code>(l, k)</code> is also permissible iff <code>l &lt;= k &lt;= r</code>. As such, let the maximum <code>r</code> for each <code>l</code> be <code>maxDst[l]</code>, then the answer for the segment <code>(l, r)</code> is <code>sum { min(maxDst[k], r) - k + 1 | l &lt;= k &lt;= r }</code>. This query can be done <code>O(log n)</code> on a segment tree with a merge-split treap in each node by splitting each treap by <code>maxDst[k] == r</code>, and adding up <code>sum { maxDst[k] - k + 1 }</code> and <code>sum { r - k + 1 }</code> for the left and right side respectively. However, since no updates are needed, we can just use a merge-sort tree, with prefix sums for <code>maxDst[k] - k + 1</code> and suffix sums for <code>- k + 1</code> in each node. (The latter is summed with <code>r * [NUMBER OF ELEMENTS]</code> during the query.)</p><p>The problem is then transformed into solving the <code>maxDst</code> array. We can see that when <code>k == 1</code>, we have to calculate the relations of <code>a[1], a[1] ^ a[2], ... , a[1] ^ a[2] ^ ... a[n]</code>, and when <code>k == 2</code>, the sequence turns into <code>a[2], a[2] ^ a[3], ...</code>. Note that we can just drop the first element from the former and xor all the elements with <code>a[1]</code> to get the latter. In other words, we have to track the relations while supporting modifications that xor all the elements with a certain integer.</p><p>Looking into how xor works, we can observe that <code>x &lt;= y</code> becomes <code>x ^ k &gt; y ^ k</code> iff the most significant bit that differs between <code>x</code> and <code>y</code> is xored with <code>1</code>. Thus, we can categorize the relations into 32 sets, and turn this into a modal where we have a sequence of 0s and 1s, standing for <code>&lt;=</code> and <code>&gt;</code> respectively. For each xor operation, we flip some certain sets of elements according to the binary representation of the number so that we can track the relations. Then, if we can query the sum of a segment, we can know whether the sequence is increasing by checking whether the sum is zero, thus solving <code>maxDst</code> via binary search.</p><p>In order to do the operations mentioned above, the first thing that came into mind are segment trees. However, since the modifications are non-continuous, we have to use multiple segment trees, one for each set, querying and modifying them separately. Unfortunately, this method is too slow and gets TLEs. On further inspection, it can be observed that the only modifications are the flipping, which are only done on the root. In other words, none of the nodes, except the roots, are modified. As such, we can turn to prefix sums and maintain a boolean array on whether a set is flipped. If the set is flipped, the query returns <code>N - ans</code>, where <code>ans</code> is the original return value, and <code>N</code> is the total number of elements in the segment, which can be determined by another prefix sum array.</p><p>To recap, the procedure is as follows:</p><ul><li>Create an array of <code>a[1], a[1] ^ a[2], ... a[1] ^ a[2] ^ ... a[n]</code> and record the relations between every pair <code>(a[i], a[i + 1])</code>. (<code>O(n)</code>)<li>Place each relation into two prefix sums (one for tracking the <code>&gt;</code> count, and the other for tracking the number of elements) according to their binary representation (one of the 32 sets). (<code>O(n)</code>)<li>Scan from left to right. For each <code>l</code>, binary search the minimum <code>r</code> so that the segment <code>(l, r)</code> has a sum &gt; 0 on the prefix sum (querying the 32 sets separately). <code>maxDst[l]</code> can then be updated to <code>r</code>. Then, do the modification by xorring with <code>a[l]</code>, i.e. flip the sets whose corresponding bit in <code>a[l]</code> is 1. (<code>O(n * log n * log C)</code>)<li>Build a merge-sort tree. In each node, maintain not only <code>maxDst[]</code> but also the prefix sums of <code>maxDst[k] - k + 1</code> and suffix sums of <code>-k + 1</code>. (<code>O(n * log n)</code>)<li>For each query <code>(l, r)</code>, search the segment on the merge-sort tree. For each node hit, binary search <code>maxDst</code> for <code>r</code>, and sum up the prefix sums left of <code>r</code> and suffix sums right of <code>r</code> together with <code>r * [NUMBER OF ELEMENTS ON THE RIGHT]</code>. (<code>O(q * log^2 n)</code>)</ul><p>Total time complexity: <code>O(n * log n * log C + q * log^2 n)</code></p><p>Code is as follows:</p><pre><code class="language-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MAXN = 4E5 + 10;
+
+int sum[32][MAXN][2], arr[MAXN], xorred[MAXN], maxDst[MAXN], n, queryR;
+bool isRev[32] = { false };
+vector&lt;int&gt; typeToIdx[32];
+vector&lt;int64_t&gt; msPreSum[MAXN * 4], msSufSum[MAXN * 4];
+vector&lt;pair&lt;int, int&gt; &gt; msTree[MAXN * 4];
+
+bool queryMulti(int l, int r) {
+  for (int i = 0; i &lt; 32; i++) {
+    int t = sum[i][r][0] - sum[i][l - 1][0];
+    if (isRev[i]) {
+      if (sum[i][r][1] - sum[i][l - 1][1] != t) return false;
+    } else {
+      if (t != 0) return false;
+    }
+  }
+  return true;
+}
+
+void modifyMulti(int x) {
+  for (int i = 0; i &lt; 32; i++) {
+    if (x &amp; (1 &lt;&lt; i)) isRev[i + 1] = !isRev[i + 1];
+  }
+}
+
+void buildMs(int id, int l, int r) {
+  if (l == r) {
+    msTree[id].push_back({ maxDst[l], maxDst[l] - l + 1 });
+    msPreSum[id] = { 0, maxDst[l] - l + 1 };
+    msSufSum[id] = { l, 0 };
+  } else {
+    int m = (l + r) &gt;&gt; 1;
+    buildMs(id &lt;&lt; 1, l, m); buildMs(id &lt;&lt; 1 | 1, m + 1, r);
+    msTree[id].resize(msTree[id &lt;&lt; 1].size() + msTree[id &lt;&lt; 1 | 1].size());
+    merge(msTree[id &lt;&lt; 1].begin(), msTree[id &lt;&lt; 1].end(),
+        msTree[id &lt;&lt; 1 | 1].begin(), msTree[id &lt;&lt; 1 | 1].end(),
+        msTree[id].begin());
+    msPreSum[id].resize(msTree[id].size() + 1);
+    for (int i = 1; i &lt;= (int)msTree[id].size(); i++) {
+      msPreSum[id][i] = msPreSum[id][i - 1] + msTree[id][i - 1].second;
+    }
+    msSufSum[id].resize(msTree[id].size() + 1);
+    for (int i = msTree[id].size(); i &gt;= 1; i--) {
+      msSufSum[id][i - 1] = msSufSum[id][i] +
+        (msTree[id][i - 1].first - msTree[id][i - 1].second + 1);
+    }
+  }
+}
+
+int64_t queryMs(int id, int l, int r, int qL, int qR) {
+  if (qL &lt;= l &amp;&amp; r &lt;= qR) {
+    int idx = lower_bound(msTree[id].begin(), msTree[id].end(),
+        make_pair(queryR, 0)) - msTree[id].begin();
+    return msPreSum[id][idx] +
+      (int64_t)(msTree[id].size() - idx) * (queryR + 1) - msSufSum[id][idx];
+  } else {
+    int m = (l + r) &gt;&gt; 1;
+    int64_t t = 0;
+    if (qL &lt;= m) t += queryMs(id &lt;&lt; 1, l, m, qL, min(m, qR));
+    if (m &lt; qR) t += queryMs(id &lt;&lt; 1 | 1, m + 1, r, max(qL, m), qR);
+    return t;
+  }
+}
+
+int32_t main() {
+#ifdef OJ_DEBUG
+  freopen("out2", "r", stdin);
+#endif
+  std::cin.tie(0);
+  std::ios_base::sync_with_stdio(0);
+  cin &gt;&gt; n;
+  for (int i = 1; i &lt;= n; i++) cin &gt;&gt; arr[i];
+  for (int i = 1; i &lt;= n; i++) xorred[i] = xorred[i - 1] ^ arr[i];
+  for (int i = 1; i &lt; n; i++) {
+    int j;
+    for (j = 31; j &gt;= 0; j--) {
+      if ((xorred[i] &amp; (1 &lt;&lt; j)) != (xorred[i + 1] &amp; (1 &lt;&lt; j))) {
+        typeToIdx[j + 1].push_back(i);
+        if (xorred[i] &gt; xorred[i + 1]) sum[j + 1][i][0]++;
+        sum[j + 1][i][1]++;
+        break;
+      }
+    }
+    if (j &lt; 0) {
+      typeToIdx[0].push_back(i);
+      sum[0][i][1]++;
+    }
+  }
+  for (int i = 0; i &lt; 32; i++) {
+    for (int j = 1; j &lt;= n; j++) {
+      sum[i][j][0] += sum[i][j - 1][0];
+      sum[i][j][1] += sum[i][j - 1][1];
+    }
+  }
+  for (int i = 1; i &lt; n; i++) {
+    int l = i, r = n;
+    while (l != r) {
+      int m = (l + r) &gt;&gt; 1;
+      if (queryMulti(i, m)) l = m + 1;
+      else r = m;
+    }
+    maxDst[i] = l;
+    modifyMulti(arr[i]);
+  }
+  maxDst[n] = n;
+  buildMs(1, 1, n);
+  int q;
+  int64_t lastAns = 0;
+  cin &gt;&gt; q;
+  while (q--) {
+    int l, r; cin &gt;&gt; l &gt;&gt; r;
+    l = (l + lastAns) % n + 1;
+    queryR = r = (r + lastAns) % n + 1;
+    lastAns = queryMs(1, 1, n, l, r);
+    cout &lt;&lt; lastAns &lt;&lt; '\n';
+  }
+}
+</code></pre></div><div><h1>Related Posts</h1><ul><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/07/04/persistent-segment-tree-in-scala.html"> Persistent Segment Tree In Scala </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/11/10/c-stl-hash.html"> C++ STL Hash </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/12/uva108-maximum-sum.html"> UVa108: Maximum Sum </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/12/uva10696-f91.html"> UVa10696: f91 </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/12/uva10298-power-strings.html"> UVa10298: Power Strings </a></ul></div><div><h1><span itemprop="commentCount">0</span> comments</h1><h2>Post a comment</h2><p> Send an email to <a href="mailto:comment@nerde.pw">comment@nerde.pw</a>.</p></div></article></main><footer itemscope itemtype="http://schema.org/Person"><ul><li itemprop="name">WillyPillow<li><a itemprop="email" href="mailto:wp@nerde.pw">wp@nerde.pw</a><li> Gitlab: <a href="https://gitlab.com/willypillow">WillyPillow</a><li> BitBucket: <a href="https://bitbucket.org/WillyPillow">WillyPillow</a><li> Github: <a href="https://github.com/WillyPillow">WillyPillow</a><li> Diaspora*: <a href="https://diasporing.ch/people/7abf8850bce50134011e7a163e59d8f4">WillyPillow</a><li> Reddit: <a href="https://www.reddit.com/user/WillyPillow/">WillyPillow</a><li>Bitcoin: 15ii2SMbgZSyzKxVSYwim7KtT2uqdSdjVm<li>Namecoin: NES89UkGDutphGbVYNUkGkQuRGs6vFQk6h</ul></footer>

@@ -1,0 +1,38 @@
+<!DOCTYPE html><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title> UVa10189: Minesweeper</title><meta name="description" content=" 宣告一個較大的陣列，並忽略邊緣元素，便不必檢查 array-bounds。 If you use a slightly bigger array and ignore the elements on the edge, then it becomes unnecessary to check the array ... "><link rel="stylesheet" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/assets/main.css"><link rel="canonical" href="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/09/uva10189-minesweeper.html"><link rel="alternate" type="application/rss+xml" title="Nerde Nolzda" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/feed.xml"><header role="banner"> <a class="site-title" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/">Nerde Nolzda</a><nav> <a href="#" class="menu-icon">&#9776;</a><div class="trigger"> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/about/">About</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/keys/">Keys</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/mirrors/">Mirrors</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/">Tags</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/feed.xml">RSS</a></div></nav></header><main><article itemscope itemtype="http://schema.org/BlogPosting"><header><h1 itemprop="name headline"> <a itemprop="mainEntityOfPage url" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/09/uva10189-minesweeper.html"> UVa10189: Minesweeper </a></h1><p class="post-meta"> <time datetime="2016-08-09T17:45:17+08:00" itemprop="datePublished"> Aug 9, 2016 </time> • <time datetime="2018-06-02T22:25:00+08:00" itemprop="dateModified"> Jun 2, 2018 </time> • <span itemprop="author publisher" itemscope itemtype="http://schema.org/Person"> <span itemprop="name">WillyPillow</span> </span> • <span itemprop="keywords"> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/en.html" rel="tag">en</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/zh.html" rel="tag">zh</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/bilingual.html" rel="tag">bilingual</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/cpp.html" rel="tag">cpp</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/uva.html" rel="tag">UVa</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/competitive-coding.html" rel="tag">competitive-coding</a></span> • <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/sigs/posts/2016-08-09-uva10189-minesweeper.md.asc"> Signature </a></p></header><div itemprop="articleBody text"><p>宣告一個較大的陣列，並忽略邊緣元素，便不必檢查 array-bounds。<br /> If you use a slightly bigger array and ignore the elements on the edge, then it becomes unnecessary to check the array bounds.</p><p>除此之外，因為使用 <code>putchar</code> 的緣故，便無法使用 <code>sync_with_stdio(0)</code>。<br /> Also, because of the usage of <code>putchar</code>, <code>sync_with_stdio(0)</code> can not be used.</p><p><a href="https://uva.onlinejudge.org/index.php?option=com_onlinejudge&amp;Itemid=8&amp;category=24&amp;page=show_problem&amp;problem=1130">UVa Link</a></p><pre><code class="language-cpp">#include &lt;iostream&gt;
+
+int main() {
+  std::cin.tie(0);
+  for (int i = 1;; i++) {
+    int m, n, arr[102][102] = { 0 };
+    std::cin &gt;&gt; m &gt;&gt; n;
+    if (!m &amp;&amp; !n) break;
+    std::cout &lt;&lt; ((i == 1) ? "" : "\n") &lt;&lt; "Field #" &lt;&lt; i &lt;&lt; ":\n";
+    std::cin.get(); // Ignore '\n'
+    for (int j = 1; j &lt;= m; j++) {
+      for (int k = 1; k &lt;= n; k++) {
+        char in;
+        std::cin.get(in);
+        if (in == '*') {
+          arr[j][k] = -100;
+          arr[j - 1][k - 1]++;
+          arr[j - 1][k]++;
+          arr[j - 1][k + 1]++;
+          arr[j][k - 1]++;
+          arr[j][k + 1]++;
+          arr[j + 1][k - 1]++;
+          arr[j + 1][k]++;
+          arr[j + 1][k + 1]++;
+        }
+      }
+      std::cin.get(); // Ignore '\n'
+    }
+    for (int j = 1; j &lt;= m; j++) {
+      for (int k = 1; k &lt;= n; k++) {
+        if (arr[j][k] &lt; 0) putchar('*');
+        else putchar(arr[j][k] + '0');
+      }
+      putchar('\n');
+    }
+  }
+}
+</code></pre></div><div><h1>Related Posts</h1><ul><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/12/uva108-maximum-sum.html"> UVa108: Maximum Sum </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/12/uva10696-f91.html"> UVa10696: f91 </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/12/uva10298-power-strings.html"> UVa10298: Power Strings </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/12/uva455-periodic-strings.html"> UVa455: Periodic Strings </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/08/09/uva299-train-swapping.html"> UVa299: Train Swapping </a></ul></div><div><h1><span itemprop="commentCount">0</span> comments</h1><h2>Post a comment</h2><p> Send an email to <a href="mailto:comment@nerde.pw">comment@nerde.pw</a>.</p></div></article></main><footer itemscope itemtype="http://schema.org/Person"><ul><li itemprop="name">WillyPillow<li><a itemprop="email" href="mailto:wp@nerde.pw">wp@nerde.pw</a><li> Gitlab: <a href="https://gitlab.com/willypillow">WillyPillow</a><li> BitBucket: <a href="https://bitbucket.org/WillyPillow">WillyPillow</a><li> Github: <a href="https://github.com/WillyPillow">WillyPillow</a><li> Diaspora*: <a href="https://diasporing.ch/people/7abf8850bce50134011e7a163e59d8f4">WillyPillow</a><li> Reddit: <a href="https://www.reddit.com/user/WillyPillow/">WillyPillow</a><li>Bitcoin: 15ii2SMbgZSyzKxVSYwim7KtT2uqdSdjVm<li>Namecoin: NES89UkGDutphGbVYNUkGkQuRGs6vFQk6h</ul></footer>

@@ -1,0 +1,32 @@
+<!DOCTYPE html><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title> WRO 2016 Hexagon Strategy</title><meta name="description" content=" As I’ve mentioned in a previous post, I had been partitcipating in the WRO 2016 competition. Unfortunately, our team lost the national game in September due ... "><link rel="stylesheet" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/assets/main.css"><link rel="canonical" href="http://127.0.0.1:43110/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/11/05/wro-2016-hexagon-strategy.html"><link rel="alternate" type="application/rss+xml" title="Nerde Nolzda" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/feed.xml"><header role="banner"> <a class="site-title" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/">Nerde Nolzda</a><nav> <a href="#" class="menu-icon">&#9776;</a><div class="trigger"> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/about/">About</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/keys/">Keys</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/mirrors/">Mirrors</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/">Tags</a> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/feed.xml">RSS</a></div></nav></header><main><article itemscope itemtype="http://schema.org/BlogPosting"><header><h1 itemprop="name headline"> <a itemprop="mainEntityOfPage url" href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/11/05/wro-2016-hexagon-strategy.html"> WRO 2016 Hexagon Strategy </a></h1><p class="post-meta"> <time datetime="2016-11-05T22:04:42+08:00" itemprop="datePublished"> Nov 5, 2016 </time> • <time datetime="2018-06-02T22:25:08+08:00" itemprop="dateModified"> Jun 2, 2018 </time> • <span itemprop="author publisher" itemscope itemtype="http://schema.org/Person"> <span itemprop="name">WillyPillow</span> </span> • <span itemprop="keywords"> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/en.html" rel="tag">en</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/lego.html" rel="tag">lego</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/ev3.html" rel="tag">ev3</a>, <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/tag/wro.html" rel="tag">wro</a></span> • <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/sigs/posts/2016-11-05-wro-2016-hexagon-strategy.md.asc"> Signature </a></p></header><div itemprop="articleBody text"><p>As I’ve mentioned <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/07/22/ev3-motor-loop-slow.html">in a previous post</a>, I had been partitcipating in the WRO 2016 competition. Unfortunately, our team lost the national game in September due to a flaw in the part of the program regarding the surprise rule. In fact, we were the only team that got &gt;= 300 points in both runs. (By the way, we were also the fastest, finishing at 70 seconds if the special rule isn’t counted.) However, since the ranking prioritizes the best score, we ended up in 7th place.</p><p>Anyway, while we were working on the program, we ran into a decision: at the hexagon part, should we always go clockwise, or should we change the direction if there isn’t a tank on the first position? (See <a href="http://www.wro2016india.org/wp-content/uploads/2016/01/Senior-High-School_Recyling-Plant_game_150116.pdf">the rules</a> for more information.)</p><p>Thus, I wrote a simple Scala script to brute force all the combinations of the tanks to see how much time we would save if we used the latter:</p><pre><code class="language-scala">val possibleConditions =
+  // Fill with combinations of the four possibilities with repetition
+  Seq.fill(6)(Seq("000", "100", "010", "001")).
+  flatten.
+  combinations(6).
+  flatMap(_.permutations).
+  map(_.mkString("")).
+  // Strictly 4 tanks are needed
+  filter(_.count(_ == '1') == 4).
+  // No tanks can be put together
+  filter(!_.contains("11")).
+  filter(x =&gt; !(x(0) == '1' &amp;&amp; x(17) == '1')).
+  toList
+
+def getWalkLenData(s: List[String]): (Double, Seq[Int]) = {
+  // The number of corners that need to be passed (0-indexed)
+  val toLen = s.map(_.lastIndexOf('1') / 3)
+  val avg = toLen.sum.toDouble / toLen.size + 1
+  // count(i) = number of possibilities that result in passing (i + 1) corners
+  val count = toLen.foldLeft(Seq.fill(6)(0))(
+    (acc, i) =&gt; acc.updated(i, acc(i) + 1))
+  (avg, count)
+}
+
+// Go in one direction no matter what
+println("One-way: " + getWalkLenData(possibleConditions))
+// If the first space is empty, go the other way
+println("Two-way: " + getWalkLenData(possibleConditions.map(x =&gt;
+  if (x(0) == '0') x.reverse else x)))
+</code></pre><p>Output:</p><pre><code>One-way: (5.605555555555555,List(0, 0, 0, 55, 245, 600))
+Two-way: (5.482222222222222,List(0, 0, 0, 76, 314, 510))
+</code></pre><p>The second strategy saves about the time of 0.12 corners. However, detecting whether there is a tank and turning in reverse if not definitely takes more time than that. Thus we stuck to the first strategy, which was also easier to implement.</p></div><div><h1>Related Posts</h1><ul><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2016/07/22/ev3-motor-loop-slow.html"> EV3 Motor Loop Slow </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2018/08/24/setting-up-yubikey.html"> Setting Up Yubikey & NMC + Zeronet Update </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/10/23/revoking-my-gpg-keys.html"> Revoking My GPG Keys </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/07/04/codechef-prefixor.html"> Codechef PREFIXOR: Prefix XOR </a><li> <a href="/1ncvmoP187AuEQkBsJHqEq8qcK1zcL2A9/2017/07/04/persistent-segment-tree-in-scala.html"> Persistent Segment Tree In Scala </a></ul></div><div><h1><span itemprop="commentCount">0</span> comments</h1><h2>Post a comment</h2><p> Send an email to <a href="mailto:comment@nerde.pw">comment@nerde.pw</a>.</p></div></article></main><footer itemscope itemtype="http://schema.org/Person"><ul><li itemprop="name">WillyPillow<li><a itemprop="email" href="mailto:wp@nerde.pw">wp@nerde.pw</a><li> Gitlab: <a href="https://gitlab.com/willypillow">WillyPillow</a><li> BitBucket: <a href="https://bitbucket.org/WillyPillow">WillyPillow</a><li> Github: <a href="https://github.com/WillyPillow">WillyPillow</a><li> Diaspora*: <a href="https://diasporing.ch/people/7abf8850bce50134011e7a163e59d8f4">WillyPillow</a><li> Reddit: <a href="https://www.reddit.com/user/WillyPillow/">WillyPillow</a><li>Bitcoin: 15ii2SMbgZSyzKxVSYwim7KtT2uqdSdjVm<li>Namecoin: NES89UkGDutphGbVYNUkGkQuRGs6vFQk6h</ul></footer>
