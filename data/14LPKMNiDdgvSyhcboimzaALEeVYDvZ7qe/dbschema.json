@@ -1,0 +1,39 @@
+{
+    "db_name": "ZeroQuotes",
+    "db_file": "data/users/zeroquotes.db",
+    "version": 2,
+    "maps": {
+        ".+/data.json": {
+            "to_table": [
+                "quote",
+                {"node": "quote_vote", "table": "quote_vote", "key_col": "quote_uri", "val_col": "vote"}
+            ]
+        },
+        ".+/content.json": {
+            "to_keyvalue": [ "cert_user_id" ]
+        }
+    },
+    "tables": {
+        "quote": {
+            "cols": [
+                ["quote_id", "INTEGER"],
+                ["body", "TEXT"],
+                ["by", "TEXT"],
+                ["work", "TEXT"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX quote_key ON quote(json_id, date_added)"],
+            "schema_changed": 5
+        },
+        "quote_vote": {
+      			"cols": [
+        				["quote_uri", "TEXT"],
+        				["vote", "INTEGER"],
+        				["json_id", "INTEGER REFERENCES json (json_id)"]
+      			],
+      			"indexes": ["CREATE UNIQUE INDEX quote_vote_key ON quote_vote(quote_uri, json_id)", "CREATE INDEX quote_vote_uri ON quote_vote(quote_uri)"],
+      			"schema_changed": 5
+      		}
+    }
+}

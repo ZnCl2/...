@@ -1,0 +1,93 @@
+{
+	"next_topic_id": 4,
+	"topic": [
+		{
+			"topic_id": 1581423317,
+			"title": "Lisp——超越时代的语言",
+			"body": "Lisp 的起源\n\nJohn McCarthy于1960年发表了一篇非凡的论文，他在这篇论文中对编程的贡献有如欧几里德对几何的贡献。他向我们展示了，在只给定几个简单的操作符和一个表示函数的记号的基础上，如何构造出一个完整的编程语言。麦卡锡称这种语言为 Lisp, 意为 List Processing，因为他的主要思想之一是用一种简单的数据结构表 (list) 来代表代码和数据。\n\n值得注意的是，McCarthy所作的发现，不仅是计算机史上划时代的大事，而且是一种在我们这个时代编程越来越趋向的模式。一般认为，C 语言和 Lisp 是编程语言的两个极端，在它们中间是犹如沼泽的低地。占领了这两座山头，就能用更高的视角来看待中间所发生的一切。\n\n随着计算机变得越来越强大，新开发的语言一直在坚定地趋向于 Lisp 模式。 二十年来，开发新编程语言的一个流行秘诀是，取C语言的计算模式，逐渐地往上加 Lisp 模式的特性，例如运行时类型和无用单元收集。事实上，大多数现代编程语言所引以为傲的“新”特性，早在上世纪60年代就被 Lisp 引入了。这是一门真正超越时代的语言。\n\nLisp 的不同寻常之处——是它能够自己来编写自己。为了理解McCarthy所表述的这个特点，我们将追溯他的步伐，并将他的数学标记转换成能够运行的 Lisp 代码。\n七个基本操作符的定义\n\n开始我们先定义表达式。表达式或是一个原子 (atom)，它是一个字母序列(如 foo)，或是一个由零个或多个表达式组成的表 (list)，表达式之间用空格分开，放入一对括号中。以下是一些表达式的例子：\n\nfoo\n()\n(foo)\n(foo bar)\n(a b (c) d)\n\n\n最后一个表达式是由四个元素组成的表，第三个元素本身是由一个元素组成的表。在算术中表达式中 1 + 1 得出值 2，正确的 Lisp 表达式也有值。如果表达式 e 得出值v ，我们说  e 返回 v 。下一步我们将定义几种表达式以及它们的返回值。\n\n如果一个表达式是表，我们称第一个元素为操作符，其余的元素为自变量。Lisp解释器将循环读取表的第一个元素，将它作为操作符应用到表的剩余元素上，并返回作用结果。我这里说操作符，而不说函数的原因，是因为在 Lisp 中，宏(macro) 也是一种操作符。你可能联想到了C语言的“宏”，但请注意，Lisp的宏与C语言的宏除了名字相同之外，没有任何共同之处，两者是完全不同的概念。事实上，宏是 Lisp 语言最强大的武器，没有其他语言拥有这项功能。因为如果一种新语言引入了“宏”，人们就会把它当成 Lisp 的一门方言来看待 x)\n\n回到正题，下面我们将定义七个原始 (从公理的意义上说) 操作符：quote, atom, eq, car, cdr, cons 和 cond.\n(1) qoute\n\n(quote x) 返回x ，即它的作用是保护一个表达式，防止它被求值。为了可读性我们把(quote x )简记 为 ‘x ，Lisp代码：\n\n> (quote a)\na\n\n> 'a\na  \n\n> (quote (a b c))\n(a b c)\n\n> '(quote (quote a b c))\n(quote (quote a b c))\n\n(2) atom\n\n(atom x)返回原子t，如果 x 的值是一个原子或是空表，否则返回()。 在 Lisp 中我们按惯例用原子t 表示真, 而用空表表示假。Lisp代码：\n\n> (atom 'a)\nt\n\n> (atom '(a b c))\n()\n\n> (atom '())\nt\n\n既然有了一个自变量需要求值的操作符，我们可以看一下quote的作用。通过引用(quote)一个表，我们避免它被求值。一个未被引用的表作为自变量传给象 atom 这样的操作符将被视为代码：\n\n> (atom (atom 'a))\nt\n\n反之一个被引用的表仅被视为表，在此例中就是有两个元素的表:\n\n> (atom '(atom 'a))\n()\n\n这与我们在英语中使用引号的方式一致，Cambridge(剑桥)是一个位于麻萨诸塞州有90000人口的城镇。而”Cambridge”是一个由9个字母组成的单词。\n\n引用看上去可能有点奇怪，因为极少有其它语言有类似的概念。它和 Lisp 最与众不同的特征紧密联系：代码和数据由相同的数据结构构成，而我们用 quote 操作符来区分它们。\n(3) eq\n\n(eq x y) 返回t，如果 x 和 y 的值是同一个原子或都是空表，否则返回()。Lisp代码：\n\n> (eq 'a 'a)\nt\n\n> (eq 'a 'b)\n()\n\n> (eq '() '())\nt\n\n(4) car\n\n(car x) 期望 x 的值是一个表并且返回 x 的第一个元素。Lisp代码：\n\n> (car '(a b c))  \na\n\n> (car '((a b) c d))\n(a b)\n\n(5) cdr\n\n(cdr x) 期望 x 的值是一个表并且返回 x  的第一个元素之后的所有元素。Lisp代码：\n\n> (cdr '(a b c))  \n(b c)\n\n> (cdr '())\n()\n\n(6) cons\n\n(cons x y) 期望 y 的值是一个表并且返回一个新表，它的第一个元素是 x 的值，后面跟着 y 的值的各个元素。Lisp代码：\n\n> (cons 'a '(b c))\n(a b c)\n\n> (cons 'a (cons 'b (cons 'c '())))\n(a b c)\n\n> (car (cons 'a '(b c)))\na\n\n> (cdr (cons 'a '(b c)))\n(b c)\n\n(7) cond\n\n(cond (p1  e1) (p2  e2) … (pn  en)) 的求值规则如下：p 表达式依次求值直到有一个返回 t。如果能找到这样的 p 表达式，相应的 e 表达式的值作为整个cond表达式的返回值。否则返回空表。 \n\n> (cond ((eq 'a 'b) 'first)\n        ((atom 'a)  'second))\nsecond\n\n以上就是 Lisp 的基本操作符。\n\n当表达式以七个原始操作符中的五个(除了quote、cond)开头时，它的自变量总是要求值的。我们称这样的操作符为函数。下篇我将着重阐述Lisp的宏，它是一种自变量不会被求值的操作符。我们将看到，宏的这一特性里蕴含着巨大的能量。\n\n \n\n[Reference]\n\nHackers & Painters, by Paul Graham",
+			"added": 1581423316,
+			"parent_topic_uri": "1517728147_1K7tW4WEbso38uMs4RN3W7GihA6tTqrApz"
+		},
+		{
+			"topic_id": 1581428234,
+			"title": "Matrix聊天快速指南",
+			"body": "矩阵一入深似海，从此 电幕 是路人。\nMatrix 和其他通信服务的比较\n\n关于 Matrix 的介绍，可以参考我在2017年软件自由日上的演讲： https://matrixim.cc/sfd2017-matrix.pdf\n\n为什么不用某些通信服务：\n\n    客户端必须是 自由软件 ，确保该软件不容易做不正确的事，于是排除微信、QQ、Skype、Discord等软件，有报告称，某些私有聊天软件会配合政府监控用户：\n\n            微信一app两制\n\n            微软，棱镜门和NSA\n\n    服务端也需要是自由软件，从而不会因为集中在一个服务器而被封锁。Telegram 在多个国家被封锁，说明了我们需要一个可以自己架设服务器的通信服务。此外，Telegram 需要用手机号注册，在国内手机号实名认证的状况下，对隐私也是一个威胁。\n\n    在上一点的基础上，不同服务器间需要能互通，即使用邦联式(federation)聊天协议，电子邮件、XMPP 和 Matrix 都是这样的协议。\n\n    支持端到端加密，最好是协议自身支持\n\nMatrix 就是一个满足以上特性的协议。\n\n其他通信服务：\n\n    IRC 和 Rocket.Chat, Mattermost 等协作平台：有自由的客户端和服务端，可以自己架设服务器，但是它们不是邦联式协议，不同服务器的用户之间无法通信。\n\n    XMPP: 一个经典的通信协议，核心功能很小，扩展性很强。在安全方面，有XEP标准支持OTR端到端加密，支持多端加密的OMEMO也已经在一些客户端中启用。近些年来，XMPP 协议有很大的进步，但是各客户端和服务器对 XMPP 扩展的支持不太统一。\n\n    Tox, GNU Ring, bitmessage 等 P2P 协议：比邦联式更加去中心化，但是缺乏离线消息和单账户多设备支持\n\n最简单的 Matrix 使用方式：使用在线的 Riot web\n\n首先，Matrix是一个去中心化的网络，我们需要先选择一个服务器。Hello Matrix 提供了一份 非官方 Matrix 服务器列表 。\n\n注意有的服务器注册时需要填写 Google reCAPTCHA, 如果上 Google 不方便，可以选择一个不需要 reCAPTCHA 注册的服务器，如本文作者的 matrixim.cc.\n\n以下以 matrixim.cc 为例介绍如何用在线的 Riot web 使用 Matrix.\n注册和登录\n\n打开 https://matrixim.cc 首页，可以看到 Chat with Riot now! 链接，点击进去可以进入 Riot 的界面 https://chat.matrixim.cc. 点击 Create an account 便可创建账户，注意只需要填写用户名和密码，不需要填写邮箱地址和手机号。创建账户之后就可以登录了。\n\n为了在其他客户端中方便地使用 Matrix，我们要记下服务器的链接和自己的 Matrix ID.\n\n我们先看 Riot web 的左边栏，最下面有 5 个按钮，用鼠标光标指向这些按钮可以看到它们的说明。\nriot-left-panel.png\n\n我们点击右下角的设置按钮，可以看到设置界面，把设置界面拉到最下方，可以看到服务器地址和 Matrix ID.\nsettings.png\n\n从上图可以看到，我的 Matrix ID 是 @vimacs:matrixim.cc, 所用服务器的 URL 是 https://matrixim.cc.\n\n    Matrix ID 是 Matrix 网络上一个用户的标识，类似于电子邮件的地址，要联系一个 Matrix 用户，要使用 Matrix ID\n\n    服务器 URL 是登录时使用的服务器地址，如果你用 Riot 的 Android 或 iOS 版本，你需要在登录时选择用自定义服务器，在 Home server URL 中填写这个地址\n\n开始聊天\n\n登录后，可以看到 Riot web 的首页，为了方便，我在下图中标出常用的功能。\nriot-home.png\n\n点击左下角的目录图标，可以看到你用的服务器中的公开聊天室列表。你也可以直接填写要加入的房间，如``#lcpu:matrixim.cc``，然后回车就能加入。\n\n要和其他人私聊，可以点左下角的Start chat(图案是一个人)，填写你要联络的人的 Matrix ID.\n\n你也可以点击图案是加号的按钮，创建一个房间，然后拉其他人进来。\n\n于是你已经学会了使用 Matrix 协议进行通信了。\n结语\n\n以上讲解了怎样用最简单的方式使用 Matrix，然而 Matrix 是个很强大的协议，客户端软件也不只有 Riot 一个。\n\n要想更熟练地使用 Matrix 聊天，你还可以学习：\n\n    使用 Riot web 的离线版本，以及 Riot 的 Android, iOS 端\n\n    使用其他客户端软件，如 nheko\n\n    使用端到端加密，保护你的隐私\n\n    如果有服务器资源，可以自己架设服务器",
+			"added": 1581428232,
+			"parent_topic_uri": "1517728147_1K7tW4WEbso38uMs4RN3W7GihA6tTqrApz"
+		},
+		{
+			"topic_id": 1581472942,
+			"title": "支持 IPFS的网站",
+			"body": "[BT高清电影网](http://127.0.0.1:43110/1JuwWYEgApiBVNyGxhvNYyohsv4YMtxy7M/)",
+			"added": 1581472939,
+			"parent_topic_uri": "1576914145_1BWwq5edPNmp1XBtRQEw9S5YHCek2hs1P8"
+		}
+	],
+	"topic_vote": {
+		"1537771014_1E9Rj5vA5pYMBSTtiE6ksJfaoDGsPW8Lbu": 1,
+		"1581329941_1CqNrgtYzPRgpMfeuC1sprqTwPxhDTmqY4": 1
+	},
+	"next_comment_id": 10,
+	"comment": {
+		"1581125958_1CqNrgtYzPRgpMfeuC1sprqTwPxhDTmqY4": [
+			{
+				"comment_id": 1,
+				"body": "TG 群挺活跃的",
+				"added": 1581420600
+			},
+			{
+				"comment_id": 8,
+				"body": "Windows 已经非常好用了，为什么要使用 linux ?\n大部分人都是懒的，愿意尝试 linux的人很少，我想看看普通用户是怎么使用 linux的，要把用户当作傻瓜\n(elona里有个传教技能)(传教中)\n&nbsp;  \n如果你厌倦了win10的两套控制面板，可以换一个桌面环境",
+				"added": 1581482150
+			}
+		],
+		"1579168609_1FfatX3G2z43rV6nc1F3koYtn8tmD5EVb6": [
+			{
+				"comment_id": 2,
+				"body": "> [mmku@zeroid.bit](#comment_42_1CqNrgtYzPRgpMfeuC1sprqTwPxhDTmqY4): 零网不一定上，但 RetroShare [...]\n\n在零网分享的文件会因为人太少而经常失效，可以使用 RetroShare分享，这样就不用挂着 2个软件了",
+				"added": 1581425598
+			},
+			{
+				"comment_id": 5,
+				"body": "化繁为简",
+				"added": 1581426388
+			},
+			{
+				"comment_id": 9,
+				"body": "在零网没事干，看看今天有哪些[视频](http://127.0.0.1:43110/big.kopykate.bit/?Latest)，别人分享了什么[文件](http://127.0.0.1:43110/1CiXRY9ATZSoZqBzwMfXEMsKtPRt2aQoF2/?Latest)\n看高清电影，还是觉得[零网版海盗湾](http://127.0.0.1:43110/1PLAYgDQboKojowD3kwdb3CtWmWaokXvfp/)更好些。\n在零网我都不知道要干什么，他们在那安静的写着博客，一点都不冒泡",
+				"added": 1581487308
+			}
+		],
+		"1581329941_1CqNrgtYzPRgpMfeuC1sprqTwPxhDTmqY4": [
+			{
+				"comment_id": 3,
+				"body": "防止机器人刷屏",
+				"added": 1581426053
+			}
+		],
+		"1581381007_1CqNrgtYzPRgpMfeuC1sprqTwPxhDTmqY4": [
+			{
+				"comment_id": 4,
+				"body": "> [rushfly@zeroid.bit](#comment_34_1Fcvuso49sa7PXuYqxBBnSAnSdF6U7p5Ta): 需要修改用户的data.json，将该 [...]\n\n太麻烦了，想要一个有后台管理界面的论坛模板",
+				"added": 1581426223
+			}
+		],
+		"1581428234_1BkPSzuB78Xg2wRgrMYRCqhzHhcNbAry8o": [
+			{
+				"comment_id": 6,
+				"body": "官网：https://matrix.org/",
+				"added": 1581428567
+			}
+		],
+		"1580964305_1CqNrgtYzPRgpMfeuC1sprqTwPxhDTmqY4": [
+			{
+				"comment_id": 7,
+				"body": "也可以看看台湾的博客",
+				"added": 1581471095
+			}
+		]
+	},
+	"comment_vote": {
+		"27_1CqNrgtYzPRgpMfeuC1sprqTwPxhDTmqY4": 1
+	}
+}

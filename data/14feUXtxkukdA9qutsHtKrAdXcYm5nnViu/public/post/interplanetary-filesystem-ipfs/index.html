@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="de-de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ipfs Installation auf Ubuntu NAS</title>
+<meta name="description" content=" Eddy Kotschinski&#39;s Sammelsurium Blog ">
+<meta name="generator" content="Hugo 0.57.2" />
+<meta property="og:title" content="Ipfs Installation auf Ubuntu NAS" />
+<meta property="og:description" content="Unter dem Begriff Web 3 verstehe ich nicht das Internet der Dinge (IOT) und den damit verbundenen Smarthome - Spielereien.
+Typische Server - Client Anwendungen, so wie man sie bisher kennt und nutzt, sind&hellip;
+ unsicher angreifbar zensierbar  Deshalb habe ich schon vor längerer Zeit damit begonnen dieses Blog, parallel zum typischen Server- Hosting, ins P2P Gelände auszusiedeln. Zeronet und Dat waren die beiden ersten DApps . Und last but not least ist heuer IPFS neu hinzugekommen." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/post/interplanetary-filesystem-ipfs/" />
+<meta property="article:published_time" content="2018-06-30T00:00:00+00:00" />
+<meta property="article:modified_time" content="2018-06-30T00:00:00+00:00" />
+
+<link rel="dns-prefetch" href="" />
+<link rel="dns-prefetch" href="" />
+
+<link rel="stylesheet" href="../../css?family=Open+Sans:400,400italic,700" type="text/css" media="all" />
+<link rel="stylesheet" href="../../css/style.css" type="text/css" media="all" />
+<script type="text/javascript" src="../../"></script>
+<link rel="shortcut icon" href="../../favicon.ico">
+
+</head>
+<body class="body body-right-sidebar mobile" itemscope="itemscope" itemtype="http://schema.org/WebPage">
+	<div class="container container-outer">
+		<header class="header" itemscope="itemscope" itemtype="http://schema.org/WPHeader">
+			<div class="container container-inner clearfix">
+				<div class="logo" role="banner" itemscope="itemscope" itemtype="http://schema.org/Brand">
+					<a class="logo__link" href="../../" title="Eddy&#39;s Sammelsurium" rel="home">
+						<h1 class="logo__title">Eddy&#39;s Sammelsurium</h1>
+						<h2 class="logo__tagline">LINUX ˈwɛb.lɔg/ 4 noob&#39;s | morpheus44.tk | eddyle.tk |</h2>
+					</a>
+				</div>
+			</div>
+			
+<nav class="menu" itemscope="itemscope" itemtype="http://schema.org/SiteNavigationElement">
+	<ul class="menu__list">
+		<li class="menu__item"><a class="menu__link" href="../../page/about/">ABOUT ME</a></li>
+		<li class="menu__item"><a class="menu__link" href="../../page/xmpp-chat/">XMPP-CHAT</a></li>
+		<li class="menu__item"><a class="menu__link" href="../../page/links/">LINKS</a></li>
+		<li class="menu__item"><a class="menu__link" href="../../page/login/">LOGIN</a></li>
+		<li class="menu__item"><a class="menu__link" href="../../page/kontakt/">KONTAKT</a></li>
+	</ul>
+</nav>
+
+		</header>
+		<div class="wrapper clearfix">
+
+<main class="main-content content" role="main" itemprop="mainContentOfPage">
+	<article class="post">
+		<header class="post__header clearfix">
+			<h1 class="post__title">Ipfs Installation auf Ubuntu NAS</h1>
+			<p class="post__meta meta">
+				<svg class="icon icon-time" height="14" viewBox="0 0 16 16" width="14" xmlns="http://www.w3.org/2000/svg"><path d="m8-.0000003c-4.4 0-8 3.6-8 8 0 4.4000003 3.6 8.0000003 8 8.0000003 4.4 0 8-3.6 8-8.0000003 0-4.4-3.6-8-8-8zm0 14.4000003c-3.52 0-6.4-2.88-6.4-6.4000003 0-3.52 2.88-6.4 6.4-6.4 3.52 0 6.4 2.88 6.4 6.4 0 3.5200003-2.88 6.4000003-6.4 6.4000003zm.4-10.4000003h-1.2v4.8l4.16 2.5600003.64-1.04-3.6-2.1600003z"/></svg>
+				<time class="post__meta-date" datetime="2018-06-30T00:00:00">30 Jun, 2018</time>
+				<span class="post__meta-categories meta-categories">
+					<svg class="icon icon-category" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m7 2l1 2h8v11h-16v-13z"/></svg>
+					<a class="meta-categories__link" href="../../categories/filesharing" rel="category">Filesharing</a></span>
+			</p>
+		</header>
+		<div class="post__content clearfix">
+			<p>Unter dem Begriff Web 3 verstehe ich nicht das Internet der Dinge (IOT) und den damit verbundenen Smarthome - Spielereien.</p>
+
+<p>Typische Server - Client Anwendungen, so wie man sie bisher kennt und nutzt, sind&hellip;</p>
+
+<ul>
+<li>unsicher</li>
+<li>angreifbar</li>
+<li>zensierbar</li>
+</ul>
+
+<p>Deshalb habe ich schon vor längerer Zeit damit begonnen dieses Blog, parallel zum typischen Server- Hosting, ins P2P Gelände auszusiedeln. <a href="https://zeronet.io/" target="_blank">Zeronet</a> und <a href="https://datproject.org/" target="_blank">Dat</a> waren die beiden ersten <a href="https://blockchainwelt.de/dapp-dezentralisierte-app-dapps/" target="_blank">DApps</a> . Und last but not least ist heuer <a href="https://ipfs.io" target="_blank">IPFS</a> neu hinzugekommen.</p>
+
+<p><img src="../../images/ipfs.png" alt="ipfs" /></p>
+
+<p>Da ich hier einen Ubuntu NAS herumstehen habe, welcher nicht mal annähernd ausgelastet ist und mehr vor sich hin idelt als das er was zu schuften hätte, bietet es sich an, auf diesem Teil einen ipfs Knoten zum Seeden meines Blögleins zu installieren.</p>
+
+<hr />
+
+<p>Die Installation gestaltet sich als recht simpel.</p>
+
+<p>Zuerst loggt man sich per ssh auf dem Nas ein und lädt mittels wget das Archiv <a href="https://dist.ipfs.io/#go-ipfs" target="_blank">go-ipfs</a> herunter.</p>
+
+<pre><code class="language-bash">wget https://dist.ipfs.io/go-ipfs/v0.4.15/go-ipfs_v0.4.15_linux-386.tar.gz
+</code></pre>
+
+<p>danach entpackt man das Archiv</p>
+
+<pre><code class="language-bash">tar -xvzf go-ipfs_v0.4.15_linux-386.tar.gz
+</code></pre>
+
+<p>und wechselt in das Verzeichnis</p>
+
+<pre><code class="language-bash">cd go-ipfs/
+</code></pre>
+
+<p>Danch startet man die Installation</p>
+
+<pre><code class="language-bash">sudo ./install.sh
+</code></pre>
+
+<p>Das Script macht nix anderes als das es die ausführbare bin-datei <strong>ipfs</strong> nach /usr/local/bin/ kopiert. Deswegen muß es als root ausgeführt werden.</p>
+
+<p>Jetzt können wir unsere IPFS Peer ID estellen.</p>
+
+<pre><code class="language-bash">ipfs init
+</code></pre>
+
+<p>ausgabe im Terminal :</p>
+
+<pre><code class="language-bash">generating 2048-bit RSA keypair...done
+peer identity: QmVF4FvcS6zwh33U96F4FkbKivMgqPMR24pxDbXguiKXtv
+</code></pre>
+
+<p>Unter dieser Peer Identität sind fort an alle mit IPFS geteilten Inhalte erreichbar !!
+Die IPFS URL lautet dann so :</p>
+
+<pre><code>ipns/QmVF4FvcS6zwh33U96F4FkbKivMgqPMR24pxDbXguiKXtv/
+</code></pre>
+
+<blockquote>
+<p>Vorsicht !  <strong>ipfs init</strong> sollte nur ein einziges mal ausgeführt werden. Und zwar direkt nach der erst Installation. Ein erneuter Aufruf zu einem späteren Zeitpunkt würde nämlich eine neue Peer ID sowie ein neues keypair generiereren, was zur Folge hätte, das alle zuvor mit IPFS publizierten Dateien und Verzeichnisse nicht mehr erreichbar wären.</p>
+</blockquote>
+
+<p>Als nächstes müssen wir uns noch ein Start - Script für den ipfs - daemon bauen. Tut man das nicht, würde sich der ipfs- daemon nach dem verlassen der ssh- Session sofort wieder beenden. Und das wollen wir ja nicht.</p>
+
+<p>Das Script soll start-ipfs.sh heissen. Dazu starten wir im selben ssh Terminal einen Texteditor.
+Ich bevorzuge <a href="https://de.wikipedia.org/wiki/Nano_(Texteditor)" target="_blank">nano</a>.</p>
+
+<pre><code class="language-bash">nano start-ipfs.sh
+</code></pre>
+
+<p>und fügen folgenden Inhalt hinzu.</p>
+
+<pre><code>nohup ipfs daemon &amp;
+</code></pre>
+
+<p><img src="../../images/nano.png" alt="nano" /></p>
+
+<p>Mit STRG + O speichert man das ganze. Und mit STRG + X beendet man nano wieder.</p>
+
+<p>Das neu erstellte start-script muß man als ausführbar markieren !</p>
+
+<pre><code class="language-bash">chmod +x start-ipfs.sh
+</code></pre>
+
+<p>Der ipfs - daemon lässt sich nun starten, indem man das script aufruft.</p>
+
+<pre><code class="language-bash">./start-ipfs.sh
+</code></pre>
+
+<p>Jetzt kann man damit beginnen Dateien und oder ganze Verzeichnisse dem IPFS Netz bekannt zu machen. In meinem Fall ist es dieses Blog, welches im Verzeichnis ~/hugoblog abgelget ist.</p>
+
+<pre><code class="language-bash">ipfs add -r hugoblog/
+</code></pre>
+
+<p>Ausgabe im Terminal :</p>
+
+<pre><code class="language-bash">
+	added QmeWub1BxXXpy451JraLR8LfZjCCYju4SGH3nD9YkfcDtB hugoblog/tags/zeronet/page
+	added QmQJ17tdVV2sNe6kSm8brwWJMV9NgUevxwwszgmZKz1TrT hugoblog/tags/zeronet
+	added mYjGJ5fSoh9Fq2yuS6Lj2M4bFSW5VdtNKPGdhejW4T69o hugoblog/tags
+	added QmWzWWQVeP1SU6JAW2KhKTeX2qKNivdqLYyAUTzNYM6uxo hugoblog
+</code></pre>
+
+<p>Bei verzeichnissen ist immer der letzte Hash- wert relevant ! Weil wir nur diesen Hash publizieren müssen und nicht die einzelnen hashes der jeweiligen Dateien.</p>
+
+<pre><code class="language-bash">ipfs name publish QmWzWWQVeP1SU6JAW2KhKTeX2qKNivdqLYyAUTzNYM6uxo
+</code></pre>
+
+<p>Mehr ist nicht notwendig.</p>
+
+<p>Wir erinnern uns.</p>
+
+<p>Alle geteilten Inhalte sind immer unter der selben Peer ID erreichbar !</p>
+
+<pre><code>ipns/QmVF4FvcS6zwh33U96F4FkbKivMgqPMR24pxDbXguiKXtv/
+</code></pre>
+
+<p>und nicht zu verwechseln mit dem zuletzt generierten Hashwert !</p>
+
+<p>Wenn zu einem späteren Zeitpunkt neue Inhalte hinzukommen, wovon ich ausgehe, oder man bestehende Inhalte verändert, wiederholt man einfach die beiden letzten Schritte.</p>
+
+<pre><code class="language-bash">
+ipfs add -r hugoblog/
+
+	added QmVCY68k2EgyeQSwuBHzeqFSHkCJA2zAghF1zAkducPc5V hugoblog/tags/zeronet/page
+	added Qmf3zvfDA2dAczuc6SSEmicSsci7FTYMboDn3yWpzt5Utv hugoblog/tags/zeronet
+	added QmaR2tcM68SQArX2midXWdMRETMFyrnkuxtTR4QxpRFbdo hugoblog/tags
+	added QmdixJFKW8K8QmskW2w5Pn3GxmRfD2d8BNEY2CC3nJLKhJ hugoblog
+</code></pre>
+
+<pre><code>ipfs name publish QmdixJFKW8K8QmskW2w5Pn3GxmRfD2d8BNEY2CC3nJLKhJ
+</code></pre>
+
+<hr />
+
+<p>Die zur Zeit aktuelle Adresse zu diesem Blog</p>
+
+<pre><code class="language-bash">ipns/QmbpZHWRAwJ4MaYLog3NjbHxvDc5Ney1qWLXEPwSGXcJc9
+</code></pre>
+
+<p>TIPP :</p>
+
+<p>Die <a href="https://brave.com/de/" target="_blank">Brave Browser</a> Entwickler haben die <a href="https://brave.com/ipfs-support/" target="_blank">Unterstützung von IPFS</a> mittels lokalem IPFS Node implementiert. Damit lassen sich im IPFS gehostete Websites direkt besuchen.</p>
+
+<p>Z.B. <a href="ipns://QmbpZHWRAwJ4MaYLog3NjbHxvDc5Ney1qWLXEPwSGXcJc9/" target="_blank">ipns://QmbpZHWRAwJ4MaYLog3NjbHxvDc5Ney1qWLXEPwSGXcJc9/</a></p>
+
+		</div>
+		
+<div class="post__tags tags clearfix">
+	<svg class="icon icon-tag" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="m4.73135 3.3795002q0-.5597-.39604-.9557-.39604-.3961-.95577-.3961-.55974 0-.95578.3961-.39604.396-.39604.9557 0 .5598.39604.9558.39604.3961.95578.3961.55973 0 .95577-.3961.39604-.396.39604-.9558zm11.26865 6.0832q0 .5596998-.39076.9504998l-5.18548 5.196q-.41188.3908-.9610504.3908-.55974 0-.9505-.3908l-7.5511496-7.5616998q-.40132-.3907-.68119-1.0666-.27987-.6759-.27987-1.2357v-4.3934q0-.54920004.40132-.95050004.40132-.4013.9505-.4013h4.39339q.55974 0 1.23565.2799.67591.2798 1.07723.6812l7.55115 7.54060004q.39076.4118.39076.961z"/></svg>
+	<ul class="tags__list">
+		<li class="tags__item"><a class="tags__link" href="../../tags/cloud/" rel="tag">cloud</a></li>
+		<li class="tags__item"><a class="tags__link" href="../../tags/privatsphaere/" rel="tag">privatsphaere</a></li>
+		<li class="tags__item"><a class="tags__link" href="../../tags/p2p/" rel="tag">p2p</a></li>
+		<li class="tags__item"><a class="tags__link" href="../../tags/web3/" rel="tag">web3</a></li>
+		<li class="tags__item"><a class="tags__link" href="../../tags/dat/" rel="tag">dat</a></li>
+		<li class="tags__item"><a class="tags__link" href="../../tags/ipfs/" rel="tag">ipfs</a></li>
+		<li class="tags__item"><a class="tags__link" href="../../tags/zeronet/" rel="tag">zeronet</a></li>
+		<li class="tags__item"><a class="tags__link" href="../../tags/dapp/" rel="tag">dapp</a></li>
+	</ul>
+</div>
+
+	</article>
+	
+<div class="authorbox clearfix">
+	<figure class="authorbox__avatar">
+		<img alt="Eddy Kotschinski avatar" src="../../images/avatar.png" class="avatar" height="90" width="90">
+	</figure>
+	<div class="authorbox__header">
+		<span class="authorbox__name">About Eddy Kotschinski</span>
+	</div>
+	<div class="authorbox__description">
+		Eddy&#39;s true identity is unknown. Maybe he is a successful blogger or writer. Nobody knows it. -- &gt; Eddys wahre Identität ist unbekannt. Vielleicht ist er ein erfolgreicher Blogger oder Schriftsteller. Niemand weiß es &lt;--.
+	</div>
+</div>
+	
+<nav class="post-nav row clearfix" itemscope="itemscope" itemtype="http://schema.org/SiteNavigationElement">
+	<div class="post-nav__item post-nav__item--prev col-1-2">
+		<a class="post-nav__link" href="../../post/hugo/" rel="prev"><span class="post-nav__caption">«Letzte</span><p class="post-nav__post-title">Hallo Hugo</p></a>
+	</div>
+	<div class="post-nav__item post-nav__item--next col-1-2">
+		<a class="post-nav__link" href="../../post/neue-server-hardware/" rel="next"><span class="post-nav__caption">Naechste»</span><p class="post-nav__post-title">Neue Server Hardware</p></a>
+	</div>
+</nav>
+
+	
+</main>
+
+<aside class="sidebar" itemscope="itemscope" itemtype="http://schema.org/WPSideBar">
+	
+	
+<div class="widget-recent widget">
+	<h4 class="widget__title">Recent Posts</h4>
+	<div class="widget__content">
+		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="../../post/hyperdrive/">Hyperdrive : Ein P2P Dateisystem</a></li>
+			<li class="widget__item"><a class="widget__link" href="../../post/eddys-sammelsurium-auf-https-umgestellt/">Eddy&#39;s Sammelsurium auf HTTPS umgestellt.</a></li>
+			<li class="widget__item"><a class="widget__link" href="../../post/neuer-onion-service-v3/">Zurück ins Zwiebelbeet : The Onion Router (TOR)</a></li>
+			<li class="widget__item"><a class="widget__link" href="../../post/torbrowser-letterboxing/">Tor Browser : die grauen 200 pix breiten Balken rechts, oben und unten sind nervig ? Hashtag #Letterboxing</a></li>
+			<li class="widget__item"><a class="widget__link" href="../../post/installation-youtube-dl-unter-linuxmint20.1-ubuntu/">Youtube-Dl Unter Debian 10.7 / Linux Mint 20.1 / Ubuntu 20.04 LTS installieren</a></li>
+			<li class="widget__item"><a class="widget__link" href="../../post/install-i2p-bote/">Installation I2P-Bote für Debian basierende Linux-Systeme</a></li>
+			<li class="widget__item"><a class="widget__link" href="../../post/jami-messenger/">Jami &gt; Ein Dezentralisierter P2P Messenger fürs Phone, Tablet, Pc oder Notebook</a></li>
+			<li class="widget__item"><a class="widget__link" href="../../post/linux-nfs4-netzwerk/">Linux Nfs4 Netzwerk</a></li>
+			<li class="widget__item"><a class="widget__link" href="../../post/neue-server-hardware/">Neue Server Hardware</a></li>
+			<li class="widget__item"><a class="widget__link" href="../../post/interplanetary-filesystem-ipfs/">Ipfs Installation auf Ubuntu NAS</a></li>
+		</ul>
+	</div>
+</div>
+
+	
+<div class="widget-categories widget">
+	<h4 class="widget__title">Categories</h4>
+	<div class="widget__content">
+		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="../../categories/aktuelles">Aktuelles</a></li>
+			<li class="widget__item"><a class="widget__link" href="../../categories/darknet">Darknet</a></li>
+			<li class="widget__item"><a class="widget__link" href="../../categories/dlna">Dlna</a></li>
+			<li class="widget__item"><a class="widget__link" href="../../categories/entwicklung">Entwicklung</a></li>
+			<li class="widget__item"><a class="widget__link" href="../../categories/familie">Familie</a></li>
+			<li class="widget__item"><a class="widget__link" href="../../categories/filesharing">Filesharing</a></li>
+			<li class="widget__item"><a class="widget__link" href="../../categories/hardware">Hardware</a></li>
+			<li class="widget__item"><a class="widget__link" href="../../categories/humor">Humor</a></li>
+			<li class="widget__item"><a class="widget__link" href="../../categories/java">Java</a></li>
+			<li class="widget__item"><a class="widget__link" href="../../categories/markdown">Markdown</a></li>
+			<li class="widget__item"><a class="widget__link" href="../../categories/messaging">Messaging</a></li>
+			<li class="widget__item"><a class="widget__link" href="../../categories/netzwerk">Netzwerk</a></li>
+			<li class="widget__item"><a class="widget__link" href="../../categories/programmieren">Programmieren</a></li>
+			<li class="widget__item"><a class="widget__link" href="../../categories/terminal-tool">Terminal-Tool</a></li>
+			<li class="widget__item"><a class="widget__link" href="../../categories/tv">Tv</a></li>
+			<li class="widget__item"><a class="widget__link" href="../../categories/viedeobearbeitung">Viedeobearbeitung</a></li>
+			<li class="widget__item"><a class="widget__link" href="../../categories/web">Web</a></li>
+			<li class="widget__item"><a class="widget__link" href="../../categories/windows">Windows</a></li>
+		</ul>
+	</div>
+</div>
+	
+
+	
+<div class="widget-taglist widget">
+	<h4 class="widget__title">Tags</h4>
+	<div class="widget__content">
+		<a class="widget__link widget__link--taglist" href="../../tags/cloud" title="cloud">cloud</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/dapp" title="dapp">dapp</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/darknet" title="darknet">darknet</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/dat" title="dat">dat</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/dualboot" title="dualboot">dualboot</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/entwickler" title="entwickler">entwickler</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/html-framework" title="html-framework">html-framework</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/hugo" title="hugo">hugo</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/i2p" title="i2p">i2p</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/i2p-router" title="i2p-router">i2p-router</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/interna" title="interna">interna</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/ipfs" title="ipfs">ipfs</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/java-script" title="java-script">java-script</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/johanna" title="johanna">johanna</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/konsole" title="konsole">konsole</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/linux" title="linux">linux</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/nfs" title="nfs">nfs</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/ntfs" title="ntfs">ntfs</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/oniomat" title="oniomat">oniomat</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/onion" title="onion">onion</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/onionshare" title="onionshare">onionshare</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/p2p" title="p2p">p2p</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/privates" title="privates">privates</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/privatsphaere" title="privatsphaere">privatsphaere</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/programmieren" title="programmieren">programmieren</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/qtox" title="qtox">qtox</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/ros" title="ros">ros</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/samba" title="samba">samba</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/server" title="server">server</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/skype" title="skype">skype</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/terminal" title="terminal">terminal</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/testen" title="testen">testen</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/tor" title="tor">tor</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/torbrowser" title="torbrowser">torbrowser</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/video-download" title="video-download">video-download</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/web3" title="web3">web3</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/witz" title="witz">witz</a>
+		<a class="widget__link widget__link--taglist" href="../../tags/zeronet" title="zeronet">zeronet</a>
+	</div>
+</div>
+</aside>
+
+	</div>
+		<footer class="footer" itemscope="itemscope" itemtype="http://schema.org/WPFooter">
+			<div class="container container-inner">
+				<p class="footer__copyright">&copy; 2021 Eddy&#39;s Sammelsurium. <span class="footer__copyright-credits"> was generated with <a href="https://gohugo.io/" rel="nofollow noopener" target="_blank">Hugo</a> and the <a href="https://github.com/Vimux/Mainroad/" rel="nofollow noopener" target="_blank">Mainroad theme</a>. Proudly made without PHP, Java, Perl, MySQL, Maria-blabla, Postgres or other fat web- bullshitware. </span></p>
+			</div>
+		</footer>
+	</div>
+
+<script>
+	var navigation = responsiveNav(".menu", {
+		navClass: "menu--collapse",
+	});
+</script>
+</body>
+</html>
+

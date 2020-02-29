@@ -1,0 +1,86 @@
+{
+	"next_comment_id": 6,
+	"next_question_id": 1,
+	"next_answer_id": 3,
+	"comments": [
+		{
+			"comment_id": 1,
+			"reference_id": 5,
+			"reference_type": "t",
+			"reference_auth_address": null,
+			"body": "Not quite correct that everything is stored in `zeronet_root/data`. In some cases, `data` is separated from ZeroNet: it can be in `AppData` on Windows, `Library` on OSX.",
+			"date_added": 1512907960750
+		},
+		{
+			"comment_id": 2,
+			"reference_id": 5,
+			"reference_type": "t",
+			"reference_auth_address": null,
+			"body": "> For ZeroId, the public key is the address of the ZeroId zite. However, since KaffieId's private key is public, the private key, and therefore public key, is not the same as the zite's address. This is to ensure nobody can edit the KaffieId website. For this reason, it is the public key that is associated with the private key used to create user id signatures that should be used, not the public key of KaffieId's zite.\n\nIncorrect. KaffieId's private key is not public. Using another address for ID is probably just a bug or a typo. Nobody can write neither to kaffie.id, nor to that public key published on id.kaffie.bit.\n\nOn KaffieId, there is no place where user database is stored. So, there is no need to publish new user. In fact, anybody can register `kaffie` or `nofish` name there. But they will have different `auth_address`es.",
+			"date_added": 1512908240604
+		},
+		{
+			"comment_id": 3,
+			"reference_id": 5,
+			"reference_type": "t",
+			"reference_auth_address": null,
+			"body": "> Now that we have gone over Users, it is time to detail Databases, which have a direct link to Users.\n\nNot so direct. Database can be maintained by owner only. In this case, you have to set correct map in `dbschema.json` and remove `data/users/content.json`.\n\n> All zites that use a database must have a dbschmea file. This is a json file that simply details all the tables and columns of the database. This file will also tell ZeroNet which json files should be aggregated into which tables for the database.\n\nTypo: `dbschmea`.",
+			"date_added": 1512908504661
+		},
+		{
+			"comment_id": 4,
+			"reference_id": 5,
+			"reference_type": "t",
+			"reference_auth_address": null,
+			"body": "Also, you may want to add a tutorial on how to *create* such `content.json`s, e.g. using my tutorials on GitHub: [https://github.com/krixano/ZeroNet-Dev-Center/issues/28](https://github.com/krixano/ZeroNet-Dev-Center/issues/28)",
+			"date_added": 1512908657723
+		},
+		{
+			"comment_id": 5,
+			"reference_id": 5,
+			"reference_type": "t",
+			"reference_auth_address": null,
+			"body": "",
+			"date_added": 1512908669416
+		}
+	],
+	"questions": [],
+	"answers": [
+		{
+			"answer_id": 1,
+			"question_id": 1,
+			"question_auth_address": "1CaVUegZMXMjmRXtq5q3eZDqdtsoNvgep",
+			"body": "When you are ready to catch hash change, i.e. at the very beginning, you call `wrapperInnerLoaded` ZeroFrame API. Then you listen to `hashchange` event of window and check `location.hash`.\n\nExample:\n```javascript\n// ...Create ZeroFrame...\n\nwindow.addEventListener(\"hashchange\", function() {\n    router.go(location.hash);\n});\npage.cmd(\"wrapperInnerLoaded\");\n```",
+			"date_added": 1512417922126
+		},
+		{
+			"answer_id": 2,
+			"question_id": 1,
+			"question_auth_address": "14tGkWydPLnPCVP5i9T4WSccnyAuLjEBnv",
+			"body": "We have 4 cases here:\n\n## 1. Directory for each owner\n\nYou can create directories, like `data/ivanq`, `data/nofish`, `data/krixano` and others. Then you create empty `content.json`s there. In root `content.json` you include them:\n\n```json\n...\n\"includes\": {\n    \"data/ivanq/content.json\": {\n        \"signers\": [\"ivanq_auth_address_goes_here\"],\n        \"signers_required\": 1\n    },\n    \"data/nofish/content.json\": {\n        \"signers\": [\"nofish_auth_address_goes_here\"],\n        \"signers_required\": 1\n    },\n    \"data/krixano/content.json\": {\n        \"signers\": [\"krixano_auth_address_goes_here\"],\n        \"signers_required\": 1\n    }\n},\n...\n```\n\nThen `data/.../content.json` can be signed with user `auth_address`. Recomendation: specify ZeroID `auth_address`.\n\n**Pros:** Impossible to accidentally replace somebody's content.  \n**Cons:** Many folders for each user. You have to detect directory to sign via `auth_address`.\n\n## 2. `user_contents` with limitations\n\nCreate `data/owners/content.json` with the following content:\n\n```json\n{\n    \"files\": {},\n    \"ignore\": \".*\",\n    \"signs\": {},\n    \"user_contents\": {\n        \"cert_signers\": {\n            \"zeroid.bit\": [\"1iD5ZQJMNXu43w1qLB8sfdHVKppVMduGz\"]\n        },\n        \"permission_rules\": {\n            \".*\": {\n                \"files_allowed\": \"\",\n                \"max_size\": 0\n            }\n        },\n        \"permissions\": {\n            \"ivanq@zeroid.bit\": {\n                \"files_allowed\": \"data.json\",\n                \"max_size\": 50000\n            },\n            \"nofish@zeroid.bit\": {\n                \"files_allowed\": \"data.json\",\n                \"max_size\": 50000\n            },\n            \"krixano@zeroid.bit\": {\n                \"files_allowed\": \"data.json\",\n                \"max_size\": 50000\n            }\n        }\n    }\n}\n```\n\nThen you can always sign `data/owners/auth_address/content.json`.\n\n**Pros:** Easy to implement.  \n**Cons:** This is kinda a hack, because `files_allowed: \"\", max_size: 0` doesn't forbid creating `content.json`.\n\n## 3. Using `signers` of root `content.json`\n\n**This is hardly ever recommended, because new peers won't be able to download your site!**\n\nAdd `signers` to root `content.json`:\n\n```json\n...\n\"signers\": [\n    \"ivanq_auth_address_goes_here\",\n    \"nofish_auth_address_goes_here\",\n    \"krixano_auth_address_goes_here\"\n],\n...\n```\n\n**Pros:** Very easy to use.  \n**Cons:** Doesn't work for new peers.\n\n## 4. Sharing private key\n\nYou can get private key of a site in `users.json`. Just search for your site, and you'll find `\"privatekey\": \"...\"` below that line.\n\n**Pros:** Doesn't need to change site content at all.  \n**Cons:** You cannot stop someone from using private key after they got it.",
+			"date_added": 1512907418178
+		}
+	],
+	"answer_votes": [
+		{
+			"answer_id": 1,
+			"answer_auth_address": "1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di",
+			"vote": 1
+		},
+		{
+			"answer_id": 3,
+			"answer_auth_address": "12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu",
+			"vote": 1
+		},
+		{
+			"answer_id": 4,
+			"answer_auth_address": "12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu",
+			"vote": 1
+		},
+		{
+			"answer_id": 2,
+			"answer_auth_address": "1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di",
+			"vote": 1
+		}
+	]
+}

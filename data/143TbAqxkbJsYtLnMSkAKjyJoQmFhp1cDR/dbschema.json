@@ -1,0 +1,54 @@
+{
+	"db_name": "bloxelwars",
+	"db_file": "data/bloxelwars.db",
+	"version": 2,
+	"maps": {
+				"blockchain.json":{
+					"to_table": ["bloxels"]
+				},
+        "users/.+/content.json": {
+            "to_json_table": [ "cert_auth_type", "cert_user_id", "modified" ]
+            ,"file_name": "data.json"
+        },
+        "users/.+/data.json": {
+          "to_table": [ "bloxels" ], "to_keyvalue": ["created", "updated"]
+        }
+	},
+	"tables": {
+			"bloxels":{
+				"cols": [
+					["x", "INTEGER"],
+					["y", "INTEGER"],
+					["color", "TEXT"],
+					["user", "TEXT"],
+					["time","DATETIME"],
+					["offset","INTEGER"],
+					["seq","INTEGER"],
+					["nonce","INTEGER"],
+					["parent","TEXT"],
+					["solution","TEXT PRIMARY KEY"],
+					["json_id", "INTEGER REFERENCES json (json_id)"]
+				],
+				"indexes":[
+					"create unique index solution_index on bloxels (solution)",
+					"create index time_index on bloxels (time)",
+					"create index position_index on bloxels (x,y)"
+				],
+				"schema_changed":19
+			},
+
+      "json": {
+        "cols": [
+            ["json_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+            ["directory", "TEXT"],
+            ["file_name", "TEXT"],
+            ["cert_auth_type", "TEXT"],
+            ["cert_user_id", "TEXT"],
+            ["modified","INTEGER"]
+        ],
+        "indexes": ["CREATE UNIQUE INDEX path ON json(directory, file_name)"],
+        "schema_changed": 5
+      }
+
+	}
+}

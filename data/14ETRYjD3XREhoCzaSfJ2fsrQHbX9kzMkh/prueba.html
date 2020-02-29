@@ -1,0 +1,168 @@
+<html>
+<head>
+    <title>ZeroNet streams</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .container {
+  display: flex;
+  flex-wrap: wrap;
+}
+.container > label {
+  flex: 1;
+  flex-basis: 25%;
+  order: 1;
+  background-color: #eee;
+}
+.container > div {
+  flex: 1;
+  flex-basis: 100%;
+  order: 5;
+  background-color: #eee;
+}
+.container label img {
+  display: block;
+  margin: 0 auto;
+}
+.container input, .container input ~ div {
+  display: none;
+}
+
+.container input:checked ~ div {
+  display: block;
+  padding: 10px;
+}
+.container div div {
+  text-align: center;
+}
+
+@media screen and (max-width: 650px) {
+  
+  .container > label {
+    flex-basis: 50%;
+  }
+  .container > label:nth-of-type(3),
+  .container > label:nth-of-type(4) {
+    order: 3;
+  }
+  .container > div:nth-of-type(1),
+  .container > div:nth-of-type(2) {
+    order: 2;
+  }
+  
+}
+@media screen and (max-width: 325px) {
+
+  .container > label {
+    flex-basis: 50%;
+  }
+
+  .container > label:nth-of-type(1),
+  .container > div:nth-of-type(1) {
+    order: 1;
+  }
+  .container > label:nth-of-type(2),
+  .container > div:nth-of-type(2) {
+    order: 2;
+  }
+  .container > label:nth-of-type(3),
+  .container > div:nth-of-type(3) {
+    order: 3;
+  }
+  .container > label:nth-of-type(4),
+  .container > div:nth-of-type(4) {
+    order: 4;
+  }
+
+}
+    </style>
+</head>
+<body>
+ 
+    <div id="img-select" class="container">
+  <label for="img1">
+    <img src="img/cover/1.jpg" alt="">
+  </label>
+  <label for="img2">
+    <img src="img/cover/2.jpg" alt="">
+  </label>
+  <label for="img3">
+    <img src="img/cover/3.jpg" alt="">
+  </label>
+  <label for="img4">
+    <img src="img/cover/4.jpg" alt="">
+  </label>
+
+        <div>
+            <input id="img1" type="radio" name="img-descr">
+            <div id="movie">
+                <h1 id="Title">Title</h1>
+                <p id="Runtime">Runtime</p>
+                <p id="Plot">Plot</p>
+            </div>
+        </div>
+
+        <div>
+            <input id="img2" type="radio" name="img-descr">
+            <div id="tt0110911">
+                <h1 id="Title">Title</h1>
+                <p id="Runtime">Runtime</p>
+                <p id="Plot">Plot</p>
+            </div>
+        </div>
+        
+        
+        <div>
+            <input id="img3" type="radio" name="img-descr">
+            <div id="movie3">
+                <h1 id="Title">Title</h1>
+                <p id="Runtime">Runtime</p>
+                <p id="Plot">Plot</p>
+            </div>
+        </div>
+        <div>
+            <input id="img4" type="radio" name="img-descr">
+            <div id="movie4">
+                <h1 id="Title">Title</h1>
+                <p id="Runtime">Runtime</p>
+                <p id="Plot">Plot</p>
+            </div> 
+        </div>
+    </div>
+    
+    <!-- Script para la api de OMDB -->    
+    <script>
+
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == XMLHttpRequest.DONE) {
+            var fullMovie = JSON.parse(xhr.responseText);
+            var movie = { title: fullMovie.Title, runtime: fullMovie.Runtime, plot: fullMovie.Plot };
+            document.getElementById('Title').innerText = movie.title;
+            document.getElementById('Runtime').innerText = movie.runtime;
+            document.getElementById('Plot').innerText = movie.plot
+        }
+    };
+        xhr.open('GET', 'http://www.omdbapi.com/?i=tt0110912&plot=short&r=json', true);
+        xhr.send(null);
+        
+    </script>
+    
+    <!-- Script para mostrar/ocultar la info de la movie -->    
+
+    <script>           
+    (function(lastimg) {
+    document.querySelector("#img-select").addEventListener('click', function(e){
+        if (e.target.tagName.toLowerCase() == 'input') {
+            if (lastimg == e.target) {
+                e.target.checked = false;
+                lastimg = null;
+            } else {
+                lastimg = e.target;
+            }      
+        }
+    });
+    }());
+    </script>
+</body>
+</html>

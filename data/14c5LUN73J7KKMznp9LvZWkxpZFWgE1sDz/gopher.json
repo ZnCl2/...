@@ -1,0 +1,91 @@
+{
+    "rules": {
+        "": [
+            "${`-` :site_peers len *}----------${`-` :site_address len *}",
+            "${:site_title} for ZeroNet Gopher",
+            "${:site_peers} peers - ${:site_address}",
+            "${`-` :site_peers len *}----------${`-` :site_address len *}",
+            "",
+            "${:site_description}",
+            "",
+            ["1", "Channels", "/${:site_address}/channels/"],
+            ["1", "Videos", "/${:site_address}/videos/"],
+            ["1", "Categories", "/${:site_address}/categories/"],
+            "",
+            ["1", "For devs", "/${:site_address}/devs/"],
+            "",
+            "Other Zopherholes to Check Out",
+            ["1", "ThunderWave Gopher", "/1CWkZv7fQAKxTVjZVrLZ8VHcrN6YGGcdky/"],
+            ["1", "ZeroLSTN Gopher", "/1MQveQ3RPpimXX2wjW2geAGkNJ1GdXkvJ3/"]
+        ],
+        "devs": [
+            ["1", "[home]", "/${:site_address}/"],
+            "",
+            ["0", "content.json", "/${:site_address}/content.json"],
+            ["0", "dbschema.json", "/${:site_address}/dbschema.json"],
+            ["0", "gopher.json", "/${:site_address}/gopher.json"],
+            ["0", "Users content.json", "/${:site_address}/data/users/content.json"],
+            "",
+            ["1", "data", "/${:site_address}/data"],
+            ["1", "merged-KxoVid", "/${:site_address}/merged-KxoVid"]
+        ],
+        "channels": [
+            ["1", "[home]", "/${:site_address}/"],
+            "",
+            "Here are all the channels I've found",
+            {"sql": "SELECT '1', name, '/' || :site_address || '/channels/' || REPLACE(directory, 'data/users/', '') || '/' || channel_id || '/' FROM channels LEFT JOIN json USING (json_id) ORDER BY date_added ASC"}
+        ],
+        "channels/:auth_address": [
+            ["1", "[home]", "/${:site_address}/"],
+            ["1", "[all channels]", "/${:site_address}/channels"],
+            "",
+            "Channels from :auth_address",
+            {"sql": "SELECT '1', name, '/' || :site_address || 'channels/' || :auth_address || '/' || channel_id || '/' FROM channels LEFT JOIN json USING (json_id) WHERE directory=('data/users/' || :auth_address)"},
+            "",
+            "Videos",
+            {"sql": "SELECT 'z9', title, '/' || site || '/' || REPLACE(video_file, 'merged-KxoVid/' || site || '/', '') FROM videos LEFT JOIN json USING (json_id) WHERE directory=('data/users/' || :auth_address) ORDER BY date_added DESC"}
+        ],
+        "channels/:auth_address/:id": [
+            ["1", "[home]", "/${:site_address}/"],
+            ["1", "[all channels]", "/${:site_address}/channels/"],
+            "",
+            {"sql": "SELECT 'i', name FROM channels LEFT JOIN json USING (json_id) WHERE directory=('data/users/' || :auth_address) and channel_id = :id LIMIT 1"},
+            {"sql": "SELECT 'i', about FROM channels LEFT JOIN json USING (json_id) WHERE directory=('data/users/' || :auth_address) and channel_id = :id LIMIT 1"},
+            "",
+            "Videos",
+            {"sql": "SELECT '1', title, '/' || :site_address || '/videos/' || REPLACE(directory, 'data/users/', '') || '/' || ref_channel_id || '/' || video_id FROM videos LEFT JOIN json USING (json_id) WHERE directory=('data/users/' || :auth_address) AND ref_channel_id=:id ORDER BY date_added DESC"}
+        ],
+        "videos/:auth_address/:channel_id/:video_id": [
+            ["1", "[home]", "/${:site_address}/"],
+            ["1", "[all videos]", "/${:site_address}/videos/"],
+            "",
+            {"sql": "SELECT 'z9', title, '/' || site || '/' || REPLACE(video_file, 'merged-KxoVid/' || site || '/', '') FROM videos LEFT JOIN json USING (json_id) WHERE directory=('data/users/' || :auth_address) AND ref_channel_id=:channel_id AND video_id=:video_id LIMIT 1"},
+            "",
+            {"sql": "SELECT 'i', description FROM videos LEFT JOIN json USING (json_id) WHERE directory=('data/users/' || :auth_address) AND ref_channel_id=:channel_id AND video_id=:video_id LIMIT 1"},
+            {"sql": "SELECT 'i', 'By ' || name FROM channels LEFT JOIN json USING (json_id) WHERE directory=('data/users/' || :auth_address) and channel_id = :channel_id LIMIT 1"},
+            "",
+            "",
+            "Comments",
+            {"sql": "SELECT 'i', cert_user_id || ': \n' || body || '\n' || 'Uploaded ...\n' FROM comments LEFT JOIN json USING (json_id) WHERE ref_video_auth_address=:auth_address AND ref_channel_id=:channel_id AND ref_video_id=:video_id ORDER BY date_added ASC"}
+        ],
+        "videos": [
+            ["1", "[home]", "/${:site_address}/"],
+            ["7", "Search Videos", "/${:site_address}/videos/"],
+            "",
+            "Here are all the videos I've found",
+            {"sql": "SELECT '1', title, '/' || :site_address || '/videos/' || REPLACE(directory, 'data/users/', '') || '/' || ref_channel_id || '/' || video_id FROM videos LEFT JOIN json USING (json_id) ORDER BY date_added DESC"}
+        ],
+        "categories": [
+            ["1", "[home]", "/${:site_address}/"],
+            "",
+            "Here are all the categories I've found",
+            {"sql": "SELECT '1', name, '/' || :site_address || '/categories/' || address FROM category_hubs ORDER BY date_added ASC"}
+        ],
+        "categories/:address": [
+            ["1", "[home]", "/${:site_address}/"],
+            ["1", "[all categories]", "/${:site_address}/categories"],
+            "",
+            {"sql": "SELECT '1', title, '/' || :site_address || '/videos/' || REPLACE(directory, 'data/users/', '') || '/' || ref_channel_id || '/' || video_id FROM videos LEFT JOIN json USING (json_id) WHERE site=:address ORDER BY date_added DESC"}
+        ]
+    }
+}

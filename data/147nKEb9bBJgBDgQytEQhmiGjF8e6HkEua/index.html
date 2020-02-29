@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Antilibrary</title>
+    <link rel="stylesheet" href="css/all.css">
+    <script src="js/81bootstrap-vue.js"></script>
+    <link rel="stylesheet" href="css/03antilibrary.css">
+</head>
+<body class="bg-faded">
+<!-- start main container#antilibrary -->
+<b-container id="antilibrary">
+    <div id="overlay" v-if="page_loading"  class="d-flex align-items-center flex-column justify-content-center h-100">
+        <h1 class="display-4"><!-- i class="fa fa-spinner fa-pulse fa-fw"></i -->Entering your antilibrary...</h1>
+    </div>
+
+    <!-- top menu star -->
+    <b-navbar toggleable="md" type="light">
+        <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
+        <b-navbar-brand href="#" v-on:click="handleMenuClick('latest')">
+            <img src="images/antilibrary.png" style="width: 150px"
+                 title="'I have always imagined that Paradise will be a kind of library.' - Jorge Luis Borges">
+        </b-navbar-brand>
+        <b-collapse is-nav id="nav_collapse">
+            <b-navbar-nav  class="ml-auto">
+                <b-nav-form onsubmit="return false;" @submit="handle_search('search')">
+                    <b-form-input v-model.trim="search_string_input"
+                                  id="search-string"
+                                  placeholder="Search books or authors - use % as wildcard" class="mr-sm-2"
+                                  type="text" placeholder="Search" @input="show_search_button">
+                </b-nav-form>
+                <b-button class="btn-outline-success hidden" v-if="search_button_visible" size="sm" @click="handle_search('search')">Search</b-button>
+                </b-nav-form>
+            </b-navbar-nav>
+
+            <b-navbar-nav class="ml-auto">
+                <b-nav-item v-bind:class="['nav-link', active_page == 'my_books' ? 'active' : '']"
+                            @click="handleMenuClick('my_books')">My Books
+                </b-nav-item>
+                <!-- b-nav-item v-bind:class="['nav-link', active_page == 'wish' ? 'active' : '']"
+                            href="https://www.reddit.com/r/antilibrary/comments/6qcz27/wish_list/" target="_blank">Wish
+                    List
+                </b-nav-item -->
+                <b-nav-item v-bind:class="['nav-link', active_page == 'settings' ? 'active' : '']"
+                            @click="handleMenuClick('settings')">Settings
+                </b-nav-item>
+                <b-nav-item class="nav-link" href="https://www.reddit.com/r/antilibrary/" id="discuss-link"
+                            target="_blank">Discuss
+                </b-nav-item>
+
+            </b-navbar-nav>
+        </b-collapse>
+
+
+    </b-navbar>
+    <!-- top menu end -->
+
+
+    <!-- start general alert -->
+    <b-alert dismissible v-if="general_alert_is_visible" show>
+        <div v-html="general_alert_message"></div>
+    </b-alert>
+    <!-- end general alert -->
+
+
+    <!-- start page content -->
+    <b-row>
+        <b-col>
+
+            <!--page header-->
+            <h1 class="display-4">{{search_header}}
+                <small v-if="active_page == 'search'"> {{search_string}}</small>
+                <i class="fa fa-spinner fa-pulse fa-fw" v-if="search_loading"></i>
+            </h1>
+
+            <!--my shelves tabs-->
+            <b-nav tabs class="float-right" style="margin-top:-33px" v-if="active_page == 'my_books'">
+                <b-nav-item @click="load_shelf(0)">Want to Read</b-nav-item>
+                <b-nav-item @click="load_shelf(1)">Read</b-nav-item>
+                <b-nav-item @click="load_shelf(2)" v-if="user_data.shelves[2].length > 0">Pending</b-nav-item>
+                <b-nav-item @click="load_shelf(3)">Uploads</b-nav-item>
+            </b-nav>
+            <hr>
+
+            <!--uploads tab-->
+            <div class="text-right" v-if="active_shelf == 3 && active_page == 'my_books'">
+                <b-button size="sm" variant="primary" @click="show_uploads_modal()">Upload new book</b-button>
+            </div>
+
+
+            <!--books listing-->
+            <div v-for="book in books">
+                <template>
+                    <div>
+                        <div class="float-left">
+                            <img v-if="book.i_u" v-bind:src="book.i_u" alt="cover" width="49" height="75" class=" cover"
+                                 style="margin-right: 10px">
+                            <img v-else src="images/nocover.png" alt="cover" width="49" height="75" class="cover"
+                                 style="margin-right: 10px">
+                        </div>
+                        <b-link @click="show_book(book)" class="ebook-link">
+                            <strong style="margin-right: 10px">{{ book.t }}</strong>
+                        </b-link>
+                        <b-badge v-for="s in book.book_shelves" variant="info" style="margin-right: 2px">
+                            {{user_data.shelves[s].name}}
+                        </b-badge>
+                        <br>by {{ book.authors_names }}
+                        <br>
+                        <small class="text-muted"><img v-bind:src="'images/' + book.l_c +'.png'"
+                                                       v-bind:title="book.l_c_title"></small>
+                        <small class="text-muted" style="margin-left: 5px">published <span v-if="book.p_y > 0"> {{ book.p_y }}</span>
+                            by {{ book.publisher_name }}
+                        </small>
+                        <small class="text-muted" style="margin-left: 20px" v-if="book.a_r > 0">
+                            rating <span style="color: gold">
+									<i class="fa fa-star"
+                                       :class="{ 'fa-star': (book.a_r + 1 - n) >= .51, 'fa-star-o' : (book.a_r + 1 - n) < .51 }"
+                                       aria-hidden="true" v-for="n in 5"></i>
+								</span>
+                            {{book.a_r}}
+                        </small>
+                        <small class="text-muted" style="margin-left: 20px" v-if="book.n_p">{{book.n_p}} pages</small>
+                        <hr>
+                        <div class="clearfix"></div>
+                    </div>
+                </template>
+
+            </div>
+
+            <!--generic body message-->
+            <p v-if="body_message_visible" v-html="body_message"></p>
+
+            <!--moar results-->
+            <div class="row justify-content-center align-items-center" style="margin-top: 50px">
+                <b-button @click="load_more_results" size="sm" variant="outline-primary" v-if="show_moar_books"><i class="fa fa-spinner fa-pulse fa-fw" v-if="search_loading"></i> Moar books</b-button>
+            </div>
+
+
+        <!-- SETTINGS -->
+        <div v-if="active_page == 'settings'">
+            <h4>Download books databases</h4>
+            <p>Select the databases to download the books metadata.</p>
+            <b-form-group>
+                <b-form-checkbox-group stacked :options="book_hubs_options" @change="add_book_database" v-model="book_hubs_added">
+                </b-form-checkbox-group>
+            </b-form-group>
+        </div>
+        <!-- END SETTINGS -->
+
+
+        </b-col>
+    </b-row>
+    <!-- end page content -->
+
+
+    <!-- Book Modal Component -->
+    <b-modal size="lg" v-bind:title="book.t" v-model="showModal" id="vuemodal" @hide="hideBook" hide-header hide-footer>
+        <template v-if="book">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-8" style="margin-top: 25px">
+                        <img v-if="book.i_u" v-bind:src="book.i_u" alt="cover" class="pull-left"
+                             style="margin-bottom: 10px; margin-right: 20px">
+                        <img v-else src="images/nocover.png" alt="cover" class="pull-left"
+                             style="margin-bottom: 10px; margin-right: 20px">
+                        <h5>
+                            <strong>{{book.t}}</strong>
+                            <br>
+                            <small>by {{book.authors_names}}</small>
+                        </h5>
+
+                        <div v-if="book.d" v-html="book.d"></div>
+                        <div v-else><em>No description available</em></div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <strong>Details</strong><br>
+                        <small><strong>Rating:</strong> <span style="color: gold" v-if="book.a_r">
+									<i class="fa fa-star"
+                                       :class="{ 'fa-star': (book.a_r + 1 - n) >= .51, 'fa-star-o' : (book.a_r + 1 - n) < .51 }"
+                                       aria-hidden="true" v-for="n in 5"></i>
+								</span>
+                            {{book.a_r? book.a_r : '-'}}
+                        </small>
+                        <br>
+                        <small><strong>Publication date </strong> {{book.month_name? book.month_name : '-'}} {{book.p_y?
+                            book.p_y : '-'}}
+                        </small>
+                        <br>
+                        <small><strong>Publisher:</strong> {{book.p? book.p : '-'}}</small>
+                        <br>
+                        <small><strong>Language:</strong> {{book.language}}</small>
+                        <br>
+                        <small><strong>Pages:</strong> {{book.n_p? book.n_p : '-'}}</small>
+                        <br>
+                        <small v-if="book.i10"><strong>ISBN:</strong> {{book.i10}}<br></small>
+                        <small v-if="book.i13"><strong>ISBN13:</strong> {{book.i13}}<br></small>
+                        <small v-if="book.asin"><strong>ASIN:</strong> {{book.asin}}<br></small>
+                        <small>
+                            <b-link v-bind:href="book.direct_link">Antilibrary Direct Link</b-link>
+                        </small>
+                        <br>
+                        <small>
+                            <b-link v-bind:href="book.goodreads_link" target="_blank">View on Goodreads <i
+                                    class="fa fa-external-link" aria-hidden="true"></i></b-link>
+                        </small>
+
+                        <div style="margin-bottom: 5px; margin-top: 20px"><strong>Shelves</strong></div>
+                        <div>
+                            <b-form-group>
+                                <b-form-checkbox-group stacked v-model="current_shelf_index_array_for_open_book"
+                                                       :options="shelves_options" @change="add_to_shelf">
+                                </b-form-checkbox-group>
+                            </b-form-group>
+                        </div>
+
+                        <div style="margin-bottom: 5px; margin-top: 20px"><strong>Available Files</strong></div>
+                            <b-link variant="outline-primary" class="action" v-bind:href="file.file_path" v-for="file in book_files_list">
+                                Download {{file.f_t}} ({{file.f_s}})
+                            </b-link>
+
+                        <div style="margin-bottom: 5px; margin-top: 20px"><strong>Actions</strong></div>
+
+                        <b-button variant="outline-danger" class="action" @click="delete_book" v-if="action_delete_visible">
+                            Delete book
+                        </b-button>
+
+                        <b-button variant="outline-secondary" class="action" @click="hideBook">
+                            Close
+                        </b-button>
+
+
+                    </div>
+                </div>
+        </template>
+    </b-modal>
+
+
+
+
+
+    <!-- Upload Modal Component -->
+    <b-modal size="lg" title="Upload new book" v-model="upload_modal_visible" id="uploadmodal" hide-footer>
+        <template>
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-12">
+                        <b-form @submit="start_book_upload()"  onsubmit="return false;">
+                            <b-form-group horizontal
+                                          :label-cols="3"
+                                          breakpoint="md"
+                                          description="Supported file types: .azw3, .pdf, .epub, .mobi, .azw"
+                                          label="Select the book file:"
+                                          label-for="book_file">
+                                <b-form-file @input="upload_file_selected()" accept=".azw3, .pdf, .epub, .mobi, .azw" id="book_file" v-model="book_upload_file" :state="Boolean(book_upload_file)" placeholder="Choose the book file..."></b-form-file>
+                            </b-form-group>
+
+                            <div v-if="book_upload_file">
+
+                                <b-form-group horizontal
+                                              :label-cols="3"
+                                              breakpoint="md"
+                                              label="Title:"
+                                              label-for="book_title">
+                                <b-form-input id="book_title"
+                                              type="text"
+                                              required
+                                              v-model="book_title"></b-form-input>
+                                </b-form-group>
+
+                                <b-form-group horizontal
+                                              :label-cols="3"
+                                              breakpoint="md"
+                                              label="Authors:"
+                                              label-for="book_authors"
+                                                description="Separated by comma">
+                                    <b-form-input id="book_authors"
+                                               type="text"
+                                               v-model="book_authors">
+                                    </b-form-input>
+                                </b-form-group>
+
+                                <b-form-group horizontal
+                                              :label-cols="3"
+                                              breakpoint="md"
+                                              label="Language:"
+                                              label-for="book_language">
+                                    <b-form-select id="book_language"
+                                                  type="text"
+                                                  v-model="book_language"
+                                                  :options="book_available_languages">
+                                    </b-form-select>
+                                </b-form-group>
+
+                                <b-form-group horizontal
+                                              :label-cols="3"
+                                              breakpoint="md"
+                                              label="Goodreads ID:"
+                                              label-for="book_goodreads_id">
+                                    <b-form-input id="book_goodreads_id"
+                                                  type="text"
+                                                  v-model="book_goodreads_id">
+                                    </b-form-input>
+                                </b-form-group>
+
+                                <b-form-group horizontal
+                                              :label-cols="3"
+                                              breakpoint="md"
+                                              label="Publisher:"
+                                              label-for="book_publisher">
+                                    <b-form-input id="book_publisher"
+                                                  type="text"
+                                                  v-model="book_publisher">
+                                    </b-form-input>
+                                </b-form-group>
+
+                                <b-form-group horizontal
+                                              :label-cols="3"
+                                              breakpoint="md"
+                                              label="Publishing date:"
+                                              label-for="book_publishing_month">
+                                        <b-row>
+                                            <b-col>
+                                                <b-form-select id="book_publishing_month"
+                                                               type="text"
+                                                               v-model="book_publishing_month"
+                                                               :options="book_publishing_month_options">
+                                                </b-form-select>
+                                            </b-col>
+                                            <b-col>
+                                                <b-form-input id="book_publishing_year"
+                                                               type="text"
+                                                               v-model="book_publishing_year"
+                                                              placeholder="Year format: YYYY">
+                                                </b-form-input>
+                                            </b-col>
+                                        </b-row>
+                                </b-form-group>
+
+                                <b-form-group horizontal
+                                              :label-cols="3"
+                                              breakpoint="lg"
+                                              label="Identifiers:<br>(please enter<br>at least one)"
+                                              label-for="book_isbn10">
+
+                                    <b-form-group horizontal
+                                                  :label-cols="2"
+                                                  breakpoint="md"
+                                                  label="ISBN10"
+                                                  label-for="book_isbn10">
+                                        <b-form-input id="book_isbn10"
+                                                      type="text"
+                                                      v-model="book_isbn10">
+                                        </b-form-input>
+                                    </b-form-group>
+
+                                    <b-form-group horizontal
+                                                  :label-cols="2"
+                                                  breakpoint="md"
+                                                  label="ISBN13"
+                                                  label-for="book_isbn13">
+                                        <b-form-input id="book_isbn13"
+                                                      type="text"
+                                                      v-model="book_isbn13">
+                                        </b-form-input>
+                                    </b-form-group>
+
+                                    <b-form-group horizontal
+                                                  :label-cols="2"
+                                                  breakpoint="md"
+                                                  label="ASIN"
+                                                  label-for="book_asin">
+                                        <b-form-input id="book_asin"
+                                                      type="text"
+                                                      v-model="book_asin">
+                                        </b-form-input>
+                                    </b-form-group>
+                                </b-form-group>
+
+                                <b-form-group horizontal
+                                              :label-cols="3"
+                                              breakpoint="md"
+                                              label="Description:"
+                                              label-for="book_description">
+                                    <b-form-textarea id="book_description"
+                                                     v-model="book_description"
+                                                     :rows="5"
+                                                     :max-rows="6">
+                                    </b-form-textarea>
+                                </b-form-group>
+                                <b-row>
+                                    <b-col sm="12" class="text-center">
+                                        <b-button variant="primary" type="submit">
+                                            {{book_upload_action_label}}
+                                        </b-button>
+                                    </b-col>
+                                </b-row>
+                            </div>
+
+                        </b-form>
+                    </div>
+                </div>
+        </template>
+    </b-modal>
+
+
+
+</b-container>
+<!-- end main container#antilibrary -->
+
+
+<script type="text/javascript" src="js/all.js" defer></script>
+
+</body>
+</html>
+

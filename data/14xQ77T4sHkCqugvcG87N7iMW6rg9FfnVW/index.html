@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+  <title>GrapeJS example site</title>
+  <meta charset="utf-8">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <link href="css/style.css" rel="stylesheet">
+  <link href="css/style-responsive.css" rel="stylesheet">
+
+  <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!--[if lt IE 9]>
+  <script src="js/html5shiv.js"></script>
+  <script src="js/respond.min.js"></script>
+  <![endif]-->
+  <base href="" target="_top" id="base">
+  <script>
+    base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")
+  </script>
+</head>
+
+<body class="horizontal-menu-page">
+
+  <div id="page"></div>
+
+  <script type="text/javascript" src="js/ZeroFrame.js"></script>
+
+  <script>
+    class Page extends ZeroFrame {
+      setSiteInfo(site_info) {
+        this.site_info = site_info
+      }
+
+      onOpenWebsocket() {
+        this.cmd("siteInfo", [], function(site_info) {
+          page.setSiteInfo(site_info)
+        })
+        this.cmd("fileGet", "main.html", function(res) {
+          document.getElementById("page").innerHTML = res
+        })
+
+        this.cmd("fileGet", "js/freelight/persecutor.js", function(res) {
+          eval(res);
+        });
+        this.cmd("fileGet", "js/scripts.js", function(res) {
+          eval(res);
+        });
+      }
+
+      onRequest(cmd, message) {
+        if (cmd == "setSiteInfo")
+          this.setSiteInfo(message.params)
+        else
+          this.log("Unknown incoming message:", cmd)
+      }
+    }
+    var page = new Page()
+    //page.cmd("wrapperPermissionAdd", "NOSANDBOX", function(res) {
+    //    if (!res.error) page.cmd("wrapperReload")
+    //})
+  </script>
+
+
+  <!-- Placed js at the end of the document so the pages load faster -->
+  <script src="js/jquery-1.10.2.min.js"></script>
+  <script src="js/jquery-ui-1.9.2.custom.min.js"></script>
+  <script src="js/jquery-migrate-1.2.1.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/jquery.nicescroll.js"></script>
+
+  <script src="js/freelight/main.js"></script>
+
+</body>
+
+</html>

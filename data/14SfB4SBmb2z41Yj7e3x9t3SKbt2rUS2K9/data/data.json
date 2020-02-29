@@ -1,0 +1,502 @@
+{
+	"title": "Alvin獨財者",
+	"description": "本是后山人， 偶做前堂客；\n醉舞经阁半卷书， 坐井说天阔；\n大志戏功名， 海斗量福祸；\n论到囊中羞涩时，怒指乾坤错。\n\n[yangleitj.com](http://yangleitj.com)\n\n[Steemit](https://steemit.com/@yangleitj.bit)\n\n[Telegram](http://t.me/yangleitj)\n\n[Keybase](http://keybase.io/yangleitj)\n\n[GPG Fingerprint: 6183 839E 9D6F E963 3AF3  88F3 DCBA 7F25 AB41 6F8F](https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x6183839E9D6FE9633AF388F3DCBA7F25AB416F8F) \n\n[BTSynChina中文资源分享](http://127.0.0.1:43110/btsynchina.bit)",
+	"links": "",
+	"next_post_id": 66,
+	"demo": false,
+	"modified": 1558773003,
+	"post": [
+		{
+			"post_id": 64,
+			"title": "ZeroNet in Docker",
+			"date_published": 1530458698.909,
+			"body": "\n\n\n---\n安装Docker\n`wget -qO- https://get.docker.com/ | sh`\n\n>docker run -d --name ZeroNet \\\n-e \"ENABLE_TOR=true\" \\\n-p 26552:26552 -p 43110:43110 \\\n-v ~/zeronet/data:/root/data \\\n--restart always \\\nnofish/zeronet\n\n- 访问 http://ip:43110\n"
+		},
+		{
+			"post_id": 63,
+			"title": "CloudTorrent works with ResilioSync",
+			"date_published": 1529023038.017,
+			"body": "\n\n\n---\n更新系统\n`sudo su`\n`apt update && apt upgrade -y && reboot`\n\n安装Docker\n`wget -qO- https://get.docker.com/ | sh`\n\n安装ResilioSync并运行\n\n>docker run -d --name ResilioSync \\\n-p 8888:8888 -p 55555:55555 \\\n-v ~/resiliosync:/mnt/sync \\\n--restart always \\\nresilio/sync\n\n安装CloudTorrent并运行\n\n>docker run -d --name CloudTorrent \\\n-p 7777:7777 \\\n-v ~/resiliosync/folders:/downloads \\\n--restart always \\\njpillora/cloud-torrent --port 7777\n\n- CloudTorrent访问http://ip:7777\n- ResilioSync访问http://ip:8888\n\n"
+		},
+		{
+			"post_id": 62,
+			"title": "V2RayX Mac Client",
+			"date_published": 1523833058.659,
+			"body": "\n\n---\n`/usr/bin/ruby -e \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)\"`\n`brew cask install v2rayx`\n\nhttps://github.com/Cenmrev/V2RayX/releases\n\n> V2Ray Mac 使用教程之 V2RayX\n https://233blog.com/post/25"
+		},
+		{
+			"post_id": 61,
+			"title": "ZeroNet port 43110;15441;36341",
+			"date_published": 1523240764.863,
+			"body": "\n\n\n---\ntcp:43110;udp:43110\ntcp:15441;udp:15441\ntcp:36341;udp:36341"
+		},
+		{
+			"post_id": 59,
+			"title": "Upload videos to Youtube on Ubuntu",
+			"date_published": 1502642728.405,
+			"body": "\n\n\n---\n`sudo pip install -U setuptools`\n`sudo pip install --upgrade google-api-python-client progressbar2`\n`git clone https://github.com/tokland/youtube-upload.git .youtube-upload`\n`cd youtube-upload`\n`sudo python setup.py install`\n`youtube-upload --title=\"test\" test.mp4`\n\nYou'll see that there is no email/password options. Instead, the Youtube API uses OAuth 2.0 to authenticate the upload. The first time you try to upload a video, you will be asked to follow a URL in your browser to get an authentication token. If you have multiple channels for the logged in user, you will also be asked to pick which one you want to upload the videos to. You can use multiple credentials, just use the option --credentials-file. Also, check the token expiration policies.\n\nThe package includes a default client_secrets.json file. If you plan to make a heavy use of the script, please create and use your own OAuth 2.0 file, it's a free service. Steps:\n\nGo to the Google console.\nCreate project.\nSide menu: APIs & auth -> APIs\nTop menu: Enabled API(s): Enable all Youtube APIs.\nSide menu: APIs & auth -> Credentials.\nCreate a Client ID: Add credentials -> OAuth 2.0 Client ID -> Other -> Name: youtube-upload -> Create -> OK\nDownload JSON: Under the section \"OAuth 2.0 client IDs\". Save the file to your local system.\nUse this JSON as your credentials file: --client-secrets=CLIENT_SECRETS\n"
+		},
+		{
+			"post_id": 57,
+			"title": "Become a ZeroNet Seeder",
+			"date_published": 1501836411.33,
+			"body": "\n\n\n---\nIf you have a spare node (like a Raspberry PI with external HDD), you can setup a ZeroNet node here, which can automatically download and seen each new site published here.\n\n`sudo apt-get update`\n`sudo apt-get install msgpack-python python-gevent git sqlite3`\n`git clone https://github.com/HelloZeroNet/ZeroNet.git ZeroNet`\n`cd ZeroNet`\n`nohup python zeronet.py --homepage 1LtvsjbtQ2tY7SCtCZzC4KhErqEK3bXD4n & echo $! > zerorun.pid`\n`vi autoseed.sh`\n~~~\n#!/bin/sh\nZERO_DIR=/home/用户名/ZeroNet\nZERO_HOST=127.0.0.1\nAPP_ID=1LtvsjbtQ2tY7SCtCZzC4KhErqEK3bXD4n\nNEW_SITES=`sqlite3 $ZERO_DIR/data/$APP_ID/data/zerosites.db \"select address from sites order by added desc limit 5;\"`\nfor SITE in $NEW_SITES; do\n    echo Check site $SITE\n    curl --silent http://$ZERO_HOST:43110/$SITE > /dev/null\ndone\n~~~\n`crontab -e`\n~~~\n*/5 * * * * /home/用户名/autoseed.sh\n0 0 * * * cd /home/用户名/ZeroNet && git pull\n~~~\n"
+		},
+		{
+			"post_id": 56,
+			"title": "Install ZeroNet on Ubuntu",
+			"date_published": 1501751204.626,
+			"body": "\n\n\n---\n~~~\nsudo apt-get update\nsudo apt-get install msgpack-python python-gevent git\ngit clone https://github.com/HelloZeroNet/ZeroNet.git ZeroNet\ncd ZeroNet && python zeronet.py\n~~~\n或者\n~~~\nwget https://github.com/HelloZeroNet/ZeroBundle/raw/master/dist/ZeroBundle-linux64.tar.gz\ntar xvpfz ZeroBundle-linux64.tar.gz\ncd ZeroBundle\n./ZeroNet.sh\n~~~\n\n- 如果需要代理使用 `proxychains`\n- 如果需要设置密码先要 `mv ~/plugins/disabled-UiPassword ~/plugins/UiPassword`\n- 如果需要修改默认主页使用 `--homepage 你的地址`\n举例 `python zeronet.py --ui_ip 0.0.0.0 --ui_password 你的密码 --homepage yangleitj.bit &`\n\n另一种方法\n`vi ~/ZeroNet-master/src/Config.py`\n修改第139行default'此处为你的主页 你的域名.bit'然后再运行zeronet\n\n- 如果需要后台启动\n`nohup python zeronet.py --ui_ip 0.0.0.0 --ui_password 你的密码 --homepage yangleitj.bit & echo $! > zerorun.pid`\n- 如果需要关闭 `cat zerorun.pid`  然后 `kill 对应pid`"
+		},
+		{
+			"post_id": 54,
+			"title": "V2Ray client for Ubuntu",
+			"date_published": 1501600775.194,
+			"body": "\n\n\n---\n`vi /etc/v2ray.json`\n>{\n  \"log\": {\n    \"loglevel\": \"warning\"\n  },\n  \"inbound\": {\n    \"port\": 1082,\n    \"listen\": \"0.0.0.0\",\n    \"protocol\": \"socks\",\n    \"settings\": {\n      \"auth\": \"noauth\",\n      \"udp\": false,\n      \"ip\": \"127.0.0.1\"\n    }\n  },\n  \"outbound\": {\n    \"protocol\": \"vmess\",\n    \"settings\": {\n      \"vnext\": [\n        {\n          \"address\": \"你的服务器\",\n          \"port\": 443,\n          \"users\": [\n            {\n              \"id\": \"和服务端相同\",\n              \"alterId\": 99,\n              \"security\": \"auto\"\n            }\n          ]\n        }\n      ]\n    },\n    \"mux\": {\n      \"enabled\": true\n    }\n  },\n  \"outboundDetour\": [\n    {\n      \"protocol\": \"freedom\",\n      \"settings\": {},\n      \"tag\": \"direct\"\n    }\n  ],\n  \"dns\": {\n    \"servers\": [\n      \"8.8.8.8\",\n      \"8.8.4.4\",\n      \"localhost\"\n    ]\n  },\n  \"routing\": {\n    \"strategy\": \"rules\",\n    \"settings\": {\n      \"domainStrategy\": \"IPIfNonMatch\",\n      \"rules\": [\n        {\n          \"type\": \"field\",\n          \"port\": \"1-52\",\n          \"outboundTag\": \"direct\"\n        },\n        {\n          \"type\": \"field\",\n          \"port\": \"54-79\",\n          \"outboundTag\": \"direct\"\n        },\n        {\n          \"type\": \"field\",\n          \"port\": \"81-442\",\n          \"outboundTag\": \"direct\"\n        },\n        {\n          \"type\": \"field\",\n          \"port\": \"444-65535\",\n          \"outboundTag\": \"direct\"\n        },\n        {\n          \"type\": \"chinasites\",\n          \"outboundTag\": \"direct\"\n        },\n        {\n          \"type\": \"field\",\n          \"ip\": [\n            \"0.0.0.0/8\",\n            \"10.0.0.0/8\",\n            \"100.64.0.0/10\",\n            \"127.0.0.0/8\",\n            \"169.254.0.0/16\",\n            \"172.16.0.0/12\",\n            \"192.0.0.0/24\",\n            \"192.0.2.0/24\",\n            \"192.168.0.0/16\",\n            \"198.18.0.0/15\",\n            \"198.51.100.0/24\",\n            \"203.0.113.0/24\",\n            \"::1/128\",\n            \"fc00::/7\",\n            \"fe80::/10\"\n          ],\n          \"outboundTag\": \"direct\"\n        },\n        {\n          \"type\": \"chinaip\",\n          \"outboundTag\": \"direct\"\n        }\n      ]\n    }\n  }\n}\n\n`sudo apt install unzip`\n`wget https://github.com/v2ray/v2ray-core/releases/download/v2.33.1/v2ray-linux-64.zip`\n`unzip v2ray-linux-64.zip`\n`mv v2ray-v2.33.1-linux-64 .v2ray`\n`cd .v2ray`\n`chmod +x v2ray`\n`./v2ray --config=/etc/v2ray.json`\n`crontab -e`\n>@reboot cd /home/yangleitj/.v2ray && ./v2ray --config=/etc/v2ray.json"
+		},
+		{
+			"post_id": 53,
+			"title": "You-get Youtube videos on Ubuntu",
+			"date_published": 1501580245.294,
+			"body": "\n\n\n---\n`apt install python-pip -y`\n`pip install --upgrade pip`\n`apt install python3-pip -y`\n`apt-get install build-essential libssl-dev libffi-dev python-dev -y`\n`pip3 install you-get`\n`pip3 install --upgrade you-get`\n`apt-get install python3 python3-setuptools ffmpeg unzip -y`\n`sudo curl https://bootstrap.pypa.io/get-pip.py | python`\n\n使用方法：you-get http://www.youtube.com/xxx\n"
+		},
+		{
+			"post_id": 51,
+			"title": "Install ProxyChains on Ubuntu",
+			"date_published": 1501222133.68,
+			"body": "\n\n\n---\n\n`sudo apt-get install make`\n`sudo apt-get install build-essential`\n`sudo apt-get install git`\n`git clone https://github.com/shadowsocks/proxychains-ng.git .proxychains4`\n`cd .proxychains4`\n`  ./configure --prefix=/usr --sysconfdir=/etc`\n`make`\n`[optional] sudo make install`\n`[optional] sudo make install-config (installs proxychains.conf)`\n if you dont install, you can use proxychains from the build directory\n  like this: `./proxychains4 -f src/proxychains.conf telnet google.com 80`\n\n`vi /etc/proxychains.conf`\n>socks5 127.0.0.1 9050\n\n`proxychains4 -f /etc/proxychains.conf apt update`\n\n- [https://github.com/rofl0r/proxychains-ng](https://github.com/rofl0r/proxychains-ng)"
+		},
+		{
+			"post_id": 50,
+			"title": "Install ProxyChains on MacOS",
+			"date_published": 1501221892.201,
+			"body": "\n\n\n---\n\n`/usr/bin/ruby -e \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)\"` \n`brew install proxychains-ng --universal`\n\n- [Homebrew](https://brew.sh/)\n- [https://github.com/rofl0r/proxychains-ng](https://github.com/rofl0r/proxychains-ng)"
+		},
+		{
+			"post_id": 49,
+			"title": "Set PinRetries from 3 to 5",
+			"date_published": 1500308367.931,
+			"body": "\n\n\n---\n`gpg-connect-agent --hex`\n`scd apdu 00 20 00 83 08 31 32 33 34 35 36 37 38`\n`scd apdu 00 f2 00 00 03 05 05 05`\nAfter this, close the connection, remove the card and reinsert it again."
+		},
+		{
+			"post_id": 48,
+			"title": "Reset ykneo-openpgp applet\n\n",
+			"date_published": 1500308148.241,
+			"body": "\n\n\n---\n`vi resetapplet`\n>/hex\n scd serialno\n scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40\n scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40\n scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40\n scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40\n scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40\n scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40\n scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40\n scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40\n scd apdu 00 e6 00 00\n scd apdu 00 44 00 00\n /echo Card has been successfully reset.\n\n`gpg-connect-agent -r resetapplet`\n\nAfter this, close the connection, remove the card and reinsert it again. The applet should be reset.\n\n123456 for user PIN and 12345678 for admin PIN"
+		},
+		{
+			"post_id": 47,
+			"title": "ShadowsocksR client for Ubuntu",
+			"date_published": 1500281586.662,
+			"body": "\n\n---\n`vi /etc/ssr.json`\n>{\n    \"server\": \"服务器地址\",\n    \"server_ipv6\": \"::\",\n    \"server_port\": 443,\n    \"local_address\": \"0.0.0.0\",\n    \"local_port\": 1081,\n    \"password\": \"你的密码\",\n    \"method\": \"none\",\n    \"protocol\": \"auth_chain_a\",\n    \"protocol_param\": \"\",\n    \"obfs\": \"tls1.2_ticket_auth\",\n    \"obfs_param\": \"microsoft.com,bing.com,msn.com,live.com,yahoo.com,amazon.com,ebay.com\",\n    \"speed_limit_per_con\": 0,\n    \"speed_limit_per_user\": 0,\n    \"additional_ports\" : {},\n    \"timeout\": 120,\n    \"udp_timeout\": 60,\n    \"dns_ipv6\": false,\n    \"connect_verbose_info\": 0,\n    \"redirect\": \"\",\n    \"fast_open\": false\n}\n\n`sudo apt-get update`\n`sudo apt-get install python-pip python-m2crypto git`\n`git clone https://github.com/shadowsocksr/shadowsocksr.git .ssr`\n`cd /home/yangleitj/.ssr/shadowsocks && python local.py -c /etc/ssr.json -d start`\n`crontab -e`\n>@reboot cd /home/yangleitj/.ssr/shadowsocks && python local.py -c /etc/ssr.json -d start"
+		},
+		{
+			"post_id": 46,
+			"title": "Yubikey gpg2 --edit-card",
+			"date_published": 1499071878.918,
+			"body": "\n\n\n---\n\ngpg2 --edit-card\n\ngpg/card>list\n\ngpg/card>name\n\ngpg/card>lang\n\ngpg/card>sex\n\ngpg/card>url\n\ngpg/card>login\n\ngpg/card>passwd\n\ngpg/card>fetch\n\n"
+		},
+		{
+			"post_id": 45,
+			"title": "Crontab -e",
+			"date_published": 1498748271.025,
+			"body": "\n\n\n---\n`@reboot xxxxxx`\n\n`* * * * * xxxxxx` every minute\n\n`%/2 % % % % xxxxxx` every 2 minutes\n\n`0 * * * * xxxxxx` = `@hourly xxxxxx`\n\n`0 */2 * * * xxxxxx` every 2 hours\n\n`0 0 * * * /sbin/shutdown -r now` = `@daily xxxxxx`"
+		},
+		{
+			"post_id": 44,
+			"title": "V2Ray Client config.json",
+			"date_published": 1498747758.975,
+			"body": "\n\n\n---\n>{\n  \"log\": {\n    \"loglevel\": \"warning\"\n  },\n  \"inbound\": {\n    \"port\": 1082,\n    \"listen\": \"0.0.0.0\",\n    \"protocol\": \"socks\",\n    \"settings\": {\n      \"auth\": \"noauth\",\n      \"udp\": false,\n      \"ip\": \"127.0.0.1\"\n    }\n  },\n  \"outbound\": {\n    \"protocol\": \"vmess\",\n    \"settings\": {\n      \"vnext\": [\n        {\n          \"address\": \"服务器ip\",\n          \"port\": 443,\n          \"users\": [\n            {\n              \"id\": \"同服务器uuid\",\n              \"alterId\": 99,\n              \"security\": \"auto\"\n            }\n          ]\n        }\n      ]\n    },\n    \"mux\": {\n      \"enabled\": true\n    }\n  },\n  \"outboundDetour\": [\n    {\n      \"protocol\": \"freedom\",\n      \"settings\": {},\n      \"tag\": \"direct\"\n    }\n  ],\n  \"dns\": {\n    \"servers\": [\n      \"8.8.8.8\",\n      \"8.8.4.4\",\n      \"localhost\"\n    ]\n  },\n  \"routing\": {\n    \"strategy\": \"rules\",\n    \"settings\": {\n      \"domainStrategy\": \"IPIfNonMatch\",\n      \"rules\": [\n        {\n          \"type\": \"field\",\n          \"port\": \"1-52\",\n          \"outboundTag\": \"direct\"\n        },\n        {\n          \"type\": \"field\",\n          \"port\": \"54-79\",\n          \"outboundTag\": \"direct\"\n        },\n        {\n          \"type\": \"field\",\n          \"port\": \"81-442\",\n          \"outboundTag\": \"direct\"\n        },\n        {\n          \"type\": \"field\",\n          \"port\": \"444-65535\",\n          \"outboundTag\": \"direct\"\n        },\n        {\n          \"type\": \"chinasites\",\n          \"outboundTag\": \"direct\"\n        },\n        {\n          \"type\": \"field\",\n          \"ip\": [\n            \"0.0.0.0/8\",\n            \"10.0.0.0/8\",\n            \"100.64.0.0/10\",\n            \"127.0.0.0/8\",\n            \"169.254.0.0/16\",\n            \"172.16.0.0/12\",\n            \"192.0.0.0/24\",\n            \"192.0.2.0/24\",\n            \"192.168.0.0/16\",\n            \"198.18.0.0/15\",\n            \"198.51.100.0/24\",\n            \"203.0.113.0/24\",\n            \"::1/128\",\n            \"fc00::/7\",\n            \"fe80::/10\"\n          ],\n          \"outboundTag\": \"direct\"\n        },\n        {\n          \"type\": \"chinaip\",\n          \"outboundTag\": \"direct\"\n        }\n      ]\n    }\n  }\n}\n"
+		},
+		{
+			"post_id": 43,
+			"title": "V2Ray Server config.json",
+			"date_published": 1498747535.045,
+			"body": "\n\n\n---\n`vi /etc/v2ray/config.json`\n>{\n  \"log\" : {\n    \"access\": \"/var/log/v2ray/access.log\",\n    \"error\": \"/var/log/v2ray/error.log\",\n    \"loglevel\": \"warning\"\n  },\n  \"inbound\": {\n    \"port\": 443,\n    \"protocol\": \"vmess\",\n    \"settings\": {\n      \"clients\": [\n        {\n          \"id\": \"同服务器uuid\",\n          \"level\": 1,\n          \"alterId\": 99\n        }\n      ]\n    }\n  },\n  \"outbound\": {\n    \"protocol\": \"freedom\",\n    \"settings\": {}\n  },\n  \"outboundDetour\": [\n    {\n      \"protocol\": \"blackhole\",\n      \"settings\": {},\n      \"tag\": \"blocked\"\n    }\n  ],\n  \"routing\": {\n    \"strategy\": \"rules\",\n    \"settings\": {\n      \"rules\": [\n        {\n          \"type\": \"field\",\n          \"ip\": [\n            \"0.0.0.0/8\",\n            \"10.0.0.0/8\",\n            \"100.64.0.0/10\",\n            \"127.0.0.0/8\",\n            \"169.254.0.0/16\",\n            \"172.16.0.0/12\",\n            \"192.0.0.0/24\",\n            \"192.0.2.0/24\",\n            \"192.168.0.0/16\",\n            \"198.18.0.0/15\",\n            \"198.51.100.0/24\",\n            \"203.0.113.0/24\",\n            \"::1/128\",\n            \"fc00::/7\",\n            \"fe80::/10\"\n          ],\n          \"outboundTag\": \"blocked\"\n        }\n      ]\n    }\n  }\n}\n"
+		},
+		{
+			"post_id": 41,
+			"title": "Convert your authentication public subkey to an SSH key (specify the authentication subkey ID)",
+			"date_published": 1498125185.123,
+			"body": "\n\n\n---\n\n`gpg --export-ssh-key AB416F8F `\n\n`ssh-add -L`"
+		},
+		{
+			"post_id": 39,
+			"title": "Backup GPG pub key, secret key, sub keys and revoke key",
+			"date_published": 1496027923.028,
+			"body": "\n\n---\n`gpg2 --armor --export > AB416F8F-pubkey.asc`\n`gpg2 -a --export-secret-keys AB416F8F > AB416F8F-masterkeys.asc`\n`gpg2 -a --export-secret-subkeys AB416F8F > AB416F8F-subkeys.asc`\n`gpg2 --gen-revoke AB416F8F > AB416F8F-revoke-cert.asc`"
+		},
+		{
+			"post_id": 31,
+			"title": "A YubiKey with OpenPGP can be used for logging in to remote SSH servers on MacBook",
+			"date_published": 1492359068.314,
+			"body": "\n---\n\n`ssh-add -L` will show public key, then upload the public key to the instances where you need to authenticate, and append it to ~/.ssh/authorized_keys.\n\n`vi ~/.gnupg/gpg-agent.conf`\n~~~\npinentry-program /usr/local/MacGPG2/libexec/pinentry-mac.app/Contents/MacOS/pinentry-mac\nenable-ssh-support\nwrite-env-file\nuse-standard-socket\ndefault-cache-ttl 600\nmax-cache-ttl 7200\n~~~\n\n`vi ~/.bash_profile`\n~~~\n# on OS X with GPGTools, comment out the next line:\n# eval $(gpg-agent --daemon)\nGPG_TTY=$(tty)\nexport GPG_TTY\nif [ -f \"${HOME}/.gpg-agent-info\" ]; then\n    . \"${HOME}/.gpg-agent-info\"\n    export GPG_AGENT_INFO\n    export SSH_AUTH_SOCK\nfi\n~~~\n\n`ssh root@ip`"
+		},
+		{
+			"post_id": 30,
+			"title": "Generate GPG key on MacOS Sierra",
+			"date_published": 1492256483.871,
+			"body": "\n---\n\n`gpg --expert --gen-key`\ngpg (GnuPG/MacGPG2) 2.0.30; Copyright (C) 2015 Free Software Foundation, Inc.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n\nPlease select what kind of key you want:\n   (1) RSA and RSA (default)\n   (2) DSA and Elgamal\n   (3) DSA (sign only)\n   (4) RSA (sign only)\n   (7) DSA (set your own capabilities)\n   (8) RSA (set your own capabilities)\nYour selection? `1`\nRSA keys may be between 1024 and 4096 bits long.\nWhat keysize do you want? (2048) `4096`\nRequested keysize is 4096 bits       \nRSA keys may be between 1024 and 4096 bits long.\nWhat keysize do you want for the subkey? (2048) `4096`\nRequested keysize is 4096 bits                      \nPlease specify how long the key should be valid.\n         0 = key does not expire\n      <n>  = key expires in n days\n      <n>w = key expires in n weeks\n      <n>m = key expires in n months\n      <n>y = key expires in n years\nKey is valid for? (0) `0`\nKey does not expire at all\nIs this correct? (y/N) `y`\n                        \nGnuPG needs to construct a user ID to identify your key.\n\nReal name: `yangleitj`\nEmail address: `yangleitj@gmail.com`\nComment: `yangleitj.com`        \nYou selected this USER-ID:\n    \"yangleitj (yangleitj.com) <yangleitj@gmail.com>\"\n\nChange (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? `o`\nYou need a Passphrase to protect your secret key.    \n\nWe need to generate a lot of random bytes. It is a good idea to perform\nsome other action (type on the keyboard, move the mouse, utilize the\ndisks) during the prime generation; this gives the random number\ngenerator a better chance to gain enough entropy.\nWe need to generate a lot of random bytes. It is a good idea to perform\nsome other action (type on the keyboard, move the mouse, utilize the\ndisks) during the prime generation; this gives the random number\ngenerator a better chance to gain enough entropy.\ngpg: key EC5CB5FE marked as ultimately trusted\npublic and secret key created and signed.\n\ngpg: checking the trustdb\ngpg: 3 marginal(s) needed, 1 complete(s) needed, PGP trust model\ngpg: depth: 0  valid:   2  signed:   0  trust: 0-, 0q, 0n, 0m, 0f, 2u\npub   4096R/EC5CB5FE 2017-04-15\n      Key fingerprint = 3718 B531 C46B 6B7D 4277  DDB4 D58F EC42 EC5C B5FE\nuid       [ultimate] yangleitj (yangleitj.com) <yangleitj@gmail.com>\nsub   4096R/A658B520 2017-04-15\n\n`gpg --expert --edit-key A658B520`\ngpg (GnuPG/MacGPG2) 2.0.30; Copyright (C) 2015 Free Software Foundation, Inc.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n\nSecret key is available.\n\npub  4096R/EC5CB5FE  created: 2017-04-15  expires: never       usage: SC  \n                     trust: ultimate      validity: ultimate\nsub  4096R/A658B520  created: 2017-04-15  expires: never       usage: E   \n[ultimate] (1). yangleitj (yangleitj.com) <yangleitj@gmail.com>\n\ngpg> `addkey`\nKey is protected.\n\nYou need a passphrase to unlock the secret key for\nuser: \"yangleitj (yangleitj.com) <yangleitj@gmail.com>\"\n4096-bit RSA key, ID EC5CB5FE, created 2017-04-15\n\nPlease select what kind of key you want:\n   (3) DSA (sign only)\n   (4) RSA (sign only)\n   (5) Elgamal (encrypt only)\n   (6) RSA (encrypt only)\n   (7) DSA (set your own capabilities)\n   (8) RSA (set your own capabilities)\nYour selection? `4`\nRSA keys may be between 1024 and 4096 bits long.\nWhat keysize do you want? (2048) `4096`\nRequested keysize is 4096 bits       \nPlease specify how long the key should be valid.\n         0 = key does not expire\n      <n>  = key expires in n days\n      <n>w = key expires in n weeks\n      <n>m = key expires in n months\n      <n>y = key expires in n years\nKey is valid for? (0) `0`\nKey does not expire at all\nIs this correct? (y/N) `y`\nReally create? (y/N) `y`  \nWe need to generate a lot of random bytes. It is a good idea to perform\nsome other action (type on the keyboard, move the mouse, utilize the\ndisks) during the prime generation; this gives the random number\ngenerator a better chance to gain enough entropy.\n\npub  4096R/EC5CB5FE  created: 2017-04-15  expires: never       usage: SC  \n                     trust: ultimate      validity: ultimate\nsub  4096R/A658B520  created: 2017-04-15  expires: never       usage: E   \nsub  4096R/56F3CAC0  created: 2017-04-15  expires: never       usage: S   \n[ultimate] (1). yangleitj (yangleitj.com) <yangleitj@gmail.com>\n\ngpg> `addkey`\nKey is protected.\n\nYou need a passphrase to unlock the secret key for\nuser: \"yangleitj (yangleitj.com) <yangleitj@gmail.com>\"\n4096-bit RSA key, ID EC5CB5FE, created 2017-04-15\n\nPlease select what kind of key you want:\n   (3) DSA (sign only)\n   (4) RSA (sign only)\n   (5) Elgamal (encrypt only)\n   (6) RSA (encrypt only)\n   (7) DSA (set your own capabilities)\n   (8) RSA (set your own capabilities)\nYour selection? `8`\n                 \nPossible actions for a RSA key: Sign Encrypt Authenticate \nCurrent allowed actions: Sign Encrypt \n\n   (S) Toggle the sign capability\n   (E) Toggle the encrypt capability\n   (A) Toggle the authenticate capability\n   (Q) Finished\n\nYour selection? `s`\n                 \nPossible actions for a RSA key: Sign Encrypt Authenticate \nCurrent allowed actions: Encrypt \n\n   (S) Toggle the sign capability\n   (E) Toggle the encrypt capability\n   (A) Toggle the authenticate capability\n   (Q) Finished\n\nYour selection? `e`\n                 \nPossible actions for a RSA key: Sign Encrypt Authenticate \nCurrent allowed actions:\n\n   (S) Toggle the sign capability\n   (E) Toggle the encrypt capability\n   (A) Toggle the authenticate capability\n   (Q) Finished\n\nYour selection? `a`\n                 \nPossible actions for a RSA key: Sign Encrypt Authenticate \nCurrent allowed actions: Authenticate \n\n   (S) Toggle the sign capability\n   (E) Toggle the encrypt capability\n   (A) Toggle the authenticate capability\n   (Q) Finished\n\nYour selection? `q`\nRSA keys may be between 1024 and 4096 bits long.\nWhat keysize do you want? (2048) `4096`\nRequested keysize is 4096 bits       \nPlease specify how long the key should be valid.\n         0 = key does not expire\n      <n>  = key expires in n days\n      <n>w = key expires in n weeks\n      <n>m = key expires in n months\n      <n>y = key expires in n years\nKey is valid for? (0) `0`\nKey does not expire at all\nIs this correct? (y/N) `y`\nReally create? (y/N) `y`  \nWe need to generate a lot of random bytes. It is a good idea to perform\nsome other action (type on the keyboard, move the mouse, utilize the\ndisks) during the prime generation; this gives the random number\ngenerator a better chance to gain enough entropy.\n\npub  4096R/EC5CB5FE  created: 2017-04-15  expires: never       usage: SC  \n                     trust: ultimate      validity: ultimate\nsub  4096R/A658B520  created: 2017-04-15  expires: never       usage: E   \nsub  4096R/56F3CAC0  created: 2017-04-15  expires: never       usage: S   \nsub  4096R/333B29BD  created: 2017-04-15  expires: never       usage: A   \n[ultimate] (1). yangleitj (yangleitj.com) <yangleitj@gmail.com>\n\ngpg> `save`\n\n"
+		},
+		{
+			"post_id": 29,
+			"title": "Generate GPG key on Yubikey NEO",
+			"date_published": 1492254618.641,
+			"body": "\n---\n\n>Yubikey NEO support GPG 2048\nYubikey 4 support GPG 4096\n\n`gpg --card-edit`\ngpg/card> `admin`\ngpg/card> `generate`\nMake off-card backup of encryption key? (Y/n) \n                                              \ngpg: NOTE: keys are already stored on the card!\n\nReplace existing keys? (y/N) `y`\nPlease specify how long the key should be valid.\n         0 = key does not expire\n      <n>  = key expires in n days\n      <n>w = key expires in n weeks\n      <n>m = key expires in n months\n      <n>y = key expires in n years\nKey is valid for? (0) `0`\nKey does not expire at all\nIs this correct? (y/N) `y`\n                        \nGnuPG needs to construct a user ID to identify your key.\n\nReal name: `yangleitj`\nEmail address: `yangleitj@gmail.com`\nComment: `yangleitj.com`          \nYou selected this USER-ID:\n    \"yangleitj (yangleitj.com) <yangleitj@gmail.com>\"\n\nChange (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? `o`\nYou need a Passphrase to protect your secret key.    \n\ngpg: NOTE: backup of card key saved to `/Users/yangleitj/.gnupg/sk_EE9C59F55941F4A2.gpg'\ngpg: key E1EEEF3B marked as ultimately trusted\npublic and secret key created and signed.\n\ngpg: checking the trustdb\ngpg: 3 marginal(s) needed, 1 complete(s) needed, PGP trust model\ngpg: depth: 0  valid:   3  signed:   0  trust: 0-, 0q, 0n, 0m, 0f, 3u\npub   2048R/E1EEEF3B 2017-04-15\n      Key fingerprint = B08F A721 8977 F0CF 2692  8500 369A A323 E1EE EF3B\nuid       [ultimate] yangleitj (yangleitj.com) <yangleitj@gmail.com>\nsub   2048R/721015F7 2017-04-15\nsub   2048R/5941F4A2 2017-04-15\n\n~~~\nApplication ID ...:\nVersion ..........: 2.0\nManufacturer .....: Yubico\nSerial number ....:\nName of cardholder: yangleitj\nLanguage prefs ...: en\nSex ..............: male\nURL of public key : https://pgp.mit.edu\nLogin data .......: yangleitj\nSignature PIN ....: forced\nKey attributes ...: 2048R 2048R 2048R\nMax. PIN lengths .: 127 127 127\nPIN retry counter : 3 3 3\nSignature counter : 5\nSignature key ....: B08F A721 8977 F0CF 2692  8500 369A A323 E1EE EF3B\n      created ....: 2017-04-15 12:36:54\nEncryption key....: 2721 F927 356C FA03 FB16  1ECB EE9C 59F5 5941 F4A2\n      created ....: 2017-04-15 12:36:54\nAuthentication key: 8485 0ACB 7ECE 53E6 2C83  FB77 E02A EE0F 7210 15F7\n      created ....: 2017-04-15 12:36:54\nGeneral key info..: \npub  2048R/E1EEEF3B 2017-04-15 yangleitj (yangleitj.com) <yangleitj@gmail.com>\nsec>  2048R/E1EEEF3B  created: 2017-04-15  expires: never     \n                      card-no: 0006 05240344\nssb>  2048R/721015F7  created: 2017-04-15  expires: never     \n                      card-no: 0006 05240344\nssb>  2048R/5941F4A2  created: 2017-04-15  expires: never     \n                      card-no: 0006 05240344\n~~~\n"
+		},
+		{
+			"post_id": 27,
+			"title": "ShadowsocksR client for MacOS",
+			"date_published": 1486271230.135,
+			"body": "`/usr/bin/ruby -e \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)\"\n`\n`brew install pcre`"
+		},
+		{
+			"post_id": 26,
+			"title": "ShadowsocksR server official by Breakwa11",
+			"date_published": 1481096963.112,
+			"body": "\n---\n\n`apt-get install git`\n`git clone https://github.com/shadowsocksr/shadowsocksr.git`\n`cd shadowsocksr`\n`bash initcfg.sh`\n`cd shadowsocks`\n`python server.py -p 443 -k 你的密码 -m aes-256-cfb -O auth_aes128_md5 -o tls1.2_ticket_auth -d start`\n\nInstall libsodium for chacha20-ietf\n`apt-get install build-essential`\n`wget https://github.com/jedisct1/libsodium/releases/download/1.0.10/libsodium-1.0.10.tar.gz`\n`tar xf libsodium-1.0.10.tar.gz && cd libsodium-1.0.10`\n`./configure && make -j2 && make install`\n`ldconfig`"
+		},
+		{
+			"post_id": 25,
+			"title": "V2Ray server setup",
+			"date_published": 1480914110.713,
+			"body": "\n\n---\n`bash <(curl -L -s https://install.direct/go.sh)`\n`vi /etc/v2ray/config.json`\n`service v2ray start|stop|status|reload|restart|force-reload`"
+		},
+		{
+			"post_id": 22,
+			"title": "TightVNC on Ubuntu 16.04",
+			"date_published": 1480667058.304,
+			"body": "\n---\n\n`sudo apt install xfce4 xfce4-goodies tightvncserver`\n`vncserver `\n`vncserver -kill :1`\n`mv ~/.vnc/xstartup ~/.vnc/xstartup.bak`\n`vi ~/.vnc/xstartup`\n>~~~\n#!/bin/bash\nxrdb $HOME/.Xresources\nstartxfce4 &\n~~~\n\n`sudo chmod +x ~/.vnc/xstartup`\n`vncserver`\nRun on local computer `ssh -L 5901:127.0.0.1:5901 -N -f -l username server_ip_address`\nRun tightvnc 127.0.0.1:5901\n`sudo vi /etc/systemd/system/vncserver@.service`\n>~~~\n[Unit]\nDescription=Start TightVNC server at startup\nAfter=syslog.target network.target\n[Service]\nType=forking\nUser=用户名\nPAMName=login\nPIDFile=/home/用户名/.vnc/%H:%i.pid\nExecStartPre=-/usr/bin/vncserver -kill :%i > /dev/null 2>&1\nExecStart=/usr/bin/vncserver -depth 24 -geometry 1280x800 :%i\nExecStop=/usr/bin/vncserver -kill :%i\n[Install]\nWantedBy=multi-user.target\n~~~\n\n`sudo systemctl daemon-reload`\n`sudo systemctl enable vncserver@1.service`\n`vncserver -kill :1`\n`sudo systemctl start vncserver@1`\n`sudo systemctl status vncserver@1`\n\n参考资料：\n- [How to Install and Configure VNC on Ubuntu 16.04\n](https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-vnc-on-ubuntu-16-04)"
+		},
+		{
+			"post_id": 19,
+			"title": "Configure SSH Key-Based Authentication",
+			"date_published": 1479119882.247,
+			"body": " \n---\n\n- Create SSH Keys\n`ssh-keygen`\n\n- Copy ~/.ssh/id_rsa.pub to VPS\n`ssh-copy-id -f username@remote_host_SERVER_IP_ADDRESS`\n\n- Disable Password Authentication\n`sudo vi /etc/ssh/sshd_config`\n>RSAAuthentication yes\nPubkeyAuthentication yes\nChallengeResponseAuthentication no\nPasswordAuthentication no\nUsePAM no\n\n`sudo service ssh restart`\nor\n`sudo /etc/init.d/ssh reload`\n\n\n>Protocol 2\nHostKey /etc/ssh/ssh_host_rsa_key\nHostKey /etc/ssh/ssh_host_dsa_key\nHostKey /etc/ssh/ssh_host_ecdsa_key\nHostKey /etc/ssh/ssh_host_ed25519_key\nUsePrivilegeSeparation yes\nKeyRegenerationInterval 3600\nServerKeyBits 1024\nSyslogFacility AUTH\nLogLevel INFO\nLoginGraceTime 120\nPermitRootLogin yes\nStrictModes yes\nRSAAuthentication yes\nPubkeyAuthentication yes\nIgnoreRhosts yes\nRhostsRSAAuthentication no\nHostbasedAuthentication no\nPermitEmptyPasswords no\nChallengeResponseAuthentication no\nPasswordAuthentication no\nX11Forwarding yes\nX11DisplayOffset 10\nPrintMotd no\nPrintLastLog yes\nTCPKeepAlive yes\nAcceptEnv LANG LC_*\nSubsystem sftp /usr/lib/openssh/sftp-server\nUsePAM no\nPort 56789"
+		},
+		{
+			"post_id": 18,
+			"title": ".com bind to .bit",
+			"date_published": 1479116276.877,
+			"body": "\n---\n\n首先感谢：@sary和@mv两位大神的多封邮件帮助！\n参考资料：\n- @sary的[《搭建基于ZeroNet的公网博客实践》\n](http://127.0.0.1:43110/shenrui.bit/?Post:9)和[《一个基于ZeroNet搭建网站的思路》\n](http://127.0.0.1:43110/shenrui.bit/?Post:6)\n- @mv的[《在VPS上运行ZeroNet，并通过Https访问\n》](http://127.0.0.1:43110/1H82fzqWPCaQP622b1iyFuTbbqDEMt9Tk4/?Post:3:%E5%9C%A8VPS%E4%B8%8A%E8%BF%90%E8%A1%8CZeroNet%EF%BC%8C%E5%B9%B6%E9%80%9A%E8%BF%87Https%E8%AE%BF%E9%97%AE)\n- [capybaraaa@zeroid.bit](http://127.0.0.1:43110/Me.ZeroNetwork.bit/?Profile/1White24UrrwQrD86o6Vrc1apgZ1x1o51/1BiZXB95Wx1fxb8qgGX9DJungiUCn7hj4T/capybaraaa@zeroid.bit) 整理的 [《搭建Https的ZeroNet节点反向代理》](http://127.0.0.1:43110/1FjA71G8f9vBkZcpL31vbijR6fq2ybXLEf/?Post:2:%E6%90%AD%E5%BB%BAHttps%E7%9A%84ZeroNet%E8%8A%82%E7%82%B9%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86)\n\n# Step 1 - 首先参考[《Nginx通过Let's Encrypt安装免费HTTPS证书》](http://127.0.0.1:43110/yangleitj.bit/?Post:2)\n# Step 2 - 修改nginx配置文件\n`vi /etc/nginx/sites-available/default`\n\n~~~\nserver {\nlisten 443 ssl;\nserver_name 你的域名.com;\nssl_certificate /etc/letsencrypt/live/你的域名.com/fullchain.pem;\nssl_certificate_key /etc/letsencrypt/live/你的域名.com/privkey.pem;\nssl_protocols TLSv1 TLSv1.1 TLSv1.2;\nssl_prefer_server_ciphers on;\nssl_dhparam /etc/ssl/certs/dhparam.pem;\nssl_ciphers 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA';\nssl_session_timeout 1d;\nssl_session_cache shared:SSL:50m;\nssl_stapling on;\nssl_stapling_verify on;\nadd_header Strict-Transport-Security max-age=15768000;\nlocation / {                                                \nproxy_pass http://127.0.0.1:43110;                          \nproxy_set_header Host $host;                                \nproxy_http_version 1.1;                                     \nproxy_read_timeout 1h;                                      \nproxy_set_header Upgrade $http_upgrade;                     \nproxy_set_header Connection \"upgrade\";                      \nproxy_set_header X-Real-IP $remote_addr;                    \nproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n}\naccess_log off;\n}\nserver {\nlisten 80;\nserver_name 你的域名.com;\nreturn 301 https://$host$request_uri;\n}\n~~~\n\nESC后:wq保存退出\n\n`service nginx reload`\n\n# Step 3 - 安装ZeroNet\n\n~~~\nsudo apt-get update\nsudo apt-get install msgpack-python python-gevent git\ngit clone https://github.com/HelloZeroNet/ZeroNet.git ZeroNet\ncd ZeroNet && python zeronet.py\n~~~\n或者\n~~~\nwget https://github.com/HelloZeroNet/ZeroBundle/raw/master/dist/ZeroBundle-linux64.tar.gz\ntar xvpfz ZeroBundle-linux64.tar.gz\ncd ZeroBundle\n./ZeroNet.sh\n~~~\n\n- 如果需要代理使用 `proxychains`\n- 如果需要设置密码先要 `mv ~/plugins/disabled-UiPassword ~/plugins/UiPassword`\n- 如果需要修改默认主页使用 `--homepage 你的地址`\n举例 `python zeronet.py --ui_ip 0.0.0.0 --ui_password 你的密码 --homepage yangleitj.bit &`\n\n另一种方法\n`vi ~/ZeroNet-master/src/Config.py`\n修改第139行default'此处为你的主页 你的域名.bit'然后再运行zeronet\n\n- 如果需要后台启动\n`nohup python zeronet.py --ui_ip 0.0.0.0 --ui_password 你的密码 --homepage yangleitj.bit & echo $! > zerorun.pid`\n- 如果需要关闭 `cat zerorun.pid`  然后 `kill 对应pid`\n\n大功告成后访问 https://你的域名:8888\n\n "
+		},
+		{
+			"post_id": 16,
+			"title": "aMule on Ubuntu",
+			"date_published": 1479026607.81,
+			"body": "\n\n\n---\n\n`echo -n 你的密码 | md5sum | cut -d ' ' -f 1` #默认密码 btsynchina\n\n`sudo -i` #使用root身份\n\n`apt-get install amule-common amule-daemon git -y` #安装amule\n\n`git clone https://github.com/yangleitj/amule.git /root/.aMule` #使用我的数据库和配置文件\n\n`amuled`\n\n`ctrl+c` #终止命令\n\n`amuleweb -w`\n\n`nohup amuled` #后台运行\n\n>访问 http://ip:9999\n\n\n`cd /root/.aMule`\n\n`vi amule.conf` #编辑配置文件\n\n>[eMule]\n\n>Nick=BTSynChina.com #可以随便改\n\n>Port=5773 #默认4662\n\n>UDPPort=5783 #默认4672\n\n>UPnPEnabled=1 #默认0\n\n>[ExternalConnect]\n\n>AcceptExternalConnections=1 #默认0\n\n>ECPort=5823 #默认4712可以随便改\n\n>ECPassword= #密码的md5编码，开头生成的\n\n>UPnPECEnabled=1 #默认0\n\n>[WebServer]\n\n>Enabled=1 #默认0\n\n>Password= #密码的md5编码\n\n>Port=9999 #默认4711网页登陆端口号可以随便改\n\n>UPnPWebServerEnabled=1 #默认0\n\n`esc+:wq` #保存退出\n\n`vi remote.conf`\n\n>Locale=\n\n>[EC]\n\n>Port=5823 #默认4712可以随便改\n\n>Password= #密码的md5编码，开头生成的\n\n>[Webserver]\n\n>Port=9999 #网页登陆端口号可以随便改\n\n>UPnPWebServerEnabled=1 #默认0\n\n>AdminPassword= #密码的md5编码，开头生成的\n\n`esc+:wq` #保存退出\n\n"
+		},
+		{
+			"post_id": 14,
+			"title": "ZeroBlog stick topic and group topic",
+			"date_published": 1478939238.379,
+			"body": "\n---\n\n~~~\nhttp://127.0.0.1:43110/btsynchina.bit/content.json\n  \"topic_sticky_uris\": [\n   \"1_1NVmy7v2J1aQEgja6HDSeDM8VaADP9zkpu\"\n  ]\n将置顶贴放入此处，1NVmy7v2J1aQEgja6HDSeDM8VaADP9zkpu代表作者的id，1_代表作者的第一个贴子。\n~~~\n\n~~~\nhttp://127.0.0.1:43110/btsynchina.bit/data/users/1NVmy7v2J1aQEgja6HDSeDM8VaADP9zkpu/data.json\n\t\t{\n\t\t\t\"type\": \"group\",\n\t\t\t\"topic_id\": 2,\n\t\t\t\"title\": \"「BTSync（Resilio Sync）使用方法及讨论」\",\n\t\t\t\"body\": \"\",\n\t\t\t\"added\": 1477681149\n\t\t},\n添加\"type\": \"group\",将贴子设置成板块。\n~~~\n\n~~~\nSign&Publish /content.json\nSign&Publish /data/users/content.json\nSign&Publish /data/users/作者id/data.json\n~~~\n\n"
+		},
+		{
+			"post_id": 13,
+			"title": "Nautilus(open folders as admin) on Ubuntu 16.04",
+			"date_published": 1478939156.727,
+			"body": "\n---\n\n~~~\nsudo apt update\nsudo apt install nautilus-admin\nsudo reboot\nnautilus -q\nnautilus --no-desktop\n~~~"
+		},
+		{
+			"post_id": 11,
+			"title": "Merge MP4 on Ubuntu",
+			"date_published": 1478938825.004,
+			"body": "\n\n---\n\n~~~\nsudo apt-get install gpac\nMP4Box -cat A.mp4 -cat B.mp4 -new A+B.mp4\n~~~"
+		},
+		{
+			"post_id": 10,
+			"title": "Notepadqq(Notepad++) on Ubuntu",
+			"date_published": 1478938781.655,
+			"body": "\n---\n\n~~~\nsudo add-apt-repository ppa:notepadqq-team/notepadqq\nsudo apt-get update\nsudo apt-get install notepadqq\n~~~"
+		},
+		{
+			"post_id": 7,
+			"title": "ZeroNet on macOS",
+			"date_published": 1478937608.008,
+			"body": "\n---\n\n~~~\nDrag ZeroNet.app into terminal\nInstall Homebrew\nbrew install python\npip install gevent msgpack-python\npython zeronet.py\n~~~"
+		},
+		{
+			"post_id": 4,
+			"title": "ZeroNet running in Tor mode",
+			"date_published": 1478936896.023,
+			"body": "\n---\n\n~~~\necho 'deb http://deb.torproject.org/torproject.org xenial main'>> /etc/apt/sources.list\necho 'deb-src http://deb.torproject.org/torproject.org xenial main'>> /etc/apt/sources.list\ngpg --keyserver keys.gnupg.net --recv 886DDD89\ngpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -\napt-get update\napt-get install tor deb.torproject.org-keyring\nvi /etc/tor/torrc\n去掉第57行ControlPort 9051和第61行CookieAuthentication 1 前的注释＃后ESC加:wq保存退出\n/etc/init.d/tor restart\n~~~"
+		},
+		{
+			"post_id": 2,
+			"title": "Secure Nginx with Let's Encrypt",
+			"date_published": 1478936285.716,
+			"body": "\n---\n\n#Step 1 — 安装Nginx\n`apt update`\n\n`apt-get install nginx`\n\n#Step 2 — 安装Let's Encrypt Client\n`service nginx stop`\n\nUbuntu:\n`apt-get install letsencrypt `\nCentOS:\n`yum install epel-release`\n`yum install certbot`\n\nUbuntu:\n`letsencrypt certonly --standalone -d 你的域名.com`\nCentOS:\n`certbot certonly --standalone -d 你的域名.com`\n\nUbuntu:\n`letsencrypt renew`\nCentOS:\n`certbot renew --quiet`\n\n自动更新证书:\n`sudo crontab -e`\n`30 1    * * 1    root     letsencrypt renew`\n`service cron restart`\n\n`service nginx restart`\n\n##Generate Strong Diffie-Hellman Group\n`openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048`\n\n#Step 4 — 配置SSL\n`vi /etc/nginx/sites-available/default`\n\n~~~\nserver {\nlisten 443 ssl;\nserver_name 你的域名.com;\nserver_tokens off;\nssl_certificate /etc/letsencrypt/live/你的域名.com/fullchain.pem;\nssl_certificate_key /etc/letsencrypt/live/你的域名.com/privkey.pem;\nssl_dhparam /etc/ssl/certs/dhparam.pem;\nssl_protocols TLSv1 TLSv1.1 TLSv1.2;\nssl_prefer_server_ciphers on;\nssl_ciphers 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA';\nssl_session_timeout 1d;\nssl_session_cache shared:SSL:50m;\nssl_stapling on;\nssl_stapling_verify on;\nadd_header Strict-Transport-Security max-age=15768000;\nroot /usr/share/nginx/html;\nindex index.htm index.html;\n}\nserver {\nlisten 80;\nserver_name 你的域名.com;\nreturn 301 https://$host$request_uri;\n}\n~~~\n\n`service nginx reload`\n\n访问此网站评分\n\n`https://www.ssllabs.com/ssltest/analyze.html?d=你的域名.com`\n\n参考资料：\n- https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-14-04\n- https://certbot.eff.org/#ubuntuxenial-nginx"
+		}
+	],
+	"tag": [
+		{
+			"value": "MergeMP4",
+			"post_id": 11
+		},
+		{
+			"value": "Ubuntu",
+			"post_id": 11
+		},
+		{
+			"value": "Notepadqq(Notepad++)",
+			"post_id": 10
+		},
+		{
+			"value": "Ubuntu",
+			"post_id": 10
+		},
+		{
+			"value": "Tor",
+			"post_id": 4
+		},
+		{
+			"value": "ZeroNet",
+			"post_id": 4
+		},
+		{
+			"value": "Nginx",
+			"post_id": 2
+		},
+		{
+			"value": "Ubuntu",
+			"post_id": 2
+		},
+		{
+			"value": "Nautilus",
+			"post_id": 13
+		},
+		{
+			"value": "Ubuntu",
+			"post_id": 13
+		},
+		{
+			"value": "ZeroNet",
+			"post_id": 14
+		},
+		{
+			"value": "ZeroBlog",
+			"post_id": 14
+		},
+		{
+			"value": "ZeroNet",
+			"post_id": 7
+		},
+		{
+			"value": "MacOS",
+			"post_id": 7
+		},
+		{
+			"value": ".bit",
+			"post_id": 18
+		},
+		{
+			"value": ".com",
+			"post_id": 18
+		},
+		{
+			"value": "ZeroNet",
+			"post_id": 18
+		},
+		{
+			"value": "TightVNC",
+			"post_id": 22
+		},
+		{
+			"value": "Ubuntu",
+			"post_id": 22
+		},
+		{
+			"value": "V2Ray",
+			"post_id": 25
+		},
+		{
+			"value": "ShadowsocksR",
+			"post_id": 26
+		},
+		{
+			"value": "MacOS",
+			"post_id": 27
+		},
+		{
+			"value": "ShadowsocksR",
+			"post_id": 27
+		},
+		{
+			"value": "V2Ray",
+			"post_id": 43
+		},
+		{
+			"value": "V2Ray",
+			"post_id": 44
+		},
+		{
+			"value": "SSH",
+			"post_id": 19
+		},
+		{
+			"value": "Yubikey",
+			"post_id": 46
+		},
+		{
+			"value": "ShadowsocksR",
+			"post_id": 47
+		},
+		{
+			"value": "Ubuntu",
+			"post_id": 47
+		},
+		{
+			"value": "Yubikey",
+			"post_id": 48
+		},
+		{
+			"value": "Yubikey",
+			"post_id": 49
+		},
+		{
+			"value": "ProxyChains",
+			"post_id": 50
+		},
+		{
+			"value": "MacOS",
+			"post_id": 50
+		},
+		{
+			"value": "ProxyChains",
+			"post_id": 51
+		},
+		{
+			"value": "Ubuntu",
+			"post_id": 51
+		},
+		{
+			"value": "V2Ray",
+			"post_id": 54
+		},
+		{
+			"value": "Ubuntu",
+			"post_id": 54
+		},
+		{
+			"value": "Crontab",
+			"post_id": 45
+		},
+		{
+			"value": "ZeroNet",
+			"post_id": 56
+		},
+		{
+			"value": "Ubuntu",
+			"post_id": 56
+		},
+		{
+			"value": "ZeroNet",
+			"post_id": 57
+		},
+		{
+			"value": "Youtube-upload",
+			"post_id": 59
+		},
+		{
+			"value": "Ubuntu",
+			"post_id": 59
+		},
+		{
+			"value": "ZeroNet",
+			"post_id": 61
+		},
+		{
+			"value": "MacOS",
+			"post_id": 62
+		},
+		{
+			"value": "V2Ray",
+			"post_id": 62
+		},
+		{
+			"value": "CloudTorrent",
+			"post_id": 63
+		},
+		{
+			"value": "ResilioSync",
+			"post_id": 63
+		},
+		{
+			"value": "Docker",
+			"post_id": 63
+		},
+		{
+			"value": "GPG",
+			"post_id": 41
+		},
+		{
+			"value": "SSH",
+			"post_id": 41
+		},
+		{
+			"value": "GPG",
+			"post_id": 39
+		},
+		{
+			"value": "MacOS",
+			"post_id": 31
+		},
+		{
+			"value": "GPG",
+			"post_id": 31
+		},
+		{
+			"value": "SSH",
+			"post_id": 31
+		},
+		{
+			"value": "Yubikey",
+			"post_id": 31
+		},
+		{
+			"value": "GPG",
+			"post_id": 30
+		},
+		{
+			"value": "Yubikey",
+			"post_id": 30
+		},
+		{
+			"value": "GPG",
+			"post_id": 29
+		},
+		{
+			"value": "Yubikey",
+			"post_id": 29
+		},
+		{
+			"value": "Ubuntu",
+			"post_id": 53
+		},
+		{
+			"value": "You-get",
+			"post_id": 53
+		},
+		{
+			"value": "Youtube",
+			"post_id": 53
+		},
+		{
+			"value": "Ubuntu",
+			"post_id": 16
+		},
+		{
+			"value": "AMule",
+			"post_id": 16
+		},
+		{
+			"value": "ZeroNet",
+			"post_id": 64
+		},
+		{
+			"value": "Docker",
+			"post_id": 64
+		}
+	]
+}

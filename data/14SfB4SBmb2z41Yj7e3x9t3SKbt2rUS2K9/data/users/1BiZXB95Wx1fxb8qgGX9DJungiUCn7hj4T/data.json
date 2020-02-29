@@ -1,0 +1,13 @@
+{
+	"next_comment_id": 2,
+	"comment": [
+		{
+			"comment_id": 1,
+			"body": "我用你这里最后的Nginx配置文件时出了些问题，报错：\n```\nConnection with uiServer websocket lost.... reconnecting\n```\n后来在[issue#288](https://github.com/HelloZeroNet/ZeroNet/issues/288)里找到了解决方案，将\n```\nlocation / {\nproxy_pass http://127.0.0.1:43110;\nproxy_set_header Host $host;\n}\nlocation /Websocket {\nproxy_pass http://127.0.0.1:43110;\nproxy_http_version 1.1;\nproxy_read_timeout 1h;\nproxy_set_header Upgrade $http_upgrade;\nproxy_set_header Connection \"upgrade\";\n}\n```\n替换为以下配置可以解决：\n```\nlocation / {                                                \nproxy_pass http://127.0.0.1:43110;                          \nproxy_set_header Host $host;                                \nproxy_http_version 1.1;                                     \nproxy_read_timeout 1h;                                      \nproxy_set_header Upgrade $http_upgrade;                     \nproxy_set_header Connection \"upgrade\";                      \nproxy_set_header X-Real-IP $remote_addr;                    \nproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n}                                                           \n```\n有理由认为最近一段时间ZeroNet的网络部分结构发生了变化，因此Nginx配置信息需要更新。",
+			"post_id": 18,
+			"date_added": 1500653640
+		}
+	],
+	"comment_vote": {},
+	"topic_vote": {}
+}

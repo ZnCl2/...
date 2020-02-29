@@ -1,0 +1,29 @@
+{
+	"next_topic_id": 2,
+	"topic": [
+		{
+			"topic_id": 1591240231,
+			"title": "给ZN套一个Caddy+CDN,实现VPS运行ZN,本地浏览器域名https登录",
+			"body": "主要是解决各种zeronet gate被GFW墙的不要不要的问题.\n具体配置如下\n\n一  Caddyfile\n安装caddy实现了一个轻量级web服务器,自动通过let'sEncrypt实现tls加密.\n本配置主要包含forwardproxy和proxy两部分\nforwardproxy实现了naiveproxy代理,解决了v2ray 的tls特征暴露被GFW墙问题,具体参见github\nhttps://github.com/klzgrad/naiveproxy\n\nproxy是简单的监听,并转发到ZN, 注意 { 之前需要一个空格\n\nmyDomain {\nroot /var/www/html\ntls myEmail@gmail.com\n forwardproxy {\n   basicauth user passwd\n   hide_ip\n   hide_via\n   probe_resistance secret.localhost\n   upstream http://127.0.0.1:1080\n   }\n\n proxy / 127.0.0.1:43110     {   \n  websocket\n  header_upstream -Origin \n  }\n}\n\n\nzeronet.conf做相应修改\nfileserver_port = 50000\nui_ip = 127.0.0.1:43110\nui_password = 密码强度要高\ntor = enable",
+			"added": 1591240469,
+			"parent_topic_uri": "1517729130_1K7tW4WEbso38uMs4RN3W7GihA6tTqrApz"
+		}
+	],
+	"topic_vote": {},
+	"next_comment_id": 3,
+	"comment": {
+		"1591240231_1JeTJBQxC7CuQFxijHjjEqKgQnXJhRFF94": [
+			{
+				"comment_id": 1,
+				"body": "本站页面上好像有bug,在编辑之后未提交的情况下,刷新会导致后续继续编辑找不到save按钮,编辑内容只是做了一点点缩进,当然如果有markdown就更好了\n主要是解决各种zeronet gate被GFW墙的不要不要的问题.\n具体配置如下\n\n一  Caddyfile\n安装caddy实现了一个轻量级web服务器,自动通过let'sEncrypt实现tls加密.\n本配置主要包含forwardproxy和proxy两部分\nforwardproxy实现了naiveproxy代理,解决了v2ray 的tls特征暴露被GFW墙问题,具体参见github\nhttps://github.com/klzgrad/naiveproxy\n\nproxy是简单的监听,并转发到ZN, 注意 { 之前需要一个空格\n\n myDomain {\n        root /var/www/html\n        tls myEmail@gmail.com\n        forwardproxy {\n              basicauth user passwd\n              hide_ip\n              hide_via\n              probe_resistance secret.localhost\n              upstream http://127.0.0.1:1080\n         }\n\n          proxy / 127.0.0.1:43110     {   \n              websocket\n              header_upstream -Origin \n          }\n }\n\n\nzeronet.conf做相应修改\nfileserver_port = 50000\nui_ip = 127.0.0.1:43110\nui_password = 密码强度要高\ntor = enable",
+				"added": 1591240970
+			},
+			{
+				"comment_id": 2,
+				"body": "原来老早就有人做好了,我只是重复实现了一下,nginx换成了caddy而已\n\nhttp://127.0.0.1:43110/yangleitj.bit/?Post:18:.com+bind+to+.bit#Comments",
+				"added": 1591252675
+			}
+		]
+	},
+	"comment_vote": {}
+}

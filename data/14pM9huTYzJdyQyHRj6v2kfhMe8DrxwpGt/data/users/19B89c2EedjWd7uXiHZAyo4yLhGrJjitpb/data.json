@@ -1,0 +1,35 @@
+{
+	"next_comment_id": 3,
+	"next_question_id": 1,
+	"next_answer_id": 2,
+	"comments": [
+		{
+			"comment_id": 1,
+			"reference_id": 1,
+			"reference_type": "a",
+			"reference_auth_address": "19B89c2EedjWd7uXiHZAyo4yLhGrJjitpb",
+			"body": "I see it show up again, so posting the comment here, too. I hope there was a way to easily edit answers, or am I missing something here?\n\n- - -\n\nI made a mistake about that join. Selecting from `keyvalue LEFT JOIN json ...` would yield only one row with both `json_id` and `key`, as `LEFT JOIN` *only* duplicates rows from the left table. I wasn't focused and talked about `INNER JOIN` instead.",
+			"date_added": 1502675117566
+		},
+		{
+			"comment_id": 2,
+			"reference_id": 1,
+			"reference_type": "a",
+			"reference_auth_address": "19B89c2EedjWd7uXiHZAyo4yLhGrJjitpb",
+			"body": "That's great to hear!",
+			"date_added": 1502677039537
+		}
+	],
+	"questions": [],
+	"answers": [
+		{
+			"answer_id": 1,
+			"question_id": 2,
+			"question_auth_address": "12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu",
+			"body": "The `keyvalue` table stores values (*integers by default*) unique for each (json_id, key) pair.\n\nYes, it doesn't matter because of the joining. I think selecting from `keyvalue LEFT JOIN json ...` would yield the same result, but would at least seem to be less efficient, as the left table now has more than one row to be `LEFT JOIN`ed. I can't say for sure, though. SQL optimization is witchcraft.\n\n- - -\n\nHere's the default schema for `keyvalue`, and the code used to insert rows into it, if you want to look at them. As of Rev2169:\n\n```py\n# src/Db/Db.py#L168\n# Check keyvalue table\nchanged = cur.needTable(\"keyvalue\", [\n    [\"keyvalue_id\", \"INTEGER PRIMARY KEY AUTOINCREMENT\"],\n    [\"key\", \"TEXT\"],\n    [\"value\", \"INTEGER\"],\n    [\"json_id\", \"INTEGER\"],\n], [\n    \"CREATE UNIQUE INDEX key_id ON keyvalue(json_id, key)\"\n], version=self.schema[\"version\"])\nif changed:\n    changed_tables.append(\"keyvalue\")\n```\n\n```py\n# src/Db/Db.py#L273\nif dbmap.get(\"to_keyvalue\"):\n    # Get current values\n    res = cur.execute(\"SELECT * FROM keyvalue WHERE json_id = ?\", (json_row[\"json_id\"],))\n    current_keyvalue = {}\n    current_keyvalue_id = {}\n    for row in res:\n        current_keyvalue[row[\"key\"]] = row[\"value\"]\n        current_keyvalue_id[row[\"key\"]] = row[\"keyvalue_id\"]\n\n    for key in dbmap[\"to_keyvalue\"]:\n        if key not in current_keyvalue:  # Keyvalue not exist yet in the db\n            cur.execute(\n                \"INSERT INTO keyvalue ?\",\n                {\"key\": key, \"value\": data.get(key), \"json_id\": json_row[\"json_id\"]}\n            )\n        elif data.get(key) != current_keyvalue[key]:  # Keyvalue different value\n            cur.execute(\n                \"UPDATE keyvalue SET value = ? WHERE keyvalue_id = ?\",\n                (data.get(key), current_keyvalue_id[key])\n            )\n```",
+			"date_added": 1502672283445
+		}
+	],
+	"answer_votes": [
+	]
+}

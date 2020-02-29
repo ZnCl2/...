@@ -1,0 +1,133 @@
+{
+    "db_name": "ZeroNetDevCenter",
+    "db_file": "data/zeronetdevcenter.db",
+    "version": 2,
+    "maps": {
+        "tutorials.json": {
+            "to_table": [
+                {
+                    "node": "tutorials",
+                    "table": "tutorials"
+                }
+            ]
+        },
+        "blog.json": {
+            "to_table": ["blogposts"]
+        },
+        "tags.json": {
+            "to_table": ["tags"]
+        },
+        "users/.+/data.json": {
+            "to_table": [ "comments", "questions", "answers", "answer_votes" ],
+            "to_keyvalue": [ "next_comment_id", "next_question_id", "next_answer_id" ]
+        },
+        "users/.+/content.json": {
+            "to_json_table": ["cert_user_id"],
+            "file_name": "data.json"
+        }
+    },
+    "tables": {
+        "json": {
+            "cols": [
+                ["json_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+                ["directory", "TEXT"],
+                ["file_name", "TEXT"],
+                ["cert_user_id", "TEXT"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX path ON json(directory, file_name)"],
+            "schema_changed": 12
+        },
+        "tutorials": {
+            "cols": [
+                ["id", "INTEGER PRIMARY KEY"],
+                ["slug", "TEXT NOT NULL"],
+                ["file", "TEXT NOT NULL"],
+                ["title", "TEXT NOT NULL"],
+                ["description", "TEXT"],
+                ["author", "TEXT NOT NULL"],
+                ["tags", "TEXT"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX tutorial_key ON tutorials(id, json_id)", "CREATE UNIQUE INDEX tutorials_slug ON tutorials(slug)", "CREATE INDEX tutorial_file ON tutorials(slug)", "CREATE INDEX tutorial_title ON tutorials(title)"],
+            "schema_changed": 12
+        },
+        "blogposts": {
+            "cols": [
+                ["post_id", "INTEGER"],
+                ["title", "TEXT"],
+                ["slug", "TEXT"],
+                ["body", "TEXT"],
+                ["tags", "TEXT"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX blog_posts_key ON blogposts (json_id, post_id)", "CREATE INDEX blog_posts_id ON blogposts (post_id)"],
+            "schema_changed": 11
+        },
+        "tags": {
+            "cols": [
+                ["tag_id", "INTEGER"],
+                ["name", "TEXT"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX tags_key ON tags (json_id, tag_id)"],
+            "schema_changed": 10
+        },
+        "comments": {
+            "cols": [
+                ["comment_id", "INTEGER"],
+                ["reference_id", "INTEGER"],
+                ["reference_auth_address", "TEXT"],
+                ["reference_type", "TEXT"],
+                ["body", "TEXT"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX comment_key ON comments(json_id, comment_id)", "CREATE INDEX comment_reference_id ON comments(reference_id)"],
+            "schema_changed": 18
+        },
+        "questions": {
+            "cols": [
+                ["question_id", "INTEGER"],
+                ["title", "TEXT"],
+                ["body", "TEXT"],
+                ["solution_id", "INTEGER"],
+                ["solution_auth_address", "TEXT"],
+                ["tags", "TEXT"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX question_key ON questions(json_id, question_id)"],
+            "schema_changed": 14
+        },
+        "answers": {
+            "cols": [
+                ["answer_id", "INTEGER"],
+                ["question_id", "INTEGER"],
+                ["question_auth_address", "TEXT"],
+                ["body", "TEXT"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX answer_key ON answers(json_id, answer_id)"],
+            "schema_changed": 18
+        },
+        "answer_votes": {
+            "cols": [
+                ["answer_vote_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+                ["answer_id", "INTEGER"],
+                ["answer_auth_address", "TEXT"],
+                ["vote", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX answer_votekey ON answer_votes(json_id, answer_vote_id)"],
+            "schema_changed": 10
+        }
+    },
+    "feeds": {
+        "Blogposts": "SELECT blogposts.post_id AS event_uri, 'post' AS type, blogposts.date_added AS date_added, blogposts.title AS title, blogposts.body AS body, '?/blog/' || blogposts.slug AS url FROM blogposts LEFT JOIN json USING (json_id)",
+        "Blogcomments": "SELECT comments.comment_id AS event_uri, 'comment' AS type, comments.date_added AS date_added, blogposts.title AS title, json.cert_user_id || ': ' || comments.body AS body, '?/blog/' || blogposts.slug AS url FROM comments LEFT JOIN json ON (comments.json_id = json.json_id) LEFT JOIN blogposts ON (comments.reference_id = blogposts.post_id) WHERE reference_type='b'",
+        "Questions": "SELECT questions.question_id AS event_uri, 'article' AS type, questions.date_added AS date_added, 'Question: ' || questions.title AS title, json.cert_user_id || ': ' || questions.body AS body, '?/questions/' || REPLACE(json.directory, 'users/', '') || '/' || questions.question_id AS url FROM questions LEFT JOIN json ON (questions.json_id = json.json_id)",
+        "QuestionAnswers": "SELECT answers.answer_id AS event_uri, 'article' AS type, answers.date_added AS date_added, 'Answer on: ' || questions.title AS title, json.cert_user_id || ': ' || answers.body AS body, '?/questions/' || answers.question_auth_address || '/' || answers.question_id AS url FROM answers LEFT JOIN questions ON (answers.question_id = questions.question_id) LEFT JOIN json ON (questions.json_id = json.json_id) WHERE answers.question_auth_address = REPLACE(json.directory, 'users/', '')"
+    }
+}

@@ -1,0 +1,32 @@
+{
+	"next_topic_id": 2,
+	"topic": [
+		{
+			"topic_id": 1541775753,
+			"title": "Why Json Table structure isn't preserved with DB Reload action??",
+			"body": "Here is my dbschema.json:\n```\n{\n  \"db_name\": \"db\",\n  \"db_file\": \"data/users/db.db\",\n  \"version\": 2,\n  \"maps\": {\n    \".+/data.json\": {\n      \"to_table\": [\n        {\"node\": \"topics\", \"table\": \"topics\"}\n      ],\n      \"to_keyvalue\": [\"next_topic_id\"]\n    },\n    \".+/content.json\": {\n      \"file_name\": \"data.json\",\n      \"to_json_table\": [\"cert_user_id\", \"cert_auth_type\"]\n    }\n  },\n\n  \"tables\": {\n    \"topics\": {\n      \"cols\": [\n        [\"topic_id\", \"INTEGER\"],\n        [\"title\", \"TEXT\"],\n        [\"json_id\", \"INTEGER REFERENCES json (json_id)\"]\n      ],\n      \"indexes\": [\n        \"CREATE UNIQUE INDEX topic_key ON topics(topic_id, json_id)\"\n      ],\n      \"schema_changed\": 1\n    },\n    \"json\": {\n      \"cols\": [\n        [\"json_id\", \"INTEGER PRIMARY KEY AUTOINCREMENT\"],\n        [\"directory\", \"TEXT\"],\n        [\"file_name\", \"TEXT\"],\n        [\"cert_auth_type\", \"TEXT\"],\n        [\"cert_user_id\", \"TEXT\"]\n      ],\n      \"indexes\": [\"CREATE UNIQUE INDEX path ON json(directory, file_name)\"],\n      \"schema_changed\": 1\n    }\n  }\n}\n```\n\nSo I click buttons related DB in sidebar:\n\nDatabase REBUILD button works ok, I see `cert_auth_type` & `cert_user_id` in `json` table:\n```\n[14:54:50] Site:XXXX Deleting ./data/<SITEADDRESS>/data/users/db.db\n[14:54:50] Site:XXXX Creating tables...\n[14:54:50] Db:db Table keyvalue outdated...version: False need: 2, rebuilding...\n[14:54:50] Db:db Table json outdated...version: 0 need: 2, rebuilding...\n[14:54:50] Db:db Table topics outdated...version: 0 need: 1, rebuilding...\n[14:54:50] Db:db Table json outdated...version: 0 need: 1, rebuilding...\n[14:54:50] Db:db Table comments outdated...version: 0 need: 1, rebuilding...\n[14:54:50] Db:db Table categories outdated...version: 0 need: 1, rebuilding...\n[14:54:50] Site:XXXX Getting db files...\n[14:54:50] Site:XXXX Importing data...\n[14:54:50] Site:XXXX Closing Db: <Db#140106308371024:./data/<SITEADDRESS>/data/users/db.db close_idle:False>\n[14:54:50] Site:XXXX Imported 1 data file in 0.0552639961243s\n```\n\nDatabase RELOAD button *fails*, now there are no `cert_auth_type` & `cert_user_id` columns in `json` table:\n```\n[14:54:53] Db:db Table json outdated...version: 1 need: 2, rebuilding...\n[14:54:53] Site:XXXX Creating tables...\n[14:54:53] Site:XXXX Getting db files...\n[14:54:53] Site:XXXX Importing data...\n[14:54:53] Site:XXXX Error importing data/users/<USERADDRESS>/content.json: OperationalError: table json has no column named cert_auth_type in SiteStorage.py line 151 > ContentFilterPlugin.py line 165 > SiteStorage.py line 90 > Db.py line 314 > DbCursor.py line 70\n[14:54:53] Site:XXXX Closing Db: <Db#140106313794256:./data/<SITEADDRESS>/data/users/db.db close_idle:False>\n[14:54:53] Site:XXXX Imported 1 data file in 0.0695490837097s\n```\n\nSo question is: what wrong with RELOAD action? Why JSON table structure isn't preserved?",
+			"added": 1541775752
+		}
+	],
+	"topic_vote": {
+		"1541775753_1PpvHgysHyZk6AEaG38SzH2FXgcr74vJt5": 1
+	},
+	"next_comment_id": 3,
+	"comment": {
+		"1541435317_1L4dZcDF2maSKHDy788yhxpYnBWnXadUtS": [
+			{
+				"comment_id": 1,
+				"body": "Hi!\n`files_allowed` - all files that user can edit/upload.\n`optional` - are files (from array of files_allowed) that do not downloads by default for other user unless user request them.\n\nAs for pattern I think it check filename like `data.json$` which means $ - the end of string so data.json.js will not apply. But I prefer to check that in ZeroNet sources.",
+				"added": 1541503820
+			}
+		],
+		"1541775753_1PpvHgysHyZk6AEaG38SzH2FXgcr74vJt5": [
+			{
+				"comment_id": 2,
+				"body": "Fixed changing:\n```\n\"schema_changed\": 2\n```\nSee issue on gitcenter: http://127.0.0.1:43110/1GitLiXB6t5r8vuU2zC6a8GYj9ME6HMQ4t/repo/issues/view/?1P4w4Rvh4vS9r6G5xTiSh8qEW87EKZtnJB/0@1PpvHgysHyZk6AEaG38SzH2FXgcr74vJt5",
+				"added": 1542026843
+			}
+		]
+	},
+	"comment_vote": {}
+}

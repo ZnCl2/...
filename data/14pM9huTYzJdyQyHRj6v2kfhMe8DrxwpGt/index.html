@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>ZeroNet Dev Center</title>
+	<meta charset="utf-8">
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="keywords" content="zite,zites,important,krixano,list,category,search,filter">
+	<meta name="author" content="Krixano">
+	<meta name="description" content="Center for ZeroNet Development. Tutorials, Collaboration, Questions">
+	<base href="" target="_top" id="base">
+	<script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+
+	<link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.min.css">
+	<link rel="stylesheet" href="css/buefy.css" />
+	<link rel="stylesheet" href="css/main.css" />
+
+	<script src="js/navToggle.js" defer></script>
+</head>
+<body>
+	<div id="app">
+		<my-hero v-bind:class="{ 'is-medium': heroIsMedium }" v-bind:title="heroTitle" v-bind:subtitle="heroSubtitle">
+			<div v-html="heroContent"></div>
+		</my-hero>
+
+		<component v-bind:is="currentView" v-bind:current-authaddress="currentAuthaddress" v-bind:tutorials-list="tutorialsList" v-bind:blog-posts="blogPosts" v-bind:tutorial-content="tutorialContent" v-bind:tableofcontents="tableOfContents" v-bind:tutorial-comments="comments" v-bind:questions-list="questionsList" v-bind:reference-id="referenceID" v-bind:date-added="dateAdded" v-bind:answers-list="answersList" v-bind:question-title="questionTitle" v-bind:question-subtitle="questionSubtitle" v-bind:question-comments="comments" v-bind:question-authaddress="questionAuthaddress" v-bind:solutionid="solutionid" v-bind:solution-authaddress="solutionAuthaddress" v-bind:all-comments="allComments" v-bind:tags="tags"></component>
+
+		<my-footer></my-footer>
+	</div>
+
+	<!-- ZeroFrame -->
+	<script type="text/javascript" src="js/ZeroFrame.js"></script>
+
+	<!-- Vue & Router -->
+	<script type="text/javascript" src="js/vue.min.js"></script>
+	
+	<script type="text/javascript" src="js/router.js"></script>
+	<script type="text/javascript" src="js/vue-zeroframe-router.js"></script>
+	<script type="text/javascript" src="js/vueComponents.js"></script>
+	<script type="text/javascript" src="js/vueRoutes.js"></script>
+	<script type="text/javascript" src="collab/collab-routes.js"></script>
+
+	<script type="text/javascript" src="js/vue-async-computed.js"></script>
+
+	<!-- Bulma and Buefy -->
+	<script type="text/javascript" src="js/buefy.js"></script>
+
+	<!-- Markdown-It -->
+	<script type="text/javascript" src="js/markdown-it/markdown-it.min.js"></script>
+	<script type="text/javascript" src="js/markdown-it/markdown-it-footnote.min.js"></script>
+	<script type="text/javascript" src="js/markdown-it/markdown-it-emoji-light.min.js"></script>
+	<script type="text/javascript" src="js/markdown-it/markdown-it-abbr.min.js"></script>
+	<script type="text/javascript" src="js/markdown-it/markdown-it-deflist.min.js"></script>
+
+	<!-- Moment JS -->
+	<script type="text/javascript" src="js/moment.js"></script>
+
+	<!-- HighlightJS -->
+	<link rel="stylesheet" href="js/highlightjs/styles/atom-one-light.css">
+	<script type="text/javascript" src="js/highlightjs/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+
+	<script>
+		// Markdown It
+		var md = window.markdownit();
+		md.use(window.markdownitFootnote);
+		md.use(window.markdownitEmoji);
+		md.use(window.markdownitAbbr);
+		md.use(window.markdownitDeflist);
+		md.set({
+			html: true,
+			highlight: function (str, lang) {
+				if (lang && hljs.getLanguage(lang)) {
+					try {
+					  return hljs.highlight(lang, str).value;
+					} catch (__) {}
+				}
+
+				return ''; // use external default escaping
+			}
+		});
+
+		// Vue
+		Vue.use(Buefy);
+		Vue.use(AsyncComputed);
+		Vue.use(VueZeroFrameRouter);
+
+		var app = new Vue({
+			data: {
+				site_info: null,
+				userKeyValueData: {},
+				currentView: null,
+				currentAuthaddress: '',
+				heroIsMedium: true,
+				heroTitle: "",
+				heroSubtitle: "",
+				heroContent: "",
+				blogPosts: [],
+				tutorialsList: [],
+				referenceID: null,
+				dateAdded: null,
+				tutorialContent: "",
+				tableOfContents: "",
+				comments: [],
+				allComments: [],
+				userComments: [], // TODO: Change this to use allComments instead
+				questionsList: [],
+				questionTitle: "",
+				questionSubtitle: "",
+				questionAuthaddress: "",
+				solutionid: null,
+				solutionAuthaddress: "",
+				answersList: [],
+				allAnswersList: [],
+				tags: "",
+				allTags: []
+			}
+		}).$mount('#app');
+
+		// ZeroFrame
+		class ZeroApp extends ZeroFrame {
+			onOpenWebsocket () {
+				this.cmd("siteInfo", {}, (site_info) => {
+					this.site_info = site_info;
+					getUsersKeyValueData();
+					getTags(true);
+					fillInCurrentUser();
+					app.currentAuthaddress = this.site_info.auth_address;
+					getUsersComments();
+				});
+			}
+
+			selectUser () {
+				this.cmd("certSelect", {accepted_domains: ["zeroid.bit", "kaffie.bit", "cryptoid.bit"]})
+				return false
+			}
+
+			onRequest (cmd, message) {
+				if (cmd == "setSiteInfo") {
+					this.site_info = message.params;  // Save site info data to allow access it later
+					getUsersKeyValueData();
+					app.currentAuthaddress = this.site_info.auth_address;
+					fillInCurrentUser();
+					getUsersComments();
+					if (Router.currentRoute == "questions/:certuserid/:id") {
+						// When user changes, refresh answers list (but don't sort answers)
+						getAnswersList(app.referenceID, app.questionAuthaddress, app.solutionid, app.solutionAuthaddress, false);
+					}
+					if (message.params.event[0] == "file_done") {
+						getTags(true);
+						if (Router.currentRoute == "tutorials") {
+							checkTutorialsList(true, true);
+						} else if (Router.currentRoute == "tutorials/:slug") {
+							getComments(app.referenceID, "t");
+						} else if (Router.currentRoute == "questions") {
+							getQuestionsList();
+						} else if (Router.currentRoute == "questions/:certuserid/:id") {
+							getQuestion(app.referenceID, app.questionAuthaddress, false);
+							//getVotesForAnswersList();
+							//getCommentsWithAuthaddress(app.referenceID, app.questionAuthaddress, "q");
+							//getAnswersList(app.referenceID, app.questionAuthaddress);
+							//getAllComments();
+						} else if (Router.currentRoute == "blog") {
+							getBlogPosts(null, true);
+						} else if (Router.currentRoute == "blog/:slug") {
+							// TODO: Update blog post
+							//getBlogPost(app.);
+							getComments(app.referenceID, 'b');
+						} else if (Router.currentRoute == "") {
+							checkTutorialsList(false, true);
+							getQuestionsList();
+						}
+					}
+				}
+
+				Router.listenForBack(cmd, message);
+			}
+		}
+
+		zeroframe = new ZeroApp();
+		page = zeroframe; // NOTE: For ZeroFrame Router
+
+
+		// ZeroFrame Router
+		// Route Components are declared in the js/vueRoutes.js file.
+		VueZeroFrameRouter_Init(app, [
+			{ route: 'tutorials/:slug', component: TutorialsSlug },
+			{ route: 'tutorials', component: Tutorials },
+			{ route: 'questions/tags/:tag', component: QuestionsTagsTag },
+			{ route: 'questions/new', component: QuestionsNew },
+			{ route: 'questions/:certuserid/:id/answer', component: QuestionsCertuseridIdAnswer },
+			{ route: 'questions/:certuserid/:id/edit', component: QuestionsCertuseridIdEdit },
+			{ route: 'questions/:certuserid/:id', component: QuestionsCertuseridId },
+			{ route: 'questions', component: Questions },
+			{ route: 'blog/:slug', component: BlogSlug },
+			{ route: 'blog', component: Blog },
+			{ route: '', component: Home }
+		]);
+
+		if (initCollabRoutes) initCollabRoutes(app);
+
+		// Change the content in the hero.
+		function setupHero(isMedium, title, subtitle, content = "") {
+			if (isMedium != null) {
+				app.heroIsMedium = isMedium;
+			}
+			if (title != null) {
+				app.heroTitle = title;
+			}
+			if (subtitle != null) {
+				app.heroSubtitle = subtitle;
+			}
+			if (content != null) {
+				app.heroContent = content;
+			}
+		}
+
+		// Change innerHTML of all elements with class of 'currentuser' to
+		// the current user's cert_user_id, or a Select User link when there isn't
+		// a current user selected. This is called everytime a route is loaded
+		// and when the current user changes.
+		function fillInCurrentUser() {
+			var elements = document.querySelectorAll('.currentuser');
+			for (var i = 0; i < elements.length; i++) {
+				if (zeroframe.site_info.cert_user_id) {
+					if (elements[i].parentElement.tagName == "A" || elements[i].parentElement.tagName == "BUTTON") {
+						elements[i].innerHTML = zeroframe.site_info.cert_user_id;
+					} else {
+						elements[i].innerHTML = '<a href="#Select+user" onclick="return zeroframe.selectUser()">' + zeroframe.site_info.cert_user_id + '</a>';
+					}
+				} else {
+					if (elements[i].parentElement.tagName == "A" || elements[i].parentElement.tagName == "BUTTON") {
+						elements[i].innerHTML = "Select User";
+					} else {
+						elements[i].innerHTML = '<a href="#Select+user" onclick="return zeroframe.selectUser()">Select User</a>';
+					}
+				}
+			}
+		}
+
+		function getUsersKeyValueData() {
+			// Not Logged in
+			if (!zeroframe.site_info.cert_user_id) {
+				return;
+			}
+
+			zeroframe.cmd('dbQuery', ['SELECT key, value FROM keyvalue LEFT JOIN json USING (json_id) WHERE cert_user_id="' + zeroframe.site_info.cert_user_id + '" AND directory="users/' + zeroframe.site_info.auth_address + '"'], (rows) => {
+				app.userKeyValueData = {};
+				for (var i = 0; i < rows.length; i++) {
+					var row = rows[i];
+					app.userKeyValueData[row.key] = row.value ? row.value : 1;
+				}
+			});
+		}
+
+		function saveUsersKeyValueData(innerdata = null, signAndPublish = true) {
+			if (!app.userKeyValueData) {
+				console.log("Error: No user's keyvalue data!");
+				return;
+			}
+			// No account selected -> Display error
+			if (!zeroframe.site_info.cert_user_id) {
+				zeroframe.cmd("wrapperNotification", ["info", "Please, select your account."]);
+				zeroframe.selectUser();
+				return;
+			}
+			if (!innerdata) {
+
+				// This is the data file path
+				var data_inner_path = "data/users/" + zeroframe.site_info.auth_address + "/data.json";
+				var content_inner_path = "data/users/" + zeroframe.site_info.auth_address + "/content.json";
+
+				zeroframe.cmd("fileGet", {"inner_path": data_inner_path, "required": false}, (data) => {
+					if (!data) {
+						console.log("ERROR: No data for the current user. Cannot edit question that doesn't exist.");
+						return;
+					}
+					data = JSON.parse(data);
+
+					for (var property in app.userKeyValueData) {
+						if (app.userKeyValueData.hasOwnProperty(property)) {
+							data[property] = app.userKeyValueData[property];
+						}
+					}
+
+					// Encode data array to utf8 json text
+					var json_raw = unescape(encodeURIComponent(JSON.stringify(data, undefined, '\t')));
+
+					// Write file to disk
+					zeroframe.cmd("fileWrite", [data_inner_path, btoa(json_raw)], (res) => {
+						if (res == "ok") {
+							if (signAndPublish) {
+								// Sign the changed file in our user's directory
+								zeroframe.cmd("siteSign", {"inner_path": content_inner_path}, (res) => {
+									// Publish to other users
+									zeroframe.cmd("sitePublish", {"inner_path": content_inner_path, "sign": false});
+								});
+							}
+						} else {
+							zeroframe.cmd("wrapperNotification", ["error", "File write error: #{res}"]);
+						}
+					});
+				});
+			} else {
+				for (var property in app.userKeyValueData) {
+					if (app.userKeyValueData.hasOwnProperty(property)) {
+						innerdata[property] = app.userKeyValueData[property];
+					}
+				}
+			}
+		}
+
+		// Called from oninput of textarea, passes in 'this' so the function can
+		// use it's height and scrollHeight.
+		function expandTextarea(textarea) {
+			textarea.style.height = "";
+			textarea.style.height = textarea.scrollHeight + "px";
+			if (textarea.style["overflow-y"] != "hidden") {
+				textarea.style["overflow-y"] = "hidden";
+			}
+		}
+
+		function getTags(refresh = false, f = null) {
+			if (app.allTags.length == 0 || refresh) {
+				zeroframe.cmd('dbQuery', ['SELECT * FROM tags'], (tags) => {
+					app.allTags = tags;
+					if (f && typeof f == 'function') {
+						f();
+					}
+				});
+			}
+		}
+
+		// Parses tags from string of tag id's delimited by commas
+		// If not an integer, it will use it as a name of a custom tag.
+		// Returns array of tag names
+		function parseTagIds(tags) {
+			if (!tags || tags.length == 0) return null;
+			// Make sure allTags is not empty
+			var tagIds = tags.split(',').map(function(t) {
+				var integer = parseInt(t);
+				return isNaN(integer) ? t.trim() : integer;
+			});
+			var tagNames = tagIds.map(function(id) {
+				if (typeof id == 'string') return id;
+				return app.allTags[id - 1].name;
+			});
+			return tagNames;
+		}
+
+		// Parses tags from string of tag names delimited by commas
+		// Returns arrays of tag ids
+		function parseTagNames(tags) {
+			if (!tags || tags.length == 0) return null;
+			var tagNames = tags.split(',');
+			var tagIds = tagNames.map(function(name) {
+				return tagNameToId(name);
+			});
+			return tagIds;
+		}
+
+		function tagNameToId(tagName) {
+			var tag = app.allTags.find(function(tag) {
+				return tag.name == tagName;
+			});
+			if (tag) return tag.tag_id;
+			else return tagName.trim();
+		}
+
+		function newUsersData() {
+			return {
+				"next_comment_id": 1,
+				"next_question_id": 1,
+				"next_answer_id": 1,
+				"comments": [],
+				"questions": [],
+				"answers": [],
+				"answer_votes": []
+			};
+		}
+
+		function getBlogPosts(f = null, refresh = false) {
+			if (app.blogPosts.length == 0 || refresh) {
+				zeroframe.cmd('dbQuery', ['SELECT * FROM blogposts ORDER BY date_added DESC'], (posts) => {
+					app.blogPosts = posts;
+					if (f && typeof f == 'function') f();
+				});
+			}
+		}
+
+		function getBlogPost(slug, f = null) {
+			if (slug) {
+				var getBlogPost = function(blogPosts) {
+					var post = null;
+					for (var i in blogPosts) {
+						if (blogPosts[i].slug == slug) {
+							post = blogPosts[i];
+						}
+					}
+
+					if (post) {
+						app.tutorialContent = md.render(post.body);
+						app.heroTitle = post.title;
+						app.heroSubtitle = "Published on " + moment(this.dateAdded).format('MMMM Do, YYYY');
+						app.referenceID = post.post_id;
+						app.dateAdded = post.date_added;
+
+						getComments(post.post_id, "b", f);
+					} else {
+						app.tutorialContent = "";
+						app.heroTitle = 'Not Found';
+						app.heroSubtitle = 'This page was not found!';
+						app.dateAdded = null;
+					}
+				};
+
+				if (app.blogPosts.length == 0) {
+					zeroframe.cmd('dbQuery', ['SELECT * FROM blogPosts'], (blogPosts) => getBlogPost(blogPosts));
+				} else {
+					getBlogPost(app.blogPosts);
+				}
+			}
+		}
+
+		// Get's all tutorials from database and caches it in app.tutorialsList
+		// TODO(krixano): Recache tutorial list when tutorials database changes
+		function checkTutorialsList(asc = false, refresh = false) {
+			if (app.tutorialsList.length == 0 || refresh) {
+				var order = "DESC"
+				if (asc) order = "ASC";
+				zeroframe.cmd('dbQuery', ['SELECT * FROM tutorials ORDER BY id ' + order], (tutorials) => {
+					app.tutorialsList = tutorials;
+				});
+			}
+		}
+
+		// Get the tutorial from the tutorialList, get its markdown file,
+		// and convert it into html, and generate a table of contents based on
+		// the main headings.
+		// Afterwards, call the getComments function.
+		// TODO?(krixano): Implement caching of last visited tutorial's text?
+		function getTutorial(slug, f = null) {
+			if (slug) {
+				var getTutorial = function(tutorials) {
+					var tutorial = null;
+					for (var i in tutorials) {
+						if (tutorials[i].slug == slug) {
+							tutorial = tutorials[i];
+						}
+					}
+
+					if (tutorial) {
+						zeroframe.cmd('fileGet', ['tutorials/' + tutorial.file], (content) => {
+							app.heroTitle = tutorial.title;
+							app.heroSubtitle = 'By ' + tutorial.author;
+							app.tutorialContent = md.render(content);
+							app.referenceID = tutorial.id;
+							app.dateAdded = tutorial.date_added;
+
+							// Generate Table Of Contents
+							var tableOfContents = "<ol>";
+							var headings = app.tutorialContent.match(/<(h2)[^>]*>([^<]+)<\/(h2)>/g);
+							for (var i = 0; i < headings.length; i++) {
+								tableOfContents += "<li><a href='#h" + i + "'>" + headings[i].replace(/<h2[^>]*>/, '').replace(/<\/h2>/, '') + "</a></li>";
+							}
+							tableOfContents += "</ol>";
+							app.tableOfContents = tableOfContents;
+
+							getComments(tutorial.id, "t", f);
+						});
+					} else {
+						app.tutorialContent = "";
+						app.heroTitle = 'Not Found';
+						app.heroSubtitle = 'This page was not found!';
+						app.dateAdded = null;
+						// Router.navigate('not-found');
+					}
+				};
+
+				if (app.tutorialsList.length == 0) {
+					zeroframe.cmd('dbQuery', ['SELECT * FROM tutorials'], (tutorials) => getTutorial(tutorials));
+				} else {
+					getTutorial(app.tutorialsList);
+				}
+			}
+		}
+
+		// Get comments that reference given id and type from database.
+		// Usually used when the referenced post is a Tutorial.
+		// ReferenceTypes:
+		// t - tutorial
+		// q - question
+		// a - answer
+		// b - blog post
+		function getComments(referenceID, referenceType, f = null) {
+			zeroframe.cmd("dbQuery", ["SELECT * FROM comments LEFT JOIN json USING (json_id) WHERE reference_id=" + referenceID + " AND reference_type='" + referenceType + "' ORDER BY date_added DESC"], (comments) => {
+				app.comments = comments;
+				if (f && typeof f == 'function') f();
+			});
+		}
+
+		// Get all comments from database.
+		function getAllComments(f = null) {
+			zeroframe.cmd("dbQuery", ["SELECT * FROM comments LEFT JOIN json USING (json_id) ORDER BY date_added DESC"], (comments) => {
+				app.allComments = comments;
+				if (f && typeof f == 'function') f();
+			});
+		}
+
+		// Get current user's comments from database.
+		// TODO: Change this to use getAllComments instead (and cache the comments and check whether they are already downloaded, etc)?
+		function getUsersComments(f = null) {
+			zeroframe.cmd("dbQuery", ["SELECT * FROM comments LEFT JOIN json USING (json_id) ORDER BY date_added DESC"], (comments) => {
+				app.usersComments = comments;
+				if (f && typeof f == 'function') f();
+			});
+		}
+
+		// Get all comments that reference given id, type, and auth_address of
+		// the user where the json file that contains the referenced post is located.
+		// Usually used when the referenced post is a Question. NOTE: Answers use getAllComments isntead!
+		// ReferenceTypes:
+		// t - tutorial
+		// q - question
+		// a - answer
+		// b - blog post
+		function getCommentsWithAuthaddress(referenceID, auth_address, referenceType) {
+			if (referenceType == "t") {
+				console.log("ERROR: getCommentsWithAuthaddress doesn't work with tutorials.");
+				return;
+			}
+
+			zeroframe.cmd("dbQuery", ["SELECT * FROM comments LEFT JOIN json USING (json_id) WHERE reference_id=" + referenceID + " AND reference_auth_address='" + auth_address + "' AND reference_type='" + referenceType + "' ORDER BY date_added DESC"], (comments) => {
+				app.comments = comments;
+			});
+		}
+
+		// Post a comment referencing a post of given type with given id from json
+		// file located in the directory of the user whose auth_address matches
+		// the given auth_address.
+		// ReferenceTypes:
+		// t - tutorial
+		// q - question
+		// a - answer
+		// b - blog post
+		function postComment(referenceType, referenceID, referenceAuthAddress = null, refreshComments = true, f = null) {
+			// No account selected -> Display error
+			if (!zeroframe.site_info.cert_user_id) {
+				zeroframe.cmd("wrapperNotification", ["info", "Please, select your account."]);
+				zeroframe.selectUser();
+				return;
+			}
+
+			// This is the data file path
+			var data_inner_path = "data/users/" + zeroframe.site_info.auth_address + "/data.json";
+			var content_inner_path = "data/users/" + zeroframe.site_info.auth_address + "/content.json";
+
+			// Load our current messages
+			zeroframe.cmd("fileGet", {"inner_path": data_inner_path, "required": false}, (data) => {
+				if (data)
+					data = JSON.parse(data);
+				else
+					data = newUsersData();
+
+				if (!data.comments) data.comments = [];
+
+				// Add the new message to data
+				data.comments.push({
+					"comment_id": app.userKeyValueData["next_comment_id"] || 1,
+					"reference_id": referenceID,
+					"reference_type": referenceType,
+					"reference_auth_address": referenceAuthAddress,
+					"body": document.getElementById("comment").value,
+					"date_added": Date.now()
+				});
+				if (!app.userKeyValueData["next_comment_id"]) app.userKeyValueData["next_comment_id"] = 1;
+				app.userKeyValueData["next_comment_id"]++;
+				saveUsersKeyValueData(data, false);
+
+				// Encode data array to utf8 json text
+				var json_raw = unescape(encodeURIComponent(JSON.stringify(data, undefined, '\t')));
+
+				// Write file to disk
+				zeroframe.cmd("fileWrite", [data_inner_path, btoa(json_raw)], (res) => {
+					if (res == "ok") {
+						// Reset the message input
+						document.getElementById("comment").value = "";
+
+						// Sign the changed file in our user's directory
+						zeroframe.cmd("siteSign", {"inner_path": content_inner_path}, (res) => {
+							// Reload comments
+							if (refreshComments) {
+								if (referenceAuthAddress) {
+									getCommentsWithAuthaddress(app.referenceID, referenceAuthAddress, referenceType);
+								} else {
+									getComments(app.referenceID, referenceType);
+								}
+							}
+
+							if (f && typeof f == 'function') f();
+
+							// Publish to other users
+							zeroframe.cmd("sitePublish", {"inner_path": content_inner_path, "sign": false});
+						});
+					} else {
+						zeroframe.cmd("wrapperNotification", ["error", "File write error: #{res}"]);
+					}
+				});
+			});
+		}
+
+		// Overwrite answer of given id with new body from given textarea
+		function editComment(commentID, bodyTextarea, commentAuthaddress, referenceType, referenceAuthAddress = null) {
+			// No account selected -> Display error
+			if (!zeroframe.site_info.cert_user_id) {
+				zeroframe.cmd("wrapperNotification", ["info", "Please, select your account."]);
+				zeroframe.selectUser();
+				return;
+			}
+
+			// Check that the current user is equal to the question's user.
+			if (app.currentAuthaddress != commentAuthaddress) {
+				console.log("You cannot edit this. This question doesn't belong to you!");
+				zeroframe.cmd("wrapperNotification", ["info", "You cannot edit this. This question doesn't belong to you!"]);
+				return;
+			}
+
+			// This is the data file path
+			var data_inner_path = "data/users/" + zeroframe.site_info.auth_address + "/data.json";
+			var content_inner_path = "data/users/" + zeroframe.site_info.auth_address + "/content.json";
+
+			zeroframe.cmd("fileGet", {"inner_path": data_inner_path, "required": false}, (data) => {
+				if (!data) {
+					console.log("ERROR: No data for the current user. Cannot edit comment that doesn't exist.");
+					return;
+				}
+				data = JSON.parse(data);
+
+				for (var i = 0; i < data.comments.length; i++) {
+					var comment = data.comments[i];
+					if (comment.comment_id == commentID) {
+						comment.body = bodyTextarea.value;
+						// TODO: Add date_edited column to comments (and questions, and answers)
+						break;
+					}
+				}
+
+				// Encode data array to utf8 json text
+				var json_raw = unescape(encodeURIComponent(JSON.stringify(data, undefined, '\t')));
+
+				// Write file to disk
+				zeroframe.cmd("fileWrite", [data_inner_path, btoa(json_raw)], (res) => {
+					if (res == "ok") {
+						// Sign the changed file in our user's directory
+						zeroframe.cmd("siteSign", {"inner_path": content_inner_path}, (res) => {
+							// Refresh Comments
+							if (referenceAuthAddress) {
+								getCommentsWithAuthaddress(app.referenceID, referenceAuthAddress, referenceType);
+							} else {
+								getComments(app.referenceID, referenceType);
+							}
+							getUsersComments(); // WOW! This code is TERRIBLE! TODO: Make this code not terrible!
+							getAllComments();
+
+							// Publish to other users
+							zeroframe.cmd("sitePublish", {"inner_path": content_inner_path, "sign": false});
+						});
+					} else {
+						zeroframe.cmd("wrapperNotification", ["error", "File write error: #{res}"]);
+					}
+				});
+			});
+		}
+
+		// Get list of all questions from database.
+		function getQuestionsList(f = null) {
+			zeroframe.cmd('dbQuery', ['SELECT * FROM questions LEFT JOIN json USING (json_id) ORDER BY date_added DESC'], (questions) => {
+				app.questionsList = questions;
+				if (f && typeof f == 'function') f();
+			});
+		}
+
+		// Get list of all questions that have the given tagName in it's tags list
+		function getQuestionsToTag(tagName, f = null) {
+			var tagId = tagNameToId(tagName);
+			zeroframe.cmd('dbQuery', ['SELECT * FROM questions LEFT JOIN json USING (json_id) WHERE tags LIKE \'%' + tagId + '%\' ORDER BY date_added DESC'], (questions) => {
+				app.questionsList = questions;
+				if (f && typeof f == 'function') f();
+			});
+		}
+
+		// Determins in the current user can edit the current question. If it can,
+		// app.showEdit is set to true, which will display the edit button.
+		function questionAllowEdit() {
+			app.showEdit = zeroframe.site_info.auth_address == app.questionAuthaddress;
+		}
+
+		// Get question with given id from the data.json file of the user whose
+		// auth_address matches given auth_address
+		// Set markdown to true if you want app.tutorialContent to be the markdown
+		// instead of the html of the markdown.
+		function getQuestion(id, auth_address, sortAnswers = true, markdown = false, f = null) {
+			if (id && auth_address) {
+				var getQuestion = function(questions) {
+					var question = null;
+					for (var i in questions) {
+						if (questions[i].question_id == id) {
+							question = questions[i];
+						}
+					}
+
+					if (question) {
+						if (markdown) {
+							app.tutorialContent = question.body;
+						} else {
+							app.tutorialContent = md.render(question.body);
+						}
+						app.referenceID = question.question_id;
+						app.questionTitle = question.title;
+						app.questionSubtitle = question.cert_user_id;
+						app.questionAuthaddress = question.directory.replace(/users\//, '').replace(/\//g, '');
+						app.solutionid = question.solution_id;
+						app.solutionAuthaddress = question.solution_auth_address;
+						app.tags = question.tags ? question.tags : "";
+						app.dateAdded = question.date_added;
+
+						getCommentsWithAuthaddress(id, auth_address, "q");
+						getAnswersList(id, auth_address, app.solutionid, app.solutionAuthaddress, sortAnswers, f);
+					} else {
+						app.tutorialContent = "";
+						app.heroTitle = 'Not Found';
+						app.heroSubtitle = 'This page was not found!';
+						if (f && typeof f == 'function') f();
+						// Router.navigate('not-found');
+					}
+				};
+
+				zeroframe.cmd('dbQuery', ['SELECT * FROM questions LEFT JOIN json USING (json_id) WHERE directory="users/' + auth_address + '" ORDER BY date_added DESC'], (questions) => getQuestion(questions));
+			}
+		}
+
+		// Post a question in the current user's data.json file. The id of the question
+		// is 1 more than the id of the user's last question.
+		function postQuestion() {
+			// No account selected -> Display error
+			if (!zeroframe.site_info.cert_user_id) {
+				zeroframe.cmd("wrapperNotification", ["info", "Please, select your account."]);
+				zeroframe.selectUser();
+				return;
+			}
+
+			// This is the data file path
+			var data_inner_path = "data/users/" + zeroframe.site_info.auth_address + "/data.json";
+			var content_inner_path = "data/users/" + zeroframe.site_info.auth_address + "/content.json";
+
+			// Load our current questions
+			zeroframe.cmd("fileGet", {"inner_path": data_inner_path, "required": false}, (data) => {
+				if (data)
+					data = JSON.parse(data);
+				else
+					data = newUsersData();
+
+				if (!data.questions) data.questions = [];
+
+				// Add the new question to data
+				data.questions.push({
+					"question_id": app.userKeyValueData["next_question_id"] || 1,
+					"title": document.getElementById("questionTitle").value,
+					"body": document.getElementById("questionBody").value,
+					"tags": parseTagNames(document.getElementById("questionTags").value).join(','),
+					"date_added": Date.now()
+				});
+				if (!app.userKeyValueData["next_question_id"]) app.userKeyValueData["next_question_id"] = 1;
+				app.userKeyValueData["next_question_id"]++;
+				saveUsersKeyValueData(data, false);
+
+				// Encode data array to utf8 json text
+				var json_raw = unescape(encodeURIComponent(JSON.stringify(data, undefined, '\t')));
+
+				// Write file to disk
+				zeroframe.cmd("fileWrite", [data_inner_path, btoa(json_raw)], (res) => {
+					if (res == "ok") {
+						// Reset the question input
+						document.getElementById("questionTitle").value = "";
+						document.getElementById("questionBody").value = "";
+
+						// If successfully written to file, modify and save user's keyvalues
+
+						// Sign the changed file in our user's directory
+						zeroframe.cmd("siteSign", {"inner_path": content_inner_path}, (res) => {
+							// Reload Questions List
+							getQuestionsList();
+
+							// Publish to other users
+							zeroframe.cmd("sitePublish", {"inner_path": content_inner_path, "sign": false});
+							Router.navigate("questions");
+						});
+					} else {
+						zeroframe.cmd("wrapperNotification", ["error", "File write error: #{res}"]);
+					}
+				});
+			});
+		}
+
+		// Overwrite question of given id with new body from textarea with id of 'editQuestionBody'
+		function editQuestion(questionID, questionAuthaddress) {
+			// No account selected -> Display error
+			if (!zeroframe.site_info.cert_user_id) {
+				zeroframe.cmd("wrapperNotification", ["info", "Please, select your account."]);
+				zeroframe.selectUser();
+				return;
+			}
+
+			// Check that the current user is equal to the question's user.
+			if (app.currentAuthaddress != questionAuthaddress) {
+				console.log("You cannot edit this. This question doesn't belong to you!");
+				zeroframe.cmd("wrapperNotification", ["info", "You cannot edit this. This question doesn't belong to you!"]);
+				return;
+			}
+
+			// This is the data file path
+			var data_inner_path = "data/users/" + zeroframe.site_info.auth_address + "/data.json";
+			var content_inner_path = "data/users/" + zeroframe.site_info.auth_address + "/content.json";
+
+			zeroframe.cmd("fileGet", {"inner_path": data_inner_path, "required": false}, (data) => {
+				if (!data) {
+					console.log("ERROR: No data for the current user. Cannot edit question that doesn't exist.");
+					return;
+				}
+				data = JSON.parse(data);
+
+				for (var i = 0; i < data.questions.length; i++) {
+					var question = data.questions[i];
+					if (question.question_id == questionID) {
+						question.title = document.getElementById("editQuestionTitle").value;
+						question.body = document.getElementById("editQuestionBody").value;
+						question.tags = parseTagNames(document.getElementById("editQuestionTags").value).join(',');
+						// TODO: Add date_edited column to questions (and answers)
+						break;
+					}
+				}
+
+				// Encode data array to utf8 json text
+				var json_raw = unescape(encodeURIComponent(JSON.stringify(data, undefined, '\t')));
+
+				// Write file to disk
+				zeroframe.cmd("fileWrite", [data_inner_path, btoa(json_raw)], (res) => {
+					if (res == "ok") {
+						// Reset the question input
+						document.getElementById("editQuestionTitle").value = "";
+						document.getElementById("editQuestionBody").value = "";
+
+						// Sign the changed file in our user's directory
+						zeroframe.cmd("siteSign", {"inner_path": content_inner_path}, (res) => {
+							// Publish to other users
+							zeroframe.cmd("sitePublish", {"inner_path": content_inner_path, "sign": false});
+							Router.navigate("questions/" + zeroframe.site_info.auth_address + "/" + questionID);
+						});
+					} else {
+						zeroframe.cmd("wrapperNotification", ["error", "File write error: #{res}"]);
+					}
+				});
+			});
+		}
+
+		function questionMarkSolution(questionID, questionAuthaddress, answerID, answerAuthaddress) {
+			// No account selected -> Display error
+			if (!zeroframe.site_info.cert_user_id) {
+				zeroframe.cmd("wrapperNotification", ["info", "Please, select your account."]);
+				zeroframe.selectUser();
+				return;
+			}
+
+			// Check that the current user is equal to the question's user.
+			if (app.currentAuthaddress != questionAuthaddress) {
+				console.log("You cannot edit this. This question doesn't belong to you!");
+				zeroframe.cmd("wrapperNotification", ["info", "You cannot mark a solution for this question. This question doesn't belong to you!"]);
+				return;
+			}
+
+			// This is the data file path
+			var data_inner_path = "data/users/" + zeroframe.site_info.auth_address + "/data.json";
+			var content_inner_path = "data/users/" + zeroframe.site_info.auth_address + "/content.json";
+
+			zeroframe.cmd("fileGet", {"inner_path": data_inner_path, "required": false}, (data) => {
+				if (!data) {
+					console.log("ERROR: No data for the current user. Cannot mark solution for a question that doesn't exist.");
+					return;
+				}
+				data = JSON.parse(data);
+
+				for (var i = 0; i < data.questions.length; i++) {
+					var question = data.questions[i];
+					if (question.question_id == questionID) {
+						question.solution_id = answerID;
+						question.solution_auth_address = answerAuthaddress;
+					}
+				}
+
+				// Encode data array to utf8 json text
+				var json_raw = unescape(encodeURIComponent(JSON.stringify(data, undefined, '\t')));
+
+				// Write file to disk
+				zeroframe.cmd("fileWrite", [data_inner_path, btoa(json_raw)], (res) => {
+					if (res == "ok") {
+						app.solutionid = answerID;
+						app.solutionAuthaddress = answerAuthaddress;
+
+						// Sign the changed file in our user's directory
+						zeroframe.cmd("siteSign", {"inner_path": content_inner_path}, (res) => {
+							// Publish to other users
+							zeroframe.cmd("sitePublish", {"inner_path": content_inner_path, "sign": false});
+						});
+					} else {
+						zeroframe.cmd("wrapperNotification", ["error", "File write error: #{res}"]);
+					}
+				});
+			});
+		}
+
+		// Get list of all answers that reference a question with given id from
+		// a data.json file of a user whose auth_address matches the given auth_address.
+		function getAnswersList(question_id, question_auth_address, solutionID, solutionAuthaddress, sortAnswers = true, f = null) {
+			zeroframe.cmd('dbQuery', ['SELECT * FROM answers LEFT JOIN json USING (json_id) WHERE question_id=' + question_id + ' AND question_auth_address="' + question_auth_address + '" ORDER BY date_added DESC'], (answers) => {
+				// As long as a solution exists, go through all answers to find the solution from the array
+				//app.answersList = [];
+				var list = [];
+				if (solutionID && solutionAuthaddress) {
+					var solutionIndex = null;
+					for (var i = 0; i < answers.length; i++) {
+						if (answers[i].answer_id == solutionID && answers[i].directory.replace(/users\//, '').replace(/\//, '') == solutionAuthaddress) {
+							list.push(answers[i]); // Put solution first
+							solutionIndex = i;
+							break; // Don't go through rest of array if we found the solution - there can only be one solution
+						}
+					}
+					// If there is a solution
+					if (solutionIndex != null) {
+						// Remove solution from answers array
+						answers.splice(solutionIndex, 1); // Removes 1 element starting at the given index
+					}
+				}
+
+				list = list.concat(answers);
+				getVotesForAnswersList(list, function(newList) {
+					// Sort list by votes (disregarding the solution)
+					//if (sortAnswers) {
+						newList.sort(function(a, b) { // TODO: Don't resort when not on first zite load
+							if (a.answer_id == solutionID && a.directory.replace(/users\//, '').replace(/\//g, '') == solutionAuthaddress) return false;
+							return b.vote_amount - a.vote_amount;
+						});
+					//} else {
+					//}
+					// TODO: Make where it doesn't sort answers unless on first zite load
+					// which means I need to somehow keep the old sorting, since everytime the
+					// answerslist is updated, everything gets sorted by date (when not sorted by votes)
+					app.answersList = newList;
+					if (f && typeof f == 'function') f();
+				});
+			});
+		}
+
+		// Get the votes for the answers list
+		// This is called every time you get the answers list
+		// AND every time the current user changes
+		function getVotesForAnswersList(answersList, f = null) {
+			for (var i = 0; i < answersList.length; i++) {
+				var answer = answersList[i];
+				var auth_address = answer.directory.replace(/users\//, '').replace(/\//g, '');
+				getVotesForAnswer(answer.answer_id, auth_address, function(vote_amount, currentUserVoted, i) {
+					answersList[i]["vote_amount"] = vote_amount;
+					answersList[i]["current_user_voted"] = currentUserVoted;
+					
+					if (i == answersList.length - 1 && f && typeof f == 'function') f(answersList);
+				}, i);
+			}
+		}
+
+		// Get the votes for the given answer
+		// Calls passed in function, giving it the vote amount and whether the current user has voted
+		function getVotesForAnswer(answer_id, answer_auth_address, f, outer_i = null) {
+			zeroframe.cmd('dbQuery', ['SELECT * FROM answer_votes LEFT JOIN json USING (json_id) WHERE answer_id=' + answer_id + ' AND answer_auth_address="' + answer_auth_address + '"'], (votes) => {
+				var vote_amount = 0;
+				var currentUserVoted = false;
+				for (var i = 0; i < votes.length; i++) {
+					var auth_address = votes[i].directory.replace(/users\//, '').replace(/\//g, '');
+					// Don't let there be two different vote's from same user
+					if (currentUserVoted && app.currentAuthaddress == auth_address) continue;
+
+					if (votes[i].vote > 0) vote_amount++; // For upvotes
+					if (votes[i].vote < 0) vote_amount--; // For downvotes
+					if (!currentUserVoted && app.currentAuthaddress == auth_address) {
+						if (votes[i].vote == 0) {
+							// TODO/NOTE: User has vote in json file, but it is 0, so return false so the voted arrows don't change color
+							currentUserVoted = false;
+							break;
+						} else {
+							currentUserVoted = true;
+						}
+					}
+					// if vote == 0, no vote has happened
+				}
+				if (f && typeof f == 'function') f(vote_amount, currentUserVoted, outer_i);
+			});
+		}
+
+		function voteForAnswer(answer_id, answer_auth_address, downvote = false) {
+			// No account selected -> Display error
+			if (!zeroframe.site_info.cert_user_id) {
+				zeroframe.cmd("wrapperNotification", ["info", "Please, select your account."]);
+				zeroframe.selectUser();
+				return;
+			}
+
+			// This is the data file path
+			var data_inner_path = "data/users/" + zeroframe.site_info.auth_address + "/data.json";
+			var content_inner_path = "data/users/" + zeroframe.site_info.auth_address + "/content.json";
+
+			zeroframe.cmd("fileGet", {"inner_path": data_inner_path, "required": false}, (data) => {
+				if (data)
+					data = JSON.parse(data);
+				else
+					data = newUsersData();
+
+				if (!data.answer_votes) data.answer_votes = [];
+
+				var alreadyVoted = false;
+				var voteIndex = null;
+				for (var i = 0; i < data.answer_votes.length; i++) {
+					if (data.answer_votes[i].answer_id == answer_id && data.answer_votes[i].answer_auth_address == answer_auth_address) {
+						alreadyVoted = true;
+						voteIndex = i;
+						break;
+					}
+				}
+
+				if (alreadyVoted) {
+					if (data.answer_votes[voteIndex].vote < 0 && downvote) {
+						data.answer_votes[voteIndex].vote = 0;
+					} else if (data.answer_votes[voteIndex].vote > 0 && !downvote) {
+						data.answer_votes[voteIndex].vote = 0;
+					} else if (data.answer_votes[voteIndex].vote >= 0 && downvote) {
+						data.answer_votes[voteIndex].vote = -1;
+					} else if (data.answer_votes[voteIndex].vote <= 0 && !downvote) {
+						data.answer_votes[voteIndex].vote = 1;
+					}
+				} else {
+					data.answer_votes.push({
+						"answer_id": answer_id,
+						"answer_auth_address": answer_auth_address,
+						"vote": downvote ? -1 : 1,
+					});
+				}
+
+				// Encode data array to utf8 json text
+				var json_raw = unescape(encodeURIComponent(JSON.stringify(data, undefined, '\t')));
+
+				// Write file to disk
+				zeroframe.cmd("fileWrite", [data_inner_path, btoa(json_raw)], (res) => {
+					if (res == "ok") {
+						// Sign the changed file in our user's directory
+						zeroframe.cmd("siteSign", {"inner_path": content_inner_path}, (res) => {
+							// Refresh answers
+							getAnswersList(app.referenceID, app.questionAuthaddress, app.solutionid, app.solutionAuthaddress, false);
+
+							// Publish to other users
+							zeroframe.cmd("sitePublish", {"inner_path": content_inner_path, "sign": false});
+						});
+					} else {
+						zeroframe.cmd("wrapperNotification", ["error", "File write error: #{res}"]);
+					}
+				});
+			});
+		}
+
+		// Get all answers from database.
+		function getAllAnswers() {
+			zeroframe.cmd('dbQuery', ['SELECT * FROM answers LEFT JOIN json USING (json_id) ORDER BY date_added DESC'], (answers) => {
+				app.allAnswersList = answers;
+			});
+		}
+
+		// Post an answer referencing the current question's id and the auth_address
+		// of the user who posted the question. The current question is loaded,
+		// before this function is called, using the getQuestion function (the
+		// values in the url are passed in). The id of the answer is 1 more than
+		// the current user's last answer's id.
+		function postAnswer() {
+			// No account selected -> Display error
+			if (!zeroframe.site_info.cert_user_id) {
+				zeroframe.cmd("wrapperNotification", ["info", "Please, select your account."]);
+				zeroframe.selectUser();
+				return;
+			}
+
+			// This is the data file path
+			var data_inner_path = "data/users/" + zeroframe.site_info.auth_address + "/data.json";
+			var content_inner_path = "data/users/" + zeroframe.site_info.auth_address + "/content.json";
+
+			// Load our current questions
+			zeroframe.cmd("fileGet", {"inner_path": data_inner_path, "required": false}, (data) => {
+				if (data)
+					data = JSON.parse(data);
+				else
+					data = newUsersData();
+
+				if (!data.answers) data.answers = [];
+
+				// Add the new question to data
+				data.answers.push({
+					"answer_id": app.userKeyValueData["next_answer_id"] || 1,
+					"question_id": app.referenceID,
+					"question_auth_address": app.questionAuthaddress,
+					"body": document.getElementById("answerBody").value,
+					"date_added": Date.now()
+				});
+				if (!app.userKeyValueData["next_answer_id"]) app.userKeyValueData["next_answer_id"] = 1;
+				app.userKeyValueData["next_answer_id"]++;
+				saveUsersKeyValueData(data, false);
+
+				// Encode data array to utf8 json text
+				var json_raw = unescape(encodeURIComponent(JSON.stringify(data, undefined, '\t')));
+
+				// Write file to disk
+				zeroframe.cmd("fileWrite", [data_inner_path, btoa(json_raw)], (res) => {
+					if (res == "ok") {
+						// Reset the question input
+						document.getElementById("answerBody").value = "";
+
+						// Sign the changed file in our user's directory
+						zeroframe.cmd("siteSign", {"inner_path": content_inner_path}, (res) => {
+							// Publish to other users
+							zeroframe.cmd("sitePublish", {"inner_path": content_inner_path, "sign": false});
+							Router.navigate("questions/" + app.questionAuthaddress + '/' + app.referenceID);
+						});
+					} else {
+						zeroframe.cmd("wrapperNotification", ["error", "File write error: #{res}"]);
+					}
+				});
+			});
+		}
+
+		// Overwrite answer of given id with new body from given textarea
+		function editAnswer(answerID, bodyTextarea, answerAuthaddress) {
+			// No account selected -> Display error
+			if (!zeroframe.site_info.cert_user_id) {
+				zeroframe.cmd("wrapperNotification", ["info", "Please, select your account."]);
+				zeroframe.selectUser();
+				return;
+			}
+
+			// Check that the current user is equal to the question's user.
+			if (app.currentAuthaddress != answerAuthaddress) {
+				console.log("You cannot edit this. This question doesn't belong to you!");
+				zeroframe.cmd("wrapperNotification", ["info", "You cannot edit this. This question doesn't belong to you!"]);
+				return;
+			}
+
+			// This is the data file path
+			var data_inner_path = "data/users/" + zeroframe.site_info.auth_address + "/data.json";
+			var content_inner_path = "data/users/" + zeroframe.site_info.auth_address + "/content.json";
+
+			zeroframe.cmd("fileGet", {"inner_path": data_inner_path, "required": false}, (data) => {
+				if (!data) {
+					console.log("ERROR: No data for the current user. Cannot edit answer that doesn't exist.");
+					return;
+				}
+				data = JSON.parse(data);
+
+				for (var i = 0; i < data.answers.length; i++) {
+					var answer = data.answers[i];
+					if (answer.answer_id == answerID) {
+						answer.body = bodyTextarea.value;
+						// TODO: Add date_edited column to answers (and questions, and comments)
+						break;
+					}
+				}
+
+				// Encode data array to utf8 json text
+				var json_raw = unescape(encodeURIComponent(JSON.stringify(data, undefined, '\t')));
+
+				// Write file to disk
+				zeroframe.cmd("fileWrite", [data_inner_path, btoa(json_raw)], (res) => {
+					if (res == "ok") {
+						// Sign the changed file in our user's directory
+						zeroframe.cmd("siteSign", {"inner_path": content_inner_path}, (res) => {
+							// Refresh answers
+							getAnswersList(app.referenceID, app.questionAuthaddress, app.solutionid, app.solutionAuthaddress, false);
+
+							// Publish to other users
+							zeroframe.cmd("sitePublish", {"inner_path": content_inner_path, "sign": false});
+						});
+					} else {
+						zeroframe.cmd("wrapperNotification", ["error", "File write error: #{res}"]);
+					}
+				});
+			});
+		}
+	</script>
+</body>
+</html>
