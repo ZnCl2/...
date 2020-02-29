@@ -1,0 +1,28 @@
+{
+	"title": "The Alarus Project",
+	"description": "Various Programming Projects",
+	"links": "- [Source code](https://github.com/HelloZeroNet)",
+	"next_post_id": 5,
+	"demo": false,
+	"modified": 1489641759,
+	"post": [
+		{
+			"post_id": 4,
+			"title": "Running Synergy on Raspberry Pi",
+			"date_published": 1489638426.1,
+			"body": "> Synergy is a free and open source software that allows multiple computers to share a mouse and keyboard. One of the computers that the keyboard and mouse is connected to becomes a Synergy server. The other computers becomes Synergy clients. All of this is done over the network. So if your Raspberry Pi is connected to the network somehow (via Ethernet or WiFi), you can setup your Raspberry Pi as a Synergy client so you can remotely control your Raspberry Pi from another computer. - Frank Zhao, adafruit.com\n\nI used the tutorial[[1](#clearnet-links)] there on adafruit.com by Mr. Zhao as a base, but with several changes to Synergy since then, it took quite a bit more to get it installed and running. This github wiki from symless[[2](#clearnet-links)] also helped.\n\n## Setup Synergy Server\n\nSetup the Synergy Server on the machine the keyboard and mouse are connected to. Add the Raspberry Pi to the configuration and name the display (remember this name for later)!\n\n## ![synergy-server.png (24x24)](data/img/post_4_synergy-server.png)\n\n## Compile Synergy\n\nFind the “Source” tar.gz URL from the Symless website[[3](#clearnet-links)] – it will be something like synergy-1.8.16-Source.tar.gz with the latest version number in the middle.\n\nSSH into the Raspberry Pi and run the following commands:\n\nUse wget to download latest version:\n\n```\ncd /home/pi/downloads\nsudo wget syngery-version-Source.tar.gz\n```\n\nExtract the tarball:\n\n```\nsudo tar -xzf synergy-version-Source.tar.gz\n```\n\nRun some updates...\n\n```\nsudo apt-get update && sudo apt-get upgrade -y\nsudo apt-get install build-essential cmake libavahi-compat-libdnssd-dev libcurl4-openssl-dev libssl-dev lintian python qt4-dev-tools xorg-dev\n```\n\nNavigate to the source directory\n\n```\ncd synergy-version-Source\n```\n\nOpen CMakeLists.txt in nano\n\n```\nsudo nano CMakeLists.txt\n```\n\nLook for this line:\n\n```\nset(CMAKE_INCLUDE_PATH \"${CMAKE_INCLUDE_PATH}:/usr/local/include\")\n```\n\nReplace it with:\n\n```\nset(CMAKE_INCLUDE_PATH \"${CMAKE_INCLUDE_PATH}:/usr/include\")\n```\n\nClose nano (hotkey CTRL-X, save your changes).\n\nSetup the configuration and compile Synergy:\n\n```\n./hm.sh conf -g1\n./hm.sh build\n```\n\nThis will take a looooooooooooooooooong time, take a break!\n\nCopy built executables so we can use them!\n\n```\nsudo cp -a ./bin/. /usr/bin\n```\n\n## Setup Synergy Cilent to Autostart\n\nCreate an autostart file for LXDE, or add to it if the file already exists:\n\n```\nsudo mkdir -p ~/.config/lxsession/LXDE\nsudo touch ~/.config/lxsession/LXDE/autostart\nsudo nano ~/.config/lxsession/LXDE/autostart\n```\n\nAdd the following to the bottom of the file:\n\n```\n~/.startsynergy.sh\n```\n\nClose nano (hotkey CTRL-X, save your changes).\n\nCreate the .startsynergy.sh script:\n\n```\nsudo nano ~/.startsynergy.sh\n```\n\n.startsynergy.sh script contents:\n\n```\n#!/bin/bash\n\nkillall synergyc\nsleep 1\nsynergyc --name pi 192.168.0.16\nexit 0\n```\n\nChange the –name of “pi” to whatever you named the Raspberry Pi’s display on the Synergy Server setup step at the very beginning. Change the IP address to match that of your Synergy Server machine’s IP address.\n\nClose nano (hotkey CTRL-X, save your changes).\n\nSet file permissions and reboot:\n\n```\nsudo chmod 777 ~/.startsynergy.sh\nsudo reboot\n```\n\n## Clearnet Links\n\n[1] [https://learn.adafruit.com/synergy-on-raspberry-pi](https://learn.adafruit.com/synergy-on-raspberry-pi)\n[2] [https://github.com/symless/synergy/wiki/Compiling](https://github.com/symless/synergy/wiki/Compiling)\n[3] [http://symless.com/download/](http://symless.com/download/)"
+		},
+		{
+			"post_id": 3,
+			"title": "Purpose & Levels...",
+			"date_published": 1485576486.692,
+			"body": "Originally, the purpose of this project was to have some fun with a good friend of mine. He's a pretty smart guy, but he gave up around the halfway point of his journey. My only hope is someone will come across this project log and give it a try for one of their friends as well.\n\nThe initial setup was supposed to be a scavenger hunt that incorporated hardware hacking, gaming, geocaching, and some web sleuthing. The levels were designed as follows:\n\n*   Level 01 - Hardware (game)\n*   Level 02 - Geocache\n*   Level 03 - Web Sleuthing\n*   Level 04 - Geocache\n*   Level 05 - Hardware\n*   Level 06 - Web Sleuthing\n*   Level 07 - |||||||||||||||||\n*   Level 08 - |||||||||||||||||\n*   Level 09 - |||||||||||||||||\n*   Level 10 - |||||||||||||||||"
+		},
+		{
+			"post_id": 2,
+			"title": "Welcome To The Alarus Project",
+			"date_published": 1483767904.143,
+			"body": "Welcome to _The Alarus Project_, a combination of hardware, software, literature, gaming, and personal experiences."
+		}
+	]
+}

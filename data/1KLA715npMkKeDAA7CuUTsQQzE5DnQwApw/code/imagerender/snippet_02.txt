@@ -1,0 +1,41 @@
+IntBuffer file(String path)
+{
+    BufferedImage image = null;
+    
+    try 
+    {
+        image = ImageIO.read(new File(path));
+    }
+    catch (IOException e) 
+    {
+        System.err.println("Could not load image '"+path+"'.");
+        return new IntBuffer(0,0);
+    }
+    
+    return convert(image);
+}
+
+IntBuffer resource(String directory)
+{
+    BufferedImage image = null;
+    InputStream stream = InputStream.class.getResourceAsStream(directory);
+    
+    if (stream!=null)
+    try 
+    {
+        image = ImageIO.read( stream );
+    } 
+    catch (IOException e) 
+    {
+        System.err.println("Could not load resource '"+directory+"'.");
+        return new IntBuffer(0,0);
+    }
+    
+    if (image==null)
+    {
+        System.err.println("InputStream error from reading '"+directory+"'.");
+        return new IntBuffer(0,0);
+    }
+    
+    return convert(image);
+}

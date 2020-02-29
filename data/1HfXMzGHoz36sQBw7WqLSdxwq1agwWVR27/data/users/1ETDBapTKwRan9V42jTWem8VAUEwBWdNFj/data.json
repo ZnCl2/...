@@ -1,0 +1,48 @@
+{
+	"questions": [
+		{
+			"question_id": 1515239481211,
+			"title": "Vue - $emit not working from parent to child",
+			"body": "So I'm trying to add event handling to my Vue app and am having a hard time.\n\nIn the parent, I have a method that emit's a signal:\n\n```\napp.$emit(\"updateSomething\", value);\n```\n\nIn a Vue component, I'd like to run a method when this $emit fires, but because this is a component of app, app doesn't actually exist yet, and thus I can't do the following in `mounted`:\n\n```\napp.$on(\"updateSomething, function(value) {\n    console.log(\"Got value: \" + value);\n});\n```\n\nI tried making another Vue instance to act as a global messaging bus, but the child Vue component still isn't able to access that instance in its `mounted` method.\n\nHow do you handle calling child methods from the parent Vue app? Is there another way other than $emit? Am I doing something wrong? To be fair this is the first time I've ever used $emit and $on in Vue so still finding it a bit hard to understand.",
+			"tags": "vue,event-handling",
+			"date_added": 1515239481211,
+			"solution_id": 1515239646111,
+			"solution_auth_address": "1ETDBapTKwRan9V42jTWem8VAUEwBWdNFj"
+		}
+	],
+	"answers": [
+		{
+			"answer_id": 1515239646111,
+			"question_id": 1515239481211,
+			"question_auth_address": "1ETDBapTKwRan9V42jTWem8VAUEwBWdNFj",
+			"body": "By looking at ZeroExchange's [excellent source code](https://github.com/krixano/ZeroExchange/blob/f567604c4f9c62b5509ebfdb5f831a270c40b550/src/router_pages/home.vue#L39), I've realized that you can simply write:\n\n```\nthis.$parent.$on(...);\n```\n\nin the component and you will be good!",
+			"date_added": 1515239646111
+		}
+	],
+	"comments": [
+		{
+			"comment_id": 1515246890724,
+			"reference_type": "q",
+			"reference_id": 1515239481211,
+			"reference_auth_address": "1ETDBapTKwRan9V42jTWem8VAUEwBWdNFj",
+			"body": "Actually, it seems I can only receive $emit's in direct children of the main Vue instance, i.e. the `navbar`, whereas views that are handled by ZeroFrameRouter, like a homepage for instance, do not get updates with the following:\n\n```\nthis.$parent.$on(\"updateSomething\", function...);\n```\n\nIs it possible to receive $emit's on view's handled by ZeroFrameRouter @krixano?",
+			"date_added": 1515246890724
+		},
+		{
+			"comment_id": 1515247448434,
+			"reference_type": "q",
+			"reference_id": 1515239481211,
+			"reference_auth_address": "1ETDBapTKwRan9V42jTWem8VAUEwBWdNFj",
+			"body": "I must be missing something since [ZeroExchange does this with no problem](https://github.com/krixano/ZeroMedium/blob/569e02c07f8fc5c0ce381c728a8d8a6936639a39/src/router_pages/topics.js#L22)...",
+			"date_added": 1515247448434
+		},
+		{
+			"comment_id": 1515352588385,
+			"reference_type": "q",
+			"reference_id": 1515239481211,
+			"reference_auth_address": "1ETDBapTKwRan9V42jTWem8VAUEwBWdNFj",
+			"body": "Nevermind, all working now. Make sure you register your components, kids!",
+			"date_added": 1515352588385
+		}
+	]
+}

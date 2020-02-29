@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>ZeroPolls</title>
+  <link rel="stylesheet" href="styles.css" media="screen" title="no title" charset="utf-8">
+</head>
+<body>
+  <div id="app" v-cloak>
+    <div id="header">
+      <span id="logo"><a href="?Home">ZeroPolls</a></span>
+      <a href="#Select+user"
+         id="select-user"
+         @click="selectUser"
+         title="{{ cert_user_id || '' }}">{{ cert_user_id ? 'Logout' : 'Select user'}}</a>
+        <span id="data-usage"
+              v-show="cert_user_id && dataSizeMax && dataSize"
+              title="The space that your polls and votes occupy, if you reach the maximum, send a ZeroMail to Ekaterina asking for more">
+          Using: {{ dataUsage || '' }}
+        </span>
+        <a href="/1Kp5xdjQyrPth5mEJsn6NDBKZxcaeYz86N" target="_top" style="color: white;">development blog</a>
+        <span id="stats">{{total_votes}}</span>
+    </div>
+    <div id="infobox">
+      Votes are tied to your ZeroID, they are pseudonymous, not anonymous. With a little bit of work someone can find out what you (your ZeroID) voted for.
+    </div>
+    <div v-if="!showPoll && cert_user_id" id="followbox">
+      Follow in Newsfeed:
+      <input type="checkbox" v-model="followsPolls" @change="changedFollows" />New Polls
+      <input type="checkbox" v-model="followsMentions" @change="changedFollows" />Username mentions
+      <input type="checkbox" v-model="followsComments" @change="changedFollows" />Comments on your polls
+    </div>
+    <h2 v-if="!showPoll">Create a poll</h2>
+    <div id="create-box" v-if="!showPoll">
+      <p>Question <br /><input type="text" v-model="newQuestion" :disabled="creating"/></p>
+      <br />
+      <p>Answers</p>
+      <ul id="answers-create-box">
+        <li v-for="answer in newAnswers">
+          <input type="text"
+                 v-model="answer.answer"
+                 @keyup.enter="addAnswer"
+                 :disabled="creating"/>
+          <button v-if="$index != 0"
+                  @click="removeAnswer(answer)"
+                  :disabled="creating">-</button>
+        </li>
+        <button @click="addAnswer" :disabled="creating">+</button> (You can also just press enter to add and move to the next answer)
+      </ul>
+      <br />
+      <span><input type="checkbox" v-model="newHidden" />Hide this poll in recent/popular polls, only accessible via link (can still be seen in the site's data files and by you)</span>
+      <br />
+      <br />
+      <div v-show="!creating">
+        <button @click="addNewPoll">Create poll</button>
+        <button @click="reset">Reset</button>
+      </div>
+      <div v-else>
+        <span>Creating poll...</span>
+        <loading color="green" bgcolor="lightgreen"></loading>
+      </div>
+    </div>
+
+    <h2 v-if="!showPoll">
+      <span :class="{active: poll_sort_order === 'date_added'}"
+            @click="changePollSortOrder('date_added')">Recent Polls</span>
+      /
+      <span :class="{active: poll_sort_order === 'votes'}"
+            @click="changePollSortOrder('votes')">Popular Polls</span>
+      /
+      <span :class="{active: poll_sort_order === 'comment_count'}"
+            @click="changePollSortOrder('comment_count')">Most commented Polls</span>
+      <span id="hide-votes">
+        <input type="checkbox" @change="toggleVoted" /> Hide voted on polls
+      </span>
+    </h2>
+
+    <ul v-if="poll">
+      <li class="poll"
+          transition="appear"
+          id="poll-{{poll.poll_uri}}"
+          track-by="poll_uri">
+        <div class="poll-content" v-show="!poll.voted">
+          <div class="question" title="{{poll.date_added | moment 'from'}}">{{ poll.question }}</div>
+          <ul>
+            <li v-for="answer in poll.answers">
+              <div>
+                <input type="radio" v-model="my_selection[poll.poll_uri]" :value="$index" />
+                <span>{{ answer.answer }}</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="poll-content" v-else>
+          <div class="question" title="{{poll.date_added | moment 'from'}}">{{ poll.question }}</div>
+          <ul class="chart">
+            <li v-for="answer in poll.answers">
+              <p title="{{answer.votes}} votes">{{answer.percentage}}%</p><p title="{{answer.answer}}"><span style="width:{{answer.percentage}}%">{{ answer.answer }}</span></p>
+            </li>
+          </ul>
+        </div>
+        <div class="v-space"></div>
+        <div class="button-bar">
+          <button v-show="!poll.voted"
+                  :disabled="typeof my_selection[poll.poll_uri] === 'undefined' || voting"
+                  @click="submitVote(poll)">Vote!</button>
+          <loading color="green" bgcolor="lightgreen" v-show="voting === poll.poll_uri"></loading>
+          {{ poll.votes }} votes
+        </div>
+      </li>
+    </ul>
+    <ul class="poll-list" v-else>
+      <li v-for="poll in polls"
+          class="poll"
+          transition="appear"
+          id="poll-{{poll.poll_uri}}"
+          track-by="poll_uri"
+          v-show="(!poll.voted || !hideVoted || justvoted[poll.poll_uri]) && (!poll.hidden || poll.cert_user_id === cert_user_id)">
+        <div class="poll-content" v-show="!poll.voted">
+          <div class="question" title="{{poll.date_added | moment 'from'}}"><a href="?Poll:{{poll.poll_uri}}">{{ poll.question }}</a></div>
+          <ul>
+            <li v-for="answer in poll.answers">
+              <div>
+                <input type="radio" v-model="my_selection[poll.poll_uri]" :value="$index" />
+                <span>{{ answer.answer }}</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="poll-content" v-else>
+          <div class="question" title="{{poll.date_added | moment 'from'}}"><a href="?Poll:{{poll.poll_uri}}">{{ poll.question }}</a></div>
+          <ul class="chart">
+            <li v-for="answer in poll.answers">
+              <p title="{{answer.votes}} votes">{{answer.percentage}}%</p><p title="{{answer.answer}}"><span style="width:{{answer.percentage}}%">{{ answer.answer }}</span></p>
+            </li>
+          </ul>
+        </div>
+        <div class="v-space"></div>
+        <div class="button-bar">
+          <button v-show="!poll.voted"
+                  :disabled="typeof my_selection[poll.poll_uri] === 'undefined' || voting"
+                  @click="submitVote(poll)">Vote!</button>
+          <loading color="green" bgcolor="lightgreen" v-show="voting === poll.poll_uri"></loading>
+          {{ poll.votes }} votes
+          <div class="h-space"></div>
+          <span class="comment-count" v-show="poll.comment_count"><a href="?Poll:{{poll.poll_uri}}">{{ poll.comment_count }} comments</a></span>
+        </div>
+      </li>
+    </ul>
+
+    <div id="markdown-div" v-if="poll">
+      <div id="markdown-info">You can copy this Markdown code and paste it on ZeroNet sites with support for Markdown, like ZeroTalk and ZeroBlog, to create a nice looking link to this poll.<br /><br />(Tip: Clicking three times selects a whole line, makes copying the link easy)</div>
+      <div id="markdown-link">[ZeroPolls: {{poll.question}}](/ZeroPolls.bit/?Poll:{{poll.poll_uri}})</div>
+      <div id="markdown-result">
+        Result: <a target="_top" href="/ZeroPolls.bit/?Poll:{{poll.poll_uri}}">ZeroPolls: {{poll.question}}</a>
+      </div>
+    </div>
+
+    <div id="comment-box" v-if="poll">
+      <h2 id="comments-h">Comments</h2>
+      <pre style="color: black;"
+           v-if="false">
+        {{poll.comments | json}}
+      </pre>
+      <textarea id="comment-area"
+                v-model="newComment"
+                :disabled="commenting"
+                rows="5"></textarea>
+      <div>
+        <button @click="submitComment(poll)"
+                :disabled="commenting">Submit</button>
+        <span id="comment-markdown-info">Markdown is supported, HTML and images disabled</span>
+        <loading color="green" bgcolor="lightgreen" v-show="commenting"></loading>
+      </div>
+      <ul>
+        <li v-for="comment in pollComments | orderBy 'date_added' -1"
+            track-by="comment_uri"
+            transition="appear"
+            id="comment-{{comment.comment_uri}}">
+          <span class="comment-user"
+                @click="replyTo(comment, $index)"
+                title="Append the commenter's username to your comment. If you entered no text for your comment yet and this isn't the most recent comment, this comment is quoted">
+            {{comment.cert_user_id}}
+          </span>
+          <span class="comment-date">({{comment.date_added | moment 'from'}})</span>
+          <span class="comment-admin"
+                v-if="comment.cert_user_id === 'ekaterina@zeroid.bit'">
+            Administrator
+          </span>
+          <span class="comment-delete"
+                v-if="comment.cert_user_id === cert_user_id"
+                @click="deleteComment(comment)">
+            <span v-if="deleting && comment.comment_id === deleteIndex">Deleting...</span>
+            <span v-else>Delete</span>
+          </span>
+          <span class="comment-body" v-html="comment.body | markdown"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <template id="loading-template">
+    <div class="loading-wrapper">
+      <div class="loading-div2"
+           style="background: {{bgcolor}}">
+        <div class="loading-div"
+           style="background: {{color}}">
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script src="js/all.js"></script>
+</body>
+</html>

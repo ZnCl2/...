@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <title>LibCDN</title>
+    <!--Include-->
+    <script type="text/javascript" src="/1LibCDNvZoxnBSYKLHF8XbBujPxYRePQSp/lib/showdown/1.6.2/showdown.min.js"></script>
+    <script type="text/javascript" src="/1LibCDNvZoxnBSYKLHF8XbBujPxYRePQSp/lib/jquery/3.1.1/jquery.min.js"></script>
+    <script type="text/javascript" src="/1LibCDNvZoxnBSYKLHF8XbBujPxYRePQSp/lib/twitter-bootstrap/3.3.7/js/bootstrap.js"></script>
+    <link rel="stylesheet" type="text/css" href="/1LibCDNvZoxnBSYKLHF8XbBujPxYRePQSp/lib/bootswatch/3.3.7/cyborg/bootstrap.min.css">
+    <style>
+        code {
+            background-color: #191919;
+            color: #ffffff;
+            font-weight: bolder;
+            padding: 5px 5px 5px 5px;
+        }
+    </style>
+    <!--Scripts-->
+    <script type="text/javascript">
+        var getParameter = function(a) {
+            if ("" == a) return {};
+            for (var b = {}, c = 0; c < a.length; ++c) {
+                var d = a[c].split("=", 2);
+                1 == d.length ? b[d[0]] = "" : b[d[0]] = decodeURIComponent(d[1].replace(/\+/g, " "))
+            }
+            return b
+        }(window.location.search.substr(1).split("&"));
+
+        function find(key, array) {
+            // The variable results needs var in this case (without 'var' a global variable is created)
+            var results = [];
+            for (var i = 0; i < array.length; i++) {
+                if (array[i].indexOf(key) == 0) {
+                    results.push(array[i]);
+                }
+            }
+            return results;
+        }
+
+        function updatePage(url) {
+            console.log("Updating Page: " + url);
+
+            var getu = getParameter['u'];
+            var getl = getParameter['l'];
+            var getfof = getParameter['fof'];
+            var getfofpage = getParameter['fofpage'];
+            if (url) {
+                // var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + url;
+                // window.history.pushState({
+                //     path: newurl
+                // }, '', newurl);
+
+                var getNewParameter = function(a) {
+                    if ("" == a) return {};
+                    for (var b = {}, c = 0; c < a.length; ++c) {
+                        var d = a[c].split("=", 2);
+                        1 == d.length ? b[d[0]] = "" : b[d[0]] = decodeURIComponent(d[1].replace(/\+/g, " "))
+                    }
+                    return b
+                }(url.substr(1).split("&"));
+                getu = getNewParameter['u'];
+                getl = getNewParameter['l'];
+                getfof = getNewParameter['fof'];
+                getfofpage = getNewParameter['fofpage'];
+                //        console.log(getNewParameter);
+            }
+
+
+
+            var fourohfour = "> Uh Oh! " + getfofpage + " couldn't be found! Here's the homepage! [**[close]**](javascript:updatePage('?u=Index.md'))";
+
+            var conv = new showdown.Converter({
+                simpleLineBreaks: true
+            });
+            //Load index despite U not being defined
+            if (getu === undefined) {
+                getu = "Index.md";
+            }
+            if (getu == "lib") {
+                //Go back to index if this one isnt available
+                //  console.log("getu == lib");
+                if (!getl) updatePage("?u=Libraries.md");
+                else {
+
+                    //I need a list of all files on site
+                    var temp1 = [];
+                    $.get('./content.json', function(data) {
+                        $.each(data["files"], function(index, value) {
+                            temp1.push(index);
+                        });
+                        $.each(data["files_optional"], function(index, value) {
+                            temp1.push(index);
+                        });
+
+
+                        //Now that the functions are squared away, we can load the initial page.
+
+                        var pre = "lib/" + getl + "/";
+                        var temp2 = find(pre, temp1);
+                        var temp3 = temp2.map(function(v) {
+                            return v.slice(pre.length);
+                        });
+                        //Get the package.json
+
+                        $.get("./lib/" + getl + "/package.json", function(data) {
+                            //Remove unnecessary stuff
+
+
+                            // var template="[**[Home]**](?u=Index.md) | [**[Libraries]**](?u=Libraries.md)
+                            //
+                            // ----------
+                            // #"+data.name+"
+                            //
+                            // > "+data.description+"
+                            //
+                            //
+                            // ###Files:
+                            // #####Use these as the src of the file when you include it:
+                            //(Note: the first number in front of files is often the version.)
+                            // >`/1LibCDNvZoxnBSYKLHF8XbBujPxYRePQSp/lib/"+data.name+"/` followed by
+                            // >";
+                            var template = "[**[Home]**](javascript:updatePage('?u=Index.md')) | [**[Libraries]**](javascript:updatePage('?u=Libraries.md')) \n\n---------- \n\n# [" + data.name + "](" + data.homepage + ") \n\n> " +
+                                data.description +
+                                " \n\n###Files: \n\n##### Click the library you want to copy, or create the links manually: \n\n(Note: the first number in front of files is often the version.) \n\n>`/1LibCDNvZoxnBSYKLHF8XbBujPxYRePQSp/lib/" +
+                                data.name +
+                                "/` followed by \n>";
+                            $.each(temp3,
+                                function(index, value) {
+                                    if (value != "package.json") {
+                                        template += ">[`" + value + "`](javascript:promptURL('" + getl + "','" + value + "')) \n "
+
+                                        $("#divMarkdown").fadeOut(200, function() {
+                                            $(this).html(conv.makeHtml(template)).fadeIn(200);
+                                        });
+                                    }
+                                });
+
+                        });
+                    });
+                }
+            } else {
+                //Get markdown of requested resource, if fail redirect home
+                jQuery.get(getu, function(data) {
+                    if (getfof == "true") {
+                        data = fourohfour + data
+                    }
+                    $("#divMarkdown").fadeOut(200, function() {
+                        $(this).html(conv.makeHtml(data)).fadeIn(200);
+                    });
+                }).fail(function() {
+                    updatePage("?fof=true&fofpage=" + getu);
+                });
+            }
+        }
+
+        function promptURL(lib, file) {
+            if (lib && file) {
+                window.prompt("Copy to clipboard: Ctrl+C, Enter", "/1LibCDNvZoxnBSYKLHF8XbBujPxYRePQSp/lib/" + lib + "/" + file);
+            } else
+                window.prompt("Copy to clipboard: Ctrl+C, Enter", lib);
+        }
+
+        (function() {
+            //cache some data for later
+            if (window.location.search.length > 1)
+                updatePage(window.location.search);
+            else updatePage("?u=Index.md");
+        })();
+    </script>
+</head>
+
+<body style="padding-left: 10px">
+    <div id="divMarkdown">You are still fetching necessary libraries. Please Wait.</div>
+</body>
+
+</html>

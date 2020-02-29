@@ -1,0 +1,255 @@
+<div id="head" class="row">
+            <div class="mainbar row">
+                <div class="container">
+                    <div id="topbar">
+                        <ul id="toolbar" class="menu"><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="#" id="login"><font color="red">我要供片</font></a></li>
+                            <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="./intro.html"><font color="red">网站说明</font></a></li>
+                        </ul> </div>
+                    <div id="rss">
+                        <ul>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="clear"></div>
+            <div class="container">
+                <div id="blogname" class="third">
+                    <a href="./" title="零点视频"><h1>零点视频</h1> <img src="./wp-content/themes/Loostrive/images/logo-2.jpg" alt="零点视频"/></a>
+                </div> <!--  div class="fenxiang"><img src="./wp-content/themes/Loostrive/images/fenxiang.png" height="30" width="100" alt="分享"></div-->
+                <div class="banner push-right1">
+                    <div class="header-search1">
+                        <form name="searchform" id="searchform1" method="post" action="./search.html">
+                            <input type="hidden" name="show" value="title">
+                            <input type="hidden" name="tbname" value="news">
+                            <input type="text" name="keyboard" id="s1" class="field" value="输入关键字后搜索……" onfocus="if (this.value == '输入关键字后搜索……') {this.value = '';}" onblur="if (this.value == '') {this.value = '输入关键字后搜索……';}">
+                            <input type="submit" value="搜索一下" class="searchsubmit1" onmouseover="this.className='searchsubmit1 btnhover'" onmouseout="this.className='searchsubmit1'">
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="clear"></div>
+        </div>
+        <div class="mainmenus container">
+            <div class="mainmenu">
+                <div class="topnav">
+                    <a href="./" title="首页" class="home">首页</a>
+                    <div class="menu-button"><i class="menu-ico"></i></div>
+                    <ul class="menu">
+                    </ul> 
+                </div>
+            </div>
+            <div class="clear"></div>
+        </div> 
+        </div>
+
+        <div class="container">
+
+            <div id="sidebar">
+
+                <div class="widget box row">
+                    <div id="tab-title">
+                        <div class="tab">
+                            <ul id="tabnav">
+                                <li class="selected">最新视频</li>
+                                <li>随机视频</li>
+                            </ul>
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                    <div class="tab-content" id="tab-content">
+                        <ul  id="lastupdate"> 
+                        </ul>
+                        <ul class="hide" id="randomvideo">
+                        </ul>
+                    </div>
+                </div>
+                <div class="widget box row"><h3>本类最近更新</h3><div class="siderbar-list"><ul class="imglist clear" id="lastcategoryupdate"> 
+                </ul></div></div>
+            </div> 
+
+            <div class="mainleft">
+                <ul id="post_container" class="masonry clearfix">
+                </ul>
+
+                <div class="clear"></div>
+                <div class="navigation container"><div class='pagination'></div>
+                </div>
+            </div>
+        </div>
+        <div class="clear"></div>
+        <div class="clear"></div>
+        <div id="footer">
+            <div class="copyright">
+                <p>
+                    本站所有内容均来自互联网，我们不提供影片资源存储，也不参与录制、上传！请下载后24小时内删除，不可用于商业传播，否则产生的一切后果将由您自己承担！
+                </p>
+            </div>
+        </div>
+        </div>
+        
+        <div id="tbox"/>
+        <script>
+$("#tabnav > li").on('click',function (e) {
+             e.preventDefault();
+             // Declare all variables
+             var $this = $(this);
+             console.log($this);
+             var $p = $this.parent();
+             console.log($p);
+             var tables = $p.find("li");
+             console.log(tables);
+             var i = 0;
+             var index = 0;
+             for (i = 0; i < tables.length; i++) {
+                 var one = $(tables[i]);
+                 if (tables[i]== this) {
+                     index = i;
+                     one.addClass("selected");
+                 } else {
+                     one.removeClass("selected");
+                 }
+             }
+             var contents = $p.parent().parent().parent().find(".tab-content > ul");
+             console.log("index==="+index);
+             for (i = 0; i < contents.length; i++) {
+                 var one = $(contents[i]);
+                 if (i == index) {
+                     one.removeClass("hide");
+                 } else {
+                     one.addClass("hide");
+                 }
+             }
+         });
+
+         function parsepage($pagebar) {
+             $pagebar.empty();
+             var config = btvideo.config;
+             var page = Math.round(config['video_all_count']/config['pagesize']+0.5);
+             var curpage = parseInt(config['curpage']);
+             if (curpage-3>0) {
+                 var $ap1 = $("<a/>").attr({"href":geturl("page","page=1"), "class":"prev"})
+                                     .text("第一页")
+                                     .on('click', function(e) {
+                                         e.preventDefault();
+                                         showvideopage(1);
+                                     });
+                 $pagebar.append($ap1);
+                 var $ap = $("<a/>").attr({"href":geturl("page","page="+(curpage-1)), "class":"prev"})
+                                    .text("前一页")
+                                    .one("click", function(e) {
+                                        e.preventDefault();
+                                        showvideopage(curpage-1);
+                                    });
+                 $pagebar.append($ap);
+             }
+             if (curpage-2>0) {
+                 var $a2 = $("<a/>").attr({"href":geturl("page", "page="+(curpage-2))})
+                                    .text(""+(curpage-2))
+                                    .on("click", function(e){
+                                        e.preventDefault();
+                                        showvideopage(curpage-2);
+                                    });
+                 $pagebar.append($a2);
+             }
+             if (curpage-1>0) {
+                 $a = $("<a/>").attr({"href":geturl("page", "page="+(curpage-1))})
+                               .text(""+(curpage-1))
+                               .on("click", function(e) {
+                                   e.preventDefault();
+                                   showvideopage(curpage-1);
+                               });
+                 $pagebar.append($a);
+             }
+             var $a = $("<a/>").attr({"href":geturl("page","page="+curpage),"class": "current"})
+                               .text(""+curpage)
+                               .on("click", function(e) {
+                                   e.preventDefault();
+                                   showvideopage(curpage);
+                               });
+             $pagebar.append($a);
+             if (page - curpage>0) {
+                 var $a = $("<a/>").attr({"href":geturl("page", "page="+(curpage+1))})
+                                   .text(""+(curpage+1))
+                                   .on("click", function(e) {
+                                       e.preventDefault();
+                                       showvideopage((curpage+1));
+                                   });
+                 $pagebar.append($a);
+             }
+             if (page - curpage>1) {
+                 var $a2 = $("<a/>").attr({"href":geturl("page", "page="+(curpage+2))})
+                                    .text(""+(curpage+2))
+                                    .on("click", function(e) {
+                                        e.preventDefault();
+                                        showvideopage((curpage+2));
+                                    });
+                 $pagebar.append($a2);
+             }
+             if (page - curpage>2) {
+                 var $ap = $("<a/>").attr({"href":geturl("page", "page="+(curpage+1)), "class":"next"})
+                                    .text("后一页")
+                                    .on("click", function(e) {
+                                        e.preventDefault();
+                                        showvideopage(curpage+1);
+                                    });
+                 $pagebar.append($ap);
+                 var $ap2 = $("<a/>").attr({"href":geturl("page", "page="+page),"class":"next"})
+                                     .text("最后一页")
+                                     .on("click", function(e) {
+                                         e.preventDefault();
+                                         showvideopage(page);
+                                     });
+                 $pagebar.append($ap2);
+             }
+         }
+         window.btvideo.getcategory(function(data) {
+             var $place = $(".mainmenu > .topnav > .menu");
+         });
+         function right_table_video_parse($place, data) {
+             $place.empty();
+             $.each(data, function(i, one) {
+                 var parent = one.parent ? one.parent:one;
+                 var $h4 = $("<h4/>").text(one.title+one.subtitle);
+                 var $a = $("<a/>").attr({"href":"?action=play&video="+parent.video_id, "title":""+parent.title})
+                                   .text(one.title+one.subtitle);
+                 /*
+                                   .on('click', (e)=> {
+                                       e.preventDefault();
+                                       btvideo.action_parse['play'](parent.video_id);
+                                   });
+                 */
+                 $add = $("<li/>").append($a);
+                 $place.append($add);
+             });
+         }
+         window.btvideo.lastvideo(5, function(data) {
+             var $place = $("#lastupdate");
+             right_table_video_parse($place, data);
+         });
+         if (false)
+         window.btvideo.randomvideo(5, function(data) {
+             var $place = $("#randomvideo");
+             right_table_video_parse($place, data);
+         });
+if(false)
+         window.btvideo.lastcategoryvideo(function(data) {
+             var $place = $("#lastcategoryupdate");
+             $.each(data, function(i, one) {
+                 var parent = one.parent ? one.parent:one;
+                 var img_path = (one.screens && one.screens.length>0)? one.screens[0].url :'';
+                 var $img = $("<img/>").attr({"src":"./img/#{img_path}", "width":"140", "height":"160", "alt":one.title})
+                 var $h4 = $("<h4/>").text(one.title+one.subtitle)
+                 var $a = $("<a/>").attr({"href":"?action=play&video="+parent.video_id,"title":""+parent.title}).append($img).append($h4)
+                 var $add = $("<li/>").append($a)
+                 $place.append($add)
+             });
+         });
+
+         $("#login").on('click', function(e) {
+             window.btvideo.cmd("wrapperNotification", ["info", "Please, select your account."]);
+             window.btvideo.cmd("certSelect", [["zeroid.bit"]], (site_info)=>{
+                 window.btvideo.check();
+             });
+         });
+
+        </script>

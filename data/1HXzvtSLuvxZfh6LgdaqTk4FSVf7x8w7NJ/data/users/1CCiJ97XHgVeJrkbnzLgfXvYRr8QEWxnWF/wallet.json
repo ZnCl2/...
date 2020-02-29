@@ -1,0 +1,213 @@
+{
+	"msgtype": "wallet",
+	"wallet_address": "1LqUnXPEgcS15UGwEgkbuTbKYZqAUwQ7L1",
+	"wallet_title": "MoneyNetworkW2",
+	"wallet_description": "Money Network - Wallet 2 - BitCoins www.blocktrail.com - runner jro",
+	"currencies": [
+		{
+			"code": "tBTC",
+			"name": "Test Bitcoin",
+			"url": "https://en.bitcoin.it/wiki/Testnet",
+			"fee_info": "Fee is calculated by external API (btc.com) and subtracted from amount. Calculated from the last X block in block chain. Lowest fee that still had more than an 80% chance to be confirmed in the next block.",
+			"units": [
+				{
+					"unit": "BitCoin",
+					"factor": 1,
+					"decimals": 8
+				},
+				{
+					"unit": "Satoshi",
+					"factor": 1e-8,
+					"decimals": 0
+				}
+			]
+		}
+	],
+	"api_url": "https://www.blocktrail.com/api/docs",
+	"json_schemas": {
+		"w2_pubkeys": {
+			"type": "object",
+			"title": "Send pubkeys (JSEncrypt and cryptMessage) to other wallet session",
+			"description": "Sent from send_mt and start_mt post processing",
+			"properties": {
+				"msgtype": {
+					"type": "string",
+					"pattern": "^w2_pubkeys$"
+				},
+				"pubkey": {
+					"type": "string"
+				},
+				"pubkey2": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"msgtype",
+				"pubkey",
+				"pubkey2"
+			],
+			"additionalProperties": false
+		},
+		"w2_check_mt": {
+			"type": "object",
+			"title": "Return bitcoin addresses and check money transactions",
+			"description": "From receiver to sender. Workflow: pubkeys => w2_check_mt. Use this message to exchange bitcoin addresses and crosscheck money transaction information. Identical=execute transactions. Different=abort transactions",
+			"properties": {
+				"msgtype": {
+					"type": "string",
+					"pattern": "^w2_check_mt$"
+				},
+				"money_transactions": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"action": {
+								"type": "string",
+								"pattern": "^(Send|Request)$"
+							},
+							"code": {
+								"type": "string",
+								"minLength": 2,
+								"maxLength": 5
+							},
+							"amount": {
+								"type": [
+									"number",
+									"string"
+								],
+								"description": "number or string with a formatted number (number.toFixed)"
+							},
+							"json": {
+								"type": "object",
+								"properties": {
+									"address": {
+										"type": "string"
+									},
+									"return_address": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"address",
+									"return_address"
+								],
+								"additionalProperties": false
+							}
+						},
+						"required": [
+							"action",
+							"code",
+							"amount",
+							"json"
+						],
+						"additionalProperties": false
+					},
+					"minItems": 1
+				}
+			},
+			"required": [
+				"msgtype",
+				"money_transactions"
+			],
+			"additionalProperties": false
+		},
+		"w2_start_mt": {
+			"type": "object",
+			"title": "start or abort money transactions",
+			"description": "From sender to receiver. Workflow: w2_check_mt => w2_start_mt. Start or abort money transaction",
+			"properties": {
+				"msgtype": {
+					"type": "string",
+					"pattern": "^w2_start_mt$"
+				},
+				"pay_results": {
+					"type": "array",
+					"items": {
+						"type": [
+							"undefined",
+							"null",
+							"string"
+						]
+					},
+					"description": "null (receiver is sending), bitcoin transactionid or an error message). One row with each row in w2_check_mt.money_transactions array",
+					"minItems": 1
+				},
+				"error": {
+					"type": "string",
+					"description": "w2_check_mt errors. Inconsistency between transaction in the two wallets."
+				}
+			},
+			"required": [
+				"msgtype"
+			],
+			"additionalProperties": false
+		},
+		"w2_end_mt": {
+			"type": "object",
+			"title": "end or abort money transactions",
+			"description": "From receiver to sender. Workflow: w2_start_mt => w2_end_mt. End (pay_results) or abort money transaction (error)",
+			"properties": {
+				"msgtype": {
+					"type": "string",
+					"pattern": "^w2_end_mt$"
+				},
+				"pay_results": {
+					"type": "array",
+					"items": {
+						"type": [
+							"undefined",
+							"null",
+							"string"
+						]
+					},
+					"description": "null (sender is sending) or btc.pay result (transaction id or error message). One row with each row in w2_check_mt.money_transactions array",
+					"minItems": 1
+				},
+				"error": {
+					"type": "string",
+					"description": "w2_start_mt errors. Inconsistency between w2_start_mt and saved transaction info"
+				}
+			},
+			"required": [
+				"msgtype"
+			],
+			"additionalProperties": false
+		},
+		"w2_cleanup_mt": {
+			"type": "object",
+			"title": "cleanup file and data after completed or aborted money transaction",
+			"description": "From sender to to receiver. Workflow: w2_end_mt => w2_cleanup_mt. Cleanup data in file system and in Ls",
+			"properties": {
+				"msgtype": {
+					"type": "string",
+					"pattern": "^w2_cleanup_mt$"
+				},
+				"error": {
+					"type": "string",
+					"description": "w2_end_mt errors. Inconsistency between w2_end_mt and saved transaction info"
+				}
+			},
+			"required": [
+				"msgtype"
+			],
+			"additionalProperties": false
+		}
+	},
+	"message_workflow": {
+		"sender": {
+			"start": "w2_pubkeys",
+			"w2_check_mt": "w2_start_mt",
+			"w2_end_mt": "w2_cleanup_mt"
+		},
+		"receiver": {
+			"start": "w2_pubkeys",
+			"w2_pubkeys": "w2_check_mt",
+			"w2_start_mt": "w2_end_mt",
+			"w2_cleanup_mt": "end"
+		}
+	},
+	"wallet_sha256": "23823ecbc270ac395f20b068efa992d758988b85d570294d81434a463df3210c",
+	"hub": "17k1QzQRhpkJubxCxaCcD6ytqnp8cqUkXe",
+	"hub_title": "W2 Wallet data hub 2"
+}

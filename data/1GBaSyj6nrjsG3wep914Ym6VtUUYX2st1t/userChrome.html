@@ -1,0 +1,302 @@
+<!--
+Author: Aeonivm
+Licensed under CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0)
+You can modify or/and distribute it UNDER THE SAME LICENSE (copyleft)
+-->
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="Referrer-Policy" content="no-referrer">
+<meta name="description" content="Personnaliser l’interface de Firefox grâce au fichier userChrome.css"/>
+<meta name="keywords" content="Firefox, userChrome, css, quantum, photon, interface"/>
+<title>Firefox et userChrome.css</title>
+<link rel="shortcut icon" href="images/aeonium.svg"/>
+<link rel="stylesheet" type= "text/css" href="css/light.css" id="light"/>
+<link rel="alternate stylesheet" type= "text/css" href="css/dark.css" id="dark"/>
+<link rel="alternatestylesheet" type= "text/css" href="css/hide.css" id="hide"/>
+<link rel="stylesheet" href="css/prism.css" />
+</head>
+<body>
+
+<!------------------------------------header------------------------------------>
+
+    <div id="header">
+        <div class="box-left"><a href="index.html" title="home page"><h2>Aeonivm codex</h2></a></div>
+        <div class="box-center"></div>
+        <div class="box-right">
+            <span id="tooltip1" onclick="
+            var b = document.getElementById('hide').getAttribute('rel');
+            if (b == 'stylesheet') { document.getElementById('hide').setAttribute('rel', 'alternatestylesheet');}
+            else if (b == 'alternatestylesheet') { document.getElementById('hide').setAttribute('rel', 'stylesheet');}
+            "></span>
+            <span id="tooltip2" onclick="
+            var a = document.getElementById('light').getAttribute('href');
+            document.getElementById('light').setAttribute('href', document.getElementById('dark').getAttribute('href'));
+            document.getElementById('dark').setAttribute('href', a);
+            "></span>
+            <span id="hidden1"></span>
+            <span id="logo"></span>
+            <span id="hidden2"></span>
+        </div>
+    </div>
+
+    <div id="background2" style="background-color:rgba(47,47,47,0.6);">
+    </div>
+    <div id="background1" style="background-image:url(images/jessica-ruscello-99566-red.jpg);background-size:cover;background-position:center center;background-repeat:no-repeat;">
+    </div>
+
+<!---------------------------------------Intro------------------------------------>
+
+    <section id="intro">
+        <div id="title">
+            <h1>Firefox et userChrome.css</h1>
+        </div>
+        <div id="description">
+            <p>Peu mis en avant par Mozilla, le fichier userChrome.css est pourtant un moyen simple et efficace de personnaliser l’interface de son navigateur. La fin des extensions basée sur XUL est l’occasion de mettre les mains dedans. Fini les onglets saillants et la chasse aux extensions.</p>
+            <p id="date">Mis en ligne le 27 Nov. 2017</p>
+            <a id="unsplash" href="https://unsplash.com/photos/-GUyf8ZCTHM" target="_blank" rel="noopener noreferrer" title="Jessica Ruscello">
+              <span>Unsplash</span>
+            </a>
+        </div>
+    </section>
+
+<!---------------------------------------Article------------------------------------>
+
+    <section id="article" class="language-css">
+        <h2>Des lendemains qui chantent</h2>
+            <p>Vous avez migrez vers <a href="https://linuxfr.org/redaction/news/firefox-57">Firefox 57</a> et vous ne retrouvez plus vos petits dans la nouvelle interface <a href="https://design.firefox.com/photon/welcome.html">Photon</a>. Deux solutions s’offrent à vous:</p>
+                <ol>
+                <li>Vous trollez un peu partout en espérant en vain que ça fera pousser une <a href="https://developer.mozilla.org/fr/Add-ons/WebExtensions/What_are_WebExtensions">WebExtension</a></li>
+                <li>Vous prenez les choses en main avec cet article</li>
+                </ol>
+            <h2>userChrome.css</h2>
+            <p>Oui Firefox utilise cet outil compliqué et controversé qu’est le <a href="https://fr.wikipedia.org/wiki/CSS">CSS</a> pour donner un style à son interface construite en XUL. Et en plus ils ont eu le culot <del>de laisser</del> d’imposer la possibilité aux utilisateurs d’ajouter leur propre fichier CSS. L’objet du délit: <kbd>~/.mozilla/firefox/le_profil/chrome/userChrome.css</kbd>. Les victimes consentantes que nous sommes créeront le dossier et le fichier s’ils n’existent pas encore, puis y déposeront les règles CSS avec les sélecteurs qui vont bien.</p>
+            <p>On prendra soin de rajouter <kbd>!important</kbd> à la fin de chaque déclaration pour donner la priorité à nos règles. Enfin il faut redémarrer le navigateur pour prendre en compte les changements apportés au fichier.</p>
+
+            <h2>Browser Toolbox</h2>
+            <p>Vous connaissez sans doute les Outils de développement de Firefox pour inspecter, entre autres, le contenu HTML et CSS de vos pages web. Et bien il existe la même <a href="https://developer.mozilla.org/fr/docs/Outils/Bo%C3%AEte_%C3%A0_outils_du_navigateur">boite à outils</a> pour l’interface du navigateur, à la différence près que ce sera du XML, XUL oblige.</p>
+            <blockquote cite="https://developer.mozilla.org/fr/docs/Outils/Bo%C3%AEte_%C3%A0_outils_du_navigateur">
+            <p>« La boite à outils du navigateur n’est pas activée par défaut. Pour l’activer, il est nécessaire de cocher les options: "Activer le débogage du chrome du navigateur et des modules" et "Activer le débogage distant". Ces options se trouvent dans les options des outils de développement, dans la section "Paramètres avancés" »</p>
+            </blockquote>
+            <p>Ainsi vous avez tout le loisir de décortiquer l’interface et de trouver quels sélecteurs utiliser, de faire des essais, ou encore d’étudier un fichier tel que browser.css qui concentre une bonne partie du style existant.</p>
+
+            <h2>Exemples</h2>
+
+            <h3>Les onglets</h3>
+            <p>Les nouveaux onglets sont moches. C’est un scandale ! (... et avant aussi c’était un scandale !)</p>
+            <pre><code>
+/* arrondir les onglets */
+
+.tab-background {
+  border-radius: 6px 6px 0px 0px !important;
+  border-image: none !important;
+  border-width: 0px;
+}
+.tab-line { display: none !important;}
+
+/*suppression du séparateur entre les onglets*/
+
+.tabbrowser-tab::after, .tabbrowser-tab::before { border-left:0px !important;}
+
+/*suppression de la croix sur les onglets non survolés*/
+
+#tabbrowser-tabs .tabbrowser-tab:not(:hover) .tab-close-button { display:none!important;}
+
+/*couleur du texte des onglets inactifs*/
+
+.tabbrowser-tab:not([visuallyselected="true"]), .tabbrowser-tab:-moz-lwtheme { color: red !important;}
+
+/*couleur du fond de l’onglet actif*/
+
+:root {
+    --tabs-border: transparent !important;
+    --toolbar-bgcolor: orange !important;
+    --toolbar-bgimage: none !important;
+    }
+            </code></pre>
+            <p>On peut bien sûr arrondir davantage en augmentant <kbd>border-radius</kbd></p>
+            <h3>Les bordures</h3>
+            <pre><code>
+/*suppression des bordures*/
+
+#urlbar, .searchbar-textbox { border:0px !important;}
+#TabsToolbar:not([collapsed="true"]) + #nav-bar { border:0px !important;}
+#navigator-toolbox::after { border:0px !important;}
+            </code></pre>
+
+            <h3>Les barres</h3>
+            <pre><code>
+/*Couleur de la barre de navigation*/
+
+#navigator-toolbox > toolbar:not(#toolbar-menubar):not(#TabsToolbar) {
+    background-color: yellow !important;
+    background-image: none !important;
+}
+
+/*couleur de la barre de recherche/adresse*/
+
+#urlbar { background-color: green !important; }
+
+/*taille des barres*/
+
+#nav-bar { min-height: 67px !important;}
+#urlbar { min-height: 21px !important;}
+
+/* déplacer la barre d’onglets sous la barre de navigation*/
+
+#TabsToolbar{
+  -moz-box-ordinal-group: 3 !important;
+  margin-top: -1px !important;
+}
+            </code></pre>
+
+            <h3>Cacher la barre d’onglets quand il y en a un seul</h3>
+            <p>Il faut penser à déplacer le bouton d’ouverture d’un nouvel onglet, dans la barre de navigation par exemple, via l’interface "Personnaliser".</p>
+            <ul>
+            <li>on cache l’onglet quand il est unique (ligne 6).</li>
+            <li>on cache le bouton d’ouverture d’un nouvel onglet (ligne 5)</li>
+            <li>on supprime la hauteur minimum de la barre d’onglet (ligne 4)</li>
+            <li>on récupère la hauteur des onglets par défaut suivant la densité choisie (identique à browser.css) (lignes 1,2,3)</li>
+            <li>on la réinjecte cette fois, non plus dans la barre des onglets, mais directement dans chaque onglet. (ligne 7)</li>
+            </ul>
+            <pre><code>
+:root { --tab-min-height: 33px; }
+:root[uidensity=compact] { --tab-min-height: 29px;}
+:root[uidensity=touch] { --tab-min-height: 41px;}
+#tabbrowser-tabs, #tabbrowser-tabs > *:not(tab) { min-height: 0px !important;}
+.tabs-newtab-button { visibility: collapse !important;}
+tab[first-tab='true'][last-tab='true'] { visibility: collapse !important;}
+tab { min-height: var(--tab-min-height) !important;}
+            </code></pre>
+
+            <h3>Police</h3>
+            <p>On peut changer de police de caractère.</p>
+            <pre><code>
+/*dans barre de navigation et la barre d’onglet*/
+
+#navigator-toolbox { font-family: Comic Sans MS !important;}
+#navigator-toolbox { font-weight: bolder !important;}
+
+/*ou bien partout, y compris les menus*/
+
+* { font-family: Comic Sans MS !important;}
+* { font-weight: bolder !important;}
+            </code></pre>
+
+            <h3>Survol</h3>
+            <p>On peut changer le comportement de l’interface au survol des boutons. Au lieu d’un changement du fond, on change la couleur de l’icône elle-même. Évidemment cela pose problème avec les icônes des extensions qui ne sont en général pas coloriables.</p>
+            <pre><code>
+/*changement des survols*/
+/*couleur de survol : #ffffff, c’est à dire blanc plus blanc que blanc*/
+/*couleur icône actif : #45A1FF, le même bleu en principe que celui de l’étoile des marque-pages*/
+
+#PersonalToolbar .toolbarbutton-1:not([disabled=true]):not([checked]):not([open]):not(:active):hover,
+.tabbrowser-arrowscrollbox > .scrollbutton-up:not([disabled=true]):hover,
+.tabbrowser-arrowscrollbox > .scrollbutton-down:not([disabled=true]):hover,
+.findbar-button:not(:-moz-any([checked="true"],[disabled="true"])):hover > .toolbarbutton-text,
+toolbarbutton.bookmark-item:not(.subviewbutton):hover:not([disabled="true"]):not([open]),
+toolbar .toolbarbutton-1:not([disabled=true]):not([checked]):not([open]):not(:active):hover > .toolbarbutton-icon,
+toolbar .toolbarbutton-1:not([disabled=true]):not([checked]):not([open]):not(:active):hover > .toolbarbutton-text,
+toolbar .toolbarbutton-1:not([disabled=true]):not([checked]):not([open]):not(:active):hover > .toolbarbutton-badge-stack {
+  background-color: transparent !important;
+}
+
+#PersonalToolbar .toolbarbutton-1:not([disabled=true]):-moz-any([open],[checked],:hover:active),
+.findbar-button:not([disabled=true]):-moz-any([checked="true"],:hover:active) > .toolbarbutton-text,
+toolbarbutton.bookmark-item:not(.subviewbutton):hover:active:not([disabled="true"]),
+toolbarbutton.bookmark-item[open="true"],
+toolbar .toolbarbutton-1:not([disabled=true]):-moz-any([open],[checked],:hover:active) > .toolbarbutton-icon,
+toolbar .toolbarbutton-1:not([disabled=true]):-moz-any([open],[checked],:hover:active) > .toolbarbutton-text,
+toolbar .toolbarbutton-1:not([disabled=true]):-moz-any([open],[checked],:hover:active) > .toolbarbutton-badge-stack {
+  background-color: transparent !important;
+}
+
+toolbar .toolbarbutton-1[checked]:not(:active):hover > .toolbarbutton-icon {
+  background-color: transparent !important;
+}
+
+toolbarbutton:not(.close-icon):not([disabled=true]):not([checked]):not([open]):not(:active):hover { fill-opacity:1 !important;}
+toolbarbutton:not(.close-icon):not([disabled=true]):-moz-any([checked="true"],[open],[checked],:active) { fill-opacity:1 !important;}
+
+toolbarbutton:not([disabled=true]):not([checked]):not([open]):not(:active):hover { color: #ffffff !important;}
+toolbarbutton:not([disabled=true]):-moz-any([checked="true"],[open],[checked],:active) { color: #45A1FF !important;}
+
+/*urlbar*/
+
+.urlbar-icon:not([disabled]):not([checked]):not([open]):not(:active):hover,
+.urlbar-icon-wrapper:not([disabled]):not([checked]):not([open]):not(:active):hover {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  fill-opacity:1 !important;
+}
+
+
+.urlbar-icon:not([disabled]):-moz-any([checked="true"],[open],[checked],:active),
+.urlbar-icon-wrapper:not([disabled]):-moz-any([checked="true"],[open],[checked],:active) {
+  background-color: transparent !important;
+  color: #45A1FF !important;
+  fill-opacity:1 !important;
+}
+
+/*identity box*/
+
+#identity-box:hover:not(.no-hover):not([open=true]) {
+  background-color: transparent !important;
+}
+
+#identity-box:hover:active:not(.no-hover),
+#identity-box[open=true] {
+  background-color: transparent !important;
+}
+
+#identity-box:hover:not(.no-hover):not([open=true]):not([open]):not(:active) > #identity-icon {
+  color: #ffffff !important;
+  fill-opacity:1 !important;
+}
+
+#identity-box:active > #identity-icon {
+  color: #45A1FF !important;
+  fill-opacity:1 !important;
+}
+#identity-box:hover:active:not(.no-hover),
+#identity-box[open=true] {
+  color: #45A1FF !important;
+  fill-opacity:1 !important;
+}
+#identity-box:-moz-focusring:not(:active) {
+  outline: none !important;
+}
+            </code></pre>
+
+            <h2>Conclusion</h2>
+            <p>Photon va demeurer plusieurs années donc plutôt que de pleurer et d’attendre des WebExtensions qui n’arriveront probablement jamais, il me parait judicieux de prendre une heure de son temps et d’ajouter quelques lignes de CSS dans un fichier pour avoir quelque chose en phase avec ses besoins, étant entendu qu’aucune interface par défaut ne pourra jamais les couvrir tous.</p>
+
+            <h2>Voir aussi</h2>
+            <p><a href="https://www.forum-francophone-linuxmint.fr/viewtopic.php?t=7506">https://www.forum-francophone-linuxmint.fr/viewtopic.php?t=7506</a>
+            <br><a href="https://www.reddit.com/r/FirefoxCSS/">https://www.reddit.com/r/FirefoxCSS/</a>
+            
+            <h2>Licences</h2>
+            <ul>
+                <li>L’image présente sur cette page est l’oeuvre de <a href="https://unsplash.com/photos/-GUyf8ZCTHM">Jessica Ruscello</a> et est sous la <a href="https://unsplash.com/license">license libre de Unsplash.com</a></li>
+                <li>Le reste du contenu est sous licence libre copyleft <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.fr">CC by-sa</a> et est une version adaptée de <a href="https://linuxfr.org/wiki/firefox-et-userchrome-css">LinuxFR</a></li>
+                <li>Cette page utilise <a href="https://github.com/PrismJS/prism">prism.js</a>, sous <a href="LICENSE-prism">licence libre MIT</a>, pour la coloration des lignes de codes sans faire appel à des ressources extérieures</li>
+            </ul>
+            
+    </section>
+
+<!---------------------------------------Footer------------------------------------>
+
+    <div id="footer-vide">
+    </div>
+
+    <footer id="footer">
+        <div>
+            <span id="copyleft">Sauf mention contraire, tout le contenu de ce site est sous licence libre copyleft <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.fr">CC by-sa</a></span>
+            <span  id="mail">Pour des remarques ou des suggestions, contactez moi via <a href="http://127.0.0.1:43110/Mail.ZeroNetwork.bit/?to=aeonium">Zeromail</a></span>
+        </div>
+    </footer>
+    <script src="prism.js"></script>
+</body>
+</html>

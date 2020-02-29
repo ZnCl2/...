@@ -1,0 +1,29 @@
+{
+	"questions": [
+		{
+			"question_id": 1554994486703,
+			"title": "Bigfile upload error",
+			"body": "My code is based off of: http://127.0.0.1:43110/1DocsYf2tZVVMEMJFHiDsppmFicZCWkVv1/site_development/zeroframe_api_reference/\n<input type=\"file\" onchange=\"handle_file(event)\">\n\n\tfunction handle_file(e){\n\tpage.writeOptionalFile(e.target.files[0])\n\t}\n\n\twriteOptionalFile(file){\n\t    page.cmd(\"bigfileUploadInit\", [\"data/\"+user.address+\"/optional/\", file.size], function(init_res){\n\t      console.log(init_res);\n       \tvar formdata = new FormData();\n       \tformdata.append(file.name, file);\n\n       var req = new XMLHttpRequest()\n       req.upload.addEventListener(\"progress\",console.log);\n       req.upload.addEventListener(\"loadend\",function(){\n         page.signSite();\n         console.log(\"Upload complete!\");\n       });\n       req.withCredentials = true;\n\treq.open(\"POST\",init_res.url);\t\n\treq.send(formdata);\n\t});\n\t}\n\nI keep getting the \"upload complete\" after this error message:\nCross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://127.0.0.1:43110/ZeroNet-Internal/BigfileUpload?upload_nonce=665a73c75eaa70ce430e446020132116ef52fa70977f75c9d085c084a9c56e96. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing).[Learn More]\nbut then no file is present in the user folder.",
+			"tags": "bigfiles,zeroframe,site,javascript",
+			"date_added": 1554994486703
+		}
+	],
+	"comments": [
+		{
+			"comment_id": 1555032944376,
+			"reference_type": "a",
+			"reference_id": 1554998561353,
+			"reference_auth_address": "1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di",
+			"body": "I'm still getting..\n>Access to XMLHttpRequest at 'http://127.0.0.1:43110/ZeroNet-Internal/BigfileUpload?upload_nonce=2e27717c207b0041e075498c20cbeabc2b308eaf5a9cbcac46cb47484bac61d2' from origin 'null' has been blocked by CORS policy\nAdding the header\n>req.setRequestHeader(\"origin\", base.href);\nDoesn't seem to change anything, why is the origin null? ",
+			"date_added": 1555032944376
+		},
+		{
+			"comment_id": 1555087382113,
+			"reference_type": "a",
+			"reference_id": 1554998561353,
+			"reference_auth_address": "1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di",
+			"body": "That's weird....removing \"ui_password\" from the config fixes the issue.",
+			"date_added": 1555087382113
+		}
+	]
+}

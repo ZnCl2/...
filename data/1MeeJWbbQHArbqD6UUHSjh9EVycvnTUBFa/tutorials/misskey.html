@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>How to install Misskey on Debian 9 - Archive - MayVaneDay Studios</title>
+		<link href="../style.css" rel="stylesheet" type="text/css" media="all">
+		<meta name="author" content="Vane Vander">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</head>
+	<body class="mayvaneday">
+		<article>
+			<div class="box">
+				<p><h1>How to install Misskey on Debian 9</h1></p>
+				<p>published: 2019-09-21</p>
+			</div>
+			<hr>
+			<div class="box">
+				<ol type="1">
+					<li>Create a user for Misskey:</li>
+				</ol>
+				<p><code>adduser --disabled-password --disabled-login misskey</code></p>
+				<p><code>adduser misskey sudo</code></p>
+				<p><code>passwd</span> misskey</a></code></p>
+				<p>Give the misskey user a strong password. Write it down somewhere safe.</p>
+				<ol start="2" type="1">
+					<li>Add the Node.js and PostgreSQL repositories:</li>
+				</ol>
+				<p><code>curl -sL https://deb.nodesource.com/setup_12.x |bash</code></p>
+				<p><code>echo &quot;deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main&quot; &gt; /etc/apt/sources.list.d/pgdg.list</code></p>
+				<p><code>cd /tmp</code></p>
+				<p><code>wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -</code></p>
+				<p><code>apt-get update</code></p>
+				<ol start="3" type="1">
+					<li>Install Misskey’s dependencies:</li>
+				</ol>
+				<p><code>apt-get install -y nodejs postgresql redis-server build-essential python certbot byobu sudo</code></p>
+				<ol start="4" type="1">
+					<li>Set up a password for PostgreSQL:</li>
+				</ol>
+				<p><code>passwd postgres</code></p>
+				<p>Write this password down somewhere safe. You’ll need it later.</p>
+				<ol start="5" type="1">
+					<li>Download Misskey:</li>
+				</ol>
+				<p><code>su - misskey</code></p>
+				<p><code>git clone -b master git://github.com/syuilo/misskey.git</code></p>
+				<p><code>cd misskey</code></p>
+				<p><code>git checkout master</code></p>
+				<p><code>npm install</code></p>
+				<ol start="6" type="1">
+					<li>Configure Misskey:</li>
+				</ol>
+				<p><code>cp .config/example.yml .config/default.yml</code></p>
+				<p>Edit <code>.config/default.yml</code> with your terminal editor of choice.</p>
+				<p><code>url</code> should be the URL of your server.</p>
+				<p>Assuming you don’t know what you’re doing, which is probably true if you’re reading this, uncomment the line that says <code>port: 443</code>. This will make Misskey start its own web server on port 443 (the HTTPS port).</p>
+				<p>Uncomment the <code>key:</code> and <code>cert:</code> lines. Replace example.tld in the file path with the same URL as you used above, omitting the <code>https://</code> at the beginning.</p>
+				<p>Under the <code>user: postgres</code> line, there should be a password line. Make sure it is uncommented and put in the password that you set up earlier.</p>
+				<p>Uncomment the <code>autoAdmin: true</code> line. This will make the first user registrated on the instance the admin of the instance. Hopefully this is you!</p>
+				<ol start="7" type="1">
+					<li>Set up PostgreSQL:</li>
+				</ol>
+				<p><code>exit</code></p>
+				<p><code>su - postgres</code></p>
+				<p>You are now logged in as the postgres user. Type in <code>psql</code> and press enter. A different command prompt should show up. Type in <code>CREATE DATABASE misskey;</code> and follow whatever instructions it gives you.</p>
+				<!-- ALTER USER postgres PASSWORD 'newPassword'; as well? needs investigation-->
+				<ol start="8" type="1">
+					<li>Set up SSL:</li>
+				</ol>
+				<p><code>exit</code></p>
+				<p><code>certbot certonly -d example.tld</code></p>
+				<p><code>example.tld</code> should be the URL you previously configured in the Misskey config file. Make sure that your DNS is properly set up to point to your server’s IP address.</p>
+				<p>Follow the instructions Certbot gives you.</p>
+				<ol start="9" type="1">
+					<li>Compile Misskey:</li>
+				</ol>
+				<p><code>su - misskey</code></p>
+				<p><code>cd misskey</code></p>
+				<p><code>NODE_ENV=production npm run build</code></p>
+				<p>Sit back for a hot minute while it compiles. If you have 2 GB or less of RAM, pick a god and pray. If you have less than 1 GB of RAM and you’ve somehow made it this far, nuke your server and give up now.</p>
+				<p>After that’s done, run <code>npm run init</code> to set up the Misskey database.</p>
+				<ol start="10" type="1">
+					<li>Run Misskey:</li>
+				</ol>
+				<p><code>cd ~</code></p>
+				<p><code>byobu</code></p>
+				<p>You are now in Byobu. This is a window manager for the command line. This will allow you to daemonize Misskey (run it in the background) without using systemd, which is an absolute pain in the ass to diagnose and fix.</p>
+				<p><code>cd misskey</code></p>
+				<p><code>sudo NODE_ENV=production npm start</code></p>
+				<p>If everything looks good (there are no fatal error messages), open your configured URL in a web browser and complete setup from the web interface.</p>
+				<p>When you want to close the terminal, press Ctrl and A at the same time. Pick the first option for whatever Byobu nags you about. Press Ctrl and A again, and then press D. You should get a “detached from session” message. Log out of the misskey user and then the root user until the terminal disconnects from the server.</p>
+				<p>If Misskey ever locks up or it uses more than 70% of the server’s CPU, either:</p>
+				<ul>
+					<li>log in as root, run <code>systemctl reboot now</code> to reboot the server, then log in as root, <code>su - misskey</code>, and repeat step 10 to get Misskey running again.</li>
+					<li>use your VPS provider’s dashboard to reboot the server, then log in as root, <code>su - misskey</code>, and repeat step 10 to get Misskey running again.</li>
+				</ul>
+			</div>
+			<hr>
+			<div class="box">
+				<p align=right>CC BY-NC-SA 4.0 &copy; Vane Vander</p>
+			</div>
+		</article>
+	</body>
+</html>

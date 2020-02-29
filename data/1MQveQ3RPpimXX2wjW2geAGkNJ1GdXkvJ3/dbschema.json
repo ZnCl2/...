@@ -1,0 +1,106 @@
+{
+    "db_name": "ZeroLSTN",
+    "db_file": "merged-ZeroLSTN2/ZeroLSTN.db",
+    "version": 3,
+    "maps": {
+        ".+/data/users/.+/content.json": {
+            "to_json_table": ["cert_user_id"],
+            "file_name": "data.json"
+        },
+        ".+/data/users/.+/data.json": {
+            "to_table": ["songs", "artwork", "genres"]
+        },
+        "1idx27vRHSGXZeEhQrxwMRopGhjNrb3bk/data/users/.+/data.json": {
+            "to_table": [
+                {"table": "mergers", "node": "mergers", "key_col": "address"}
+            ]
+        },
+        "1ListsNz9zbKVm163PToico2dqEqU98eAp/data/users/.+/data.json": {
+            "to_table": ["playlists", "playlist_songs"]
+        }
+    },
+    "tables": {
+        "json": {
+            "cols": [
+                ["json_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+                ["site", "TEXT"],
+                ["directory", "TEXT"],
+                ["file_name", "TEXT"],
+                ["cert_user_id", "TEXT"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX path ON json(directory, site, file_name)"],
+            "schema_changed": 3
+        },
+        "songs": {
+            "cols": [
+                ["id", "TEXT"],
+                ["track_number", "INTEGER"],
+                ["filename", "TEXT"],
+                ["filesize", "INTEGER"],
+                ["path", "TEXT"],
+                ["title", "TEXT"],
+                ["artist", "TEXT"],
+                ["album", "TEXT"],
+                ["art", "TEXT"],
+                ["compilation", "INTEGER"],
+                ["year", "INTEGER"],
+                ["date_added", "INTEGER"],
+                ["has_merged", "INTEGER"],
+                ["is_edit", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX songs_id ON songs(json_id, id)"],
+            "schema_changed": 18
+        },
+        "genres": {
+            "cols": [
+                ["song_id", "TEXT"],
+                ["genre", "TEXT"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE INDEX genres_song_id ON genres(json_id, genre)"],
+            "schema_changed": 6
+        },
+        "playlists": {
+            "cols": [
+                ["id", "TEXT"],
+                ["name", "TEXT"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX playlists_id ON playlists(json_id, id)"],
+            "schema_changed": 1
+        },
+        "playlist_songs": {
+            "cols": [
+                ["playlist_id", "TEXT"],
+                ["song_id", "TEXT"],
+                ["playlist_index", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE INDEX playlist_songs_playlist_id ON playlist_songs(json_id, playlist_id)"],
+            "schema_changed": 3
+        },
+        "mergers": {
+            "cols": [
+                ["address", "TEXT"],
+                ["name", "TEXT"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX mergers_address ON mergers(json_id, address)"],
+            "schema_changed": 3
+        },
+        "artwork": {
+            "cols": [
+                ["hash", "TEXT"],
+                ["image_path", "TEXT"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX artwork_hash ON artwork(json_id, hash)"],
+            "schema_changed": 1
+        }
+    }
+}

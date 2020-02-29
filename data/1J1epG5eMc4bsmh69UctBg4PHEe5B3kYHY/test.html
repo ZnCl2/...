@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test</title>
+</head>
+<body>
+    <a href="#Select+user" id="select_user" onclick='return page.selectUser()'>Select user</a>:
+    <script type="text/javascript" src="js/ZeroFrame.js"></script>
+<script>
+class ZeroChat extends ZeroFrame {
+    addMessage (username, message) {
+        var message_escaped = message.replace(/</g, "&lt;").replace(/>/g, "&gt;")  // Escape html tags in the message
+        this.messages.innerHTML += "<li><b>" + username + "</b>: " + message_escaped + "</li>"
+    }
+
+    onOpenWebsocket () {
+        this.messages = document.getElementById("messages")
+        this.addMessage("System", "Ready to call ZeroFrame API!")
+    }
+    selectUser () {
+        this.cmd("certSelect", {accepted_domains: ["zeroid.bit"]})
+        return false
+    }
+    
+    onRequest (cmd, message) {
+        if (cmd == "setSiteInfo") {
+            if (message.params.cert_user_id)
+                document.getElementById("select_user").innerHTML = message.params.cert_user_id
+            else
+                document.getElementById("select_user").innerHTML = "Select user"
+            this.site_info = message.params  // Save site info data to allow access it later
+        }
+    }
+    //Show the selected username on load
+    this.cmd("siteInfo", {}, (site_info) => {
+            if (site_info.cert_user_id)
+                document.getElementById("select_user").innerText = site_info.cert_user_id
+            this.site_info = site_info
+        })
+}
+
+page = new ZeroChat()
+</script>
+</body>

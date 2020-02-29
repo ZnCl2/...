@@ -1,0 +1,1277 @@
+<style>
+
+.served { background-color: #AF3BFF; display: inline-block;  color: white }
+#peers, #sites { -webkit-transition: opacity 0.3s ; -moz-transition: opacity 0.3s ; -o-transition: opacity 0.3s ; -ms-transition: opacity 0.3s ; transition: opacity 0.3s  }
+.updating { opacity: 0 }
+.site .anim-updating {
+	background: transparent url("img/loading.gif") left top no-repeat;
+	width: 0px; -webkit-transition: all 0.6s cubic-bezier(0.755, 0.05, 0.855, 0.06); -moz-transition: all 0.6s cubic-bezier(0.755, 0.05, 0.855, 0.06); -o-transition: all 0.6s cubic-bezier(0.755, 0.05, 0.855, 0.06); -ms-transition: all 0.6s cubic-bezier(0.755, 0.05, 0.855, 0.06); transition: all 0.6s cubic-bezier(0.755, 0.05, 0.855, 0.06) ; transition-delay: 0.15s; opacity: 0; height: 11px; float: left; margin-top: 2px
+}
+.site .anim-updating.visible { width: 30px; opacity: 0.5 }
+.head .logo {
+	background-color: #DB3207; display: inline-block; padding: 13px; 
+	color: rgba(255,255,255,1); font-size: 20px; text-transform: uppercase; line-height: 1em; font-family: consolas, menlo, monospace
+}
+.head2 .logo {
+	background-color: #DB3207; display: inline-block; padding: 13px; 
+	color: rgba(255,255,255,1); font-size: 20px; text-transform: uppercase; line-height: 1em; font-family: consolas, menlo, monospace
+}
+.head { float: left; left: 2px; margin-bottom: 10px }
+.head2 { float: right; right: 2px; margin-bottom: 10px;height:100%; }
+.certselect {   color: white; border-bottom-color: #3543F9; padding-right:10px; }
+
+.site {
+	color: white; position: relative; cursor: pointer; background-color: #26C281; text-decoration: none;
+	-webkit-transition: all 0.2s ease-out; -moz-transition: all 0.2s ease-out; -o-transition: all 0.2s ease-out; -ms-transition: all 0.2s ease-out; transition: all 0.2s ease-out ; width: 150px; height: 60px
+}
+
+.site:hover { -webkit-box-shadow: inset 0px 0px 0px 11px #196244 ; -moz-box-shadow: inset 0px 0px 0px 11px #196244 ; -o-box-shadow: inset 0px 0px 0px 11px #196244 ; -ms-box-shadow: inset 0px 0px 0px 11px #196244 ; box-shadow: inset 0px 0px 0px 11px #196244  }
+.site:active, .site:focus { top: 2px; -webkit-transition: none ; -moz-transition: none ; -o-transition: none ; -ms-transition: none ; transition: none  }
+.site:hover .action { -webkit-box-shadow: inset 120px 0px 0px 0px #fff85f; -moz-box-shadow: inset 120px 0px 0px 0px #fff85f; -o-box-shadow: inset 120px 0px 0px 0px #fff85f; -ms-box-shadow: inset 120px 0px 0px 0px #fff85f; box-shadow: inset 120px 0px 0px 0px #fff85f ; color: black }
+
+#flashproxy-badge {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-collapse: collapse;
+	line-height: 0;
+}
+#flashproxy-badge.idle {
+	background-color: #227;
+}
+#flashproxy-badge.active {
+	background-color: #28f;
+}
+#flashproxy-badge.disabled {
+	background-color: #777;
+}
+#flashproxy-badge.dead {
+	background-color: #111;
+}
+#flashproxy-badge td {
+	margin: 0;
+	padding: 0;
+	vertical-align: middle;
+	text-align: center;
+}
+#flashproxy-badge a img {
+	border: 0;
+}
+#flashproxy-badge.debug {
+	position: absolute;
+	margin: 0;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	overflow: auto;
+	color: #4c4;
+	background-color: #021;
+	line-height: inherit;
+}
+
+
+</style>
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<script type="text/javascript" src="js/flashproxy.js"></script>
+<script type="text/javascript">
+flashproxy_badge_insert().start();
+</script>
+<script type="text/javascript" src="js/all.js" asyc></script>
+<script type="text/javascript">
+function sh(id) {
+if(document.getElementById(id).style.display == 'block')
+document.getElementById(id).style.display = 'none';
+else
+document.getElementById(id).style.display = 'block';
+}
+function hide(id) {
+document.getElementById(id).style.display = 'none';
+}
+function show(id) {
+document.getElementById(id).style.display = 'block';
+}
+
+</script>
+<body style="background-color:#E7E2D9;">
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+
+          <a class="navbar-brand" href="#"><div class="served" align="center">This site currently served by <b><span id='peers' class='updating'>0</span> peers</b> without any central server.</div></a>
+        </div>
+      </div>
+    </nav>
+<div class="jumbotron" align="center">
+<div class="head" style="position:fixed;">
+ <s class='logo nolink'>Ads</s><br /><br />
+ <s class='logo nolink'>Tracking</s><br /><br />
+ <s class='logo nolink'>PUB</s><br /><br />
+ <s class='logo nolink'>Mal-/Spyware</s><br /><br />
+ <s class='logo nolink'>Exploits</s><br /><br />
+ <s class='logo nolink'>Fraud</s><br /><br />
+ <s class='logo nolink'>Hijacking</s>
+
+</div>
+<div class="head2" style="position:fixed;background-color:hrey;">
+ <s class='logo nolink'>Phishing</s><br /><br />
+ <s class='logo nolink'>Typosquating</s><br /><br />
+ <s class='logo nolink'>Botnets</s><br /><br />
+ <s class='logo nolink'>Bad SSL</s><br /><br />
+ <s class='logo nolink'>Worms</s><br /><br />
+ <s class='logo nolink'>Trojans/Virus</s><br /><br />
+ <s class='logo nolink'>DDoS</s>
+
+</div>
+
+<div style="position:fixed;right:0px;bottom:0px;"><table id="flashproxy-badge" class="disabled"><tr><td><a href="options.html" target="_blank"><img src="img/badge.png" alt="Internet freedom"></a></td></tr></table></div>
+
+<div align="center" style="border-left-width:4px;border-left-style:solid;border-left-color:#5B3B38;width:73%;margin: 0px;
+padding: 28px 0px 1px 0px;">
+      <div class="container">
+        <h1>(BPHF) Bad Punching Host File<br /><small><small>131215 +nonmobile| source link| tutorial [Universal]</small></small></h1>
+        <p>on ZeroNet Adress /1KUR242vYb5BDAiLkfa321fXfsDr5vBj3i<br />
+</div></div>
+
+<div align="center" style="border-left-width:4px;border-left-style:solid;border-left-color:#7CBBBB;width:73%;margin: 0px;
+padding: 28px 0px 1px 0px;">
+<div class="container">
+
+<div class="row">
+        <div class="col-md-4">
+
+<div id="2.2" style="display:none;">
+<div class="site">
+  <a>&nbsp;</a>
+ <a target="_top" style="color:white;text-decoration:none;" onclick="hide('4');hide('7');sh('2'); return false;" >
+   <br /><b>Install</b>
+  </a>
+ </div>
+&nbsp;<br />
+</div>
+
+<div id="7.2" style="display:none;">
+<div class="site">
+  <a>&nbsp;</a>
+ <a target="_top" style="color:white;text-decoration:none;" onclick="hide('4');hide('2');sh('7'); return false;" >
+   <br /><b>Tutorial</b>
+  </a>
+ </div>
+&nbsp;<br />
+</div>
+
+<div class="site">
+  <a>&nbsp;</a>
+ <a target="_top" style="color:white;text-decoration:none;" onclick="hide('2');hide('2.1');hide('7');hide('7.1');sh('4');show('2.2');show('7.2'); return false;" >
+   <br /><b>Download-/Links</b>
+  </a>
+ </div>
+
+<div id="4" style="display:none;">
+<br />
+<div style="background-color: #007AFF;padding:3;" class="certselect">Download-/Links</div>
+<br />
+        <div style="height:80%;overflow:auto;">
+source link for apps like adaway<br />
+<a href="https://pags.to/bphf/sec.txt" target="_blank" rel="nofollow" >https://pags.to/bphf/sec.txt</a> | <a href="https://pags.to/bphf/ad.txt" target="_blank" rel="nofollow" >https://pags.to/bphf/ad.txt</a><br />
+Decentral ZeroNet Link:<br />
+(remember this is only reachable over an public zeronet proxy [ zero.pags.to:43110 | zeronet.classcoder.com | bit.no.com:43110 ] or if its activated [theres no android app for this yet])<br />
+<a href="sec.txt">/1KUR242vYb5BDAiLkfa321fXfsDr5vBj3i/sec.txt</a> | <a href="ad.txt">/1KUR242vYb5BDAiLkfa321fXfsDr5vBj3i/ad.txt</a><br />
+<br />
+download :<br />
+[decentral zeronet links , same 'rules' as with the above source links]<br />
+<br />
+you can load three versions of BPHF now - ad and sec (security) are for mobile , both contain a minimal amount of the other (i recommend sec) and nonmobile - explains it allready, right?<br />
+old versions (multi-upload,choose favorite server) &amp; changelog at second post<br />
+<br />
+<br />
+nonmobile-131215<br />
+<a href="bphf-nonmobile-131215.zip">/1KUR242vYb5BDAiLkfa321fXfsDr5vBj3i/bphf-nonmobile-131125.zip</a><br />
+[extracted= 68,7 mb | 12,8 mb]<br />
+<br />
+sec-131215<br />
+<a href="bphf-sec-131215.zip">/1KUR242vYb5BDAiLkfa321fXfsDr5vBj3i/bphf-sec-131215.zip</a><br />
+[extracted= 24,6 mb | 5,4 mb]<br />
+<br />
+ad-131215<br />
+<a href="bphf-ad-131215.zip">/1KUR242vYb5BDAiLkfa321fXfsDr5vBj3i/bphf-ad-131215.zip</a><br />
+[extracted= 20,6 mb | 4,6 mb]
+</div>
+</div>
+
+<div id="2.1">
+<br />
+<div class="site">
+  <a>&nbsp;</a>
+ <a target="_top" style="color:white;text-decoration:none;" onclick="hide('4');hide('7');hide('7.1');sh('2');show('7.2'); return false;" >
+   <br /><b>Install</b>
+  </a>
+ </div>
+</div>
+
+<div id="2" style="display:none;">
+<br />
+<div style="background-color: #007AFF;padding:3;" class="certselect">Install</div>
+<br />
+        <div style="height:80%;overflow:auto;">
+just extract the file and copy it to your hosts file direction.<br />
+if theres no file to overwrite, its the wrong location.<br />
+linux= /etc/<br />
+check all lines on linux before, just paste my file after them to prevent system problems<br />
+(for example user hostname changes)<br />
+android= /system/etc/ [the mobile version grants automatic flash with recovery]<br />
+windows= /system32/drivers/etc/<br />
+same as on linux. pasting behind always keeps it safer.
+</div>
+</div>
+
+<div id="7.1">
+<br />
+<div class="site">
+  <a>&nbsp;</a>
+ <a target="_top" style="color:white;text-decoration:none;" onclick="hide('2');hide('4');sh('7'); return false;" >
+   <br /><b>Tutorial</b>
+  </a>
+ </div>
+</div>
+
+<div id="7" style="display:none;">
+<br />
+<div style="background-color: #007AFF;padding:3;" class="certselect">Tutorial</div>
+<br />
+        <div style="height:80%;overflow:auto;">
+(rebuild yourself)<br />
+all sources from above are linked exactly now and can be used for this.<br />
+please first check if your downloaded files are newer as the latest uploads. just use valid domains.<br />
+i will at colors to differ sources in ad and sec versions later.<br />
+<br />
+1.<br />
+search for ' multiple reverse ip lookup ' to convert ip lists to domain names, this includes<br />
+sslbl ,feodotracker [their domainlist seems empty] and projecthoneypot<br />
+<br />
+2.<br />
+replace a word in textfile=<br />
+sed 's/before/now/g' old_file &gt; new_file<br />
+can be used for 127.0.0.1 &lt;-&gt; 0.0.0.0 (first isnt supported by all devices and second one reacts faster and needs less space)<br />
+malc0de source needs change of PRIMARY to ip,<br />
+for those without any hosts like formatation you can add before each line=<br />
+sed -e 's/^/yourtext/' old_file &gt; new_file<br />
+[e.g. palevo on abuse.ch]<br />
+also to unify the distance between the ip and domain name in a host file, use these=<br />
+sed 's/127.0.0.1  /127.0.0.1 /g' old_file &gt; new_file<br />
+[for moab and malwaredomainlist hosts]<br />
+sed 's/127.0.0.1\t/127.0.0.1 /g' old_file &gt; new_file<br />
+[hosts-file.net , zeustracker and adzhost]<br />
+sed 's/127.0.0.1\t /127.0.0.1 /g' old_file &gt; new_file<br />
+[for sysctl]<br />
+<br />
+<br />
+3.<br />
+merge host files into one<br />
+cat file1&gt; tmphost<br />
+cat file2&gt;&gt; tmphost<br />
+and remove dubplicates<br />
+cat tmphost|sort|uniq &gt;done1<br />
+<br />
+<br />
+all cmd commands works in mass - u can create a txt file with all actions together, copy&amp;paste will let cmd work trough.<br />
+thats how i manage it. every version i update the source files ,edit each name with an date addition and just change the same at this txt file.<br />
+<br />
+4.<br />
+delete all comments from the final file (they start with #)<br />
+add the header and search duplicates of it manual:<br />
+127.0.0.1 localhost<br />
+127.0.0.1 localhost.localdomain<br />
+255.255.255.255 broadcasthost<br />
+127.0.0.1 android #just on mobile version<br />
+127.0.0.1 android.localhost #just on mobile version<br />
+127.0.0.1 test<br />
+127.0.0.1 test.localhost<br />
+127.0.0.1 local<br />
+127.0.1.1 q4os-desktop #just on nonmobile version<br />
+<br />
+# The following lines are desirable for IPv6 capable hosts<br />
+::1 localhost ip6-localhost ip6-loopback<br />
+fe00::0 ip6-localnet<br />
+ff00::0 ip6-mcastprefix<br />
+ff02::1 ip6-allnodes<br />
+ff02::2 ip6-allrouters<br />
+ff02::3 ip6-allhosts<br />
+fe80::1%lo0 localhost
+</div>
+</div>
+
+</div>
+
+
+
+        <div class="col-md-4">
+
+<div id="5.2" style="display:none;">
+<div class="site">
+  <a>&nbsp;</a>
+ <a target="_top" style="color:white;text-decoration:none;" onclick="hide('1');hide('8');sh('5'); return false;" >
+   <br /><b>Changelog</b>
+  </a>
+ </div>
+&nbsp;<br />
+</div>
+
+<div id="8.2" style="display:none;">
+<div class="site">
+  <a>&nbsp;</a>
+ <a target="_top" style="color:white;text-decoration:none;" onclick="hide('5');hide('1');sh('8'); return false;" >
+   <br /><b>Improve Device</b>
+  </a>
+ </div>
+&nbsp;<br />
+</div>
+
+<div class="site">
+  <a>&nbsp;</a>
+ <a target="_top" style="color:white;text-decoration:none;" onclick="hide('5');hide('5.1');hide('8');hide('8.1');sh('1');show('5.2');show('8.2'); return false;" >
+   <br /><b>About</b>
+  </a>
+ </div>
+
+<div id="1" style="display:none;">
+<br />
+<div style="background-color: #007AFF;padding:3;" class="certselect">About</div>
+<br />
+        <div style="height:80%;overflow:auto;">
+Inspired by BSDgeek_jane's mother of adblock, ive combined more than 19 hostname lists into one.<br />
+Its name should speak itself- this will keep most dangerous sites out of your range, and ads should be gone too.<br />
+The focus stays on security/privacy. cause the huge file could slow down your android device, two mobile versions got published. at the beginning, the moab was a mid-way cause its trimmed down already to take care of this point but now all should work fine.<br />
+btw you can also find tips to improve your device on this page.<br />
+!!<br />
+-- Important --<br />
+Firefox seems to ignore hosts file, import settings to IceCat or Pale Moon (modified Firefox)<br />
+this is big security bug, known by devs since about 8 years and still no change<br />
+!!<br />
+<br />
+<br />
+it blocks:<br />
+(version legend= <font color="Yellow">ad</font> , <font color="Red">security</font> , both)<br />
+<br />
+- ads [<font color="Red">minimal</font>]<br />
+- tracking<br />
+- <font color="Red">PUB (Potentially Unwanted Program)</font><br />
+- malware/spyware [<font color="Yellow">minimal</font>]<br />
+- <font color="Red">exploits</font><br />
+- <font color="Red">fraud</font><br />
+- <font color="Red">hijacking</font><br />
+- <font color="Red">phishing</font><br />
+- <font color="Red">typosquating</font><br />
+- <font color="Red">botnets</font><br />
+- dns censorship* <font color="Silver">circum version currently discontinued</font><br />
+- <font color="Red">bad ssl</font><br />
+- <font color="Red">worms</font><br />
+- trojans / virus [<font color="Yellow">minimal</font>]<br />
+- <font color="Red">ddos</font><br />
+<br />
+<br />
+works on:<br />
+<br />
+- Windows* <font color="Silver">still testing</font><br />
+- Linux<br />
+- Android
+</div>
+</div>
+
+<div id="5.1">
+<br />
+<div class="site">
+  <a>&nbsp;</a>
+ <a target="_top" style="color:white;text-decoration:none;" onclick="hide('1');hide('8');hide('8.1');sh('5');show('8.2'); return false;" >
+   <br /><b>Changelog</b>
+  </a>
+ </div>
+</div>
+
+<div id="5" style="display:none;">
+<br />
+<div style="background-color: #007AFF;padding:3;" class="certselect">Changelog</div>
+<br />
+        <div style="height:80%;overflow:auto;">
+131215<br />
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code: </div>
+	
+	<pre class="alt2 " dir="ltr" style="
+		margin: 0px;
+		padding: 5px;
+		border: 1px inset;
+		width: 100%;
+		height: 82px;
+		text-align: left;
+		overflow: auto">
+updated sources
+zeronet site title shorted again
+changed text passages (more things for device improve,...)- still not synced on xda
+mirror uploaded 211115
+
+ad:
+one new source
+</pre>
+</div>
+211115<br />
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code: </div>
+	
+	<pre class="alt2 " dir="ltr" style="
+		margin: 0px;
+		padding: 5px;
+		border: 1px inset;
+		width: 100%;
+		height: 82px;
+		text-align: left;
+		overflow: auto">
+updated sources
+zeronet site title shorted to keep it readable in zerohello
+changed text passages (more things for device improve,...)- still not synced on xda
+mirror uploaded 311015
+</pre>
+</div>
+311015<br />
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code: </div>
+	
+	<pre class="alt2 " dir="ltr" style="
+		margin: 0px;
+		padding: 5px;
+		border: 1px inset;
+		width: 100%;
+		height: 82px;
+		text-align: left;
+		overflow: auto">
+updated sources
+added own created zeronetproxy in information
+changed text passages (more things for device improve,...)- still not synced on xda
+mirror uploaded 101015
+
+sec:
+5 sources added
+
+ad:
+2 sources added
+</pre>
+</div>
+101015<br />
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code: </div>
+	
+	<pre class="alt2 " dir="ltr" style="
+		margin: 0px;
+		padding: 5px;
+		border: 1px inset;
+		width: 100%;
+		height: 82px;
+		text-align: left;
+		overflow: auto">
+updated sources
+reworked zeronet page interface with known network design elements &
+added flashproxy (tor access relay)
+changed some text passages  (more things for device improve,...)- will sync on xda later
+mirror uploaded 270915
+</pre>
+</div>
+270915<br />
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code: </div>
+	
+	<pre class="alt2 " dir="ltr" style="
+		margin: 0px;
+		padding: 5px;
+		border: 1px inset;
+		width: 100%;
+		height: 82px;
+		text-align: left;
+		overflow: auto">
+updated sources
+added community discussions
+removed death discussion link
+mirror uploaded 210915
+</pre>
+</div>
+210915<br />
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code: </div>
+	
+	<pre class="alt2 " dir="ltr" style="
+		margin: 0px;
+		padding: 5px;
+		border: 1px inset;
+		width: 100%;
+		height: 82px;
+		text-align: left;
+		overflow: auto">
+updated sources
+available through ZeroNet since yesterday. for now,
+all versions are web mirrored at next release and only newest one will get central hosted source links so you can access them with three methods:
+Choose from the two ZeroNet Public Proxies or pags.
+</pre>
+</div>100915<br />
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code: </div>
+	
+	<pre class="alt2 " dir="ltr" style="
+		margin: 0px;
+		padding: 5px;
+		border: 1px inset;
+		width: 100%;
+		height: 82px;
+		text-align: left;
+		overflow: auto">updated sources
+investment for lists results in
+sec: 4 new sources
+ad: one new source</pre>
+</div>260815<br />
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code: </div>
+	
+	<pre class="alt2 " dir="ltr" style="
+		margin: 0px;
+		padding: 5px;
+		border: 1px inset;
+		width: 100%;
+		height: 34px;
+		text-align: left;
+		overflow: auto">updated sources</pre>
+</div>150615<br />
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code: </div>
+	
+	<pre class="alt2 " dir="ltr" style="
+		margin: 0px;
+		padding: 5px;
+		border: 1px inset;
+		width: 100%;
+		height: 50px;
+		text-align: left;
+		overflow: auto">updated sources
+back to main server</pre>
+</div>040615<br />
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code: </div>
+	
+	<pre class="alt2 " dir="ltr" style="
+		margin: 0px;
+		padding: 5px;
+		border: 1px inset;
+		width: 100%;
+		height: 50px;
+		text-align: left;
+		overflow: auto">updated sources
+changed source link- and direct download- server until pags is back again..</pre>
+</div>200515<br />
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code: </div>
+	
+	<pre class="alt2 " dir="ltr" style="
+		margin: 0px;
+		padding: 5px;
+		border: 1px inset;
+		width: 100%;
+		height: 98px;
+		text-align: left;
+		overflow: auto">5 new sources
+updated sources
+main direct download domain is back online.
+changed moab from dec to latest (its bigger again)
+source links for adaway &amp; co</pre>
+</div><br />
+020515<br />
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code: </div>
+	
+	<pre class="alt2 " dir="ltr" style="
+		margin: 0px;
+		padding: 5px;
+		border: 1px inset;
+		width: 100%;
+		height: 34px;
+		text-align: left;
+		overflow: auto">updated sources</pre>
+</div><br />
+270415<br />
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code: </div>
+	
+	<pre class="alt2 " dir="ltr" style="
+		margin: 0px;
+		padding: 5px;
+		border: 1px inset;
+		width: 100%;
+		height: 162px;
+		text-align: left;
+		overflow: auto">unified localadress-domain distance to improve double detection rate
+updated (many !) sources
+started cross posting in different communitys for wide support
+
+sec:
++one source
+
+ad:
+two new sources</pre>
+</div><br />
+210415<br />
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code: </div>
+	
+	<pre class="alt2 " dir="ltr" style="
+		margin: 0px;
+		padding: 5px;
+		border: 1px inset;
+		width: 100%;
+		height: 114px;
+		text-align: left;
+		overflow: auto">splitted mobile version into ad and sec version
+added 2 sources
+updated sources
+
+Ad / Sec :
+changed local adress for faster resolve/less memory work</pre>
+</div><br />
+140415<br />
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code: </div>
+	
+	<pre class="alt2 " dir="ltr" style="
+		margin: 0px;
+		padding: 5px;
+		border: 1px inset;
+		width: 100%;
+		height: 146px;
+		text-align: left;
+		overflow: auto">source merge with automated script = minimized time for creation,
+standard now means removed double entries (previously uniq) WITHOUT any source exclude,
+no other comments inside
+added newest moab source
+updated sources
+
+mobile:
+removed old (big) moab source from dec = system behaves nearly as without file</pre>
+</div><br />
+110415<br />
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code: </div>
+	
+	<pre class="alt2 " dir="ltr" style="
+		margin: 0px;
+		padding: 5px;
+		border: 1px inset;
+		width: 100%;
+		height: 114px;
+		text-align: left;
+		overflow: auto">op refocused:
+- circum/uniq/normal replaced with flashable mobile &amp; nonmobile
+- tips to improve devices
+flashable works now
+cleaned spreaded lines to header for faster connect
+updated sources</pre>
+</div><br />
+040415<br />
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code: </div>
+	
+	<pre class="alt2 " dir="ltr" style="
+		margin: 0px;
+		padding: 5px;
+		border: 1px inset;
+		width: 100%;
+		height: 146px;
+		text-align: left;
+		overflow: auto">flashable zip test for android
+updated sources
+4 new sources-
+more protection types:
+'bad' ssl (malware/botnet)
+worms
+trojans
+ddos</pre>
+</div><br />
+310315<br />
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code: </div>
+	
+	<pre class="alt2 " dir="ltr" style="
+		margin: 0px;
+		padding: 5px;
+		border: 1px inset;
+		width: 100%;
+		height: 210px;
+		text-align: left;
+		overflow: auto">added botnet block
+experimental version to block some DNS censorship
+will upload every update on different services now to prevent total downs
+
+normal:
+8 new sources
+
+uniq:
+4 new sources
+
+circum:
+first release</pre>
+</div>290315<br />
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code: </div>
+	
+	<pre class="alt2 " dir="ltr" style="
+		margin: 0px;
+		padding: 5px;
+		border: 1px inset;
+		width: 100%;
+		height: 130px;
+		text-align: left;
+		overflow: auto">added own in/out ad connections
+updated sources
+Fixed combine problem from 1603/ 0403-repack
+
+uniq:
+optimized source fusion to work more effective
+typosquat blocking added</pre>
+</div>160315 / 040315-repacked<br />
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code: </div>
+	
+	<pre class="alt2 " dir="ltr" style="
+		margin: 0px;
+		padding: 5px;
+		border: 1px inset;
+		width: 100%;
+		height: 98px;
+		text-align: left;
+		overflow: auto">repacked to universal usable zip
+
+normal:
+typosquat blocking with another new source
+updated other sources</pre>
+</div>040315<br />
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code: </div>
+	
+	<pre class="alt2 " dir="ltr" style="
+		margin: 0px;
+		padding: 5px;
+		border: 1px inset;
+		width: 100%;
+		height: 130px;
+		text-align: left;
+		overflow: auto">PUB blocking added
+
+uniq:
+added one source
+
+normal:
+added two sources</pre>
+</div>030315<br />
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code: </div>
+	
+	<pre class="alt2 " dir="ltr" style="
+		margin: 0px;
+		padding: 5px;
+		border: 1px inset;
+		width: 100%;
+		height: 34px;
+		text-align: left;
+		overflow: auto">first release</pre>
+</div>
+</div>
+</div>
+
+<div id="8.1">
+<br />
+<div class="site">
+  <a>&nbsp;</a>
+ <a target="_top" style="color:white;text-decoration:none;" onclick="hide('1');hide('5');sh('8'); return false;" >
+   <br /><b>Improve Device</b>
+  </a>
+ </div>
+</div>
+
+<div id="8" style="display:none;">
+<br />
+<div style="background-color: #007AFF;padding:3;" class="certselect">Improve Device</div>
+<br />
+        <div style="height:80%;overflow:auto;">
+this isnt a full guide but some kind of list. all 'how to' is stored on xda, just search and then ask.<br />
+<br />
+universal (firefox addons) =<br />
+fasterfox<br />
+page speed<br />
+proxmate<br />
+skyzip<br />
+tweak network<br />
+[privacy] defense<br />
+noscript<br />
+downthemall<br />
+beef taco<br />
+betternet<br />
+betterprivacy<br />
+blockulicious<br />
+blur<br />
+dolus<br />
+firegloves<br />
+google privacy<br />
+https-everywhere<br />
+location guard<br />
+privacy badger<br />
+random agent spoofer<br />
+statutory<br />
+team cymru's mhr<br />
+<br />
+general=<br />
+use f-secure freedom vpn without the 14-eyes countrys<br />
+<br />
+starting with android =<br />
+rom without huge feature list - both<br />
+convert system to f2fs &amp; use art instead of dalvik runtime - improves both battery&amp; performance<br />
+partition sdcard ext4 - performance on moved (with link2sd for example) apps<br />
+use custom kernel - mostly battery&amp;performance<br />
+change kernel settings (arch_power, gentle_fair_sleepers, power-efficient workqueues for battery / choose cpu and gpu governor , improvement depends on your choice. i would recommend to choose an base and take most reworked gov that fits your need. apps for example: cpu tuner) - both<br />
+flash fresh weekly or btw on intervals (backups are easy- you can use nandroid in recovery, oandbackup for app/data) - both<br />
+delete unneeded apps (with oandbackup/tianium backup...) and use things that also remove some: minimized gapps like delta gapps , freecyngn - both<br />
+disable some services/activities on google apps (play services 'SystemUpdateService' ....) - battery<br />
+search smaller alternatives to default apps (quickpic...) - performance<br />
+check default performance options in settings<br />
+use tweaks (Fly-On Mod, Malive Booster, flag_tuner, sched_tuner, skeleton, maybe nitrox and still the best: supercharger)<br />
+use the following apps<br />
+moboclean - both<br />
+amplify - battery<br />
+ds battery saver<br />
+LoaderDroid - download speed<br />
+boosters plus battery saver / sdcard booster - both<br />
+snapdragon batteryguru<br />
+power nap - battery<br />
+bootmanager (xposed) - performance on bootup<br />
+bw ruler - performance<br />
+cpu sleeper - battery on deepsleep<br />
+cpu tuner - battery & performance if you know some about kernel govs and adjust mhz to your needs<br />
+greenify - both<br />
+history eraser - performance<br />
+internet booster and optimizator - performance<br />
+Pixel BatterySaver<br />
+sd maid - performance<br />
+xposed media scanner optimizer - scanning speed<br />
+battery calibration is nearly useless, modern phones do this themself on full load and remember battery is getting older/weaker with every load (doesnt matter if up or empty)<br />
+im no friend of cpu overclocks, stable runs are the nicest <img src="//cdn3.xda-developers.com/images/smilies/wink.gif" border="0" alt="" title="Wink" class="inlineimg" /><br />
+now privacy & security=<br />
+avoid playstore (apps shipped with gov spyware) and google apps (usage tracking) [alternative: load everything over aptoide and check updates / new apps over 1mobile, bam and updatechecker]<br />
+AIMSICD<br />
+class0firewall<br />
+dns changer (use dnscrypt server)<br />
+image privacy<br />
+logs filter<br />
+minminguard<br />
+obscuracam<br />
+privacyblocker<br />
+pry-fi<br />
+secdroid<br />
+tellows<br />
+xprivacy (generate random data on all apps)<br />+
+xposed with fake id fix, master key multi-fix, xad
+<br />
+linux =<br />
+use clamav with clamtk as a small antivir<br />
+install wine and use clamwin , clamsentinel, superantispyware and spywareblaster<br />
+smaller alternatives (if dekstop environment: lxde,....)<br />
+bleachbit<br />
+Nixory<br />
+xtreme download manager<br />
+<br />
+windows =<br />
+clamwin with clamsentinel, superantispyware and spywareblaster<br />
+nixory<br />
+ccleaner<br />
+ultradefrag<br />
+little registry optimizer<br />
+xtreme download manager<br />
+</div>
+</div>
+
+</div>
+
+
+        <div class="col-md-4">
+
+<div id="6.2" style="display:none;">
+<div class="site">
+  <a>&nbsp;</a>
+ <a target="_top" style="color:white;text-decoration:none;" onclick="hide('3');hide('9');sh('6'); return false;" >
+   <br /><b>Old Versions</b>
+  </a>
+ </div>
+&nbsp;<br />
+</div>
+
+<div id="9.2" style="display:none;">
+<div class="site">
+  <a>&nbsp;</a>
+ <a target="_top" style="color:white;text-decoration:none;" onclick="hide('3');hide('6');sh('9'); return false;" >
+   <br /><b>@Other Communitys</b>
+  </a>
+ </div>
+&nbsp;<br />
+</div>
+
+<div class="site">
+  <a>&nbsp;</a>
+ <a target="_top" style="color:white;text-decoration:none;" onclick="hide('6');hide('6.1');hide('9');hide('9.1');sh('3');show('6.2');show('9.2'); return false;" >
+   <br /><b>Sourcelist</b>
+  </a>
+ </div>
+
+<div id="3" style="display:none;">
+<br />
+<div style="background-color: #007AFF;padding:3;" class="certselect">Sourcelist</div>
+<br />
+        <div style="height:80%;overflow:auto;">
+heres a list of sources, please let me know if you reach more.<br />
+<br />
+paid ones:<br />
+iblocklist.com (hosts from bluestack)<br />
+malwarepatrol.net (cryptolocker and normal)<br />
+free:<br />
+mother of adblock from december 14 (before performance cut) / moab (aug15) [<a href="http://forum.xda-developers.com/showthread.php?t=1916098" target="_blank">thread on xda</a>]<br />
+<a href="https://github.com/Free-Software-for-Android/AdAway/tree/master/hosts" target="_blank" rel="nofollow" >adaway.org</a><br />
+<a href="http://hosts-file.net/?s=Download" target="_blank" rel="nofollow" >hosts-file.net</a> (6 categories= ad,emd,exp,fsa,hjk,psh)<br />
+<a href="http://www.malwaredomainlist.com/hostslist/hosts.txt" target="_blank" rel="nofollow" >malwaredomainlist.com</a><br />
+<a href="http://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&amp;showintro=0&amp;startdate&#91;day]=&amp;startdate&#91;month]=&amp;startdate&#91;year]=&amp;mimetype=plaintext" target="_blank" rel="nofollow" >pgl.yoyo.org</a><br />
+<a href="http://someonewhocares.org/hosts/" target="_blank" rel="nofollow" >someonewhocares.org</a><br />
+<a href="http://www.sysctl.org/cameleon/" target="_blank" rel="nofollow" >sysctl.org</a><br />
+<a href="http://winhelp2002.mvps.org/hosts.txt" target="_blank" rel="nofollow" >winhelp2002.mvps.org</a><br />
+<a href="http://www.malekal.com/HOSTS_filtre/HOSTS.txt" target="_blank" rel="nofollow" >malekal.com</a><br />
+<a href="https://community.websense.com/blogs/securitylabs/archive/2011/12/08/a-typosquat-hostname-list-for-xmas_2D00_.aspx" target="_blank" rel="nofollow" >community.websense.com</a><br />
+<a href="http://rlwpx.free.fr/WPFF/hosts.htm" target="_blank" rel="nofollow" >rlwpx.free.fr</a> (3 categories= trc, pub, rsk)<br />
+own in/out ad connections [will upload later]<br />
+<a href="http://hosts.eladkarako.com/hosts.txt" target="_blank" rel="nofollow" >hosts.eladkarako.com</a><br />
+<a href="http://optimate.dl.sourceforge.net/project/adzhosts/HOSTS.txt" target="_blank" rel="nofollow" >adzhost on optimate.dl.sourceforge.net</a><br />
+<a href="http://malc0de.com/bl/BOOT" target="_blank" rel="nofollow" >malc0de.com</a><br />
+<a href="http://adblock.gjtech.net/?format=unix-hosts" target="_blank" rel="nofollow" >adblock.gjtech.net</a><br />
+<a href="https://sites.google.com/site/logroid/files/hosts.txt?attredirects=0" target="_blank" rel="nofollow" >logroid on sites.google.com</a><br />
+abuse.ch (4 categories= <a href="https://zeustracker.abuse.ch/blocklist.php?download=hostfile" target="_blank" rel="nofollow" >zeus</a>, <a href="https://sslbl.abuse.ch/blacklist/sslipblacklist.csv" target="_blank" rel="nofollow" >sslbl</a>, <a href="https://feodotracker.abuse.ch/blocklist/" target="_blank" rel="nofollow" >feodo</a>, <a href="https://palevotracker.abuse.ch/blocklists.php?download=domainblocklist" target="_blank" rel="nofollow" >palevo</a>)<br />
+<a href="https://jansal.googlecode.com/svn/trunk/adblock/hosts.txt" target="_blank" rel="nofollow" >jansal.googlecode.com</a><br />
+virustracker.net<br />
+spam404.com<br />
+<a href="http://urlblacklist.com/cgi-bin/commercialdownload.pl?type=download&amp;file=bigblacklist" target="_blank" rel="nofollow" >urlblacklist.com</a> (4 categories= malware, phishing, ad, spyware, virusinfected)<br />
+<a href="https://dshield.org/feeds/suspiciousdomains_High.txt" target="_blank" rel="nofollow" >dshield.org</a><br />
+adnitro from <a href="http://forum.xda-developers.com/android/software-hacking/mod-projct-mod-boost-nitro-x-edition-t2809443" target="_blank">nitrox tweak</a><br />
+<a href="http://www.sinfuliphone.com/showthread.php?t=107743" target="_blank" rel="nofollow" >basic's adblock8</a> (cydia)<br />
+the following are shipped with the own in/out ad connections file<br />
+<a href="http://www.nictasoft.com/ace/malware-urls/" target="_blank" rel="nofollow" >nictasoft.com</a><br />
+maliciousdomainsblocker.tk [recently down]<br />
+<a href="https://www.projecthoneypot.org/list_of_ips.php" target="_blank" rel="nofollow" >projecthoneypot.org</a><br />
+<a href="https://www.phishtank.com/phish_search.php" target="_blank" rel="nofollow" >phishtank.com</a><br />
+<a href="http://www.malwareurl.com" target="_blank" rel="nofollow" >http://www.malwareurl.com</a><br />
+<a href="http://cinsscore.com/list/ci-badguys.txt" target="_blank" rel="nofollow" >cinsscore.com</a><br />
+<a href="http://dsi.ut-capitole.fr/blacklists/index_en.php" target="_blank" rel="nofollow" >Université Toulouse Blacklist</a> (sections: malware,phishing,publicite,ddos)<br />
+<a href="http://www.shallalist.de/categories.html" target="_blank" rel="nofollow" >shallalist.de</a> (sections: adv,spyware,tracker)<br />
+<a href="https://www.reddit.com/r/jailbreak/comments/3r4c1k/update_minimal_hosts_71_and_minimal_hosts_cb_10/" target="_blank" rel="nofollow" >Minimal Hosts on Reddit</a>
+</div>
+</div>
+
+<div id="6.1">
+<br />
+<div class="site">
+  <a>&nbsp;</a>
+ <a target="_top" style="color:white;text-decoration:none;" onclick="hide('3');hide('9');hide('9.1');sh('6');show('9.2'); return false;" >
+   <br /><b>Old Versions</b>
+  </a>
+ </div>
+</div>
+
+<div id="6" style="display:none;">
+<br />
+<div style="background-color: #007AFF;padding:3;" class="certselect">Old Versions</div>
+<br />
+<div style="height:80%;overflow:auto;">
+nonmobile-211115<br />
+<a href="http://www.maxmirror.com/download/ASF1KJKG" target="_blank" rel="nofollow" >http://www.maxmirror.com/download/ASF1KJKG</a><br />
+[extracted= 68,4 mb | 12,7 mb]<br />
+<br />
+sec-211115<br />
+<a href="http://www.maxmirror.com/download/0PSJAKZO" target="_blank" rel="nofollow" >http://www.maxmirror.com/download/0PSJAKZO</a><br />
+[extracted= 24,8 mb | 5,4 mb]<br />
+<br />
+ad-211115<br />
+<a href="http://www.maxmirror.com/download/0PQSWCKH" target="_blank" rel="nofollow" >http://www.maxmirror.com/download/0PQSWCKH</a><br />
+[extracted= 20,2 mb | 4,5 mb]<br />
+<br />
+nonmobile-311015<br />
+<a href="http://www.embedupload.com/?d=1JLGEHJWZH" target="_blank" rel="nofollow" >http://www.embedupload.com/?d=1JLGEHJWZH</a><br />
+[extracted= 61,4 mb | 11,3 mb]<br />
+<br />
+sec-311015<br />
+<a href="http://www.embedupload.com/?d=9GLHVIOXSI" target="_blank" rel="nofollow" >http://www.embedupload.com/?d=9GLHVIOXSI</a><br />
+[extracted= 24,8 mb | 5,5 mb]<br />
+<br />
+ad-311015<br />
+<a href="http://www.embedupload.com/?d=6HRUMJVWVY" target="_blank" rel="nofollow" >http://www.embedupload.com/?d=6HRUMJVWVY</a><br />
+[extracted= 15,8 mb | 3,5 mb]<br />
+<br />
+nonmobile-101015<br />
+<a href="http://www.uploadmagnet.com/jqctslkhwsaw/bphf-nonmobile-101015.zip" target="_blank" rel="nofollow" >http://www.uploadmagnet.com/jqctslkhwsaw/bphf-nonmobile-101015.zip</a><br />
+[extracted= 61,4 mb | 11,3 mb]<br />
+<br />
+sec-101015<br />
+<a href="http://www.uploadmagnet.com/hxc2t5jfsexx/bphf-sec-101015.zip" target="_blank" rel="nofollow" >http://www.uploadmagnet.com/hxc2t5jfsexx/bphf-sec-101015.zip</a><br />
+[extracted= 24,8 mb | 5,5 mb]<br />
+<br />
+ad-101015<br />
+<a href="http://www.uploadmagnet.com/deqzy3mx492l/bphf-ad-101015.zip" target="_blank" rel="nofollow" >http://www.uploadmagnet.com/deqzy3mx492l/bphf-ad-101015.zip</a><br />
+[extracted= 15,8 mb | 3,5 mb]<br />
+<br />
+nonmobile-270915<br />
+<a href="http://multiupload.biz/a0vwiopj2ygp/bphf-nonmobile-270915_MultiUpload.biz.zip.html" target="_blank" rel="nofollow" >
+http://multiupload.biz/a0vwiopj2ygp/bphf-nonmobile-270915_MultiUpload.biz.zip.html</a><br />
+[extracted= 61,4 mb | 11,3 mb]<br />
+<br />
+sec-270915<br />
+<a href="http://multiupload.biz/2ax4ybex11ij/bphf-sec-270915_MultiUpload.biz.zip.html" target="_blank" rel="nofollow" >
+http://multiupload.biz/2ax4ybex11ij/bphf-sec-270915_MultiUpload.biz.zip.html</a><br />
+[extracted= 24,8 mb | 5,5 mb]<br />
+<br />
+ad-270915<br />
+<a href="http://multiupload.biz/40cce1h8cjo1/bphf-ad-270915_MultiUpload.biz.zip.html" target="_blank" rel="nofollow" >http://multiupload.biz/40cce1h8cjo1/bphf-ad-270915_MultiUpload.biz.zip.html</a><br />
+[extracted= 15,8 mb | 3,5 mb]<br />
+<br />
+        
+nonmobile-210915<br />
+<a href="http://exoshare.com/download.php?uid=1PV1MI1V" target="_blank" rel="nofollow" >
+http://exoshare.com/download.php?uid=1PV1MI1V</a><br />
+[extracted= 62,1 mb | 11,5 mb]<br />
+<br />
+sec-210915<br />
+<a href="http://exoshare.com/download.php?uid=0QKMHS2C" target="_blank" rel="nofollow" >
+http://exoshare.com/download.php?uid=0QKMHS2C</a><br />
+[extracted= 24,8 mb | 5,5 mb]<br />
+<br />
+ad-210915<br />
+<a href="http://exoshare.com/download.php?uid=KZAOP0NT" target="_blank" rel="nofollow" >http://exoshare.com/download.php?uid=KZAOP0NT</a><br />
+[extracted= 16,7 mb | 3,7 mb]<br />
+<br />
+nonmobile-100915<br />
+<a href="http://www.mirrorcreator.com/files/1EOCE4QH/bphf-nonmobile-100915.zip_links" target="_blank" rel="nofollow" >http://www.mirrorcreator.com/files/1...0915.zip_links</a><br />
+[extracted= 61,1 mb | 11,3 mb]<br />
+<br />
+sec-100915<br />
+<a href="http://www.mirrorcreator.com/files/HUBXCHIU/bphf-sec-100915.zip_links" target="_blank" rel="nofollow" >http://www.mirrorcreator.com/files/H...0915.zip_links</a><br />
+[extracted= 24,7 mb | 5,4 mb]<br />
+<br />
+ad-100915<br />
+<a href="http://www.mirrorcreator.com/files/1ZSSKECD/bphf-ad-100915.zip_links" target="_blank" rel="nofollow" >http://www.mirrorcreator.com/files/1...0915.zip_links</a><br />
+[extracted= 15,8 mb | 3,5 mb]<br />
+<br />
+nonmobile-260815<br />
+<a href="http://www.multiup.org/download/159ac0983d8c15ff0030136f00dc3ff7/bphf-nonmobile-260815.zip" target="_blank" rel="nofollow" >http://www.multiup.org/download/159a...ile-260815.zip</a><br />
+[extracted= 59 mb | 10,8 mb]<br />
+<br />
+sec-260815<br />
+<a href="http://www.multiup.org/download/fbff866ff5ae488164c3f766d86dd54f/bphf-sec-260815.zip" target="_blank" rel="nofollow" >http://www.multiup.org/download/fbff...sec-260815.zip</a><br />
+[extracted= 22,9 mb | 4,6 mb]<br />
+<br />
+ad-260815<br />
+<a href="http://www.multiup.org/download/05fc9bad4b570c249b6e57a3766c9f4e/bphf-ad-260815.zip" target="_blank" rel="nofollow" >http://www.multiup.org/download/05fc...-ad-260815.zip</a><br />
+[extracted= 13,9 mb | 3,2 mb]<br />
+<br />
+nonmobile-150615<br />
+<a href="http://uploadmirrors.com/download/0QU4N4H6/bphf-nonmobile-150615.zip" target="_blank" rel="nofollow" >http://uploadmirrors.com/download/0Q...ile-150615.zip</a><br />
+[extracted= 52,6 mb | 9,9 mb]<br />
+<br />
+sec-150615<br />
+<a href="http://uploadmirrors.com/download/1OIJN4V8/bphf-sec-150615.zip" target="_blank" rel="nofollow" >http://uploadmirrors.com/download/1O...sec-150615.zip</a><br />
+[extracted= 21 mb | 4,9 mb]<br />
+<br />
+ad-150615<br />
+<a href="http://uploadmirrors.com/download/AGGBPUKF/bphf-ad-150615.zip" target="_blank" rel="nofollow" >http://uploadmirrors.com/download/AG...-ad-150615.zip</a><br />
+[extracted= 11,8 mb | 2,4 mb]<br />
+<br />
+nonmobile-040615<br />
+<a href="http://calabox.com/files/0A5C8TX8/bphf-nonmobile-040615.zip" target="_blank" rel="nofollow" >http://calabox.com/files/0A5C8TX8/bp...ile-040615.zip</a><br />
+[extracted= 53,6 mb | 10,1 mb]<br />
+<br />
+sec-040615<br />
+<a href="http://calabox.com/files/03VGAFDB/bphf-sec-040615.zip" target="_blank" rel="nofollow" >http://calabox.com/files/03VGAFDB/bphf-sec-040615.zip</a><br />
+[extracted= 23,4 mb | 5,2 mb]<br />
+<br />
+ad-040615<br />
+<a href="http://calabox.com/files/7ZP0LIFB/bphf-ad-040615.zip" target="_blank" rel="nofollow" >http://calabox.com/files/7ZP0LIFB/bphf-ad-040615.zip</a><br />
+[extracted= 10,9 mb | 2,3 mb]<br />
+<br />
+nonmobile-200515<br />
+<a href="http://www.maxmirror.com/download/SKUJOLYF" target="_blank" rel="nofollow" >http://www.maxmirror.com/download/SKUJOLYF</a><br />
+[extracted= 53,2 mb | 9,9 mb]<br />
+<br />
+sec-200515<br />
+<a href="http://www.maxmirror.com/download/06XPRUIR" target="_blank" rel="nofollow" >http://www.maxmirror.com/download/06XPRUIR</a><br />
+[extracted= 30,5 mb | 5,9 mb]<br />
+<br />
+ad-200515<br />
+<a href="http://www.maxmirror.com/download/0992FA0Y" target="_blank" rel="nofollow" >http://www.maxmirror.com/download/0992FA0Y</a><br />
+[extracted= 11,1 mb | 2,4 mb]<br />
+<br />
+nonmobile-020515<br />
+<a href="http://www.embedupload.com/?d=3XFARGKQRB" target="_blank" rel="nofollow" >http://www.embedupload.com/?d=3XFARGKQRB</a><br />
+[extracted= 64,7 mb | 13 mb]<br />
+<br />
+sec-020515<br />
+<a href="http://www.embedupload.com/?d=9AEYNSLHGG" target="_blank" rel="nofollow" >http://www.embedupload.com/?d=9AEYNSLHGG</a><br />
+[extracted= 27,6 mb | 5,8 mb]<br />
+<br />
+ad-020515<br />
+<a href="http://www.embedupload.com/?d=3WQJQJIUCD" target="_blank" rel="nofollow" >http://www.embedupload.com/?d=3WQJQJIUCD</a><br />
+[extracted= 10,2 mb | 2,3 mb]<br />
+<br />
+nonmobile-270415<br />
+<a href="http://www.uploadmagnet.com/gfmxnyrgc1jr/bphf-nonmobile-270415.zip" target="_blank" rel="nofollow" >http://www.uploadmagnet.com/gfmxnyrg...ile-270415.zip</a><br />
+[extracted= 64,7 mb | 13 mb]<br />
+<br />
+sec-270415<br />
+<a href="http://www.uploadmagnet.com/wtif1pq4vlqw/bphf-sec-270415.zip" target="_blank" rel="nofollow" >http://www.uploadmagnet.com/wtif1pq4...sec-270415.zip</a><br />
+[extracted= 27,6 mb | 5,8 mb]<br />
+<br />
+ad-270415<br />
+<a href="http://www.uploadmagnet.com/rec9u4jkzc9j/bphf-ad-270415.zip" target="_blank" rel="nofollow" >http://www.uploadmagnet.com/rec9u4jk...-ad-270415.zip</a><br />
+[extracted= 10,2 mb | 2,3 mb]<br />
+<br />
+nonmobile-210415<br />
+<a href="http://multiupload.biz/vl6j51omdauo/bphf-nonmobile-210415_MultiUpload.biz.zip.html" target="_blank" rel="nofollow" >http://multiupload.biz/vl6j51omdauo/...d.biz.zip.html</a><br />
+[extracted= 83,1 mb | 14,9 mb]<br />
+<br />
+sec-210415<br />
+<a href="http://multiupload.biz/bbysrv19wft8/bphf-sec-210415_MultiUpload.biz.zip.html" target="_blank" rel="nofollow" >http://multiupload.biz/bbysrv19wft8/...d.biz.zip.html</a><br />
+[extracted= 27,8 mb | 6,0 mb]<br />
+<br />
+ad-210415<br />
+<a href="http://multiupload.biz/zguc2zfvsudy/bphf-ad-210415_MultiUpload.biz.zip.html" target="_blank" rel="nofollow" >http://multiupload.biz/zguc2zfvsudy/...d.biz.zip.html</a><br />
+[extracted= 14,3 mb | 2,8 mb]<br />
+<br />
+nonmobile-140415<br />
+<a href="http://exoshare.com/download.php?uid=0E39UKDR" target="_blank" rel="nofollow" >http://exoshare.com/download.php?uid=0E39UKDR</a><br />
+[extracted= 72,1 mb | 12,6 mb]<br />
+<br />
+mobile-140415<br />
+<a href="http://exoshare.com/download.php?uid=JM5GCVVQ" target="_blank" rel="nofollow" >http://exoshare.com/download.php?uid=JM5GCVVQ</a><br />
+[extracted= 31,3 mb | 5,9 mb]<br />
+<br />
+nonmobile-110415<br />
+<a href="http://www.mirrorcreator.com/files/ITMKWC3O/bphf-nonmobile-110415.zip_links" target="_blank" rel="nofollow" >http://www.mirrorcreator.com/files/I...0415.zip_links</a><br />
+[extracted= 72 mb | 13,7 mb]<br />
+<br />
+mobile-110415<br />
+<a href="http://www.mirrorcreator.com/files/AK8YRS02/bphf-mobile-110415.zip_links" target="_blank" rel="nofollow" >http://www.mirrorcreator.com/files/A...0415.zip_links</a><br />
+[extracted= 72 mb | 13,9 mb]<br />
+<br />
+uniq-040415<br />
+<a href="http://www.multiup.org/en/download/183551319503c3ad20894abbda2886ca/bphf-uniq-040415.zip" target="_blank" rel="nofollow" >http://www.multiup.org/en/download/1...niq-040415.zip</a><br />
+[extracted= 54,3 mb | 10,7 mb]<br />
+flashable test<br />
+<a href="http://www.multiup.org/en/download/338483560daa4b62d2648e0f5ac5f2f6/bphf-uniq-android-040415.zip" target="_blank" rel="nofollow" >http://www.multiup.org/en/download/3...oid-040415.zip</a><br />
+<br />
+normal-040415<br />
+<a href="http://www.multiup.org/en/download/52952f46abe1b5b3277b23e4803ceb08/bphf-040415.zip" target="_blank" rel="nofollow" >http://www.multiup.org/en/download/5...phf-040415.zip</a><br />
+[extracted= 71,6 mb | 13,7 mb]<br />
+flashable test<br />
+<a href="http://www.multiup.org/en/download/68ece53601b15473bdaabf279ed67e46/bphf-android-040415.zip" target="_blank" rel="nofollow" >http://www.multiup.org/en/download/6...oid-040415.zip</a><br />
+<br />
+circum-040415<br />
+<a href="http://www.multiup.org/en/download/11df6996a1e7052dc21c1cab23c5ed8b/bphf-circum-040415.zip" target="_blank" rel="nofollow" >http://www.multiup.org/en/download/1...cum-040415.zip</a><br />
+[extracted= 54,3 mb | 10,7 mb]<br />
+flashable test<br />
+<a href="http://www.multiup.org/en/download/2398c19536cd68c9ff8ce4933595f95f/bphf-circum-android-040415.zip" target="_blank" rel="nofollow" >http://www.multiup.org/en/download/2...oid-040415.zip</a><br />
+<br />
+uniq-310315<br />
+[extracted= 56,4 mb | 11,1 mb]<br />
+<a href="http://uploadmirrors.com/download/0OXDRUFD/bphf-uniq-310315.zip" target="_blank" rel="nofollow" >http://uploadmirrors.com/download/0O...niq-310315.zip</a><br />
+<br />
+normal-310315<br />
+[extracted= 71,3 mb | 13,7 mb]<br />
+<a href="http://uploadmirrors.com/download/0P8CHHCG/bphf-310315.zip" target="_blank" rel="nofollow" >http://uploadmirrors.com/download/0P...phf-310315.zip</a><br />
+<br />
+circum-310315<br />
+[extracted= 56,5 mb | 11,1 mb]<br />
+<a href="http://uploadmirrors.com/download/1BOJZOOK/bphf-circum-310315.zip" target="_blank" rel="nofollow" >http://uploadmirrors.com/download/1B...cum-310315.zip</a><br />
+<br />
+uniq-290315<br />
+<a href="http://calabox.com/files/3TCHNLMF/bphf-uniq-290315_1.zip" target="_blank" rel="nofollow" >http://calabox.com/files/3TCHNLMF/bp...q-290315_1.zip</a><br />
+<br />
+normal-290315<br />
+<a href="http://calabox.com/files/YDTKWFUG/bphf-290315.zip" target="_blank" rel="nofollow" >http://calabox.com/files/YDTKWFUG/bphf-290315.zip</a><br />
+<br />
+uniq-040315-repacked<br />
+[extracted= 50,4 mb | 10,37 mb]<br />
+<a href="http://uploadseeds.com/download/I1XV1JBF/bphf-uniq-04031.zip" target="_blank" rel="nofollow" >http://uploadseeds.com/download/I1XV...uniq-04031.zip</a><br />
+<br />
+normal-160315<br />
+[extracted= 53,9 mb | 10,96 mb]<br />
+<a href="http://uploadseeds.com/download/IAKP2PKE/bphf-160315.zip" target="_blank" rel="nofollow" >http://uploadseeds.com/download/IAKP...phf-160315.zip</a><br />
+<br />
+uniq 040315<br />
+[extracted= 50,4 mb | 5,7 mb]<br />
+<a href="http://www.uploadseeds.com/download/1KTU9NSY/bphf-uniq-04031.zip" target="_blank" rel="nofollow" >http://www.uploadseeds.com/download/...uniq-04031.zip</a><br />
+<br />
+normal 040315<br />
+[extracted= 64,7 mb | 7,1 mb]<br />
+<a href="http://www.uploadseeds.com/download/0MYFQUJM/bphf-040315_1.zip" target="_blank" rel="nofollow" >http://www.uploadseeds.com/download/...f-040315_1.zip</a><br />
+<br />
+uniq 030315<br />
+[extracted= 50,4 mb | dl= 5,7 mb]<br />
+<a href="http://www.uploadseeds.com/download/DOWXKBDX/bphf-uniq-03031.zip" target="_blank" rel="nofollow" >http://www.uploadseeds.com/download/...uniq-03031.zip</a><br />
+<br />
+normal 030315<br />
+[extracted= 57,5 mb | dl= 6,3 mb]<br />
+<a href="http://www.uploadseeds.com/download/MVHK6H3G/bphf-030315.zip" target="_blank" rel="nofollow" >http://www.uploadseeds.com/download/...phf-030315.zip</a>
+</div>
+</div>
+
+<div id="9.1">
+<br />
+<div class="site">
+  <a>&nbsp;</a>
+ <a target="_top" style="color:white;text-decoration:none;" onclick="hide('3');hide('6');sh('9'); return false;" >
+   <br /><b>@Other Communitys</b>
+  </a>
+ </div>
+</div>
+
+
+<div id="9" style="display:none;">
+<br />
+<div style="background-color: #007AFF;padding:3;" class="certselect">@Other Communitys</div>
+<br />
+
+
+        <div style="height:80%;overflow:auto;">
+BPHF Support:<br /><br />
+English=<br />
+<a href="https://community.ee.co.uk/t5/Android-Forum/BPHF-Bad-Punching-Host-File-Universal/td-p/350137" target="_blank" rel="nofollow">EE Community</a><br />
+<a href="http://www.cnet.com/forums/discussions/bphf-bad-punching-host-file-universal/" target="_blank" rel="nofollow">Cnet.com</a>
+<br /><br />
+German=<br />
+<a href="http://www.android-hilfe.de/allgemeine-tools-scripte-geraeteunabhaengig/683380-bphf-bad-punching-host-file-universal.html" target="_blank" rel="nofollow" >android-hilfe.de</a><br />
+<a href="http://www.androidpit.de/forum/650002/bphf-bad-punching-host-file-universal" target="_blank" rel="nofollow" >androidpit.de</a><br />
+<a href="http://www.handy-faq.de/forum/handy_allgemein/318313-bphf_bad_punching_host_file_universal.html" target="_blank" rel="nofollow" >handy-faq.de</a><br />
+<a href="http://www.usp-forum.de/programme-apps/117022-bphf-bad-punching-host-file-universal.html" target="_blank" rel="nofollow" >usp-forum.de</a><br />
+<a href="http://www.mobilefaq.de/forum/apps-forum/tools/14472-bphf-bad-punching-host-file-universal" target="_blank" rel="nofollow" >mobilefaq.de</a>
+</div>
+</div>
+
+
+</div>
+
+
+</div>
+
+      <hr>
+
+      <footer>
+remember that it cant block everything, find missing hostnames on android with blockit!.<br /><br />
+Thats it, Enjoy :)<br /><br />
+        <p>&copy; <a href="http://heathenmen.wordpress.com" target="_blank">HeathenMan</a></p>
+      </footer>
+
+</div>

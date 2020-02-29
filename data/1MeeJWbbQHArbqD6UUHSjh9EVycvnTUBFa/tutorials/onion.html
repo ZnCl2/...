@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>How to create a Tor hidden service website on Caddy on Debian 10 - Archive - MayVaneDay Studios</title>
+		<link href="../style.css" rel="stylesheet" type="text/css" media="all">
+		<meta name="author" content="Vane Vander">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</head>
+	<body class="mayvaneday">
+		<article>
+			<div class="box">
+				<p><h1>How to create a Tor hidden service website on Caddy on Debian 10</h1></p>
+				<p>first published: 2020-01-31</p>
+				<p>last updated: 2021-01-13</p>
+			</div>
+			<hr>
+			<div class="box">
+				<ol style="list-style-type: decimal">
+					<li>Install Tor.</li>
+				</ol>
+				<code>sudo apt install tor</code>
+				<ol start="2" style="list-style-type: decimal">
+					<li>Install the Caddy web server.</li>
+				</ol>
+				<p><code>echo "deb [trusted=yes] https://apt.fury.io/caddy/ /" | sudo tee -a /etc/apt/sources.list.d/caddy-fury.list</code></p>
+				<p><code>sudo apt update; sudo apt install caddy -y</code></p>
+				<ol start="3" style="list-style-type: decimal">
+					<li>Edit <code>/etc/tor/torrc</code> to create the hidden service.</li>
+				</ol>
+				<p>Open /etc/tor/torrc in your favorite text editor. (Please note that this usually requires root privileges.)</p>
+				<p>Go to the lines that say:</p>
+				<code>
+				#HiddenServiceDir /var/lib/tor/hidden_service/<br />
+				#HiddenServicePort 80 127.0.0.1:80
+				</code>
+				<p>Uncomment them by deleting the # mark in front of each line.</p>
+				<p>If you want, you can change the HiddenServiceDir directory, but you will need to remember it for later. For security purposes, keep the new directory inside of <code>/var/lib/tor/</code>.</p>
+				<ol start="4" style="list-style-type: decimal">
+					<li>Restart the Tor service.</li>
+				</ol>
+				<p><code>sudo systemctl restart tor@default</code></p>
+				<ol start="5" style="list-style-type: decimal">
+					<li>As root, go to the hidden service directory and get the new hidden service's domain.</li>
+				</ol>
+				<p><code>sudo -i</code></p>
+				<p><code>cd /var/lib/tor/directory/</code></p>
+				<p>Replace &quot;directory&quot; with the actual directory you chose in step 3.</p>
+				<p><code>cat hostname</code></p>
+				<p>If all is well, you should now see a long string of letters and numbers that ends in &quot;.onion&quot;. Copy this somewhere safe. You'll need it next step.</p>
+				<ol start="6" style="list-style-type: decimal">
+					<li>Configure Caddy to serve the hidden service.</li>
+				</ol>
+				<p>Open <code>/etc/caddy/Caddyfile</code> with your favorite text editor. You should already be root, but if you did <code>exit</code> after getting the Tor hostname, just <code>sudo -i</code> again.</p>
+				<p>Type the following in:</p>
+				<pre>
+http://YourTorHostnameHere.onion {
+	root * /your/website/file/path/here
+	file_server
+	encode gzip
+	bind 127.0.0.1
+}
+				</pre>
+				<p>The &quot;http://&quot; in front of the address is important as that tells Caddy to not try to enable HTTPS on that domain. HTTPS is unnecessary for Tor hidden services as all traffic to and from the server is already encrypted in transit. And since Tor hidden services aren't accessible on the normal clearnet, the request for Let's Encrypt to give Caddy a certificate would fail as they wouldn't be able to access the domain.</p>
+				<ol start="8" style="list-style-type: decimal">
+					<li>Restart Caddy to apply your changes.</li>
+				</ol>
+				<p><code>sudo systemctl restart caddy</code></p>
+			</div>
+			<hr>
+			<div class="box">
+				<p align=right>CC BY-NC-SA 4.0 &copy; Vane Vander</p>
+			</div>
+		</article>
+	</body>
+</html>

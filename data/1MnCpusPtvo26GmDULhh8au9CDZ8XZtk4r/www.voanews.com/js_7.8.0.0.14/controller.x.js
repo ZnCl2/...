@@ -1,0 +1,1 @@
+$(document).ready(function(){var n;for(fixTabs(),mixMail(),n=0;n<files2include.length;n++)include_once(files2include[n]);for(n=0;n<onloadActions.length;n++)eval(onloadActions[n]);setIframes();DesignMode||$.getScript(formatPath("/jslocalizations{0}/Multimedia.Playlist.x.js"));typeof DownloadOptionsDropdown=="function"&&DownloadOptionsDropdown(".downloadlink")});;

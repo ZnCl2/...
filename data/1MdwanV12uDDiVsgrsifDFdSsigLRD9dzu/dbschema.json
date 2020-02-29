@@ -1,0 +1,116 @@
+{
+    "db_name": "Blog",
+    "db_file": "data/blog.db",
+    "version": 2,
+    "maps": {
+        "data.json": {
+            "to_table": [
+                "post",
+                "tag",
+                "page",
+                "footer"
+            ],
+            "to_keyvalue": [
+                "author",
+                "title",
+                "description",
+                "copyright",
+                "next_post_id",
+                "modified",
+                "created"
+            ]
+        },
+        "users/.+/data.json": {
+            "to_table": [{
+                "node": "comment",
+                "table": "comment"
+            }, {
+                "node": "like",
+                "table": "like"
+            }]
+        },
+        "users/.+/content.json": {
+            "to_json_table": [
+                "cert_user_id"
+            ],
+            "file_name": "data.json"
+        }
+    },
+    "tables": {
+        "json": {
+            "cols": [
+                ["json_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+                ["directory", "TEXT"],
+                ["file_name", "TEXT"],
+                ["cert_user_id", "TEXT"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX path ON json(directory, file_name)"],
+            "schema_changed": 8
+        },
+        "page": {
+            "cols": [
+                ["title", "TEXT"],
+                ["md", "BOOLEAN"],
+                ["body", "TEXT"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX page_id ON page(json_id, title)"],
+            "schema_changed": 2
+        },
+        "tag": {
+            "cols": [
+                ["value", "TEXT NOT NULL CHECK(length(value)!=0)"],
+                ["post_id", "REFERENCES post(post_id)"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX tag_post_uri ON tag(value, post_id)"],
+            "schema_changed": 1
+        },
+        "footer": {
+            "cols": [
+                ["title", "TEXT"],
+                ["new_tab", "BOOLEAN"],
+                ["links", "TEXT"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX footer_id ON footer(json_id, title)"],
+            "schema_changed": 4
+        },
+        "post": {
+            "cols": [
+                ["post_id", "INTEGER"],
+                ["title", "TEXT"],
+                ["quote", "TEXT"],
+                ["quoteBy", "TEXT"],
+                ["body", "TEXT"],
+                ["date_published", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX post_uri ON post(json_id, post_id)", "CREATE INDEX post_id ON post(post_id)"],
+            "schema_changed": 2
+        },
+        "comment": {
+            "cols": [
+                ["body", "TEXT NOT NULL CHECK(length(body)!=0)"],
+                ["date_added", "INTEGER"],
+                ["post_id", "REFERENCES post(post_id)"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX comment_post_uri ON comment(body, post_id)"],
+            "schema_changed": 2
+        },
+        "like": {
+            "cols": [
+                ["date_added", "INTEGER"],
+                ["post_id", "REFERENCES post(post_id)"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX like_post_uri ON like(date_added, post_id)"],
+            "schema_changed": 2
+        }
+    },
+    "feeds": {
+        "Comments": "SELECT 'comment' AS type, date_added, post.title AS title, keyvalue.value || ': ' || comment.body AS body, '?Post:' || comment.post_id || '#Comments' AS url FROM comment LEFT JOIN json USING (json_id) LEFT JOIN json AS json_content ON (json_content.directory = json.directory AND json_content.file_name='content.json') LEFT JOIN keyvalue ON (keyvalue.json_id = json_content.json_id AND key = 'cert_user_id') LEFT JOIN post ON (comment.post_id = post.post_id)",
+        "Posts": "SELECT post_id AS event_uri, 'post' AS type, date_published AS date_added, title AS title, body AS body, '?P:' || post_id AS url FROM post"
+    }
+}

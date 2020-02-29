@@ -1,0 +1,1 @@
+function toggleKeyboardVisible(){virtualKeyboard==null?(google.elements.keyboard.enableMinMaxMode(!1),google.elements.keyboard.setAutoHide(!1),virtualKeyboard=new google.elements.keyboard.Keyboard([virtualKeyboardLanguage])):virtualKeyboard.setVisible(!virtualKeyboard.isVisible())}google.load("elements","1",{packages:"keyboard"});var virtualKeyboard=null;;

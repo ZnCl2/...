@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <title>New ZeroNet site!</title>
+ <meta charset="utf-8">
+ <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+ <base href="" target="_top" id="base">
+<style>
+* { font-family: monospace; line-height: 1.5em; font-size: 13px; vertical-align: middle; }
+body { background-color: white; }
+#message { padding: 5px; width: 100%;  }
+input#send { height: 34px; padding: 5px; }
+input#loadlist { height: 34px; padding: 5px; }
+
+ul { padding: 0px; }
+li { list-style-type: none; border-top: 1px solid #eee; padding: 5px 0px; }
+li:nth-child(odd) { background-color: #F9FAFD; }
+li b { color: #3F51B5; }
+</style> 
+ <script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<body>
+
+<body>
+<a href="#Select+user" id="select_user" onclick='return page.selectUser()'>Select user</a>:<br>
+Url: <input type="text" id="url">
+Image: <input type="text" id="img"><br>
+<textarea id="message" rows="5" col="50"></textarea><br>
+<input type="button" id="send" value="Send!" onclick="return page.sendMessage()"/>
+<input type="button" id="loadlist" value="Load list" onclick="return page.jqload()"/>
+<div id="images"></div>
+<ul id="messages">
+ <li>Welcome to ZeroChat!</li>
+</ul>
+<script type="text/javascript" src="js/ZeroFrame.js"></script>
+<script>
+var items = [];
+
+function jqloadid(num,id) {
+  $.getJSON( "https://myphoto.pi3d.pw/getuserphoto.php?id="+id, function( data ) {
+  var str = '';
+  var bbstr = '';
+  
+  $.each( data, function( key, val ) {
+    str += ' <img src="' + val.s + '">' ;
+    bbstr += ' [img src="' + val.s + '" onclick="return vwp(\''+val.b+'\')"]';
+    //console.log( "JSON Data: " + val );
+  });
+  $("#li"+num).html(str+' <a href="#" onclick="return addphoto('+num+')">Add photo</a>');
+  items[num] = bbstr;
+ 
+});
+}
+
+function vwp(src) {
+  var image = new Image();
+    image.src = src;
+    var width = image.width;
+    var height = image.height;
+    window.open(src,"Image","width=" + width + ",height=" + height);
+}
+
+function addphoto (num) {
+  $("#message").val(items[num]);
+}
+class ZeroChat extends ZeroFrame {
+    jqload() {
+      if (!this.site_info.cert_user_id) {
+        this.cmd("wrapperNotification", ["info","Please, select your account."]);
+        return false;
+      }
+      $.getJSON( "https://myphoto.pi3d.pw/getuserphoto.php", function( data ) {
+      var items = [];
+      var str = '';
+      
+      $.each(data, function( key, val ) {
+        items.push(val);
+        //str += "<li>" + key + ' ' + val + "</li>";
+        //console.log( "JSON Data: " + val );
+        $("#images").append('<li id="li'+key+'"><a href="#" onclick="return jqloadid('+key+','+val+')">'+val+'</a></li>');
+      });
+     
+    });
+    }
+    uploadFileb1 () {
+      var input = document.createElement('input')
+      document.body.appendChild(input)
+      input.type = "file"
+      input.style.visibility = "hidden"
+
+      input.onchange = () => {
+          var file = input.files[0]
+          page.cmd("bigfileUploadInit", ["optional/"+file.name, file.size], (init_res) => {
+              var formdata = new FormData()
+              formdata.append(file.name, file)
+
+              var req = new XMLHttpRequest()
+              req.upload.addEventListener("progress", console.log)
+              req.upload.addEventListener("loadend", () =>
+                  page.cmd("wrapperConfirm", ["Upload finished!", "Open file"],
+                      () => { window.top.location = init_res.inner_path }
+                  )
+              )
+              req.withCredentials = true
+              req.open("POST", init_res.url)
+              req.send(formdata)
+          })
+      }
+      input.click()
+    
+    }
+    addMessage (username, message) {
+        var message_escaped = message.replace(/</g, "&lt;").replace(/>/g, "&gt;")  // Escape html tags in the message
+        message_escaped = message_escaped.replace(/\[url\](.*)\[\/url\]/g, "<a href=\"$1\" target=_blank>$1</a>")  // Url
+        message_escaped = message_escaped.replace(/\[img/g, "<img").replace(/\]/g, ">")  // Img
+        message_escaped = message_escaped.replace(/([^>])\n+/g, '$1<br/>') // nl2br 
+        this.messages.innerHTML += "<li><b>" + username + "</b>: " + message_escaped + "</li>"
+    }
+
+    onOpenWebsocket () {
+        this.messages = document.getElementById("messages")
+        this.addMessage("System", "Ready to call ZeroFrame API!")
+        this.cmd("siteInfo", {}, (site_info) => {
+            if (site_info.cert_user_id)
+                document.getElementById("select_user").innerText = site_info.cert_user_id
+            this.site_info = site_info
+        })
+        this.loadMessages()
+          
+    }
+    
+    loadMessages () {
+        this.cmd("dbQuery", ["SELECT * FROM message LEFT JOIN json USING (json_id) ORDER BY date_added DESC"], (messages) => {
+            document.getElementById("messages").innerHTML = ""  // Always start with empty messages
+            for (var i=0; i < messages.length; i++) {
+                this.addMessage(messages[i].cert_user_id, messages[i].body)
+            }
+        })
+    }    
+    selectUser () {
+        this.cmd("certSelect", {accepted_domains: ["zeroid.bit"]})
+        return false
+    }
+    
+    onRequest (cmd, message) {
+        if (cmd == "setSiteInfo") {
+            if (message.params.cert_user_id)
+                document.getElementById("select_user").innerHTML = message.params.cert_user_id
+            else
+                document.getElementById("select_user").innerHTML = "Select user"
+            this.site_info = message.params  // Save site info data to allow access it later
+            
+            // Reload messages if new file arrives
+            if (message.params.event[0] == "file_done")
+                this.loadMessages()
+        }
+    }
+    
+    sendMessage () {
+        if (!this.site_info.cert_user_id) {  // No account selected, display error
+            this.cmd("wrapperNotification", ["info", "Please, select your account."])
+            return false
+        }
+
+        // This is our data file path
+        var data_inner_path = "data/users/" + this.site_info.auth_address + "/data.json"
+        var content_inner_path = "data/users/" + this.site_info.auth_address + "/content.json"
+        var param_img = document.getElementById("img").value;
+        var param_url = document.getElementById("url").value;
+        var param_message = document.getElementById("message").value;
+
+        // Load our current messages
+        this.cmd("fileGet", {"inner_path": data_inner_path, "required": false}, (data) => {
+            if (data)  // Parse current data file
+                data = JSON.parse(data)
+            else  // Not exists yet, use default data
+                data = { "message": [] }
+            
+            if (param_url.length > 0) {
+              param_message += "\n[url]"+param_url+"[/url] ";
+            }            
+            
+            if (param_img.length > 0) {
+              param_message += "\n[img src=\""+param_img+"\" ] ";
+            }            
+
+            // Add the new message to data
+            data.message.push({
+                "body": param_message,
+                "date_added": Date.now()
+            })
+
+            // Encode data array to utf8 json text
+            var json_raw = unescape(encodeURIComponent(JSON.stringify(data, undefined, '\t')))
+
+            // Write file to disk
+            this.cmd("fileWrite", [data_inner_path, btoa(json_raw)], (res) => {
+                if (res == "ok") {
+                    // Reset the message input
+                    document.getElementById("message").value = ""
+                    document.getElementById("url").value = ""
+                    document.getElementById("img").value = ""
+                    // Sign the changed file in our user's directory
+                    this.cmd("siteSign", {"inner_path": content_inner_path}, (res) => {
+                        // Publish to other users
+                        this.cmd("sitePublish", {"inner_path": content_inner_path, "sign": false})
+                    })
+                } else {
+                    this.cmd("wrapperNotification", ["error", "File write error: #{res}"])
+                }
+            })
+        })
+        this.cmd("siteSign", {"inner_path": content_inner_path}, (res) => {
+                        this.loadMessages() // Reload messages
+        })
+        return false
+    }
+}
+page = new ZeroChat()
+
+</script>
+</body>
+</html>

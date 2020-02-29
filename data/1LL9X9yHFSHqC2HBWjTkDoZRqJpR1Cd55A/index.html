@@ -1,0 +1,574 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="css/bootstrap.min.css" />
+        
+        <style>
+            .product-image img {
+                width: 100%;
+            } 
+        </style>
+    </head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <div class="row">
+                <div class="col-sm-6">
+                    <h1>OneMarket <small>Just another market ;)</small></h1>
+                </div>
+                <div class="col-sm-6 text-right">
+                    <ul class="nav nav-pills pull-right">
+                        <li role="presentation"><a href="?my-products">My Products</a></li>
+                        <li role="presentation"><a href="?add-product">Add Product</a></li>
+                        <li role="presentation"><a href="?my-orders">My Orders</a></li>
+                        <li role="presentation"><a href="?my-profile">My Profile</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-4">
+                <h4>Browse by Categories</h4>
+                <div id="navigation"></div>
+            </div>
+            
+            <div class="col-sm-8">
+                <div id="content"></div>
+            </div>
+        </div>
+        
+        <hr />
+        <!-- Button trigger modal -->
+        <button type="button" class="btn btn-sm" data-toggle="modal" data-target="#myModal">
+        Debug
+        </button>
+
+        <!-- Modal -->
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel">Debug</h4>
+                    </div>
+                    <div class="modal-body">
+                        <h2>Notification examples</h2>
+                        <input type='button' onclick='my_site.cmd("wrapperNotification", ["done", "Hello World!", 10000])' value='With 10sec timeout'>
+                        <input type='button' onclick='my_site.cmd("wrapperNotification", ["error", "Some error"])' value='Error with no timeout'>
+                        <input type='button' onclick='my_site.cmd("wrapperConfirm", ["Are you sure?"], function (res) { output.value = res+"\n"+output.value })' value='Confirmation'>
+                        <input type='button' onclick='my_site.cmd("wrapperPrompt", ["Whats your name?"], function (res) { output.value = res+"\n"+output.value })' value='Prompt'>
+
+                        <hr />
+                        
+                        <input type='button' onclick='test()' value='TEST'>
+                        <input type='button' onclick='cert()' value='Cert'>
+                        <input type='button' onclick='check()' value='Check'>
+                        <input type='button' onclick='queryMessages()' value='Query Messages'>
+                        <input type='button' onclick='queryCats()' value='Query Cats'>
+                        <input type='button' onclick='queryProducts()' value='Query Products'>
+                        <input type='button' onclick='crypt()' value='Crypt'>
+                        <input type='button' onclick='decrypt()' value='DECrypt'>
+                        <hr />
+                        <a href="#" class="certselect">Select User</a>
+                        <hr />
+                        <h3>Output</h3>
+                        <textarea id='output' style='width: 100%; height: 600px'></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+<script>
+function queryMessages() {
+	my_site.cmd("dbQuery", ["SELECT * FROM message ORDER BY date_added"], function (res) {
+		output.value = JSON.stringify(res, undefined, '\t')+"\n"+output.value
+	})
+}
+    
+function queryCats() {
+	my_site.cmd("dbQuery", ["SELECT * FROM categories"], function (res) {
+		output.value = JSON.stringify(res, undefined, '\t')+"\n"+output.value
+	})
+}
+    
+function queryProducts() {
+	my_site.cmd("dbQuery", ["SELECT * FROM products"], function (res) {
+		output.value = JSON.stringify(res, undefined, '\t')+"\n"+output.value
+	})
+}
+    
+function cert() {
+    my_site.cmd("certSelect", [["zeroid.bit"]]);
+}
+    
+function check() {
+    if( my_site.site_info.cert_user_id ) my_site.log('logged IN!');
+    else my_site.log('NOT logged IN!');
+    my_site.log( my_site.site_info.cert_user_id );
+    my_site.log( my_site.site_info.auth_address );
+}
+    
+function crypt(){
+    my_site.log( my_site.cmd("userPublickey") );
+    
+    var text = my_site.cmd("eciesEncrypt", ["hello world :d", "AjORERrYaoEH5l1Alk5LfsiJYUkiVGgTxy6vk/R49/1h"], function(res){
+        my_site.log( res );
+        return res;
+    });
+}
+    
+function decrypt(){
+    var msgfrom_imises = "1XvZzadyYICG47yKXw+DogLKACClf4/jtkxaxQs0LGvqEXbR8WT+sRazhcziXJlraZmMuQAgEznIpds1QgPZD+/g5tmTGHMjvAMZnJgHBvQF0zmE6k4N/LKlTjza6ZdT8+acxDtqZvi7cNt1vjMI4oIU2+YxJZ1YNlCF/f72qhz653tRBkk=";
+ 
+    var text = my_site.cmd("eciesDecrypt", [msgfrom_imises], function(res){
+        my_site.log( res );
+        return res;
+    });
+}
+    
+function test(){
+    //Product.add('sku2', 'name2', 'description2', 'imagebase64', 1, 10, 12.34);
+}
+</script>
+    
+<script id="built-in-helpers-template" type="text/x-handlebars-template">
+  {{#each animals}}
+    <p>
+      The {{capitalize this.name}} says
+      {{#if this.noise}}
+        "{{this.noise}}".
+      {{else}}
+        nothing since its a {{this.name}}.
+      {{/if}}
+    </p>
+  {{/each}}
+</script>
+    
+<script id="tmpl-navigation" type="text/x-handlebars-template">
+    <ul class="nav nav-pills nav-stacked">
+        <li role="presentation" class="active"><a href="?">Home</a></li>
+        {{#each items}}
+        <li role="presentation"><a href="?category={{this.category_id}}">{{this.name}}</a></li>
+        {{/each}}
+    </ul>
+</script>
+    
+<script id="tmpl-category" type="text/x-handlebars-template">
+    <div class="row">
+        {{#each items}}
+            <div class="col-sm-3">
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <div class="product-image"><a href="?product={{this.product_id}}&vendor={{this.vendor}}">{{product-image this.image}}</a></div>
+                        <div class="product-name"><a href="?product={{this.product_id}}&vendor={{this.vendor}}"><strong>{{this.name}}</strong></a></div>
+                        <div class="product-price text-right">{{this.price}} BTC</div>
+                    </div>
+                </div>
+            </div>
+        {{else}}
+            <div class="col-sm-12">
+                <div class="alert alert-info" role="alert">Sorry, this category is empty :(</div>
+            </div>
+        {{/each}}
+    </div>
+</script>
+    
+<script id="tmpl-homepage" type="text/x-handlebars-template">
+    <h1>Welcome to OneMarket</h1>
+    This is a demo market for ZeroNet. Just in development!
+</script>
+    
+<script id="tmpl-add-product" type="text/x-handlebars-template">
+    <h1>Add Product</h1>
+    <div class="alert alert-warning" role="alert">Currently all products will be shown instantly. But to avoid spam a vendor insurnce come in the next time. This means a vendor pay a small fee to list theair products here.</div>
+    <form id="product-add" data-toggle="validator" role="form">
+        <div class="row">
+            <div class="form-group col-sm-6">
+                <label for="name">Product Name</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+            <div class="form-group col-sm-6">
+                <label for="sku">Sku (will not be displayed)</label>
+                <input type="text" class="form-control" id="sku" name="sku" required>
+                <span class="help-block with-errors">Hey look, this one has feedback icons!</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="image">Image (max. 10kb)</label>
+            <input type="text" id="image_base64" style="height:1px; width:1px; opacity:0;" name="image_base64" required>
+            <input type="file" id="image" name="image" required>
+            <p class="help-block with-errors">Please choose a image or your image is bigger than 10kb.</p>
+        </div>
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea class="form-control" id="description" name="description" required></textarea>
+        </div>
+        <div class="row">
+            <div class="form-group col-sm-6">
+                <label for="max_qty">Max Qty per Order</label>
+                <input type="number" step="1" class="form-control" id="max_qty" name="max_qty" required>
+            </div>
+            <div class="form-group col-sm-6">
+                <label for="price">Price in BTC</label>
+                <input type="number" step="0.001" type="text" class="form-control" id="price" name="price" required>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-sm-6">
+                <label for="category">Category</label>
+                {{category-select}}
+            </div>
+            <div class="form-group col-sm-6">
+                <label for="country">Shipping from</label>
+                {{country-select}}
+            </div>
+        </div>
+        <button type="submit" class="btn btn-default">Add</button>
+    </form>
+</script>
+    
+<script id="tmpl-view-product" type="text/x-handlebars-template">
+    {{#if name}}
+        <div class="row">
+            <div class="col-sm-4">
+                <div class="thumbnail">
+                    {{product-image image}}
+                </div>
+            </div>
+            <div class="col-sm-8">
+                <div class="product-name">
+                    <h3>{{name}}</h3>
+                </div>
+                <hr />
+                <ul class="list-group">
+                    <li class="list-group-item">Shipping from <strong>{{country-name country}}</strong></li>
+                    <li class="list-group-item">Max. Qty per order <strong>{{max_qty}}</strong></li>
+                </ul>
+                <div class="text-right">
+                    <h3>{{price}} BTC</h3>
+                </div>
+                <div class="row">            
+                    <div class="col-sm-4">
+                        <div class="input-group">
+                            <div class="input-group-addon">Qty</div>
+                            <input type="text" class="form-control" value="1" />
+                        </div>
+                    </div>
+                    <div class="col-sm-8">
+                        <button class="btn btn-success btn-block" data-toggle="modal" data-target="#checkout">Buy</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr />
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Description</h3>
+            </div>
+            <div class="panel-body">
+                {{description}}
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Vendor Profile</h3>
+            </div>
+            <div class="panel-body">
+                Infos about the vendor...
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Vendor Reviews</h3>
+            </div>
+            <div class="panel-body">
+                Coming soon...
+            </div>
+        </div>
+    {{else}}
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="alert alert-info" role="alert">Product not found :(</div>
+            </div>
+        </div>
+    {{/if}}
+    
+    <!-- Order -->
+    <div class="modal fade" id="checkout" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Order Product</h4>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group row">
+                            <div class="col-sm-5">
+                                <label>Product Summary</label>
+                                <span id="helpBlock" class="help-block">Product you want to buy.</span>
+                            </div>
+                            <div class="col-sm-7">
+                                <ul class="list-group">
+                                    <li class="list-group-item">Name <strong>{{name}}</strong></li>
+                                    <li class="list-group-item">Shipping from <strong>{{country-name country}}</strong></li>
+                                    <li class="list-group-item">Qty <strong>{{max_qty}}</strong></li>
+                                    <li class="list-group-item">Price <strong>{{price}} BTC</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <hr />
+                        <div class="form-group row">
+                            <div class="col-sm-5">
+                                <label>Vendor PGP Public-Key</label>
+                                <span id="helpBlock" class="help-block">Use this public key to encrypt your address</span>
+                            </div>
+                            <div class="col-sm-7">
+                                <textarea class="form-control" rows="5" disabled>....KEY.....</textarea>
+                            </div>
+                        </div>
+                        <hr />
+                        <div class="form-group row">
+                            <div class="col-sm-5">
+                                <label>Your address</label>
+                                <span id="helpBlock" class="help-block">Your address will be encryptet. But for some more security please encrypt your address with PGP!</span>
+                            </div>
+                            <div class="col-sm-7">
+                                <textarea class="form-control" rows="5"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-5">
+                                <label>Your PGP Public-Key</label>
+                                <span id="helpBlock" class="help-block">Will be used by the vendor to send you a encrypted message.</span>
+                            </div>
+                            <div class="col-sm-7">
+                                <textarea class="form-control" rows="5"></textarea>
+                            </div>
+                        </div>
+                        <hr />
+                        <div class="form-group row">
+                            <div class="col-sm-5">
+                                <label>Bitcoin Payment</label>
+                            </div>
+                            <div class="col-sm-7">
+                                <p>After you placed the order a Bitcoin address of the vendor will be shown. 
+                                    Please send the amount of BTC to this address. Only payed orders will be shipped by the vendor.</p>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success">Place Order!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Order -->
+</script>
+    
+<script id="tmpl-my-orders" type="text/x-handlebars-template">
+    <table class="table">
+        <caption>
+            Overview of your orders.
+        </caption>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th scope="row">22.02.2016 16:12</th>
+                <td><span class="label label-info">You</span></td>
+                <td>Hometools</td>
+                <td><span class="label label-default">Not confirmed</span></td>
+                <td><a href="?order=123" class="action action-edit"><span class="glyphicon glyphicon-pencil"></span></a></td>
+            </tr>
+            <tr>
+                <th scope="row">22.02.2016 16:12</th>
+                <td>Hometools</td>
+                <td><span class="label label-info">You</span></td>
+                <td><span class="label label-default">Not confirmed</span></td>
+                <td><a href="?order=123" class="action action-edit"><span class="glyphicon glyphicon-pencil"></span></a></td>
+            </tr>
+        </tbody>
+    </table>
+</script>
+
+<script id="tmpl-order" type="text/x-handlebars-template">
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Order Information</h3>
+                </div>
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <strong>Status</strong>
+                            </div>
+                            <div class="col-sm-6">
+                                <span class="label label-success">Shipped!</span>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <strong>Product</strong>
+                            </div>
+                            <div class="col-sm-6">
+                                Example1
+                            </div>
+                        </div>
+                    </li>
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <strong>Product Sku</strong>
+                            </div>
+                            <div class="col-sm-6">
+                                ex-1
+                            </div>
+                        </div>
+                    </li>
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <strong>Qty ordered</strong>
+                            </div>
+                            <div class="col-sm-6">
+                                3x
+                            </div>
+                        </div>
+                    </li>
+                    <li class="list-group-item text-center">
+                        <button class="btn btn-danger">DELETE ORDER!</button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Address Information</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="form-group">
+                        <label>Customer Address</label> <a href="#">Show/Hide</a>
+                        <textarea class="form-control" disabled>12</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Customer PGP Public Key</label>
+                        <textarea class="form-control" disabled>23</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Messages</h3>
+        </div>
+        <div class="panel-body">
+            <form class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-sm-3">Change Status To</label>
+                    <div class="col-sm-9">
+                        <select class="form-control">
+                            <option value="">Don't change</option>
+                            <option value="">Wait for payment / Confirmed</option>
+                            <option value="">Preparing for shipping!</option>
+                            <option value="">Shipped</option>
+                            <option value="">Canceled</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3">Message</label>
+                    <div class="col-sm-9">
+                        <textarea class="form-control"></textarea>
+                    </div>
+                </div>
+                <button class="btn btn-success">Send Message</button>
+            </form>
+        </div>
+        
+        <ul class="list-group">
+            <li class="list-group-item">
+                From <strong>Vendor</strong> / 22.01.2016 <span class="label label-danger">Canceled</span>
+                <div class="well well-sm">
+                    Product is sold out :(
+                </div>
+            </li>
+            <li class="list-group-item">
+                From <strong>Vendor</strong> / 22.01.2016 <span class="label label-success">Shipped!</span>
+                <div class="well well-sm">
+                    No Message.
+                </div>
+            </li>
+            <li class="list-group-item">
+                From <strong>Vendor</strong> / 22.01.2016 <span class="label label-info">Preparing for shipping!</span>
+                <div class="well well-sm">
+                    No Message.
+                </div>
+            </li>
+            <li class="list-group-item">
+                From <strong>Vendor</strong> / 22.01.2016 <span class="label label-warning">Wait for payment / Confirmed</span>
+                <div class="well well-sm">
+                    Please sent you money to XYZ.
+                </div>
+            </li>
+            <li class="list-group-item">
+                From <strong>You</strong> / 22.01.2016
+                <div class="well well-sm">
+                    I want to pay!
+                </div>
+            </li>
+        </ul>
+    </div>
+</script>
+    
+<script id="tmpl-category-select" type="text/x-handlebars-template">
+    <select class="form-control" id="category" name="category" required>
+        <option value="">Please select</option>
+        {{#each items}}
+            <option value="{{this.category_id}}">{{this.name}}</option>
+        {{/each}}
+    </select>
+</script>
+    
+<script id="tmpl-country-select" type="text/x-handlebars-template">
+    <select class="form-control" id="country" name="country" required>
+        <option value="">Please select</option>
+        {{#each items}}
+            <option value="{{@key}}">{{this}} ({{@key}})</option>
+        {{/each}}
+    </select>
+</script>
+    
+<script id="tmpl-product-image" type="text/x-handlebars-template">
+    <img src="{{image}}" />
+</script>
+    
+<script id="tmpl-country-name" type="text/x-handlebars-template">
+    {{name}} ({{code}})
+</script>
+
+
+    <script type='text/javascript' src='js/script.js'></script>
+
+</body>
+</html>

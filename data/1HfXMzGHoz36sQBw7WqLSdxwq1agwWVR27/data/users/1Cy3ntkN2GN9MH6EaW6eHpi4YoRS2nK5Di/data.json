@@ -1,0 +1,85 @@
+{
+	"questions": [
+		{
+			"question_id": 1514293307849,
+			"title": "Using AJAX for reading part of a file results in memory crash",
+			"body": "Hope you can help me.\n\nI am using this code to read part of file via ajax:\n\n```javascript\nfunction peekFile(file, offset, length, bytes) {\n\t\tlet siteInfo;\n\t\treturn this.page.getSiteInfo()\n\t\t\t.then(s => {\n\t\t\t\tsiteInfo = s;\n\t\t\t\treturn this.page.cmd(\"wrapperGetAjaxKey\");\n\t\t\t})\n\t\t\t.then(ajaxKey => {\n\t\t\t\treturn new Promise((resolve, reject) => {\n\t\t\t\t\tlet path = \"/\" + siteInfo.address + \"/\" + file + \"?ajax_key=\" + ajaxKey;\n\n\t\t\t\t\tlet req = new XMLHttpRequest();\n\t\t\t\t\treq.open(\"GET\", path);\n\n\t\t\t\t\tif(bytes == \"arraybuffer\") {\n\t\t\t\t\t\treq.responseType = \"arraybuffer\";\n\t\t\t\t\t} else if(bytes) {\n\t\t\t\t\t\treq.overrideMimeType(\"text/plain; charset=x-user-defined\");\n\t\t\t\t\t} else {\n\t\t\t\t\t\treq.overrideMimeType(\"text/plain; charset=utf-8\");\n\t\t\t\t\t}\n\n\t\t\t\t\treq.setRequestHeader(\"Range\", \"bytes=\" + offset + \"-\" + (offset + length));\n\n\t\t\t\t\t//console.log(\"Reading \" + length + \" bytes from \" + file);\n\t\t\t\t\treq.onload = e => {\n\t\t\t\t\t\t//console.log(\"Read \" + length + \" bytes from \" + file);\n\t\t\t\t\t\tif(bytes == \"arraybuffer\") {\n\t\t\t\t\t\t\tresolve(new Uint8Array(req.response));\n\t\t\t\t\t\t} else {\n\t\t\t\t\t\t\tresolve(req.responseText);\n\t\t\t\t\t\t}\n\t\t\t\t\t};\n\t\t\t\t\treq.onerror = e => {\n\t\t\t\t\t\treject(e);\n\t\t\t\t\t};\n\n\t\t\t\t\treq.send(null);\n\t\t\t\t});\n\t\t\t});\n\t}\n```\n\nNow I load Mercurial objects using this thing. And also reach memory limit and my Chrome crashes.\n\nHowever, if I read whole file into memory via `fileGet` and then call `subarray` on it, I get no crash. Any ideas?",
+			"tags": "crash,memory,javascript,zeroframe,ajax,array,buffer",
+			"date_added": 1514293307849,
+			"solution_id": 1514302360976,
+			"solution_auth_address": "1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di"
+		},
+		{
+			"question_id": 1516288139573,
+			"title": "Make SASS + VueJS + Gulp work",
+			"body": "Hello!\n\nI am trying to make my project to work, but I can't make CSS work.\n\nExample: https://github.com/imachug/gitcenter/tree/vue/main\n\nWhat I am trying to do is adding the following to .vue file:\n```\n<style lang=\"scss\">\n.header {\n    color: red;\n}\n</style>\n```\n\nI've tried `lang=\"sass\"` but both fail with `Error: Invalid CSS after \"\": expected 1 selector or at-rule, was \".header\" while parsing file`.\n\nHow can I solve this problem?",
+			"tags": "gulp,sass,scss,vue,vuejs",
+			"date_added": 1516288139573
+		}
+	],
+	"comments": [
+		{
+			"comment_id": 1514293673075,
+			"reference_type": "q",
+			"reference_id": 1514293307849,
+			"reference_auth_address": "1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di",
+			"body": "testing comment",
+			"date_added": 1514293673075
+		},
+		{
+			"comment_id": 1514549319947,
+			"reference_type": "q",
+			"reference_id": 1514293307849,
+			"reference_auth_address": "1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di",
+			"body": "@Krixano: Something not right... Not right. Yesterday I saw horizontal scroll, but now I don't. Did you add it? Or maybe that's Binchan's dark theme adding scroll?",
+			"date_added": 1514549319947
+		},
+		{
+			"comment_id": 1519365950444,
+			"reference_type": "a",
+			"reference_id": 1519269350816,
+			"reference_auth_address": "1AjJqGb8AmPfgD62kEBBtqhg2hYDW5zner",
+			"body": "This is fixed now because I am using Webpack. Though I am unsure where the bug came from, probably it didn't like inline styles 'cause `<link>` works.",
+			"date_added": 1519365950444
+		},
+		{
+			"comment_id": 1555044256857,
+			"reference_type": "a",
+			"reference_id": 1554998561353,
+			"reference_auth_address": "1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di",
+			"body": "I updated the answer.",
+			"date_added": 1555044256857
+		}
+	],
+	"answers": [
+		{
+			"answer_id": 1514302360976,
+			"question_id": 1514293307849,
+			"question_auth_address": "1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di",
+			"body": "Just need to read HTTP specification again. Replacing `offset + length` with `offset + length - 1` fixed the issue. Though I am not sure how this could lead to crash, probably my delta parser allocates more memory than needed if data is incorrect.",
+			"date_added": 1514302360976
+		},
+		{
+			"answer_id": 1514900179261,
+			"question_id": 1514657383300,
+			"question_auth_address": "1CiFGk8MdmQAYacFejYdjUkQcN5jYmoDYh",
+			"body": "Git Center is just a mirror. Same applies for GitLab - there is a ZeroNet Core mirror there. So you only need to contribute *somewhere* - @nofish will merge your pull request and push it everywhere - to GitHub, to GitLab and to Git Center.",
+			"date_added": 1514900179261
+		},
+		{
+			"answer_id": 1544939228410,
+			"question_id": 1544370507577,
+			"question_auth_address": "15hL2gR4oCSgKBbndn3MxY8Hc5xoy1vqCe",
+			"body": "Eech... ZeroExchange is like StackOverflow -- don't post adverstiment here.",
+			"date_added": 1544939228410
+		},
+		{
+			"answer_id": 1554998561353,
+			"question_id": 1554994486703,
+			"question_auth_address": "1PZnbAYUg4AzDgJU4gtTupekoaNp1Mwizi",
+			"body": "It is possible that the problem is because of a wrong path passed to `bigfileUploadInit`. You should pass it a filepath, not a directory. The correct usage would be:\n\n```\npage.cmd(\"bigfileUploadInit\", [\"data/\"+user.address+\"/optional/\"+file.name, file.size], function(init_res){\n```\n\nAlso, sounds like `Origin` header is wrong. Do the following at the page load:\n\n```\nwindow.origin = location.protocol + \"//\" + location.host;\n```",
+			"date_added": 1554998561353,
+			"updated_date": 1555044248430
+		}
+	]
+}

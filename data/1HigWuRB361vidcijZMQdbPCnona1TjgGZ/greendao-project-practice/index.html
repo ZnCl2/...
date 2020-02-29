@@ -1,0 +1,1063 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="安卓,GreenDAO,数据库,开发效率," />
+
+
+
+
+
+  <link rel="alternate" href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/atom.xml" title="Ernest的Blog" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="在安卓移动APP开发过程中，一般使用安卓默认的sqlite数据库做数据持久化存储。虽然android提供了ContentProvider等框架支持，但是写SQL语句依然是一件不少程序猿的头疼的事。无论是简单的SQL语句，还是复杂的多表查询，都是影响开发效率的苦力活。幸运的是，我们有类似于Hibernate/MyBatis的ORM框架用于安卓开发中。今天我们介绍gitHub上热门的一个专注于A">
+<meta property="og:type" content="article">
+<meta property="og:title" content="greenDAO项目实战">
+<meta property="og:url" content="http://127.0.0.1:43110/greendao-project-practice/index.html">
+<meta property="og:site_name" content="Ernest的Blog">
+<meta property="og:description" content="在安卓移动APP开发过程中，一般使用安卓默认的sqlite数据库做数据持久化存储。虽然android提供了ContentProvider等框架支持，但是写SQL语句依然是一件不少程序猿的头疼的事。无论是简单的SQL语句，还是复杂的多表查询，都是影响开发效率的苦力活。幸运的是，我们有类似于Hibernate/MyBatis的ORM框架用于安卓开发中。今天我们介绍gitHub上热门的一个专注于A">
+<meta property="og:image" content="http://greenrobot.org/wordpress/wp-content/uploads/greenDAO-orm-320.png">
+<meta property="og:updated_time" content="2017-03-20T01:57:46.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="greenDAO项目实战">
+<meta name="twitter:description" content="在安卓移动APP开发过程中，一般使用安卓默认的sqlite数据库做数据持久化存储。虽然android提供了ContentProvider等框架支持，但是写SQL语句依然是一件不少程序猿的头疼的事。无论是简单的SQL语句，还是复杂的多表查询，都是影响开发效率的苦力活。幸运的是，我们有类似于Hibernate/MyBatis的ORM框架用于安卓开发中。今天我们介绍gitHub上热门的一个专注于A">
+<meta name="twitter:image" content="http://greenrobot.org/wordpress/wp-content/uploads/greenDAO-orm-320.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 'undefined',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'QENGM5CT4Q',
+      apiKey: '45d39923dd445eff839e23101a0b4bcb',
+      indexName: 'prod_NAME',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://127.0.0.1:43110/greendao-project-practice/"/>
+
+
+
+
+
+  <title> greenDAO项目实战 | Ernest的Blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?97409bf12b6059d525cabe137ba77b22";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+<script>
+  	var _mtac = {};
+  	(function() {
+  		var mta = document.createElement("script");
+  		mta.src = "http://pingjs.qq.com/h5/stats.js?v2.0.2";
+  		mta.setAttribute("name", "MTAH5");
+  		mta.setAttribute("sid", "500417707");
+
+  		var s = document.getElementsByTagName("script")[0];
+  		s.parentNode.insertBefore(mta, s);
+  	})();
+</script>
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Ernest的Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">一个有理想的Android程序员</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://127.0.0.1:43110/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/greendao-project-practice/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Ernest">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ernest的Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+            
+            
+              
+                greenDAO项目实战
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-03-16T17:13:27+08:00">
+                2017-03-16
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2017-03-20T09:57:46+08:00">
+                2017-03-20
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/categories/开发效率/" itemprop="url" rel="index">
+                    <span itemprop="name">开发效率</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a class="cloud-tie-join-count" href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/greendao-project-practice/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count join-count" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/greendao-project-practice/" class="leancloud_visitors" data-flag-title="greenDAO项目实战">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计</span>
+                
+                <span title="字数统计">
+                  2,036
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长</span>
+                
+                <span title="阅读时长">
+                  8
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>  在安卓移动APP开发过程中，一般使用安卓默认的sqlite数据库做数据持久化存储。虽然android提供了ContentProvider等框架支持，但是写SQL语句依然是一件不少程序猿的头疼的事。无论是简单的SQL语句，还是复杂的多表查询，都是影响开发效率的苦力活。幸运的是，我们有类似于Hibernate/MyBatis的ORM框架用于安卓开发中。今天我们介绍gitHub上热门的一个专注于Android开发的ORM框架——greenDAO.</p>
+</blockquote>
+<h2 id="greenDAO简介"><a href="#greenDAO简介" class="headerlink" title="greenDAO简介"></a>greenDAO简介</h2><p>greenDAO是一个轻量&amp;快速的安卓ORM框架,把对象和Sqlite数据库关联映射起来。它专门为Android做了高度的优化，高性能，消耗极少的内存。<br><strong>greenDAO首页, 开发文档以及技术支持链接: <a href="http://greenrobot.org/greendao/" target="_blank" rel="external">http://greenrobot.org/greendao/</a></strong><br><img src="http://greenrobot.org/wordpress/wp-content/uploads/greenDAO-orm-320.png" alt="greendao图解"><br><strong>GreenDAO特色功能</strong>：</p>
+<ul>
+<li>稳健：GreenDAO从2011开始，就被无数著名的应用程序使用 </li>
+<li>超级简单：简洁直截了当的API，支持注释（V3以上版本） </li>
+<li>小巧：框架小于150K,并且只是普通的java jar（没有CPU相关的本地部分）减少构建时间避免超出 65k方法数限制 </li>
+<li>快速：可能是全球最快的Android平台ORM框架，得益于gradle插件，框架能够自动智能执行代码生成 </li>
+<li>安全且人性化的查询API：QueryBuilder使用属性常量，避免拼写错误（这是SQL语句拼接查询常见的错误） </li>
+<li>强大的连接：跨实体的查询，甚至嵌套复杂的多表链接和多条件关系查询 </li>
+<li>灵活的属性类型：在实体中使用自定义的类或枚举表示数据 </li>
+<li>加密：支持SQLCipher加密数据库</li>
+<li>活跃的社区:超过7000 GitHub stars<h2 id="在项目中使用GreenDAO"><a href="#在项目中使用GreenDAO" class="headerlink" title="在项目中使用GreenDAO"></a>在项目中使用GreenDAO</h2>greenDAO 在 Maven 仓库可用. 请保证点击以下链接检查你使用的是否是最新版本<a href="http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.greenrobot%22%20AND%20a%3A%22greendao%22" target="_blank" rel="external">greenDAO最新版链接 </a>| <a href="http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.greenrobot%22%20AND%20a%3A%22greendao-generator%22" target="_blank" rel="external">greenDAO-generator最新版链接</a></li>
+</ul>
+<p>添加以下的Gradle配置到安卓项目：<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 在项目根目录的 build.gradle 文件:</span></div><div class="line">buildscript &#123;</div><div class="line">    repositories &#123;</div><div class="line">        jcenter()</div><div class="line">        mavenCentral() &lt;-- 添加这个仓库</div><div class="line">    &#125;</div><div class="line">    dependencies &#123;</div><div class="line">        classpath <span class="string">'com.android.tools.build:gradle:2.3.0'</span></div><div class="line">        classpath <span class="string">'org.greenrobot:greendao-gradle-plugin:3.2.1'</span> &lt;-- 添加greendao用到的gradle插件，用于生成GreenDao用到的代码（注意使用最新版本）</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"> </div><div class="line"><span class="comment">// 在app 项目的 build.gradle 文件:</span></div><div class="line">apply <span class="string">plugin:</span> <span class="string">'com.android.application'</span></div><div class="line">apply <span class="string">plugin:</span> <span class="string">'org.greenrobot.greendao'</span> &lt;-- 应用greendao的gradle插件(用于生成GreenDao用到的代码)</div><div class="line"><span class="comment">//------------</span></div><div class="line"><span class="comment">//(可选)配置数据库版本，生成的Dao包路径(无特殊要求除了schemaVersion，daoPackage和targetGenDir一般不用配置，使用默认的)</span></div><div class="line">greendao &#123;</div><div class="line">    schemaVersion <span class="number">1</span></div><div class="line">    daoPackage <span class="string">'com.example.greendao'</span></div><div class="line">    targetGenDir <span class="string">'src/main/java'</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">//------------</span></div><div class="line"></div><div class="line">dependencies &#123;</div><div class="line">    compile <span class="string">'org.greenrobot:greendao:3.2.0'</span> &lt;-- 添加greenDao框架依赖</div><div class="line"><span class="comment">//如果需要数据库加密，要引入一下sqlcipher加密库</span></div><div class="line"><span class="comment">//compile 'net.zetetic:android-database-sqlcipher:3.5.4'</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p><strong>注意</strong> 这些配置使得GreenDao插件在Gradle构建过程中触发，当项目构建时.插件生成 DaoMaster, DaoSession 以及实体类对应的DAO.这些类是GreenDao框架的核心类</p>
+<h3 id="声明实体类"><a href="#声明实体类" class="headerlink" title="声明实体类"></a>声明实体类</h3><blockquote>
+<p>首先，我们声明一个实体类Note,一个自定义的枚举类型NoteType。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="keyword">enum</span> NoteType &#123;</div><div class="line">    TEXT, LIST, PICTURE</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="meta">@Entity</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Note</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="meta">@Id</span>(autoincrement = <span class="keyword">true</span>)</div><div class="line">    <span class="keyword">private</span> Long id;</div><div class="line"></div><div class="line">    <span class="meta">@NotNull</span></div><div class="line">    <span class="keyword">private</span> String text;</div><div class="line">    <span class="keyword">private</span> String comment;</div><div class="line">    <span class="keyword">private</span> java.util.Date date;</div><div class="line">    </div><div class="line">    <span class="meta">@Convert</span>(converter = NoteTypeConverter.class, columnType = String.class)</div><div class="line">    <span class="keyword">private</span> NoteType type;</div><div class="line"></div><div class="line">    <span class="meta">@Generated</span>(hash = <span class="number">1272611929</span>)</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Note</span><span class="params">()</span> </span>&#123;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Note</span><span class="params">(Long id)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.id = id;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Generated</span>(hash = <span class="number">1686394253</span>)</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Note</span><span class="params">(Long id, @NotNull String text, String comment, java.util.Date date, NoteType type)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.id = id;</div><div class="line">        <span class="keyword">this</span>.text = text;</div><div class="line">        <span class="keyword">this</span>.comment = comment;</div><div class="line">        <span class="keyword">this</span>.date = date;</div><div class="line">        <span class="keyword">this</span>.type = type;</div><div class="line">    &#125;</div><div class="line"></div><div class="line"></div><div class="line">    <span class="meta">@NotNull</span></div><div class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getText</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> text;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/** 非空值声明，保证这个只在保存到数据之前是非空的**/</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setText</span><span class="params">(@NotNull String text)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.text = text;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">//省略了其他的geter,setter</span></div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>上面的实体类代码中：</p>
+<p><code>@Entity</code>注解表明这是一个GreenDao映射到数据的实体类，括号内的配置是可选的。</p>
+<p><code>@Id</code>注解表明这是主键,<code>autoincrement = true</code>表示自增，<strong>注意</strong>GreenDao主键需要是Long类型，不能是long或者int之类的其他类型。（这也是安卓推荐的主键类型）</p>
+<p><code>@NotNull</code> 注解表明这是一个非空值，在它的setter参数也注明了非空，保证这个只在保存到数据之前是非空的。</p>
+<p><code>@Convert(converter = NoteTypeConverter.class, columnType = String.class)</code>这个注解实现自定义类型到数据库支持的类型的转换。<code>converter = NoteTypeConverter.class</code>指定转换器是NoteTypeConverter这个类（下面马上介绍），<code>columnType = String.class</code>指定数据库对应的列类型是文本类型。通过Convert我们可以用自然的方式表达各种属性。</p>
+<p><code>@Transient</code>上面的例子没有标出。这个注解表明此字段不存储到数据库中，用于不用持久化的字段</p>
+<p>值得说明的是，实体类的构造函数和getter/setter是greendao在项目build的时候自动生成的，是不是很方便呢？</p>
+<p>接下来我们再看看转换器的写法。转换器听起来很高级有没有？但是写起来出乎意料的简单。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NoteTypeConverter</span> <span class="keyword">implements</span> <span class="title">PropertyConverter</span>&lt;<span class="title">NoteType</span>, <span class="title">String</span>&gt; </span>&#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> NoteType <span class="title">convertToEntityProperty</span><span class="params">(String databaseValue)</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> NoteType.valueOf(databaseValue);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">convertToDatabaseValue</span><span class="params">(NoteType entityProperty)</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> entityProperty.name();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>每个转换器都实现了<code>PropertyConverter&lt;P, D&gt;</code> 这个接口。P是实体类中自定义的类型，D是数据库支持的类型。</p>
+<p>接口方法<code>convertToEntityProperty</code>接受一个数据库支持类型的参数，返回实体类中自定义的类型。</p>
+<p>接口方法<code>convertToDatabaseValue</code>接受一个实体类中自定义的类型的参数，返回数据库支持类型。</p>
+<p>通过实现这两个方法，我们就完成了实体类的自定义类型到数据库支持类型的映射。在本例中，<code>NoteType</code>这个自定义的枚举类型得以用文本方式存储到数据库。</p>
+<h3 id="在Application中配置DaoSession"><a href="#在Application中配置DaoSession" class="headerlink" title="在Application中配置DaoSession"></a>在Application中配置DaoSession</h3><blockquote>
+<p>接着，我们在App中配置DaoSession，作为数据统一操作的对象，注意DaoSession所在的包如果未配置，默认跟声明的实体类包名相同</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">App</span> <span class="keyword">extends</span> <span class="title">Application</span> </span>&#123;</div><div class="line">    <span class="comment">/**是否加密标志。通过这个例子展示给我们greendao从用SQLCipher加密数据库到标准的sqlite切换时多么简单.打开数据库加密需要引入SQLCipher相关的库*/</span></div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">boolean</span> ENCRYPTED = <span class="keyword">false</span>;</div><div class="line">    <span class="comment">/**全局公用的DaoSession**/</span></div><div class="line">    <span class="keyword">private</span> DaoSession daoSession;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate();</div><div class="line">        <span class="comment">//DevOpenHelper简单的在数据库需要升级的时候重建数据表，在实际项目中，如果我们需要保存旧版本的数据，需要自己实现一个OpenHelper,把旧版本数据迁移到新版本中。</span></div><div class="line">        </div><div class="line">        DevOpenHelper helper = <span class="keyword">new</span> DevOpenHelper(<span class="keyword">this</span>, ENCRYPTED ? <span class="string">"notes-db-encrypted"</span> : <span class="string">"notes-db"</span>);</div><div class="line">        Database db = ENCRYPTED ? helper.getEncryptedWritableDb(<span class="string">"super-secret"</span>) : helper.getWritableDb();</div><div class="line">        daoSession = <span class="keyword">new</span> DaoMaster(db).newSession();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> DaoSession <span class="title">getDaoSession</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> daoSession;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong> 提醒 </strong><br>记得在<code>AndroidManifest.xml</code>中配置App.<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">application</span></span></div><div class="line">    <span class="attr">android:name</span>=<span class="string">".App"</span>&gt;</div><div class="line"><span class="tag">&lt;/<span class="name">application</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>到这里，我们从实体类的声明，数据库操作入口都已经建立好了。没有写一行SQL，是不是有一种畅快淋漓的感觉？下面我们用几个代码片段展示一下如何通过greendao进行数据的增删改查。</p>
+<h3 id="查询所有的note列表"><a href="#查询所有的note列表" class="headerlink" title="查询所有的note列表"></a>查询所有的note列表</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="comment">// 获得note对应的DAO。Dao在build的时候自动生成</span></div><div class="line">DaoSession daoSession = ((App) getApplication()).getDaoSession();</div><div class="line"><span class="comment">//我们通过这个noteDao进行增删改查的操作</span></div><div class="line">NoteDao noteDao = daoSession.getNoteDao();</div><div class="line"></div><div class="line"><span class="comment">//查询所有的note数据</span></div><div class="line">List&lt;Note&gt; notes = noteDao.loadAll();</div><div class="line"><span class="comment">// 查询所有的note数据, 根据note的文本内容根据a-z升序排序.这里的NoteDao.Properties.Text是greendao自动生成的，上面提到的属性常量。 </span></div><div class="line">notes = noteDao.queryBuilder().orderAsc(NoteDao.Properties.Text).build().list();</div></pre></td></tr></table></figure>
+<h3 id="根据id来查询一个note记录-修改后再保存到数据库里"><a href="#根据id来查询一个note记录-修改后再保存到数据库里" class="headerlink" title="根据id来查询一个note记录,修改后再保存到数据库里"></a>根据id来查询一个note记录,修改后再保存到数据库里</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">Long id = <span class="number">1L</span>;</div><div class="line">Note note = noteDao.load(id);</div><div class="line"></div><div class="line">note.setText(<span class="string">"这是修改后的内容文本"</span>);</div><div class="line">note.setComment(<span class="string">"这是修改后的comment"</span>);</div><div class="line">noteDao.save(note);</div></pre></td></tr></table></figure>
+<h3 id="删除所有note记录"><a href="#删除所有note记录" class="headerlink" title="删除所有note记录"></a>删除所有note记录</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">noteDao.deleteAll();</div></pre></td></tr></table></figure>
+<h3 id="根据id删除一条note记录"><a href="#根据id删除一条note记录" class="headerlink" title="根据id删除一条note记录"></a>根据id删除一条note记录</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">Long id = <span class="number">1</span>;</div><div class="line">noteDao.deleteByKey(id);</div></pre></td></tr></table></figure>
+<h3 id="添加一条note记录"><a href="#添加一条note记录" class="headerlink" title="添加一条note记录"></a>添加一条note记录</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">Note note = <span class="keyword">new</span> Note();</div><div class="line">note.setText(<span class="string">"这是note 内容文本"</span>);</div><div class="line">note.setComment(<span class="string">"这是note的comment"</span>);</div><div class="line">note.setDate(<span class="keyword">new</span> Date());</div><div class="line">note.setType(NoteType.TEXT);</div><div class="line">noteDao.insert(note);</div></pre></td></tr></table></figure>
+<h2 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h2><p>greenDao的简单介绍就到这里。后续介绍GreenDao的进阶使用，包括<code>@ToOne</code> 一对一， <code>@ToMany</code> 一对多等使用介绍。同时介绍如何在现有项目中迁移到GreenDao，包括用统一的数据库管理类来对GreenDao进行轻度封装等。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+<div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center">
+    <img id="wechat_subscriber_qcode" src="/uploads/wechat-qcode.jpeg" alt="Ernest wechat" style="width: 200px; max-width: 100%;"/>
+    <div>欢迎您扫一扫上面的微信公众号，关注我的博客最新动态！</div>
+</div>
+
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/tags/安卓/" rel="tag"># 安卓</a>
+          
+            <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/tags/GreenDAO/" rel="tag"># GreenDAO</a>
+          
+            <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/tags/数据库/" rel="tag"># 数据库</a>
+          
+            <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/tags/开发效率/" rel="tag"># 开发效率</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/how-to-build-api-mock-service/" rel="next" title="如何快速搭建模拟接口服务">
+                <i class="fa fa-chevron-left"></i> 如何快速搭建模拟接口服务
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/wechat-subscription-not-that-simple/" rel="prev" title="微信公众号没有你想的那么简单">
+                微信公众号没有你想的那么简单 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="cloud-tie-wrapper" class="cloud-tie-wrapper"></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/uploads/avatar.jpg"
+               alt="Ernest" />
+          <p class="site-author-name" itemprop="name">Ernest</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+           
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/archives">
+                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/categories/index.html">
+                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/tags/index.html">
+                <span class="site-state-item-count">31</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/307141632" target="_blank" title="Weibo">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                  Weibo
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://sighttp.qq.com/authd?IDKEY=643001ea27ef9d2cdc98650694596dbc100cb679a7d79c2d" target="_blank" title="QQ">
+                  
+                    <i class="fa fa-fw fa-qq"></i>
+                  
+                  QQ
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#greenDAO简介"><span class="nav-number">1.</span> <span class="nav-text">greenDAO简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#在项目中使用GreenDAO"><span class="nav-number">2.</span> <span class="nav-text">在项目中使用GreenDAO</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#声明实体类"><span class="nav-number">2.1.</span> <span class="nav-text">声明实体类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#在Application中配置DaoSession"><span class="nav-number">2.2.</span> <span class="nav-text">在Application中配置DaoSession</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#查询所有的note列表"><span class="nav-number">2.3.</span> <span class="nav-text">查询所有的note列表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#根据id来查询一个note记录-修改后再保存到数据库里"><span class="nav-number">2.4.</span> <span class="nav-text">根据id来查询一个note记录,修改后再保存到数据库里</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#删除所有note记录"><span class="nav-number">2.5.</span> <span class="nav-text">删除所有note记录</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#根据id删除一条note记录"><span class="nav-number">2.6.</span> <span class="nav-text">根据id删除一条note记录</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#添加一条note记录"><span class="nav-number">2.7.</span> <span class="nav-text">添加一条note记录</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#后记"><span class="nav-number">3.</span> <span class="nav-text">后记</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+    <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+
+  <span class="author" itemprop="copyrightHolder">Ernest</span>
+
+  <span class="links-of-author-item" >
+                <a rel="nofollow" href="http://weibo.com/307141632" target="_blank" title="Weibo">
+                    <i class="fa fa-fw fa-weibo"></i>
+                  新浪微博
+                </a>
+              </span>
+              <span class="links-of-author-item">
+                <a rel="nofollow" href="http://sighttp.qq.com/authd?IDKEY=643001ea27ef9d2cdc98650694596dbc100cb679a7d79c2d" target="_blank" title="QQ">
+                    <i class="fa fa-fw fa-qq"></i>
+                  QQ交谈
+                </a>
+              </span>
+
+
+</div>
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  <script type="text/javascript" src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+    
+    <script>
+      var cloudTieConfig = {
+        url: document.location.href, 
+        sourceId: "",
+        productKey: "1486df24bb8240c5b76e8b0ac977a845",
+        target: "cloud-tie-wrapper"
+      };
+    </script>
+    <script src="https://img1.ws.126.net/f2e/tie/yun/sdk/loader.js"></script>
+  
+
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("N7KGGdrTwngF1XoRmaArcz0m-gzGzoHsz", "NTW3kIexCMsnqT7leKq9YGmi");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/js/src/algolia-search.js?v=5.1.0"></script>
+
+
+
+  
+
+</body>
+</html>

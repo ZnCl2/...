@@ -1,0 +1,175 @@
+{
+  "db_name": "MoneyNetwork",
+  "db_file": "merged-MoneyNetwork/MoneyNetwork.db",
+  "version": 2,
+  "maps": {
+    ".+/data/users/.+/data.json": {
+      "to_table": [
+        { "node": "search", "table": "search" },
+        { "node": "users",  "table": "users" },
+        { "node": "msg",    "table": "messages" } ],
+      "to_keyvalue": [ "hub", "hub_title" ]
+    },
+    ".+/data/users/.+/content.json": {
+      "to_keyvalue": [ "cert_user_id", "modified", "optional" ],
+      "to_table": [
+        { "node": "files", "table": "files", "key_col": "filename"},
+        { "node": "files_optional", "table": "files_optional", "key_col": "filename"}
+      ]
+    },
+    ".+/data/users/.+/status.json": {
+      "to_table": [
+        { "node": "status", "table": "status"}
+      ]
+    },
+    ".+/data/users/.+/like.json": {
+      "to_table": [
+        { "node": "like", "table": "like"}
+      ]
+    },
+    ".+/data/users/.+/wallet.json": {
+      "to_table": [
+        { "node": "currencies", "table": "currencies"}
+      ],
+      "to_keyvalue": [ "wallet_address", "wallet_title", "wallet_description", "wallet_sha256", "hub", "hub_title" ]
+    },
+    ".+/data/users/.+/wallets.json": {
+      "to_table": [
+        { "node": "wallets", "key_col": "address", "table": "wallets" },
+        { "node": "share", "table": "share" }
+      ],
+      "to_keyvalue": [ "wallets_modified" ]
+    }
+  },
+  "tables": {
+    "json": {
+      "cols": [
+        ["json_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+        ["directory", "TEXT"],
+        ["file_name", "TEXT"]
+      ],
+      "indexes": ["CREATE INDEX path ON json(directory, file_name)"],
+      "schema_changed": 5
+    },
+    "search": {
+      "cols": [
+        ["user_seq", "INTEGER"],
+        ["tag", "TEXT"],
+        ["value", "TEXT"],
+        ["json_id", "INTEGER REFERENCES json (json_id)"]
+      ],
+      "indexes": ["CREATE INDEX search_i1 ON search(value, tag)"],
+      "schema_changed": 10
+    },
+    "users": {
+      "cols": [
+        ["user_seq", "INTEGER"],
+        ["pubkey", "TEXT"],
+        ["pubkey2", "TEXT"],
+        ["encryption", "TEXT"],
+        ["avatar", "TEXT"],
+        ["guest", "TEXT"],
+        ["json_id", "INTEGER REFERENCES json (json_id)"]
+      ],
+      "indexes": [
+        "CREATE INDEX users_i1 ON users(pubkey)",
+        "CREATE INDEX users_i2 ON users(json_id)",
+        "CREATE INDEX json_i1 ON json(directory)"
+      ],
+      "schema_changed": 10
+    },
+    "files": {
+      "cols": [
+        ["filename", "TEXT"],
+        ["sha512", "TEXT"],
+        ["size", "INTEGER"],
+        ["json_id", "INTEGER REFERENCES json (json_id)"]
+      ],
+      "indexes": ["CREATE INDEX files_i1 ON files(json_id)"],
+      "schema_changed": 10
+    },
+    "files_optional": {
+      "cols": [
+        ["filename", "TEXT"],
+        ["sha512", "TEXT"],
+        ["size", "INTEGER"],
+        ["json_id", "INTEGER REFERENCES json (json_id)"]
+      ],
+      "indexes": ["CREATE INDEX files_optional_i1 ON files_optional(json_id)"],
+      "schema_changed": 10
+    },
+    "messages": {
+      "cols": [
+        ["user_seq", "INTEGER"],
+        ["receiver_sha256", "TEXT"],
+        ["key", "TEXT"],
+        ["message", "TEXT"],
+        ["message_sha256", "TEXT"],
+        ["timestamp", "INTEGER"],
+        ["json_id", "INTEGER REFERENCES json (json_id)"]
+      ],
+      "indexes": [
+        "CREATE INDEX messages_i1 ON messages(user_seq, message_sha256)",
+        "CREATE INDEX messages_i2 ON messages(receiver_sha256)"],
+      "schema_changed": 10
+    },
+    "status": {
+      "cols": [
+        ["user_seq", "INTEGER"],
+        ["timestamp", "INTEGER"],
+        ["json_id", "INTEGER REFERENCES json (json_id)"]
+      ],
+      "indexes": ["CREATE INDEX status_i1 ON status(json_id)"],
+      "schema_changed": 10
+    },
+    "like": {
+      "cols": [
+        ["user_seq", "INTEGER"],
+        ["timestamp", "INTEGER"],
+        ["auth", "TEXT"],
+        ["emoji", "TEXT"],
+        ["count", "INTEGER"],
+        ["json_id", "INTEGER REFERENCES json (json_id)"]
+      ],
+      "indexes": ["CREATE INDEX like_i1 ON like(timestamp)"],
+      "schema_changed": 10
+    },
+    "currencies": {
+      "cols": [
+        ["code", "TEXT"],
+        ["name", "TEXT"],
+        ["url", "TEXT"],
+        ["json_id", "INTEGER REFERENCES currencies (json_id)"]
+      ],
+      "indexes": ["CREATE INDEX currencies_i1 ON currencies(json_id)"],
+      "schema_changed": 10
+    },
+    "wallets": {
+      "cols": [
+        ["address", "TEXT"],
+        ["wallet_address", "TEXT"],
+        ["wallet_domain", "TEXT"],
+        ["wallet_title", "TEXT"],
+        ["wallet_description", "TEXT"],
+        ["api_url", "TEXT"],
+        ["wallet_sha256", "TEXT"],
+        ["wallet_modified", "INTEGER"],
+        ["wallet_directory", "TEXT"],
+        ["json_id", "INTEGER REFERENCES wallets (json_id)"]
+      ],
+      "indexes": ["CREATE INDEX wallets_i1 ON wallets(json_id)"],
+      "schema_changed": 14
+    },
+    "share": {
+      "cols": [
+        ["user_seq", "NUMBER"],
+        ["address", "TEXT"],
+        ["rate", "NUMBER"],
+        ["review", "TEXT"],
+        ["json_id", "INTEGER REFERENCES share (json_id)"]
+      ],
+      "indexes": ["CREATE INDEX share_i1 ON share(json_id)"],
+      "schema_changed": 13
+    }
+  }
+}

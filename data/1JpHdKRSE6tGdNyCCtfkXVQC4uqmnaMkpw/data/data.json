@@ -1,0 +1,29 @@
+{
+	"title": "すまるんブログ",
+	"description": "Smalun's blog",
+	"links": "ホームページ:[私のゼロネット備忘録](/1Hy9jq14bkNAGJKhk1cNphBkCacnXLEUve/)",
+	"next_post_id": 10,
+	"demo": false,
+	"footer": "Powered by [ZeroNet](https://zeronet.io) [open, free, and uncensored]",
+	"modified": 1611934304,
+	"post": [
+		{
+			"post_id": 7,
+			"title": "Raspberry Pi 3 Model B+のZeroNetベンチスコア",
+			"date_published": 1605960073.308,
+			"body": "Raspberry Pi 3 Model B+上で動くZeroNetの/Benchmarkにアクセスし、ベンチマークを取ってみました。\nTor等も動いているので、参考までに。\n結果は以下の通りです。\n\n```\nLinux raspberrypi 5.4.51-v7+ armv7l\nZeroNet Version: 0.7.2 r4538, Python 3.5.3\n\ntestHdPrivatekey x 50                                                    0.717s 0.79x Goodish\ntestSign x 20                                                            0.363s 1.27x Fine\ntestVerify ({'lib_verify': 'sslcrypto_fallback'}) x 20                   2.373s 0.16x Sloooow\ntestVerify ({'lib_verify': 'sslcrypto'}) x 200                           2.594s 0.12x Sloooow\ntestVerify ({'lib_verify': 'libsecp256k1'}) x 200                        1.457s 0.07x Sloooow\ntestPackMsgpack x 100 x 100 x 5KB                                        1.067s 0.33x Ehh\ntestUnpackMsgpackStreaming ({'fallback': False}) x 100 x 1000 x 5KB      5.439s 0.06x Sloooow\ntestUnpackMsgpackStreaming ({'fallback': True}) x 10 x 1000 x 5KB        7.571s 0.07x Sloooow\ntestPackZip x 5 x 100 x 5KB                                              0.372s 0.17x Sloooow\ntestPackArchive ({'archive_type': 'gz'}) x 5 x 100 x 5KB                 0.750s 0.11x Sloooow\ntestPackArchive ({'archive_type': 'bz2'}) x 5 x 100 x 5KB                7.196s 0.09x Sloooow\ntestPackArchive ({'archive_type': 'xz'}) x 5 x 100 x 5KB                 3.327s 0.14x Sloooow\ntestUnpackZip x 20 x 100 x 5KB                                           2.168s 0.12x Sloooow\ntestUnpackArchive ({'archive_type': 'gz'}) x 20 x 100 x 5KB              3.295s 0.08x Sloooow\ntestUnpackArchive ({'archive_type': 'bz2'}) x 20 x 100 x 5KB             7.336s 0.11x Sloooow\ntestUnpackArchive ({'archive_type': 'xz'}) x 20 x 100 x 5KB              3.736s 0.10x Sloooow\ntestCryptHash ({'hash_type': 'sha256'}) x 10 (5MB)                       1.422s 0.35x Ehh\ntestCryptHash ({'hash_type': 'sha512'}) x 10 (5MB)                       1.486s 0.22x Sloooow\ntestCryptHashlib ({'hash_type': 'sha3_256'}) x 10 x 5MB                 10.276s 0.03x Sloooow\ntestCryptHashlib ({'hash_type': 'sha3_512'}) x 10 x 5MB                 18.917s 0.03x Sloooow\ntestRandom x 100 x 1000 x 256 bytes                                      3.110s 0.03x Sloooow\ntestDbConnect x 10                                                     140.741s 0.00x Sloooow\ntestDbInsert x 10 x 1000 lines                                         124.704s 0.01x Sloooow\ntestDbInsertMultiuser x 1 x 100 users x 100 lines                       18.234s 0.03x Sloooow\ntestDbQueryIndexed x 1000  (Db warmup done in 20.231s)                  26.143s 0.03x Sloooow\ntestDbQueryNotIndexed x 1000  (Db warmup done in 17.857s)               30.987s 0.04x Sloooow\ntestCryptEciesEncrypt x 100                                              3.944s 0.30x Ehh\ntestCryptEciesDecrypt x 500                                              7.193s 0.18x Sloooow\ntestCryptEciesDecryptMulti x 5 x 100 (2 threads)                         5.899s 0.12x Sloooow\ntestCryptAesEncrypt x 10000                                              2.974s 0.09x Sloooow\ntestCryptAesDecrypt x 10000                                              2.227s 0.11x Sloooow\n\n* Result:\n - Total: 31 tests\n - Success: 31 tests\n - Failed: 0 tests\n - Average speed factor: 0.17x (Sloooow)\n - Total time: 448.135s\n```"
+		},
+		{
+			"post_id": 6,
+			"title": "ブログが書き換えられない問題が発生",
+			"date_published": 1605948833.331,
+			"body": "~~ブログの保存や削除ができない状態が続いています。現在原因を調査中です。（この文章はデータベースを直接編集しています。(いいのだろうか...)）~~\n\n## 解決しました\n\n原因が解決しました。原因はlanguage/ja.jsonはAll.jsonプログラム定数までも翻訳してしまったことによるものでした。\n\nja.jsonに指定した`\"Post\":\"投稿\",`という文がなんとAll.jsの`if( type === \"Post\" || ・・・`という部分を`if( type === \"投稿\" || ・・・`に書き換えていたのです。　なんてこった！\n\n以下が検証ブログラムです。\n\n```\nconsole.log(\"type=\" + type); //type=Post\nif(type == \"Post\"){\n    console.log(\"だよね！ですよね！\");\n}else{ //何故かこっち(type != \"Post\")になる\n    console.log(\"ありえない！typeの参照で変更したのは誰や！Cちゃうねん！\");\n}\nvar hoge = \"Post\";\nconsole.log(\"type=\" + type + \" hoge=\" + hoge); //type=Post hoge=投稿　　//ん？なんだ？\nif(type == hoge){ //false\n    ・・・\n```\n\n`var`を`let`にしたり、`==`を`===`にしたり...いろいろ大変だった...。\n`type != \"Post\"`と表示されたとき、とうとうFirefoxのJSエンジンが壊れたのかと思いました...。（再インストールしたり、chromiumを入れたりした）\n\n`\"Post\":\"投稿\",`を書いた記憶が無い...。おお、怖っ。\n私とZeroNetとの戦いは長引きそうです。"
+		},
+		{
+			"post_id": 5,
+			"title": "ブログ始めました。",
+			"date_published": 1605697196.43,
+			"body": "ブログを始めてみました。ZeroBlogをclone後、翻訳や多少のカスタマイズをしました。ソースコードや画像など、様々なことができるみたいですがやり方が全くわかりません（泣）。いろいろ模索してやっていこうと思います。\n\nこれからZeroNetについてわかったこと等をこのブログに投稿していきたいと思います。（私の備忘録と言ってまだ備忘録らしい投稿ができていない）"
+		}
+	]
+}

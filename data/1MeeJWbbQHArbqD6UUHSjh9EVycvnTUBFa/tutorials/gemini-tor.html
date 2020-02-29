@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>How to virtualhost on Gemini using Tor - Archive - MayVaneDay Studios</title>
+		<link href="../style.css" rel="stylesheet" type="text/css" media="all">
+		<meta name="author" content="Vane Vander">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</head>
+	<body class="mayvaneday">
+		<article>
+			<div class="box">
+				<p><h1>How to virtualhost on Gemini using Tor</h1></p>
+				<p>published: 2020-11-14</p>
+			</div>
+			<hr>
+			<div class="box">
+				<p>This guide will assume you are using a Debian-based system.</p>
+				<ol type="1">
+					<li>Install Tor and Jetforce, a Gemini server.</li>
+				</ol>
+				<p><code>sudo -H pip3 install jetforce; sudo apt install tor</code></p>
+				<ol start="2" type="1">
+					<li>Set up a Tor hidden service.</li>
+				</ol>
+				<p>Add the following lines to <code>/etc/tor/torrc</code>, adjusting as necessary:</p>
+<pre>HiddenServiceDir /var/lib/tor/gemini/
+HiddenServiceVersion 3
+HiddenServicePort 1965 127.0.0.1:1966</pre>
+				<p><code>1965</code> is Gemini's default port and the one clients will expect the server to be listening on. <code>1966</code> will be the actual port the second server instance is running on. This will allow the server serving the clearnet version to use the default port. Do not worry about the port numbers not matching; Tor will redirect Tor traffic on 1966 to the proper server to look like it is also running on <code>1965</code>.</p>
+				<p>If you need multiple hidden services, copy these lines again, changing the <code>HiddenServiceDir</code> path to a different one and changing <code>1966</code> to a different port not in use.</p>
+				<ol start="3" type="1">
+					<li>Configure Jetforce.</li>
+				</ol>
+				<p>Run the following to start the server:</p>
+<pre>jetforce --host 127.0.0.1 \
+--tls-certfile /path/to/certificate.crt \
+--tls-keyfile /path/to/key.key \
+--dir /path/to/gemsite/files/ \
+--hostname YOUREXTREMELYLONGONIONHERE.onion \
+--port 1966</pre>
+			</div>
+			<hr>
+			<div class="box">
+				<p align=right>CC BY-NC-SA 4.0 &copy; Vane Vander</p>
+			</div>
+		</article>
+	</body>
+</html>

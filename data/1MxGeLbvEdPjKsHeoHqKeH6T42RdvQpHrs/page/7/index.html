@@ -1,0 +1,345 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/avatars/v5.png"><link rel="alternate" type="application/rss+xml" title="王子亭的博客" href="https://jysperm.me/atom.xml"><link rel="stylesheet" href="/styles.css"><title>王子亭的博客</title></head><body><div class="container"><div class="columns page-header"><h1>王子亭的博客</h1></div><div class="columns"><div class="navigation"><nav class="menus-main"><a href="/" class="favicon"><img alt="王子亭的博客" src="/avatars/v5.png"></a><a href="/about">关于精子</a><a href="/resume">简历</a><a href="/links">链接</a><a href="/booklist">推荐书单</a><a href="/list">日志列表</a><a href="/ad">广告</a></nav><nav class="right menus-right"><a href="/atom.xml">RSS</a><a target="_blank" href="https://github.com/jysperm/blog">fork on Github</a></nav></div></div><div class="columns"><div class="block-body column three-fourths"><div class="article-widget">精子新上线了一个名为 &nbsp;<a target="_blank" href="https://stream.pub/">Stream</a>&nbsp; 的服务，希望提供一个基于发布、订阅模型的消息服务，提供 HTTP API 并传输结构化的 JSON 数据。</div><article><header><h2><a href="/2016/06/interesting-javascript/">从被误解到最流行：论 JavaScript 如何完成华丽转身</a></h2></header><div class="article-meta clearfix"><time class="left">2016 6 月 12 日</time><ul class="tags left"></ul><ul class="tags right"><li><a href="/tag/nodejs/">Node.js</a></li></ul></div><div class="markdown-body"><p>有人说「<a href="http://www.ruanyifeng.com/blog/2011/06/birth_of_javascript.html" target="_blank" rel="external">JavaScript 是花了 10 天时间匆忙被设计出来的语言</a>」，也有人说「<a href="https://blog.codinghorror.com/the-principle-of-least-power" target="_blank" rel="external">凡是能用 JavaScript 写出来的，最终都会用 JavaScript 写出来</a>」。写这篇文并非要对 JavaScript 做一个全面的优劣分析，而是想与大家分享一些存在于 JavaScript 及其生态系统中的、在我看来比较有趣的闪光点。  </p>
+<h3 id="插件化的语言特征"><a href="#插件化的语言特征" class="headerlink" title="插件化的语言特征"></a>插件化的语言特征</h3><p>JavaScript 曾经是一门兼容性最糟糕、升级最困难的语言。开发者们要苦等到所有用户都升级了浏览器，才敢使用新版本的特征。然而在最近几年，随着 <a href="https://babeljs.io/" target="_blank" rel="external">Babel</a> 等编译器的兴起，越来越多的 JavaScript 开发者们都放开了手，开始在生产环境中使用那些尚未被纳入标准的语言特征了。</p>
+<p>使用了 Babel 的项目需要在发布之前引入一个「构建」的步骤，将使用了较新的语言特征的源代码转译为兼容性更好、被所有浏览器所支持的早期版本的 JavaScript，所以开发者就不必再去关心用户的浏览器是否支持这项新特征了。</p>
+<p>Babel 是一个开源的、插件化的编译器框架，JavaScript 的每个语言特征（包括那些还未被纳入标准的）都被实现成了一个插件，插件可以遍历和替换 <a href="https://github.com/thejameskyle/babel-handbook/blob/master/translations/en/plugin-handbook.md" target="_blank" rel="external">AST</a>，进而对编译的结果施加影响。令人兴奋的一点是 Babel 让语言的特征形成了模块化，也就是说开发者可以在构建脚本中来配置要使用的语言特征。</p>
+<p>Babel 的出现大大加速了 JavaScript 的进化。因为一旦有人希望在 JavaScript 中加入一个新特征，他首先会去实现一个 Babel 插件，然后很快就会有开发者去使用这个插件（这个过程不过是修改一下构建脚本）。这样新特征会得到来自一线开发者的验证和反馈，并有效地得以改进，如此形成一个良性循环。对比来看，某一些语言的新特征在设计和普及阶段进展非常缓慢。因为如果一个特征无法成为标准，就不会有开发者使用，而没有开发者使用，标准的制定者又无法得到足够的反馈，进而推迟进入标准的时间。</p>
+<h3 id="总有一种适合你的方言"><a href="#总有一种适合你的方言" class="headerlink" title="总有一种适合你的方言"></a>总有一种适合你的方言</h3><p>除了对 JavaScript 本身的增强，社区中还有着上百种编译成 JavaScript 的「<a href="https://github.com/jashkenas/coffeescript/wiki/list-of-languages-that-compile-to-js" target="_blank" rel="external">方言</a>」。创造一种 JavaScript 的方言并不难，你只要编写一个从源代码到 <a href="https://github.com/estree/estree" target="_blank" rel="external">ES AST</a> 的词法和语法分析器，后续的步骤交给 Babel 就好。社区中比较知名的几种方言有：</p>
+<ul>
+<li><a href="http://coffeescript.org/" target="_blank" rel="external">CoffeeScript</a>：提供更简洁的语法，可以省略大部分的括号和花括号。</li>
+<li><a href="http://www.typescriptlang.org/" target="_blank" rel="external">TypeScript</a>：强类型的 JavaScript，提供编译期类型检查。</li>
+<li><a href="https://github.com/clojure/clojurescript" target="_blank" rel="external">ClojureScript</a>：提供 Clojure（Lisp）风格的语法。</li>
+<li><a href="http://www.purescript.org/" target="_blank" rel="external">PureScript</a>：<a href="https://www.infoq.com/news/2014/09/purescript-haskell-javascript" target="_blank" rel="external">类 Haskell 的语法和类型系统</a>。</li>
+<li><a href="https://facebook.github.io/jsx/" target="_blank" rel="external">JSX</a>：混写 JavaScript 与 HTML（React DOM）。</li>
+</ul>
+<p>这些方言有着各自的风格，从外观来看语法完全不同，但它们最终都会编译成标准的 JavaScript，这意味着它们之间是可以互操作的，你可以在一个 TypeScript 的项目中使用 CoffeeScript 编写的库，反之亦然。你甚至可以在一个项目中混用不同的方言。</p>
+<p>开发者很少需要担心新特征或方言带来的不稳定性，因为代码最终会被编译成标准的 JavaScript，只要编译的过程没有错误，最后都是交由 JavaScript 引擎来执行，这并没有为 JavaScript 引擎带来新的复杂度。一旦有一天你决定不再使用某个特征或方言时也不要紧，直接使用编译后的 JavaScript 就好了。</p>
+<p>这样一来，可以说 JavaScript 不再是一门语言，而是一个 JVM（<em>JavaScript</em> Virtual Machine）了。同时因为浏览器厂商（它们是这个世界上最大的科技巨头）之间的竞争和合作，JavaScript 有着几乎是所有虚拟机语言中最好的性能。</p>
+<h3 id="精简而灵活的语言核心"><a href="#精简而灵活的语言核心" class="headerlink" title="精简而灵活的语言核心"></a>精简而灵活的语言核心</h3><p><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects" target="_blank" rel="external">JavaScript 的标准库</a>仅包含了非常有限的功能，某种程度上来说这也是件好事 —— 精简的标准库给第三方库留出了充分的竞争空间，真正得到大家认可的库才会被广泛使用，而不仅仅因为它被包含在了标准库中。</p>
+<p>JavaScript 语言本身并没有定义得非常好的「范式」，你可以使用函数式的风格，比如函数作为参数和返回值、闭包、<a href="https://github.com/stoeffel/awesome-fp-js" target="_blank" rel="external">lodash 等函数式工具</a>、<a href="https://facebook.github.io/immutable-js" target="_blank" rel="external">Immutable.js</a> 提供的不可变数据类型（ES2015 甚至还包括了<a href="https://github.com/v8/v8/commit/6131ab1edd6e78be01ac90b8f0b0f4f27f308071" target="_blank" rel="external">尾递归优化</a>）；你还可以使用面向对象的风格，比如使用原型 prototype 构造出具有静态成员和实例成员、支持继承和多态的类（ES2015 也添加了 class 这个关键字来更加方便直观地定义类）。</p>
+<p>正是 JavaScript 的这种灵活性，赋予了类库的设计者很大的施展空间。很多知名的类库可以说是创造了一种新的编程范式：</p>
+<ul>
+<li><a href="http://backbonejs.org/" target="_blank" rel="external">Backbone</a>：面向对象的 ORM，通过事件模型来通知对象的变化。</li>
+<li><a href="http://expressjs.com/" target="_blank" rel="external">Express</a>：通过定义串联的「中间件」来处理 HTTP 请求。</li>
+<li><a href="https://facebook.github.io/react" target="_blank" rel="external">React</a>：每当状态发生变化便重新渲染整个页面，减少用户界面状态管理的复杂度。</li>
+</ul>
+<h3 id="不止于浏览器环境"><a href="#不止于浏览器环境" class="headerlink" title="不止于浏览器环境"></a>不止于浏览器环境</h3><p>JavaScript 不仅可以在浏览器中运行，因为它精简的语言核心（甚至不包括任何 IO 相关的功能），现在已经被移植到了其他很多平台：</p>
+<ul>
+<li><a href="https://nodejs.org/" target="_blank" rel="external">Node.js</a>：提供了访问文件系统、进行网络操作的 API，用于构建 Web 后端等服务器程序。</li>
+<li><a href="http://ionicframework.com/" target="_blank" rel="external">Ionic</a> / Cordova：提供访问移动设备的 API，使用 Web 技术来构建移动应用。</li>
+<li><a href="http://electron.atom.io/" target="_blank" rel="external">Electron</a>：让 JavaScript 可以同时访问 Web 和 Node.js 的 API，以便用 Web 技术来构建桌面应用。</li>
+<li><a href="https://facebook.github.io/react-native" target="_blank" rel="external">React Native</a>：用 JavaScript 去操作原生 UI 组件来构建移动应用。</li>
+</ul>
+<p>这些环境下有着和浏览器中完全不同的 API，但运行的都是同样的 JavaScript 代码，你的业务逻辑代码可以在这些环境间共用。JavaScript 社区中大部分已有的、不依赖具体运行环境的工具库都可以不加修改地运行在这些新环境中。</p>
+<h3 id="异步单线程是把双刃剑"><a href="#异步单线程是把双刃剑" class="headerlink" title="异步单线程是把双刃剑"></a>异步单线程是把双刃剑</h3><p>无论在浏览器还是 Node.js 中，JavaScript 都采用了异步单线程的并发模型，所有的 IO 操作都采取异步执行，并通过「回调函数」来接收结果。以 Node.js 为例，引擎内部使用了一个<a href="http://stackoverflow.com/questions/20346097/does-node-js-use-threads-thread-pool-internally" target="_blank" rel="external">固定数量的线程池</a>，通过操作系统的「IO 多路复用」功能来进行 IO 操作，这样即使有大量并发的 IO 操作，也不过是多花了一点内存来维护相关的数据结构，并不会创建新的线程。这也是为什么大家都说 Node.js 适合高并发场景的原因了。同时 JavaScript 暴露给开发者的线程只有一个，只有这个线程会执行 JavaScript 代码，所以开发者不必象其他一些多线程语言那样去关心线程同步和线程安全的问题。JavaScript 开发者对于异步任务的接受程度也更高，他们会尽可能地让没有依赖关系的操作并行执行，<a href="https://jysperm.me/2014/09/1843">让无谓的等待时间最小化</a>。</p>
+<p>作为代价，JavaScript 中所有的 IO 操作都需要通过传递 <a href="http://www.infoq.com/cn/articles/nodejs-callback-hell" target="_blank" rel="external">回调函数</a> 的方式来获取结果，初学者会为此非常苦恼 —— 编写循环、处理异常时会束手束脚，异步回调的写法也非常繁琐，一不留神<a href="http://callbackhell.com/" target="_blank" rel="external">回调函数的嵌套就会失去控制</a>。为此社区创造了很多语言特性和工具来试图解决这个问题，包括 EventEmitter、async.js、Promise、co/generator、async/await 等。虽然基本可以认为 Promise 是未来的趋势，但目前还并没有普及到所有的 JavaScript 开发者，而且在这几种异步流程控制方案之间互相调用也很令人头痛。此外因为只有一个 JavaScript 线程在运行，所以如果在一个函数中有 CPU 密集的计算任务，它就会阻塞整个事件循环的处理，此时需要开发者手工让出线程，来处理事件循环中其他的事件。</p>
+<p>好了，怕篇幅再长反而会分散大家对内容的理解和印象，就此收笔。我这儿还有些其他相关的内容，感兴趣的朋友可以继续读下去。</p>
+<ul>
+<li><a href="http://www.infoq.com/cn/presentations/javascript-the-world-best-programming-language" target="_blank" rel="external">JavaScript - The World’s Best Programming Language</a>（中文演讲）</li>
+</ul>
+</div></article><article><header><h2><a href="/2016/05/remove-comments-and-wechat/">移除博客评论和微信公众号</a></h2></header><div class="article-meta clearfix"><time class="left">2016 5 月 16 日</time><ul class="tags left"></ul><ul class="tags right"><li><a href="/tag/blog/">博客</a></li></ul></div><div class="markdown-body"><p>最近我对博客做出了一个大胆的改变：移除之前存在了五年的文章评论功能。可以说评论功能一直是博客系统的标配。想起来大概是在 SNS 不那么流行的年代，评论功能将会是读者和作者进行公开的讨论的唯一渠道，但现在已经是 SNS 的时代了，博客的评论显得功能不够丰富也不够即时，所以这个功能显得并不是那么必要了。</p>
+<p>从另一个角度来看，我写了这么多年博客，收到的大部分评论都和文章内容无关 —— 他们在把文章的评论当作留言板来使用，和我打个招呼或者询问一下近况。当然我也曾收到极少部分一些认真撰写的评论，我也希望继续给这些人留出一些空间：我会以邮件的形式接受文章评论，我会挑选其中对读者有价值的部分展示在文章的末尾。</p>
+<p>我希望以这种严肃的、原始的方式来收集优秀的评论，或者 —— 干脆没有评论。我会陆续将之前通过多说收集到的优秀的评论补充到相应文章。</p>
+<p>另一方面，我一直是抵触微信公众号这种封闭技术的，但因为微信的庞大用户群，我也曾在过去的一段时间小范围地试水微信公众号。但最终我还是无法接受它的限制 —— 正文中不能有链接、网页会被重新排版、只能在手机上阅读等。但在这个很少有人去阅读独立博客的年代，我也需要有一个推送的渠道，于是我选择用原始的「邮件订阅」去代替微信公众号（你可以在我的博客和粉丝团首页的边栏上看到订阅按钮），毕竟邮件才是互联网上最通用的「推送协议」。</p>
+<p>虽然目前我选用了一款第三方服务来编排邮件，但因为邮件的通用性，这并不妨碍将来迁移到其他服务甚至自建服务。我曾在知乎回答过一个问题「<a href="https://www.zhihu.com/question/22951230/answer/23400706" target="_blank" rel="external">电子邮件最终会不会被即时通讯工具代替？</a>」，我的回答是不会，因为电子邮件是一个开放的、可拓展的协议，同时也有着去中心化的架构，因此邮件将永远是最正统、最严肃的沟通方式，这也是我在评论和推送这两个问题上都选择了邮件的原因。</p>
+</div></article><article><header><h2><a href="/2016/05/blockchain-slides/">BlockChain 与 Ethereum 介绍</a></h2></header><div class="article-meta clearfix"><time class="left">2016 5 月 1 日</time><ul class="tags left"></ul><ul class="tags right"><li><a href="/tag/bitcoin/">比特币</a></li><li><a href="/tag/cryptography/">密码学</a></li><li><a href="/tag/blockchain/">区块链</a></li></ul></div><div class="markdown-body"><blockquote>
+<p>这篇文章由我 3 月末在 LeanCloud 进行的技术分享整理而来，假定读者已有基本的密码学知识且对 Bitcoin 的实现有初步的了解。</p>
+</blockquote>
+<p>Blockchain 也叫区块链，可以认为它是 HashTree（散列树）的一种，也正因如此它有着一些和 HashTree 相同的性质：</p>
+<p><img src="https://o5eoc29h5.qnssl.com/blockchain-hash-tree.jpg" alt="blockchain-hash-tree"></p>
+<blockquote>
+<p>图片来自 <a href="http://happypeter.github.io/bitcoin_basics/book/017_merkle_tree.html" target="_blank" rel="external">http://happypeter.github.io/bitcoin_basics/book/017_merkle_tree.html</a></p>
+</blockquote>
+<p>即在一个树状结构中，每个末端节点都有一个散列值，而非末端节点的散列值则是由其所有直接子节点的散列值散列而来，因此每个节点都直接或间接地包含了其所有子节点的信息。进而，只要任意一个末端节点的散列值变化，其所有父节点的散列值都会发生变化，根节点也必定变化。</p>
+<p>我可以举一个有关 HashTree 的应用：「100% 准备金证明」，它属于「零知识证明（Zero-knowledge proofs）」的这一类问题。我们可以考虑这样一个场景，Bitcion 的持有者为了进行交易，需要将 Bitcoin 寄存在交易所，理论上交易所可以将这笔钱（所有用户寄存的账户余额）挪作它用，这是用户们不希望看到的，而交易所也希望自证清白：交易所首先公布一个自己所持有的 Bitcoin 地址，供大家确认交易所确实持有这么多 Bitcoin 作为准备金，但如何证明这笔钱确实大于所有用户余额的总和呢？换句话说，如何在不公布每个用户的余额（会泄露用户的隐私）的情况下，让每个用户都认可自己的余额被包含在了总的准备金中呢？</p>
+<p><img src="https://o5eoc29h5.qnssl.com/blockchain-proof-of-reserves.png" alt="blockchain-proof-of-reserves"></p>
+<blockquote>
+<p>图片来自 <a href="http://blog.bifubao.com/2014/03/16/proof-of-reserves" target="_blank" rel="external">http://blog.bifubao.com/2014/03/16/proof-of-reserves</a></p>
+</blockquote>
+<p>我们可以构造一个 HashTree，所有的末端节点都代表一个用户，包含了用户余额（<code>Σ</code>）和用户标识（如邮箱地址）的散列（<code>h</code>），而父节点包含了其子节点的余额总和（<code>sum</code>）和所有子节点信息的散列（<code>hash</code>）。对于每一个用户而言，只需向其展示他自己的末端节点和兄弟节点、其所有父节点和父节点的兄弟节点即可，因为这个用户可以通过逐步追溯父节点的方式，确认自己的余额被包含在了父节点中，最后进而包含在了根节点中。</p>
+<p>这样一来，向每个用户展示的信息只有其自己的信息和一些经过聚合的信息，每个用户都可以在不获知其他用余额的情况下确认自己的余额被包含在了根节点中。上图中有一个小错误，<code>h</code> 为 <code>e4df9d12</code> 的节点不应该是一个代表用户的末端节点，而应该是一个经过聚合的信息节点（这个节点可以包含一个有 3333 余额的用户，和一个 0 余额的虚构用户）来避免泄漏某个用户的隐私信息。</p>
+<p>接下来我们来看一下 Git，其实 Git 是一个非常典型的 Blockchain 应用：</p>
+<p><img src="https://o5eoc29h5.qnssl.com/blockchain-git-objects-example.png" alt="blockchain-git-objects-example"></p>
+<blockquote>
+<p>图片来自 <a href="http://gitbook.liuhui998.com/1_2.html" target="_blank" rel="external">http://gitbook.liuhui998.com/1_2.html</a> （GPL v2）</p>
+</blockquote>
+<p>在 Git 中，无论是文件（Blob）、索引（Tree）还是提交（Commit），都有一个由其内容决定的 Hash，如果两个对象有着一样的内容，则有着一样的 Hash。在 Git 中，整个仓库的历史就是一条 Blockchain，每个 Commit 相当于一个 Block，Commit 中包含了前一个 Commit 的 Hash 以及此次修改相关的对象的 Hash，Commit 本身的 Hash 由其内容和这些元信息来决定。</p>
+<p>Git 借助 Blockchain 为仓库来确定了一个唯一的历史 ———— 如果一个 Commit 被修改了，在其之后的所有的 Commit 的 Hash 都会改变。当然，因为 Git 只是一个版本控制工具，所以并没有阻止你去修改历史（毕竟还可以 rebase 然后 <code>push --force</code>），但这种修改会被所有协作者察觉到。  </p>
+<p>另一个 Blockchain 的经典应用就是 Bitcoin 了，也正是 Bitcoin 将 Blockchain 这个词传播开来（而这个概念其实是一直都有的）：</p>
+<p><img src="https://o5eoc29h5.qnssl.com/blockchain-bitcoin-block-data.png" alt="blockchain-bitcoin-block-data"></p>
+<blockquote>
+<p>图片来自 <a href="https://commons.wikimedia.org/wiki/File:Bitcoin_Block_Data.png" target="_blank" rel="external">https://commons.wikimedia.org/wiki/File:Bitcoin_Block_Data.png</a>（CC-BY-SA-3.0）</p>
+</blockquote>
+<p>在 Bitcoin 中，每个 Block（块）包含了一系列 Transaction（交易）和上个 Block 的 Hash，而整个 Blockchain 则构成了一个去中心化的唯一账本。因为每十分钟才会产生一个新的 Block，而 Block 一经产生就会永远留在 Blockchain 上，所以 Blockchain 将交易发生的顺序固定了下来，维护了交易发生的先后顺序，进而确定一个账户是否有足够的余额发起一笔交易。</p>
+<h2 id="Bitcoin"><a href="#Bitcoin" class="headerlink" title="Bitcoin"></a>Bitcoin</h2><p>这个分享的第一个部分是简单地回顾一下 Bitcoin.</p>
+<p>Bitcoin 中 Block 的产生是通过「工作量证明」来实现的，即所有参与「挖矿」的「矿工」都要进行一种与计算力相关的、具有随机性质的散列计算，直到算出一个满足特定条件的随机数，才能获得发布一个 Block 的权利。</p>
+<p>在设定上，每个矿工总是会去信任「最长的链」，在已知的、满足规则的最长的链的基础上去计算下一个 Block，否则你的计算力就会被白白浪费掉 —— 因为其他矿工也总是认可最长的链，而如果你不在最长的链的基础上开始工作，那么就是在和其他所有矿工的计算力对抗。</p>
+<p>Bitcoin 被设计成每 10 分钟生成一个新的 Block, 这个时间是由大家共同通过观察过去几个 Block 的间隔时间，去调整下个 Block 的生成条件的难度去实现的。当过去几个 Block 的生成速度高于预期时，大家就会认为下一个 Block 的生成应该具有更高的难度。</p>
+<p>正常来说，每一个 Bitcoin 节点都需要存储完整的 Blockchain 数据才能去确认一笔交易是否合法 —— 交易的发起者是否拥有足够的余额发起这笔交易。但现在完整的 blockchain 已有 66G，而且还在以每天 0.1G 左右的速度增长。如果要求 Bitcoin 的每个用户都存储完整的区块链未免过于苛刻，因此 Bitcoin 拥有一个「简化确认（SPV, Simplified payment verification）」的机制，所谓的「轻量级客户端」可以选择不存储完整的区块链，而是附着到一个或几个完整节点上，只存储所有 Block 的元信息（Hash、包含交易的 Hash、工作量证明），然后验证每个块的工作量证明，每当需要验证交易时便向完整节点查询这个交易所在的 Block，然后获取这个 Block 中必要的信息（Block 中的交易也是以 HashTree 的方式存储的），以便校验这笔交易是否包含在 Blockchain 中。</p>
+<p><img src="https://o5eoc29h5.qnssl.com/blockchain-bitcoin-state-machine.png" alt="blockchain-bitcoin-state-machine"></p>
+<blockquote>
+<p>图片来自 <a href="https://github.com/ethereum/wiki/wiki/White-Paper" target="_blank" rel="external">https://github.com/ethereum/wiki/wiki/White-Paper</a></p>
+</blockquote>
+<ul>
+<li>Blockchain ↔ 账本 ↔ 状态变更日志</li>
+<li>Transaction ↔ 交易 ↔ 一次状态变更</li>
+<li>Block ↔ 对于当前状态的一次「共识」</li>
+</ul>
+<p>其实我们可以将 Bitcoin 的 Blockchain 想像成一个「状态机」，整个 Blockchain 是一个有状态的「账本」，其中存储着每一笔交易记录，根据这些交易记录可以推算出整个账本在任一时间的「状态」—— 即 Bitcoin 网络中每个账户有多少余额。每个 Transaction 就是一次对状态的变更，而每个 Block 是整个 Bitcoin 网络的矿工对当前状态的一个「共识」，因为 Bitcoin 每 10 分钟生成一个新的 Block，相当于每 10 分钟大家会对所有的账户的余额达成一次共识，而在这十分钟之间，账本的状态其实是一种「混沌」的状态。</p>
+<h2 id="Alt-Coin"><a href="#Alt-Coin" class="headerlink" title="Alt Coin"></a>Alt Coin</h2><p>在比特币的基础上也衍生出来了很多其他密码学货币，通常被称为「山寨币（Alt Coin）」，通常这类货币有两种实现方案：</p>
+<p>第一种是使用自己的、和 Bitcoin 相独立的网络，这样的好处是山寨币可以非常灵活地设计自己的协议和规则，但因为用户量很难达到和 Bitcoin 相当的数量级，所以对恶意攻击的防御能力将非常地弱。</p>
+<p>第二种是去使用 Bitcoin 的网络实现「元协议」，在 Bitocin 的 Transaction 之上附带自定义的信息来实现自己的逻辑，这样的好处是可以利用 Bitcoin 的计算力规模去抵御攻击，但同时因为依附在 Bitcoin 网络上，并不是所有的矿工都会遵守山寨币的规则，因此无法防止不符合规则的 Block 进入 Blockchain，只能在客户端上过滤掉不符合规则的交易，也就无法利用前面提到的 Bitcoin 提供的简化确认的功能了。</p>
+<p>对于这些山寨币而言，Bitcoin 可以提供一个具有大量矿工参与的、能够抵御住很大规模的恶意攻击的 Blockchain，同时 Bitcoin 的 Transaction 上也可以搭载自定义的数据，给山寨币的实现留出了一定空间。</p>
+<p>Bitocin 也提供了一个 <a href="https://en.bitcoin.it/wiki/Script" target="_blank" rel="external">Bitcoin Script</a> 用来实现更为复杂的 Transaction 但因为这并非是 Bitcoin 的核心功能，所以只能进行比较简单的运算，只能非常有限地读取 Blockchain 上的数据，同时因为缺少循环机制，很难编写通用的、图灵完备的逻辑。</p>
+<h2 id="Ethereum"><a href="#Ethereum" class="headerlink" title="Ethereum"></a>Ethereum</h2><p><img src="https://o5eoc29h5.qnssl.com/blockchain-ethereum.png" alt="blockchain-ethereum"></p>
+<blockquote>
+<p>图片来自 <a href="https://www.ethereum.org/assets" target="_blank" rel="external">https://www.ethereum.org/assets</a> （CC 3.0）</p>
+</blockquote>
+<p>「Ethereum（以太坊）」是一个基于区块链的、去中心化的应用平台，它将 Bitcoin 的基础设施 —— 基于密码学的区块链技术构建为了一个通用的平台，并补齐了 Bitcoin 网络的一些缺失功能，以便开发者将自己的去中心化应用运行在 Blockchain 上。</p>
+<p>在详细介绍 Ethereum 之前，我先介绍一下（我所认为的）去中心化网络的两大基础 —— 密码学和博弈。密码学自然不用多说，无非是通过公钥加密、数字签名、散列和摘要算法去从数学上保证安全性；而博弈是说在去中心化的网络中，任何人，包括希望恶意地希望攻击这个网络的人都可能参与，在设计去中心化网络时需要站在每一个参与者的角度去思考其利益关系，确保遵守规则时利益最大化、违反规则时会遭受损失或承担风险。</p>
+<p>然而在数字世界中，发布一段数据是没有成本的，无所谓「利益」和「损失」，因此必须和实体世界建立某种联系，才能去定义「利益」。例如在 Bitocin 网络中，如果攻击者希望去人为地改变 Blcokchain 的走向，需要拥有比其他所有矿工更高的计算力，而在实体世界中，计算力是需要计算设备来提供的，而计算设备是需要从实体世界购买的 —— 甚至有时候即使有钱也没有足够的产能，因此参与 Bitcoin 网络的矿工越多，它抵御攻击的能力将会越强。</p>
+<p>所以说在去中心化网络中，并不是所有问题都是被「技术」解决的，在技术所达不到的部分，必须通过利益、通过经济激励来解决。也是因为「经济激励」的需要，Ethereum 也有一个钱包体系（货币单位叫「Ether（以太）」），每个用户有一个钱包地址作为其唯一标识，在这一点上和 Bitcion 比较类似。</p>
+<p>「Contract（合约）」是 Ethereum 所引入的最重要的概念。在 Bitcoin 中，所有的地址都是属于一个用户的 —— 当我们说「用户」的时候，其实是说一对公钥和私钥。但在 Ethereum 中，除了由一个密钥对所拥有的地址之外，还有一种由「代码」拥有的地址，即 Contract. Contract 由用户发布，其本质是一段代码，在发布之后便无法修改，Contract 像普通账户一样也有一个钱包地址，每当这个地址收到交易时，所关联的代码便会被执行，这些代码：</p>
+<ul>
+<li>能且只能以区块链作为输入和输出，因此计算是可重复的 —— 实际上计算的结果并不需要被存储到区块链，因为随时可以重新进行计算。</li>
+<li>可以调用其他 Contract 中的函数（其他 Contract 的代码和数据同样存在于区块链上）。</li>
+<li>执行过程中可以创建新的交易（操纵自己的钱包余额），这些交易可能会去执行其他的 Contract.</li>
+</ul>
+<p>首先举一个「多人共同持有的钱包」的例子，在 Ethereum 的官方客户端中便有一个创建多人钱包的功能：</p>
+<p><img src="https://o5eoc29h5.qnssl.com/blockchain-ethereum-multi-sig-wallet.jpg" alt="blockchain-ethereum-multi-sig-wallet"></p>
+<p>如图，通过这个功能可以创建出一个与其他 2 个人共同拥有的钱包地址，每个人每天最多使用其中的 100 Ether，如果超过了这个限制，则必须经过另外一个人的同意。</p>
+<p>这个功能实际上会创建出一个 Contract，而上述逻辑是通过 Contract 中的代码来描述的。当你希望从这个共有钱包中支出款项时，你需要向这个共有钱包发一个消息（交易即消息，交易金额可以为零，仅携带数据），然后共有钱包中的代码会被执行，若这个支出请求符合上述逻辑，则发起真正的支出交易，否则这个支出请求会被驳回（没有真正地支出款项）。</p>
+<p>另外一个例子是「对冲合约」，一直都有人吐槽 Bitcoin 作为数字货币其币值（和法定货币的汇率）不稳定，经常出现一天之间币值涨一倍或跌一倍的情况，但如果借助 Contract 实现一个对冲合约便可一定程度上解决这个问题。</p>
+<p>我们将希望保持币值不变的人称为「风险规避者」，将另外一个愿意承担币值波动的风险并从中盈利的人称为「风险承担者」，于是他们便可以约定一个金额（例如 1000 CNY）和一个时间窗口（例如一个月），并创建一个 Contract 执行下列逻辑：</p>
+<ul>
+<li>风险规避者将价值 1000 CNY 的 Ether 发送到 Contract 的钱包地址，风险承担者也将价值 1000 CNY（或更多）的 Ether 发送到 Contract 来应约（如无人应约，风险规避者可取回自己的 Ether）。</li>
+<li>一个月后，风险规避者可以从 Contract 取回当时价值 1000 CNY 的 Ether，而无论 Ether 和 CNY 之间的汇率如何，余下的 Ether 由风险承担者取回。</li>
+</ul>
+<p>如 Ether 价值上涨，风险承担者获利，若 Ether 价值下降，风险承担者亏损，但风险规避者总是不亏不赚。当然，风险规避者和风险承担者可以事先商定一个风险规避者需要支付的「保费」，亦可商定风险承担者需要提供几倍于 1000 CNY 的担保（倍率越高能够承担的风险越大）。</p>
+<p>上面的例子中其实还存在一个不是很好解决的问题，即如何去确定 Ether 和法定货币之间的汇率，在前面我们提到过，Contract 只能访问区块链上的数据，而法定货币是一个存在于实体世界而非密码学世界的数据，我们需要通过某种机制将这类「来自非密码学世界的数据」引入到区块链中。</p>
+<p>我们可以设计另外一个 Contract 来指定这样的逻辑，来从实体世界中征集 Ether 和法定货币之间的汇率，在每个时间窗口（如一小时）中：</p>
+<ul>
+<li>所有人可以向 Contract 缴纳保证金并提供一个汇率。</li>
+<li>在时间窗口结束时，Contract 计算所有人提供的汇率的平均值（按照保证金加权）并公布。</li>
+<li>并将收集到的保证金分配（按照保证金加权）最接近平均值的 25% 的人。</li>
+</ul>
+<p>对于任何一个参与者，因为不知道其他人的出价，所以提交一个真实的汇率有更大的可能性获得奖励，而提交一个很离谱的汇率将会有很大的机率失去保证金。</p>
+<p>当然这个规则其中有几个漏洞，比如如果一个人有非常多的保证金，那么他就可以将平均值拉到一个比真实汇率更高或更低的价格的同时拿到奖励，并且使其他一些提供了准确汇率的人失去保证金。但其实在实体世界中也是一样的，如果你有非常多的钱同样可以抬高或打压一种商品的价格，只不过相比于实体世界，电子货币的体量还很小，并不需要太多钱就可以做到；但其实这样恶意地抬高或打压汇率也是有非常大的风险的，因为你不敢肯定自己缴纳的保证金是足够多的，一旦失败将会失去所有的保证金。</p>
+<p>另外一个漏洞就是「所有人可以向 Contract 缴纳保证金并提供一个汇率」这个步骤是通过创建交易来实现的，而所有的交易会被写到 Blockchain 上，因此你提交的汇率其实是对其他人可见的，进一步给恶意的攻击者创造了机会，接下来我会通过一个「产生随机数」的例子来介绍如何规避这个问题。</p>
+<p>前面我们提到了 Contract 可以读取 Blockchain 上的数据，但 Blockchain 上的数据都是确定的，如果我们要实现一个类似于赌博的应用，该从哪里获得一个随机数呢？</p>
+<p>可以想到的一个随机数来源就是下一个 Block 的 Hash，在大多数情况下，这种程度的随机性足够了。但其实矿工是可以在一定程度上操控这个随机数的，假设一个矿工参与了某个赌博，且赌博的收益大于挖出一个块的收益，那么如果这个矿工挖出了一个将会使自己输掉赌博的块，那么显然这个矿工会选择不去公布这个新的块，这一点在单个矿工的计算力越强的情况下越明显。</p>
+<p>因此我们需要引入一个类似征集汇率的机制来征集随机数种子，然后在每个时间窗口结束时使用这些种子来计算出一个随机数。但就像征集汇率一样，因为参与者是通过创建交易来实现提交汇率的，因此在一个时间窗口之间，每个人提交的随机数对其他人都是可见的，因此一个已经参与了某项赌博的人可以精心挑选一个随机数种子来使其他人已提交的种子加上新的种子所产生的随机数刚好符合他的期望。</p>
+<p>所以我们有必要将征集种子的窗口分为两部分，来取得一个任何人都无法预测和干预的随机数：</p>
+<ul>
+<li>阶段一：所有人可以向 Contract 缴纳保证金并提供「一个随机选定的种子的散列值」。</li>
+<li>阶段二：参与阶段一的人向 Contract 提供未被散列的种子。</li>
+<li>阶段二结束：Contract 将所有合法的种子散列，生成一组随机数并公布；退回阶段二中提供了正确的种子的人的保证金。</li>
+</ul>
+<p>在第一阶段你只知道其他人提交的种子的散列值，而不知道实际的种子，因此无法去精心构造一个种子来干预结果；而在第二阶段中，所有人只是在确认第一阶段提交的种子，而不能提交新的，也无法阻止其他人提交种子。</p>
+<p>前面我们提到 Bitcoin Script 是没有提供循环、递归、跳转之类的能力的，也许 Bitcoin 是出于控制一段 Bitcoin Script 执行时间的考虑，因为根据图灵的「停机定理」，由图灵完备的编程语言所编写的程序，无法总是仅从静态分析的角度判断其是否会在有限的步骤后结束，这样依赖恶意的攻击者便可以构造一个会引起死循环的 Transaction 来干扰矿工的正常工作。</p>
+<p>而 Ethereum 则再次通过「经济激励」绕过了这个问题，Contract 以 opcode（操作码）的形式运行在一个叫 EVM（Ethereum Virtual Machine）的虚拟机上，EVM 是一个自带「计费」的虚拟机，在 EVM 的标准中，根据操作所需要的内存和 CPU 时间，定义了每一种 opcode 所消耗的 Gas，这是一种由 Ether 购得的计算资源。前面提到当一笔交易的目标是 Contract 时，Contract 的代码会被执行，交易的发起者需要为 Contract 执行过程中消耗的 Gas 付费，同时声明一个「愿意支付的最大的 Gas 数量」，如果 Gas 中途耗尽，Contract 的执行将会停止。</p>
+<p>然后我们再重新讨论一下「共识间隔」的问题，前面提到 Bitcoin 每 10 分钟出现一个新的 Block，即整个网络每 10 分钟达成一个「共识」，所以通常的 Bitcoin 交易要等上十几分钟才会被确认，在计算力不是很高的早期，可能要等待一个小时（6 个 Block），大家才会认为这笔交易是可靠的。</p>
+<p>显然更短的共识时间对用户而言会有更好的体验，为什么 Bitcoin 不缩短出块时间呢？这是因为更快的共识间隔会一定程度上增加「中心化矿池」的优势。所谓「矿池」就是指比特币矿工聚在一起挖矿，矿工无条件地听从矿池的指令，最后和矿池来约定收益分成，显然 Bitcoin 作为一个去中心化系统，并不希望这种中心化的矿池有额外的优势。</p>
+<p>当一个矿工 A 挖到一个新的块的时候，他会将这个 Block 广播出去，其他人一旦收到了这个消息，就会立刻基于这个新的块开始工作。而其他人在「A 挖到新的块」和「收到 A 广播的消息」之间这段时间之间的计算实际上是被浪费掉了的，而中心化矿池中的其他矿工则不会有这个问题，因为他们可以更快地得到新产生的块的信息，立刻在新的块的基础上开始工作。</p>
+<p><img src="https://o5eoc29h5.qnssl.com/blockchain-ethereum-without-uncles.png" alt="blockchain-ethereum-without-uncles"></p>
+<p>这个广播的时间可能需要十几秒，对于 10 分钟来讲这点时间并不是十分重要，但如果去缩短共识间隔，中心化矿池的优势将会越来越明显。但 Ethereum 通过引入「叔块（Uncle Block）」的概念解决了这个问题，将共识间隔减少到了 15 秒钟，在支付确认速度上较 Bitcoin 有了很大的提升。</p>
+<p>在 Bitcoin 的 Blockchain 中，一个 Block 只能有一个父块，也只能有一个子块。但在 Ethereum 中，一个新产生的块可以有一个父块和若干个叔块。回到上面的例子，如果在 A 挖到新的块但其他人尚未收到广播的时间中，如果有人挖出了一个新的块，但因为广播较晚没有被大家接受，那么这个块有可能成为下个块的「叔块」—— 这个块所代表的工作量证明会被认为是下一个块的一部分（即这个人挖出下一个块的难度降低了），叔块也仅仅提供工作量证明，其中所包含的交易是无效的。这样一来便补偿了较晚收到广播的客户端在低出块间隔情况下的劣势，具体来讲，直接的叔块提供 50% 的工作量证明、二代叔块提供 25% 的工作量证明以此类推，最多会承认最多五代的叔块。</p>
+<p><img src="https://o5eoc29h5.qnssl.com/blockchain-ethereum-uncles.png" alt="blockchain-ethereum-uncles"></p>
+<blockquote>
+<p>图片来自 <a href="https://blog.ethereum.org/2014/07/11/toward-a-12-second-block-time" target="_blank" rel="external">https://blog.ethereum.org/2014/07/11/toward-a-12-second-block-time</a></p>
+</blockquote>
+<h2 id="尚未解决的问题"><a href="#尚未解决的问题" class="headerlink" title="尚未解决的问题"></a>尚未解决的问题</h2><p>接下来这个部分我向大家介绍一下 Ethereum 目前尚未解决的几个问题。</p>
+<p>首先就是 Ethereum 目前达成共识的方式依然和 Bitcoin 一样是通过 POW（工作量证明）来担保的，只有完成了特定工作量的节点才能够参与 Block 生成的工作，工作量证明的问题就在于会浪费大量的计算力去保证网络的安全性，虽然者也是基于我们前面提到的「经济激励」思想，但其实是可以改进的。Ehtereum 认为更好的方式是用 POS（所有权证明）去代替工作量证明，这样可以极大地提高这个网络的效率 —— 不需要再去进行无意义的计算了。</p>
+<p>既然 Ether 本身就是有价值的，那么为什么不用它本身来进行经济激励呢？所谓 POS 就是说大家用所拥有的 Ether 去做担保，即每一个希望参与 Block 生成（传统意义上的挖矿）的节点（被称为验证人）都需要向系统（这里说的系统是指在协议上做规定，所有节点都认为这笔保证金被「冻结」了）缴纳一笔保证金，然后大家用自己的保证金来对可能成为下一个 Block 的 Block 下注（所谓「可能」的一个重要前提就是这个 Block 必须是符合协议规定的），如果这个块真的成为下一个 Block，那么所有下注的节点将会得到奖励，否则保证金将会被罚没。</p>
+<p>这个模式其实和 POW 非常类似，在 POW 中，矿工用自己的计算力来「下注」，而且如果一旦有一个链更长，就有必要切换到这个链上继续挖矿 —— 因为参与的人越多的链越有可能成为正确的链，最终大家达成一个共识。而在 POS 中，大家使用自己的保证金下注，大家同样倾向于选择已经被很多其他人下注的块（如果它是合法的话），最后达成一个共识。</p>
+<p>POS 势必会增加整个网络的吞吐量 —— 大家不再需要通过进行大量无意义的计算来达成共识了，每个节点的运算量将趋近于执行 Contract 中代码和进行数据验证的计算量。</p>
+<p>当然 POS 之所以目前还未被采用，是因为还存在一些尚未解决的问题，其中之一就是和 POW 一样的 51% 攻击问题，在 POW 中集中全网 51% 的计算力是有一定物理限制的 —— 因为计算力需要计算设备来提供；而相比之下在 POS 中收集全网 51% 的 Ether 则相比之下容易一些 —— 只要你有足够的钱。POS 天然地比 POW 更非复杂，要实现上述的工作逻辑，需要处理例如维护有效的验证人列表、保证金的冻结、罚没和返还、提议区块和投注区块、防止验证人之间的结盟攻击、网络分区之后的恢复等等。</p>
+<p>另外一个话题是「分片」，无论是 Bitcoin 还是 Ethereum, 目前都是在同一个 Blockchain 上完成所有的交易确认，这极大地限制了一个分布式网络的计算能力 —— 每个节点都需要接收、存储、验算每一笔交易，整个网络的处理能力其实等于一个节点的处理能力。</p>
+<p>因此 Ethereum 希望在未来引入一个「分片」的机制，来将整个网络分为若干个部分，之间独立地进行交易验证。但分片之间会通过指针的结构去引用其他分片的数据、通过异步调用的方式去影响其他分片，所以整个网络在用户看来依然是一体的，只不过整个网络的处理能力将会有非常强的可拓展性。目前分片相关的实现还在比较早期的开发阶段，我找到的资料有限，所以就不过多介绍了。</p>
+<h2 id="Contract"><a href="#Contract" class="headerlink" title="Contract"></a>Contract</h2><p>这一部分我将会给大家展示一些实际的、可以工作的 Contract 的代码。Contract 可以由很多种不同范式的语言来编写，最终它们都会被编译成 opcode 在 EVM 上执行，今天我们选择以 Solidity 这个类 JavaScript 的语言为例，它是目前维护得最好的一个 EVM 语言。</p>
+<pre><code class="javascript">contract Test {
+  uint storedData; // State variable
+
+  struct Voter { // Struct
+    uint weight;
+    bool voted;
+    address delegate;
+    uint vote;
+  }
+
+  event HighestBidIncreased(address bidder, uint amount); // Event
+
+  function func() { // Function
+    if (msg.sender.balance &lt; 10 finney) {
+        msg.sender.send(10 finney);
+    }
+
+    sha256(&quot;...&quot;);
+
+    address nameServer = 0x72ba7d8e73fe8eb666ea66babc8116a41bfb10e2;
+    nameServer.delegatecall(&quot;isAvailable&quot;, &quot;MyName&quot;);
+    nameServer.call(&quot;register&quot;, &quot;MyName&quot;);
+  }
+}
+</code></pre>
+<p>以上是一些核心语法的展示，在 Solidity 中你可以声明状态变量（<code>uint storedData;</code>），这些变量的值会永远被保存在 Blockchain 上；可以用 <code>struct</code> 去声明复杂的数据结构；也可以定义函数，这些函数会在收到交易时被执行，交易的发起者可以选择执行哪些函数，所以一个 Contract 可以提供若干个函数，在函数内可以进行逻辑判断、循环、修改变量的值。</p>
+<p>语言内置一些很方便的小功能，例如常见的密码学算法（<code>sha256</code>）、单位换算（<code>10 finney</code>）、直接书写钱包地址（<code>0x72ba7d8e73fe8eb666ea66babc8116a41bfb10e2</code>）等。<code>msg</code> 是内置的全局变量，可以从上面读取与此次交易有关的信息，如发起者、金额等。Contract 可以通过两种方式去调用其他 Contract 的代码，<code>delegatecall</code> 相当于将另一个 Contract 的代码放到当前上下文执行，就好像引入了一个库函数；而 <code>call</code> 则是发起一笔新的交易去触发另一个 Contract 的逻辑。</p>
+<p>那么 Contract 如何从 blockchain 上读取和写入数据呢？这个复杂的工作被抽象为了「状态变量」，上面的 storedData 就是一个状态变量。其实 Contract 执行过程中对状态变量的修改并不会保存到 blockchain 中，因为 Contract 执行的都是确定性的计算 —— Contract 的执行由交易触发，执行过程中只能读取 blockchain 上已有的数据，因此只要我们知道历史上每一笔与这个 Contract 有关的交易，我们就可以随时推算出一个 Contract 在某个时间点上各个状态变量的值。</p>
+<p>接下来我来展示一个真正可用的 Contract —— 在 Ethereum 网络的基础上发行一个属于自己的代币：</p>
+<pre><code class="javascript">contract Coin {
+    // The keyword &quot;public&quot; makes those variables
+    // readable from outside.
+    address public minter;
+    mapping (address =&gt; uint) public balances;
+
+    // Events allow light clients to react on
+    // changes efficiently.
+    event Sent(address from, address to, uint amount);
+
+    // This is the constructor whose code is
+    // run only when the contract is created.
+    function Coin() {
+        minter = msg.sender;
+    }
+    function mint(address receiver, uint amount) {
+        if (msg.sender != minter) return;
+        balances[receiver] += amount;
+    }
+    function send(address receiver, uint amount) {
+        if (balances[msg.sender] &lt; amount) return;
+        balances[msg.sender] -= amount;
+        balances[receiver] += amount;
+        Sent(msg.sender, receiver, amount);
+    }
+}
+</code></pre>
+<blockquote>
+<p>代码来自 <a href="http://solidity.readthedocs.io/en/latest/introduction-to-smart-contracts.html#subcurrency-example" target="_blank" rel="external">http://solidity.readthedocs.io/en/latest/introduction-to-smart-contracts.html#subcurrency-example</a> （MIT）</p>
+</blockquote>
+<p>这个名为 Coin 的 Contract 声明了两个状态变量，<code>minter</code> 用来存储这个代币的创建者，在构造函数（<code>function Coin()</code>）中将第一笔用于创建 Contract 的交易的发起者赋值给了这个变量；还声明了一个钱包地址到数字的映射表 <code>balances</code>, 用来表示每个持有该代币的地址的余额。</p>
+<p><code>mint</code> 这个函数中先判断了交易的发起者是否是该代币的创建者，如果是的话就按照函数参数，将一定数量的代币加给指定的地址。<code>send</code> 这个函数可以被所有人调用，会从交易发起者的地址扣除一定量的余额（如果有足够的余额的话），加到目标地址上，相当于一个转账的功能。</p>
+<p>我们还声明了一个名为 <code>Sent</code> 的事件，事件其实并不会有什么实际的作用，只是便于调试时打印关键性事件，未来也会方便轻量级客户端的实现（轻量级客户端只接受事件而不实际执行 Contract）。</p>
+<p><img src="https://o5eoc29h5.qnssl.com/blockchain-ethereum-mix.jpg" alt="blockchain-ethereum-mix"></p>
+<p>Ethereum 提供了一个叫 Mix 的 IDE 来调试这段代码，在 Mix 的右侧你可以虚构一些 Block 和账户来测试你的 Contract，也可以看到在执行过程中每个状态变量的值的变化情况。值得一提的是 Contract 一旦发布便无法修改，此后的运行完全靠其他人的交易触发，对于每天都在写 Bug 的程序员来讲这一点会令人非常不爽，但是 Contract 的语义本来就是「合约」，一旦你发布了一个合约自然不能去修改它，否则谁还会信任你的合约呢。当然你可以在 Contract 中给自己一些特权（就像前面的 Coin 中那样，只有创建者可以凭空创造代币），但这些代码也存在于 Blockchain 上，其他使用者也是知晓的。</p>
+<p>编写完成后我们就可以用 Ethereum 钱包将这个 Contract 发布到网络上了：</p>
+<p><img src="https://o5eoc29h5.qnssl.com/blockchain-ethereum-create-contract.jpg" alt="blockchain-ethereum-create-contract"></p>
+<p>发布之后你可以关注这个 Contract，随时点到 Contract 的详情界面：</p>
+<p><img src="https://o5eoc29h5.qnssl.com/blockchain-ethereum-wallet-contract.jpg" alt="blockchain-ethereum-wallet-contract"></p>
+<p>在左侧可以看到两个状态变量的值，<code>minter</code> 的值就是我自己的地址，<code>balances</code> 因为是一个映射表，所以你可以输入一个地址去查询它的余额。在右侧你可以向这个 Contract 发起新的交易，有一个下拉菜单可以选择 <code>send</code> 或是 <code>mint</code> 函数，你可以填写传递给 Contract 的参数。因为在这里我们发交易的目的是传递一个消息，而非传递 Ether，所以我们不必设置交易的金额。</p>
+<p>接下来我要介绍一个很有趣的 Contract，这个 Contract 实现了一个「庞氏骗局」的效果，即你可以向这个 Contract 支付 1 Ether 来加入这个游戏，之后每加入三个人，就会按顺序支付给先加入的人 3 Ether:</p>
+<pre><code class="javascript">contract Pyramid {
+    struct Participant {
+        address etherAddress;
+    }
+
+    Participant[] public participants;
+
+    uint public payoutIdx = 0;
+
+    // events make it easier to interface with the contract
+    event NewParticipant(uint indexed idx);
+
+    // fallback function - simple transactions trigger this
+    function() {
+        enter();
+    }
+
+    function enter() {
+        if (msg.value &lt; 1 ether) {
+            msg.sender.send(msg.value);
+            return;
+        }
+
+        if (msg.value &gt; 1 ether) {
+            msg.sender.send(msg.value - 1 ether);
+        }
+
+        uint idx = participants.length;
+        participants.length += 1;
+        participants[idx].etherAddress = msg.sender;
+
+        NewParticipant(idx);
+
+        // for every three new participants we can
+        // pay out to an earlier participant
+        if (idx != 0 &amp;&amp; idx % 3 == 0) {
+            // payout is triple, minus 10 % fee
+            uint amount = 3 ether;
+            participants[payoutIdx].etherAddress.send(amount);
+            payoutIdx += 1;
+        }
+    }
+
+    function getNumberOfParticipants() constant returns (uint n) {
+        return participants.length;
+    }
+}
+</code></pre>
+<blockquote>
+<p>代码简化自 <a href="https://ethereumpyramid.com/contract.html" target="_blank" rel="external">https://ethereumpyramid.com/contract.html</a></p>
+</blockquote>
+<p>代码还算简单，这个 Contract 声明了一个 <code>participants</code> 数组用来按顺序存储所有参与者的钱包地址，还是声明了一个 <code>payoutIdx</code> 用来记录前多少名参与者已经得到了 3 Ether 的返还。<code>enter</code> 实现了这个 Contract 的主要功能，首先是一些参数检查，保证每个参与者都支付了 1 Ether, 然后将新的参与者放到 <code>participants</code> 数组的末尾，最后如果当前参与者的序号刚好是 3 的倍数，就发送 3 Ether 给第 <code>payoutIdx</code> 个参与者，并将 <code>payoutIdx</code> 指向下一个参与者。</p>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p>HashTree:</p>
+<ul>
+<li>白话 Merkle Tree <a href="http://happypeter.github.io/bitcoin_basics/book/017_merkle_tree.html" target="_blank" rel="external">http://happypeter.github.io/bitcoin_basics/book/017_merkle_tree.html</a></li>
+<li>100% 准备金证明 <a href="http://blog.bifubao.com/2014/03/16/proof-of-reserves" target="_blank" rel="external">http://blog.bifubao.com/2014/03/16/proof-of-reserves</a></li>
+<li>Git 对象模型 <a href="http://gitbook.liuhui998.com/1_2.html" target="_blank" rel="external">http://gitbook.liuhui998.com/1_2.html</a></li>
+</ul>
+<p>Bitcoin:</p>
+<ul>
+<li>(Alt Coin) NameCoin <a href="https://namecoin.info/" target="_blank" rel="external">https://namecoin.info/</a></li>
+<li>Bitcoin Script <a href="https://en.bitcoin.it/wiki/Script" target="_blank" rel="external">https://en.bitcoin.it/wiki/Script</a></li>
+<li>Simplified payment verification <a href="https://en.bitcoin.it/wiki/Scalability#Simplifiedpaymentverification" target="_blank" rel="external">https://en.bitcoin.it/wiki/Scalability#Simplifiedpaymentverification</a></li>
+</ul>
+<p>Halting Problem:</p>
+<ul>
+<li>计算的极限（二）：自我指涉与不可判定 <a href="http://songshuhui.net/archives/75957" target="_blank" rel="external">http://songshuhui.net/archives/75957</a></li>
+</ul>
+<p>Ethereum:</p>
+<ul>
+<li>Ethereum <a href="https://www.ethereum.org/" target="_blank" rel="external">https://www.ethereum.org/</a></li>
+<li>White Paper <a href="https://github.com/ethereum/wiki/wiki/White-Paper" target="_blank" rel="external">https://github.com/ethereum/wiki/wiki/White-Paper</a></li>
+<li>Toward a 12-second Block Time <a href="https://blog.ethereum.org/2014/07/11/toward-a-12-second-block-time" target="_blank" rel="external">https://blog.ethereum.org/2014/07/11/toward-a-12-second-block-time</a></li>
+</ul>
+<p>Ethereum Network:</p>
+<ul>
+<li><a href="https://ethstats.net/" target="_blank" rel="external">https://ethstats.net/</a></li>
+<li><a href="https://etherchain.org" target="_blank" rel="external">https://etherchain.org</a></li>
+<li><a href="https://live.ether.camp" target="_blank" rel="external">https://live.ether.camp</a></li>
+</ul>
+<p>Next of Ethereum:</p>
+<ul>
+<li>友善的小精灵 Casper <a href="http://ethfans.org/posts/introducing-casper-friendly-ghost" target="_blank" rel="external">http://ethfans.org/posts/introducing-casper-friendly-ghost</a></li>
+<li>理解 Serenity - 第二部分: Casper <a href="http://ethfans.org/posts/understanding-serenity-part-ii-casper" target="_blank" rel="external">http://ethfans.org/posts/understanding-serenity-part-ii-casper</a></li>
+<li>(Scalability Paper) Notes on Scalable Blockchain Protocols <a href="https://github.com/vbuterin/scalability_paper" target="_blank" rel="external">https://github.com/vbuterin/scalability_paper</a></li>
+<li>Merkling in Ethereum <a href="https://blog.ethereum.org/2015/11/15/merkling-in-ethereum/" target="_blank" rel="external">https://blog.ethereum.org/2015/11/15/merkling-in-ethereum/</a></li>
+</ul>
+<p>Contract:</p>
+<ul>
+<li>ÐAPPS <a href="http://dapps.ethercasts.com/" target="_blank" rel="external">http://dapps.ethercasts.com/</a></li>
+<li>Solidity <a href="https://solidity.readthedocs.org" target="_blank" rel="external">https://solidity.readthedocs.org</a></li>
+<li>Ethereum and Oracles <a href="https://blog.ethereum.org/2014/07/22/ethereum-and-oracles" target="_blank" rel="external">https://blog.ethereum.org/2014/07/22/ethereum-and-oracles</a></li>
+<li>Ethereum Pyramid Contract <a href="https://ethereumpyramid.com/" target="_blank" rel="external">https://ethereumpyramid.com/</a></li>
+<li>RANDAO: A DAO working as RNG of Ethereum <a href="https://github.com/randao/randao" target="_blank" rel="external">https://github.com/randao/randao</a></li>
+</ul>
+<p>Contract IDE:</p>
+<ul>
+<li>Mix <a href="https://github.com/ethereum/mix" target="_blank" rel="external">https://github.com/ethereum/mix</a></li>
+<li>Web IDE <a href="https://chriseth.github.io/browser-solidity" target="_blank" rel="external">https://chriseth.github.io/browser-solidity</a></li>
+<li>Virtual IDE <a href="http://etherscripter.com/" target="_blank" rel="external">http://etherscripter.com/</a></li>
+</ul>
+</div></article><div class="archive-pagination"><div class="paginator"><a class="extend prev" rel="prev" href="/page/6/">&laquo;</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><span class="page-number current">7</span><a class="page-number" href="/page/8/">8</a><a class="page-number" href="/page/9/">9</a><span class="space">&hellip;</span><a class="page-number" href="/page/71/">71</a><a class="extend next" rel="next" href="/page/8/">&raquo;</a></div></div></div><div class="block-sidebar column one-fourth"><div class="widget text-content"><p>精子生于 1995.11.25, 21 岁，英文 ID jysperm.</p>
+<ul>
+<li>有一个 <a href="https://jybox.net">精子粉丝团</a></li>
+<li><a href="http://pidan.cat">皮蛋</a> 和 <a href="http://doufu.cat">豆腐</a> 的主人</li>
+<li>创建了 <a href="https://atom-china.org">Atom 中文社区</a></li>
+<li>坚持十余年的 <a href="https://jysperm.me">独立博客</a> 作者</li>
+<li>高中退学，就职于 <a href="https://leancloud.cn">LeanCloud</a></li>
+<li>在 <a href="https://github.com/jysperm">Github</a> 上积极参与开源社区</li>
+</ul>
+</div><div class="widget text-content"><h2>订阅推送</h2><p>通过邮件订阅精子的博客日志、产品和项目的最新动态，精子承诺每一封邮件都会认真撰写（<a href="http://us13.campaign-archive1.com/home/?u=f4c7c26ec1a5dc400a7a7373e&amp;id=e2136d8929">历史邮件</a>），有想和精子说的话也可以直接回复邮件。</p><div id="mc_embed_signup"><form id="mc-embedded-subscribe-form" action="//jybox.us13.list-manage.com/subscribe/post?u=f4c7c26ec1a5dc400a7a7373e&amp;id=e2136d8929" method="post" name="mc-embedded-subscribe-form" target="_blank" novalidate="" class="validate"><div id="mc_embed_signup_scroll" class="input-group"><input id="mce-EMAIL" type="email" value="" name="EMAIL" placeholder="email address" required="" class="form-control"/><input type="hidden" name="b_f4c7c26ec1a5dc400a7a7373e_e2136d8929" value=""/><span class="input-group-button"><div class="form-actions"><button id="mc-embedded-subscribe" type="submit" value="Subscribe" name="subscribe" class="btn">订阅</button></div></span></div></form></div></div><div class="widget tags"><ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tag/atom/">Atom</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/cpp/">C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/cpp-ppt/">C++讲稿</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/docker/">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/html/">HTML</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/hexo/">Hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/javascript/">JavaScript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/LeanCloud/">LeanCloud</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/lightphp/">LightPHP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/linux/">Linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/mongodb/">MongoDB</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/nodejs/">Node.js</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/php/">PHP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/rpvhost/">RP主机</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/rootpanel/">RootPanel</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/sicp/">SICP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/idea/">idea</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/traditional-medicine/">中医</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/internet/">互联网</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/news/">互联网资讯</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/values/">价值观</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/works/">作品</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/information-security/">信息安全</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/cold-knowledge/">冷知识</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/blockchain/">区块链</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/unit-test/">单元测试</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/blog/">博客</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/去中心化/">去中心化</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/doraemon/">哆啦A梦</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/school-weekly/">学校周记</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/exam/">学校考试</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/cryptography/">密码学</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/xiaolu/">小璐</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/summary-of-year/">年度小结</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/caipai/">彩排</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/xuxueli/">徐雪丽</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/summary/">总结</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/technology/">技术</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/tutorials/">教程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/education/">教育</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/server-side/">服务器端</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/bitcoin/">比特币</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/physical/">物理</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/live/">生活</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/live/">生活记录</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/movie/">电影</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/science/">科普</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/reading-notes/">笔记</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/story-of-sperm/">精子的故事</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/programming/">编程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/programming-language/">编程语言</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/computer-science/">计算机科学</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/network/">计算机网络</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/reading/">读书</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/shopping/">购物</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/software-engineering/">软件工程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/note/">随笔</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/zeroms/">零毫秒</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/hacker/">黑客</a></li></ul></div><div class="widget archives"><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/2017/02/">二月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2017/01/">一月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/12/">十二月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/11/">十一月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/10/">十月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/09/">九月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/08/">八月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/07/">七月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/06/">六月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/04/">四月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/02/">二月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/12/">十二月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/11/">十一月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/10/">十月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/09/">九月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/08/">八月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/07/">七月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/06/">六月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/05/">五月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/04/">四月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/03/">三月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/02/">二月 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/01/">一月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/12/">十二月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/11/">十一月 2014</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/10/">十月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/09/">九月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/08/">八月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/07/">七月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/06/">六月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/05/">五月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/04/">四月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/03/">三月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/02/">二月 2014</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/01/">一月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/12/">十二月 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/11/">十一月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/10/">十月 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/09/">九月 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/08/">八月 2013</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/07/">七月 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/06/">六月 2013</a><span class="archive-list-count">13</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/05/">五月 2013</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/04/">四月 2013</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/03/">三月 2013</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/02/">二月 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/12/">十二月 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/11/">十一月 2012</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/10/">十月 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/09/">九月 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/08/">八月 2012</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/06/">六月 2012</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/05/">五月 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/04/">四月 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/03/">三月 2012</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/02/">二月 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/01/">一月 2012</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/12/">十二月 2011</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/11/">十一月 2011</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/10/">十月 2011</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/09/">九月 2011</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/08/">八月 2011</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/07/">七月 2011</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/06/">六月 2011</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/05/">五月 2011</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/03/">三月 2011</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2010/05/">五月 2010</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2010/01/">一月 2010</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2008/01/">一月 2008</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2007/10/">十月 2007</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2007/09/">九月 2007</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2007/02/">二月 2007</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2006/08/">八月 2006</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2005/08/">八月 2005</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2005/01/">一月 2005</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2003/11/">十一月 2003</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2003/10/">十月 2003</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2003/08/">八月 2003</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2002/08/">八月 2002</a><span class="archive-list-count">1</span></li></ul></div><div class="widget text-content"><p>该博客使用基于 &nbsp;<a href="http://hexo.io">Hexo</a>&nbsp; 的 &nbsp;<a href="https://github.com/jysperm/hexo-theme-simpleblock">simpleblock</a>&nbsp; 主题。博客内容使用 &nbsp;<a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn">CC BY-NC-SA 3.0</a>&nbsp; 授权发布。最后生成于 2017-03-13.</p></div></div></div></div><script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-49193300-1', 'auto');
+ga('send', 'pageview');
+</script></body></html>

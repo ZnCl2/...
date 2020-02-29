@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>What happens after HTML? - Archive - MayVaneDay Studios</title>
+		<link href="../../../style.css" rel="stylesheet" type="text/css" media="all">
+		<meta name="author" content="Vane Vander">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</head>
+	<body class="mayvaneday">
+		<article>
+			<div class="box">
+				<h1>What happens after HTML?</h1>
+				<p>published: 2020-07-12</p>
+			</div>
+			<hr>
+			<div class="box">
+				<p>Back in the murky days of the early 2010's, possibly even 2009, I wanted to make my first website. I and a friend, who I fell out of contact with in high school, wanted to make a pay-to-play website in the same veins as Webkinz. Of course, the business venture was doomed to fail, as we would be selling not plush stuffed animals but shitty pompom balls glued on pieces of heart-shaped felt to resemble a little creature. I asked my father for help, as apparently he'd set up a crude website of his own a decade earlier to announce my birth and share pictures of my infant self, and he laughed me out of the room and told me that making websites costed money.</p>
+				<p>Undeterred, I found a tutorial for HTML and CSS off some backwater website. It was nothing like the slick tutorials one would find today if they wanted to learn, nor had I any idea that places like Codecademy existed. The website gave a small zip file to download, full of sample images and navigational buttons, and I slowly worked my way through with Notepad and a constantly crashing Windows Vista machine. (<a href="../february/32bit.html">The same one that's now mine, funnily enough.</a>) I only remember that this happened in elementary school because I know I showed my social worker (or maybe she was a counselor; I don't remember) the files on a flash drive I'd smuggled in.</p>
+				<p>I felt like the world's most wanted criminal as I signed up for a free hosting service under a false name and an obviously fake address. The terms of service said that they would attempt to verify all addresses and terminate the accounts of people who they couldn't verify existed. It apparently took them over a decade to figure it out and delete my abandoned site there. Or maybe it was just an inactive account being cleaned...</p>
+				<p>A major part of what initially pulled me towards Gemini was the simplicity of the <code>text/gemini</code> markup language. HTML is littered with ending tags and closing tags. Sure, one could serve plaintext <code>.txt</code> files, but then there wouldn't be any inline links or stylization whatsoever. And <a href="../june/homo.html">heaven knows I hate unformatted plaintext</a> when it comes to the web. Both from an aesthetics standpoint, since I hate blandness and homogeneity, and from a neurodivergent one, since walls of tiny text that all blend into one another demand an attention span to plod my way through far longer than I can usually muster.</p>
+				<p>Another pretty damning argument, or weak depending on the point of view, is that Gemini <a href="https://web.archive.org/web/20200707212036/https://news.ycombinator.com/item?id=23730408">isn't backwards-compatible with the pre-existing web</a>. As the top commenter on the Hacker News thread (in a <a href="../february/hackernews.html">rare moment of sanity for an HN comment</a>) says, emphasis mine:</p>
+				<blockquote>
+					<p>The protocol is new and primitive, it's easy to write tools around it, write texts about it, etc. A small community forms, and you're part of it. You can advertise it to others, or rant against the mainstream, or whatever. <strong>But now what? You lose interest and abandon it, and eventually it dies.</strong></p>
+					<p>... <strong>The advantage here is that the community is not an island. Users of Big Browser can still read your latest rants.</strong> They can even learn about this project and, while perhaps not using Mom-and-Pop browser, may support it in their sites, since it wouldn't require another server; mostly just having their site work without JavaScript would be a huge step forward. Right, you don't have Google filtering based on Accessibility. The community can create a search engine that does. Now what? You just get on with your life, producing and consuming AccessibleWeb content without the gratuitous incompatibility.</p>
+				</blockquote>
+				<p>But I didn't come here to dunk on Gemini again. My point is that most modern browsers, <a href="https://chrome.google.com/webstore/detail/markdown-preview-plus/febilkbfcbhebfnokafefeacimjdckgl?hl=en-US">without</a> <a href="https://addons.mozilla.org/en-US/firefox/addon/markdown-viewer-webext/">extensions</a>, don't natively render document types other than <code>text/html</code>. (I am counting PDFs in on this since technically rendering those is thanks to an extension, just now usually built-in.) Even trying to view an image standalone makes the browser generate an impromptu HTML document to display it in. Thus, if one wants to build an accessible website that doesn't require potential visitors to install additional extensions or even <em>whole browsers</em>, they have to either handwrite HTML or subordinate themselves to a framework or service that does it for them. <a href="https://web.archive.org/web/20200708221307/https://www.webdesigndev.com/10-good-and-10-bad-things-about-adobes-dreamweaver/">Adobe Dreamweaver</a>, which I thankfully never had the misfortune of using, is notorious for constructing bloated and opaque HTML.</p><p>But since mainstream browsers don't look like they're going to support Markdown rendering natively anytime soon, one writing their website would have to somehow translate their pages into HTML <em>before</em> they hit the browser. In other words, if the client side won't do or can't be trusted to do it, the server will have to do it. Using one of my tulpas' sites <b>(EDIT 2021-07-18: the website no longer exists because I no longer own the domain)</b> (with consent), I experimented with several server-side Markdown-to-HTML servers:</p>
+				<ul>
+					<li><a href="https://web.archive.org/web/20200707211729/https://github.com/crempp/mdweb">mdweb</a> worked well when it was configured properly. But it relies heavily on templates, and the ones it comes with are riddled with JavaScript and weird CSS frameworks that were exactly what I was trying to <em>escape</em> from. The documentation is sparse and doesn't really go into detail how to write a theme from scratch, so I deemed it more trouble than it was worth.</li>
+					<li><a href="https://web.archive.org/web/20200707211716/https://github.com/mkaz/lanyon/">lanyon</a> also relies heavily on templates. This one <em>did</em> have proper documentation on how to write them, but the web server didn't seem to actually render any changes to my site unless I manually stopped and restarted it each time, which rather... defeats the purpose. True, I could write a systemd service and a crontab line to restart it every few hours, but if I were actively writing a document and wanted to see how it looked like before I anounced it, I'd have to wait until the next time the server restarted, and if I wasn't doing anything to my site, it would be reloading unnecessarily.</li>
+					<li><a href="https://web.archive.org/web/20200707211706/https://github.com/oscarmorrison/md-page">md-page</a> depends on client-side JavaScript to be enabled. Since it's essentially an HTML page with Markdown hanging off the end, without that JavaScript to turn it into valid HTML, most browsers would just mangle the raw Markdown into an unreadable glob of text.</li>
+				</ul>
+				<p>This site runs on Caddy. If we were still on the glorious Caddy 1.x days, we'd have a <a href="https://web.archive.org/web/20200707211659/https://caddyserver.com/v1/docs/markdown">markdown directive</a> built in that does everything we want: just throw some <code>text/markdown</code> files in a folder, point the server to a <code>style.css</code> file to throw on everything, and go. But Caddy 2.x insists on using <a href="https://web.archive.org/web/20200708223918/https://caddyserver.com/docs/caddyfile/directives/templates">templates</a> and making the prospective site-writer dig through complicated, sometimes non-existent, documentation to try to grasp some semblance of Markdown rendering.</p>
+				<p>Thankfully, since the old 1.x download pages were still up, I <a href="https://web.archive.org/web/20200708224225/https://caddyserver.com/download/linux/amd64?license=personal&amp;telemetry=off">saved the program</a> in the <a href="https://web.archive.org/web/20200708224355/https://caddyserver.com/download/linux/arm7?license=personal&amp;telemetry=off">Wayback Machine</a> so it would continue to be available after the Caddy developers memoryholed everything. Meaning, with the power of a reverse proxy, I could write a site entirely in Markdown with the end reader none the wiser.</p>
+				<p>Here's my current configuration:</p>
+				<pre>
+REDACTED:2015 {
+	root /home/vanevander/Sync/website/azure/
+	markdown / {
+		css /style.css # this gets applied to every page
+	}
+	tls off # since this is behind a reverse proxy
+	bind 127.0.0.1 # don&#39;t let people bypass the reverse proxy
+	browse # dynamically generate file listings for folders without an index.md, like how Gopher and Gemini do
+}
+				</pre>
+				<p>But this only works for server-side websites. Since one of my goals (or restraints) with this is to not assume the client knows this is supposed to be Markdown, I can't just slap a <a href="https://web.archive.org/web/20200708225311/https://github.com/rivy/js-user.markdown-render">userscript</a> in a ZeroNet directory and call it a day. And even if I were to do that, I'd have to maintain a separate version of the website just for peer-to-peer websites, as inserting that JavaScript would also affect Caddy's rendered pages.</p>
+				<p>And even though <a href="../february/32bit.html">I hate Node.js with a passion</a>, I have to admit that the latest builds of Beaker Browser support <a href="https://web.archive.org/web/20200708231723/https://beakerbrowser.com/docs/guides/create-a-markdown-site">rendering Markdown automatically</a>. Although CSS isn't automatically applied, and thus one has to put the HTML line at the top of the file to enable it. Curiously enough, this makes Caddy's pages have duplicate CSS entries, although it doesn't seem to affect the pages. Beaker Browser also doesn't play well (actually, at all) with Caddy's convention of writing TOML at the top of a Markdown file to set metadata such as the page title, so this:</p>
+				<pre>
++++
+title = &quot;Page title here&quot;
++++
+				</pre>
+				<p>gets rendered as:</p>
+				<p><code>+++title = "Page title here"+++</code></p>
+				<p>which is obviously ugly and doesn't work at all. Normal <code>&lt;title&gt;</code> tags work as a workaround, I guess.</p>
+				<p>So, under this system, I'm not entirely free of HTML, nor can I yet code an entire page from memory since I have to remember the CSS line. But it's a start towards a future without template files, a future where blogging demands less mental working memory, less friction against chronic fatigue.</p>
+				</div>
+				<div class="box">
+					<p>So I'm revisiting this post a few days after I drafted it. Tired and worn out from work, a precious hour or two from willing my body to sleep like a rock so that tomorrow is less hell.</p>
+					<p>Despite all of the rationalization I've done above, I still can't seem to will myself to follow through with anything I've written here on my own site. Mostly because of the dependency on a technically dead piece of software. Not that a transition to Markdown would be the worst thing ever- it's still <a href="https://web.archive.org/web/20200712143250/https://plaintextproject.online/articles/2018/01/26/markdown.html"><em>plaintext</em>, after all</a>- but it would be like moving my entire digital notepad to a word processor on a whim. Even with LibreOffice's open formats, if I don't have access to the software and I <em>need</em> to open a file right then and there, the best I can do is unzip it like any other archive and go digging within. I can convert the HTML to Markdown until the cows come home, but if I don't have a server that can serve those files, then what's the point? I'd just have to go back eventually.</p>
+					<p>In some future yet unknown to me where we've all migrated onto a computing architecture other than ARM or x86, hopefully one that's fully open-source, what will the software we use look like? Will we even be on Linux anymore, or even a UNIX-based system while we're pondering? Caddy can talk a big game about not having any dependencies, but it still technically has one: the Go language. If Go doesn't exist on the systems of the future, good luck getting Caddy to run on it without any kind of virtualization. (Assuming the climate crisis doesn't knock us down to Raspberry Pi-levels of computing power and we can even virtualize in the first place.)</p>
+					<p>What will the web look like, for that matter? What will the browsers and the networks we use prioritize? Ease-of-use like Markdown, or infinite customization like HTML? Or will some other plaintext format take its place? Or will the commercialization come to a tipping point, and everyone is forced to use some proprietary binary format?</p>
+					<p>Or maybe the world will shatter and the internet die forever, and something else rise up in its place, and none of this will matter anyway.</p>
+			</div>
+			<hr>
+			<div class="box">
+				<p align=right>CC BY-NC-SA 4.0 &copy; Vane Vander</p>
+			</div>
+		</article>
+	</body>
+</html>

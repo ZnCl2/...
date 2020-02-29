@@ -1,0 +1,120 @@
+<section class="content-header">
+      <h1>
+        分类管理
+      <small>
+          <a href="addcategory">添加分类</a>
+      </small>
+      </h1>
+      <script>
+       $('a[href="addcategory"]').on('click', function(e) {
+           e.preventDefault();
+           $(".content-wrapper").empty();
+           Page.getfile("page/admin_add_category.html", function(data) {
+               $(".content-wrapper").append(data);
+           });
+       });
+      </script>
+    </section>
+
+    <!-- Main content -->
+    <section id="content" class="content">
+<div class="box">
+            <div class="box-header">
+              <h3 class="box-title">分类列表</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+              <table id="categorylist" class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>操作</th>
+                  <th>ID</th>
+                  <th>名称</th>
+                  <th>上级分类</th>
+                  <th>可用</th>
+                  <th>创建时间</th>
+                  <th>更新时间</th>
+                </tr>
+                </thead>
+                <tbody>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th>操作</th>
+                        <th>ID</th>
+                        <th>名称</th>
+                        <th>上级分类</th>
+                        <th>可用</th>
+                        <th>创建时间</th>
+                        <th>更新时间</th>
+                </tr>
+                </tfoot>
+              </table>
+            </div>
+            <!-- /.box-body -->
+          </div>
+    </section>
+    <!-- /.content -->
+  <!-- /.content-wrapper -->
+  <script>
+   console.log(window);
+   var $table = $('#categorylist').DataTable({
+       processing:true,
+       serverSide:true,
+       ajax: function (data, callback, settings){
+           window.admin.getcategory(function(category) {
+               callback({data:category});
+           });
+       },
+       "columns":[
+           {"data":null, render: function(data, type, row){
+               /*
+               var $modify = $("<a/>").attr({href:"modify"}).text("修改").on('click', function(e) {
+                   e.preventDefault();
+                   console.log(data);
+               });
+               var $del = $("<a/>").attr({href:"delete"}).text("删除").on('click', function(e) {
+                   e.preventDefault();
+                   console.log(data);
+               });
+               var place = $("<div/>").append($modify)
+                                      .append("|")
+                                      .append($del);
+               return place.html();
+               */
+               return '<a href="modify">' + '修改</a>'+ '|' + '<a href="del">' + '删除</a>';
+           }},
+           {"data":"category_id"},
+           {"data":"name"},
+           {"data":"parent_id"},
+           {"data":"enable"},
+           {"data":"create_at", render: function(data, type, row){return formattimestamp(data);}},
+           {"data":"update_at", render: function(data, type, row){return formattimestamp(data);}}
+           //{"data":"json_id"}
+       ]
+   });
+   $("#categorylist tbody").on('click', 'a', function(e) {
+       e.preventDefault();
+       var attr = $(this).attr('href');
+       var tr = this.closest('tr');
+       var d = $table.row(tr).data();
+       switch(attr) {
+           case "modify":
+               $(".content-wrapper").empty();
+               Page.getfile("page/admin_modify_category.html", function(data) {
+                   $(".content-wrapper").append(data);
+                   modify_category(d);
+               });
+               break;
+           case "del":
+               window.admin.delcategory(d, function(res) {
+                   if (res != "ok") {
+                       alert("error"+res);
+                   } else {
+                       $("#category-manage").trigger('click');
+                   }
+               });
+               break;
+       }
+   });
+  </script>

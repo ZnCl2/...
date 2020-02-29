@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<!--suppress HtmlUnknownAttribute, HtmlUnknownAttribute, HtmlUnknownAttribute, HtmlUnknownAttribute, HtmlUnknownAttribute, HtmlUnknownAttribute -->
+<html ng-app="MoneyNetworkW2">
+<head>
+    <title>MoneyNetworkW2</title>
+    <meta name="keywords" content="money">
+    <link rel="stylesheet" media="all" href="css/all.css"/>
+
+    <script type="text/ng-template" id="addHubs">
+        Add more hubs. Get content from more MoneyNetwork W2 hubs and help distribute MoneyNetwork W2 content.<br>
+        Use checkbox to add/remove hubs. Use url to see info about hub (will also add site).
+        <div style="width: 100%" ng-controller="AddHubsCtrl as c">
+            <div ng-repeat="h in c.all_hubs|filter:c.filter_hubs|orderBy:'text'" style="float: left">
+                <input type="checkbox" ng-model="h.hub_added" ng-change="c.add_remove_hub(h)" ng-disabled="h.disabled">
+                <a href="" ng-click="c.open_hub_url(h)">
+                    <span ng-bind="h.hub"></span>
+                    <span ng-bind="h.hub_title"></span>
+                    <span ng-show="h.hasOwnProperty('no_users')">
+                        - <span ng-bind="h.no_users"></span> users
+                    </span>
+                    <span ng-show="h.hasOwnProperty('peers')">
+                        - <span ng-bind="h.peers"></span> peers
+                    </span>
+                </a>
+                &nbsp;&nbsp;&nbsp;
+            </div>
+
+            <div style="width: 100%; clear: left">
+                <input type="checkbox" ng-model="c.help.bol" ng-change="c.help_changed()"> help download and help distribute all W2 wallet data files (money transactions)?
+            <span ng-show="c.help.bol">
+                Thanks. I love you <span style="color: red">❤❤❤️️</span>
+            </span>
+            </div>
+
+            <div style="width: 100%" ng-show="c.show_my_wallet_data_hub">
+                User profile:
+                <input type="text" placeholder="User profile hub"
+                       ng-model="c.my_wallet_data_hub" required
+                       uib-typeahead="hub.text for hub in c.wallet_data_hubs | filter:$viewValue | limitTo:8"
+                       typeahead-editable="false"
+                       typeahead-on-select="c.my_wallet_data_hub_changed()"
+                       class="user_info" style="width: 400px">
+            </div>
+
+        </div>
+
+
+        <!-- end addHubs -->
+    </script>
+
+    <script type="text/ng-template" id="wallet.html">
+
+        <div>
+
+            <p>
+                MoneyNetworkW2 - test BitCoin wallet (<a href="https://www.blocktrail.com" target="_blank" rel="noopener noreferrer">blocktrail.com</a>)
+                used by <a href="/moneynetwork.bit" target="_top" rel="noopener noreferrer">MoneyNetwork</a>.
+                <br>
+                Note that <a href="https://www.blocktrail.com" target="_blank" rel="noopener noreferrer">blocktrail.com</a>
+                has been acquired by <a href="https://btc.com/" target="_blank" rel="noopener noreferrer">btc.com</a>.
+                Blocktrails Node.js <a href="https://www.blocktrail.com/api/docs" target="_blank" rel="noopener noreferrer">API</a>
+                is used for BitCoin operations.
+            </p>
+
+            <p>
+                Optional ZeroNet ID
+                <a href="" ng-bind="w.z.site_info.cert_user_id|shortCertId"
+                   ng-click="w.select_zeronet_cert()"
+                   title="{{w.z.site_info.cert_user_id}}">select ...
+                </a>.
+                <a href="" id="zeronet_cert_changed_link" ng-click="w.zeronet_cert_changed()" style="display: none"></a>
+                Can be used for wallet login storage and/or MoneyNetwork integration.<br>
+                Use an anonymous @moneynetwork.bit ZeroNet ID or use your preferred ZeroNet ID provider.<br>
+                Click on ZeroNet ID link to change ZeroNet certificate.
+                Send me a <a href="/moneynetwork.bit/?path=/chat2/jro@zeroid.bit" target="_top" rel="noopener noreferrer">PM ✉</a>
+                if your preferred ZeroNet ID povider is not on the list.
+                </p>
+            <!--
+            <p>
+                Status:<br>
+                Merger:MoneyNetwork permission: <span ng-bind="w.status.merger_permission"></span><br>
+                MoneyNetwork session handshake: <span ng-bind="w.status.session_handshake"></span>
+                <br>
+            </p>
+            <!-- -->
+            <p ng-show="w.z.site_info.cert_user_id">
+                Remember wallet login?<br>
+                <input type="radio" ng-model="w.status.save_login" value="0" ng-change="w.save_login_changed()" ng-disabled="w.status.save_login_disabled">
+                No thank you, I will remember wallet login by myself.<br>
+                <input type="radio" ng-model="w.status.save_login" value="1" ng-change="w.save_login_changed()" ng-disabled="w.status.save_login_disabled">
+                Save wallet login in MoneyNetworkW2 (browser/localStorage) encrypted with my ZeroId certificate.
+                <span ng-show="w.status.sessionid">
+                    <br>
+                    <input type="radio" ng-model="w.status.save_login" value="2" ng-change="w.save_login_changed()" ng-disabled="w.status.save_login_disabled">
+                    Save wallet login in MoneyNetwork (browser/localStorage) encrypted with my MoneyNetwork password.
+                </span>
+            </p>
+
+        </div>
+
+        <div>
+            <table>
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th></th>
+                    <th>Value</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Network</td>
+                    <td>:</td>
+                    <td>Bitcoin TestNet</td>
+                </tr>
+                <tr>
+                    <td>Wallet Id</td>
+                    <td>:</td>
+                    <td><input type="text" ng-model="w.status.wallet_id" style="width: 300px"> Generate <input type="button" value="Wallet Id" ng-click="w.gen_wallet_id()"/></td>
+                </tr>
+                <tr>
+                    <td>Wallet password</td>
+                    <td>:</td>
+                    <td><input type="text" ng-model="w.status.wallet_password" style="width: 300px"> Generate <input type="button" value="Wallet password" ng-click="w.gen_wallet_pwd()"/></td>
+                </tr>
+                <tr><td colspan="3">&nbsp;</td> </tr>
+                <tr>
+                    <td>Wallet operations:</td>
+                    <td>:</td>
+                    <td>
+                        <input type="button" value="Create wallet" ng-click="w.create_new_wallet()"/>
+                        <input type="button" value="Log in" ng-click="w.init_wallet()"/>
+                        <input type="button" value="Get balance" ng-click="w.get_balance()"/>
+                        <input type="button" value="Log out" ng-click="w.close_wallet()"/>
+                        <input type="button" value="Delete wallet" ng-click="w.delete_wallet()"/>
+                    </td>
+                </tr>
+                <tr><td colspan="3">&nbsp;</td> </tr>
+                <tr>
+                    <td>Wallet status</td>
+                    <td>:</td>
+                    <td ng-bind="w.wallet_info.status"></td>
+                </tr>
+                <tr>
+                    <td>Confirmed balance</td>
+                    <td>:</td>
+                    <td ng-bind="w.wallet_info.confirmed_balance"></td>
+                </tr>
+                <tr>
+                    <td>Unconfirmed balance</td>
+                    <td>:</td>
+                    <td ng-bind="w.wallet_info.unconfirmed_balance"></td>
+                </tr>
+                <tr><td colspan="3">&nbsp;</td> </tr>
+                <tr>
+                    <td>Send money</td>
+                    <td>:</td>
+                    <td>Receiver: <input type="text" ng-model="w.send_address" style="width: 300px">
+                        Amount: <input type="text" ng-model="w.send_amount" style="width: 100px"> Satoshi&nbsp;&nbsp;
+                        <input type="button" value="Send" ng-click="w.send_money()"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Receive money</td>
+                    <td>:</td>
+                    <td>Address : <input type="text" ng-model="w.receiver_address" style="width: 300px" readonly>
+                        <input type="button" value="Get address" ng-click="w.get_new_address()"/>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <br><br>
+
+        <p ng-hide="w.status.sessionid">
+            Standalone usage. Add this wallet site to <a href="/moneynetwork.bit/?path=/wallet&new_wallet_site=1LqUnXPEgcS15UGwEgkbuTbKYZqAUwQ7L1" target="_top" rel="noopener noreferrer">MoneyNetwork</a>?
+            <br>
+        </p>
+        <p ng-show="w.status.sessionid">
+            Permissions:<br>
+            Grant MoneyNetwork session permission to:
+            All             <input type="checkbox" ng-model="w.status.permissions.all"             ng-change="w.permissions_changed('all')">,
+            none            <input type="checkbox" ng-model="w.status.permissions.none"            ng-change="w.permissions_changed('none')">,
+            open wallet     <input type="checkbox" ng-model="w.status.permissions.open_wallet"     ng-change="w.permissions_changed('open_wallet')">,
+            get balance     <input type="checkbox" ng-model="w.status.permissions.get_balance"     ng-change="w.permissions_changed('get_balance')">,
+            send money      <input type="checkbox" ng-model="w.status.permissions.send_money"      ng-change="w.permissions_changed('send_money')">,
+            receive money   <input type="checkbox" ng-model="w.status.permissions.receive_money"   ng-change="w.permissions_changed('receive_money')">,
+            pay             <input type="checkbox" ng-model="w.status.permissions.pay"             ng-change="w.permissions_changed('pay')">,
+            receive payment <input type="checkbox" ng-model="w.status.permissions.receive_payment" ng-change="w.permissions_changed('receive_payment')"> and
+            close wallet    <input type="checkbox" ng-model="w.status.permissions.close_wallet"    ng-change="w.permissions_changed('close_wallet')">.<br>
+            Confirm MoneyNetwork money transactions <input type="checkbox" ng-model="w.status.permissions.confirm" ng-change="w.permissions_changed('confirm')"> (send, receive, pay & receive payment)<br>
+            Grant MoneyNetwork session permission to:
+            backup          <input type="checkbox" ng-model="w.status.permissions.backup"          ng-change="w.permissions_changed('backup')"> and
+            restore         <input type="checkbox" ng-model="w.status.permissions.restore"         ng-change="w.permissions_changed('restore')"> localStorage data.
+            Confirm backup and restore: <input type="checkbox" ng-model="w.status.permissions.confirm_backup_restore" ng-change="w.permissions_changed('confirm_backup_restore')">
+        </p>
+        <br>
+
+
+        Hubs:<br>
+        <p ng-include="'addHubs'"></p>
+        <br><br>
+
+        <p>
+            Summary:
+        <ul style="list-style-type:disc">
+            <li>Tested OK with test Bitcoins (see screendumps below)</li>
+            <li>Tested OK with MoneyNetwork integration (see screendumps below)</li>
+            <li>Please return test Bitcoins to faucet when finish testing</li>
+            <li>Please delete test wallet when finish testing</li>
+            <li><a href="https://github.com/jaros1/Money-Network-W2" target="_top" rel="noopener noreferrer">GitHub</a></li>
+        </ul>
+
+        </p>
+
+        Click to show/hide screendumps:
+        <a href="" ng-click="w.show_hide('-w2-standalone-')">Standalone usage</a> and
+        <a href="" ng-click="w.show_hide('-w2-integrated-')">MoneyNetwork integration</a>
+        <table style="width: 100%">
+            <tbody ng-repeat="s in w.screendumps|filter:{show:true,files:true}">
+            <tr><td>&nbsp;</td></tr>
+            <tr><td ng-bind="s.text"></td></tr>
+            <tr>
+                <td>
+                    <img ng-src="{{s.src}}" style="border:1px solid black">
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <br>
+
+
+        <p>
+            Contact info: I am not using ZeroMail.
+            Send a <a href="/moneynetwork.bit/?path=/chat2/jro@zeroid.bit" target="_top" rel="noopener noreferrer">PM ✉</a>
+            , use "@jro:" in ZeroMe or create a <a href="https://github.com/jaros1/Money-Network-W2" target="_top" rel="noopener noreferrer">GitHub</a> issue with question or issue.
+        </p>
+
+        <!-- end wallet.html -->
+    </script>
+
+    <!-- end angularJS templates -->
+
+</head>
+<body>
+
+<div class="container-fluid" style="width: 100%">
+    <div class="row-fluid">
+        <div ng-view style="width: 100%"  id="ng-view-id"></div>
+    </div>
+    <!--/row-->
+
+</div>
+
+<script type="text/javascript" src="js-api/MoneyNetworkAPI.js"></script>
+
+<!--script type="text/javascript" src="js/all.js"></script>
+<!-- -->
+<script type="text/javascript" src="js/all.js.zip/all.js"></script>
+<!-- -->
+
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>How to run Oasis, a Secure Scuttlebutt client, on a remote server - Archive - MayVaneDay Studios</title>
+		<link href="../style.css" rel="stylesheet" type="text/css" media="all">
+		<meta name="author" content="Vane Vander">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</head>
+	<body class="mayvaneday">
+		<article>
+			<div class="box">
+				<h1>How to run Oasis, a Secure Scuttlebutt client, on a remote server</h1>
+				<p>published: 2021-11-13</p>
+			</div>
+			<hr>
+			<div class="box">
+				<p>This tutorial assumes you already have a functioning Node.js and Caddy installation.</p>
+				<ol type="1">
+					<li>Install Oasis.</li>
+				</ol>
+				<code>git clone https://github.com/fraction/oasis.git<br />cd oasis<br />npm install</code>
+				<p>Test the installation by running <code>node .</code> (yes, including the period).</p>
+				<ul>
+					<li>If the output stops after a few lines and isn't an obvious Node error, hit Control and C at the same time to exit; you're ready for the <code>systemd</code> file.</li>
+					<li>If you get an error about port 3000 already being in use, use the command <code>node . --port PORTNUMBER</code> instead, where <code>PORTNUMBER</code> is any open port you want.</li>
+				</ul>
+				<p>If your instance immediately throws <a href="https://github.com/fraction/oasis/issues/718#issuecomment-927379995">an error about <code>ssb.friends.get</code></a>:</p>
+				<code>git checkout 4e8f7426a4eb1d95f6e55cf894a3168f523f8af8<br />rm -rf node_modules<br />npm install</code>
+				<ol start="2" type="1">
+					<li>Prepare the <code>systemd</code> daemon file.</li>
+				</ol>
+				<p>Edit <code>/lib/systemd/system/oasis.service</code> as root with your favorite text editor. Paste the following:</p>
+				<pre>
+[Unit]
+Description=Oasis client for Secure Scuttlebutt
+After=network.target
+
+[Service]
+User=YourUsername
+Group=YourUsername
+ExecStart=/path/to/your/node/binary . --port 8787
+WorkingDirectory=/path/to/where/you/cloned/oasis/
+TimeoutStopSec=5s
+LimitNOFILE=1048576
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target
+				</pre>
+				<p>Replace <code>/path/to/your/node/binary</code> with whatever comes up when you run <code>which node</code>. You may need to change this if you update Node.</p>
+				<ol start="3" type="1">
+					<li>Edit your Caddyfile. (This will probably also require root.)</li>
+				</ol>
+				<pre>
+yourdomain.tld {
+	reverse_proxy 127.0.0.1:PORTNUMBER {
+		header_up Host 127.0.0.1
+		header_up Referer http://localhost
+	}
+	basicauth * {
+		AnyUsernameYouWant EXTREMELYLONGCADDYHASHHERE
+	}
+}
+				</pre>
+				<p><code>EXTREMELYLONGCADDYHASHHERE</code> is used instead of an actual password so you don't have cleartext credentials hanging around. Generate this with <code>caddy hash-password</code>. Make sure you save your actual password in a password manager, as you can't reverse a hash!</p>
+				<p>The <code>header_up</code> lines are there to trick Oasis into thinking it is running on a local machine, as it (very aggressively) wants to be. Normally this would be true, as Secure Scuttlebutt is peer-to-peer and intended to be run on a personal device that may see intermittent internet connectivity. However, if you're looking at this tutorial, you probably want to host a public peer as an <em>actually functioning</em> alternative to a <a href="https://github.com/ssbc/ssb-server">pub</a> or <a href="https://github.com/ssb-ngi-pointer/go-ssb-room/">room</a>.</p>
+				<ol start="4" type="1">
+					<li>Get everything running.</li>
+				</ol>
+				<code>sudo systemctl daemon-reload<br />sudo systemctl restart caddy<br />sudo systemctl start oasis &amp;&amp; sudo systemctl enable oasis</code>
+			</div>
+			<hr>
+			<div class="box">
+				<p align=right>CC BY-NC-SA 4.0 &copy; Vane Vander</p>
+			</div>
+		</article>
+	</body>
+</html>

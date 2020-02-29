@@ -1,0 +1,49 @@
+{
+    "db_name": "NullPaste",
+    "db_file": "data/users/nullpaste.db",
+    "version": 2,
+    "maps": {
+        ".+/data.json": {
+            "to_table": [{
+                "node": "paste",
+                "table": "paste"
+            }, {
+                "node": "comment",
+                "table": "comment"
+            }]
+        },
+        ".+/content.json": {
+            "to_keyvalue": ["cert_user_id"]
+        }
+    },
+    "tables": {
+        "paste": {
+            "cols": [
+                ["paste_id", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"],
+                ["description", "TEXT"],
+                ["body", "TEXT"],
+                ["encrypted", "INTEGER"],
+                ["language", "TEXT"],
+                ["added", "DATETIME"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX paste_key ON paste(paste_id, json_id)"],
+            "schema_changed": 2
+        },
+        "comment": {
+            "cols": [
+                ["comment_id", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"],
+                ["body", "TEXT"],
+                ["target_paste_id", "INTEGER REFERENCES paste (paste_id)"],
+                ["target_json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": [
+                "CREATE UNIQUE INDEX comment_key ON comment(comment_id, json_id)",
+                "CREATE INDEX comment_target_key ON comment(target_paste_id, target_json_id)"
+            ],
+            "schema_changed": 1
+        }
+    }
+}
+

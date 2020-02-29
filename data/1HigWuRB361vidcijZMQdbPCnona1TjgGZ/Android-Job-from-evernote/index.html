@@ -1,0 +1,1082 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Evernote,JobScheduler,GcmNetworkManager,AlarmManager,Android,安卓,Android-Job," />
+
+
+
+
+
+  <link rel="alternate" href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/atom.xml" title="Ernest的Blog" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="在新版本安卓版本(API23以上)中，谷歌把android.net.conn.CONNECTIVITY_CHANGE 这个广播废弃了。总的来说，应用不应该依赖这个广播来执行相关任务，而应该使用 JobScheduler 或者 GCMNetworkManager。计划任务的执行方案还可以用 AlarmManager。 对于国内的开发者来说，这是一个悲剧。Android 现在提供这三种不同的API来">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Evernote带来的计划任务神器Android-Job">
+<meta property="og:url" content="http://127.0.0.1:43110/Android-Job-from-evernote/index.html">
+<meta property="og:site_name" content="Ernest的Blog">
+<meta property="og:description" content="在新版本安卓版本(API23以上)中，谷歌把android.net.conn.CONNECTIVITY_CHANGE 这个广播废弃了。总的来说，应用不应该依赖这个广播来执行相关任务，而应该使用 JobScheduler 或者 GCMNetworkManager。计划任务的执行方案还可以用 AlarmManager。 对于国内的开发者来说，这是一个悲剧。Android 现在提供这三种不同的API来">
+<meta property="og:image" content="http://127.0.0.1:43110/images/alarmManager.png">
+<meta property="og:updated_time" content="2017-03-24T02:46:57.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Evernote带来的计划任务神器Android-Job">
+<meta name="twitter:description" content="在新版本安卓版本(API23以上)中，谷歌把android.net.conn.CONNECTIVITY_CHANGE 这个广播废弃了。总的来说，应用不应该依赖这个广播来执行相关任务，而应该使用 JobScheduler 或者 GCMNetworkManager。计划任务的执行方案还可以用 AlarmManager。 对于国内的开发者来说，这是一个悲剧。Android 现在提供这三种不同的API来">
+<meta name="twitter:image" content="http://127.0.0.1:43110/images/alarmManager.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 'undefined',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'QENGM5CT4Q',
+      apiKey: '45d39923dd445eff839e23101a0b4bcb',
+      indexName: 'prod_NAME',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://127.0.0.1:43110/Android-Job-from-evernote/"/>
+
+
+
+
+
+  <title> Evernote带来的计划任务神器Android-Job | Ernest的Blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?97409bf12b6059d525cabe137ba77b22";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+<script>
+  	var _mtac = {};
+  	(function() {
+  		var mta = document.createElement("script");
+  		mta.src = "http://pingjs.qq.com/h5/stats.js?v2.0.2";
+  		mta.setAttribute("name", "MTAH5");
+  		mta.setAttribute("sid", "500417707");
+
+  		var s = document.getElementsByTagName("script")[0];
+  		s.parentNode.insertBefore(mta, s);
+  	})();
+</script>
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Ernest的Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">一个有理想的Android程序员</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://127.0.0.1:43110/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/Android-Job-from-evernote/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Ernest">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ernest的Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+            
+            
+              
+                Evernote带来的计划任务神器Android-Job
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-03-23T15:56:55+08:00">
+                2017-03-23
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2017-03-24T10:46:57+08:00">
+                2017-03-24
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/categories/开源框架/" itemprop="url" rel="index">
+                    <span itemprop="name">开源框架</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a class="cloud-tie-join-count" href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/Android-Job-from-evernote/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count join-count" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/Android-Job-from-evernote/" class="leancloud_visitors" data-flag-title="Evernote带来的计划任务神器Android-Job">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计</span>
+                
+                <span title="字数统计">
+                  1,592
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长</span>
+                
+                <span title="阅读时长">
+                  6
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>在新版本安卓版本(API23以上)中，谷歌把<code>android.net.conn.CONNECTIVITY_CHANGE</code> 这个广播废弃了。总的来说，应用不应该依赖这个广播来执行相关任务，而应该使用 <code>JobScheduler</code> 或者 <code>GCMNetworkManager</code>。计划任务的执行方案还可以用 <code>AlarmManager</code>。 对于国内的开发者来说，这是一个悲剧。Android 现在提供这三种不同的API来执行计划任务.这三种API都有各自的优缺点 。 <code>android.net.conn.CONNECTIVITY_CHANGE</code> 在高版本的系统中不可用了，<code>JobScheduler</code> 在低版本的系统中又不可用，<code>GCMNetworkManager</code> 是什么？在国内不存在。而且这些API之间的不同语义和用法对开发者是一种额外的负担。这种负担体现在我们不仅仅要懂得什么时候使用合适的API,而且要为不同的环境执行同样任务提供不同分支的代码。APP需要在运行时候用合适的条件判断到底要使用哪种方式执行计划任务。幸运的是，开源的世界有伟大的公司为我们提供了灵活的轮子。</p>
+</blockquote>
+<p>Evernote 开源的 <code>Android-Job</code>  为我们带来兼容这三种API的方案，高效，简单，灵活。<code>Android-Job</code> 在运行判断使用哪种API，它提供  <code>AlarmManager</code>, <code>JobScheduler</code>和 <code>GcmNetworkManager</code>功能的超集，比如说，我们可以定义计划任务在网络连通且在充电时候执行。</p>
+<h1 id="为兼容而生"><a href="#为兼容而生" class="headerlink" title="为兼容而生"></a>为兼容而生</h1><p>上面提到的三种方案，兼容维护非常麻烦。为了彰显<code>Android-Job</code>的价值，我们有必要对这三种方案做一个分析。</p>
+<h2 id="AlarmManager"><a href="#AlarmManager" class="headerlink" title="AlarmManager"></a>AlarmManager</h2><p><code>AlarmManager</code> 的API<a href="https://plus.google.com/+AndroidDevelopers/posts/GdNrQciPwqo" target="_blank" rel="external">一直在改变</a> ，所以我们需要非常注意我们APP目标运行系统是哪个版本。</p>
+<p><strong> 优点 </strong></p>
+<ul>
+<li>所有设备上可用</li>
+<li>发送广播来启动一个服务执行计划很容易</li>
+</ul>
+<p><strong> 缺点 </strong></p>
+<ul>
+<li>API在不同系统版本表现不一致</li>
+<li>太多样板代码</li>
+<li>忽略了设备的状态<br><img src="/images/alarmManager.png" alt="alarmManager"></li>
+</ul>
+<h2 id="JobScheduler"><a href="#JobScheduler" class="headerlink" title="JobScheduler"></a>JobScheduler</h2><p><a href="https://developer.android.com/reference/android/app/job/JobScheduler.html" target="_blank" rel="external">JobScheduler </a>只在Lollipop以上版本可用。</p>
+<p><strong> 优点 </strong></p>
+<ul>
+<li>流式API简洁易用</li>
+<li>检查设备状态</li>
+</ul>
+<p><strong>  缺点 </strong></p>
+<ul>
+<li>只在API 21+ 可用 （有些功能要求API24+）</li>
+<li>平台bug</li>
+<li>也是太多样板代码</li>
+</ul>
+<h2 id="GcmNetworkManager"><a href="#GcmNetworkManager" class="headerlink" title="GcmNetworkManager"></a>GcmNetworkManager</h2><p><a href="https://developers.google.com/cloud-messaging/network-manager" target="_blank" rel="external">GcmNetworkManager </a>只有在安装有Google Play的设备上可用，而且，没有被墙。</p>
+<p><strong> 优点 </strong></p>
+<ul>
+<li>跟<code>JobScheduler</code>相似的API</li>
+<li>要求minSdkVersion 9</li>
+</ul>
+<p><strong> 缺点 </strong></p>
+<ul>
+<li>是 GooglePlay ServicesSDK 的一部分</li>
+<li>不能脱离 Play Services 运行</li>
+<li>API 有很多陷阱</li>
+</ul>
+<h2 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h2><p>Android-Job项目作者在一篇PPT中详细的说明了这三种方案以及Android-Job的用法。由于篇幅有限且排版原因，强烈建议点击链接去看看。例子简单易懂，在这里给出PPT对应的PDF文件。还在犹豫是否要使用 Android-Job ，看了这个PDF，相信你心里就有肯定的答案了 <a href="https://speakerd.s3.amazonaws.com/presentations/c9e9289df7df48bab2bf52db0a087248/Schedule_background_jobs_at_the_right_time_-_MTC.pdf" target="_blank" rel="external">PDF传送门</a></p>
+<h1 id="使用Android-Job-翻译自项目说明"><a href="#使用Android-Job-翻译自项目说明" class="headerlink" title="使用Android-Job(翻译自项目说明)"></a>使用Android-Job(翻译自项目说明)</h1><p>请保证点击以下链接检查你使用的是否是最新版本<a href="http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.evernote%22%20AND%20a%3A%22android-job%22" target="_blank" rel="external">Android-Job最新版链接 </a><br>添加以下的Gradle配置到安卓项目：</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 在app 项目的 build.gradle 文件:</span></div><div class="line">dependencies &#123;</div><div class="line">    compile <span class="string">'com.evernote:android-job:1.1.7'</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>如果没有在 Gradle build tools 中关闭 manifest merger，那就不用更多步骤来配置这个工具库了。否则需要手动添加权限生命和services，参考这个<a href="https://github.com/evernote/android-job/blob/master/library/src/main/AndroidManifest.xml" target="_blank" rel="external">AndroidManifest</a></p>
+<h3 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h3><p> <code>JobManager</code> 类作为入口。我们自定义的Jobs 需要继承  <code>Job</code> 类。使用对应的Builder类创建一个  <code>JobRequest</code> 然后使用 <code>JobManager</code> 创建这个计划请求。</p>
+<p>使用 <code>JobManager</code> 之前必须向初始化这个单例。我们需要提供一个 <code>Context</code> 然后添加一个 <code>JobCreator</code> 实现类.  <code>JobCreator</code> 把一个job tag 映射到一个特定的job 类。推荐在 <code>Application</code> 的 <code>onCreate()</code> 方法中 初始化 <code>JobManager</code> 。如果没有 <code>Application</code> 类的访问权限，这是<a href="FAQ.md#i-cannot-override-the-application-class-how-can-i-add-my-jobcreator">可选的方案</a>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">App</span> <span class="keyword">extends</span> <span class="title">Application</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate();</div><div class="line">        JobManager.create(<span class="keyword">this</span>).addJobCreator(<span class="keyword">new</span> DemoJobCreator());</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DemoJobCreator</span> <span class="keyword">implements</span> <span class="title">JobCreator</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> Job <span class="title">create</span><span class="params">(String tag)</span> </span>&#123;</div><div class="line">        <span class="keyword">switch</span> (tag) &#123;</div><div class="line">            <span class="keyword">case</span> DemoSyncJob.TAG:</div><div class="line">                <span class="keyword">return</span> <span class="keyword">new</span> DemoSyncJob();</div><div class="line">            <span class="keyword">default</span>:</div><div class="line">                <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>然后我们可以开始计划要执行的任务。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DemoSyncJob</span> <span class="keyword">extends</span> <span class="title">Job</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String TAG = <span class="string">"job_demo_tag"</span>;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="meta">@NonNull</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> Result <span class="title">onRunJob</span><span class="params">(Params params)</span> </span>&#123;</div><div class="line">        <span class="comment">// run your job here</span></div><div class="line">        <span class="keyword">return</span> Result.SUCCESS;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">scheduleJob</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">new</span> JobRequest.Builder(DemoSyncJob.TAG)</div><div class="line">                .setExecutionWindow(<span class="number">30_000L</span>, <span class="number">40_000L</span>)</div><div class="line">                .build()</div><div class="line">                .schedule();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="进阶用法"><a href="#进阶用法" class="headerlink" title="进阶用法"></a>进阶用法</h3><p><code>JobRequest.Builder</code> 类有很多额外的配置选项，例如，我们可以声明条件：需要网络连接。为了使任务周期性执行，用 bundle 传递额外的参数，使得任务在重启后或在特定的时间恢复。<br>每一个Job 有一个唯一的 ID 。这个 ID 帮助我们辨别 job ，以便将来更新条件或者取消 job。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">scheduleAdvancedJob</span><span class="params">()</span> </span>&#123;</div><div class="line">    PersistableBundleCompat extras = <span class="keyword">new</span> PersistableBundleCompat();</div><div class="line">    extras.putString(<span class="string">"key"</span>, <span class="string">"Hello world"</span>);</div><div class="line"></div><div class="line">    <span class="keyword">int</span> jobId = <span class="keyword">new</span> JobRequest.Builder(DemoSyncJob.TAG)</div><div class="line">            .setExecutionWindow(<span class="number">30_000L</span>, <span class="number">40_000L</span>)</div><div class="line">            .setBackoffCriteria(<span class="number">5_000L</span>, JobRequest.BackoffPolicy.EXPONENTIAL)</div><div class="line">            .setRequiresCharging(<span class="keyword">true</span>)</div><div class="line">            .setRequiresDeviceIdle(<span class="keyword">false</span>)</div><div class="line">            .setRequiredNetworkType(JobRequest.NetworkType.CONNECTED)</div><div class="line">            .setExtras(extras)</div><div class="line">            .setRequirementsEnforced(<span class="keyword">true</span>)</div><div class="line">            .setPersisted(<span class="keyword">true</span>)</div><div class="line">            .setUpdateCurrent(<span class="keyword">true</span>)</div><div class="line">            .build()</div><div class="line">            .schedule();</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">schedulePeriodicJob</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">int</span> jobId = <span class="keyword">new</span> JobRequest.Builder(DemoSyncJob.TAG)</div><div class="line">            .setPeriodic(TimeUnit.MINUTES.toMillis(<span class="number">15</span>), TimeUnit.MINUTES.toMillis(<span class="number">5</span>))</div><div class="line">            .setPersisted(<span class="keyword">true</span>)</div><div class="line">            .build()</div><div class="line">            .schedule();</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">scheduleExactJob</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">int</span> jobId = <span class="keyword">new</span> JobRequest.Builder(DemoSyncJob.class)</div><div class="line">            .setExact(<span class="number">20_000L</span>)</div><div class="line">            .setPersisted(<span class="keyword">true</span>)</div><div class="line">            .build()</div><div class="line">            .schedule();</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">cancelJob</span><span class="params">(<span class="keyword">int</span> jobId)</span> </span>&#123;</div><div class="line">    JobManager.instance().cancel(jobId);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>如果非周期性的  <code>Job</code> 执行失败,我们可以设定恢复标准重新计划这个 job</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RescheduleDemoJob</span> <span class="keyword">extends</span> <span class="title">Job</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="meta">@NonNull</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> Result <span class="title">onRunJob</span><span class="params">(Params params)</span> </span>&#123;</div><div class="line">        <span class="comment">// 一些异常情况发生，稍后重试这个Job</span></div><div class="line">        <span class="keyword">return</span> Result.RESCHEDULE;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onReschedule</span><span class="params">(<span class="keyword">int</span> newJobId)</span> </span>&#123;</div><div class="line">        <span class="comment">// 恢复的Job有一个新的 ID</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong>提醒:</strong>  谷歌在安卓 Marshmallow  版本引入自动备份功能，所有的 job 信息保存在一个文件名为 <code>evernote_jobs.xml</code>的 shared preference ，   以及文件名为<code>evernote_jobs.db</code> 的数据库中. 我们应该排除这些文件，避免他们被自动备份。<br>我们可以定义一个resource XML 文件 (比如, <code>res/xml/backup_config.xml</code>) 内容如下:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="utf-8"?&gt;</div><div class="line"><span class="tag">&lt;<span class="name">full-backup-content</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">exclude</span> <span class="attr">domain</span>=<span class="string">"sharedpref"</span> <span class="attr">path</span>=<span class="string">"evernote_jobs.xml"</span> /&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">exclude</span> <span class="attr">domain</span>=<span class="string">"database"</span> <span class="attr">path</span>=<span class="string">"evernote_jobs.db"</span> /&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">full-backup-content</span>&gt;</span></div><div class="line">``` </div><div class="line"></div><div class="line">然后在应用的 `AndroidManifest.xml`指向这个文件:</div><div class="line"></div><div class="line">```xml</div><div class="line"><span class="tag">&lt;<span class="name">application</span> <span class="attr">...</span>  <span class="attr">android:fullBackupContent</span>=<span class="string">"@xml/backup_config"</span>&gt;</span></div></pre></td></tr></table></figure>
+<h3 id="代码混淆"><a href="#代码混淆" class="headerlink" title="代码混淆"></a>代码混淆</h3><p>这个库没有使用反射，但是它依赖两个 <code>Service</code> 以及两个 <code>BroadcastReceiver</code> 为了避免任何可能出现的问题，不应该混淆这四个类。这个库打包了它自己的混淆配置，所以我们不需要做任何额外的配置。以防万一，也可以在我们项目的混淆配置中添加<a href="library/proguard.txt">这些规则</a> </p>
+<h3 id="FAQ"><a href="#FAQ" class="headerlink" title="FAQ"></a>FAQ</h3><p> <a href="FAQ.md">点击这里</a>查看更多的疑问解答。</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><p><a href="https://blog.evernote.com/tech/2015/10/26/unified-job-library-android/" target="_blank" rel="external">evernote的Blog</a><br><a href="https://speakerdeck.com/vrallev/scheduling-background-job-on-android-at-the-right-time" target="_blank" rel="external">作者Ralf的PPT</a></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+<div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center">
+    <img id="wechat_subscriber_qcode" src="/uploads/wechat-qcode.jpeg" alt="Ernest wechat" style="width: 200px; max-width: 100%;"/>
+    <div>欢迎您扫一扫上面的微信公众号，关注我的博客最新动态！</div>
+</div>
+
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/tags/Evernote/" rel="tag"># Evernote</a>
+          
+            <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/tags/JobScheduler/" rel="tag"># JobScheduler</a>
+          
+            <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/tags/GcmNetworkManager/" rel="tag"># GcmNetworkManager</a>
+          
+            <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/tags/AlarmManager/" rel="tag"># AlarmManager</a>
+          
+            <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/tags/Android/" rel="tag"># Android</a>
+          
+            <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/tags/安卓/" rel="tag"># 安卓</a>
+          
+            <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/tags/Android-Job/" rel="tag"># Android-Job</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/linux-command-mannual/" rel="next" title="Linux 命令手册安卓版">
+                <i class="fa fa-chevron-left"></i> Linux 命令手册安卓版
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/android-project-and-code-guidelines/" rel="prev" title="GitHub上star超过2k的安卓项目和代码风格指南（绝对干货）">
+                GitHub上star超过2k的安卓项目和代码风格指南（绝对干货） <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="cloud-tie-wrapper" class="cloud-tie-wrapper"></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/uploads/avatar.jpg"
+               alt="Ernest" />
+          <p class="site-author-name" itemprop="name">Ernest</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+           
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/archives">
+                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/categories/index.html">
+                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/tags/index.html">
+                <span class="site-state-item-count">31</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/307141632" target="_blank" title="Weibo">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                  Weibo
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://sighttp.qq.com/authd?IDKEY=643001ea27ef9d2cdc98650694596dbc100cb679a7d79c2d" target="_blank" title="QQ">
+                  
+                    <i class="fa fa-fw fa-qq"></i>
+                  
+                  QQ
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#为兼容而生"><span class="nav-number">1.</span> <span class="nav-text">为兼容而生</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#AlarmManager"><span class="nav-number">1.1.</span> <span class="nav-text">AlarmManager</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JobScheduler"><span class="nav-number">1.2.</span> <span class="nav-text">JobScheduler</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GcmNetworkManager"><span class="nav-number">1.3.</span> <span class="nav-text">GcmNetworkManager</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#例子"><span class="nav-number">1.4.</span> <span class="nav-text">例子</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#使用Android-Job-翻译自项目说明"><span class="nav-number">2.</span> <span class="nav-text">使用Android-Job(翻译自项目说明)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#用法"><span class="nav-number">2.0.1.</span> <span class="nav-text">用法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#进阶用法"><span class="nav-number">2.0.2.</span> <span class="nav-text">进阶用法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码混淆"><span class="nav-number">2.0.3.</span> <span class="nav-text">代码混淆</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#FAQ"><span class="nav-number">2.0.4.</span> <span class="nav-text">FAQ</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考资料"><span class="nav-number">3.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+    <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+
+  <span class="author" itemprop="copyrightHolder">Ernest</span>
+
+  <span class="links-of-author-item" >
+                <a rel="nofollow" href="http://weibo.com/307141632" target="_blank" title="Weibo">
+                    <i class="fa fa-fw fa-weibo"></i>
+                  新浪微博
+                </a>
+              </span>
+              <span class="links-of-author-item">
+                <a rel="nofollow" href="http://sighttp.qq.com/authd?IDKEY=643001ea27ef9d2cdc98650694596dbc100cb679a7d79c2d" target="_blank" title="QQ">
+                    <i class="fa fa-fw fa-qq"></i>
+                  QQ交谈
+                </a>
+              </span>
+
+
+</div>
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  <script type="text/javascript" src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+    
+    <script>
+      var cloudTieConfig = {
+        url: document.location.href, 
+        sourceId: "",
+        productKey: "1486df24bb8240c5b76e8b0ac977a845",
+        target: "cloud-tie-wrapper"
+      };
+    </script>
+    <script src="https://img1.ws.126.net/f2e/tie/yun/sdk/loader.js"></script>
+  
+
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("N7KGGdrTwngF1XoRmaArcz0m-gzGzoHsz", "NTW3kIexCMsnqT7leKq9YGmi");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/1HigWuRB361vidcijZMQdbPCnona1TjgGZ/js/src/algolia-search.js?v=5.1.0"></script>
+
+
+
+  
+
+</body>
+</html>

@@ -1,0 +1,79 @@
+{
+	"questions": [
+		{
+			"question_id": 1513856453879,
+			"title": "How to use Vue with ZeroNet",
+			"body": "So I've been looking at Vue recently as it seems to be a good fit for developing nice UIs while at the same time breaking up websites into manageable components.\n\nI've followed a [guide](https://www.youtube.com/watch?v=z6hQqgvGI4Y) (clearnet) on Vue and it was a pretty good experience overall, but I'm still pretty new to all this fancy web-based framework stuff, and haven't played around with npm, yarn, webpack, etc. all that much.\n\nWhile it was simple to start a web server for devving with Vue with `vue-cli`, how exactly would I package that into ZeroNet?\n\nI can quite happily include Vue in a script tag, but then installing further dependencies starts to add up and feel a bit hacky.\n\nWhat's the ideal workflow for using Vue with ZeroNet and installing/managing dependencies, then packaging it all up for a deployable ZeroNet site?",
+			"tags": "vue,zite development,npm",
+			"date_added": 1513856453879,
+			"solution_id": 1513857457850,
+			"solution_auth_address": "1G5FwRWF7PRWos66wTcZPtFSbH7vQDnvNb"
+		},
+		{
+			"question_id": 1513915115209,
+			"title": "Where to put the JS logic in a Vue app?",
+			"body": "I've been reading through both [ZeroExchange](https://github.com/krixano/ZeroExchange/) and [Thundote's](https://github.com/AnthyG/Thundote/) source code, and noticed that in Thundote's vue components, all methods consist `this.$emit` statements [shown here](https://github.com/AnthyG/Thundote/blob/master/src/vue_components/noteLists.js#L37-L48). ZeroExchange on the other hand keeps the actual logic in the components themselves [shown here](https://github.com/krixano/ZeroExchange/blob/master/src/vue_components/comment_area.vue#L38-L63).\n\nI imagine this is probably just personal preference, and intuitively I would keep the component's logic in them so that the `main.js` file isn't as large. Is there any benefit to having many `$emit`'s over just keeping the logic in the components themselves?\n\nMore a Vue question than ZeroNet related, but I'd figure I'd ask the two actual devs of the project who lurk here.",
+			"tags": "vue,js",
+			"date_added": 1513915115209,
+			"solution_id": 1513924149507,
+			"solution_auth_address": "12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu"
+		},
+		{
+			"question_id": 1514163593490,
+			"title": "Import npm module with CSS",
+			"body": "Hey, I'm trying to use Buefy with my Vue-enabled site. I've got the following in my `main.js`:\n\n```\nversion = \"0.1\"\n\nvar Buefy = require('buefy');\nimport 'buefy/lib/buefy.css';\n```\n\nThe `require('buefy')` line works fine, as it's JS. The second line not so much, saying:\n\n```\nSyntaxError: 'import' and 'export' may only appear at the top level\n```\n\nI've got the following in my `gulpfile.js` for styles:\n\n```\ngulp.task(\"styles\", function() {\n    return gulp.src(paths.styles)\n        .pipe(sass({\n            \"includePaths\": [\n                \"./node_modules\"\n            ]\n        }).on(\"error\", sass.logError))\n        // .pipe(prefix({cascade: true}))\n        .pipe(minify())\n        .pipe(gulp.dest(\"./css/\"));\n});\n```\n\nAnd you'd think that `includePaths` directive would pick it up, but maybe not since it's searching for SASS files while Buefy uses CSS?\n\nI'd appreciate any advice!",
+			"tags": "vue,buefy",
+			"date_added": 1514163593490
+		}
+	],
+	"comments": [
+		{
+			"comment_id": 1513859650363,
+			"reference_type": "a",
+			"reference_id": 1513857457850,
+			"reference_auth_address": "1G5FwRWF7PRWos66wTcZPtFSbH7vQDnvNb",
+			"body": "Thanks guys, super helpful!\n\nYeah I was using separate `.vue` files but having `import X from './vue-components/Y` would fail as straight JS didn't know how to parse that.\n\nI'll attempt the npm route and include those files and change dependencies as necessary. Does one actually run gulp as well, and how does one actually build and run things? As you can tell I'm quite new to all of these different frameworks and buildsystems, but know my way around vanilla JS and HTML :)",
+			"date_added": 1513859650363
+		},
+		{
+			"comment_id": 1513862860613,
+			"reference_type": "a",
+			"reference_id": 1513857457850,
+			"reference_auth_address": "1G5FwRWF7PRWos66wTcZPtFSbH7vQDnvNb",
+			"body": "All great starting points. It seems like I have a good idea of what my toolchain will consist of, just need to go ahead and learn about the different tools now.\n\nThanks again, I'll probably return with more questions as I start setting everything up :)",
+			"date_added": 1513862860613
+		},
+		{
+			"comment_id": 1513930270656,
+			"reference_type": "a",
+			"reference_id": 1513924149507,
+			"reference_auth_address": "12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu",
+			"body": "Does that mean there's no way to access the information stored inside your root app from a component then? You can't say `app.some_var` then? I suppose that makes sense from a modularity sensibility.",
+			"date_added": 1513930270656
+		},
+		{
+			"comment_id": 1514162216835,
+			"reference_type": "a",
+			"reference_id": 1513924149507,
+			"reference_auth_address": "12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu",
+			"body": "Ohh, I was looking through your code and though the `var self = this;` was entirely because you didn't like the word `this` for some reason. That explains a lot, thanks.",
+			"date_added": 1514162216835
+		},
+		{
+			"comment_id": 1514163976963,
+			"reference_type": "q",
+			"reference_id": 1514163593490,
+			"reference_auth_address": "164x9q7LJPLX4SMbhqLPraKAGZRPa2gTFe",
+			"body": "Is `vue-loader` required in any way for this?",
+			"date_added": 1514163976963
+		},
+		{
+			"comment_id": 1514164012755,
+			"reference_type": "q",
+			"reference_id": 1514163593490,
+			"reference_auth_address": "164x9q7LJPLX4SMbhqLPraKAGZRPa2gTFe",
+			"body": "Nah, apparently that's only for .vue files.",
+			"date_added": 1514164012755
+		}
+	]
+}

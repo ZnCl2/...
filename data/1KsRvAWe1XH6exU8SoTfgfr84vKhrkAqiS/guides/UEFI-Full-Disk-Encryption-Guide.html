@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+    <title>Infected</title>
+	<meta name="description" content="">
+	<link rel="stylesheet" href=".././files/css.css" type="text/css">
+	
+	<link rel="apple-touch-icon" sizes="57x57" href=".././files/favix.ico">
+    <link rel="apple-touch-icon" sizes="60x60" href=".././files/favix.ico">
+    <link rel="apple-touch-icon" sizes="72x72" href=".././files/favix.ico">
+    <link rel="apple-touch-icon" sizes="76x76" href=".././files/favix.ico">
+    <link rel="apple-touch-icon" sizes="114x114" href=".././files/favix.ico">
+    <link rel="apple-touch-icon" sizes="120x120" href=".././files/favix.ico">
+    <link rel="apple-touch-icon" sizes="144x144" href=".././files/favix.ico">
+    <link rel="apple-touch-icon" sizes="152x152" href=".././files/favix.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href=".././files/favix.ico">
+    <link rel="icon" type="image/png" sizes="192x192"  href=".././files/favix.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href=".././files/favix.ico">
+    <link rel="icon" type="image/png" sizes="96x96" href=".././files/favix.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href=".././files/favix.ico">
+    <meta name="msapplication-TileImage" content=".././files/favix.ico">
+	
+    </head>
+	<body>
+    <div id="main">
+    <div id="contentg">
+	
+	
+	<h1>
+    <img src=".././files/logo2.png" alt="Infected" style="width: 100px;">
+    </h1>
+	
+	<div class="b" style="margin-bottom: 12px;">
+	<br>You are here: <a href="../guides/UEFI-Full-Disk-Encryption-Guide.html">[UEFI Full Disk Encryption Guide] </a>
+	<br>Click <a href="../index.html">[HERE]</a> to return to the Homepage </div>
+	<div id="othertrackers" style="margin-bottom: 9px;">
+	
+	
+	<br>Note: You will need an USB stick for this method.
+	
+	</br><br>Part1. Getting the Certificates.
+	<br>First thing you'll need is VeraCrypt, wich is available here:
+	<a href="https://veracrypt.codeplex.com/">
+	<font color="#84cc33">veracrypt.codeplex.com</font></a>
+	
+    <br>Secondly, you'll need the certificates: 
+	<a href="https://github.com/veracrypt/VeraCrypt/tree/VeraCrypt_1.21/">
+	<font color="#84cc33">github.com/veracrypt/VeraCrypt/tree/VeraCrypt_1.21</font></a>
+	
+	<br></br>Note: the link is version specific, so if you are using a higher version
+    you'll need the edit the link according to the veracrypt version.
+    (In my test i've used v.1.21)
+	
+	<br></br>On the github page press the "Clone or Download" button and select "Download ZIP"
+    <br>It will download a ZIP file to your device, now go to the folder where you have saved it.
+    <br>Extract the ZIP file and browse to<font color="#a3a2a2"> ( ../src/Boot/EFI )</font> and copy the certs folder to your USB.
+	
+	<br></br>Part 2.
+	<br>Install VeraCrypt and follow the instructions as normally.
+	<br>Note:<font color="#a3a2a2"> AES(Twofish(Serpent))</font> is the strongest encryption method up to date <font color="#a3a2a2">(26/11/2017)</font>
+	
+	<br></br>Note: its important that your system doesn't shutdown, restart may happen.
+    <br>If it shuts down after the pre-test, just press it on.
+	
+	<br></br>After the pre-test the actual encryption procedure will start.
+    <br>When the encryption has finished, in windows 10 settings go to:
+	
+	<br><font color="#a3a2a2"> Update & Security > Recovery > Advanced startup > Restart now</font>
+	
+	<br></br>When restarted in the options menu, choose the following options:
+	<br><font color="#a3a2a2"> Troubleshoot > Advanced options > UEFI Firmware Settings</font>
+	<br>Press the "Restart" button, this will boot you into the UEFI Setting's.
+	
+	<br></br>Now go to the "Security" tab and go to "Secure Boot Menu" and select the option "secure boot"
+	to enable it (if not enabled by default)
+	<br>And set the"Secure Boot Mode" option to "Custom"
+	
+	<br></br>Go to "Key Management" and select "Delete all Secure Boot Variables" (Important!)
+	<br>Okay, so now we are going to import the certificates (Finally)
+	
+	<br></br>The First certificate we're going to import is for (from the usb, part 1)
+    the "Platform Key(PK)" select that option and select "Set New Key"
+	
+	<br></br>If it asks to load factory default keys, select "No" for all certificates.
+    <br>It will ask where the look for the certs (storage), select your USB device,
+    <br>You'll just have to find out wich device it is...
+    <br>On your USB device, select the Certs folder (from part 1) and select the "DCS_platform" cert.
+    <br>Now it will give you 2 options, select the "Public Key Certificate" option and hit enter.
+	
+	<br></br>To install the next certificate, select "Key Exchange Keys"
+    <br>Just like the previous steps, set new key, browse to the certs folder on your USB and select the 
+    "DCS_key_exchange" certificate, and again, select "Public Key Certificate"
+	
+	<br></br>The next 3 certificates are really simple, select "Authorized Signatures"
+    <br>For the first one select "Set New Key" and in the Certs folder select the "DCS_Sign" certificate,
+    and select "Public Key Certificate"
+	
+	<br></br>For the next 2 certificates: 
+    <br><font color="#a3a2a2"> "MicCorUEFCA2011_2011-06-27" and "MicWinProPCA2011_2011-10-19"</font>
+	
+	<br></br>Select "Authorized Signatures" and select "Append Key" select your 
+	<br>usb device and select the above certificates.
+	<br>You have to append them seperately since you can't select 2 files at once.
+     And finally select "Public Key Certificate"
+	 
+	 <br></br>The last thing you'll have to do is to select "Save changes & Exit"
+	 <br>when you leave the UEFI setting and boot back into the OS.
+	 
+	 <br></br><a href="#" onclick="window.print();return false;">[PRINT]</a>
+	- <a href="../index.html">[HOME]</a>
+	</div>
+	
+	<div id="footer">
+	<div class="b" style="margin-bottom: 12px;">[DONATIONS: BTC_ADR]</div>   </a></div>
+	</div>
+	
+</div>
+</div>
+</body></html>

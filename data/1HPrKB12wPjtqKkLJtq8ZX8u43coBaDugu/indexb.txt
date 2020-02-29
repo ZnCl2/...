@@ -1,0 +1,134 @@
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+<style>
+* { color: #9463F9; }
+h1 { font-size: 50;}
+body {
+    background: no-repeat center center fixed;
+    -webkit-background-size: cover; /* For WebKit*/
+    -moz-background-size: cover;    /* Mozilla*/
+    -o-background-size: cover;      /* Opera*/
+    background-size: cover;         /* Generic*/
+    background-size: 100% 100%; 
+    background: black
+
+}
+#bg
+{
+	width: calc(100% + 10px);
+	min-height: calc(100% + 10px);
+	height: auto !important;
+	background-color: rgba(0, 0, 0, 0.7);
+	position: absolute;
+	left: -10px;
+	top: -10px;
+}
+</style>
+<body>
+	<div id="bg">
+<center><h1>ZeroMovies</h1></center>
+<script>
+originurl = 'http://allorigins.us/get?url='
+tmdbkey = '97435aa0b3279f548f2eb1591765c978'
+popularMovies = {"tt0111161": "The Shawshank Redemption", "tt0068646": "The Godfather", "tt0468569": "The Dark Knight", "tt0050083": "12 Angry Men", "tt0108052": "Schindler's List", "tt0110912": "Pulp Fiction", "tt0167260": "The Lord of the Rings: The Return of the King", "tt0137523": "Fight Club", "tt0120737": "The Lord of the Rings: The Fellowship of the Ring", "tt0080684": "Star Wars: Episode V - The Empire Strikes Back", "tt0109830": "Forrest Gump", "tt1375666": "Inception", "tt0167261": "The Lord of the Rings: The Two Towers", "tt0099685": "Goodfellas", "tt0133093": "The Matrix", "tt0047478": "Seven Samurai", "tt0076759": "Star Wars: Episode IV - A New Hope", "tt0114369": "Se7en", "tt0245429": "Spirited Away", "tt0816692": "Interstellar", "tt0407887": "The Departed", "tt0088763": "Back to the Future", "tt2582802": "Whiplash", "tt0209144": "Memento", "tt0482571": "The Prestige", "tt0110357": "The Lion King", "tt0078748": "Alien", "tt0095327": "Grave of the Fireflies", "tt0910970": "WALL·E", "tt1345836": "The Dark Knight Rises", "tt0119698": "Princess Mononoke", "tt0090605": "Aliens", "tt0338013": "Eternal Sunshine of the Spotless Mind", "tt0435761": "Toy Story 3", "tt0062622": "2001: A Space Odyssey", "tt5311514": "Your Name."}
+var bgimgs = {}
+var imgs = { "tt0111161": "http://image.tmdb.org/t/p/w500/9O7gLzmreU0nGkIB6K3BsJbzvNv.jpg", "tt0068646": "http://image.tmdb.org/t/p/w500/rPdtLWNsZmAtoZl9PK7S2wE3qiS.jpg", "tt0468569": "http://image.tmdb.org/t/p/w500/1hRoyzDtpgMU7Dz4JF22RANzQO7.jpg", "tt0050083": "http://image.tmdb.org/t/p/w500/mswBMPecmV7NpKTbMCpYuGzFqfh.jpg", "tt0108052": "http://image.tmdb.org/t/p/w500/yPisjyLweCl1tbgwgtzBCNCBle.jpg", "tt0110912": "http://image.tmdb.org/t/p/w500/dM2w364MScsjFf8pfMbaWUcWrR.jpg", "tt0167260": "http://image.tmdb.org/t/p/w500/uexxR7Kw1qYbZk0RYaF9Rx5ykbj.jpg", "tt0137523": "http://image.tmdb.org/t/p/w500/4GpwvwDjgwiShr1UBJIn5fk1gwT.jpg", "tt0120737": "http://image.tmdb.org/t/p/w500/6oom5QYQ2yQTMJIbnvbkBL9cHo6.jpg", "tt0080684": "http://image.tmdb.org/t/p/w500/6u1fYtxG5eqjhtCPDx04pJphQRW.jpg", "tt0109830": "http://image.tmdb.org/t/p/w500/z4ROnCrL77ZMzT0MsNXY5j25wS2.jpg", "tt1375666": "http://image.tmdb.org/t/p/w500/tAXARVreJnWfoANIHASmgYk4SB0.jpg", "tt0167261": "http://image.tmdb.org/t/p/w500/wf3v0Pn09jnT5HSaYal7Ami3bdA.jpg", "tt0099685": "http://image.tmdb.org/t/p/w500/pwpGfTImTGifEGgLb3s6LRPd4I6.jpg", "tt0133093": "http://image.tmdb.org/t/p/w500/aWFDGCINBSG0BQHsxQDJtSEDxx7.jpg", "tt0047478": "http://image.tmdb.org/t/p/w500/v6xrz4fr92KY1oNC3HsEvrsvR1n.jpg", "tt0076759": "http://image.tmdb.org/t/p/w500/btTdmkgIvOi0FFip1sPuZI2oQG6.jpg", "tt0114369": "http://image.tmdb.org/t/p/w500/8zw8IL4zEPjkh8Aysdcd0FwGMb0.jpg", "tt0245429": "http://image.tmdb.org/t/p/w500/dL11DBPcRhWWnJcFXl9A07MrqTI.jpg", "tt0816692": "http://image.tmdb.org/t/p/w500/nBNZadXqJSdt05SHLqgT0HuC5Gm.jpg", "tt0407887": "http://image.tmdb.org/t/p/w500/tGLO9zw5ZtCeyyEWgbYGgsFxC6i.jpg", "tt0088763": "http://image.tmdb.org/t/p/w500/pTpxQB1N0waaSc3OSn0e9oc8kx9.jpg", "tt2582802": "http://image.tmdb.org/t/p/w500/lIv1QinFqz4dlp5U4lQ6HaiskOZ.jpg", "tt0209144": "http://image.tmdb.org/t/p/w500/fQMSaP88cf1nz4qwuNEEFtazuDM.jpg", "tt0482571": "http://image.tmdb.org/t/p/w500/5MXyQfz8xUP3dIFPTubhTsbFY6N.jpg", "tt0110357": "http://image.tmdb.org/t/p/w500/bKPtXn9n4M4s8vvZrbw40mYsefB.jpg", "tt0078748": "http://image.tmdb.org/t/p/w500/2h00HrZs89SL3tXB4nbkiM7BKHs.jpg", "tt0095327": "http://image.tmdb.org/t/p/w500/bwVhmPpydv8P7mWfrmL3XVw0MV5.jpg", "tt0910970": "http://image.tmdb.org/t/p/w500/9cJETuLMc6R0bTWRA5i7ctY9bxk.jpg", "tt1345836": "http://image.tmdb.org/t/p/w500/dEYnvnUfXrqvqeRSqvIEtmzhoA8.jpg", "tt0119698": "http://image.tmdb.org/t/p/w500/gzlJkVfWV5VEG5xK25cvFGJgkDz.jpg", "tt0090605": "http://image.tmdb.org/t/p/w500/nORMXEkYEbzkU5WkMWMgRDJwjSZ.jpg", "tt0338013": "http://image.tmdb.org/t/p/w500/7y3eYvTsGjxPYDtSnumCLIMDkrV.jpg", "tt0435761": "http://image.tmdb.org/t/p/w500/AqYmOBxLjASrj5UtybIh7Axyv77.jpg", "tt0062622": "http://image.tmdb.org/t/p/w500/90T7b2LIrL07ndYQBmSm09yqVEH.jpg", "tt5311514": "http://image.tmdb.org/t/p/w500/xq1Ugd62d23K2knRUx6xxuALTZB.jpg" }
+
+function setMoviePoster(id, displaybg)
+{
+	url = 'http://api.themoviedb.org/3/movie/'+id+'/images?api_key='+tmdbkey
+	var xhr = new XMLHttpRequest();
+    xhr.open("GET", url, true);
+    xhr.responseType = "text";
+    xhr.onload = function(event) {
+        rt = xhr.responseText
+        var bgreg = /"file_path":"(\/.+?.jpg)/g
+        var myRegexp = /posters\":.+?(\/.+?.jpg)/g;
+		var poster = myRegexp.exec(rt);
+		var bg = bgreg.exec(rt)[1];
+		bgimgs[id] = bg
+		if(displaybg)
+			$('body').css('background-image', 'url('+"http://image.tmdb.org/t/p/original"+bg+')');
+		document.getElementById(id).src = "http://image.tmdb.org/t/p/w500"+poster[1]
+    };
+    xhr.send();
+}
+function displayMoviePop(id)
+{
+	setMoviePoster(id, true);
+	displayMovie(id)
+}
+function displayMovie(id)
+{
+	$('body').css('background-image', 'url('+"http://image.tmdb.org/t/p/original"+bgimgs[id]+')');
+	document.getElementById('movie').src = "http://vodlocker.to/embed?i="+id+"&server=1";
+	document.getElementById('movie').width="640" 
+	document.getElementById('movie').height="400" 
+}
+function search()
+{
+	$('#results').html("Loading...")
+	searchterm = $("#sr").val();
+	getIMDB(searchterm);
+}
+function updateResults(results)
+{
+	result = ""
+	for(var i = 0; i < results.length; i++)
+	{
+		poster = "<input type='image' alt='"+results[i].title+"' id='"+results[i].id+"' width='100px' src='' onclick='displayMovie(\""+results[i].id+"\")'></input>"
+		result += poster
+		if(results.length == 1)
+			setMoviePoster(results[i].id, true)
+		else
+			setMoviePoster(results[i].id, false)
+	}
+	if(results.length == 1)
+	{
+		displayMovie(results[0].id)
+	}
+	$('#results').html(result);
+}
+function getIMDB(search) {
+	query = 'http://www.imdb.com/xml/find?json=1&q='+search;
+	var xhr = new XMLHttpRequest();
+    xhr.open("GET", query, true);
+    xhr.responseType = "text";
+    xhr.onload = function(event) {
+        rt = xhr.responseText
+        var jobj = $.parseJSON(rt)
+        updateResults(jobj.title_popular)
+    };
+    xhr.send();
+}
+</script>
+	<center>
+	<input type = "search" class = "searchbox" name = "search_input" id = "sr" placeholder = "Search..." required x-webkit-speech results = "10" autosave = "search_input" title = "Search Zeronet" role = "search" autofocus autocomplete = "true" tab-index = "1"/></input>
+	<button onclick="search()">Search</button>
+	<br>
+		<iframe id="movie" src=""
+ width="0" height="0" 
+ allowscriptaccess="always" allowfullscreen="true" 
+ scrolling="no" frameborder="0"></iframe>
+	<div id="results"></div>
+</center>
+</div>
+</body>
+<script>
+	result = ""
+for(var key in popularMovies)
+{
+	poster = "<input type='image' alt='"+popularMovies[key]+"' id='"+key+"' width='100px' src='"+imgs[key]+"' onclick='displayMoviePop(\""+key+"\")'></input>"
+	result += poster
+}
+$('#results').html(result);
+/*
+for(var key in popularMovies)
+{
+	setMoviePoster(key, false)
+}*/
+$(document).keypress(function (e) {
+    if (e.which == 13) {
+        search();
+    }
+});
+</script>

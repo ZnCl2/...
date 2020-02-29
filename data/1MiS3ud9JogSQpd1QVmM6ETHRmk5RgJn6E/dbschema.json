@@ -1,0 +1,84 @@
+{
+    "db_name": "ImportantZites",
+    "db_file": "data/importantzites.db",
+    "version": 2,
+    "maps": {
+        "categories.json": {
+            "to_table": ["categories"]
+        },
+        "users/.+/data.json": {
+            "to_table": ["zites", "bookmarks", "bookmark_categories"],
+			"to_keyvalue": ["languages", "ko_interface", "cs_interface"]
+        },
+        "users/.+/content.json": {
+            "to_json_table": ["cert_user_id"],
+            "file_name": "data.json"
+        }
+    },
+    "tables": {
+        "json": {
+            "cols": [
+                ["json_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+                ["directory", "TEXT"],
+                ["file_name", "TEXT"],
+                ["cert_user_id", "TEXT"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX path ON json(directory, file_name)"],
+            "schema_changed": 2
+        },
+        "categories": {
+            "cols": [
+                ["id", "INTEGER PRIMARY KEY"],
+                ["name", "TEXT"],
+                ["slug", "TEXT"],
+                ["tags", "TEXT"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX category_key ON categories (json_id, id)"],
+            "schema_changed": 3
+        },
+        "zites": {
+            "cols": [
+                ["id", "INTEGER"],
+                ["slug", "TEXT"],
+                ["address", "TEXT"],
+                ["domain", "TEXT"],
+                ["title", "TEXT"],
+                ["creator", "TEXT"],
+                ["description", "TEXT"],
+                ["tags", "TEXT"],
+                ["category_slug", "TEXT"],
+                ["merger_supported", "INTEGER"],
+                ["merger_category", "TEXT"],
+                ["languages", "TEXT"],
+                ["date_updated", "INTEGER"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX ZITE_key ON zites (json_id, id)", "CREATE INDEX zite_slug_idx ON zites (slug)", "CREATE INDEX zite_date_added_idx ON zites (date_added DESC)"],
+            "schema_changed": 8
+        },
+        "bookmarks": {
+            "cols": [
+                ["id", "INTEGER"],
+                ["reference_id", "INTEGER"],
+                ["reference_auth_address", "TEXT"],
+                ["category_id", "INTEGER"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX bookmarks_key ON bookmarks (json_id, id)", "CREATE INDEX bookmarks_idx ON bookmarks (reference_id, reference_auth_address)", "CREATE INDEX bookmarks_date_added_idx ON bookmarks (date_added DESC)"],
+            "schema_changed": 6
+        },
+        "bookmark_categories": {
+            "cols": [
+                ["id", "INTEGER"],
+                ["name", "TEXT"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX bookmark_categories_key ON bookmark_categories (json_id, id)"],
+            "schema_changed": 3
+        }
+    }
+}

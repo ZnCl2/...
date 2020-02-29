@@ -1,0 +1,18 @@
+if(typeof(window.Localizations) == 'undefined') window.Localizations = {};
+if(typeof(window.Localizations.Widgets) == 'undefined') window.Localizations.Widgets = {};
+if(typeof(window.Localizations.Widgets.PollWidget) == 'undefined') window.Localizations.Widgets.PollWidget = {};
+window.Localizations.Widgets.PollWidget.ButtonVote = 'رأی';
+window.Localizations.Widgets.PollWidget.ButtonResults = 'نتایج';
+window.Localizations.Widgets.PollWidget.Statement = 'این نظرسنجی علمی نیست و دیدگاه‌های صدای آمريکا را منعکس نمی‌کند.';
+window.Localizations.Widgets.PollWidget.TotalVotes = 'کل آرا';
+window.Localizations.Widgets.PollWidget.MessageNoOptionSelected = 'گزینه‌ای انتخاب نشده است';
+window.Localizations.Widgets.PollWidget.MessageThankYou = 'سپاس از شما برای شرکت در نظرسنجی ';
+window.Localizations.Widgets.PollWidget.MessageClosed = 'این نظرسنجی به پایان رسیده است';
+window.Localizations.Widgets.PollWidget.ArticlePollTitle = 'نظرسنجی';
+window.Localizations.Widgets.PollWidget.MessageNotYetOpen = 'این نظرسنجی هنوز آغاز نشده';
+window.Localizations.Widgets.PollWidget.PollArchiveLinkTitle = 'آرشيو نظرسنجی های قبلی';
+window.Localizations.Widgets.PollWidget.Loading = 'در حال بارگذاری، لطفأ صبر کنید ...';
+window.Localizations.Widgets.PollWidget.LoadError = ' بارگذاری ویجت نظرسنجی انجام نشد  ☹.';
+window.Localizations.Widgets.PollWidget.PreviewNotice = 'این پیش نمایش نظرسنجی ها است - لطفا برای اصل، سایت را چک کنید.';
+window.Localizations.Widgets.PollWidget.CantVote = 'You can\'t vote, probably you already voted.';
+;

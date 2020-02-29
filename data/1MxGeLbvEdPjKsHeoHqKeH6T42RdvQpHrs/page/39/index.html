@@ -1,0 +1,273 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/avatars/v5.png"><link rel="alternate" type="application/rss+xml" title="王子亭的博客" href="https://jysperm.me/atom.xml"><link rel="stylesheet" href="/styles.css"><title>王子亭的博客</title></head><body><div class="container"><div class="columns page-header"><h1>王子亭的博客</h1></div><div class="columns"><div class="navigation"><nav class="menus-main"><a href="/" class="favicon"><img alt="王子亭的博客" src="/avatars/v5.png"></a><a href="/about">关于精子</a><a href="/resume">简历</a><a href="/links">链接</a><a href="/booklist">推荐书单</a><a href="/list">日志列表</a><a href="/ad">广告</a></nav><nav class="right menus-right"><a href="/atom.xml">RSS</a><a target="_blank" href="https://github.com/jysperm/blog">fork on Github</a></nav></div></div><div class="columns"><div class="block-body column three-fourths"><div class="article-widget">精子新上线了一个名为 &nbsp;<a target="_blank" href="https://stream.pub/">Stream</a>&nbsp; 的服务，希望提供一个基于发布、订阅模型的消息服务，提供 HTTP API 并传输结构化的 JSON 数据。</div><article><header><h2><a href="/2013/05/827/">PHP进阶：1.安全</a></h2></header><div class="article-meta clearfix"><time class="left">2013 5 月 19 日</time><ul class="tags left"></ul><ul class="tags right"><li><a href="/tag/php/">PHP</a></li><li><a href="/tag/tutorials/">教程</a></li></ul></div><div class="markdown-body"><blockquote>
+<p>我决定写一系列教程：PHP进阶——一个论坛系统的实现，这是第一章。</p>
+</blockquote>
+<h1 id="1-0-安全"><a href="#1-0-安全" class="headerlink" title="1.0 安全"></a>1.0 安全</h1><p>我们将安全放到了最前边，对于Web应用来说，安全的重要性不言而喻，如果你编写的程序存在漏洞，攻击者将有可能取得服务器的控制权，进行破坏，甚至利用你的站点进一步散播木马。</p>
+<p>有些人认为测试性的代码，位于内网的应用，可以暂时不必关心安全，这是非常不负责任的。你很难预见这段代码什么时候会被作为你的应用的一部分，保险的做法是，为你写下的每一段代码负责，通过本章提出的几项原则，这并不麻烦。</p>
+<ul>
+<li>SQL 注入</li>
+<li>Shell 注入</li>
+<li>Eval</li>
+<li>XSS</li>
+<li>CSRF</li>
+<li>关注官方通告</li>
+<li>最小权限原则</li>
+<li>中间人攻击</li>
+<li>Dos 攻击</li>
+<li>隐藏信息</li>
+</ul>
+<h2 id="SQL-注入"><a href="#SQL-注入" class="headerlink" title="SQL 注入"></a>SQL 注入</h2><p>如果你的应用需要将一个包含用户输入的字符串作为代码(如SQL)执行，那么攻击者可以通过构造巧妙的输入，来将额外的代码<strong>注入</strong>到要执行的字符串中，实现攻击.</p>
+<p>下面举一个 SQL 注入的例子, 如果有如下的用户验证的代码：</p>
+<pre><code>$result = $db-&gt;query(&quot;SELECT * FROM `users` WHERE (`name` = &#39;{$_POST[&#39;user&#39;]}&#39;) and (`passwd` = &#39;{$_POST[&#39;passwd&#39;]}&#39;)&quot;);
+if($result-&gt;fetch())
+    echo &quot;登录成功&quot;;
+</code></pre><p>这段代码从 users 表中查询用户名为 $_POST[&#8216;user&#8217;] 且密码为 $_POST[&#8216;passwd&#8217;]的记录，如存在这样的记录，就认为登录成功。</p>
+<p>但攻击者可以通过将 user 和 passwd 分别构造为如下的字符串进行攻击：</p>
+<pre><code>admin
+1&#39; OR &#39;1&#39;=&#39;1
+</code></pre><p>这样一来，实际执行的SQL变成了这个样子：</p>
+<pre><code>SELECT * FROM `users` WHERE (`name` = &#39;admin&#39;) and (`passwd` = &#39;1&#39; OR &#39;1&#39;=&#39;1&#39;)
+</code></pre><p>就可以绕过验证，实现以管理员登录.</p>
+<p>产生SQL注入的原因在于单引号在 SQL 中具有特殊含义，单引号标识着一段字符串的开始和结束，如果用户输入中含有单引号，那么该字符串就会提前结束，剩下的部分就会作为SQL命令来解析.</p>
+<p>所以，我们有必要对进入 SQL 语句的所有用户输入进行转义，所谓转义就是让代码中具有特殊含义的字符，失去特殊含义，仅仅表示它本身.</p>
+<p>具体来说，我们在SQL中需要转义的字符有：</p>
+<ul>
+<li>反斜杠 \</li>
+<li>NUL \0</li>
+<li>换行 \n</li>
+<li>回车 \r&#8221;</li>
+<li>单引号 &#8216;</li>
+<li>双引号 &#8220;</li>
+<li>Ctrl+Z \x1a</li>
+</ul>
+<p>还有一些和字符集相关的字符(在特定的字符集中，会有一些同义字).</p>
+<p>所幸我们不必自己做这些工作，MySQL提供了一个名为 mysql_real_escape_string() 的函数用于将字符串转义，以安全地嵌入SQL.</p>
+<p>而 PDO[1] 里同样有 PDO::quote() 完成同样的工作。</p>
+<p>值得注意的是 mysql_real_escape_string() 和 PDO::quote() 的行为有细微的区别，前者只是转义字符串，后者在转义后还会在字符串前后加上单引号。</p>
+<p>经过修改的代码会是这样：</p>
+<pre><code>$user = $db-&gt;quote($_POST[&#39;user&#39;]);
+$passwd = $db-&gt;quote($_POST[&#39;passwd&#39;]);
+$result = $db-&gt;query(&quot;SELECT * FROM `users` WHERE (`name` = {$user}) and (`passwd` = {$passwd})&quot;);
+if($result-&gt;fetch())
+    echo &quot;登录成功&quot;;
+</code></pre><p>如果攻击者继续构造类似之前的注入字符串，那么数据库会去查询用户名为 admin 且密码为 <code>1&#39; OR &#39;1&#39;=&#39;1</code> 的记录，数据库仅仅将这段注入字符串视为它字面的意思，不会作为命令来解析，这样攻击者就不会得逞了.</p>
+<p>所以，记住我们的第一个原则：</p>
+<p><strong>如果你需要将一段字符串作为代码来执行，那么要对所有进入字符串的用户输入进行转义</strong>。</p>
+<p>用户输入不仅仅在于 $_GET 和 $_POST, 包括HTTP Header, Cookie, 文件都是用户输入。</p>
+<p>[1]: PHP Data Object, PHP的新式数据库访问接口, 后文会讲解.</p>
+<p>更多SQL注入的例子参见: <a href="http://php.net/manual/zh/security.database.sql-injection.php" target="_blank" rel="external">http://php.net/manual/zh/security.database.sql-injection.php</a></p>
+<h2 id="Shell-注入"><a href="#Shell-注入" class="headerlink" title="Shell 注入"></a>Shell 注入</h2><p>如有如下代码：</p>
+<pre><code>shell_exec(&quot;rm /data/files/{$_POST[&#39;file&#39;]}&quot;);
+</code></pre><p>这段代码会根据用户输入，删除 /data/file/ 下的指定文件.</p>
+<p>既然你已经知道了我们的第一个原则，显然我们要对输入进行转义。<br>于是我们找到了 escapeshellarg(), 它会对进入Shell的参数进行转义，添加空格。</p>
+<p>经过修改的代码：</p>
+<pre><code>$arg = escapeshellarg(&quot;/data/files/{$_POST[&#39;file&#39;]}&quot;);
+shell_exec(&quot;rm {$arg}&quot;);
+</code></pre><p>如果攻击者输入 <code>xxoo;rm -rf /</code>, 那么实际执行的命令是：</p>
+<pre><code>rm &#39;/data/files/xxoo;rm -rf /&#39;
+</code></pre><p>可以看到攻击者没有成功。</p>
+<p>但是攻击者可以继续尝试输入 <code>../../etc/passwd</code>, 这下你傻眼了, 因为执行了：</p>
+<pre><code>rm &#39;/data/files/../../etc/passwd&#39;
+</code></pre><p>相当于：</p>
+<pre><code>rm &#39;/etc/passwd&#39;
+</code></pre><p>删掉了系统的用户数据库.</p>
+<p>所以，我们除了要对用户输入进行转义之外，还需要 <strong>从逻辑上对输入进行检验</strong>。</p>
+<p>在前面SQL注入的例子中，这种检验是不必要的，因为我们知道数据库里面用户的密码不可能恰巧等于攻击者构造的恶意字符串。</p>
+<p>但在这个Shell注入的例子中，我们有这个必要：</p>
+<pre><code>if(strstr($_POST[&#39;file&#39;], &quot;/&quot;) !== false)
+{
+    echo &quot;文件名非法&quot;;
+}
+else
+{
+    $arg = escapeshellarg(&quot;/data/files/{$_POST[&#39;file&#39;]}&quot;);
+    shell_exec(&quot;rm {$arg}&quot;);
+}
+</code></pre><p>这样我们便安全了，如果文件名包含了斜杠，程序会拒绝执行命令.</p>
+<p>在Linux下，文件名可以使用除斜杠外的所有字符，如果需要迁移到Windows下，我们还需要做更多工作。</p>
+<p>所以请记住我们的第二个原则：</p>
+<p><strong>不要相信用户的输入，考虑到每一种可能性</strong>。</p>
+<p>你最好把编写代码的过程，看作“证明这段代码不会出错”的过程。</p>
+<h2 id="Eval"><a href="#Eval" class="headerlink" title="Eval"></a>Eval</h2><p>包括 PHP 在内的大多数脚本语言都提供了类似 eval 的函数，可以将字符串作为代码来执行。同样，在使用 eval() 时我们也需要考虑注入攻击。</p>
+<p>但不同于 SQL 和 Shell, 使用 eval() 的大多数场合都是可以避免的，你需要的可能是匿名函数等机制(后文会介绍), 所以在这里不推荐使用 eval() 函数。</p>
+<h2 id="XSS"><a href="#XSS" class="headerlink" title="XSS"></a>XSS</h2><p>Cross-site scripting, 跨站脚本攻击，或者你可以认为是 HTML 注入，这种攻击并非针对服务器，而是针对访客。</p>
+<p>大多数网页的输出都是 HTML, 这意味着你的 PHP 程序的输出会作为 HTML 代码来显示在用户的浏览器中，而 HTML 中嵌入的 JS 脚本则会被用户的浏览器执行。</p>
+<p>例如一个论坛系统显示帖子的代码：</p>
+<pre><code>&lt;?php
+$post = getPostData($_POST[&#39;id&#39;]);
+?&gt;
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;title&gt;&lt;?= $post[&#39;title&#39;];?&gt;&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;?= $post[&#39;content&#39;];?&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+</code></pre><p>如果有一个帖子的内容是下面这样呢：</p>
+<pre><code>&lt;span style=&quot;color: red;&quot;&gt;帖子内容&lt;/span&gt;
+</code></pre><p>显然文字会被显示为红色，这意味着如果帖子中含有 HTML 代码，将会被直接执行，在这个例子中这段 HTML 代码可以认为是无害的，但如果是嵌入一段脚本呢：</p>
+<pre><code>&lt;script&gt;alert(&quot;帖子内容&quot;);&lt;/script&gt;
+</code></pre><p>浏览器会执行一段 JS 代码！如果你认为这除了开个玩笑外也是无害的，那么请看下面的输入：</p>
+<pre><code>&lt;script&gt;
+    $.post(&quot;/topic/create/&quot;, {&quot;title&quot;: &quot;点进来看一看啊~&quot;, &quot;content&quot;: &quot;&lt;script&gt;&quot; + $(&quot;body script:first&quot;).html() + &quot;&lt;/script&gt;&quot;});
+&lt;/script&gt;
+</code></pre><p>这段代码会自动发布一个新帖子，其内容就是这段代码本身！这样以来，这个“无害的玩笑”会在整个论坛传播开。</p>
+<p>XSS 有持久性和非持久性(反射型)之分，前面介绍的例子属于持久性 XSS, 即已经将攻击代码保存在数据库中，其他人访问这些信息时，HTML代码就会被执行。</p>
+<p>而非持久性的意思就是注入代码并未被持久性的保存，而是存在于 URL 中，如：</p>
+<pre><code>http://xxoo.xo/show.php?id=&lt;script&gt;alert();&lt;/script&gt;
+</code></pre><p>对应的 PHP 代码：</p>
+<pre><code>if(!is_numeric($_GET[&#39;id&#39;]))
+    echo &quot;{$_GET[&#39;id&#39;]} 不是一个数字&quot;;
+</code></pre><p>如果你轻易点击了这个连接，那么你将会被执行一段脚本，危险性不再复述。</p>
+<p>你想说不会有人点这么显然的链接？其实它可以很隐蔽：</p>
+<pre><code>http://xxoo.xo/show.php?id=%3Cscript%3Ealert()%3B%3C%2Fscript%3E
+</code></pre><p>甚至：</p>
+<pre><code>http://xxoo.xo/show.php?id=%3C%73%63%72%69%70%74%3E%61%6c%65%72%74%28%29%3B%3C%2F%73%63%72%69%70%74%3E
+</code></pre><p>既然是注入 HTML，那么对策并不复杂：对所有输出到 HTML 的数据进行转义，使用 htmlspecialchars(), 如：</p>
+<pre><code>if(!is_numeric($_GET[&#39;id&#39;]))
+{
+    $id = htmlspecialchars($_GET[&#39;id&#39;]);
+    echo &quot;{$id} 不是一个数字&quot;;
+}
+</code></pre><p>好吧，其实前面那么多铺垫这是为了让你了解 XSS 的重要性，当下它们甚至比 SQL 注入更加流行。</p>
+<h2 id="CSRF"><a href="#CSRF" class="headerlink" title="CSRF"></a>CSRF</h2><p>Cross-site request forgery, 跨域请求伪造。</p>
+<p>浏览器本身为 JS 制定的一个“跨域保护”规则，保证了 JS 仅能访问当前站点下的资源。</p>
+<p>规则即一个域名下的 JS 无法使用 XHR[4] 访问另一个域名下的资源。</p>
+<p>但这个限制并不包括 <code>&lt;img&gt;</code>, <code>&lt;script&gt;</code> 等标记的 src 属性，而且这也不现实，因为一个站点难免引用其他站点的图片等资源。</p>
+<p>现在很多站点都使用类似于 /user/logout/ 的链接来实现注销登录的功能。如果有这样一段代码：</p>
+<pre><code>&lt;img src=&quot;//xxoo.xo/user/logout/&quot; /&gt;
+</code></pre><p>那么如果用户访问了这个页面，它在 xxoo.xo 网站就会被注销登录，无论当前站点是不是 xxoo.xo ！</p>
+<p>这样攻击是非常隐蔽的，因为如果图片加载失败了也只不过是一个小叉而已，还可以通过 CSS 隐藏起来。</p>
+<p>上面的例子也许可以认为是无害，因为被注销登录也算不得什么大不了的事情，但如果你继续使用 GET 方式响应非修改性的请求的话，事情就没那么简单了。</p>
+<p>记住： <strong>所有修改性的操作都使用POST方式</strong>。</p>
+<p>[2]: XMLHttpRequest, JS 无刷新请求技术的 API 接口。</p>
+<h2 id="关注官方通告"><a href="#关注官方通告" class="headerlink" title="关注官方通告"></a>关注官方通告</h2><p>有时候，漏洞并不在于我们编写的代码，而在于我们所使用的软件本身，如PHP, 或者Linux, MySQL等等。</p>
+<p>虽然这些软件的代码审核和发布过程是非常严谨的，但也难免有漏网之鱼。一些严重的漏洞会在一天之间被传播，利用和修复。</p>
+<p>对此我们没有什么对策，毕竟这些软件不是我们自己写的，我们能做的但只有：</p>
+<ul>
+<li>使用官方的稳定发行版</li>
+<li>及时关注官方通告，安装补丁</li>
+</ul>
+<p>在PHP领域，有很多问题是官方在反复提醒，但仍广泛存在的，我们在此指出几点：</p>
+<h3 id="关闭-Register-Globals"><a href="#关闭-Register-Globals" class="headerlink" title="关闭 Register Globals"></a>关闭 Register Globals</h3><p>这是 php.ini 中的一个选项(register_globals), 开启后会将所有表单变量($_GET和$_POST)注册为全局变量.</p>
+<p>看下面的例子：</p>
+<pre><code>if(isAuth())
+    $authorized = true;
+if($authorized)
+    include(&quot;page.php&quot;);
+</code></pre><p>这段代码在通过验证时，将 $authorized 设置为 true. 然后根据 $authorized 的值来决定是否显示页面.</p>
+<p>但由于并没有事先把 $authorized 初始化为 false, 当 register_globals 打开时，可能访问 /auth.php?authorized=1 来定义该变量值，绕过身份验证。</p>
+<p>该特征属于历史遗留问题，在 PHP4.2 中被默认关闭，在 PHP5.4 中被移除。</p>
+<h3 id="关闭-Magic-Quotes"><a href="#关闭-Magic-Quotes" class="headerlink" title="关闭 Magic Quotes"></a>关闭 Magic Quotes</h3><p>对应 php.ini 中的选项 magic_quotes_gpc, 这个特征同样属于历史遗留问题，已经在 PHP5.4 中移除。</p>
+<p>该特征会将所有用户输入进行转义，这看上去不错，我们之前提到过要对用户输入进行转义。</p>
+<p>但是 PHP 并不知道哪些输入会进入 SQL , 哪些输入会进入 Shell, 哪些输入会被显示为 HTML, 所以很多时候这种转义会引起混乱。</p>
+<h2 id="最小权限原则"><a href="#最小权限原则" class="headerlink" title="最小权限原则"></a>最小权限原则</h2><p>让我们试想如果 PHP 出现了一个验证漏洞，导致可以任意执行Shell命令，这将会多么恐怖。事实上这种漏洞在各种服务器软件上时有发生。</p>
+<p>虽然我们无法阅读和修改 PHP 的源代码，但我们可以通过给予 PHP 最小的权限，来减少漏洞被利用后的损失。</p>
+<p>很多教程在遇到文件权限问题的时候，会很不负责任地让你将文件夹权限设置为 777, 即最宽松权限。</p>
+<p>在Linux下，每个文件，每个进程都对应着一个用户，非 root 用户只能控制自己的文件，自己的进程，自己的进程创建的文件也是属于自己的。</p>
+<p>每个文件有 9 个权限位，分别对应 <strong>自己, 同组用户, 其他用户</strong> 的 <strong>读取, 修改, 执行 权限</strong>。</p>
+<p>基于这种机制，我们可以将服务器的不同功能划分为不同的用户，实现隔离，即使一个服务被攻击者控制，也不会影响到其他的服务。</p>
+<p>事实上各个发行版也是这么做的，Apache2, PHP-FPM[2] 大多是以 www-data 或类似的用户运行的，即使被拿到权限，也只能控制网站的部分，无法执行需要 root 权限的系统级命令。</p>
+<p>我们可以进一步对权限进行细分，如果应用不需要写入文件，那么给 Web 目录设置只读权限就可以了。</p>
+<p>储存静态资源(图片, CSS, JS等)的目录，不要允许 PHP 执行。</p>
+<p>甚至让每一个站点都以单独的用户来运行[3].</p>
+<p>如果服务器仅提供 Web 服务，那么防火墙仅开放 80 端口。</p>
+<p>对于数据库以及其他服务，我们也需要给予应用最小的权限，为每个应用建立单独的账户，只赋予每个应用读写自己的数据库的权限。</p>
+<p>[3]: PHP 在 Apache2 下可能依附于 Apache2进程，在 Nginx 则大多用 PHP-FPM 方式运行。</p>
+<p>[4]: Apache2 可使用 apache2-mpm-itk, PHP-FPM 可使用配置文件中的 user 选项。</p>
+<h2 id="中间人攻击"><a href="#中间人攻击" class="headerlink" title="中间人攻击"></a>中间人攻击</h2><p>在 Web 领域，中间人攻击即服务器和用户之间，存在着一个可以双向篡改数据包的 <strong>中间人</strong>，它有可能是网络中的一个路由节点，也可能是一个钓鱼网站。</p>
+<p>说实话这已经是网络传输层面的问题了，和 PHP 没多大关系，解决中间人攻击的唯一途径就是使用 https 协议，SSL 除了可以防御中间人攻击外，还可以让你的数据以加密的形式传输(HTTP是明文传输的), 目前网络上已经有了一些免费的证书颁发机构(CA), 如 StarSSL.</p>
+<h2 id="DoS-攻击"><a href="#DoS-攻击" class="headerlink" title="DoS 攻击"></a>DoS 攻击</h2><p>Denial of Service, 阻断服务攻击，通过大量垃圾请求迫使服务器无法工作。</p>
+<p>如果你的网站让攻击者无处下手，那么攻击者可能会使出最野蛮的攻击方式，DoS, 比如使用脚本快速访问你的站点，让你的服务器不堪重负。</p>
+<p>首先你应当避免你的站点出现性能瓶颈，尽量通过缓存(后文会讲解)来提供内容，减少请求处理时间。</p>
+<p>设置 Web 服务器的最大进程数，避免进程过多导致内存不足。</p>
+<p>还可以使用如 DDoS deflate[5] 的脚本，自动对攻击 IP 进行封禁，这对单点 DoS 非常有效。</p>
+<p>如果攻击者不计成本地使用流量“堵”你的线路，那么你可以选择一些知名的 CDN 服务来过滤请求，隐藏服务器的真实 IP 地址。</p>
+<h2 id="隐藏信息"><a href="#隐藏信息" class="headerlink" title="隐藏信息"></a>隐藏信息</h2><p>虽然隐藏信息是一种比较消极的防御手段，但也能为攻击者添加一些障碍。</p>
+<p>值得隐藏的信息包括：Web服务器版本，脚本引擎(PHP)版本，错误信息等等。</p>
+</div></article><article><header><h2><a href="/2013/05/821/">笔记: 循环, 递归, 迭代, 遍历</a></h2></header><div class="article-meta clearfix"><time class="left">2013 5 月 11 日</time><ul class="tags left"></ul><ul class="tags right"><li><a href="/tag/reading-notes/">笔记</a></li><li><a href="/tag/technology/">技术</a></li><li><a href="/tag/computer-science/">计算机科学</a></li></ul></div><div class="markdown-body"><blockquote>
+<p>本文首发于SegmentFault, <a href="http://segmentfault.com/q/1010000000199577#a-1020000000199630" target="_blank" rel="external">http://segmentfault.com/q/1010000000199577#a-1020000000199630</a></p>
+</blockquote>
+<p>表示&#8221;重复&#8221;这个含义的词有很多, 比如循环(loop), 递归(recursion), 遍历(traversal), 迭代(iterate).</p>
+<h3 id="循环"><a href="#循环" class="headerlink" title="循环"></a>循环</h3><p>循环算是最基础的概念, 凡是重复执行一段代码, 都可以称之为循环. 大部分的递归, 遍历, 迭代, 都是循环.</p>
+<h3 id="递归"><a href="#递归" class="headerlink" title="递归"></a>递归</h3><p>递归的定义是, 根据一种(几种)基本情况定义的算法, 其他复杂情况都可以被逐步还原为基本情况.</p>
+<p>在编程中的特征就是, 在函数定义内重复调用该函数.</p>
+<p>例如斐波那契数列, 定义F(0)=1, F(1)=1, 所有其他情况: F(x)=F(x-1)+F(x-2).</p>
+<p>所有大于1的整数经过有限次的反推之后都可以转换到两种基本情况. 而在编程中, 算法则是这样的:</p>
+<pre><code>int F(x)
+{
+    if(x==0 || x==1)
+        return 1;    //这里是退出递归的条件, 以保证在有限次递归后能够得到结果
+    return F(x-1)+F(x-2);    //转化为更为基本的情况, 重复调用自身进行计算
+}
+</code></pre><h3 id="迭代-数学"><a href="#迭代-数学" class="headerlink" title="迭代(数学)"></a>迭代(数学)</h3><p>迭代在数学和编程中有不同的含义.</p>
+<p>数学方面是指在循环的基础上, 每一次循环, 都比上一次更为接近结果.</p>
+<p>例如下面是一个迭代的例子.</p>
+<pre><code>int result = 0;
+for(int i=0; i&gt;10; i++)
+    result += i;    //每一次循环之后, result都更加接近结果45
+</code></pre><p>有很多数学问题, 都是迭代算法, 如牛顿迭代法(求平方根).</p>
+<h3 id="迭代-编程"><a href="#迭代-编程" class="headerlink" title="迭代(编程)"></a>迭代(编程)</h3><p>按顺序访问一个列表中的每一项, 这在很多编程语言中表现为foreach语句:</p>
+<pre><code>$arr = [1, 2, 3, 4];
+foreach($arr as $i)
+    echo $i;
+</code></pre><h3 id="遍历"><a href="#遍历" class="headerlink" title="遍历"></a>遍历</h3><p>按一定规则访问一个非线性的结构中的每一项, 强调非线性结构(树, 图). 而迭代一般适用于线性结构(数组, 队列).</p>
+<h3 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h3><ul>
+<li>循环(loop) &#8211; 最基础的概念, 所有<strong>重复</strong>的行为</li>
+<li>递归(recursion) &#8211; 在<strong>函数内调用自身</strong>, 将复杂情况逐步转化成基本情况</li>
+<li>(数学)迭代(iterate) &#8211; 在多次循环中<strong>逐步接近结果</strong></li>
+<li>(编程)迭代(iterate) &#8211; 按<strong>顺序</strong>访问<strong>线性</strong>结构中的<strong>每一项</strong></li>
+<li>遍历(traversal) &#8211; 按规则访问<strong>非线性</strong>结构中的<strong>每一项</strong></li>
+</ul>
+<p>这些概念都表示“重复”的含义, 彼此互相交叉, 在上下文清晰的情况下, 不必做过于细致的区分.</p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><ul>
+<li><a href="http://www.nowamagic.net/librarys/veda/detail/2324" target="_blank" rel="external">http://www.nowamagic.net/librarys/veda/detail/2324</a></li>
+<li><a href="http://www.cn-cuckoo.com/2010/08/09/loop-iterate-traversal-and-recursion-1846.html" target="_blank" rel="external">http://www.cn-cuckoo.com/2010/08/09/loop-iterate-traversal-and-recursion-1846.html</a></li>
+<li>维基百科相关词条</li>
+</ul>
+</div></article><article><header><h2><a href="/2013/05/810/">RP主机如何进行权限控制</a></h2></header><div class="article-meta clearfix"><time class="left">2013 5 月 1 日</time><ul class="tags left"></ul><ul class="tags right"><li><a href="/tag/technology/">技术</a></li><li><a href="/tag/rpvhost/">RP主机</a></li></ul></div><div class="markdown-body"><p>折腾虚拟主机一年多了, 除去编写面板，研究的更多的就是权限控制了. 在此我分享一下我在Linux虚拟主机权限控制方面的经验.</p>
+<p>阅读本文需要一定的Linux服务器维护基础.</p>
+<p>《应用密码学》的前言中讲到:</p>
+<blockquote>
+<p>如果我把一封信锁在保险柜中, 把保险柜藏在纽约的某个地方, 然后告诉你去读这封信, 这并不是安全, 而是隐藏.</p>
+<p>  相反，如果我把一封信锁在保险柜中, 然后把保险柜及其设计规范和许多同样的保险柜给你, 以便你和世界上最好的开保险柜的专家能够研究锁的装置.</p>
+<p>  而你还是无法打开保险柜去读这封信, 这才是安全.</p>
+</blockquote>
+<p>我不是说我的安全措施无懈可击, 我只是认为隐藏起来也于事无补, 不如分享出来, 在此我也提示RP主机的用户, 请不要在服务器上做尝试突破限制的操作, 根据协议你可能被封停帐号, 你可以自行架设环境来测试, 或与我交流. 啊, 题外话说了这么多.</p>
+<p>我很懒, 我在尽可能地借助Linux本身的功能来进行权限控制, 而且这也是RP主机的宗旨——提供完整的Linux环境.</p>
+<h2 id="文件"><a href="#文件" class="headerlink" title="文件"></a>文件</h2><p>文件方面, Linux本身已经提供了一套文件权限系统, 我只需要提示用户应当将文件权限设置为770即可: <code>chmod -R 770 ~</code></p>
+<p>为了防止疏忽，我们还可以在<code>.bashrc</code>中加入<code>umask 007</code>这样创建出来的文件默认就是660(注1), 不过这对PHP等脚本生成的文件并不起作用, 因为他们没有通过bash环境.</p>
+<p>注1: Linux不允许一个文件创建时就有执行权限, 所以默认是660, 对于目录则是770.</p>
+<p>我没有使用单独的FTP软件, 比如有名的vsftp, 因为我觉得配置起来很麻烦, 容易产生新漏洞. sshd自带的SFTP功能完全可以满足文件管理的需求, 这是自带的功能, 方便.</p>
+<p>我还使用了quota-tools来限制用户的磁盘占用, 因为磁盘这东西, 占了多少就是多少, 总不能随便删人的文件啊, 所以一定要限制死.</p>
+<h2 id="Web"><a href="#Web" class="headerlink" title="Web"></a>Web</h2><p>Web部分可谓是重中之重, 因为按照Linux的规则, 端口是被一个进程独占的, 但是大家都需要用80端口来开设Web服务, 这就需要以root运行一个Web服务器, 然后根据用户的在面板中的配置, 分发, 执行Web请求. 其实, 只需要一个反向代理来分发请求就够了, 但是为了降低建站的门槛, 毕竟相当大一部分用户购买RP主机就是为了建站, 所以还要提供公共的常见脚本(PHP)运行环境.</p>
+<p>Apache负责运行各种网页脚本, 如PHP, Python, CGI等等. 为了保证自由度, 我没有对PHP加任何的限制, 我希望借助Linux本身的进程安全模型——让脚本以对应的Linux用户来运行.</p>
+<p>于是我找到了 mpm_itk_module, 这种工作模式, 可以为每个Virtual Host指定实际运行的用户. 当收到请求时, Apache的工作进程会setuid为相应用户, 然后再执行相应的脚本完成请求.</p>
+<p>借助于Linux本身的功能, PHP进程可以按照权限访问文件, 创建新进程(以实际的用户), 而不会干扰到其他用户.</p>
+<p>但和标准的 mpm_perfork_module 相比, 因为要频繁地setuid, 创建和销毁进程, 性能相差了几十上百倍之多. 但为了权限控制的灵活性, 只能牺牲性能了. 在新版本中, 我正在把性能低下的Apache边缘化.</p>
+<p>目前, 事实上是Nginx在监听80端口, 负责处理静态文件请求, 并把其他请求反向代理到Apache. 为了提供静态文件, Nginx需要能偶访问所有用户的文件.</p>
+<p>我选择了以www-data用户来运行Nginx, 同时将www-data加入到每个用户的组当中, 所以需要用户将文件设置为770, 给予同组的Nginx权限.</p>
+<h2 id="新版本的Web"><a href="#新版本的Web" class="headerlink" title="新版本的Web"></a>新版本的Web</h2><p>新版本中将使用PHP-FPM代替Apache处理PHP脚本, PHP-FPM的功能很强大, 可以建立不同的进程池, 在新版本中, 每个用户都会有一个单独的进程池.</p>
+<p>每个进程池表现为一个UNIX socket文件, 用户也可以编译自己的PHP和PHP-FPM来代替默认的PHP-FPM.</p>
+<p>新版本中使用了 uWSGI 代替Aapche的 mod_wsgi 来处理Python脚本, 用户需要自行运行uWSGI守护进程, 监听一个UNIX socket, 并配置Nginx的反向代理即可.</p>
+<p>事实上这种方式适用于所有的fcgi服务器.</p>
+<h2 id="MySQL"><a href="#MySQL" class="headerlink" title="MySQL"></a>MySQL</h2><p>MySQL再简单不过了, 装一个phpmyadmin, 默认的安全策略已经相当完善, 每个用户对以自己的用户名为前缀的数据库具有全部权限, 可以随意建立数据库.</p>
+<h2 id="流量统计"><a href="#流量统计" class="headerlink" title="流量统计"></a>流量统计</h2><p>说实话直到目前我还没找到较可行的方案, 我希望依然以Linux中的用户为单位进行统计. 目前我正在调研iptables的相关功能.</p>
+<p>目前还有两个部分的用户相关进程没有以实际用户运行: PPTP, Nginx的worker.</p>
+<p>不知不觉写了这么多, 不过好像没啥实际的啊.</p>
+</div></article><div class="archive-pagination"><div class="paginator"><a class="extend prev" rel="prev" href="/page/38/">&laquo;</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/37/">37</a><a class="page-number" href="/page/38/">38</a><span class="page-number current">39</span><a class="page-number" href="/page/40/">40</a><a class="page-number" href="/page/41/">41</a><span class="space">&hellip;</span><a class="page-number" href="/page/71/">71</a><a class="extend next" rel="next" href="/page/40/">&raquo;</a></div></div></div><div class="block-sidebar column one-fourth"><div class="widget text-content"><p>精子生于 1995.11.25, 21 岁，英文 ID jysperm.</p>
+<ul>
+<li>有一个 <a href="https://jybox.net">精子粉丝团</a></li>
+<li><a href="http://pidan.cat">皮蛋</a> 和 <a href="http://doufu.cat">豆腐</a> 的主人</li>
+<li>创建了 <a href="https://atom-china.org">Atom 中文社区</a></li>
+<li>坚持十余年的 <a href="https://jysperm.me">独立博客</a> 作者</li>
+<li>高中退学，就职于 <a href="https://leancloud.cn">LeanCloud</a></li>
+<li>在 <a href="https://github.com/jysperm">Github</a> 上积极参与开源社区</li>
+</ul>
+</div><div class="widget text-content"><h2>订阅推送</h2><p>通过邮件订阅精子的博客日志、产品和项目的最新动态，精子承诺每一封邮件都会认真撰写（<a href="http://us13.campaign-archive1.com/home/?u=f4c7c26ec1a5dc400a7a7373e&amp;id=e2136d8929">历史邮件</a>），有想和精子说的话也可以直接回复邮件。</p><div id="mc_embed_signup"><form id="mc-embedded-subscribe-form" action="//jybox.us13.list-manage.com/subscribe/post?u=f4c7c26ec1a5dc400a7a7373e&amp;id=e2136d8929" method="post" name="mc-embedded-subscribe-form" target="_blank" novalidate="" class="validate"><div id="mc_embed_signup_scroll" class="input-group"><input id="mce-EMAIL" type="email" value="" name="EMAIL" placeholder="email address" required="" class="form-control"/><input type="hidden" name="b_f4c7c26ec1a5dc400a7a7373e_e2136d8929" value=""/><span class="input-group-button"><div class="form-actions"><button id="mc-embedded-subscribe" type="submit" value="Subscribe" name="subscribe" class="btn">订阅</button></div></span></div></form></div></div><div class="widget tags"><ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tag/atom/">Atom</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/cpp/">C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/cpp-ppt/">C++讲稿</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/docker/">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/html/">HTML</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/hexo/">Hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/javascript/">JavaScript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/LeanCloud/">LeanCloud</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/lightphp/">LightPHP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/linux/">Linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/mongodb/">MongoDB</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/nodejs/">Node.js</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/php/">PHP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/rpvhost/">RP主机</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/rootpanel/">RootPanel</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/sicp/">SICP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/idea/">idea</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/traditional-medicine/">中医</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/internet/">互联网</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/news/">互联网资讯</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/values/">价值观</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/works/">作品</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/information-security/">信息安全</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/cold-knowledge/">冷知识</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/blockchain/">区块链</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/unit-test/">单元测试</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/blog/">博客</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/去中心化/">去中心化</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/doraemon/">哆啦A梦</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/school-weekly/">学校周记</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/exam/">学校考试</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/cryptography/">密码学</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/xiaolu/">小璐</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/summary-of-year/">年度小结</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/caipai/">彩排</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/xuxueli/">徐雪丽</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/summary/">总结</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/technology/">技术</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/tutorials/">教程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/education/">教育</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/server-side/">服务器端</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/bitcoin/">比特币</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/physical/">物理</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/live/">生活</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/live/">生活记录</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/movie/">电影</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/science/">科普</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/reading-notes/">笔记</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/story-of-sperm/">精子的故事</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/programming/">编程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/programming-language/">编程语言</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/computer-science/">计算机科学</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/network/">计算机网络</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/reading/">读书</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/shopping/">购物</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/software-engineering/">软件工程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/note/">随笔</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/zeroms/">零毫秒</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/hacker/">黑客</a></li></ul></div><div class="widget archives"><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/2017/02/">二月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2017/01/">一月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/12/">十二月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/11/">十一月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/10/">十月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/09/">九月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/08/">八月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/07/">七月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/06/">六月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/04/">四月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/02/">二月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/12/">十二月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/11/">十一月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/10/">十月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/09/">九月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/08/">八月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/07/">七月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/06/">六月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/05/">五月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/04/">四月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/03/">三月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/02/">二月 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/01/">一月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/12/">十二月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/11/">十一月 2014</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/10/">十月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/09/">九月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/08/">八月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/07/">七月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/06/">六月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/05/">五月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/04/">四月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/03/">三月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/02/">二月 2014</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/01/">一月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/12/">十二月 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/11/">十一月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/10/">十月 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/09/">九月 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/08/">八月 2013</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/07/">七月 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/06/">六月 2013</a><span class="archive-list-count">13</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/05/">五月 2013</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/04/">四月 2013</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/03/">三月 2013</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/02/">二月 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/12/">十二月 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/11/">十一月 2012</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/10/">十月 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/09/">九月 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/08/">八月 2012</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/06/">六月 2012</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/05/">五月 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/04/">四月 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/03/">三月 2012</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/02/">二月 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/01/">一月 2012</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/12/">十二月 2011</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/11/">十一月 2011</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/10/">十月 2011</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/09/">九月 2011</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/08/">八月 2011</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/07/">七月 2011</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/06/">六月 2011</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/05/">五月 2011</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/03/">三月 2011</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2010/05/">五月 2010</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2010/01/">一月 2010</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2008/01/">一月 2008</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2007/10/">十月 2007</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2007/09/">九月 2007</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2007/02/">二月 2007</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2006/08/">八月 2006</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2005/08/">八月 2005</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2005/01/">一月 2005</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2003/11/">十一月 2003</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2003/10/">十月 2003</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2003/08/">八月 2003</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2002/08/">八月 2002</a><span class="archive-list-count">1</span></li></ul></div><div class="widget text-content"><p>该博客使用基于 &nbsp;<a href="http://hexo.io">Hexo</a>&nbsp; 的 &nbsp;<a href="https://github.com/jysperm/hexo-theme-simpleblock">simpleblock</a>&nbsp; 主题。博客内容使用 &nbsp;<a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn">CC BY-NC-SA 3.0</a>&nbsp; 授权发布。最后生成于 2017-03-13.</p></div></div></div></div><script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-49193300-1', 'auto');
+ga('send', 'pageview');
+</script></body></html>

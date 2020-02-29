@@ -1,0 +1,52 @@
+{
+	"answers": [
+		{
+			"answer_id": 1513857457850,
+			"question_id": 1513856453879,
+			"question_auth_address": "164x9q7LJPLX4SMbhqLPraKAGZRPa2gTFe",
+			"body": "You could use some package manager like NPM or yarn, and then use gulp, some of it's add-ons, and some other packages like browserify to compile all your stuff from a `src`-directory together, and put it into the root of your Zite.\n\nI mostly used [@Krixano's ZeroMedium](https://github.com/krixano/ZeroMedium/) as a template for my current project, [Thundote](https://github.com/AnthyG/Thundote).\nIn both, you can see a file called `package.json` in which all packages are listed. Those can be added via command line e.g. using NPM: `npm install --save [packagename]`.\nAlso a `gulpfile.json` can be found, in which the configuration is found for compiling all the different files together.\n\nAll the files that should be compiled are located in the `src`-Directory.\nI believe, you could probably just copy over `src/index.html`, `gulpfile.js`, and `package.json`. Then, if you're using NPM, just run `npm install` from your cmd, and it will install all the packages. ..You might also want to copy `.gitignore` over, _before_ you're running the install-command..\n\nAt last, you should add the following line into your Zites `content.json`-File, located in it's root:\n```\n\"ignore\": \"|node_modules/.*|src/.*|.git|disabled/.*)\",\n```",
+			"date_added": 1513857457850
+		},
+		{
+			"answer_id": 1556399688016,
+			"question_id": 1556393562031,
+			"question_auth_address": "12GAPJTRmNmDZKBXc1419vhTW4WpPujNuq",
+			"body": "First of all, yes, Hubs make for a great expandable system.\n\nOne problem with hubs is that if you decide to change the structure, all hubs need to be updated manually by their owner (which might be you, or might be any other user). So you should consider adding a version property to them, so that you can exclude the old ones if you do change important structure. Thus, you really have to give a few thoughts to how to structure your system, before you decide to actually do the implementation.\nAnother problem is that you have to add hubs manually, so that they can get merged afaik (e.g. KxoQA has a moderated list of available topics, managed by @krixano). Ofc you can also add a system which handles this on it's own, so e.g. the user can clone a template (e.g. as in GitCenter), and load hubs when they get opened through the UI (e.g. GitCenter or ZeroMe).\n\nIf users should be able to post large pieces of data, then you should look into the optional files system of ZeroNet.\n\nNot using hubs at all makes moderation a bit easier.\nThis is because even tho a moderator can sign users files (this requires the admin to know the zites private key or the moderator to be added to the `signers_sign` property in the zite's `content.json` file: https://zeronet.io/docs/site_development/content_json/#signers_sign (notice that I already differentiated between \"admin\" and \"moderator\", even tho the feature of adding the `signers_sign` property to e.g. the standard `users/data/content.json` file does not seem to be implemented as of now)), users can also just overwrite those signs again.\nAnother way of blocking users would be to utilize the mute plugin, but I believe this feature applies to the complete ZeroNet client: https://zeronet.io/docs/site_development/zeroframe_api_reference/#plugin-mute.\n\nNot using an automated hub system at all makes moderation a lot easier (because there's only one single point that has to be controlled), but in the former case, it will still require more work to add the hubs manually.\n\nSo the best from both might be to make an automated system, that uses a blocklist so that you can easily moderate and administrate I guess..\n\nYou can ofc also combine the optional files and hubs e.g. by requiring the user to clone a hub template which can has a default property for optional files.\nOptional files and hubs might not be the only two things that might help you find a good solution, but they are the only ones I can remember right now.\n\nTo address the anonymity aspect of your question, you could also integrate your own certificate authority, so that users are not tied to any other ID provider that is available in ZeroNet (e.g. [Nanasi text board](/16KzwuSAjFnivNimSHuRdPrYd1pNPhuHqN)). There's also this: https://github.com/HelloZeroNet/ZeroNet/issues/1258.\nAs I haven't used any of those two things before, I'm first of all, not sure if they might even are the same thing, and secondly, am not sure if any of those two really are what you need.",
+			"date_added": 1556399688016,
+			"updated_date": 1556447705510
+		},
+		{
+			"answer_id": 1556971923299,
+			"question_id": 1556970875680,
+			"question_auth_address": "191qyhaRxXEx1bdtG65iQvFddtXBjgo6j3",
+			"body": "Not quite sure where the exact code is located to create the previews (I _think_ it is [this (GitHub)](https://github.com/HelloZeroNet/ZeroMe/blob/135e15ab99e9bceab61bfc059b7e80199b0d6bdd/js/utils/Uploadable.coffee#L24), but you could check out [ZeroMe's code on GitHub](https://github.com/HelloZeroNet/ZeroMe/tree/master/js). I believe it works by creating a very low-res copy of the image in form of a data-uri and then that gets added to the post when posting. So you \"just\" have to search for the function that does that .. in the source code.\n\nIf you don't want to struggle rewriting the .coffee code into js, then you can either check out the following:\nhttps://zeronet.io/docs/site_development/getting_started/#extra-features-works-only-for-sites-that-you-own\nhttps://zeronet.io/docs/site_development/getting_started/#writing-in-coffeescript\n\nOr you can go to [ZeroMe](/Me.ZeroNetwork.bit) and search the file `/js/all.js` (which holds all the compiled source code as the docs linked to before explain) for `/1MeFqFfFFGQfa1J3gJyYYUvb5Lksczq7nH/js/utils/Uploadable.coffee`.",
+			"date_added": 1556971923299
+		}
+	],
+	"comments": [
+		{
+			"comment_id": 1513857567866,
+			"reference_type": "a",
+			"reference_id": 1513857457850,
+			"reference_auth_address": "1G5FwRWF7PRWos66wTcZPtFSbH7vQDnvNb",
+			"body": "If you have more questions, I'd be glad to help you :)",
+			"date_added": 1513857567866
+		},
+		{
+			"comment_id": 1513857764365,
+			"reference_type": "a",
+			"reference_id": 1513857457850,
+			"reference_auth_address": "1G5FwRWF7PRWos66wTcZPtFSbH7vQDnvNb",
+			"body": "Oh, and I forgot to mention that you need to put all this stuff _into_ your Zites root-directory in your ZeroNet's data-directory!\nOtherwise you'd have to copy all the stuff over to your Zite-directory everytime you edit stuff.!\n\nSo create a new zite, and then copy the stuff I mentioned.",
+			"date_added": 1513857764365
+		},
+		{
+			"comment_id": 1513857922603,
+			"reference_type": "a",
+			"reference_id": 1513857457850,
+			"reference_auth_address": "1G5FwRWF7PRWos66wTcZPtFSbH7vQDnvNb",
+			"body": "And apparently I also forgot to complete the ignore-line.\nIt should be `\"ignore\": \"(node_modules/.*|src/.*|.git|disabled/.*)\",`",
+			"date_added": 1513857922603
+		}
+	]
+}

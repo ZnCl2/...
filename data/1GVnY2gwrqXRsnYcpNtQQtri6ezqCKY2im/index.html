@@ -1,0 +1,96 @@
+
+<!DOCTYPE html>
+
+<html>
+<head>
+ <title>Video Streaming Test</title>
+ <meta charset="utf-8">
+ <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+ <base href="" target="_top" id="base">
+ <script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+</head>
+<body>
+
+<script>
+// Inject ajax_key into XMLHttpRequest
+var open = window.XMLHttpRequest.prototype.open;
+
+function openReplacement(method, url, async, user, password) {
+  if (url.indexOf("?ajax_key=") === -1) {
+    url += "?ajax_key=" + document.ajax_key;
+  }
+  return open.apply(this, arguments);
+}
+
+window.XMLHttpRequest.prototype.open = openReplacement;
+</script>
+
+<h3>Live video streaming on ZeroNet</h3>
+<div id="player"></div>
+
+<p>This <s>is</s> was an example of live video streaming on ZeroNet.<br>
+Video stream is cut into small video files which are pushed to ZeroNet every 30 seconds. The player on page joins these pieces seamlessly, into proper video stream, following HLS specification.</p>
+<p>The streaming concept is proven to work. This proof of concept zite stream is turned off.</p>
+<p><a href="/Talk.ZeroNetwork.bit/?Topic:1555652637_1LGApmQZPN49nawg4HQQgf8ToVUPxGe2Zq/Live+video+streaming+zite+example">Discussion thread on ZeroTalk</a></p>
+
+<div style="margin-top: 4em;" id="out"></div>
+
+<script type="text/javascript" src="js/clappr.min.js"></script>
+<script type="text/javascript" src="js/ZeroFrame.js"></script>
+
+<script>
+
+class Page extends ZeroFrame {
+	setSiteInfo(site_info) {
+		var out = document.getElementById("out")
+		out.innerHTML =
+			"Page address: " + site_info.address +
+			"<br>- Peers: " + site_info.peers +
+			"<br>- Size: " + site_info.settings.size +
+			"<br>- Modified: " + (new Date(site_info.content.modified*1000))
+	}
+	
+	sitePublish() {page.cmd("sitePublish", [document.privatekey]);}
+
+	onOpenWebsocket() {
+		this.cmd("siteInfo", [], function(site_info) {
+			page.setSiteInfo(site_info)
+			page.cmd("wrapperGetAjaxKey", [], function(s) {
+			    document.ajax_key = s;
+			})
+			page.cmd("siteInfo", [], function(s) {
+				if (s.settings.own === true) {
+					page.cmd("wrapperPrompt", ["Private key:", "password"], function(p) {
+						document.privatekey = p;
+						page.sitePublish();
+						// Publish every 30 seconds
+						setInterval(page.sitePublish, 30000);
+                    })
+			    }
+			})
+			page.cmd("optionalFileList", {"limit": 10000}, function(s) {
+				s.forEach(function(p) {
+					page.cmd("optionalFileUnpin", [p.inner_path], function(z){});
+					page.cmd("optionalFileDelete", [p.inner_path], function(z){});
+				});
+			});
+		});
+	};
+
+	onRequest(cmd, message) {
+		if (cmd == "setSiteInfo")
+			this.setSiteInfo(message.params)
+        else
+			this.log("Unknown incoming message:", cmd)
+	}
+}
+page = new Page()
+
+
+//new Clappr.Player({source: "video/video.m3u8",
+//					parentId: "#player", width: 960, height: 540, autoPlay: false});
+
+</script>
+
+</body>
+</html>

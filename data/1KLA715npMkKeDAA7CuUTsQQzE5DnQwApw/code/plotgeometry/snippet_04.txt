@@ -1,0 +1,45 @@
+void ellipse(int xc, int yc, int width, int height, int color, Surface srf)
+{
+    int a2 = width * width;
+    int b2 = height * height;
+    int fa2 = a2<<2, fb2 = b2<<2;
+    int incX, incY, x, y, sigma;
+    
+    incX = 0;
+    incY = a2*height;
+    sigma = a2-((a2*height-b2)<<1);
+    for (x = 0, y = height; incX <= incY; x++)
+    {
+        srf.plot(xc + x, yc + y, color);
+        srf.plot(xc - x, yc + y, color);
+        srf.plot(xc + x, yc - y, color);
+        srf.plot(xc - x, yc - y, color);
+        if (sigma >= 0)
+        {
+            sigma += fa2 * (1 - y);
+            y--;
+            incY -= a2;
+        }
+        sigma += b2 * ((x<<2) + 6);
+        incX += b2;
+    }
+    
+    incX = b2*width;
+    incY = 0;
+    sigma = b2-((b2*width-a2)<<1);
+    for (x = width, y = 0; incY <= incX; y++)
+    {
+        srf.plot(xc + x, yc + y, color);
+        srf.plot(xc - x, yc + y, color);
+        srf.plot(xc + x, yc - y, color);
+        srf.plot(xc - x, yc - y, color);
+        if (sigma >= 0)
+        {
+            sigma += fb2 * (1 - x);
+            x--;
+            incX -= b2;
+        }
+        sigma += a2 * ((y<<2) + 6);
+        incY += a2;
+    }
+}

@@ -1,0 +1,63 @@
+{
+	"db_name": "Ftrader",
+	"db_file": "data/users/ftrader.db",
+	"version": 2,
+	"maps": {
+		".+/content.json": {
+			"to_json_table": [ "cert_auth_type", "cert_user_id" ],
+			"file_name": "data.json"
+		},
+		".+/data.json": {
+			"to_table": [
+				{"node": "file", "table": "file", "key_col": "file_name"},
+				{"node": "file_price", "table": "file_price"}
+			],
+			"to_keyvalue": ["next_comment_id", "next_topic_id"]
+		}
+	},
+	"tables": {
+		"json": {
+			"cols": [
+				["json_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+				["directory", "TEXT"],
+				["file_name", "TEXT"],
+				["cert_auth_type", "TEXT"],
+				["cert_user_id", "TEXT"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX path ON json(directory, file_name)"],
+			"schema_changed": 7
+		},
+		"file": {
+			"cols": [
+				["file_name", "TEXT"],
+				["title", "TEXT"],
+				["decription", "TEXT"],
+				["size", "INT"],
+				["metadata_creation_date", "DATETIME"],
+				["metadata_length", "INT"],
+				["metadata_info_files", "TEXT"],
+				["metadata_name", "TEXT"],
+				["metadata_description", "TEXT"],
+				["metadata_price", "FLOAT"],
+				["metadata_owner", "FLOAT"],
+				["date_added", "DATETIME"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX file_key ON file(date_added, json_id)"],
+			"schema_changed": 10
+		},
+		"file_price": {
+			"cols": [
+				["id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+				["metadata_info_files", "TEXT REFERENCES file (metadata_info_files)"],
+				["price", "FLOAT"],
+				["date_added", "DATETIME"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": [
+                "CREATE UNIQUE INDEX file_price_key ON file_price(date_added, price, metadata_info_files)",
+                "CREATE UNIQUE INDEX file_price_json_key ON file_price(date_added, json_id)"],
+			"schema_changed": 17
+		}
+	}
+}

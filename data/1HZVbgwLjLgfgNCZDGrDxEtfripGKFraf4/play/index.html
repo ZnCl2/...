@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>194-8</title>
+<link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css"/>
+<link rel="stylesheet" type="text/css" href="../css/font-awesome.min.css"/>
+<link rel="stylesheet" type="text/css" href="../css/style.css?v=8"/>
+<script type="text/javascript">var ref = false;</script>
+</head>
+<body>
+<div class="container" style="padding: 96px 0 30px; width: 638px; height: 818px;background-size: 100% 100%;background-repeat: no-repeat;image-rendering: crisp-edges; image-rendering: -moz-crisp-edges;" id="bigdiv">
+<link rel="stylesheet" type="text/css" href="../css/monokai-sublime.css"/>
+<div class="col-xs-8 col-sm-12" id="game-container">
+<div id="playarea_0"></div>
+<div id="buttons">
+<a onclick="codo_running = !codo_running; if (codo_running) Module.resumeMainLoop(); else Module.pauseMainLoop(); set_pause_button();">
+<div id=pause_button>
+<img src="../img/p8b_pause.png" width="12" height="12">
+</div>
+</a>
+<a onclick="Module.requestFullScreen(true, false);">
+<img src="../img/p8b_full.png" width="12" height="12">
+</a>
+<a onclick="codo_volume = (codo_volume == 0) ? 128 : 0; codo_command = 2; codo_command_p = codo_volume; set_sound_button()">
+<div id=sound_button>
+<img src="../img/p8b_sound1.png" width="12" height="12">
+</div>
+</a>
+</div>
+</div>
+<script type="text/javascript" src="../js/jquery-2.2.4.min.js"></script>
+<script type="text/javascript" src="../js/pngtoy.min.js"></script>
+<script type="text/javascript" src="../js/decode-png.js?v=2"></script>
+<script type="text/javascript" src="../js/highlight.pack.js"></script>
+<script type="text/javascript" src="../js/ZeroFrame.js"></script>
+<script type="text/javascript">
+  var cartname = window.location.search.split('&')[0].slice(1);
+ 
+  var bigdiv = document.getElementById('bigdiv');
+  bigdiv.style.backgroundImage = "url('../uploads/"+cartname+".p8.png')";
+
+  var Module;
+  var module_canvas;
+  var buttons_to_show = null;
+  var playable_area_count = 0;
+  var playarea_state = 0;
+  var codo_command = 0;
+  var codo_command_p = 0;
+  var codo_volume = 256;
+  var codo_running = true;
+  var pa_pid = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+  var pa_Module = [false, false, false, false, false, false, false, false];
+  var currentGame = '';
+
+  function fullscreenable_canvas(canEl) {
+    var reqFuncName = (canEl.mozRequestFullScreen || canEl.webkitRequestFullScreen || {"name": 'requestFullScreen'}).name;
+
+    document.addEventListener(reqFuncName.slice(0, -'requestFullScreen'.length) + 'fullscreenchange', function (evt) {
+      if(document.mozFullScreen || document.webkitIsFullScreen || document.fullScreen || document.isFullScreen) {
+        var w = canEl.clientWidth;
+        var h = canEl.clientHeight;
+        var factor = Math.min(screen.width / w, screen.height / h);
+
+        canEl.setAttribute('style', 'width: ' + Math.round(w * factor) +
+        'px !important; height: ' + Math.round(h * factor) + 'px !important;');
+      } else {
+        canEl.removeAttribute('style');
+      }
+    }, false);
+
+    if(reqFuncName == 'mozRequestFullScreen') {
+      canEl[reqFuncName] = function() {
+        this.parentNode[reqFuncName].apply(this.parentNode, arguments);
+      };
+    }
+  }
+
+  function onKeyDown_blocker(event) {
+    var o = document.activeElement;
+    event = event || window.event;
+
+    if (!o || o === document.body || o.tagName === 'module_canvas') {
+      if (event.preventDefault) event.preventDefault();
+    }
+  }
+
+  function set_sound_button() {
+    var sb = document.getElementById('sound_button');
+
+    if (codo_volume === 0) sb.innerHTML = '<img src="../img/p8b_sound0.png" width="12" height="12" />';
+    else sb.innerHTML = '<img src="../img/p8b_sound1.png" width="12" height="12" />';
+  }
+
+  function set_pause_button() {
+    var pb = document.getElementById('pause_button');
+
+    if (codo_running) pb.innerHTML = '<img src="../img/p8b_pause.png" width="12" height="12" />';
+    else pb.innerHTML = '<img src="../img/p8b_resume.png" width="12" height="12" />';
+  }
+
+  var e = document.createElement('script');
+
+  e.type = 'application/javascript';
+  e.src  = '../js/pico8.js';
+
+  module_canvas = document.createElement('canvas');
+  module_canvas.width  = 0;
+  module_canvas.height = 0;
+
+  Module = {
+    arguments: ["../uploads/"+cartname+".p8.png"],
+    canvas: module_canvas
+  };
+
+  document.body.appendChild(e);
+  document.addEventListener('keydown', onKeyDown_blocker, false);
+  document.getElementById('playarea_0').appendChild(module_canvas);
+
+  fullscreenable_canvas(module_canvas);
+
+  codo_volume = 128;
+  codo_command = 2;
+  codo_command_p = codo_volume;
+</script> </div>
+<script type="text/javascript" src="../js/libs.js"></script>
+<script type="text/javascript" src="../js/scripts.js?v=9"></script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Unity WebGL Player | Up Up!</title>
+    <base href="" target="_top" id="base">
+    <script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+    <script src="js/ZeroFrame.js"></script>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <link rel="stylesheet" href="TemplateData/style.css">
+    <script src="TemplateData/UnityProgress.js"></script>  
+    <script src="Build/UnityLoader.js"></script>
+    <script>
+      var page = new ZeroFrame();
+
+      // Monkey-patch
+      XMLHttpRequest.prototype.realOpen = XMLHttpRequest.prototype.open;
+      page.cmd("wrapperGetAjaxKey", [], function(ajax_key) {
+        var newOpen = function(method, url, async) {
+            url += "?ajax_key=" + ajax_key;
+            if(typeof async == "undefined") {
+              return this.realOpen(method, url);
+            } else {
+              return this.realOpen(method, url, async);
+            }
+        }
+        XMLHttpRequest.prototype.open = newOpen;
+
+        window.gameInstance = UnityLoader.instantiate("gameContainer", "Build/1.json", {onProgress: UnityProgress});
+      });
+    </script>
+  </head>
+  <body>
+   <p><a href="http://127.0.0.1:43110/1Q9LrWv27gyToaqDXA2GF2ZSA6PhznX7z1/">知乎</a> </p>
+    <div class="webgl-content">
+      <div id="gameContainer" style="width: 960px; height: 600px"></div>
+      <div class="footer">
+        <div class="webgl-logo"></div>
+        <div class="fullscreen" onclick="gameInstance.SetFullscreen(1)"></div>
+        <div class="title">旋转跳跃</div>
+      </div>
+    </div>
+  </body>
+</html>

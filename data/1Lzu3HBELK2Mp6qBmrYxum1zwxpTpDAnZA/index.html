@@ -1,0 +1,232 @@
+
+<!DOCTYPE html>
+<!-- Template by quackit.com -->
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Заметки наблюдателя</title>
+		<style type="text/css">
+		
+			body{
+				margin:0;
+				padding:0;
+				font-family: Sans-Serif;
+				line-height: 1.5em;
+			}
+			
+			#header {
+				background: #BCCE98;
+				height: 100px;
+			}
+			
+			#header h1 {
+				margin: 0;
+				padding-top: 15px;
+			}
+			
+			#mainwrapper {
+				overflow: hidden;
+			}
+			
+			#contentwrapper{
+				float: left;
+				width: 100%;
+			}
+			
+			#content {
+				margin-right: 460px; /* Width of '#rightmenu' and '#leftmenu' combined. */
+				padding-bottom: 10010px;
+				margin-bottom: -10000px;
+			}
+			
+			#leftmenu {
+				float: left;
+				width: 250px;
+				margin-left: -460px; /* Width of '#rightmenu' and '#leftmenu' combined. */
+				padding-bottom: 10010px;
+				margin-bottom: -10000px;
+				background: #F7FDEB;
+			}
+			
+			#rightmenu {
+				float: left;
+				width: 210px;
+				margin-left: -210px;
+				padding-bottom: 10010px;
+				margin-bottom: -10000px;
+				background: #DAE9BC;
+			}
+			
+			#footer{
+				clear: left;
+				width: 100%;
+				background: #BCCE98;
+				text-align: center;
+				padding: 5px 0;
+			}
+			
+			.innertube{
+				margin: 15px; /* Padding for content */
+				margin-top: 0;
+			}
+		
+		
+			p {
+				color: #555;
+			}
+	
+			nav ul {
+				list-style-type: dot;
+				margin: 0;
+				padding: 0;
+			}
+			
+			nav ul a {
+				color: darkgreen;
+				text-decoration: none;
+			}
+			
+		</style>
+		
+	</head>
+	
+	<body>
+			<header id="header">
+				<div class="innertube">
+					<h1>Заметки наблюдателя</h1>
+				</div>
+			</header>
+		<div id="mainwrapper">
+		
+			<div id="contentwrapper">
+				<div id="content">
+					<div class="innertube">
+					
+						<h1>Небольшой редизайн</h1>
+<p>Кажется, так симпатичнее.</p>						
+
+						<h1>Конвертация кривых имён файлов</h1>
+						<p>Не перевелись ещё на Руси идиоты, шлющие много русскоязычных файлов .zip-архивом (разумеется, в безумной виндовой кодировке). Вот и сейчас, простите за неровный почерк. Но подсказала мне интуиция, что проблема эта не нова и поиск быстро принёс решение в виде простого скрипта.
+<br> Оригинал (аж 2010 года) здесь: <a href="http://debback.blogspot.ru/2010/08/unzip-cp1251-utf-8.html">http://debback.blogspot.ru/2010/08/unzip-cp1251-utf-8.html</a>
+<br> Копия здесь: <a href="./convert_encoding.sh">convert_encoding.sh</a></p>
+
+
+					<h1>Скрипт для прослушивания/скачивания музыки из фкантактика</h1>
+						<p>
+						Исходники <a href="http://paste.org.ru/?igrhh7">Здесь</a>
+						<br> Копия <a href="./vk_download.sh">Здесь</a>
+						</p>
+
+						<h1>Вечернее</h1>
+						<p>
+Бесконечно протяжённый момент тишины,<br>
+Застывший промежуток между мыслями.<br>
+Полувздохи — напряжённые — слышны<br>
+Облаками в нереальности подвисшими.<br>
+-<br>
+Погружение в постсумрачный покой<br>
+Выключает разделение сознания<br>
+Замирает, снова замкнута собой,<br>
+Застывает в пароксизме созерцания<br>
+Душа.<br>
+</p>
+
+<h1>Автомонтирование флешек - простое решение</h1>
+<p>Подглядел <a href="https://www.linux.org.ru/forum/general/11904952">на ЛОРе</a></p>
+<p>
+81-custom.flash.rules:
+</p>
+<code>ENV{ID_FS_USAGE}=="filesystem", ENV{ID_FS_TYPE}=="vfat", SUBSYSTEMS=="usb", ACTION=="add", ENV{MOUNT_OPTIONS}="-o gid=plugdev,dmask=007,fmask=117", RUN+="/store1/bin/mflash in %k"
+ENV{ID_FS_USAGE}=="filesystem", ENV{ID_FS_TYPE}=="ext?", SUBSYSTEMS=="usb", ACTION=="add", ENV{MOUNT_OPTIONS}="", RUN+="/store1/bin/mflash in %k"
+#здесь в зависимости от типа файловой системы передаются моунт-опции, в переменной ENV{MOUNT_OPTIONS}
+ENV{ID_FS_USAGE}=="filesystem", SUBSYSTEMS=="usb", ACTION=="remove", RUN+="/store1/bin/mflash out  %k"
+#а здесь типа отключение
+#и вроще как %k передает от udev kernel-имя устройства.</code>
+
+<p>
+mflash:
+</p>
+<code>if [ "$1" = "in" ]; then
+    # The ID_FS_LABEL enviroment variable is only available
+    # When this script is caleld by udev
+    mkdir "/media/$ID_FS_LABEL"
+    $(mount | grep -q "/media/$ID_FS_LABEL") || mount /dev/$2 "/media/$ID_FS_LABEL"
+elif [ "$1" = "out" ]; then
+    rmdir "/media/$ID_FS_LABEL"
+else
+    echo "ERROR: Mode $1 should be 'in' or 'out'."
+fi</code>
+
+<h1>Полезная ссылка в закладки</h1>
+<p>Наткнулся на сайт с солидным количеством руководств по починке всего и вся — электроники, портативных устройств,  <br>
+автомобилей, бытовой техники et cetera. Разуммется, на английскои. Однозначно в закладки: <a href="https://ifixit.com">iFixIt</a>
+</p>
+<h1>Обход интернет-цензуры</h1>
+<p>Отзеркалена книга "как обойти интернет цензуру". Лежит здесь: <a href="http://lambofdevil.tk/bypassing-censorship-ru.pdf">bypassing-censorship-ru.pdf</a></p>
+<p>Цитирую авторов:</p>
+<p>«На том основании, что, как мы полагаем, #Интернет #цензура противоречит главной цели Интернета, которая заключается в предоставлении людям возможности, беспрепятственно обмениваться любой информацией с теми людьми, с которыми они хотят поддерживать связь, а также в корне противоречит всеобщему праву на свободу убеждений и на свободное выражение их; это право включает свободу беспрепятственно придерживаться своих убеждений и свободу искать, получать и распространять информацию и идеи любыми средствами и независимо от государственных границ (ВДПЧ, Статья 19), мы предлагаем вам руководство “Как обойти Интернет Цензуру”.<br>
+Эта #книга не только поможет вам найти свой путь к множеству инструментов и методов, которые позволят вам преодолеть барьеры Интернет цензуры, но и расскажет вам о том, как цензура осуществляется за кулисами. Вы узнаете о рисках, которые могут быть связаны с использованием таких инструментов, и книга поможет вам оценить и смягчить их благодаря методам шифрования или анонимизации.»<br>
+<a href="http://www.howtobypassinternetcensorship.org/ru.html">Источник</a>
+
+<h1>Битвы мёртвых богов</h1>
+<p>Тут один товарищ вбросил интересное заявление — мол "йога = сатанизм". Смех смехом, но, прохихикавшись, я задумался. По зрелом размышлении, получается, что не так уж он и неправ. Особенно с точки зрения христианства и ему подобных.</p>
+<p>
+А вывод о верности оного заявления я высосал вот откуда...</p>
+<a href="./dead-gods.html">Читать далее</a>
+
+
+
+					</div>
+
+			</div>
+			</div>
+			
+			<nav id="leftmenu">
+				<div class="innertube">
+					<p>В этом уютнобложике периодически будут появляться статьи. Счётчиков и комментариев тут нет, rss пока тоже - всё на голом html. Весь контент отдаю в публичное пользование, так что не стесняйтесь. Писать буду нечасто, для удобства отслеживания ссылки транслируются в мой аккаунт в  соцсети <a href="https://joindiaspora.com/u/th3w4tch3r">Diaspora*</a>. Пользователи ВК и Facebook - сами себе злые буратины.</p> 
+				</div>
+			</nav>
+			
+			<nav id="rightmenu">
+				<div class="innertube">
+					<h3>Статьи</h3>
+					<ul>
+						<li><a href="./dead-gods.html">Битвы мёртвых богов</a></li>
+						<li><a href="./anon.html">Анонимное поведение</a></li>
+						<li><a href=".//postgres-bdr.html">Мастер-мастер репликация длля PostgreSQL
+						<li><a href="./browser.html">Браузер твой - враг твой!</a></li>
+						<li><a href="./relig-cargo.html">Все религии — карго-культ?</a></li>
+					</ul>
+					<h3>Документы</h3>
+					<ul>
+	
+						<li><a href="http://lambofdevil.tk/bypassing-censorship-ru.pdf">Обход интернет-цензуры (PDF)</a></li>
+						<li><a href="./vk_download.sh">Скачивание/прослушивание музыки из ВКонтакте (bash)</a></li>
+						<li><a href="./convert_encoding.sh">Конвертация кодировки .zip-архива</a></li>
+					</ul>
+				</div>
+			</nav>
+		</div>
+			<footer id="footer">
+				<div class="innertube">
+					<p><a href="https://internetdefenseleague.org"><img src="https://internetdefenseleague.org/images/badges/final/side_bar_badge.png" alt="Member of The Internet Defense League"/></a></p>
+				</div>
+			</footer>
+	
+
+<script type="text/javascript">
+window._idl = {};
+_idl.variant = "modal";
+(function() {
+    var idl = document.createElement('script');
+    idl.async = true;
+    idl.src = 'https://members.internetdefenseleague.org/include/?url=' + (_idl.url || '') + '&campaign=' + (_idl.campaign || '') + '&variant=' + (_idl.variant || 'modal');
+    document.getElementsByTagName('body')[0].appendChild(idl);
+})();
+</script>
+
+	</body>
+
+</html>
+
+

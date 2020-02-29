@@ -1,0 +1,86 @@
+
+<!DOCTYPE html>
+
+<html>
+<head>
+ <title>New ZeroNet site!</title>
+ <meta charset="utf-8">
+ <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+ <base href="" target="_top" id="base">
+ <link href="assets/css/style.css" rel="stylesheet" type="text/css"/>
+ <script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+</head>
+<body>
+
+<pre class="logo">
+      :::::::::::       ::::::::::       ::::::::
+         :+:           :+:             :+:    :+:
+        +:+           +:+             +:+
+       +#+           :#::+::#        +#++:++#++
+      +#+           +#+                    +#+
+     #+#           #+#             #+#    #+#
+###########       ###              ########
+</pre>
+
+<div class="site-info-container">
+	<h3>Intergalactic File Server</h3>
+	<div id="out"></div>
+</div>
+
+<script type="text/javascript" src="js/ZeroFrame.js"></script>
+
+<script>
+
+class Page extends ZeroFrame {
+	setSiteInfo(site_info) {
+		var out = document.getElementById("out");
+		var query = ["SELECT count(*) FROM channel"];
+		this.cmd("dbQuery", query ,function(ch_count){
+			var channel_count = ch_count[0]['count(*)'];
+			out.innerHTML = "<div>" +
+								"<h3>"+site_info.content.title+"</h3>"+
+								"<ul>" +
+									"<li>" +
+										"<span class='key'>cluster id</span>" +
+										"<span class='val'>"+site_info.address+"</span>" +
+									"</li>" +
+									"<li>" +
+										"<span class='key'>hosted channels</span>" +
+										"<span class='val'>"+channel_count+"</span>" +
+									"</li>" +
+									"<li>" +
+										"<span class='key'># peers</span>" +
+										"<span class='val'>"+site_info.settings.peers+"</span>" +
+									"</li>" +
+                  "<li>" +
+                    "<span class='key'>Uplink to Master</span>"+
+                    "<span class='val'><a href='/12MVkvYGcRW6u2NYbpfwVad1oQeyG4s9Er'>12MVkvYGcRW6u2NYbpfwVad1oQeyG4s9Er</a></span>" +
+                  "</li>" +                  
+								"</ul>" +
+							"</div>";
+		});
+    this.cmd("optionalFileInfo",
+    "data/users/1EhxWNwfNAsgyZo2sEivPTad4fbSxLthD2/Kyuss_-_One_Inch_Man.mp4",
+    function(res) {console.log(JSON.stringify(res))});
+
+	}
+
+	onOpenWebsocket() {
+		this.cmd("siteInfo", [], function(site_info) {
+			page.setSiteInfo(site_info)
+		})
+	}
+
+	onRequest(cmd, message) {
+		if (cmd == "setSiteInfo")
+			this.setSiteInfo(message.params)
+		else
+			this.log("Unknown incoming message:", cmd)
+	}
+}
+page = new Page()
+
+</script>
+
+</body>
+</html>

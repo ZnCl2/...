@@ -1,0 +1,52 @@
+{
+	"title": "Microyu's Blog",
+	"description": "一个萌新的小博客\n技术向/Python/C++",
+	"links": "- [Source code](https://github.com/HelloZeroNet)",
+	"next_post_id": 5,
+	"demo": false,
+	"modified": 1496900121,
+	"post": [
+		{
+			"post_id": 4,
+			"title": "斐讯K2刷入OpenWrt实现Drcom上网",
+			"date_published": 1496900009.489,
+			"body": "# 准备工作\n\n## 刷入Breed与OpenWrt\n\n这个步骤不是这篇文章的重点，你可以参照这篇文章的步骤进行操作\n\n[斐讯K2新版 22.4.6.3非telnet页面直刷Breed详细方法（图文）](http://im.acirno.com/2563.html/amp)\n\n**斐讯K2固件大全**  链接: https://pan.baidu.com/s/1hrXWwfy 密码: fpr6\n\n---\n\n## 手动下载软件包\n\n刷入OpenWrt之后不能使用`opkg update`命令，我也不清楚为什么，所以也就不能使用`opkg install ***` 来安装软件包，我们只能通过wget这种方式来手动获取软件包。\n\n在下载之前，我们先切换到`/root/tmp/`目录下，然后再按照下面的软件包列表下载\n\npython需要的软件包:\n\n* zlib(python-base依赖项)\n\n* python-base\n\n* libffi(python-light依赖项)\n\n* libbz2(python-light依赖项)\n\n* python-light\n\n* python-logging(python用于处理log的模块)\n\n* <del>python-codeces</del>(python用于处理编码的模块，这个可选，我安装的时候由于空间不够就没有安装，然后拷贝两个文件过去也可以实现这个功能，在后面我会具体说明)\n\n* openssh-sftp-server\n\n* vsftpd(用于等会开启sftp来传输脚本)\n\n  下载地址(仅作参考，这个我下载的时候的地址，可能会因为版本更新而发生变化)\n\n  ```shell\n  $ wget http://downloads.openwrt.org/snapshots/trunk/ramips/mt7620/packages/base/zlib_1.2.8-1_ramips.ipk\n  ```\n\n## 安装软件包\n\n由于斐讯K2不能被OpenWrt斐讯定制版识别，所以会导致`opkg install`签名无法认证而无法安装软件包，所以我们要先配置`/etc/opkg.conf`文件\n\n首先，我们打开`opkg.conf`\n\n```shell\n$ vi /etc/opkg.conf\n```\n\n然后修改成如下内容\n\n```shell\ndest root /\ndest ram /tmp\nlists_dir ext /var/opkg-lists\noption overlay_root /overlay\noption check_signature 0\narch all 100\narch ramips 200\narch ramips_24kec 300\n```\n\n配置完后，我们就可以使用`opkg install ***`来安装刚刚下载好的软件包了\n\n## 上传脚本\n\n在上传脚本之前，我们要先输入以下命令开启vsftpd\n\n```shell\n$ /etc/init.d/vsftpd enable\n$ /etc/init.d/vsftpd start\n```\n\n然后我们到Github上下载Drcom的Python版客户端，并按照提示设置好\n\nDrcom开源项目：\n\n[jlu-drcom-client · Github](https://github.com/drcoms/jlu-drcom-client)(吉林大学专版)\n\n[drcom-generic · Github](https://github.com/drcoms/drcom-generic)(通用版)\n\n我这里以吉林大学专版为示范，使用FileZilla等类似工具上传`newclient.py`到路由器根目录\n\n## 配置Python模块\n\n由于空间不足，我们无法安装python-codeces，这个模块，但是我们可以从已安装了python2.7的电脑上拷贝`encoding`这个文件夹以达到目的，但是我们发现，其实`encoding`这个文件夹也很大，于是我们删除里面的文件，只留下需要的`__init__.py`、`hex_codec.py`和`aliases.py`这三个文件,并将其上传到路由器的`/usr/lib/python2.7`目录下。\n\n另外我们还要将电脑Python2.7目录下的`hashlib.py`文件上传到路由器的`/usr/lib/python2.7`目录下。\n\n## 配置路由器\n\n连接上路由器的WiFi，或者通过网线连接到路由器，打开浏览器输入`192.168.1.1`进入路由器界面\n\n先将Wan接口修改为静态协议，然后按照学校给你的IP地址，DNS，默认网关填入，并点击`保存并应用`\n\n然后我们在`启动项`下添加如下命令\n\n```shell\n$ python /root/newclient.py\n```\n\n最后重启路由器愉快的开始上网吧！"
+		},
+		{
+			"post_id": 3,
+			"title": "使用Github和Hexo搭建自己的博客",
+			"date_published": 1496899269.037,
+			"body": "# GitHub Pages是什么？\n\nGitHub Pages本用于介绍托管在GitHub的项目， 不过，由于它具有300MB免费空间，而且十分稳定（~~也许以后会被墙~~），所以用来做搭建一个博客再好不过了。\nGitHub Pages的官网:https://pages.github.com/\n\n---\n\n# 配置环境\n\n## 1. 需要安装的软件\n\n* [Node.js](https://nodejs.org/en/)\n* [Git](https://git-scm.com/)\n\n安装这些软件也是有技巧的，因为如果你普通去官网上下会非常慢的，除非你人品好(别问我为什么)\n\n所以说这里推荐几个VPN，挂上VPN下载的可以快一些\n\n* [EVO加速器](http://www.evojsq.org/portal.php)(每个月有1GB的流量，有日本和美国线路，比较稳定)\n* [赛风](http://www.psiphon3.net/zh/index.html)(多平台客户端，速度较慢)\n* [Lantern](www.getlantern.org)(google的项目)\n\n## 2.注册与配置GitHub\n\n* 打开https://github.com/ (记好你注册时的UserName和E-mail)\n* 进入你的个人页面，点击Repositories，再点击绿色的New\n\n![](http://a3.qpic.cn/psb?/V12Ztnu23ZAQl8/9oK21lDj0XnXt8UXBqnjJHANXV6zQ0A8.Wgz51f9ma4!/b/dNoAAAAAAAAA&bo=IAWAAjkGCQMDCb4!&rf=viewer_4)\n\n* 将Repositories命名为username.github.io(username替换成你自己的)\n\n![](http://a2.qpic.cn/psb?/V12Ztnu23ZAQl8/eTBz5dMxZgA9Sicw3TjUxst0IXNujDrfpflUse5s4ak!/b/dAwBAAAAAAAA&bo=AwRfAwMEXwMDCSw!&rf=viewer_4)\n\n## 3.配置Hexo\n\n新建一个放置你博客的目录，在此处右键，点击Git Bash Here\n\n![](http://a3.qpic.cn/psb?/V12Ztnu23ZAQl8/0IOGZG4dxZhq2Ow5hL*D.a5rRAOajtCoLq0AnVboIkg!/b/dA0BAAAAAAAA&bo=RgHqAQAAAAADB44!&rf=viewer_4)\n\n### 安装Hexo\n\n```\n$ npm install -g hexo\n```\n\n### 部署Hexo\n\n```\n$ hexo init\n```\n\nHexo随后会自动在目标文件夹建立网站所需要的所有文件(现在目录大概看起来是这个样子的)\n\n![](http://a1.qpic.cn/psb?/V12Ztnu23ZAQl8/h0EtjPyCaMUS4200x3MgvsC6ukiF0t0P.R51N9geIdM!/b/dAsBAAAAAAAA&bo=YwR8AQAAAAADBzg!&rf=viewer_4)\n\n### 查看本地Hexo\n\n现在我们已经搭建起本地的hexo博客了，执行以下命令，然后到浏览器输入localhost:4000就可以查看了\n\n```\n$ hexo generate ($ hexo g 也可以)\n$ hexo server ($ hexo s 也可以)\n```\n![](http://a3.qpic.cn/psb?/V12Ztnu23ZAQl8/Z8hO2WU8UJIcMvnXE2asu79Q.l41So*J*qqweH1Ht8I!/b/dA0BAAAAAAAA&bo=DANYAAAAAAADB3U!&rf=viewer_4)\n\n### 关联GitHub\n\n将博客目录中的_config.yml中最下面的deploy改为下面的样子\n\n![img](http://a1.qpic.cn/psb?/V12Ztnu23ZAQl8/xClrk4kDUx7*AzExDYuO2McxsZiN9PwEyp3pWZZUzj0!/b/dOQAAAAAAAAA&bo=rQK7AAAAAAADBzY!&rf=viewer_4)\n\n```\ndeploy:\n  type: git\n  repo: https://github.com/leopardpan/leopardpan.github.io.git\n  branch: master\n```\n\n> 注意：冒号后面有一个空格\n\n网上会有很多说法，有的type是github, 还有repository最后面的后缀也不一样，是github.com.git，我也踩了很多坑，不过现在按照上面那个是对的\n\n执行以下命令\n\n```\n$ npm install hexo-deployer-git --save\n```\n\n### 完成\n\n执行以下命令来上传\n\n```\n$ hexo generate ($ hexo g 也可以)\n$ hexo deploy ($ hexo s 也可以)\n```\n\n或者可以一步到位\n\n```\n$ hexo d -g\n```\n\n![](http://a1.qpic.cn/psb?/V12Ztnu23ZAQl8/iHARCfGjdmsFJ4J5vfXIFGWyIZ9u2yXt0MFkM4ghPh4!/b/dHEBAAAAAAAA&bo=mAKAAgAAAAADAD0!&rf=viewer_4)\n\n![img](http://a2.qpic.cn/psb?/V12Ztnu23ZAQl8/bIj0ZUvcRlx0ASjVRCwbYKWDbuED2A7MpB3wV5b2Y6c!/b/dOUAAAAAAAAA&bo=DQOAAgAAAAADAKk!&rf=viewer_4)\n\n**如果上面的过程没错，你现在可以通过https://username.github.io/ （将username换成你的用户名）来访问你的博客了，如果遇到问题，请继续往下看**\n\n# 问题与错误\n\n### 1. _config.yml错误\n\n部署的时候会提示“致命错误”，多数情况是因为\n\n**冒号后面要加空格**\n\n**冒号后面要加空格**\n\n**冒号后面要加空格**\n\n重要的事情说三遍！！！\n\n### 2.部署成功，但是....404\n\n我第一次安装的时候执行过 hexo d -g 后提示 INFO  Deploy done: git，我高兴了好一阵\n\n然后打开页面时就404了，我发现它居然把整个hexo根目录给提交了上去。\n\n查了很多网站，后来发现是因为我之前执行过git init\n\n**解决方法:在hexo根目录下删除“.git”文件夹(可能是隐藏的)。**\n\n### 3.部署成功，但是内容没有更新\n\n**解决方法:输入以下命令**\n\n```\n$ hexo clean\n$ hexo d -g\n```\n\n### 4.部署错误\n\n#### 错误信息1\n\nFATAL Something's wrong. Maybe you can find the solution here: [Troubleshooting**](https://link.zhihu.com/?target=http%3A//hexo.io/docs/troubleshooting.html)\nError: fatal: Not a git repository (or any of the parent directories): .git\n\n**解决方法:删掉根目录下的文件夹：.deploy_git，重新deploy就可以了。**\n\n#### 错误信息2\n\nError: spawn git ENOENT\n\n**解决方法:添加Git与Git管理库的环境变量**\n\n```\nD:\\Git\\bin;D:\\Git\\libexec\\git-core\n```\n\n#### 错误信息3\n\nERROR Deployer not found: git 或者 ERROR Deployer not found: github\n\n**解决方法:输入以下命令**\n\n```\nnpm install hexo-deployer-git --save\n```\n\n### 5.测试错误\n\n​这个我没出现过，别的论坛看到的，希望能对你有帮助\n错误信息:\n\nERROR Plugin load failed: hexo-server\n\n**解决方法: 输入以下命令**\n\n```\nnpm install hexo-server\n```\n\n# 购买域名\n\n\n> 注意:这个步骤不是必须的，你可以选择购买域名(收费)，也可以选择使用GitHub Pages的二级域名(免费)\n\n因为我没有购买域名（当然以后会的），所以先不写这里\n\n# 主题的部署\n\n\nHexo的主题有很多，可以自己选择\n\n[有哪些好看的 Hexo 主题？](https://www.zhihu.com/question/24422335)\n\n我这里已部署NexT主题为例\n\n### 1.找到主题的GitHub页面\n\n  https://github.com/iissnan/hexo-theme-next\n\n  ![img](http://a2.qpic.cn/psb?/V12Ztnu23ZAQl8/UJJtXKwLzvfFB6Yv01NtIiwaFpMTC6OxYig9J6NFpKQ!/b/dHIBAAAAAAAA&bo=gAJ6AQAAAAADB9s!&rf=viewer_4)\n\n### 2.选择右上方绿色的Clone or download中的Download ZIP\n\n### 3.将下载好的文件解压，并放入博客根目录的themes文件夹中\n\n### 4.修改根目录的_config.yml(站点配置文件)\n\n  找到 `theme` 字段，并将其值更改为 `next`。\n\n  ![img](http://a2.qpic.cn/psb?/V12Ztnu23ZAQl8/LQqSO445cTxEz3LUM1qjhNw7O7UPV3vi.P0u52M4ecc!/b/dG8BAAAAAAAA&bo=BgKXAAAAAAADB7E!&rf=viewer_4)\n\n### 5.修改主题目录的_config.yml(主题配置文件)进行个性化设置\n\n  [开始使用](http://theme-next.iissnan.com/getting-started.html)\n\n  [主题配置](http://theme-next.iissnan.com/theme-settings.html)\n\n  [第三方服务](http://theme-next.iissnan.com/third-party-services.html)\n\n  [内建标签](http://theme-next.iissnan.com/tag-plugins.html)\n\n  [进阶设定](http://theme-next.iissnan.com/advanced-settings.html)\n"
+		},
+		{
+			"post_id": 2,
+			"title": "Hello ZeroNet",
+			"date_published": 1496892090.052,
+			"body": "HelloWorld！！！"
+		},
+		{
+			"post_id": 1,
+			"title": "Congratulations!",
+			"date_published": 1433033779.604,
+			"body": "Your zeronet blog has been successfully created!"
+		}
+	],
+	"tag": [
+		{
+			"value": "技术",
+			"post_id": 3
+		},
+		{
+			"value": "水文",
+			"post_id": 2
+		},
+		{
+			"value": "水文",
+			"post_id": 1
+		},
+		{
+			"value": "技术",
+			"post_id": 4
+		}
+	]
+}

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+ <title>Millchan</title>
+ <meta charset="utf-8">
+ <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+ <base href="" target="_top" id="base">
+ <script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+ <link rel="stylesheet" type="text/css" href="css/vuetify.css">
+ <link rel="stylesheet" type="text/css" href="css/style.css">
+ <link rel="stylesheet" type="text/css" href="css/highlight.css">
+ <link rel="stylesheet" type="text/css" href="css/dark.css">
+ <link rel="stylesheet" type="text/css" href="css/light.css">
+</head>
+<body>
+<div id="root">
+<v-app ref='app' :dark='dark_theme'>
+<template slot="anonymous">Anonymous</template>
+<template slot="reply_button">[Reply]</template>
+<template slot="subject">Subject</template>
+<template slot="files">Files</template>
+<template slot="create">Reply</template>
+<template slot="preview">Preview</template>
+<template slot="close">Close</template>
+<template slot="all_posts">[Show all posts]</template>
+<toolbar>
+<template slot="options">Options</template>
+</toolbar>
+<logo></logo>
+	<template v-if="active_page === 'home'">
+		<v-container grid-list-md text-xs-center>
+		<create-form :userid="userid">
+		<template slot="hide">Hide</template>
+		<template slot="new_board">New board</template>
+		<template slot="create">Create!</template>
+		</create-form>
+		<disclaimer></disclaimer>
+		<v-card color='transparent' class='elevation-2' style='height: 56px'>
+		<v-text-field loading color='transparent' full-width v-model='search_board' label='Search board...'></v-text-field>
+		</v-card>
+		<popular-boards v-if="popular_boards.length" :boards="popular_boards"></popular-boards>
+		<div v-if="posts.length" class="home-container" id="home-recent-posts">
+			<recent-posts :posts="posts" :post_no="post_no">
+			<template slot="recent_posts">Recent posts</template>
+			<template slot="load_more">Load more</template>
+			<template slot="hide_expanded">Hide expanded</template>
+			</recent-posts>
+		</div>
+		<div v-if="new_boards.length" class="home-container" id="home-new-boards" v-if="new_boards">
+			<span class="home-info">New boards</span>
+			<div v-for="board in new_boards">
+			<a :href="board|boardLink">{{boardTarget(board)}}</a>
+			</div>
+			<v-btn small @click="clearNewboards()">Clear</v-btn>
+		</div>
+		<div v-if="user_boards.length" class="home-container" id="home-userboards" v-if="user_boards">
+			<span class="home-info">User boards</span>
+			<div v-for="board in user_boards">
+			<a :href="board|boardLink">{{boardTarget(board)}}</a>
+			<a :href="editBoardLink(board)" title="Manage board">[Edit]</a>
+			</div>
+		</div>
+		</v-container>
+	</template>
+	<template v-else-if="active_page === 'page'">
+		<v-container fluid grid-list-md>
+		<v-layout column align-center>
+		<v-flex xs3 text-xs-center>
+		<board-info :boardinfo='boardinfo'></board-info>
+		<v-btn color="primary" @click="show_create_reply = !show_create_reply">
+		{{ show_create_reply ? "Hide" : "New thread" }}
+		</v-btn>
+		<reply-form id='create-form' v-if="show_create_reply" :uri="uri" :userid="userid" :directory="dir" :post_no="post_no">
+		<template slot="submit">Create thread</template>
+		</reply-form>
+		</v-flex>
+		</v-layout>
+		<div id="top-links">
+		<a :href="catalogURL">[Catalog]</a>
+		<a href="#bottom-links" @click.prevent="$vuetify.goTo('#bottom-links',scrollOptions)">[Bottom]</a>
+		</div>
+		<v-divider class='mb-2'></v-divider>
+		<div-thread v-for="thread in getThreads()" :thread='thread' :post_no='post_no' :is_user_board='is_user_board' :key='thread.id' ref='thread'>
+		</div-thread>
+		<navigator v-if="blacklist_active" :pages="blacklist_nav"></navigator>
+		<navigator v-else :pages="normal_nav"></navigator>
+		<post-preview v-if='preview_post' :preview_post='preview_post' :post_no='post_no[preview_post.id]'></post-preview>
+		<div id="bottom-links">
+		<a :href="location.pathname">[Home]</a>
+		<a :href="catalogURL">[Catalog]</a>
+		<a href="#top-links" @click.prevent="$vuetify.goTo('#top-links',scrollOptions)">[Top]</a>
+		<options :dir='dir' :uri='uri'></options>
+		<styles></styles>
+		</v-container>
+	</template>
+	<template v-else-if="active_page === 'thread'">
+		<v-container fluid grid-list-md>
+		<v-layout column align-center>
+		<v-flex xs3 text-xs-center>
+		<a style="text-decoration:none" :href="boardURI">
+		<board-info :boardinfo='boardinfo'></board-info>
+		</a>
+		<v-btn color="primary" v-if="!show_quick_reply" @click="show_create_reply = !show_create_reply">
+		{{ show_create_reply ? "Hide" : "Reply to thread" }}
+		</v-btn>
+		<reply-form id='create-form' v-if="show_create_reply && !show_quick_reply" :uri="uri" :userid="userid" :thread="thread" :directory="dir" :post_no="post_no">
+		<template slot="submit">Reply</template>
+		</reply-form>
+		</v-flex>
+		</v-layout>
+		<div id="top-links">
+		<a :href="boardURI">[Return]</a>
+		<a :href="catalogURL">[Catalog]</a>
+		<a href="#bottom-links" @click.prevent="$vuetify.goTo('#bottom-links',scrollOptions)">[Bottom]</a>
+		</div>
+		<posts-wrapper ref='replies' :is_user_board="is_user_board" :post_no="post_no" :posts="posts"></posts-wrapper>
+		<v-layout column align-center>
+		<v-flex xs3 text-xs-center>
+		<reply-form id='quick-reply' ref="quickreply" v-if="show_quick_reply" :uri="uri" :userid="userid" :thread="thread" :directory="dir" :post_no="post_no" :addclose='true'>
+		<template slot="submit">Reply</template>
+		</reply-form>
+		</v-flex>
+		</v-layout>
+		<post-preview v-if='preview_post' :preview_post='preview_post' :post_no='post_no[preview_post.id]'></post-preview>
+		<div id="bottom-links">
+		<a :href="boardURI">[Return]</a>
+		<a :href="location.pathname">[Home]</a>
+		<a :href="catalogURL">[Catalog]</a>
+		<a href="#top-links" @click.prevent="$vuetify.goTo('#top-links',scrollOptions)">[Top]</a>
+		<a v-if="!show_quick_reply" href="javascript:void(0)" @click="show_quick_reply=true">[Reply]</a>
+		<options :dir='dir' :uri='uri'></options>
+		<styles></styles>
+		</div>
+	</template>
+	<template v-else-if="active_page === 'catalog'">
+		<v-container fluid grid-list-md>
+		<v-layout column align-center>
+		<v-flex xs3 text-xs-center>
+		<board-info :boardinfo='boardinfo'></board-info>
+		<v-btn color="primary" @click="show_create_reply = !show_create_reply">
+		{{ show_create_reply ? "Hide" : "New thread" }}
+		</v-btn>
+		<reply-form id='create-form' v-if="show_create_reply" :uri="uri" :userid="userid" :directory="dir" :post_no="post_no">
+		<template slot="submit">Create thread</template>
+		</reply-form>
+		</v-flex>
+		</v-layout>
+		<div id="catalog-threads" v-for="thread in getAllThreads()">
+		<catalog-thread :thread="thread" :key="thread.id"></catalog-thread>
+		</div>
+		<div id="bottom-links">
+		<a :href="boardURI">[Return]</a>
+		<a :href="location.pathname">[Home]</a>
+		<options :dir='dir' :uri='uri'></options>
+		</div>
+		<styles></styles>
+		</v-container>
+	</template>
+	<template v-else-if="active_page === 'edit'">
+		<v-container grid-list-md>
+		<v-layout column align-center>
+		<v-flex xs3 text-xs-center>
+		<a style="text-decoration:none" :href="boardURI">
+		<board-info :boardinfo='boardinfo'></board-info>
+		</a>
+		<board-edit v-if='boardinfo' :board="boardinfo"></board-edit>
+		</v-flex>
+		<v-flex xs12>
+		<div v-if="bl_users.length" class="blacklist_container">
+			<h2>Blacklisted users</h2>
+			<bl-users id="blacklist_users" :bl_users="bl_users"></bl-users>
+		</div>
+		<div class="mt-4"  v-if="bl_posts.length" class="blacklist_container">
+			<h2>Blacklisted posts</h2>
+			<bl-posts id="blacklist_posts" :bl_posts="bl_posts"></bl-posts>
+		</div>
+		</v-flex>
+		</v-layout>
+		<div id="bottom-links">
+		<a :href="location.pathname">[Home]</a>
+		</v-container>
+	</template>
+	<mclink></mclink>
+	<overlay></overlay>
+</div>
+</v-app>
+</div>
+<script type="text/javascript" src="js/all.js" async></script>
+</body>
+</html>

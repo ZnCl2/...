@@ -1,0 +1,2919 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>王子亭的博客</title>
+  
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="https://jysperm.me/"/>
+  <updated>2017-03-04T08:34:40.000Z</updated>
+  <id>https://jysperm.me/</id>
+  
+  <author>
+    <name>王子亭</name>
+    <email>jysperm@gmail.com</email>
+  </author>
+  
+  <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Rollup: 去中心化随机抽奖程序</title>
+    <link href="https://jysperm.me/2017/02/distributed-random-rollup/"/>
+    <id>https://jysperm.me/2017/02/distributed-random-rollup/</id>
+    <published>2017-02-18T16:00:00.000Z</published>
+    <updated>2017-03-04T08:34:40.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>在春节前后，经常在社区中看到有关年会抽奖程序的讨论，其中抽奖的公平性是被大家讨论得最多的点。可能有的人会说可以用 random.org 来取随机数，的确这个网站可以保证数字的随机性，但如果访问 random.org 的浏览器位于一台计算机上，如何证明这个随机数确实来自 random.org 呢？<strong>如何确定这台计算机从软件到硬件、从操作系统到网络接口都没有被动过手脚呢</strong>？</p>
+<p>所以我们需要一种「可验证」的随机数生成算法，即 <strong>这个算法不应该是运行在单个设备上的，而是可以在不同的设备上多次运行，并且总是得到相同的结果</strong>，这样才能被大家信服 —— 每个人都可以在自己的设备上进行验算。</p>
+<p>其实说来直接使用比特币下一个区块的 hash，或者股市收盘价格作为随机数是最简单、最具有可行性的做法了。但这并不是说比特币（矿工可以有选择性地提交区块来影响随机数）或股市不能被操控，而只是相对于我们的年会抽奖来说，他们的体量都太大了，去操控比特币或股市是不划算的。</p>
+<p>于是我想能否利用之前了解到的去中心化和区块链的知识，来实现一个去中心化的、可验算的、难以操控的抽奖程序，让这个抽奖程序以分布式的方式运行在所有参与者的设备上，会有一个后端服务器帮助客户端进行广播，但本身没有特权，客户端会对随机数的产生过程进行验算，确保没有人作弊。</p>
+<p>其实在 Ethereum（一个类似比特币的区块链）上已经有了非常成熟的 <a href="https://github.com/randao/randao" target="_blank" rel="external">随机数生成器</a>，它基于「两阶段提交」来实现，在第一阶段每个人生成一个随机数，并将这个随机数的 hash 广播出去；然后在第二阶段之前的参与者再广播随机数的明文，然后将所有参与者的随机数加到一起，形成一个无法被任何操纵的随机数。</p>
+<p>这个算法的要点在于，在第一阶段中每个人都选定了一个数字，但广播的却是数字的 hash，也就是说你没办法知道其他人选定的数字，也就无法去构造特定的数字来影响结果；而在第二阶段大家才开始广播真正的数字，同时每个人都会使用之前的 hash 进行验算，保证这时的数字与第一阶段相同。</p>
+<p>我将这个算法进行了细化，在浏览器中用 React 实现了客户端，再用 Node.js 实现了一个基于 WebSocket 的服务器来辅助广播。大家可以在 <a href="https://rollup.leanapp.cn" target="_blank" rel="external">rollup.leanapp.cn</a> 访问到这个原型（源代码和详细算法位于 <a href="https://github.com/jysperm/rollup" target="_blank" rel="external">jysperm/rollup</a>），可以自己开多个浏览器窗口进行测试：</p>
+<p><img src="https://cdn.ziting.wang/distributed-random-rollup/screenshot.png" alt="screenshot"></p>
+<p>如果有人捣乱会怎么样，比如在第二阶段广播了错误的数字或者根本没有广播呢？在 Ethereum 上这会给参与者带来经济上的惩罚。而在我们的原型中，我们只能做到感知到这些作弊的情况，然后中止抽奖，如果有人执意捣乱，就会导致抽奖一直无法完成了。</p>
+<p>那是不是说这个原型已经做到无懈可击了呢？并不是，目前是使用单一的后端来实现广播，如果这个后端有选择性地不对特定的客户端广播一些消息，就会导致这个特定的客户端被孤立，和其他人产生不同的抽奖结果，而且这个被孤立的客户端也无从证明究竟是后端没有广播，还是自己忽略了广播。</p>
+<p>更好的设计可能是通过真正 P2P 的方式进行广播，这样除非其他所有参与者联合起来孤立一部分人，否则其他参与者就可以从未参与攻击的人哪里得到正确的广播。然而真正的 P2P 其实是没办法实现的 —— 你总是需要一个用作服务发现的节点，同时也要考虑通讯信道的安全性，当前的密码学技术虽然可能保证消息不被篡改，但却无法保证消息不丢失。</p>
+<p>关于区块链的更多知识可参考我之前的文章 <a href="https://jysperm.me/2016/05/blockchain-slides/">BlockChain 与 Ethereum 介绍</a>，其中也有对 Ethereum 上的随机数生成器的详细讨论。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;在春节前后，经常在社区中看到有关年会抽奖程序的讨论，其中抽奖的公平性是被大家讨论得最多的点。可能有的人会说可以用 random.org 来取随机数，的确这个网站可以保证数字的随机性，但如果访问 random.org 的浏览器位于一台计算机上，如何证明这个随机数确实来自 ra
+    
+    </summary>
+    
+    
+      <category term="去中心化" scheme="https://jysperm.me/tag/%E5%8E%BB%E4%B8%AD%E5%BF%83%E5%8C%96/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Stream: 给机器人用的 Twitter</title>
+    <link href="https://jysperm.me/2017/01/introducing-stream/"/>
+    <id>https://jysperm.me/2017/01/introducing-stream/</id>
+    <published>2017-01-22T16:00:00.000Z</published>
+    <updated>2017-01-22T16:34:26.000Z</updated>
+    
+    <content type="html"><![CDATA[<p><a href="https://stream.pub" target="_blank" rel="external">Stream</a> 是我在 2016 年中旬完成的一个业余项目，它希望提供一个基于发布、订阅模型的消息服务，提供 HTTP API 并传输结构化的数据（JSON）。适用的场景就是自动化工具间的通讯（例如两个运行在 NAT 内的脚本需要交换数据）、自动化脚本需要推送数据给人阅读（人可以在 Web UI 上阅读消息）。</p>
+<p>还更进一步希望能够提供移动平台的客户端，对于已经订阅的消息实现实时的推送，不过这个部分并没有完成。其实也是因为这个项目被搁置了很久，在最近我也发现了一些和 Stream 非常相似的服务（<a href="https://getstream.io/" target="_blank" rel="external">getstream.io</a>），所以才将这个半成品发布了出来。</p>
+<p>目前 Stream 的 Web UI 可以发布、以时间轴查看消息、按照标签检索消息；HTTP API（文档位于 <a href="https://stream.pub/api-reference/" target="_blank" rel="external">Stream API Reference</a>）还提供了注册和登录帐号的功能，登录帐号后发出的消息会包含你的用户名作为特殊的标签。</p>
+<p>当然，就像我其他的业余项目一样，Stream 其实更多地是在实践一些新的技术，比如基于 React 的双端渲染、React Native、RAML、Docker Swarm 等等。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;&lt;a href=&quot;https://stream.pub&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Stream&lt;/a&gt; 是我在 2016 年中旬完成的一个业余项目，它希望提供一个基于发布、订阅模型的消息服务，提供 HTTP API 并传输结构化的数据（
+    
+    </summary>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>2016 年度支出分析</title>
+    <link href="https://jysperm.me/2017/01/expenses-analysis-2016/"/>
+    <id>https://jysperm.me/2017/01/expenses-analysis-2016/</id>
+    <published>2017-01-19T16:00:00.000Z</published>
+    <updated>2017-01-20T15:15:40.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>我一直热衷于做一些奇奇怪怪的数据统计 —— 今年一整年我统计了我的每一笔支出，并在此做一个分析，感谢 <a href="https://zhuanlan.zhihu.com/p/20338162" target="_blank" rel="external">Expense</a> 这个小巧的记录工具和 Excel 这个分析工具。</p>
+<h2 id="总览"><a href="#总览" class="headerlink" title="总览"></a>总览</h2><table>
+<thead>
+<tr>
+<th>类别</th>
+<th>金额</th>
+<th>比例</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数码</td>
+<td>28700</td>
+<td>22%</td>
+<td>手机、电脑等</td>
+</tr>
+<tr>
+<td>房租水电</td>
+<td>23755</td>
+<td>19%</td>
+<td></td>
+</tr>
+<tr>
+<td>餐饮</td>
+<td>22856</td>
+<td>18%</td>
+<td></td>
+</tr>
+<tr>
+<td>网络服务</td>
+<td>14620</td>
+<td>11%</td>
+<td>云服务或订阅制软件</td>
+</tr>
+<tr>
+<td>零食</td>
+<td>7553</td>
+<td>6%</td>
+<td></td>
+</tr>
+<tr>
+<td>礼物</td>
+<td>4657</td>
+<td>4%</td>
+<td></td>
+</tr>
+<tr>
+<td>玩具</td>
+<td>4575</td>
+<td>4%</td>
+<td>仅包括非电子产品</td>
+</tr>
+<tr>
+<td>皮蛋豆腐</td>
+<td>4384</td>
+<td>3%</td>
+<td></td>
+</tr>
+<tr>
+<td>交通</td>
+<td>4135</td>
+<td>3%</td>
+<td></td>
+</tr>
+<tr>
+<td>软件游戏</td>
+<td>2851</td>
+<td>2%</td>
+<td>非订阅制软件和游戏</td>
+</tr>
+<tr>
+<td>生活用品</td>
+<td>2567</td>
+<td>2%</td>
+<td></td>
+</tr>
+<tr>
+<td>医疗</td>
+<td>2237</td>
+<td>2%</td>
+<td></td>
+</tr>
+<tr>
+<td>数字内容</td>
+<td>2129</td>
+<td>2%</td>
+<td>电影、电子书等</td>
+</tr>
+<tr>
+<td>衣物个护</td>
+<td>1319</td>
+<td>1%</td>
+<td></td>
+</tr>
+<tr>
+<td>旅行娱乐</td>
+<td>1276</td>
+<td>1%</td>
+<td>住宿费用和线下娱乐活动</td>
+</tr>
+<tr>
+<td>实体书</td>
+<td>726</td>
+<td>0%</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="数码"><a href="#数码" class="headerlink" title="数码"></a>数码</h2><p>果然最多还是花在数码产品上，其中 58% 花在了苹果的产品上。</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>金额</th>
+<th>比例</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>iPhone SE * 2</td>
+<td>8176</td>
+<td>28%</td>
+<td>第一个 SE 到手一周就被盗了</td>
+</tr>
+<tr>
+<td>MacBook Pro</td>
+<td>5073</td>
+<td>18%</td>
+<td>公司报销了很大一部分</td>
+</tr>
+<tr>
+<td>XPS</td>
+<td>3708</td>
+<td>13%</td>
+<td>基本没怎么用就转手了</td>
+</tr>
+<tr>
+<td>iPad</td>
+<td>2888</td>
+<td>10%</td>
+<td></td>
+</tr>
+<tr>
+<td>4k 显示器</td>
+<td>2399</td>
+<td>8%</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="房租水电"><a href="#房租水电" class="headerlink" title="房租水电"></a>房租水电</h2><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>金额</th>
+<th>比例</th>
+<th>平均每月</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>房租</td>
+<td>20700</td>
+<td>87%</td>
+<td>1725</td>
+</tr>
+<tr>
+<td>电费</td>
+<td>2966</td>
+<td>12%</td>
+<td>247</td>
+</tr>
+<tr>
+<td>水费</td>
+<td>89</td>
+<td>0%</td>
+<td>7</td>
+</tr>
+</tbody>
+</table>
+<h2 id="餐饮"><a href="#餐饮" class="headerlink" title="餐饮"></a>餐饮</h2><p>仅包括正餐，也包括请人吃饭；今年大部分早饭是在家煮咖啡吃饼干，并没有计入餐饮分类，午饭和晚饭则几乎全部是在外面吃的，没自己做过饭，这让这个统计变得十分简单。</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>金额</th>
+<th>比例</th>
+<th>平均每日</th>
+<th>平均每次</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>晚饭</td>
+<td>14449</td>
+<td>63%</td>
+<td>40</td>
+<td>45</td>
+</tr>
+<tr>
+<td>午饭</td>
+<td>8064</td>
+<td>35%</td>
+<td>22</td>
+<td>29</td>
+</tr>
+<tr>
+<td>早饭</td>
+<td>63</td>
+<td>0%</td>
+<td>0</td>
+<td>9</td>
+</tr>
+</tbody>
+</table>
+<h2 id="网络服务"><a href="#网络服务" class="headerlink" title="网络服务"></a>网络服务</h2><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>金额</th>
+<th>比例</th>
+<th>平均每月</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>QingCloud</td>
+<td>5656</td>
+<td>39%</td>
+<td>471</td>
+</tr>
+<tr>
+<td>域名续费</td>
+<td>2402</td>
+<td>16%</td>
+<td>200</td>
+</tr>
+<tr>
+<td>Linode</td>
+<td>2221</td>
+<td>15%</td>
+<td>185</td>
+</tr>
+<tr>
+<td>DigitalOcean</td>
+<td>1010</td>
+<td>7%</td>
+<td>84</td>
+</tr>
+<tr>
+<td>电话、宽带、流量</td>
+<td>799</td>
+<td>5%</td>
+<td>67</td>
+</tr>
+<tr>
+<td>GitHub</td>
+<td>558</td>
+<td>4%</td>
+<td>47</td>
+</tr>
+</tbody>
+</table>
+<h2 id="零食"><a href="#零食" class="headerlink" title="零食"></a>零食</h2><p>这个类别的统计并不是很详细，很多时候没有记录具体内容。</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>金额</th>
+<th>比例</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>咖啡</td>
+<td>1346</td>
+<td>18%</td>
+<td>包括咖啡店消费和咖啡豆等材料</td>
+</tr>
+<tr>
+<td>饮料</td>
+<td>903</td>
+<td>12%</td>
+<td>除咖啡、牛奶、水以外</td>
+</tr>
+<tr>
+<td>牛奶</td>
+<td>549</td>
+<td>7%</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="玩具"><a href="#玩具" class="headerlink" title="玩具"></a>玩具</h2><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>金额</th>
+<th>比例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>乒乓球桌</td>
+<td>1099</td>
+<td>24%</td>
+</tr>
+<tr>
+<td>Yubikey</td>
+<td>660</td>
+<td>14%</td>
+</tr>
+<tr>
+<td>咖啡机</td>
+<td>399</td>
+<td>9%</td>
+</tr>
+</tbody>
+</table>
+<h2 id="皮蛋豆腐"><a href="#皮蛋豆腐" class="headerlink" title="皮蛋豆腐"></a>皮蛋豆腐</h2><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>金额</th>
+<th>比例</th>
+<th>平均每月</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>绝育手术</td>
+<td>2000</td>
+<td>46%</td>
+<td></td>
+</tr>
+<tr>
+<td>猫粮</td>
+<td>1094</td>
+<td>25%</td>
+<td>96</td>
+</tr>
+</tbody>
+</table>
+<h2 id="交通"><a href="#交通" class="headerlink" title="交通"></a>交通</h2><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>金额</th>
+<th>比例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>火车票</td>
+<td>1416</td>
+<td>34%</td>
+</tr>
+<tr>
+<td>滴滴</td>
+<td>1058</td>
+<td>26%</td>
+</tr>
+<tr>
+<td>机票</td>
+<td>586</td>
+<td>14%</td>
+</tr>
+<tr>
+<td>公交卡</td>
+<td>327</td>
+<td>8%</td>
+</tr>
+</tbody>
+</table>
+<h2 id="软件游戏"><a href="#软件游戏" class="headerlink" title="软件游戏"></a>软件游戏</h2><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>金额</th>
+<th>比例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Steam 游戏</td>
+<td>1702</td>
+<td>60%</td>
+</tr>
+<tr>
+<td>Sketch</td>
+<td>723</td>
+<td>25%</td>
+</tr>
+<tr>
+<td>守望先锋</td>
+<td>198</td>
+<td>7%</td>
+</tr>
+</tbody>
+</table>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;我一直热衷于做一些奇奇怪怪的数据统计 —— 今年一整年我统计了我的每一笔支出，并在此做一个分析，感谢 &lt;a href=&quot;https://zhuanlan.zhihu.com/p/20338162&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Expense
+    
+    </summary>
+    
+    
+      <category term="年度小结" scheme="https://jysperm.me/tag/summary-of-year/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>2016 年度小结（技术方面）</title>
+    <link href="https://jysperm.me/2017/01/programming-of-2016/"/>
+    <id>https://jysperm.me/2017/01/programming-of-2016/</id>
+    <published>2017-01-06T16:00:00.000Z</published>
+    <updated>2017-01-07T11:54:16.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>今年年初我花了三个月的业余时间用 Laravel 开发了一个项目，在此之前，除了去年换工作准备面试时，我并没有正经地用过什么 PHP 框架。在我看来，Laravel 其实并没有太多的独创性，而只是把其他社区中那些被实践证明非常有价值的东西带到了 PHP 社区，例如自动测试、包管理、依赖注入等等。</p>
+<p>回到 PHP 本身，PHP7 无论在语言特性还是性能上都无可挑剔，我觉得限制它的使用的更多的是在异步模型上 —— 或者说它缺少一个好的异步模型。也许有人觉得 Node.js 的事件队列十分难以捉摸，但由于 Node.js 是我在生产环境使用得最多的语言，我十分熟悉 Node.js 的异步模型，对其他「普通」的语言的异步模型却比较难以接受。今年我在 Openresty 中写了一些 Lua 代码，对 Lua 的协程也有了一些简单的了解，同时我也了解到在 Python 中被使用最多的异步模型同样也是基于协程。</p>
+<p>协程最大的好处是不会对代码有侵入性 —— 你写代码的时候依然是照常地写同步代码，只需在执行的时候引入协程（对于 Web 服务就是在每收到一个请求的时候启动一个协程）就可以享受轻量级进程的好处，用更低的 CPU 和内存开销来支持更高的并发。相比之下 Node.js 的异步代码则是显式的，需要时刻考虑异步的问题，也很容易出现疏忽和错误。而且异步的函数是有传染性的，如果你调用了一个异步函数，那么后面的代码都要用异步的方式写，虽然我们有 Promise 等异步抽象，但这其实就是侵入性的体现 —— 你必须选择一个异步抽象，这个异步抽象会混入你所有的代码。</p>
+<p>那是不是说 Python 的协程就比 Node.js 的事件队列要好呢？其实我觉得大部分的情况下是这样的，但从理论上来说，Node.js 还是会有更好的性能，因为协程虽然比线程要轻量级，但依然是一种封装 —— 需要在协程之间调度，需要保存和恢复执行上下文，而 Node.js 的异步是没有任何的封装的 —— Node.js 里你没有办法去管理异步任务（domain 模块也早就被 deprecated 了），因为异步任务并不是运行在像协程的这样一个容器里的，因此省掉这一层抽象会带来更好的性能。</p>
+<p>Laravel 是一个一站式的开发框架，我之前并没有用过这类的框架，在 Node.js 中也不是很流行这样的框架，好处自然就是组件之间有着很好的兼容性和一致的设计，质量也有保证；劣势则是选择的余地比较少（实际上服务容器的概念就是为了弥补一站式框架不便于更换组件的问题），因为这些组件是框架整体的一部分，所以对一些比较小众的需求缺乏支持，这些组件也较少考虑脱离 Laravel 独立地使用。</p>
+<hr>
+<p>今年我还花了很多时间去了解和使用 InfluxDB 这样的时序数据库，在 Web 后端的开发过程中，有很多日志、监控、统计类的数据都是时序数据 —— 这些数据量会很大、每一条都和一个时间关联、查询时通常也按照时间范围进行查询、查询时我们通常会将一段时间的数据进行分组和聚合。InfluxDB 为了支持基于 Tag 的筛选和分组，采用了按列存储的方式 —— 每个 Tag 的值的组合都被称作一个序列，被独立地存储以备检索。</p>
+<p>因为这些数据都和时间关联，同时数据库也提供了比较好的对分组和聚合的支持，所以可以很轻松地使用 Chronograf 或 Grafana 之类的可视化工具画出图表，对这些指标进行监控。实际上去年我做了一个和时序数据库非常相关的项目，即 <a href="https://github.com/leancloud/leanengine-sniper" target="_blank" rel="external">leanengine-sniper</a>，今年我又花了一些时间把这个算是自部署的系统包装成了一个云服务（<a href="https://apm.leanapp.cn" target="_blank" rel="external">LeanEngine APM</a>），实际上这就是一个针对特定场景的、简易的时序数据库和基于时序数据的可视化工具。</p>
+<hr>
+<p>做一个象棋 AI 是我一直以来的一个想法，于是今年接着 AlphaGo 的热度，我用 TypeScript、React 和 Web Worker 等技术在浏览器中实现了一个非常弱的国际象棋 AI —— <a href="https://jysperm.me/2016/06/wizard-chess/">Wizard Chess</a>。其实只能说是把关键的组件都实现了出来，但实际上 AI 走的每一步棋都很弱。显然这是一个对性能非常敏感的项目，根据我去年的经验要尽可能避免对数据的修改，但在我调研了 Immutable.js 之后我并没有选用它，因为我觉得可能我不需要它提供的那么复杂的数据结构，而是自己在编码时注意不要修改参数、函数总是返回新的对象即可。</p>
+<p>在 Wizard Chess 中我也试用了 TypeScript，它给 JavaScript 实现了编译期的类型检查，这会非常有助于在编译期发现和类型有关的错误，但并不能做到真正的静态类型语言的那种程度，尤其 JavaScript 中存在大量取值为 null 或 undefined 的情况，同时需要为所使用的库找到定义文件也是一大痛点。</p>
+<p>到目前大家已经普遍认为 TypeScript 比 CoffeeScript 有着更好的前景，CoffeeScript 这个项目也显得有些疏于维护了，这令我非常痛心。虽然 ES2015 已经补齐了 JavaScript 语言本身的一些短板，但我觉得 CoffeeScript 还是有它独特的价值的，比如用缩进区分代码块、更少的括号，以及通过问号进行空值判断。</p>
+<hr>
+<p>为项目撰写 HTTP API 文档一直是一个很纠结的事情，为了他人阅读和理解容易，应该详细地列出所有参数的细节，但这样又会导致文档有大量重复的内容，维护将会十分困难。用来生成 HTTP API 文档的方案有很多，我最后选择了 RAML —— 这是一个基于 YAML 的用来定义 HTTP API 的语言，它提供了非常多的特性（type、resourceType、trait）来对定义进行复用，你可以根据你的代码的架构去组织这些定义（例如如果几个接口都挂载了同样的中间件，便可以使用一个 trait 来定义这个中间件的行为），最后通过一个编译环节生成可以阅读的 API 文档。</p>
+<p>后来我还了解了一下 GraphQL，并实现了一个 <a href="https://jysperm.me/2016/12/leancloud-graphql">在 LeanCloud 上使用 GraphQL</a> 的 Demo，GraphQL 解决了 RESTful API 缺乏范式、类型不够严格、对关系数据支持弱、难以发现等问题。但目前对 GraphQL 的应用仍非常有限，我想大概是为了支持 GraphQL 需要服务器端进行很大的改动，同时引入这样一层复杂的抽象，也会带来很大的性能开销，可能 GraphQL 更适合的场景会是 BaaS 和开放 API 吧。</p>
+<hr>
+<p>如果说我在番茄土豆学到的是如何开新坑、如何以开放的心态去接受新的技术的话，在 LeanCloud 这一年多则是去长时间地维护一个复杂的系统，在保证兼容性和可用性的前提下，渐进式地对系统进行改进，引入新的技术。之前在番茄土豆的时候，也是因为自己的水平提高得比较快，经常想要进行一次彻底的重构  —— 其实应该称之为重写才对。但往往没有好的结果，因为这种大的重写会花费很多的时间，会导致新版本和原有代码差别越来越大，甚至更换了新的语言或数据库，很难保证和原有代码有着一样的行为。同时因为数据操作的不兼容，在上线时也必须一下子全量上线，结果就是导致最后的上线时间一拖再拖。</p>
+<p>今年上半年云引擎也有过一次很大的 <a href="https://blog.leancloud.cn/4292" target="_blank" rel="external">改版</a>，允许用户对实例进行更多的管理以及大量的内部重构，其中我得到的经验就是要进行渐进式的重构  —— 将大的修改划分为若干个小任务，逐步地将这些小修改上线进行测试，而不是一次性上线一个大的修改。让新旧代码混跑一段时间，保证新旧代码对数据的操作是互相兼容的，虽然在开发上需要实现很多过渡代码，在过渡完成后还需要清理这部分代码，但这种出现问题可以随时回滚的能力会让你对上线新的修改非常有信心，反而能够加速整体的重构进程。</p>
+<p>今年在 LeanCloud 我也开了几个新坑，的确新的项目在发布或上线之前的进化速度是非常快的，一旦有好的想法就可以立刻实施而不必顾及兼容问题，甚至也可以跳过很多的测试和 Code Review。有句话是说「不要过早的进行优化」，但我有些怀疑这个观点，在正式发布或上线之前很可能是最好的优化时机，至少要考虑到后续的优化并预留出修改的空间。一旦项目上线，那么每个修改都要有充分的理由、都要去顾及兼容性并进行全面的测试，这时再进行优化会是非常低效的，我也的确遇到一些项目是因为最开始的设计失误导致后期几乎没办法去优化。</p>
+<hr>
+<p>随着 Docker 生态的发展，「微服务」是个比较火热的话题，但大都还是一些方法论，没看到太多具体的实践经验。目前我对微服务的理解主要是两方面，一是对项目进行拆分，减少单个开发者需要接触的代码量；另一方面是对服务进行隔离，缩小故障的影响范围，更好地进行水平拓展。今年我也基于这两个出发点进行了一些实践 —— 项目的不同服务使用同一个代码库，互相共享很大一部分代码，包括自动测试也是在一起运行的。但每个服务有着不同的入口点，会被单独地部署和运行。</p>
+<p>大概这是一种不够彻底的微服务吧，我知道当然可以将共同的代码发布为单独的包，来实现更加彻底的拆分。但把一个组件独立为一个包其实是一个很严肃的事情，可能需要它有单独的仓库、文档、版本号，当 API 发生变化时还要考虑兼容。对于一个还没有那么复杂的项目来说，这个开销可能会很大程度上影响迭代速度，所以我还是选择使用同一代码库，这样进行修改时会更加灵活，通过自动测试来保证修改不会引入问题。</p>
+<p>如果已有服务化的基础设施，这种服务的拆分其实还是很容易的，但如果从头搭建一套微服务的基础设施则还是需要一些工作的。例如为了管理不同服务的配置，标准化部署过程，你需要一个 CI；为了提供不同服务所需要的环境、在运行时进行隔离，你需要有一个容器引擎；为了管理和调度容器、充分利用资源，你还需要一个集群管理器；为了能够平滑地进行部署，你还需要服务发现和负载均衡；为了收集和检索日志，你还需要一套日志收集和分析器；更别提还有的统计、监控和报警需求了。对于这些基础设施我也有自己的一些实践和看法，我还是比较期待新的一年里能在业余时间按照我自己的选择去搭建一个这样的微服务平台，大概也算是给 RootPanel 划上一个句号。</p>
+<hr>
+<p>很时候服务不可用都是因为数据库的问题导致的，不同于无状态的负载均衡或应用容器，数据库存储了所有的状态，这意味着你不能简单地重新创建一个数据库实例，而必须要顾及到其中的数据。为了保证数据库的可用性，最简单的办法就是运行多个数据库实例，互相之间同步数据，在故障时切换到另外一个实例。但这样又会引入新的问题，如果发生网络分区怎么办？于是我开始深入地了解 CAP 提出的分布式系统的限制，了解 Paxos 这样的算法如何在分布式的系统中达成共识，也了解了各种数据库提供了怎样的分布式能力和怎样的高可用解决方案，这样在以后为项目选择数据库的时候应该会更加有针对性。</p>
+<p>在这个过程中我也读到了「SRE: Google 运维解密」新出版的中文版，书中介绍了作为世界上最大的互联网公司，Google 是如何在规模迅速增长的情况下继续保证服务的可用性的。书中介绍了很多原则和方法，读完这本书让我觉得热血沸腾，相比于写代码实现确定的需求，也许去应对未知的故障会更有趣？但在此之前可能还有很多知识需要学习，首先在一番纠结后，选择了 Ansible 作为配置管理工具，开始尝试将我的服务器上的所有服务都通过定义文件进行描述，这项工作持续了将近三个月的时间，到现在还未全部完成。用一组定义文件去代替对服务器的直接操作，这样的好处是非常明显的 —— 这些文件可以进入版本控制让所有修改有据可查，可以随时应用在新的服务器上，也可以随时在已有的服务器上进行验证和重放，通过 Ansible 这类工具所提供的特性，也可以对这些配置进行高层次的抽象，来管理更复杂的配置和大量的服务器。</p>
+<p>我们不光要使用不可变的数据结构来控制可变状态，像服务器这样的基础设施也可以让它们变成「不可变」的。其实 Docker 的容器就是一个很好的例子，所有的容器都是从 Dockerfile 生成出来的，当你需要修改容器中的运行环境的时候，你不是直接在容器内进行修改，而是去修改 Dockerfile —— 因为它是容器的模板。我们也可以总是通过定义文件来描述基础设施，每次修改后都重新验证服务器与定义文件中的描述一致，这样我们便不必关心服务器上的状态了。也不会出现服务器多人维护，配置混乱难以迁移的情况了，它永远看上去和新的一样。</p>
+<hr>
+<p>此外今年我还公开或半公开地做了五次技术分享，准备每个分享都花了我起码半个月的时间，其中的四次已经被我整理成了文字版本：</p>
+<ul>
+<li><a href="https://jysperm.me/2016/05/blockchain-slides/">Blockchain 和 Ethereum</a></li>
+<li><a href="https://jysperm.me/2016/08/docker-and-containerization">Docker 在共有云上的实践</a></li>
+<li><a href="https://jysperm.me/2016/10/nodejs-error-handling/">Node.js 错误处理实践</a></li>
+<li><a href="https://jysperm.me/2016/11/behind-atom">Atom 背后的故事</a></li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;今年年初我花了三个月的业余时间用 Laravel 开发了一个项目，在此之前，除了去年换工作准备面试时，我并没有正经地用过什么 PHP 框架。在我看来，Laravel 其实并没有太多的独创性，而只是把其他社区中那些被实践证明非常有价值的东西带到了 PHP 社区，例如自动测试、
+    
+    </summary>
+    
+    
+      <category term="年度小结" scheme="https://jysperm.me/tag/summary-of-year/"/>
+    
+      <category term="PHP" scheme="https://jysperm.me/tag/php/"/>
+    
+      <category term="Docker" scheme="https://jysperm.me/tag/docker/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>2016 年度小结</title>
+    <link href="https://jysperm.me/2016/12/summary-of-2016/"/>
+    <id>https://jysperm.me/2016/12/summary-of-2016/</id>
+    <published>2016-12-30T16:00:00.000Z</published>
+    <updated>2016-12-30T15:41:44.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>转眼间又一年过去了，说实话，我的 2016 年并不是非常有趣，这一整年我都是一个人住在昆山，显得有些单调，而且因为刚刚写了一篇「20 岁的我在想些什么」，所以可以写在年度小结中的内容实在是不多了。</p>
+<p>因为皮蛋豆腐需要照顾，原打算春节就不回家了，但后来计划有变，我提前了一周休假回家，拜托同事帮忙照顾皮蛋豆腐。然后在家待了一周，除夕赶回苏州 —— 再帮忙照顾同事家的两只猫，这也是我第一次一个人过除夕，有了皮蛋豆腐现在并不能很随意的出游算是一个遗憾，虽然自动喂食机和滤水器还是能应付一到两天的。</p>
+<p>今年年初皮蛋豆腐分别做了绝育手术，一切也还算顺利。很多人说猫绝育后会变胖，因为我喜欢身手矫健的猫咪，所以我对皮蛋豆腐的体重还是很在意的，于是一整年我都在用厨房秤精确地控制它们的猫粮，最后它们的体重稳定在了 3.5 千克，我还是很满意的。皮蛋豆腐长大成为成年猫咪之后比之前稳重了一些，但依然还是会撕开我的零食、在房间里跳来跳去，所以我还是不得不在一些时候把它们关到阳台上。</p>
+<p>今年作息时间规律了一些，虽然依然是晚睡晚起，但相比之前两年还是规律了很多。晚上睡不着觉的问题依旧没什么改善，而第二天早上又要上班，这一度导致在上半年我的平均睡眠时间只有六个半小时；后来下半年因为意识到了视力的重要性，将睡觉时间提前了一些，睡不着就在听一档关于英语学习的播客，效果还不错；今年的最后两个月，我的房子附近开始有非常大的噪音 —— 每天天还没亮就会放半个小时礼炮，令我十分抓狂，如果这种状况持续下去，我可能不得不提前离开苏州了。</p>
+<p>三月初和公司一起去了一趟越南芽庄，很久没有这样连续安排一周的行程了，虽然一直在海边，但我除了在水深不超过一米的岸边划了划船之外并没有下水。不过越南的海鲜还是挺好吃的，让我觉得以前不爱吃海鲜大概只是因为没吃到好吃或新鲜的缘故。这也是我第一次离开中国到另外一个国家，让我感到不同国家、不同民族之间，有一些地方是那么地相似，又有一些地方则截然不同。</p>
+<p>今年我发现我在线上发展粉丝遇到了一些瓶颈，也很长时间没有结识新朋友了 —— 无论是线上还是线下，这不是一个好现象，于是我尝试去线下活动做演讲来「刷脸」，今年一共在四次线下活动做了技术分享，都是在杭州：Connext、稀土 Meetup，以及 Node Patry 的两次活动。因为之前在公司内部做的几次技术分享，已经有了一些制作幻灯片的经验，但第一次面对台下几十个人的时候还是有点慌，第一次在 Connext 的技术分享效果并不是很好，一方面是我过于紧张，另一方面是选题也显得不是很恰当，但之后的几次活动效果都还不错，也认识了一些新的有趣的朋友。</p>
+<p>今年我花了很多时间在听播客上面，我在听 IPN 的「太医来了」、「选美」、「味之道」，也在听「内核恐慌」、「代码时间」、「Teahour」。听着听着总是有自己录一档的冲动，终于在经过了很多的准备工作之后，在八月初将这个想法付诸了行动，也就是后来的「彩排」播客。相比于写文章，录制博客是一种完全不同的体验：你后期修改的空间很小，一旦有错误要么重录要么只能将就，其实彩排的每期博客我都录了三遍以上，以便能剪辑出一个较好的版本；同时它对听众的要求也很高，听众必须拿出相对整块的时间来收听你的博客，而不能像看文章一样语言扫过，而且有听播客习惯的人也相对较少。</p>
+<p>在去年年末买了摩卡壶之后，我才意识到咖啡是分成美式和意式的，后来也折腾了不同的咖啡豆，再后来双十二趁着打折还买了一个意式半自动咖啡机。我也花了很多时间在游戏上面，包括年中发布的守望先锋，但更多的还是 Steam 上一些「盖房子」的独立游戏。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;转眼间又一年过去了，说实话，我的 2016 年并不是非常有趣，这一整年我都是一个人住在昆山，显得有些单调，而且因为刚刚写了一篇「20 岁的我在想些什么」，所以可以写在年度小结中的内容实在是不多了。&lt;/p&gt;
+&lt;p&gt;因为皮蛋豆腐需要照顾，原打算春节就不回家了，但后来计划有变，我
+    
+    </summary>
+    
+    
+      <category term="生活记录" scheme="https://jysperm.me/tag/live/"/>
+    
+      <category term="年度小结" scheme="https://jysperm.me/tag/summary-of-year/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>在 LeanCloud 中使用 GraphQL</title>
+    <link href="https://jysperm.me/2016/12/leancloud-graphql/"/>
+    <id>https://jysperm.me/2016/12/leancloud-graphql/</id>
+    <published>2016-12-23T16:00:00.000Z</published>
+    <updated>2016-12-24T07:30:22.000Z</updated>
+    
+    <content type="html"><![CDATA[<p><a href="http://graphql.org/" target="_blank" rel="external">GraphQL</a> 是 FaceBook 开源的一套数据查询语言，也是 <a href="https://facebook.github.io/relay/" target="_blank" rel="external">Relay</a> 钦定的组件，可以在客户端以一种非常灵活的语法来获取数据，但目前支持 GraphQL 的服务还比较少，最近 <a href="http://githubengineering.com/the-github-graphql-api/" target="_blank" rel="external">GitHub 也宣布了其开放 API 支持了 GraphQL</a>。</p>
+<p>因为 GraphQL 的支持需要服务器端的更改，因此我选择了在 LeanCloud 的数据服务的基础上用 Node.js 编写一个中间层，运行在云引擎上，将 GraphQL 的查询翻译成对 LeanCloud SDK 的调用，为客户端提供 GraphQL 支持。</p>
+<p>我也参考了其他语言和框架的 GraphQL 支持，它们都需要开发者进行很多的开发或配置工作。这是因为无论在 MySQL 还是 MongoDB 中都并没有记录数据之间的关联关系（Id 和 ObjectId 都不会记录指向的表或集合，MySQL 的外键倒是会记录，但可惜用户不多）；而且即使你定义了数据之间的关联，你还是需要去定义权限 —— 哪些用户可以访问哪些数据。</p>
+<p>而 LeanCloud 的 Relation 和 Pointer 都记录了所指向的 Class，同时 LeanCloud 本身也有一套基于 sessionToken 和 ACL 的权限控制机制，因此我们完全可以做到从 LeanCloud 的数据服务获取数据之间的管理，然后遵循现有的 ACL 来自动实现对 GraphQL 的支持。</p>
+<p><a href="https://github.com/leancloud/leancloud-graphql" target="_blank" rel="external">leancloud-graphql</a> 就是这样的一个项目，你只需将它部署到云引擎上，不需要改动一行代码，便可以用 GraphQL 查询你在 LeanCloud 上的所有数据。</p>
+<p>相较于 RESTful 和 SQL，GraphQL 为数据定义了严格的类型，你可以使用这样一个灵活的语言将数据通过关系组合起来，所见即所得地得到你想要的数据。得益于 GraphQL 的类型系统，你还可以在调试工具（<a href="https://graphql.leanapp.cn/" target="_blank" rel="external">graphql.leanapp.cn</a>）中得到精确的错误提示和补全建议。</p>
+<p>例如这里我们查询 Todo 这个 Class 中按优先级排序的前两条数据，获取 title、priority，并将 owner 这个 Pointer 展开：</p>
+<pre><code class="graphql">query {
+  Todo(ascending: priority, limit: 2) {
+    title, priority, owner {
+      username
+    }
+  }
+}
+</code></pre>
+<p>结果：</p>
+<pre><code class="javascript">{
+  Todo: [{
+    title: &quot;紧急 Bug 修复&quot;,
+    priority: 0,
+    owner: {
+      username: &quot;someone&quot;
+    }
+  }, {
+    title: &quot;打电话给 Peter&quot;,
+    priority: 5,
+    owner: {
+      username: &quot;someone&quot;
+    }
+  }]
+}
+</code></pre>
+<p>目前 leancloud-graphql 已经实现了 LeanCloud 中大部分的查询参数和查询条件，你可以任意地组合这些条件。例如我们可以查询优先级大于 5 且存在 content 属性的数据：</p>
+<pre><code class="graphql">query {
+  Todo(exists: {content: true}, greaterThan: {priority: 5}) {
+    title, content, priority
+  }
+}
+</code></pre>
+<p>GraphQL 最大的亮点还是对关系查询的支持，无论是 Relation 还是 Pointer 你都可以任意地展开，而不必受到 LeanCloud RESTful API 只能展开一层的限制。例如我们查询所有的 TodoFolder 中的 Todo（Relation）并展开 owner（Pointer）：</p>
+<pre><code class="graphql">query {
+  TodoFolder {
+    name,
+    containedTodos {
+      title, owner {
+        username, email
+      }
+    }
+  }
+}
+</code></pre>
+<p>结果（省略了一部分）：</p>
+<pre><code class="javascript">{
+  TodoFolder: [{
+    name: &quot;工作&quot;,
+    containedTodos: [{
+      title: &quot;紧急 Bug 修复&quot;,
+      owner: {
+        username: &quot;someone&quot;,
+        email: &quot;test@example.com&quot;
+      }
+    }, // ...
+    ]
+  }, // ...
+  ]
+}
+</code></pre>
+<p>你也可以在关系查询上附加查询参数或条件。例如我们查询所有 TodoFolder 中优先级最高的一个 Todo：</p>
+<pre><code class="graphql">query {
+  TodoFolder {
+    name, containedTodos(limit: 1, ascending: priority) {
+      title, priority
+    }
+  }
+}
+</code></pre>
+<p>结果：</p>
+<pre><code class="javascript">{
+  TodoFolder: [{
+    name: &quot;工作&quot;,
+    containedTodos: [
+      {title: &quot;紧急 Bug 修复&quot;, priority: 0}
+    ]
+  },
+    name: &quot;购物清单&quot;,
+    containedTodos: [
+      {title: &quot;买酸奶&quot;, priority: 10}
+    ]
+  }, {
+    name: &quot;someone&quot;,
+    containedTodos: [
+      {title: &quot;紧急 Bug 修复&quot;, priority: 0}
+    ]
+  }]
+}
+</code></pre>
+<p>在实现一对多关系时，我们经常会在「多」上面保存一个到「一」的指针，例如一个 Todo 会有一个叫 owner 的 Pointer 指向用户表。在这时，leancloud-graphql 会自动在用户表上添加一个叫 ownerOfTodo 的属性用来表示这个反向关系，你可以像展开一个 Relation 一样展开这个反向关系，例如我们查询每个用户的 Todo 并展开 title：</p>
+<pre><code class="graphql">query {
+  _User {
+    username, ownerOfTodo {
+      title
+    }
+  }
+}
+</code></pre>
+<p>结果：</p>
+<pre><code class="javascript">{
+  _User: [{
+    username: &quot;someone&quot;,
+    ownerOfTodo: [
+      {title: &quot;紧急 Bug 修复&quot;},
+      {title: &quot;打电话给 Peter&quot;},
+      {title: &quot;还信用卡账单&quot;},
+      {title: &quot;买酸奶&quot;}
+    ]
+  }]
+}
+</code></pre>
+<p>对 <a href="https://github.com/leancloud/leancloud-graphql" target="_blank" rel="external">leancloud-graphql</a> 的简单介绍就到这里，更多使用方法和功能介绍可以在项目的 GitHub 主页上看到，这个项目本身也是开源的。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;&lt;a href=&quot;http://graphql.org/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;GraphQL&lt;/a&gt; 是 FaceBook 开源的一套数据查询语言，也是 &lt;a href=&quot;https://facebook.github.io/re
+    
+    </summary>
+    
+    
+      <category term="Web" scheme="https://jysperm.me/tag/web/"/>
+    
+      <category term="LeanCloud" scheme="https://jysperm.me/tag/LeanCloud/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>QPS 和并发：如何衡量服务器端性能</title>
+    <link href="https://jysperm.me/2016/12/qps-and-concurrent-connections/"/>
+    <id>https://jysperm.me/2016/12/qps-and-concurrent-connections/</id>
+    <published>2016-12-14T16:00:00.000Z</published>
+    <updated>2016-12-24T07:32:16.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>在 LeanCloud 的控制台和文档中大家会接触到「并发连接数（Concurrent Connections）」这个衡量服务器负荷或处理能力的概念，但很多人并不了解什么是并发 —— 甚至在我们团队内部，很多没有服务器端开发经验的工程师对这个词的理解也不是很准确。我们还在继续优化文案来减少用户的困惑，但与此同时不如听我仔细介绍一下并发这个概念。</p>
+<p>和并发相关不得不提的一个概念就是 QPS（Query Per Second），QPS 其实是衡量吞吐量（Throughput）的一个常用指标，就是说服务器在一秒的时间内处理了多少个请求 —— 我们通常是指 HTTP 请求，显然数字越大代表服务器的负荷越高、处理能力越强。作为参考，一个有着简单业务逻辑（包括数据库访问）的程序在单核心运行时可以提供 50 - 100 左右的 QPS，即每秒可以处理 50 - 100 个请求，LeanCloud 目前也是按照请求数量进行收费的。</p>
+<p>但 QPS 只能粗略地衡量请求的数量，完全不关心服务器处理每个请求的开销。例如一个命中缓存的请求和一个需要进行多次数据库查询的请求的开销可能会有一个数量级的差距，所以 QPS 并不能十分精确地衡量服务器的负载或处理能力，因此我们引入了一个非常抽象的概念 —— 并发。</p>
+<p>大部分请求的响应时间在 15 - 30 毫秒左右，这里的响应时间是指服务器处理这个请求所花费的时间，从客户端测量到的时间可能会稍长一些。想象如果服务器上只有一个 CPU 核心在逐个地在处理请求，如果每个请求花费 15 毫秒的话，那么每秒可以处理 66 个请求，也就是我们前面提到的 66 QPS；而如果都是复杂的请求，每个需要 30 毫秒的话，那么服务器就只有 33 QPS 了。可以看到在处理能力不变的情况下（只有一个核心），响应时间越高，QPS 就越低。又如果在响应时间不变的情况下，如果我们增加一个 CPU，QPS 就会翻倍，这三者之间的关系可以简单地描述成：吞吐量（QPS）= 处理能力（CPU）/ 响应时间。</p>
+<p>其实 CPU 的数量就是并发最基本的概念，即有多少个 CPU 在工作。当然在实际的服务器端环境中，我们在 CPU 的基础上建立起了进程、线程、协程这样复杂的抽象、通过异步的 IO 提高 CPU 的利用率 —— 当需要从硬盘或网络读取数据时，CPU 会去做其他工作，所以并发和 CPU 的比值会比 1 高一些，IO 越多，这个比值会越高。</p>
+<p>这时我们可以观测到的并发数就是服务器在同时处理多少个请求，也即「并发连接数」。对于 Web 后端的场景来说（而不考虑推送等长链接的场景），我们希望尽快地给客户端响应，所以请求在服务器端花费的几十毫秒中每一毫秒都是必不可少的：可能是在进行计算、也可能是在向磁盘或网络读写数据，都在占用着服务器的资源，因此并发依然是衡量服务器负荷和处理能力的关键指标。</p>
+<p>除了并发本身，我们还经常提到「最大并发」的概念，最大并发就是在单位时间（通常是一天）里并发最高的那一刻有多少个 CPU 在为你工作。大部分应用的请求量并不是均匀地分布在一天中的，因为用户们往往会集中在傍晚的几个小时中使用手机，这些时段中的请求量要远远高于凌晨。所以人人都希望在傍晚得到更多的计算能力，但遗憾的是这些计算能力需要原子世界中的 CPU 去支持，你不可能在傍晚购买一批服务器然后在凌晨卖掉（当然，这其实是云计算要解决的问题），所以为了支撑傍晚的高并发，我们必须去准备那么多的服务器、必须在凌晨让很多服务器闲置，因此其实我们只关心一天中最高的并发数 —— 这代表了我们需要采购多少硬件资源。</p>
+<p>当然，LeanCloud 的存在就是为了帮助开发者减轻维护后端的负担，应用开发者往往更关注的是「我有 100 万用户对应多少并发」。但这个问题往往得不到一个答案，因为有太多的因素在影响着最后的结果，例如你的 100 万用户中可能并不是每个人每天都会打开你的应用（每日活跃用户比例）；而且用户对于不同类型的应用使用的频率也并不相同（平均打开次数）；不同类型的应用在工作期间发起的请求数量也不相同（平均请求数量）；对于不同类型的请求，需要占用服务器的计算能力同样不同（平均响应时间）；最后还要考虑到你的大部分用户会集中在傍晚的几个小时使用你的应用，对于游戏抽奖、电商秒杀之类的场景，用户会更加集中在几分钟内使用你的应用。前些天我根据这些指标编写了一个简单的计算器（<a href="https://budget.leanapp.cn" target="_blank" rel="external">https://budget.leanapp.cn</a>），将最大并发数的计算抽象为了前面提到的几个指标，如果你能给每个指标一个相对准确的估算，那么就可以计算出一个可供参考的并发数。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;在 LeanCloud 的控制台和文档中大家会接触到「并发连接数（Concurrent Connections）」这个衡量服务器负荷或处理能力的概念，但很多人并不了解什么是并发 —— 甚至在我们团队内部，很多没有服务器端开发经验的工程师对这个词的理解也不是很准确。我们还在继
+    
+    </summary>
+    
+    
+      <category term="Web" scheme="https://jysperm.me/tag/web/"/>
+    
+      <category term="LeanCloud" scheme="https://jysperm.me/tag/LeanCloud/"/>
+    
+      <category term="服务器端" scheme="https://jysperm.me/tag/server-side/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>强弱类型、动静类型、GC 和 VM</title>
+    <link href="https://jysperm.me/2016/12/categories-of-languages/"/>
+    <id>https://jysperm.me/2016/12/categories-of-languages/</id>
+    <published>2016-12-11T16:00:00.000Z</published>
+    <updated>2016-12-24T07:32:43.000Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="强类型-Vs-弱类型"><a href="#强类型-Vs-弱类型" class="headerlink" title="强类型 Vs. 弱类型"></a>强类型 Vs. 弱类型</h2><ul>
+<li>强和弱是一个相对的概念，强是指倾向于将未定义的行为视作错误（Java、Python），弱是指倾向于进行隐式的转换、忽略类型相关的错误（JavaScript）。</li>
+<li>很多设计得不够严谨的语言，虽然大多数情况下（或者我们通常鼓励大家这么做）是强类型的，但也有弱类型的部分（PHP）</li>
+<li>还有的语言因为提供的抽象能力很弱，我们不得不去用弱类型的部分（C）</li>
+<li>鸭子类型（duck typing）是强弱类型的一个折中（常见于动态类型中，例如 Python），兼顾了灵活性和严谨性。</li>
+<li>我们认为弱类型是为了方便，而强类型是为了尽早发现错误。</li>
+</ul>
+<h2 id="动态类型-Vs-静态类型"><a href="#动态类型-Vs-静态类型" class="headerlink" title="动态类型 Vs. 静态类型"></a>动态类型 Vs. 静态类型</h2><ul>
+<li>静态类型的变量的类型是在编译时确定的（C++、Java）；动态类型的类型是在运行时确定的（JavaScript、Python），例如你可以在一个 if 的两个分支里给一个变量赋值不同的类型。</li>
+<li>有的动态类型语言也会添加编译期的类型检查（TypeScript、Python），但因为语言本身的动态性，这些检查仅能覆盖一部分情况。</li>
+<li>在动态类型的语言中因为类型不那么重要，所以很多时候甚至没有提供指定类型的语法（隐含了运行时的自动推导）；而在静态类型语言里通常需要为变量指定类型，所以才有了编译期自动类型推导来提供便利，而动态类型语言则做不到这一点（因为不能在编译期确定类型，更无从推导）。</li>
+<li>我们认为静态类型有助于在编译时发现有关类型的错误，确定的类型也给了编译期更多的优化空间；而动态类型给了开发者更高的灵活度。</li>
+</ul>
+<h2 id="垃圾回收-Vs-无垃圾回收"><a href="#垃圾回收-Vs-无垃圾回收" class="headerlink" title="垃圾回收 Vs. 无垃圾回收"></a>垃圾回收 Vs. 无垃圾回收</h2><ul>
+<li>无 GC 是指代码必须自行管理申请到的内存并在恰当的时机释放（Rust、C/C++）；而有 GC 的语言会通过引用计数（PHP&lt;5.3）、标记复制（V8）等方式定期查找无用的内存进行释放。</li>
+<li>标记复制的 GC 的过程通常会引起线程的暂停，也会花费额外的 CPU；但 GC 对于建立高层次的抽象又是必不可少的：异常、闭包等（虽然 C++ 在无 GC 的情况下也实现了这两个特性，但也引入了非常高的复杂度）。</li>
+<li>我们认为有 GC 可以简化对内存的管理，建立复杂的抽象；而无 GC 可以得到更底层的对内存的控制，带来更好的性能，避免因为 GC 造成的卡顿。</li>
+</ul>
+<h2 id="虚拟机-VS-本地代码"><a href="#虚拟机-VS-本地代码" class="headerlink" title="虚拟机 VS. 本地代码"></a>虚拟机 VS. 本地代码</h2><ul>
+<li>虚拟机是指在语言和 CPU 之间还有一个用于进行翻译的层次（JavaScript、Java）；无虚拟机是指编译器直接生成本地代码给 CPU 执行（C/C++、Golang）。</li>
+<li>虚拟机也提供了更为复杂的运行时的动态特性，但这些特性有的时候也可以在没有虚拟机的情况下实现（例如 C++ 的运行时类型识别、Go 的 GC）。</li>
+<li>虚拟机可以以解释的方式执行（Python，将代码视作一种数据指令来执行），也可以即时编译（JIT）的方式来执行（V8，先将代码编译到本地代码然后执行），有时也会混合这两种方式（为了更快的启动速度）。</li>
+<li>我们认为无虚拟机的语言可以在更低的层次和其他程序交互，同时也天然地有着更好的性能；而有虚拟机的语言则可以轻松地跨平台，针对特定的架构在运行时即时编译出更高性能的代码。</li>
+</ul>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><table>
+<thead>
+<tr>
+<th>语言</th>
+<th>强类型</th>
+<th>动态类型</th>
+<th>垃圾回收</th>
+<th>虚拟机</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>C++</td>
+<td>Y</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Java</td>
+<td>Y</td>
+<td></td>
+<td>Y</td>
+<td>Y</td>
+</tr>
+<tr>
+<td>Python</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+</tr>
+<tr>
+<td>JavaScript</td>
+<td></td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+</tr>
+<tr>
+<td>PHP</td>
+<td></td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+</tr>
+<tr>
+<td>Golang</td>
+<td>Y</td>
+<td></td>
+<td>Y</td>
+<td></td>
+</tr>
+<tr>
+<td>Rust</td>
+<td>Y</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>参考来源：</p>
+<ul>
+<li><a href="https://www.zhihu.com/question/19918532" target="_blank" rel="external">https://www.zhihu.com/question/19918532</a></li>
+<li><a href="http://eli.thegreenplace.net/2006/11/25/a-taxonomy-of-typing-systems/" target="_blank" rel="external">http://eli.thegreenplace.net/2006/11/25/a-taxonomy-of-typing-systems/</a></li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;强类型-Vs-弱类型&quot;&gt;&lt;a href=&quot;#强类型-Vs-弱类型&quot; class=&quot;headerlink&quot; title=&quot;强类型 Vs. 弱类型&quot;&gt;&lt;/a&gt;强类型 Vs. 弱类型&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;强和弱是一个相对的概念，强是指倾向于将未定义的行为视作错误（
+    
+    </summary>
+    
+    
+      <category term="编程语言" scheme="https://jysperm.me/tag/programming-language/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>20 岁的我在想些什么</title>
+    <link href="https://jysperm.me/2016/11/thinking-about-my-20/"/>
+    <id>https://jysperm.me/2016/11/thinking-about-my-20/</id>
+    <published>2016-11-19T16:00:00.000Z</published>
+    <updated>2016-12-24T07:43:19.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>从年初开始我就希望今后每年写这样一篇文章，如果说「年度小结」和「年度小结（技术方面）」代表了我这一年做了什么事情的话，那么这个系列的文章会聊一聊我这一年在想些什么。</p>
+<p>每当我生病或者身体不舒服的时候才会去注意一下自己的身体和健康，重新审视自己的生活状态，改变一些不健康的习惯。虽说不如早点这样做，不过现在也不晚吧，也许大家年轻的时候都是这样挥霍过来的吧。有一点可能是我之前没想过的，虽然公司不加班，但其实我做业余项目、写文章、准备演讲，和加班对身体的影响可能是差不多的。感觉自己赚那么多钱也没什么意义，也许应该放慢一点节奏，多出去走走，时不时请几天假来做自己喜欢的事情？</p>
+<p>今年最令我担忧的是眼睛，虽然视力变化不明显，但总有一种感觉不如以前看得清楚了，眼睛也比以前更容易疲劳了。去医院也检查了两次，医生都说只是用眼过度，没什么大问题，要尽量减少看屏幕的时间。确实今年年末我也是这样做的 —— 碎片时间和晚上睡觉前不再看手机了，睡眠时间也增加了一个小时左右，但一想到将来的工作和娱乐都会非常依赖视力，还是感觉有一种非常大的压力。</p>
+<p>收入高了之后也就适应了这样的生活，虽然我并没有在追求这些，但钱的确给了我很多自由：可以周末毫无目的地跑到另外一个城市闲逛，可以买一些即使自己用不上的东西而不必精打细算，可以用最好的猫粮来把皮蛋豆腐喂得油亮油亮的。</p>
+<p>但赚钱的过程本身又是在限制自由，有时候也觉得自己的钱够多了，没必要为了工作那么努力，想休息一下。也觉得可能写代码并不能给我带来像以前那么多的成就感了，刚学习编程的时候，可能只需要花很短的时间学习一些东西就可以比很多人都「厉害」，也可以得到很大的成就感；但现在虽然我很清楚自己去提高哪方面会有比较好的效果，但要付出很多的时间和精力，才能和别人比起来进步一点点。也许是时候开拓一个新的领域，学习一些新的技能？但一旦停下来，又不好说今后能不能再重新捡起来。</p>
+<p>有的时候一个人会有些空虚，所以一个人住的这一年我听了很多播客，路上在听、吃饭在听、洗澡在听、收拾房间的时候在听、睡不着的时候在听，后来也自己录了一档播客。一个人一旦闲下来就总想做一些「有意义的事情」，学学新技术、看看书、写写文章，没人打扰就会很长时间也不动一下身体，这就又回到了前面健康的话题。</p>
+<p>想出去走走但想到没人陪，一个人就很无趣，结果除了做些「有意义的事情」、经营一下个人品牌之外感觉生活没有什么目标。但我真的准备好了接纳另外一个人么？其实我不确定，很多时候我还是希望能有一个私人的空间，就连皮蛋豆腐我还是有很多时候不希望它们靠近，把它们关在阳台，也从不允许它们进我的卧室。</p>
+<p>现在想起来在番茄土豆的两年也许对我来说就好像是大学生活吧，和一群有趣的同龄人在一起，经历了很多的第一次，这一年我也时常想起那些经历。也许从职业规划的角度离开番茄土豆没有什么问题，当时也是觉得自己的生活状态需要调整，想换一个环境，但换来换去还是不知道自己想要什么，也许我明年还会去一个新的城市。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;从年初开始我就希望今后每年写这样一篇文章，如果说「年度小结」和「年度小结（技术方面）」代表了我这一年做了什么事情的话，那么这个系列的文章会聊一聊我这一年在想些什么。&lt;/p&gt;
+&lt;p&gt;每当我生病或者身体不舒服的时候才会去注意一下自己的身体和健康，重新审视自己的生活状态，改变一些
+    
+    </summary>
+    
+    
+      <category term="生活记录" scheme="https://jysperm.me/tag/live/"/>
+    
+      <category term="年度小结" scheme="https://jysperm.me/tag/summary-of-year/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Atom 背后的故事</title>
+    <link href="https://jysperm.me/2016/11/behind-atom/"/>
+    <id>https://jysperm.me/2016/11/behind-atom/</id>
+    <published>2016-11-09T16:00:00.000Z</published>
+    <updated>2017-03-04T08:34:12.000Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote>
+<p>这篇文章由我十月中旬在 <a href="https://leancloud.cn/" target="_blank" rel="external">LeanCloud</a> 和十月末在 <a href="https://github.com/Hangzhou-Node-Party/slides" target="_blank" rel="external">Node Patry 杭州</a> 进行的技术分享整理而来。</p>
+</blockquote>
+<p>Atom 是 GitHub 在 2014 年发布的一款基于 Web 技术构建的文本编辑器，我从 2014 年末开始使用 Atom 完成我的全部工作，对 Atom 很是喜爱，也创建了 Atom 的中文社区、翻译了一部分 Atom 的文档和博客。今天我将着重介绍 Atom 背后的故事，包括底层的 Electron、如何对 Atom 进行定制、Atom 的插件化机制、Atom 在启动速度和渲染性能方面的优化等。</p>
+<p>GitHub 的联合创始人之一 Chris Wanstrath 自 2008 年便有一个想法，希望使用 Web 技术构建一个像 Emacs 一样赋予开发者充分定制的能力的编辑器。但当时他忙于他的主要工作 —— GitHub，所以 Atom 一度被搁置，直到 2011 年，GitHub 添加了一个使用 Ace 实现的在线编辑代码的功能，这重新点燃了 Chris Wanstrath 对 Atom 的热情，于是他开始在业余时间开发 Atom。在 2011 年末，Atom 成为了 GitHub 的正式项目，也有了一些全职的同事加入，最后在 2014 年初 Atom 正式发布了，并于 2015 年发布了 1.0 版本。</p>
+<p>所以 Atom 有什么亮点呢，我总结了这样几点：</p>
+<ul>
+<li>像 Sublime Text 一样开箱即用</li>
+<li>像 Emacs 一样允许开发者充分地定制</li>
+<li>基于 JavaScript 和 Web 技术构建</li>
+<li>开源且拥有一个活跃的社区</li>
+</ul>
+<p>虽然 Sublime Text 之类的编辑器已经足够好用了，第一天学习编程的新手也可以快速上手，但它们仅提供了非常有限的拓展性；而在另外一个极端，像 Vim 和 Emacs 这样的编辑器虽然赋予了开发者充分定制的能力，但却有着陡峭的学习曲线。虽然 Atom 的初衷可能并非如此，但 Atom 的确做到了兼顾易用性和可拓展性，在这两种极端中间找到了一个平衡。</p>
+<p>就像 Java 开发者会使用基于 Java 构建的 Eclipse 或 IntelliJ IDEA、Clojure 开发者会使用基于 Lisp 的 Emacs 一样，作为 JavaScript 开发者我们也需要一款基于 JavaScript 和 Web 技术构建的编辑器。我觉得用自己熟悉的语言和技术去改造工具，并从工具的实现中得到启发这是很重要的一点，就像我后面介绍的那样，作为 Web 或 Node.js 开发者，我们都可以从了解 Atom 的设计和实现中受益。</p>
+<p>Vim 和 Emacs 之所以能在过去几十年始终保持活力，很大程度上是因为只有「开源」才能构建一个持久的、具有生命力的社区。GitHub 当然也意识到了这一点，所以 Atom 同样是开源的，并且它现在已经有了一个活跃的社区。</p>
+<h2 id="Electron"><a href="#Electron" class="headerlink" title="Electron"></a>Electron</h2><p>Atom 是基于 Electron，这是一个帮助开发者使用 Web 技术构建跨平台的桌面应用的工具，实际上 Electron 原本叫 Atom Shell，是专门为 Atom 设计的，后来才成为了一个独立的项目。Electron 将 Chromium 和 Node.js 结合到了一起：Chromium 提供了渲染页面和响应用户交互的能力，而 Node.js 提供了访问本地文件系统和网络的能力，也可以使用 NPM 上的几十万个第三方包。在此基础之上，Electron 还提供了 Mac、Windows、Linux 三个平台上的一些原生 API，例如全局快捷键、文件选择框、托盘图标和通知、剪贴板、菜单栏等等。</p>
+<p><img src="https://cdn.ziting.wang/behind-atom/electron-overall.png" alt="behind-atom-electron-overall"></p>
+<p>基于 Electron 的应用往往会有很大的体积，即使在打包压缩之后通常也有 40MiB，这是因为 Electron 捆绑了整个 Chromium 和 Node.js。但这也意味着你的应用运行在一个十分确定的环境下 —— 你总是可以使用最新版本 Chromium 和 Node.js 中的特性而不必顾及兼容性，这些新的特性往往会有更好的性能同时提高你的开发效率。</p>
+<p>我们来试着用 Electron 编写一个简单的 Hello World：</p>
+<pre><code class="javascript">const {app, BrowserWindow} = require(&#39;electron&#39;)
+
+let mainWindow
+
+app.on(&#39;ready&#39;, function() {
+  mainWindow = new BrowserWindow({width: 800, height: 600})
+  mainWindow.loadURL(`file://${__dirname}/index.html`)
+})
+</code></pre>
+<p>其中的 <code>index.html</code>：</p>
+<pre><code class="html">&lt;body&gt;
+  &lt;h1&gt;Hello World!&lt;/h1&gt;
+  We are using node &lt;script&gt;document.write(process.versions.node)&lt;/script&gt;,
+  Chrome &lt;script&gt;document.write(process.versions.chrome)&lt;/script&gt;,
+  and Electron &lt;script&gt;document.write(process.versions.electron)&lt;/script&gt;.
+&lt;/body&gt;
+</code></pre>
+<p>可以看到，我们就像在使用 NPM 上一个普通的包一样在使用 Electron 来控制 Chromium 来创建窗口、加载页面，你也可以控制 Chromium 来进行截图、管理 Cookie 和 Session 等操作；同时在页面中我们也可以使用 <code>process.versions</code> 这样的 Node.js API，最后我们的 Hello World 看起来是这样的：</p>
+<p><img src="https://cdn.ziting.wang/behind-atom/electron-helloworld.png" alt="electron-helloworld"></p>
+<p>我们都知道 Chromium 使用了一种多进程的架构，当你在使用 Chromium 浏览网页时，你所打开的每一个标签页和插件都对应着一个操作系统中的进程。在 Electron 中也沿用了这样的架构，Electron 程序的入口点是一个 JavaScript 文件，这个文件将会被运行在一个只有 Node.js 环境的主线程中：</p>
+<p><img src="https://cdn.ziting.wang/behind-atom/electron-process.png" alt="electron-process"></p>
+<p>由主进程创建出的每个窗口（页面）都在一个独立的进程（被称作渲染进程）中运行，有着自己的事件循环，和其他窗口互相隔离，渲染进程中同时有 Chromium 和 Node.js 环境，其中 Node.js 的事件循环被整合到了 Chromium 提供的 V8 中，两个环境间可以无缝地、无额外开销地相互调用。</p>
+<p>而主进程的主要工作就是管理渲染进程，同时还负责调用 GUI 相关的原生 API（例如托盘图标），这是通常是来自操作系统的限制。渲染进程如果需要调用这些 API，或者渲染进程之间需要通讯也都需要通过和主进程之间的 IPC（进程间通讯）来实现，Electron 也提供了几个用于简化 IPC 的模块（<code>ipcMain</code>、<code>ipcRenderer</code>、<code>remote</code>），但今天我们就不详细介绍了。</p>
+<p>目前已经有非常多基于 Electron 的应用了，下面是一些我目前正在使用的应用，借助于 Electron，这些应用大部分都是跨平台的：</p>
+<p><img src="https://cdn.ziting.wang/behind-atom/electron-apps.png" alt="electron-apps"></p>
+<ul>
+<li>VS Code 是微软的一款文本编辑器，也可以说是 Atom 的主要竞争产品。</li>
+<li>Slack 是一款即时通讯软件。</li>
+<li>Postman 是一个 HTTP API 调试工具。</li>
+<li>Hyper 是一个终端仿真器。</li>
+<li>Nylas N1 是一个邮件客户端。</li>
+<li>GitKraken 是一个 Git 的 GUI 客户端。</li>
+<li>Medis 是一个 Redis 的 GUI 客户端。</li>
+<li>Mongotron 是一个 MongoDB 的 GUI 客户端。</li>
+</ul>
+<h2 id="定制-Atom"><a href="#定制-Atom" class="headerlink" title="定制 Atom"></a>定制 Atom</h2><p>对 Electron 的介绍就到此为止了，毕竟今天的主角是 Atom。作为 JavaScript 开发者，当我们听说 Atom 是基于 Web 技术构建起来的，相信大家的第一个反应就是打开 Chromium 的 Developer Tools：</p>
+<p><img src="https://cdn.ziting.wang/behind-atom/developer-tools.png" alt="developer-tools"></p>
+<p>可以看到，整个 Atom 都是一个网页 —— 文本编辑区域也是通过大量的 DOM 模拟出来的。我们点开 Atom 的主菜单，可以看到几个简单的自定义入口：</p>
+<p><img src="https://cdn.ziting.wang/behind-atom/atom-menu.png" alt="atom-menu"></p>
+<ul>
+<li><code>Config</code> 对应 <code>~/.atom/config.cson</code> 是 Atom 的主配置文件。</li>
+<li><code>Init Script</code> 对应 <code>~/.atom/init.coffee</code> 其中的代码会在 Atom 启动时被执行。</li>
+<li><code>Keymap</code> 对应 <code>~/.atom/keymap.cson</code> 用来定义按键映射。</li>
+<li><code>Snippets</code> 对应 <code>~/.atom/snippets.cson</code> 可以定义一些代码补全片段。</li>
+<li><code>Stylesheet</code> 对应 <code>~/.atom/styles.less</code> 可以通过 CSS 修改 Atom 的样式。</li>
+</ul>
+<p>Atom 最初是用 CoffeeScript 编写的，这是一个编译到 JavaScript 的语言，在当时弥补了 JavaScript 语言设计上的一些不足。但随着后来 ES2015 标准和 Babel 这样的预编译器的出现，CoffeeScript 的优势少了许多，因此 Atom 最近也开始逐步从 CoffeeScript 切换到了 Babel，但后文还是可能会出现一些 CoffeeScript 的代码。</p>
+<p>我们可以在 Stylesheet 中先尝试用 Less —— 一种编译到 CSS 的语言来修改一下 Atom 的外观：</p>
+<pre><code class="less">// To style other content in the text editor&#39;s shadow DOM,
+// use the ::shadow expression
+atom-text-editor::shadow .cursor {
+  border-color: red;
+}
+</code></pre>
+<p>我们用 <code>atom-text-editor::shadow .cursor</code> 这个选择器指定了 Atom 的文本编辑区域中的光标，然后将边框颜色设置为了红色，保存后你马上就可以看到光标变成了红色：</p>
+<p><img src="https://cdn.ziting.wang/behind-atom/cursor-color.png" alt="cursor-color"></p>
+<p>我们也可以在 Init Script 中编写代码来给 Atom 添加功能。考虑这样一个需求，在写 Markdown 的时候我们经常需要添加一些链接，而链接通常是我们从浏览器上复制到剪贴板里的，如果有个命令可以把剪贴板中的链接自动添加到光标所选的文字上就好了：</p>
+<pre><code class="javascript">atom.commands.add(&#39;atom-text-editor&#39;, &#39;markdown:paste-as-link&#39;, () =&gt; {
+  let selection = atom.workspace.getActiveTextEditor().getLastSelection()
+  let clipboardText = atom.clipboard.read()
+
+  selection.insertText(`[${selection.getText()}](${clipboardText})`)
+})
+</code></pre>
+<p>在这段代码中，我们用 <code>atom.commands.add</code> 向 Atom 的文本编辑区域添加了一个名为 <code>markdown:paste-as-link</code> 的命令。我们先从当前激活的文本编辑区域（<code>getActiveTextEditor</code>）中获取当前选中的文字（<code>getLastSelection</code>），然后使用 Markdown 的语法将剪贴板中的链接插入到当前的位置：</p>
+<p><img src="https://cdn.ziting.wang/behind-atom/paste-as-link.png" alt="paste-as-link"></p>
+<p>那我们如何执行这个命令呢，虽然 Atom 也提供了一个类似 Sublime Text 的命令面板：</p>
+<p><img src="https://cdn.ziting.wang/behind-atom/command-palette.png" alt="command-palette"></p>
+<p>但在实际使用中，我们通常会通过快捷键来触发命令，我们可以在 Keymap 中为这个命令映射一个快捷键：</p>
+<pre><code class="coffeescript">&#39;atom-workspace&#39;:
+  &#39;ctrl-l&#39;: &#39;markdown:paste-as-link&#39;
+  &#39;ctrl-m ctrl-l&#39;: &#39;markdown:paste-as-link&#39;
+</code></pre>
+<p>我们可以使用 <code>ctrl-l</code> 这样的快捷键，也可以使用 <code>ctrl-m ctrl-l</code> 这种 Emacs 风格的快捷键。</p>
+<h2 id="插件化架构"><a href="#插件化架构" class="headerlink" title="插件化架构"></a>插件化架构</h2><pre><code class="json">  &quot;packageDependencies&quot;: {
+    &quot;atom-dark-syntax&quot;: &quot;0.28.0&quot;,
+    &quot;atom-dark-ui&quot;: &quot;0.53.0&quot;,
+    // themes ...
+    &quot;about&quot;: &quot;1.7.2&quot;,
+    &quot;archive-view&quot;: &quot;0.62.0&quot;,
+    &quot;autocomplete-atom-api&quot;: &quot;0.10.0&quot;,
+    &quot;autocomplete-css&quot;: &quot;0.14.1&quot;,
+    &quot;autocomplete-html&quot;: &quot;0.7.2&quot;,
+    &quot;autocomplete-plus&quot;: &quot;2.33.1&quot;,
+    &quot;autocomplete-snippets&quot;: &quot;1.11.0&quot;,
+    &quot;autoflow&quot;: &quot;0.27.0&quot;,
+    &quot;autosave&quot;: &quot;0.23.2&quot;,
+    &quot;background-tips&quot;: &quot;0.26.1&quot;,
+    &quot;bookmarks&quot;: &quot;0.43.2&quot;,
+    &quot;bracket-matcher&quot;: &quot;0.82.2&quot;,
+    &quot;command-palette&quot;: &quot;0.39.1&quot;,
+    &quot;deprecation-cop&quot;: &quot;0.55.1&quot;,
+    &quot;dev-live-reload&quot;: &quot;0.47.0&quot;,
+    &quot;encoding-selector&quot;: &quot;0.22.0&quot;,
+    // ...
+  }
+</code></pre>
+<p>当我们打开 Atom 核心的 <code>package.json</code> 时，你可以看到 Atom 默认捆绑了多达 77 个插件来实现各种基础功能。没错，Atom 的核心是一个仅有不足两万行代码的骨架，任何「有意义」的功能都被以插件的形式实现。Atom 作为一个通用的编辑器，不太可能面面俱到地考虑各种需求，索性不如通过彻底的插件化来适应各种不同类型的开发任务。</p>
+<p>实际上在 Atom 中插件被称为「Package（包）」，而不是「Plugin（插件）」或「Extension（拓展）」，但下文我们还会继续使用「插件」这个词。</p>
+<p><img src="https://cdn.ziting.wang/behind-atom/workspace-packages.png" alt="workspace-packages"></p>
+<p>在这张图中我标出了一些内建的插件：</p>
+<ul>
+<li>tree-view 实现了左侧的目录和文件树。</li>
+<li>tabs 实现了上方的文件切换选项卡。</li>
+<li>git-diff 实现了行号左侧用来表示文件修改状态的彩条。</li>
+<li>find-and-replace 实现了查找和替换的功能。</li>
+<li>status-bar 实现了下方的状态栏。</li>
+<li>grammar-selector 实现了状态栏上的语言切换器。</li>
+<li>one-dark-ui 实现了一个暗色调的编辑器主题。</li>
+<li>one-dark-syntax 实现了一个暗色调的语法高亮主题。</li>
+<li>language-coffee-script 实现了对 CoffeeScipt 的语法高亮方案。</li>
+</ul>
+<p><img src="https://cdn.ziting.wang/behind-atom/dialogs-packages.png" alt="dialogs-packages"></p>
+<ul>
+<li>command-palette 实现了一个命令的模糊搜索器。</li>
+<li>fuzzy-finder 实现了一个文件的模糊搜索器。</li>
+<li>settings-view 实现了一个 Atom 的设置界面。</li>
+</ul>
+<p><img src="https://cdn.ziting.wang/behind-atom/autocomplete-packages.png" alt="autocomplete-packages"></p>
+<ul>
+<li>autocomplete-plus 实现了一个代码补全的列表。</li>
+<li>autocomplete-css 实现了针对 CSS 的代码补全建议。</li>
+</ul>
+<p>这么多基础的功能都是以插件的方式实现的，这意味着第三方开发者在编写插件时所使用的 API 和这些内建的插件是完全相同的。而不像其他一些并非完全插件化的编辑器，第三方的插件很难得到与内建功能同样的 API，会受到并不完整的 API 的限制。</p>
+<p>这也意味着如果一个内建的功能不够好，社区可以开发出新的插件去替换掉内建的插件。你可能会觉得这样的情况不太可能发生，但其实 Atom 的代码补全插件就是一个例子，Atom 一开始内建的代码补全插件叫 autocomplete，功能较为简陋，于是社区中出现了一个具有更强拓展性的 autocomplete-plus，受到了大家的好评，最后替换掉了之前的 autocomplete，成为了内建插件。</p>
+<p>Atom 的插件之间是可以互相交互的，例如 grammar-selector 等很多插件都会调用状态栏的 API，来在状态栏上添加按钮或展示信息：</p>
+<p><img src="https://cdn.ziting.wang/behind-atom/status-bar-packages.png" alt="status-bar-packages"></p>
+<p>作为插件当然是可以独立地进行更新的，而一旦更新就会不可避免地引入不兼容的 API 修改，如果 grammar-selector 依赖了一个较旧版本的 status-bar 的 API，而在之后 status-bar 更新了，并且引入了不兼容的 API 调整，那么 grammar-selector 对 status-bar 的调用就会失败。</p>
+<p>在 Node.js 中对于依赖版本的解决方案大家都很清楚 —— 每个包明确地声明自己的依赖的版本，然后为每个包的每个版本单独安装一次，保证每个包都可以引用到自己想要的版本的依赖。但在 Atom 里这样是行不通的，因为你的窗口上只有一个状态栏，而不可能同时存在一个 <code>0.58.0</code> 版本的 status-bar 和一个 <code>1.1.0</code> 版本的 status-bar。</p>
+<p>因此 Atom 提供了一个服务（Service）API，将被调用方抽象为服务的提供者，而将调用方抽象为服务的消费者，插件可以声明自己同时提供一个服务的几个版本，通过 Semantic Versioning（语义化版本号）表示，例如 status-bar 的 <code>package.json</code> 中有：</p>
+<pre><code class="json">  &quot;providedServices&quot;: {
+    &quot;status-bar&quot;: {
+      &quot;description&quot;: &quot;A container for indicators at the bottom of the workspace&quot;,
+      &quot;versions&quot;: {
+        &quot;1.1.0&quot;: &quot;provideStatusBar&quot;,
+        &quot;0.58.0&quot;: &quot;legacyProvideStatusBar&quot;
+      }
+    }
+  }
+</code></pre>
+<p>status-bar 同时提供了 status-bar 这项服务的两个版本 —— <code>0.58.0</code> 和 <code>1.1.0</code>，分别对应 <code>provideStatusBar</code> 和 <code>legacyProvideStatusBar</code> 这两个函数。</p>
+<p>而 grammar-selector 的 <code>package.json</code> 中有：</p>
+<pre><code class="json">  &quot;consumedServices&quot;: {
+    &quot;status-bar&quot;: {
+      &quot;versions&quot;: {
+        &quot;^1.0.0&quot;: &quot;consumeStatusBar&quot;
+      }
+    }
+  }
+</code></pre>
+<p>grammar-selector 声明自己依赖 <code>1.0.0</code> 版本以上的 status-bar 服务。Atom 会在这中间按照 Semantic Versioning 做一个匹配，最后选择 status-bar 提供的 <code>1.1.1</code> 版本，调用 status-bar 的 <code>provideStatusBar</code> 函数，然后将结果传入 grammar-selector 的 <code>consumeStatusBar</code> 函数。</p>
+<p>通过服务 API，Atom 插件之间的交互被简化了 —— 一个插件不需要关心谁来消费自己的服务、消费哪个版本，也不需要关心谁来提供自己需要消费的服务，保证了插件能够独立地、平滑地进行版本更新和 API 的迭代，也允许实现了相同服务的插件相互替代；如果用户没有安装能够提供对应版本的服务的插件，那么就什么都不会发生。</p>
+<p>正因如此，Atom 的很多插件甚至有了自己的小社区，例如 linter 插件提供了展示语法风格建议的功能，但针对具体语言和工具的只是则是由单独的插件来完成的：</p>
+<p><img src="https://cdn.ziting.wang/behind-atom/linter-community.png" alt="linter-community"></p>
+<p>对于这样一个严重依赖插件的社区，插件质量的参差不齐也是一个严重的问题，在 Atom 中，如果一个插件抛出了异常，就会出现下面这样的提示：</p>
+<p><img src="https://cdn.ziting.wang/behind-atom/submit-exception.png" alt="submit-exception"></p>
+<p>如果你点击创建「Create issue」的话，会自动在插件的仓库上创建一个包含调用栈、Atom 和操作系统版本、插件列表及版本、配置项、发生异常前的动作的 Issue，帮助作者重现和修复异常；如果已经有其他人提交过了这个异常，按钮便会变成「View issue」，你可以到其他人提交的 Issue 中附和一下。</p>
+<h2 id="插件化-API"><a href="#插件化-API" class="headerlink" title="插件化 API"></a>插件化 API</h2><p>这一节我们将会介绍 Atom 是如何提供给插件定制的能力的，Atom 首先提供了很多全局的实例来管理特定对象的注册和查询，我们通常也称这种设计为「注册局模式（Registry Pattern）」，包括：</p>
+<ul>
+<li><code>atom.commands</code> 管理编辑器中的命令。</li>
+<li><code>atom.grammars</code> 管理对语言的支持。</li>
+<li><code>atom.views</code> 管理状态数据（Model）和用户界面之间的映射。</li>
+<li><code>atom.keymaps</code> 管理快捷键映射。</li>
+<li><code>atom.packages</code> 管理插件。</li>
+<li><code>atom.deserializers</code> 管理状态数据的序列化和反序列化。</li>
+</ul>
+<p>例如我们前面的 Markdown 粘贴链接的例子中：</p>
+<pre><code class="javascript">atom.commands.add(&#39;atom-text-editor&#39;, &#39;markdown:paste-as-link&#39;, someAction)
+</code></pre>
+<p>我们通过 <code>atom.commands</code> 注册了一个叫 <code>markdown:paste-as-link</code> 的命令并关联到一个函数上；随后其他插件（例如 command-palette）会从 <code>atom.commands</code> 中检索并执行这个命令：</p>
+<pre><code class="javascript">let target = atom.views.getView(atom.workspace.getActiveTextEditor())
+atom.commands.dispatch(target, &#39;markdown:paste-as-link&#39;)
+</code></pre>
+<p>从上面的代码中我们可以看到，<code>atom.commands.dispatch</code> 在执行一个命令时还需要指定一个 DOM 元素，结合前面注册命令和映射快捷键的例子，我们可以发现 Atom 中的快捷键和命令实际上都是被注册到一个 CSS 选择器上的。这是因为在 Atom 这样一个复杂的环境中，一个快捷键可能会被多次映射到不同的命令，例如下图，我在存在代码补全的选单的情况下按了一下 Tab 键：</p>
+<p><img src="https://cdn.ziting.wang/behind-atom/key-bindings.png" alt="key-bindings"></p>
+<p>Atom 内建的按键映射调试插件（keybinding-resolver）告诉我们 Tab 键被同时映射到了 8 个命令上，每个映射都有一个相关联的 CSS 选择器（上图中间一列）作为约束。Atom 会从当前焦点所在的元素，逐级冒泡，直到找到一个离焦点最近的按键映射，在上面的例子中，因为当前焦点在代码补全的选单上，所以 Tab 键最后被匹配到了 <code>autocomplete-plus:confirm</code> 这个命令；而如果当前没有代码补全的选单，Tab 键则会被映射到 <code>editor:indent</code>。</p>
+<p><img src="https://cdn.ziting.wang/behind-atom/panes-and-panels.png" alt="panes-and-panels"></p>
+<p>我为 Atom 主界面中的各个可视组件画了一个示意图，Atom 中最核心的区域叫「窗格（Pane）」，窗格可以横向或纵向被切分为多个窗格，窗格中可以是自定义的 DOM 元素（例如右侧的设置界面），也可以是 TextEditor（当然其实这也是一个 DOM 元素）。在窗格构成的核心区域之外，插件可以从四个方向添加「面板（Panel）」来提供一些次要的功能，面板中包含的也是自定义的 DOM 元素。可以想象，上图中的那样一个界面，是在两个窗格的基础上，先从底部添加一个 find-and-replace 的面板，然后从左侧添加一个 tree-view 的面板，最后再从底部添加一个 status-bar 的面板。</p>
+<p>Workspace 对应着 Atom 的一个窗口，TextEdtior 对应着窗格中的一个文本编辑区域，可以算是 Atom 较为核心的组件了，我们来看看它们的 API 文档：</p>
+<p><img src="https://cdn.ziting.wang/behind-atom/api-documents.png" alt="api-documents"></p>
+<p>Workspace（工作区）和 TextEditor（文本编辑器）算是 Atom 的核心部分。从上图中可以看到，Workspace 和 TextEditor 上首先提供了大量的事件订阅函数（图中仅列出了很少一部分），让插件可以感知到用户在 Workspace 在 TextEditor 中进行的操作，例如 TextEditor 的 <code>onDidChange</code> 会在每次用户修改文本时进行回调；然后也提供了大量的函数让插件可以操作 TextEditor 中的文本，例如 <code>getSelectedText</code> 可以获取到用户当前选择的文本。</p>
+<p>事件，或者说「订阅者模式（Publish–subscribe pattern）」，在 Node.js 开发中我们也经常用到，但和 Node.js 的 EventEmitter 略有不同，Atom 提供的 Emitter 提供了更方便地退订事件的功能，所有事件订阅函数都会返回一个 Disposable，用于退订这个事件订阅。例如在 Atom 中，大部分插件的结构是这样的：</p>
+<pre><code class="javascript">class SomePackage {
+  activate() {
+    this.disposable = workspace.observeTextEditors( () =&gt; {
+      console.log(&#39;found a TextEditor&#39;)
+    })
+  }
+
+  deactivate() {
+    this.disposable.dispose()
+  }
+}
+</code></pre>
+<p><code>activate</code> 会在插件被加载时调用，这个插件为当前和未来的每个 TextEditor 注册一个回调，并将返回的 <code>Disposable</code> 保存在一个实例变量上；<code>deactivate</code> 会在插件被禁用时调用，在这里我们调用了之前的 Disposable 的 <code>dispose</code> 方法来退订之前的事件。如果插件的每个事件订阅都这样实现，那么 Atom 便可以在不重启的情况下安装、卸载、更新插件，实际上绝大部分插件也是这样做的。</p>
+<p>除此之外，Atom 还提供了很多其他的 API，但在此就不详细介绍了：</p>
+<ul>
+<li><code>atom.config</code>、<code>atom.clipboard</code>、<code>atom.project</code> 提供了对配置项、剪贴板、通知的管理。</li>
+<li><code>Color</code>、<code>Selection</code>、<code>File</code>、<code>GitRepository</code> 提供了对颜色、文本选择、文件、Git 仓库的抽象。</li>
+</ul>
+<p>这也是我选择了 Atom 而不是它的主要竟品 —— VS Code 的原因：Atom 始终都将可定制性放在第一位，从一开始就是核心仅仅提供 API，而将大部分功能交由插件实现，插件和内建功能使用的是同样的 API，从 1.0 之后几乎没添加过新功能，我觉得这是一个非常优雅的设计；VS Code 还是 Visual Studio 的路线，提供一个对用户而言好用的、高性能的 IDE，后来才出现插件机制，而且很多功能都在核心中，有时第三方插件不能够得到和内建功能一样的对待。</p>
+<h2 id="优化启动速度"><a href="#优化启动速度" class="headerlink" title="优化启动速度"></a>优化启动速度</h2><p>因为 Atom 插件化的架构，默认就捆绑了 77 个插件，大多数用户在实际使用时都会有超过一百个插件，加载这些插件就花费了启动阶段的大部分时间，让人觉得 Atom 启动缓慢。</p>
+<p>Atom 也做了很多尝试来优化启动速度，首先比如延迟加载插件，对于像我们前面提到的为 Markdown 粘贴链接这样功能单一的插件，可以在 <code>package.json</code> 中声明自己提供的功能：</p>
+<pre><code class="json">{
+  &quot;name&quot;: &quot;markdown-link&quot;,
+  &quot;activationCommands&quot;: {
+    &quot;atom-text-editor&quot;: &quot;markdown:paste-as-link&quot;
+  }
+}
+</code></pre>
+<p>这样 Atom 便可以延迟对这个插件的完整加载，只记录这个插件所提供的命令，<code>markdown:paste-as-link</code> 也会出现在命令面板中，但只有当这个命令第一次被用到的时候，Atom 才会完整地加载这个插件。</p>
+<p>显然这个特性非常依赖于插件的作者，如果插件没有在 <code>package.json</code> 中做这样的声明，Atom 就不知道它提供了怎样的功能，也就不得不在启动时完整地加载这个插件。为此，Atom 默认捆绑了一个 timecop 插件，可以记录并展示启动阶段的耗时：</p>
+<p><img src="https://cdn.ziting.wang/behind-atom/timecop.png" alt="timecop"></p>
+<p>Atom 非常善于通过「社会化」的方式维护社区，因为有了 timecop，终端用户也可以感知到导致启动缓慢的插件，并在 GitHub 上向作者反馈（Atom 要求所有插件的源代码必须托管在 GitHub）。在 Atom 1.0 发布时，有一些 API 的行为有调整，Atom 也是通过类似的方式向终端用户展示未迁移到最新的 API 的插件，督促作者来进行修改。</p>
+<p>作为 Node.js 开发者我们都知道 <code>node_modules</code> 中有着大量的小文件，读取这些小文件要比读取单个大文件慢得多，尤其对于非固态硬盘而言。我做了一个简单的统计，Atom 的代码目录（包括 <code>node_modules</code>）中有着 12068 个文件，这些文件的读取显然需要花费启动阶段的很多时间：</p>
+<p><img src="https://cdn.ziting.wang/behind-atom/node-modules.png" alt="node-modules"></p>
+<p>于是 Atom 借助 Electron 提供的 ASAR 归档格式，将整个 <code>node_modules</code> 和其他的代码文件打包成了一个单个的文件，这样 Atom 在启动时只需要读取这一个文件，省下了很多的时间。</p>
+<h2 id="优化渲染性能"><a href="#优化渲染性能" class="headerlink" title="优化渲染性能"></a>优化渲染性能</h2><p>在 Atom 的早期版本中，当你打开一个代码量较大的文件时，文本编辑区域就会出现卡顿。前面我们提到，Atom 的整个窗口其实就是一个网页，如果网页渲染速度达不到 60fps —— 也就是无法总是在 16 毫秒内完成一次渲染，就会出现人可以感受到的卡顿。所以我们下面介绍的渲染性能优化思路其实是适用于所有的 Web 应用的，只是很少有应用能够有着 Atom 这样复杂的页面。</p>
+<p>在网页渲染的过程主要分为「重排（Reflow）」和「重绘（Repaint）」，重排就是重新计算页面中各元素的位置，重绘则是将元素在指定的位置绘制出来。这其中重排是绝大部分卡顿的原因，因为在一个复杂的页面中可能有几万甚至几十万个元素，它们的位置有着复杂的依赖关系，难以并行地进行计算。</p>
+<p>众所周知 JavaScript 是基于事件循环单线程地运行的，每当事件循环中的一个函数执行完成，如果它修改了 DOM，浏览器就会尝试进行重排和重绘来更新页面的显示，如果我们将对 DOM 的修改分散在事件循环中的多个函数中，就会多次触发不必要的重排和重绘，所以优化渲染性能有两个关键的思路：</p>
+<ul>
+<li>避免直接地、频繁地、反复地操作 DOM</li>
+<li>保持 DOM 树尽可能地小</li>
+</ul>
+<p>为了将对 DOM 的操作集中到一起，我们有必要引入一个抽象层，也就是所谓的 Virtual DOM，我们总是在 Virtual DOM 上进行修改，而后再由 Virtual DOM 将我们的多次修改合并，一起更新到真正的 DOM 上。Atom 一开始使用了 React 所提供的 Virtual DOM，不过后来为了更细粒度的控制，切换到了一个自行实现的 Virtual DOM 上：</p>
+<p><img src="https://cdn.ziting.wang/behind-atom/virtual-dom.png" alt="virtual-dom"></p>
+<p>在采用了 Virtual DOM 之后也意味着插件不能够直接操作 Atom 的文本编辑区域的 DOM 了，为此 Atom 提供了 Marker 和 Decoration 这两个机制来允许插件间接地与文本编辑区域交互，Marker 和 Decoration 相当于是对 Virtual DOM 的进一步封装：</p>
+<p><img src="https://cdn.ziting.wang/behind-atom/markers.png" alt="markers"></p>
+<p>Marker 是对一段文本的动态封装，所谓动态是说它并不是单纯地记录「行号」和「列数」，而是即使周围的文本被编辑，Marker 也可以维持在正确的位置，Atom 中文本编辑区域的很多功能都是基于 Marker 实现的，例如光标、选区、高亮、行号左侧 git-diff 的提示、行号右侧 linter 的提示等。</p>
+<p>Marker 只是对一段文本的表示，而 Decoration 用来向 Marker 上添加自定义的样式即 CSS 的 class，以便插件通过样式表在编辑区域展示信息：</p>
+<pre><code class="javascript">let range = editor.getSelectedBufferRange()
+// invalidate: never, surround, overlap, inside, touch
+let marker = editor.markBufferRange(range, {invalidate: &#39;overlap&#39;})
+// type: line, line-number, highlight, overlay, gutter, block
+editor.decorateMarker(marker, {type: &#39;highlight&#39;}, {class: &#39;highlight-selected&#39;})
+</code></pre>
+<p>在这段代码中，我们先从当前选择的文本创建了一个 Marker，<code>invalidate</code> 属性代表了它如何追踪对这段文本的修改；然后我们向这个 Marker 上创建了一个 Decoration，向这个 Marker 所表示的文本区域添加一个叫 <code>highlight-selected</code> 的 CSS class，<code>type</code> 属性代表了这个 CSS class 被添加到什么位置。</p>
+<p>随后我们便可以添加一个样式表，为我们的 CSS class 添加样式：</p>
+<pre><code class="less">.highlights {
+  .highlight-selected .region {
+    border-radius: 3px;
+    box-sizing: border-box;
+    background-color: transparent;
+    border-width: 1px;
+    border-style: solid;
+  }
+
+  // ...
+}
+</code></pre>
+<p>Atom 通过 Marker 和 Decoration 这样高层次的抽象，避免了插件直接去操作最关键的性能瓶颈 —— 文本编辑区域的 DOM，避免了插件反复修改 DOM 引起的重排。</p>
+<p>在之前版本的 Atom 中，当你打开一个大文件时，整个文件都会被渲染成 DOM 作为一个大的页面，供你在 Atom 的窗口中滚动地浏览文件。显然这样会额外渲染非常多的 DOM 元素，也不符合我们前面提到的「保持 DOM 尽可能小」的思路，导致 Atom 无法打开大文件。</p>
+<p>因此 Atom 现在会将文本编辑区域的每若干行划分为一个块（Tile），仅去渲染可见的块，而不是渲染整个文件。当用户滚动编辑区域时，新的块会被绘制，不可见的块会被销毁：</p>
+<p><img src="https://cdn.ziting.wang/behind-atom/tiles.gif" alt="tiles"></p>
+<p>除了渲染导致的卡顿之外，因为 JavaScript 是单线程的，如果进行 CPU 密集的操作（例如在大量文件中进行正则搜索），也会阻塞事件循环，导致卡顿。就像普通的 Node.js 程序一样，如果希望进行 CPU 密集的计算，最好放到单独的进程而不是主进程，Atom 内建的搜索功能就是这样实现的：</p>
+<pre><code class="coffeescript">scan = (regex, options={}, iterator) -&gt;
+  deferred = Q.defer()
+
+  task = Task.once require.resolve(&#39;./scan-handler&#39;), regex, options, -&gt;
+    task.on &#39;scan:result-found&#39;, (result) -&gt;
+      iterator(result)
+
+  deferred.promise
+</code></pre>
+<p>那么今天的主要内容就这么多了，接下来我想推荐几个我觉得非常好用的插件：</p>
+<ul>
+<li>git-plus 可以让你在命令面板中直接执行 <code>git diff</code>、<code>git push</code> 这样的命令。</li>
+<li>file-icons 可以给 tree-view 中的文件添加一个美观的图标。</li>
+<li>local-history 可以在你每次保存或编辑器失去焦点时在特定目录保存一份快照，以防万一。</li>
+<li>highlight-selected 可以像 Sublime Text 一样高亮当前文件中和你选择的单词一样的单词。</li>
+<li>linter 是一个语法风格检查的框架，如果你写 JavaScript 的话可以使用 linter-eslint 进行检查。</li>
+<li>对于特定语言有一些专门的代码补全插件，例如 JavaScript 可以使用 atom-ternjs，TypeScript 可以使用 atom-typescript，React 可以使用 react。</li>
+</ul>
+<p>Atom 本身是开源项目，也有着活跃的社区：</p>
+<ul>
+<li><a href="https://github.com/atom/atom" target="_blank" rel="external">https://github.com/atom/atom</a>（主仓库）</li>
+<li><a href="https://atom.io/docs" target="_blank" rel="external">https://atom.io/docs</a>（文档）</li>
+<li><a href="http://electron.atom.io/docs" target="_blank" rel="external">http://electron.atom.io/docs</a>（Electron 文档）</li>
+<li><a href="https://discuss.atom.io" target="_blank" rel="external">https://discuss.atom.io</a>（官方论坛）</li>
+<li><a href="http://blog.atom.io" target="_blank" rel="external">http://blog.atom.io</a>（官方博客）</li>
+<li><a href="https://atom-china.org" target="_blank" rel="external">https://atom-china.org</a>（中文论坛）</li>
+<li><a href="https://github.com/atom-china" target="_blank" rel="external">https://github.com/atom-china</a>（文档和博客的中文翻译）</li>
+</ul>
+<p>其他参考链接：</p>
+<ul>
+<li><a href="https://www.gnu.org/software/emacs/" target="_blank" rel="external">https://www.gnu.org/software/emacs/</a>（<a href="https://zh.wikipedia.org/wiki/Emacs" target="_blank" rel="external">维基百科</a>）</li>
+<li><a href="http://electron.atom.io/docs/api/remote" target="_blank" rel="external">Electron IPC: remote</a></li>
+<li><a href="http://jlord.us/essential-electron/" target="_blank" rel="external">http://jlord.us/essential-electron/</a></li>
+<li><a href="https://dzone.com/articles/building-a-desktop-application-with-electron" target="_blank" rel="external">https://dzone.com/articles/building-a-desktop-application-with-electron</a></li>
+<li><a href="http://blog.atom.io/2015/06/25/atom-1-0.html" target="_blank" rel="external">http://blog.atom.io/2015/06/25/atom-1-0.html</a>（<a href="https://github.com/atom-china/blog/blob/master/2015-06-25-atom-1-0.md" target="_blank" rel="external">中文版</a>）</li>
+<li><a href="http://blog.atom.io/2015/05/15/new-autocomplete.html" target="_blank" rel="external">http://blog.atom.io/2015/05/15/new-autocomplete.html</a> （<a href="https://github.com/atom-china/blog/blob/master/2015-05-15-new-autocomplete.md" target="_blank" rel="external">中文版</a>）</li>
+<li><a href="http://semver.org/" target="_blank" rel="external">http://semver.org/</a></li>
+<li><a href="https://github.com/electron/asar" target="_blank" rel="external">https://github.com/electron/asar</a></li>
+<li><a href="http://blog.atom.io/2014/07/02/moving-atom-to-react.html" target="_blank" rel="external">http://blog.atom.io/2014/07/02/moving-atom-to-react.html</a></li>
+<li><a href="https://github.com/atom/etch" target="_blank" rel="external">https://github.com/atom/etch</a></li>
+<li><a href="http://blog.atom.io/2014/07/24/decorations.html" target="_blank" rel="external">http://blog.atom.io/2014/07/24/decorations.html</a></li>
+<li><a href="http://blog.atom.io/2015/06/24/rendering-improvements.html" target="_blank" rel="external">http://blog.atom.io/2015/06/24/rendering-improvements.html</a></li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;blockquote&gt;
+&lt;p&gt;这篇文章由我十月中旬在 &lt;a href=&quot;https://leancloud.cn/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;LeanCloud&lt;/a&gt; 和十月末在 &lt;a href=&quot;https://github.com/H
+    
+    </summary>
+    
+    
+      <category term="Node.js" scheme="https://jysperm.me/tag/nodejs/"/>
+    
+      <category term="Atom" scheme="https://jysperm.me/tag/atom/"/>
+    
+      <category term="Web" scheme="https://jysperm.me/tag/web/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>我的 JavaScript 学习之路</title>
+    <link href="https://jysperm.me/2016/10/learning-javascript/"/>
+    <id>https://jysperm.me/2016/10/learning-javascript/</id>
+    <published>2016-10-04T16:00:00.000Z</published>
+    <updated>2016-12-24T07:42:20.000Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote>
+<p>源自我在知乎对 <a href="https://www.zhihu.com/question/24086544/answer/109727938" target="_blank" rel="external">你们的 JavaScript 学习开发之路是怎样的？</a> 的回答，补充了一些对时下热点问题的看法。</p>
+</blockquote>
+<h2 id="JavaScript-和方言"><a href="#JavaScript-和方言" class="headerlink" title="JavaScript 和方言"></a>JavaScript 和方言</h2><p>三年前，我当时作为服务器端工程师，从未系统地了解过 JavaScript，只是在少数需要改前端页面时才写过几句 JavaScript，正是因为这种不了解，写起来觉得很烦，也不喜欢 JavaScript.</p>
+<p>但因为工作需要开始学习 Node.js，项目是用 CoffeeScript 写的，显然这又是一个我没见过的东西，但时间很紧，只看了一天 CoffeeScript 就开始写代码了，的确 CoffeeScript 的宽容度要比 JavaScript 好很多，语法很直观，也避开了 JavaScript 的一些坑。</p>
+<p>写了大半年 Node.js 之后我喜欢上了 Node.js 和 CoffeeScript，但我依然不太喜欢 JavaScript，但毕竟代码最后是要被编译到 JavaScript 的，所以我还是认真地读完了「JavaScript 语言精粹」和「JavaScript 权威指南」。权威指南虽然很厚，但其实通篇都是平铺直叙的介绍，读起来并不是很累，小节之间关联也比较少，很适合碎片时间阅读。什么，你说权威指南太重了？不过我看的是电子版。</p>
+<p>后来继续写了两年 Node.js，此时我 JavaScript 的编码经验依然为零 —— 我全部的代码都是 CoffeeScript。经过这么长时间，我对 JavaScript 的了解也非常深入了，所以对 JavaScript 也就没什么抗拒的情绪了 —— <strong>所谓抗拒有时候只是自己不够了解</strong>。</p>
+<p>再后来换了一家公司，开始维护一些 JavaScript 的项目，在我写了两年多 Node.js 之后终于开始真正地写 JavaScript 了，虽然我已经读了很多书、写了大量编译到 JavaScript 的代码，但真正写起来还是遇到了很多麻烦 —— 这些在 CoffeeScript 中并不是问题：定义类、判等（两个等号和三个等号）、非空判断（<code>a?.b?.c</code>）、满屏的中括号和花括号。一些人喜欢拿 JavaScript 的设计缺陷说事，但哪个语言没点历史问题呢？如果一个缺陷是任何有基本 JavaScript 经验的人都可以绕开的，或者可以通过自动化的工具发现和修复的，那我觉得它可能不算一个问题，而仅仅是设计不完美而已。</p>
+<p>经过原生 JavaScript 的折腾，我不像以前那么固执地用 CoffeeScript 来写所有的代码了，也开始尝试 TypeScript、Babel 之类其他的预编译语言，无数的预编译方言是 JavaScript 的闪光点之一 ，切换一下语言也会变化一下思路。</p>
+<h2 id="JavaScript-的特性"><a href="#JavaScript-的特性" class="headerlink" title="JavaScript 的特性"></a>JavaScript 的特性</h2><p>前端面试有一个被问烂了的问题就是「你如何理解 JavaScript 的闭包」，这的确是一个很难回答的问题。从本质上来看，闭包赋予了一个函数基于词法作用域去读取外层作用域的变量的能力 —— 即使外层作用域本来已经要被销毁了。从结果上来看，闭包赋予了函数拥有「内部状态」的能力，在实践上，我更多地会用闭包来实现轻量级的面向对象范式：通过一个函数来创建对象，这个对象中的方法可以访问到闭包中的一些内部状态。</p>
+<p>所以其实我很少去和原型链打交道，个人感觉用闭包来实现面向对象要比用原型链简单、直观一些，尤其在 ES2015 之前并没有一个标准的定义类的方法。对于原型链我的理解就是对象可以有个「默认的属性来源」，当读取一个对象上不存在的属性时，就会到原型上查找，如果找不到就继续到原型的原型上查找，原型赋予了对象之间共享数据的能力。</p>
+<p>很多 JavaScript 程序员吐槽异步回调的繁琐，但如果你了解过其他语言的多线程编程，会发现 JavaScript 是非常美好的 —— 同一时间只有一个线程在执行 JavaScript 代码，而且事件循环是以函数为单位的，在函数内你完全不需要考虑线程间同步的问题（在一些语言中多线程同时读写变量都是未定义行为），而且 JavaScript 中的异步任务并不会对应到操作系统中的线程，即使有大量并发任务也不会引入线程切换的开销，这也是大家说 Node.js 适合高并发场景的原因。从概念上来说事件模型肯定是要比手动同步的多线程要先进的，事件模型不可避免地会引入大量的回调，但它将运行时的不确定的线程安全问题转换到了编写代码时的一些「小麻烦」。而且社区中已经有很多方案去解决这些小麻烦，可以看到 Promise 和 async/await 其实只是表现层面的语法糖，并没有触及到核心的事件循环机<br>制，所以说异步回调的繁琐可能并不是一个不可解决的问题。</p>
+<p>我觉得我在 JavaScript 学习上所走的最大的弯路就是比较晚才开始了解和使用 Promise。相比于编写 Callback 风格的异步代码，使用 Promise 意味着一种思路上的转变，虽然 Promise 的原理简单，但在具体的使用场景上还是需要自己做很多尝试的，例如具有分支的异步逻辑、循环地处理数据、逐级传递异常等。在使用 Promise 的过程中，也让我对「异常」有了更加深入的认识，异常是现代语言所提供的非常强大的流程控制机制，让本来唯一一条通常的、正确的执行路径变得可以从任何一处中断，并进入一个所谓的异常处理流程。</p>
+<p>在基于命名空间的语言中，同一依赖的多版本并存问题一直是一个大坑，因为同一个库的多个版本拥有着相同的命名空间，不可避免地会出现冲突。而 JavaScript 是没有命名空间的，取而代之的是基于文件系统的模块机制，这给构建出复杂的依赖关系提供了可能，也让 JavaScript 的社区变得更加活跃，在 JavaScript 中我几乎从未操心过依赖的版本，只要安装自己需要的版本即可。</p>
+<h2 id="前端的-JavaScript"><a href="#前端的-JavaScript" class="headerlink" title="前端的 JavaScript"></a>前端的 JavaScript</h2><p>在熟悉了 JavaScript 之后，感觉其实前端并没有那么神秘了，大家都是 JavaScript，只不过调的 API 不同嘛，在架构上也无非是若干年前桌面编程已经踩过的那些坑。在此推荐一本「JavaScript Web Applications」，让我很快地对前端框架的实现有了一个概览性的了解。</p>
+<p>最近几年前端的工具和框架更新极快，我觉得一方面是因为 JavaScript 语言本身在进化，所以构建工具方面变化很快了；另一方面的确前端，也就是 GUI 应用需要管理的状态远比服务器端要复杂 —— 来自服务器的状态和 GUI 上元素的状态需要相互地同步，而状态的变化也同时来自于服务器端和用户的操作。其实这是若干年前桌面应用已经走过的路，但因为之前浏览器端能力的限制，直到最近几年才涌现出这些新的尝试。</p>
+<p>而我的选择是 React，作为服务器端工程师里前端水平尚可的人，我后来也用 React 写了一些内部站点（管理员后台之类的）。React 的渲染过程和后端的数据 API 很像，将数据和状态统一地存储于一处，每当数据变化时就进行一次完整的重新渲染，渲染过程是一个无状态也无副作用的纯函数，不需要在两次渲染之间维护状态，有一种函数风格的美感。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;blockquote&gt;
+&lt;p&gt;源自我在知乎对 &lt;a href=&quot;https://www.zhihu.com/question/24086544/answer/109727938&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;你们的 JavaScript 学习开
+    
+    </summary>
+    
+    
+      <category term="Node.js" scheme="https://jysperm.me/tag/nodejs/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Node.js 错误处理实践</title>
+    <link href="https://jysperm.me/2016/10/nodejs-error-handling/"/>
+    <id>https://jysperm.me/2016/10/nodejs-error-handling/</id>
+    <published>2016-10-02T16:00:00.000Z</published>
+    <updated>2017-03-04T08:34:27.000Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote>
+<p>这篇文章由我九月末在 <a href="https://github.com/Hangzhou-Node-Party/slides" target="_blank" rel="external">Node Patry 杭州</a> 进行的一次技术分享整理而来。</p>
+</blockquote>
+<p>今天我想介绍的是 Node.js 开发中一个很小，但又很重要的话题 —— 错误处理。作为一名软件工程师，我想我们应该都会认可「错误是无法避免的」，因此我们必须积极地去对待这些错误，才能写出健壮的代码。</p>
+<p>首先，我想先介绍一下我们理想的错误处理是什么样的：</p>
+<ul>
+<li>出现错误时能将任务中断在一个合适的位置</li>
+<li>能记录错误的摘要、调用栈及其他上下文</li>
+<li>通过这些记录能够快速地发现和解决问题</li>
+</ul>
+<p>通常一个大的任务是由很多小的步骤构成的，很多时候当一个步骤中发生了错误，你并不能放任它在这里中断。我又要举那个经典的例子了：两个人，A 向 B 转账，当从 A 的账户扣完钱要加到 B 的账户上的时候发生了错误，这时显然你不能让整个任务中断在这里，否则就会出现数据的不一致 —— A 的账户被扣了钱但没有被加到其他任何账户上。因此我们需要通过错误处理精心地控制错误中断的位置，在必要的情况下回滚数据，确保数据的一致性。</p>
+<p>我们的程序也需要在出现错误的情况下能够显示（或记录）一个错误的摘要、调用栈，以及其他的上下文。调用栈通常语言本身会提供，但很多时候仅有调用栈是不足以定位问题的，所以我们还需要去记录那些可能与这个错误有关的「上下文」，比如当时某几个关键的变量的值。对于一个服务器端项目，如果我们决定不向用户展示错误的详情，可能还需要为用户提供一个唯一的错误编号，以便用户事后反馈的时候我们可以根据编号还原当时的现场。</p>
+<p>我也要举一些反面的例子，我们不希望错误处理是这样的：</p>
+<ul>
+<li>出现错误后程序崩溃退出</li>
+<li>出现错误后 HTTP 请求无响应</li>
+<li>出现错误后数据被修改了「一半」，出现不一致</li>
+<li>出现错误后没有记录日志或重复记录</li>
+<li>在日志中打印了错误但没有提供调用栈和上下文</li>
+</ul>
+<p>在 Node.js 程序中经常会出现 HTTP 请求无响应的情况 —— 既没有收到成功响应，也没有收到失败响应，一直在保持着连接。这通常是由于回调函数中的代码抛出了一个异常但没有被正确地捕捉，导致对这个请求的处理流程被意外地中断了，后面我们会介绍如何写出健壮的异步代码。</p>
+<p>有的数据库会提供回滚事务的功能，但有的时候我们在使用非事务的数据库，或者在操作临时文件或其他的外部资源，这时就需要我们自己在出现错误的时候来回滚数据了。</p>
+<p>出现错误有没有记录或记录不全也是一个非常糟糕的情况，这会让你无从定位错误，你不得不去排查代码的每一个路径，通过用日志打点的方式排查错误发生在哪里；或者虽然打印了错误但没有调用栈或上下文，这也会给你定位错误带来一些不便；再或者一旦一个错误发生了，整个程序里所有相关的函数调用都在打印这个错误，造成日志被错误刷屏，虽然不是大问题，但也会让人感到烦躁。</p>
+<h2 id="层次化架构"><a href="#层次化架构" class="headerlink" title="层次化架构"></a>层次化架构</h2><p>前辈们说过「计算机领域内的任何问题都可以通过添加一个抽象层的方法来解决」，当我们需要维护一个规模较大的项目时，通常会选择一种层次化的架构：</p>
+<p><img src="https://cdn.ziting.wang/nodejs-error-handling/layers.png" alt="layers"></p>
+<p>其实我们通常提到的 MVC 就算是一种层次化架构，但我在这里展示了一个更为通用的架构：左侧的 Dispatcher 指程序的入口点，对于 Web 后端来说可能是解析 HTTP 请求，分发到对应处理函数的部分；对于 GUI 程序来说可能是接受用户输入的部分；对于命令行程序来说可能是解析命令行参数的部分。</p>
+<p>在来自外部的任务被 Dispatcher 转换为内部表示之后，会进入到业务逻辑层，这部分是一个程序最复杂也是最核心的部分，它的内部可能还会被划分为若干个小的模块和层次。</p>
+<p>最后，我觉得无论是什么程序，最后都要去操作数据，这就是图中的 Date Access 层。对于服务器端程序来说可能会直接连接到一个数据库；对于客户端程序来说可能会使用一个 HTTP Client 去操作远程的数据。</p>
+<p>那么如果在这样一个复杂的层次化架构中，某个环节发生了错误怎么办？我们很可能会面临一个问题：<strong>我们在某一个层级可能没有足够的信息去决定如何处理这个错误</strong>。例如在 Data Access 层，一个数据库查询发生了错误，在 Data Access 这一层我们并不知道这个失败的查询对于更上层的业务逻辑意味着什么，而仅仅知道这个查询失败了。</p>
+<p>所以我们需要有一种机制，<strong>将错误从底层不断地向上层传递，直到错误到达某个层级有足够的信息去决定如何处理这个错误</strong>。例如一个数据库查询的失败，根据不同的业务逻辑，可能会采取忽略、重试、中断整个任务这些完全不同的处理方式。</p>
+<h2 id="异常"><a href="#异常" class="headerlink" title="异常"></a>异常</h2><p>好在 JavaScript 为我们提供了异常（Exception）这样一个特性。异常是现代的高级语言所提供的一种非常强大的流程控制机制，我说它是流程控制机制，是说它和 if-else、for、while 其实是差不多的，都是用来进行流程控制的。异常让原本唯一的、正确的执行路径变得可以从任何一处中断，并进入一个所谓的「异常处理流程」。</p>
+<pre><code class="javascript">try {
+  step1();
+} catch (err) {
+  console.error(err.stack);
+}
+
+function step1() {
+  // ...
+  step2()
+  // ...
+}
+
+function step2() {
+  if ( ... )
+    throw new Error(&#39;some error&#39;);
+}
+</code></pre>
+<p>在前面的例子中，我们定义了 step1 和 step2 两个函数，step1 调用了 step2，而 step2 中有可能抛出一个异常。我们仅需将对 step1 的调用放在一个 try 的语句块里，便可在后面的 catch 块中捕捉到 step2 抛出的异常，而不需要在 step1 和 step2 中进行任何处理 —— 即使它们再调用了其他函数。</p>
+<p>这是因为异常会随着调用栈逆向地回溯，然后被第一个 catch 块捕捉到。这恰好符合我们前面提到的需求：在某个较底层（调用层次较深）的函数中我们没有足够的信息去处理这个错误，我们便不必在代码中特别地处理这个错误，因为异常会沿着调用栈回溯，直到某个层次有信息去处理这个异常，我们再去 catch, 一旦一个异常被 catch 了，便不会再继续回溯了（除非你再次 throw），这时我们称这个异常被处理了。</p>
+<blockquote>
+<p>P.S. 下文中我们会同时使用「错误」和「异常」这两个词，它们之间的差别比较微妙：错误通常用来表示广义的不正确、不符合预期的情况；异常则具体指 JavaScript 或其他很多语言中提供的一种流程控制机制，以及在这个机制中被传递的异常对象。</p>
+</blockquote>
+<p>也有很多语言是没有异常的支持的，例如 C 和 Golang, 让我们来想象一下没有异常的 JavaScript 会是什么样子：</p>
+<pre><code class="javascript">var err = step1();
+if (err) console.error(err);
+
+function step1() {
+  // ...
+  var err = step2();
+  if (err) return &#39;step1: &#39; + err;
+  // ...
+}
+
+function step2() {
+  if ( ... )
+    return &#39;step2: some error&#39;;
+}
+</code></pre>
+<p>如果没有异常，每个函数都必须提供一种方式，告诉它的调用者是否有错误发生，在这里我们选择通过返回值的方式来表示错误，即如果返回空代表执行成功，返回了非空值则表示发生了一个错误。可以看到在每一次函数调用时，我们都需要去检查返回值来确定是否发生了错误，如果有错误发生了，就要提前中断这个函数的执行，将同样的错误返回。如果 step1 或 step2 中再去调用其他的函数，也需要检查每个函数的返回值 —— 这是一项非常机械化的工作，即使我们不去处理错误也必须手动检查，并在有错误时提前结束。</p>
+<p>语言内建的异常还提供了另外一项非常有用的功能，那就是调用栈：</p>
+<pre><code>Error: some error
+    at step2 (~/exception.js:14:9)
+    at step1 (~/exception.js:9:3)
+    at &lt;anonymous&gt; (~/exception.js:2:3)
+</code></pre><p>这是前面的例子中打印出的调用栈，调用栈中越靠上的部分越接近异常实际产生的位置，而下面的调用栈则会帮助我们的还原程序执行的路径。调用栈是 JavaScript 引擎为我们提供的功能，如果没有异常的话，恐怕就需要我们自己来维护调用栈了。</p>
+<h2 id="抛出一个异常"><a href="#抛出一个异常" class="headerlink" title="抛出一个异常"></a>抛出一个异常</h2><p>我在这里把异常粗略地分为两类：</p>
+<ul>
+<li>预期的异常：参数不合法、前提条件不满足</li>
+<li>非预期的异常：JavaScript 引擎的运行时异常</li>
+</ul>
+<p>预期的异常通常是我们在代码中主动抛出的，目的是为了向调用者报告一种错误，希望外部的逻辑能够感知到这个错误，在某些情况下也可能是希望外部的逻辑能够给用户展示一个错误提示。</p>
+<p>非预期的异常通常说明我们的程序有错误或者考虑不周到，比如语法错误、运行时的类型错误。或者也可能是来自依赖的库的错误，在实践中我们通常会把来自依赖库中的错误，捕捉后再次以特定的格式抛出，将其简单地「转化」为预期的异常。</p>
+<p>那么，如果我们要主动抛出一个异常，应该怎样做呢：</p>
+<ul>
+<li>总是抛出一个继承自 Error 的对象</li>
+<li>慎用自定义的异常类型</li>
+<li>可以直接向异常上附加属性来提供上下文</li>
+</ul>
+<p>首先你应该总是抛出一个继承自 JavaScript 内建的 Error 类型的对象，而不要抛出 String 或普通的 Object, 因为只有语言内建的 Error 对象上才会有调用栈，抛出其他类型的对象将可能会导致调用栈无法正确地被记录。同时也要慎重地使用自定义的异常类型，因为目前 JavaScript 中和调用栈有关的 API（如 <code>Error.captureStackTrace</code>）还不在标准中，各个引擎的实现也不同，你很难写出一个在所有引擎都可用的自定义异常类型。因此如果你的代码可能会同时运行在 Node.js 和浏览器中，或者你在编写一个开源项目，那么建议你不要使用自定义的异常类型；如果你的代码不是开源的，运行环境也非常确定，则可以考虑使用引擎提供的私有 API 来自定义异常类型。</p>
+<p>另外这里的建议不仅适用于传递给 throw 关键字的异常对象，也适用于传递给 callback 函数的第一个参数。</p>
+<p>前面我们几次提到「上下文」的这个概念，所谓上下文就是说和这个错误有关的一些信息，这个「有关」可能是非常主观的，即你觉得那些有助于你定位错误的信息。借助于 JavaScript 灵活的类型机制，我们可以向任意对象上附加任意的属性，异常对象也不例外：</p>
+<pre><code class="javascript">var err = new Error(&#39;Permission denied&#39;);
+err.statusCode = 403;
+throw err;
+
+var err = new Error(&#39;Error while downloading&#39;);
+err.url = url;
+err.responseCode = res.statusCode;
+throw err;
+</code></pre>
+<p>前面一个例子中，当一个请求无权限访问数据时，我们在抛出的异常对象上添加了一个 <code>statusCode = 403</code> 的属性，这个属性将会提示最终处理这个错误的 HTTP 层代码，给客户端发送 409 的错误响应；后面一个例子是在下载一个文件时发生了错误，当出现了这样的情况，显然我们最感兴趣的会是下载的地址是什么、服务器发回了怎样的响应，所以我们选择将这两个信息附加到异常对象上，供外层的逻辑读取。</p>
+<h2 id="异步任务"><a href="#异步任务" class="headerlink" title="异步任务"></a>异步任务</h2><p>目前为止我们提到的都是 JavaScript 语言内建的异常特性，但因为语言内建的异常是基于调用栈的，所以它只能在「同步」的代码中使用。当我们刚刚入门 Node.js 时经常会搞不清这一点：「异步」任务是通过所谓的「事件队列」来实现的，每当引擎从事件队列中取出一个回调函数来执行时，实际上这个函数是在调用栈的最顶层执行的，如果它抛出了一个异常，也是无法沿着调用栈回溯到这个异步任务的创建者的。</p>
+<p>所以你无法在异步代码中直接使用 try … catch 来捕捉异常，因此接下来我们会介绍如何在异步的代码中使用类似异常的机制来处理错误，在这里我粗略地将 Node.js 中常见的异步流程控制机制分为下面三大类：</p>
+<ul>
+<li>Node.js style callback</li>
+<li>Promise（co、async/await）</li>
+<li>EventEmitter（Stream）</li>
+</ul>
+<p>首先是影响了几乎所有 Node.js 程序员的 Node.js style callback:</p>
+<pre><code class="javascript">function copyFileContent(from, to, callback) {
+  fs.readFile(from, (err, buffer) =&gt; {
+    if (err) {
+      callback(err);
+    } else {
+      try {
+        fs.writeFile(to, buffer, callback);
+      } catch (err) {
+        callback(err);
+      }
+    }
+  });
+}
+
+try {
+  copyFileContent(from, to, (err) =&gt; {
+    if (err) {
+      console.error(err);
+    } else {
+      console.log(&#39;success&#39;);
+    }
+  });
+} catch (err) {
+  console.error(err);
+}
+</code></pre>
+<p>我们在这里以一个 copyFileContent 函数为例，它从第一个参数所代表的源文件中读取内容，然后写入到第二个参数所代表的目标文件。</p>
+<p>首先需要注意的是在每次回调中，我们都需要去检查 err 的值，如果发现 err 有值就代表发生了错误，那么需要提前结束，并以同样的错误调用 callback 来将错误传递给调用者。</p>
+<p>然后在回调中的代码也必须要包裹在 try … catch 中来捕捉同步的异常，如果捕捉到了同步的异常，那么也需要通过 callback 将错误传递给调用者。这里是一个比较大的坑，很多人会忘记，但按照 Node.js style callback 的风格，一个函数既有可能同步地抛出一个异常，也有可能异步地通过 callback 报告一个错误，Node.js 标准库中的很多函数也是如此。</p>
+<p>在使用这个 copyFileContent 时，我们也需要同时去捕捉同步抛出的异常和异步返回的错误，实际上这样导致了错误情况下的逻辑分散到了两处，实在让人有些难以接受。</p>
+<p>我们来总结一下使用 Node.js style callback 时琐碎的细节：</p>
+<ul>
+<li>需要同时处理同步的异常和异步的回调</li>
+<li>在每次回调中需要检查 err 的值</li>
+<li>回调中的代码也需要捕捉同步异常</li>
+</ul>
+<p>最后确保：无论成功或失败，要么 callback 被调用，要么同步地抛出一个异常。</p>
+<p>我们需要在每个回调中检查 err 的值，如果有值就立刻调用 callback 并不再执行接下来的逻辑，确保错误被传递给调用者。仔细想想，这个做法和我们一开始展示的「没有异常的 JavaScript」是多么地相似！我们必须手动地去完成错误的传递工作，而且中间有很多容易被遗漏的琐碎细节。这也是为什么后来 Promise 得到了大家的认可，逐步取代了 Node.js style callback.</p>
+<p>那么为什么 Node.js 会选择 callback style 而不是 Promise 作为标准库的接口呢？很大程度上是因为在 Node.js 刚刚发布时，Promise 还未进入 ECMAScript 的标准，Node.js 认为标准库应该提供最简单、最基本的接口，而使用 Promise 意味着 Node.js 还需要在标准库中内建一个 Promise 的实现，引入了额外的复杂度。如果用户希望使用 Promise 风格的标准库，大可以自己封装一个或选择第三方的封装，而标准库本身依然提供着最「简单」的接口。</p>
+<p>所以接下来我们来看 Promise:</p>
+<pre><code class="javascript">function copyFileContent(from, to) {
+  return fs.readFile(from).then( (buffer) =&gt; {
+    return fs.writeFile(to, buffer);
+  });
+}
+
+Promise.try( () =&gt; {
+  return copyFileContent(from, to);
+}).then( () =&gt; {
+  console.log(&#39;success&#39;);
+}).catch( (err) =&gt; {
+  console.error(err);
+});
+</code></pre>
+<p>Promise 可以说是对同步任务和异步任务的一种一致的抽象，算是 Node.js 中异步流程控制的未来趋势，今天我们不过多介绍 Promise, 而是着重来看它对于错误处理的影响。</p>
+<p>Pormise 的版本相比于前面的 Node.js style callback 要短了许多，主要是我们不需要在 copyFileContent 中处理错误了，而只需要去考虑正常的流程。<code>fs.readFile</code>、<code>fs.writeFile</code> 和 copyFileContent 的返回值都是一个 Promise, 它会帮助我们传递错误，在 Promise 上调用 <code>.then</code> 相当于绑定一个成功分支的回调函数，而 <code>.catch</code> 相当于绑定一个失败分支的错误处理函数，实际上我们的代码已经非常类似于语言内建的异常机制了。</p>
+<p>我也要介绍一些在使用 Promise 过程中的最佳实践，首先是要尽量避免手动创建 Promise:</p>
+<pre><code class="javascript">function copyFileContent(from, to) {
+  return new Promise( (resolve, reject) =&gt; {
+    fs.readFile(from, (err, buffer) =&gt; {
+      if (err) {
+        reject(err);
+      } else {
+        try {
+          fs.writeFile(to, buffer, resolve);
+        } catch (err) {
+          reject(err);
+        }
+      }
+    });
+  });
+}
+</code></pre>
+<p>Promise 也有一个构造函数，通常用于将一段 Node.js style callback 风格的逻辑封装为 Promise, 在其中你需要手动在成功或失败的情况下调用 resolve 或 reject, 也需要手动处理 Node.js style callback 中各种琐碎的细节，十分容易出现疏漏。</p>
+<p>取而代之的是，我们应该使用类似于 bluebird 提供的 <code>Promise.promisify</code> 这样的函数自动地帮我们完成转换，<code>Promise.promisify</code> 接受一个 Node.js style callback 风格的函数然后帮助我们自动转换到返回 Promise 的函数，虽然其内部和我们前面手动转换的例子差不多，但使用它可以避免直接面对复杂的转换逻辑，减少犯错的可能性：</p>
+<pre><code class="javascript">function copyFileContent(from, to) {
+  return Promise.promisify(fs.readFile)(from).then( (buffer) =&gt; {
+    return Promise.promisify(fs.writeFile)(to, buffer);
+  });
+}
+</code></pre>
+<p>至于 co/generator 和 async/await，我觉得它们和 Promise 并没有什么本质上的区别，而且它们最后也提供了和 Promise 相兼容的 API, 因此接下来我们只是简单地一笔带过。</p>
+<p>generator 提供了一种中断函数的执行而后再继续的能力，这种能力让它可以被用作异步流程控制：</p>
+<pre><code class="javascript">var copyFileContent = co.wrap(function*(from, to) {
+  return yield fs.writeFile(to, yield fs.readFile(from));
+});
+
+co(function*() {
+  try {
+    console.log(yield copyFileContent(from, to));
+  } catch (err) {
+    console.error(err);
+  }
+});
+</code></pre>
+<p>而 async/await 则是基于 generator 的进一步优化，使代码更加简洁而且具有语义：</p>
+<pre><code class="javascript">async function copyFileContent(from, to) {
+  return await fs.writeFile(to, await fs.readFile(from));
+}
+
+try {
+  console.log(await copyFileContent(from, to));
+} catch (err) {
+  console.error(err);
+}
+</code></pre>
+<p>通常来说一个返回 Promise 的函数也有可能同步地抛出一个异常，这也是为什么前面的代码我用了一个 <code>Promise.try</code>，如果你的代码已经在一个 Promise 的 <code>.then</code> 里，那你就不必去加 <code>Promise.try</code> 了，甚至也不需要为每一个 Promise 添加 <code>.catch</code>，而是让它自动地向上层抛出，这和 Node.js style callback 有着本质的区别，下面我们来展示一个更复杂一些的例子：</p>
+<pre><code class="javascript">Promise.try( () =&gt; {
+  return copyFileContent(a, b);
+}).then( () =&gt; {
+  return copyFileContent(b, c);
+}).then( () =&gt; {
+  return copyFileContent(c, d);
+}).then( () =&gt; {
+  console.log(&#39;success&#39;);
+}).catch( (err) =&gt; {
+  console.error(err);
+});
+</code></pre>
+<p>这里我们将文件复制了三次，在主逻辑中我们依然没有去关心错误的情况，因为任何一个步骤发生了错误，都会到达最后的 catch 块中，这就是所谓的 Pormise chain, 但需要注意的是记得要在每个「返回 Promise 的函数」中添加 return, 否则调用者没有办法感知到你返回了一个 Promise.</p>
+<p>语言内建的同步异常提供了调用栈，那么通过 Promise 传递的异步异常的调用栈会是什么样子的呢：</p>
+<pre><code>Error: EACCES: permission denied, open &#39;to&#39;
+    at Error (native)
+</code></pre><p>就像我们前面提到的那样，我们只能看到来自 JavaScript 引起的调用，而看不到这个异步任务的创建者。但实际上很多 Promise 的实现提供了一个「记录异步调用栈」的功能，当开启了这个选项之后：</p>
+<pre><code>Error: EACCES: permission denied, open &#39;to&#39;
+    at Error (native)
+From previous event:
+    at ~/test.js:15:15
+    at FSReqWrap.readFileAfterClose(fs.js:380:3)
+From previous event:
+    at copyFileContent (~/test.js:14:28)
+    at ~/test.js:20:10
+</code></pre><p>我们便可以看到创建这个异步任务的行号和更多的调用栈了，虽然这个选项对性能有一定影响，但我仍然建议开启这个选项，它将会很大程度上加快你定位线上错误的速度。</p>
+<p>那么 Node.js style callback 是否有能力记录这样的异步调用栈呢？我的答案是不能，因为在 Node.js style callback 中，我们是直接在使用调用者传递进来的 callback, 中间没有任何的胶合代码允许我们插入记录调用栈的逻辑，除非手动在每一次调用时去添加调用栈，这样便会对业务代码产生侵入式的影响。而在 Promise 中，所有异步任务的回调都被包裹在一个 <code>.then</code> 中，异步调用都是间接地通过 Promise 完成的，这给了 Promise 实现记录异步调用栈的机会，而不会影响到业务代码。</p>
+<p>当大家在争论 Promise 和 asycn/await 谁才是未来的时候，可能忘记了 Node.js 还有个 events 模块，提供了基于事件的异步流程控制机制。如果说 Node.js style callback 和 Promise 都是一个操作对应一个结果的话，那么 EventEmitter 则提供了一个操作（甚至没有操作）对应多个结果的异步模型：</p>
+<pre><code class="javascript">var redisClient = redis.createClient();
+
+redisClient.on(&#39;error&#39;, (err) =&gt; {
+  console.error(err);
+});
+</code></pre>
+<p>EventEmitter 提供了一种基于事件的通知机制，每个事件的含义其实是由使用者自己定义的，但它对于 error 事件却有一些特殊处理：如果发生了 error 事件，但却没有任何一个监听器监听 error 事件，EventEmiter 就会把这个错误直接抛出 —— 通常会导致程序崩溃退出。</p>
+<p>标准库里的很多组件和一些第三方库都会使用 EventEmitter, 尤其是例如数据库这类的长链接，我们要确保监听了它们的 error 事件 —— 哪怕是打印到日志中。其实这里也比较坑，因为当我们在使用第三方库的时候，除非文档上写了，否则我们可能并不知道它在哪里用到了 EventEmitter（有的库可能有多个地方都用到了）。</p>
+<p>Node.js 中的 Stream 也是基于 EventEmitter 的：</p>
+<pre><code class="javascript">try {
+  var source = fs.createReadStream(from);
+  var target = fs.createWriteStream(to);
+
+  source.on(&#39;error&#39;, (err) =&gt; {
+    console.error(err);
+  }).pipe(target).on(&#39;error&#39;, (err) =&gt; {
+    console.error(err);
+  });
+} catch (err) {
+  console.error(err);
+}
+</code></pre>
+<p>在上面的例子中，我创建了一个读文件的流和一个写文件的流，并将读文件的流 <code>.pipe</code> 到写文件的流，实现一个复制文件内容的功能。我们一开始看到 pipe 这个函数，可能会以为它会将前面的流的错误一起传递给后面的流，然后仅需在最后加一个 error 事件的处理器即可。但其实不然，我们需要去为每一个流去监听 error 事件。</p>
+<p>如果有异常没有捕捉到怎么样？如果有一个异常一直被传递到最顶层调用栈还没有被捕捉，那么就会导致进程的崩溃退出，不过我们还有两个终极捕捉手段：</p>
+<pre><code class="javascript">process.on(&#39;uncaughtException&#39;, (err) =&gt; {
+  console.error(err);
+});
+
+process.on(&#39;unhandledRejection&#39;, (reason, p) =&gt; {
+  console.error(reason, p);
+});
+</code></pre>
+<p>uncaughtException 事件可以捕捉到那些已经被抛出到最顶层调用栈的异常，一旦添加了这个监听器，这些异常便不再会导致进程退出。实际上有一些比较激进的人士认为程序一旦出现事先没有预料到的错误，就应该立刻崩溃，以免造成进一步的不可控状态，也为了提起开发人员足够的重视。但我从比较务实的角度建议还是不要这样做，尤其是服务器端程序，一个进程崩溃重启可能需要一分钟左右的时间，这段时间会造成服务的处理能力下降，也会造成一部分连接没有被正确地处理完成，这个后果很可能是更加严重的。</p>
+<p>当我们应当将在这个事件中捕捉到的错误视作非常严重的错误，因为在此时已经丢失了和这个错误有关的全部上下文，必然无法妥善地处理这个错误，唯一能做的就是打印一条日志。</p>
+<p>unhandledRejection 事件可以捕捉到那些被 reject 但没有被添加 <code>.catch</code> 回调的 Promise, 通常是因为你忘记为一个返回 Promise 的函数添加 return。因为 Promise 本来就是对异步错误的一种封装，所以实际使用中偶尔也会出现 Promise 先被 reject, 而后再用 <code>.catch</code> 添加错误处理的情况，所以这个事件实际上偶尔会有误报。</p>
+<h2 id="传递异常"><a href="#传递异常" class="headerlink" title="传递异常"></a>传递异常</h2><p>前面我们按照 Node.js 中不同的异步流程控制方法介绍了如何捕捉和传递异常，接下来我还要介绍一些传递异常的过程中的一些最佳实践：</p>
+<ul>
+<li>注意 Promise / callback chain 不要从中间断开</li>
+<li><strong>只处理已知的、必须在这里处理的异常，其他异常继续向外抛出</strong></li>
+<li>不要轻易地丢弃一个异常</li>
+<li>传递的过程中可以向 err 对象上添加属性，补充上下文</li>
+</ul>
+<p>相信在调试过程中最让人恼火的事情就是明明有错误发生，但错误却没有正确地传递回来，通常是因为这个错误在代码中被「不小心」地处理掉了，因此我们应该在进行错误处理时去注意保障外层代码的「知情权」，仅去处理必须在此处处理的异常，应该严格地去判断异常的类型和 message，确保只处理预期的异常，而其他大部分的异常都要继续向外层抛出：</p>
+<pre><code class="javascript">function writeLogs(logs) {
+  return fs.writeFile(&#39;out/logs&#39;, logs).catch( (err) =&gt; {
+    if (err.code === &#39;ENOENT&#39;) {
+      return fs.mkdir(&#39;out&#39;).then( () =&gt; {
+        return fs.writeFile(&#39;out/logs&#39;, logs);
+      });
+    } else {
+      throw err;
+    }
+  });
+}
+</code></pre>
+<p>这里我们实现了向 <code>out/logs</code> 这个文件写入日志的函数，如果 out 这个目录不存在则会产生一个 <code>ENOENT</code> 的错误，我们非常确信这个错误应该通过创建 out 这个目录来解决，所以我们决定去捕捉 <code>fs.writeFile</code> 的错误，然后严格地去判断 <code>err.code</code>，如果不是 <code>ENOENT</code> 还要继续抛出。其实打印日志也算是处理异常的一种，如果没有必要在此处打印日志（例如你还会继续抛出这个错误），那么就不要轻易打印日志，否则就会出现我们前面提到的，程序中发生了一个错误，到处都在打印日志。</p>
+<p>既然我们不应该轻易地处理异常，那么显然也不应该轻易地丢弃一个异常：</p>
+<pre><code class="javascript">copyFileContent(&#39;a&#39;, &#39;b&#39;).catch( err =&gt; {
+  // ignored
+});
+</code></pre>
+<p>的确有时我们需要忽略一个错误，但即使要忽略错误，也应该去判断异常的类型，确保它的确是我们想要忽略的那种错误。</p>
+<p>前面我们提到了上下文对定位错误的重要性，有的时候我们可以捕捉异常，向上面附加一些上下文然后继续抛出：</p>
+<pre><code class="javascript">function mysqlQuery(sql, placeholders) {
+  return mysqlClient.exec(sql, placeholders).catch( (err) =&gt; {
+    err.sql = sql;
+    throw err;
+  });
+}
+</code></pre>
+<p>这里的例子是一个用来进行数据库查询的工具函数，当一个数据库查询失败了，我们最感兴趣的可能是这个查询是什么，因此在这里我们捕捉了查询失败时的异常，将 SQL 语句作为属性附加到异常上，然后继续抛出。</p>
+<p>还有的时候我们捕捉异常是为了回滚数据：</p>
+<pre><code class="javascript">function mysqlTransaction(transaction) {
+  return mysqlPool.getConnection( (connection) =&gt; {
+    return connection.beginTransaction().then( () =&gt; {
+      return transaction(connection).then( (result) =&gt; {
+        return connection.commit().then( () =&gt; {
+          return result;
+        });
+      }).catch( (err) =&gt; {
+        return connection.rollback().then( () =&gt; {
+          throw err;
+        });
+      });
+    });
+  });
+}
+</code></pre>
+<p>这里的例子是一个用来进行数据库事务操作的工具函数，我们先从连接池得到一个连接、开始一个事务，然后执行要在事务中进行的操作。如果操作执行完成，我们提交这个事务，如果执行失败，我们捕捉异常，然后将事务回滚，最后将异常继续向外层抛出 —— 因为作为一个工具函数我们并不知道这个事务的失败对于业务逻辑意味着什么。</p>
+<h2 id="在程序的边界处理异常"><a href="#在程序的边界处理异常" class="headerlink" title="在程序的边界处理异常"></a>在程序的边界处理异常</h2><p>前面我们讲了那么多都在提醒大家不要轻易地处理异常，而是让异常沿着调用栈向外层传递，在传递的过程中可能有一部分异常被忽略或以重试的方式被处理了，但还有一些「无法恢复」的异常被传递到了程序的「边界」，这些异常可能是预期的（无法成功执行的任务）或者非预期的（程序错误），所谓程序的边界可能是：</p>
+<ul>
+<li>Routers（对于 Web-backend 而言）</li>
+<li>UI Layer（对于 Web/Desktop App 而言）</li>
+<li>Command Dispatcher（对于 CLI Tools 而言）</li>
+</ul>
+<p>我们需要在程序的边界来处理这些错误，例如：</p>
+<ul>
+<li>展示错误摘要</li>
+<li>发送响应、断开 HTTP 连接（Web-backend）</li>
+<li>退出程序（CLI Tools）</li>
+<li>记录日志</li>
+</ul>
+<p><strong>正因为这些错误最后被汇总到了一处，我们可以以一种统一的、健壮的方式去处理这些错误</strong>，例如在一个 Express 程序中，我们会有这样的代码：</p>
+<pre><code class="javascript">app.get(&#39;/&#39;, (req, res, next) =&gt; {
+  copyFileContent(req.query.from, req.query.to).then( () =&gt; {
+    res.send();
+  }).catch(next);
+});
+
+app.use((err, req, res, next) =&gt; {
+  err.userId = req.user.id;
+  err.url = req.originalUrl;
+  logger.error(err);
+  res.status(err.statusCode || 500).send(err.message);
+});
+</code></pre>
+<p>Express 是没有对 Promise 提供支持的，因此 Express 的中间件可以算是 Promise 代码的边界，我们需要手动地将异常传递给 Express 的 next, 以便进入到 Express 的错误处理流程。</p>
+<p>Express 提供了一种错误处理中间件，在这里我们依然保留着有关 HTTP 连接的上下文，一个比较好的实践是在这里将 HTTP 连接所关联的用户、请求的 URL 等信息作为上下文附加到错误对象上，然后将错误记录到日志系统中，最后向客户端发送一个错误摘要。</p>
+<p>这里只是一个简单的例子，在实际项目中这个错误处理中间件可能会很长很复杂，有很多内部的约定（例如 <code>err.statusCode</code>）来决定如何处理这个错误，正是因为错误被汇总到了这里，我们才有能力进行统一的处理。</p>
+<p>最后，我向大家推荐一个叫 <a href="https://getsentry.com" target="_blank" rel="external">Sentry</a> 的开源软件，它提供了各个语言的 SDK, 仅需简单的配置就可以将错误发送到 Sentry 提供的一个 Web 服务上面（实际上我们的项目中就会在 Express 的错误处理中间件向 Sentry 发送错误）。Sentry 提供了一个 Web 的 Dashboard, 会将同类错误聚合在一起，显示每个错误在过去一段时间发生的次数、影响的用户数量。你还可以在向 Sentry 发送错误时提供额外的 Tag, Sentry 可以根据 Tag 进行统计和分析。Sentry 还可以通过添加规则的方式配置 Webhook 和邮件报警。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>我们来对今天的技术分享做一个简单的小结：</p>
+<ul>
+<li>在层次化的架构中，很多时候在当前的层级没有足够的信息去决定如何处理错误，因此我们需要使用异常来将错误沿着调用栈逆向抛出，直到某个层级有足够的信息来处理这个错误。</li>
+<li>在异步的场景下我们应该使用 Promise 或相兼容的流程控制工具来模拟异常机制。</li>
+<li>传递异常时可以回滚数据或向其补充上下文，但如非必要，需要继续向外抛出。</li>
+<li>让所有无法被恢复的错误传递到程序的「边界」处，统一处理。</li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;blockquote&gt;
+&lt;p&gt;这篇文章由我九月末在 &lt;a href=&quot;https://github.com/Hangzhou-Node-Party/slides&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Node Patry 杭州&lt;/a&gt; 进行的一次技术分
+    
+    </summary>
+    
+    
+      <category term="Node.js" scheme="https://jysperm.me/tag/nodejs/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>我录了一档叫「彩排」的播客</title>
+    <link href="https://jysperm.me/2016/09/caipai-fm/"/>
+    <id>https://jysperm.me/2016/09/caipai-fm/</id>
+    <published>2016-09-19T16:00:00.000Z</published>
+    <updated>2016-12-24T07:43:10.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>一个人住有一年时间了，也养成了听播客的习惯，我最喜欢的是 IPN 一档叫「太医来了」的播客，同时我也听过「内核恐慌」和「 Teahour 」这样的技术类播客，听久了也有自己录一档播客的冲动。</p>
+<p>终于经过了很多的准备工作之后，我把这个想法付诸实践了，播客的名字叫「彩排」，你可以在 iTunes 直接搜索，也可以访问 <a href="https://caipai.fm" target="_blank" rel="external">caipai.fm</a> 在线收听和下载。如果有任何的建议意见，可以发邮件到 <a href="&#109;&#97;&#105;&#108;&#116;&#x6f;&#58;&#x66;&#x65;&#x65;&#100;&#98;&#97;&#x63;&#107;&#64;&#x63;&#97;&#x69;&#x70;&#97;&#x69;&#x2e;&#102;&#x6d;">&#x66;&#x65;&#x65;&#100;&#98;&#97;&#x63;&#107;&#64;&#x63;&#97;&#x69;&#x70;&#97;&#x69;&#x2e;&#102;&#x6d;</a>。</p>
+<p>前三期的主题分别是「自由软件和许可证」、「番茄工作法」、「密码和互联网安全」，我本不想把它限制为一个技术类播客，但我所了解并且可以分享给大家的恐怕大部分都是技术方面的话题了。接下来的选题可能会包括： Email 、 JavaScript 、比特币、养猫等。</p>
+<p>因为我本来不善言辞，也没有音频录制和剪辑的经验，最后效果其实不是很理想，还不能与开头提到的几档播客相提并论。但在这前三期的制作中，我的水平也在一点点提高，期待将来能越做越好吧。此外我感觉一个人讲会让听众有一种「压力」，可能还是两个人以对话的方式录效果会更好，如果你希望参与进来也欢迎和我联系。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;一个人住有一年时间了，也养成了听播客的习惯，我最喜欢的是 IPN 一档叫「太医来了」的播客，同时我也听过「内核恐慌」和「 Teahour 」这样的技术类播客，听久了也有自己录一档播客的冲动。&lt;/p&gt;
+&lt;p&gt;终于经过了很多的准备工作之后，我把这个想法付诸实践了，播客的名字叫「
+    
+    </summary>
+    
+    
+      <category term="彩排" scheme="https://jysperm.me/tag/caipai/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>我看「刷月饼」事件</title>
+    <link href="https://jysperm.me/2016/09/alibaba-yuebing/"/>
+    <id>https://jysperm.me/2016/09/alibaba-yuebing/</id>
+    <published>2016-09-16T16:00:00.000Z</published>
+    <updated>2016-10-07T11:54:30.000Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote>
+<p>前因后果见 <a href="https://www.zhihu.com/topic/20060618/hot" target="_blank" rel="external">知乎：阿里月饼事件</a>；关于本文的讨论见 <a href="https://www.v2ex.com/t/306691" target="_blank" rel="external">V2EX: 关于刷月饼事件我来唱点反调</a></p>
+</blockquote>
+<p>可能发得有点晚了，是因为我不是有感于事件本身，而是看了大家的讨论一边倒地黑阿里，以至于有一些逻辑显得不是那么合理，所以我想 <strong>仅就几个细节问题</strong> 谈一谈我的想法。</p>
+<h3 id="这是不是一个价值观问题"><a href="#这是不是一个价值观问题" class="headerlink" title="这是不是一个价值观问题"></a>这是不是一个价值观问题</h3><p>我觉得这是一个价值观问题，就好像就是有人觉得「刷月饼」不妥甚至很严重，也有人认为没什么大不了。所谓价值观就是指你如何看待一件事情的对错、如何进行选择，很难说谁对谁错，但这两种人的价值观的确是不同的。公司因为价值观不同开除一个员工其实也没什么不对，对双方都有好处，如果被开除的人不觉得是自己的错，那么也很难说是对他的伤害。</p>
+<h3 id="下单但没有购买算不算得到了「利益」"><a href="#下单但没有购买算不算得到了「利益」" class="headerlink" title="下单但没有购买算不算得到了「利益」"></a>下单但没有购买算不算得到了「利益」</h3><p>既然下单是需要抢的，说明这个订单很可能对应着一份库存，你下单成功了意味着你得到了这样一份权利 —— 你可以在未来的一个小时里决定要不要买这个月饼，你甚至可以等有人出了一个合适的价格之后转卖这个月饼，可以说这种购买的权利就是「抢月饼」的核心利益，所以订单最后是否成交不影响刷月饼获利的这个事实。</p>
+<h3 id="信息安全相关职位刷月饼是否可以减轻责任"><a href="#信息安全相关职位刷月饼是否可以减轻责任" class="headerlink" title="信息安全相关职位刷月饼是否可以减轻责任"></a>信息安全相关职位刷月饼是否可以减轻责任</h3><p>的确可能这个职位的工作之一就是去发现漏洞，但这也是在有工作安排的情况下，而且发现漏洞（活动规则设计不合理可以认为是广义的漏洞）后也不应该去利用它为自己谋利（是否算谋利已在前一小节讨论）。所谓 Geek 精神不应该被当作一个挡箭牌，在一个大的群体里还是要去遵守普适的规则，刷月饼就好像钻公司规章中的空子。<strong>打一个比方的话就好像办公室桌上有十几块月饼给大家吃，并没有限制一个人可以拿几块，但你一个人就拿了一大半，这显然不妥。</strong></p>
+<h3 id="抢月饼网站设计不合理开发者是否有责任"><a href="#抢月饼网站设计不合理开发者是否有责任" class="headerlink" title="抢月饼网站设计不合理开发者是否有责任"></a>抢月饼网站设计不合理开发者是否有责任</h3><p>我觉得这本来就是一个内部的活动，要考虑一个投入产出的性价比，不可能做到和对外的服务一样稳定和周全，在公司内部大家是有一个基本的信任的。因为往往一个公司的同事之间有着共同的利益和相近的价值观，没必要将方方面面都限制死，相信如果为抢月饼设计一个事无巨细、毫无漏洞的规则也不是大家希望看到的。</p>
+<h3 id="抢火车票和抢月饼是否是一回事"><a href="#抢火车票和抢月饼是否是一回事" class="headerlink" title="抢火车票和抢月饼是否是一回事"></a>抢火车票和抢月饼是否是一回事</h3><p>和前一点有点像，对外和对内是有分别的，从抢火车票这一点来说，你对其他买不到火车票的人是不负有任何的责任的，只要你不违反法律和协议你可以做任何事情；但在公司内则不同，大家需要有基本信任，即使没有明文的规则写明，当然你也可以不遵守这种「潜规则」，后果大概就是因为价值观不符被开除了，只要补偿给到位，开除当然也是合法的。</p>
+<h2 id="写在后"><a href="#写在后" class="headerlink" title="写在后"></a>写在后</h2><p>说实话，当我说出这些想法之后我有点怀疑人生，有点怀疑当我的意见和别人不同的时候我是否应该说出来，因为有的时候说出来会招致一些攻击，也会被一些本来是朋友的人划为异类。每当我看到这种一边倒的舆论的时候，我总会有点警惕，因为一边倒意味着既然大家的目标是一样的，即使过程有一些小差错也无所谓，当你指出这些问题的时候，就会有人说你在洗地。没错，腾讯抄袭的时候我给腾讯洗、百度搞竞价排名的时候我给百度洗。</p>
+<p>回到讨论本身，我简单补充几点：</p>
+<ul>
+<li>如果有公司真的会因为「价值观」而开除一名员工，我觉得是值得尊敬的，因为这家公司会在意在一起工作的同事是什么样的人，只有这样才能构建出一种凝聚力。当然，这在大公司是很难做到一碗水端平的，也很难说这是否是阿里开除几名员工的真正原因。</li>
+<li>很多人比较在意最后两点中的「双重标准」，我觉得这是一个很正常的事情，对家人、对同事，和对陌生人我们是有不同的要求和期待的，在公司抢月饼要比在陌生人间抢火车票有更多的道德约束我觉得也是合理的。</li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;blockquote&gt;
+&lt;p&gt;前因后果见 &lt;a href=&quot;https://www.zhihu.com/topic/20060618/hot&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;知乎：阿里月饼事件&lt;/a&gt;；关于本文的讨论见 &lt;a href=&quot;http
+    
+    </summary>
+    
+    
+      <category term="价值观" scheme="https://jysperm.me/tag/values/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Docker 与容器化技术实践</title>
+    <link href="https://jysperm.me/2016/08/docker-and-containerization/"/>
+    <id>https://jysperm.me/2016/08/docker-and-containerization/</id>
+    <published>2016-08-12T16:00:00.000Z</published>
+    <updated>2016-08-15T03:05:58.000Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote>
+<p>这篇文章由我 7 月末在 <a href="http://connextconf.org" target="_blank" rel="external">Connext 2016</a> 进行的一次技术分享整理而来。</p>
+</blockquote>
+<h3 id="RP-主机"><a href="#RP-主机" class="headerlink" title="RP 主机"></a>RP 主机</h3><p>我在高一的时候开始尝试搭建自己的网站，当时市面上的「虚拟主机」基本上只提供 PHP 环境，限制也比较多。于是我在 Linode 以每月 20 美元的价格买了一台 Linux VPS 用来搭建网站，但当时我的零花钱无法负担这个开销，于是尝试性地公开出售服务器资源，为此我编写了一套叫 <a href="https://github.com/HackPlan/RootPanel" target="_blank" rel="external">RootPanel</a> 的虚拟主机管理系统。</p>
+<p>和其他虚拟主机不同的是，RP 主机的用户可以有非常大的权限 —— 可以登录 SSH, 运行 Node.js、Python 之类的程序；而 RootPanel 则通过 Web 的界面允许用户使用 MySQL、MongoDB 数据库，并且通过 Nginx 共享 80 端口，RootPanel 会检查用户的请求是否符合权限要求，然后去与 Nginx 这些系统服务交互。</p>
+<p>当时 Docker 还没有出现，我用了一些比较「传统」的方式来隔离 RP 主机上用户的权限：</p>
+<ul>
+<li>文件系统：Unix users（文件权限）、quota-tools（磁盘空间）</li>
+<li>CPU 和内存：自行编写脚本来调整进程优先级（CPU 超限时）和杀进程（内存超限时）</li>
+<li>进程和网络：因为 Unix 本身的权限，无权向其他进程发送信号</li>
+</ul>
+<p>在运行 Web 服务时，后端程序（例如 PHP-FPM、Python 的 uwsgi、Node.js 应用进程）本身由用户运行，以 Unix Socket 的方式提供服务（Unix Socket 会遵守 Unix 的文件权限机制），然后可以在 RootPanel 的 Web 界面上配置从域名到 Unix Socket 的映射（RootPanel 会检查你配置的 Unix Socket 是否在你的 home 目录中等），由 Nginx 完成反向代理，实现共享 80 端口。</p>
+<p>Redis 和 Memache 这种轻量级数据库也是由用户自行运行的，通过 Unix Socket 提供服务来避免被其他用户访问到。出于性能考虑，所有用户会共同使用同一个 MySQL 和 MongoDB，用户可以在 RootPanel 的 Web 上创建和管理数据库，RootPanel 会为每个用户分配一个用户名和密码，使用这些数据库本身的用户机制进行权限控制。</p>
+<p>当然 RP 主机现在已经被关掉了，详见 <a href="/2015/10/rpvhost-shutdown-plan/">RP 主机和 GreenShadow 关闭计划</a>。</p>
+<h3 id="「隔离」和「资源控制」"><a href="#「隔离」和「资源控制」" class="headerlink" title="「隔离」和「资源控制」"></a>「隔离」和「资源控制」</h3><p>到后来 2014 年初的时候我发现了 Docker, 它是一个基于 Linux 的轻量级虚拟化技术，可以以非常低的成本来创建与主机隔离的、可以独立进行资源控制的「容器」。</p>
+<p>在前面 RP 主机的例子中，我们虽然一定程度地解决了这两个问题，但并不完美。隔离方面 RP 主机只做到了权限的隔离，但用户依然可以看到其他用户和它们的进程、网络链接；资源控制方面，CPU 和内存都依赖于脚本进行控制，控制的粒度和准确性显然不如利用内核本身的特性。</p>
+<p>Docker 使用 Linux 2.6 提供的 namespaces 特性来隔离容器之间的文件系统（mount namespace）、主机名（UTS namespace）、进程（PID &amp; IPC namespace）、网络（network namespace）、用户（user namespace）。使容器中的进程只能看到与自己有关的系统资源，完全感觉不到主机上其他的容器的存在。</p>
+<p>Docker 还使用了 Linux 2.6 提供的 cgroups 特性来统计和限制容器的系统资源，包括 CPU（cpuset &amp; cpu &amp; cpuacct cgroup）、内存（memory cgroup）、磁盘 IO（blkio cgroup）等。在资源控制方面，因为是由内核执行的，因此可以进行非常细粒度的控制，例如在 CPU 上，既可以为容器设置权重，也可以直接设置最大使用率。</p>
+<h3 id="联合文件系统"><a href="#联合文件系统" class="headerlink" title="联合文件系统"></a>联合文件系统</h3><p>在解决了隔离和资源控制之后，我们可以允许容器自由地修改容器内的文件系统，每个容器可以使用不同的发行版、运行不同版本的系统服务。但为了允许容器去自定义它们的文件系统，我们必须要为每个容器挂载一个单独的根目录，这样将会占用大量的磁盘空间。</p>
+<p>为了解决这个问题，Docker  基于「联合文件系统（AUFS、OverlayFS）」实现了一个「镜像」的功能。联合文件系统是一种可以将不同的目录，以分层「叠加」的方式挂载为一个文件系统的文件系统。Docker 会将不同容器间共同的部分作为一个共用的只读层（例如发行版就是一个层），然后为每个容器再叠加一个可写的层，容器对文件系统的修改会写入到这个可写的层，而不是共享的层，在容器运行结束后，这个可写的层也可以固化为一个只读的层，被其他容器复用（这就是 docker build 的过程）。</p>
+<h3 id="将应用封装为镜像"><a href="#将应用封装为镜像" class="headerlink" title="将应用封装为镜像"></a>将应用封装为镜像</h3><p>Docker 的容器实际上都是从 Docker 镜像创建出来的，可以说镜像是容器的模板，这个概念类似于进程是由可执行文件创建出来的，但镜像不仅仅包含可执行文件，而是包含了一个程序允许所需要的所有环境。</p>
+<p>我们可以通过 Dockerfile 来创建镜像，Dockerfile 中包含了若干指令，这些指令会在容器中被执行，而这些指令对文件系统的修改，会作为构建出的镜像中的一个「层」。</p>
+<p>Docker 镜像让应用的「交付」变得简单了，在理想的情况下，Dockerfile 中包含了构建应用所需要的运行环境的指令，而镜像则是一次构建的结果，Docker 为镜像提供了二进制级别的兼容性，镜像可以被传输到其他 Linux 主机上直接运行，交付一个应用就像发送一个可执行文件那么简单。基于我们前面提到的联合文件系统，Docker 镜像在传输时只会传输新的层，如果不同的镜像基于同一个基础的镜像（层）来构建，那么并不会产生额外的传输和存储开销。</p>
+<h3 id="无状态的容器"><a href="#无状态的容器" class="headerlink" title="无状态的容器"></a>无状态的容器</h3><p>在一个服务器端系统中，包含了大量业务逻辑、需要频繁修改的「应用进程」是最不稳定的部分，它可能会出错、会崩溃重启、会占用大量的计算资源，因此我们必须要能够快速地对包含应用的容器进行调整。为了做到这一点，一个得到了广泛认同的实践就是将应用实现为「无状态」的，即不在内存中持久性地保存数据，而是将这些状态存储到专门的数据库（Redis 等）中，这些数据库会有自己的分布式解决方案，而不必我们操心。</p>
+<p>这样我们便可以随时停止和启动一个应用容器，而不必担心数据丢失或状态不同步，同时无状态的应用对容器数量也毫不关心，我们可以根据业务的负载情况随时调整容器数量进而增加业务的负载能力，应用也不关心这些进程运行在哪台服务器上（Docker 的镜像为容器提供了一致的运行环境），只要前端的负载均衡（Nginx）可以发现它即可，因此我们还需要一种「服务发现」的机制让负载均衡服务能够感知到新容器的加入和已有容器的退出。</p>
+<h3 id="分布式的容器调度"><a href="#分布式的容器调度" class="headerlink" title="分布式的容器调度"></a>分布式的容器调度</h3><p>在一个公有云的场景中，我们往往需要管理运行在几十台服务器上的几千个容器，物理设备总是可能出现故障的，随着集群规模的增长，出现故障的频率将会越来越高，我们必须能够自动地发现和恢复这些故障，我们将这种程序称为「集群管理器」，它需要关注的问题包括：</p>
+<ul>
+<li>容器崩溃：应用进程因错误或内存超限退出，可以简单通过设置 Docker 的重启策略来解决。</li>
+<li>容器僵死：负载均衡器应该能够将应用容器无响应的情况通知给集群管理器来重启容器。</li>
+<li>服务器崩溃或失联：集群管理需要将崩溃的服务器上的容器移动到其他的服务器并从负载均衡中移除。</li>
+</ul>
+<p>在一些计划中的维护任务也需要保证服务不中断：</p>
+<ul>
+<li>部署新版本：应逐个启动新版本的容器并加入负载均衡，确认新容器工作正常后再将旧容器从负载均衡中移除并停止。</li>
+<li>调度到资源充足的服务器：集群管理器应该能够感知到各个服务器的负载情况，将负载较高的服务器的容器移动到负载较低的服务器。</li>
+</ul>
+<p>集群管理器需要决定将容器部署到哪台服务器，需要考虑的因素包括：</p>
+<ul>
+<li>服务器实际负载。</li>
+<li>有时容器会声明自己需要多少资源，虽然实际并没有占用这么多，但一段时间之后可能会有变化。</li>
+<li>将容器分散到不同的服务器以应对单个服务器失效。</li>
+</ul>
+<p>集群管理器还应该能够应对自身或所依赖的服务失效的情况，通过反复地重试保证实际运行的容器与计划中的一致。</p>
+<p>在集群管理器方面社区已经有了很多成熟的解决方案，例如 Docker Swarm、Kubernetes、Marathon，作为私有云来说都基本够用，但在公有云的场景下经常还是需要自己开发一部分功能来和现有系统（例如计费）整合的。</p>
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>因为随着需要处理的数据量越来越大，我们必须将系统设计成分布式的，这需要我们将计算资源进行一个抽象，不去考虑有关运行环境的细节问题，所以虚拟化是一个大的趋势。基于 Docker 的容器是虚拟化解决方案中的一种，也是目前受到了非常多关注的一种，这大概是因为内核级别的虚拟化有着非常好的性能，同时 Docker 作为一个开源的产品也有着非常活跃的社区。我今天主要介绍的是我在部署环节对 Docker 的实践，但 Docker 的应用并不止于此，在开发和测试环节同样有 Docker 的身影。</p>
+<h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3><ul>
+<li><a href="http://rpvhost.net/" target="_blank" rel="external">http://rpvhost.net/</a></li>
+<li><a href="https://jysperm.me/2013/05/810/">https://jysperm.me/2013/05/810/</a></li>
+<li><a href="https://github.com/ekenberg/quotatool" target="_blank" rel="external">https://github.com/ekenberg/quotatool</a></li>
+<li><a href="https://wiki.archlinux.org/index.php/users_and_groups" target="_blank" rel="external">https://wiki.archlinux.org/index.php/users_and_groups</a></li>
+<li><a href="https://www.linux.com/learn/understanding-linux-file-permissions" target="_blank" rel="external">https://www.linux.com/learn/understanding-linux-file-permissions</a></li>
+<li><a href="http://www.infoq.com/cn/articles/features-and-design-concept-of-distributed-system" target="_blank" rel="external">http://www.infoq.com/cn/articles/features-and-design-concept-of-distributed-system</a></li>
+<li><a href="http://dockone.io/article/1138" target="_blank" rel="external">http://dockone.io/article/1138</a></li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;blockquote&gt;
+&lt;p&gt;这篇文章由我 7 月末在 &lt;a href=&quot;http://connextconf.org&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Connext 2016&lt;/a&gt; 进行的一次技术分享整理而来。&lt;/p&gt;
+&lt;/blockquot
+    
+    </summary>
+    
+    
+      <category term="Docker" scheme="https://jysperm.me/tag/docker/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>给初入门程序员的建议</title>
+    <link href="https://jysperm.me/2016/07/suggestions-for-beginners/"/>
+    <id>https://jysperm.me/2016/07/suggestions-for-beginners/</id>
+    <published>2016-06-30T16:00:00.000Z</published>
+    <updated>2016-12-24T07:49:41.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>我们经常看到网络上有很多黑程序员的段子，但那不过是一群居心叵测的人散布的谣言，企图通过给新人们留下负面的印象，进而阻止更多人进入这个行业的方式，来保证不思进取的自己不会被行业淘汰。</p>
+<h2 id="解决问题的途径比得到结果更重要"><a href="#解决问题的途径比得到结果更重要" class="headerlink" title="解决问题的途径比得到结果更重要"></a>解决问题的途径比得到结果更重要</h2><p>解决问题是一个通用的能力，本应在学生时代习得，若是不擅长解决问题，怕是短时间内很难提升，但在一个具体的领域里，往往「途径」更加重要。</p>
+<p>当你在一个论坛或社区提出一个问题时，有些惜字如金的大牛会直接丢给你一个链接，不会多留下哪怕半个字，不要小看一个链接，它可能比直接告诉你答案更有价值。</p>
+<p>当你进入一个新的领域，遇到问题时往往不知道应该去哪寻找答案，这时候你会想如果有一个网站，列出了作为新手可能遇到的一切问题该多好。但世上没有这么好的事情，往往这些问题和解答分散在不同的网站上 —— 从这个链接就可以点过去。</p>
+<h2 id="不要相信一句话就可以描述的真理"><a href="#不要相信一句话就可以描述的真理" class="headerlink" title="不要相信一句话就可以描述的真理"></a>不要相信一句话就可以描述的真理</h2><p>网络上的大牛经常提出提出一些简洁有力的口号，例如「抽象可以解决计算机领域的一切问题」、「好的代码不需要注释去解释」、「动态类型语言才能提高编码效率」、「PHP 是世界上最好的编程语言」等等。</p>
+<p>并不是说这些观点是错误的，但它们就像「苹果总是会落到地上」这种简单的理论一样，描述的情况是片面的，而非普适的。有些结论是前辈们花了大量的时间和精力探索出来的，但光知道一个结论对你的编程是没有太多指导意义的，更多的细节隐藏在得出这个结论的过程中。</p>
+<p>所以如果提出这些观点的人没有深入介绍、你也不打算自行了解，索性不如忘掉这些话。</p>
+<h2 id="深入了解你使用的工具"><a href="#深入了解你使用的工具" class="headerlink" title="深入了解你使用的工具"></a>深入了解你使用的工具</h2><p>在编程的过程中，我们需要借助大量的工具来完成版本控制、调试、重构、构建和部署等工作。包括你的编辑器（IDE）和操作系统都是必不可少的工具，选择一组好用的工具，并且不断地学习和配置它们，这样才能逐渐提高工作效率。</p>
+<p>每个人在选择工具的过程中都会掺杂大量的个人喜好，但我建议大家在选择工具时考虑下面几个因素：是否是免费软件或开源软件、是否有公司在维护、是否有大量用户和活跃的社区、是否支持插件或拓展、是否支持多种平台。</p>
+<h2 id="写出可以运行的代码只是最基本的要求"><a href="#写出可以运行的代码只是最基本的要求" class="headerlink" title="写出可以运行的代码只是最基本的要求"></a>写出可以运行的代码只是最基本的要求</h2><p>当一个程序可以运行起来了，不要高兴得太早，这只是一个开始。例如你是否考虑到了各种边界情况；当程序收到非预期的输入会发生什么；所依赖的外部服务出现异常会怎样，发生错误时是否能从日志中还原出现场；如果程序处理的数据量或运行时间提高几个数量级会发生什么；构建、测试和部署过程是否做到了自动化；代码是否为将来的修改做好了准备等等。</p>
+<h2 id="先精通一种语言，再广泛涉猎"><a href="#先精通一种语言，再广泛涉猎" class="headerlink" title="先精通一种语言，再广泛涉猎"></a>先精通一种语言，再广泛涉猎</h2><p>很多新手会各种编程语言搞得头晕目眩，不知道先从哪个学起，索性不如左右开弓，同时学习。</p>
+<p>一旦你这样做了就会发现很难将同时学习的两种语言的知识区分开，因为它们实在太像了。但如果你先精通一门语言，了解了它每个语法的工作方式之后再学习其他语言就很轻松了，因为你对已掌握的语言已经足够了解，不会和新语言混淆。而且你会不由自主地用已掌握的语言去和新语言比较，更容易发现它们之间的差异，发现各自语法的内在逻辑。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;我们经常看到网络上有很多黑程序员的段子，但那不过是一群居心叵测的人散布的谣言，企图通过给新人们留下负面的印象，进而阻止更多人进入这个行业的方式，来保证不思进取的自己不会被行业淘汰。&lt;/p&gt;
+&lt;h2 id=&quot;解决问题的途径比得到结果更重要&quot;&gt;&lt;a href=&quot;#解决问题的途径
+    
+    </summary>
+    
+    
+      <category term="编程" scheme="https://jysperm.me/tag/programming/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>WizardChess: 一个国际象棋 AI 的实现</title>
+    <link href="https://jysperm.me/2016/06/wizard-chess/"/>
+    <id>https://jysperm.me/2016/06/wizard-chess/</id>
+    <published>2016-06-25T16:00:00.000Z</published>
+    <updated>2016-12-24T07:51:17.000Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote>
+<p>这篇文章由我 6 月末在 LeanCloud 进行的一次技术分享整理而来。</p>
+</blockquote>
+<p>我高一的时候曾读过一本「代码的力量：C/C++ 中国象棋程序入门与提高」，也想自己试着实现一个，连名字都想好了，就叫 Wizard Chess —— 哈利波特中的「巫师棋」。然而直到最近借着 AlphaGo 的热度，我才真正动起手来，代码开源在 <a href="https://github.com/jysperm/WizardChess" target="_blank" rel="external">GitHub</a>，因为是纯前端程序，所以你可以直接访问托管在云引擎上的 Demo <a href="http://wizard-chess.leanapp.cn" target="_blank" rel="external">http://wizard-chess.leanapp.cn</a>.</p>
+<p>国际象棋是一种「透明」的、「没有随机元素」的博弈游戏，所谓「透明」是说在任一时间，博弈双方对局面的了解都是一致的（而不像牌类游戏看不到对方的手牌），大部分棋类游戏，例如五子棋、围棋都是如此，这类游戏需要的是非常强的逻辑推理能力去预见若干回合之后的局面，本文介绍的方法也大体适用于这些棋类游戏。</p>
+<p>在技术选型上，我选择了用 TypeScript 来编写核心代码以便可以同时运行于浏览器和 Node.js, 借助 TypeScript 的编译期类型检查，可以让我们更早地发现和类型有关的错误，同时 Chrome 本身也有着非常好用的调试器和性能分析器来查找性能瓶颈。前端方面我选择用 React 来编写 UI, Web Worker 来运行计算 —— 毕竟如果在主线程进行 CPU 密集的运算会阻塞事件循环。</p>
+<p>最近一段时间，我发现在这种偏重于数据结构的程序中，「不可变」的数据类型将会极大地减少复杂度并且提高性能，但在我调研了 Immutable.js 后并没有直接使用它，因为我觉得可能我不需要它提供的那么复杂的数据结构，而是自己在编码时注意不要修改参数、函数总是返回新的对象。</p>
+<h3 id="建模"><a href="#建模" class="headerlink" title="建模"></a>建模</h3><p>第一步是将国际象的规则建模到代码中，首先是定义一些数据结构来表示国际象棋中的元素（阵营、棋子、棋盘）：</p>
+<pre><code class="javascript">enum ChessType {
+  king, queen, rook, bishop, knight, pawn
+}
+
+enum Camp {
+  black, white
+}
+
+interface Piece {
+  type: ChessType;
+  camp: Camp;
+}
+
+interface Board {
+  /* from 0 to 63 */
+  pieces: Array&lt;Piece&gt;;
+}
+</code></pre>
+<p>然后需要为每一种棋子编写一个「生成走法」的函数，以便我们的程序知道一个棋子有哪些走法可走，在此以国王为例：</p>
+<pre><code class="javascript">function generateMovesForKing(board, piece, camp) {
+  for target in ([-1, -1], [0, -1], [1, -1], [-1, 0],
+                 [1, 0], [-1, 1], [0, 1], [1, 1]) {
+    if (target on the board and (target is empty or target.camp != piece.camp)) {
+      yield target
+    }
+  }
+}
+</code></pre>
+<p>按照国际象棋的规则，国王可以以直线或斜线的方式移动一格，因此上面的代码会检查相邻一格的位置是否在棋盘范围内、是否是空的或者有对面的棋子（吃子）。</p>
+<p>然后还需要考虑到我们的程序和外部的输入输出，在国际象棋领域已有一个叫 FEN 的标准来表示当前的局势（各个棋子在棋盘上的位置），下面是一段表示开局状态的 FEN:</p>
+<pre><code>rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
+</code></pre><p>FEN 为每种棋子规定了一个字母、用大小写表示黑棋或者白棋、用斜线分割不同的行、用数字表示空白。在我们的程序的 Web 界面中有一个填写 FEN 的文本框，当你填入一个新的 FEN 时，棋盘上的棋子会随之改变；反过来当你移动棋子时，FEN 也会跟着改变，这将会让我们后续的调试变得非常简单。</p>
+<h3 id="局面评估"><a href="#局面评估" class="headerlink" title="局面评估"></a>局面评估</h3><p>我们的程序会在每个回合中，从众多可能的走法中选择一个对自己而言最优的走法，所以我们需要一个函数去评估和量化一个走法对我们而言的优势。</p>
+<pre><code class="javascript">function evaluate(board: Board, camp: camp): number {
+  var ourScore = 0;
+
+  for piece on board {
+    if (piece.camp == camp) {
+      ourScore += getScode(board, piece)
+    } else {
+      ourScore -= getScode(board, piece)
+    }
+  }
+
+  return ourScore;
+}
+</code></pre>
+<p>这个函数会接受一个棋盘（board）和一个阵营（camp）作为参数，这个棋盘其实就是应用了某个走法之后，各个棋子的位置。这个函数会检查棋盘上每个棋子，如果这个棋子是我方的，就将其代表的分数加到「我方的优势分数」上；如果是对方的，就从我方的优势分数中减去对应的分数。</p>
+<p>每个棋子所代表的分数则按照下表来计算：</p>
+<table>
+<thead>
+<tr>
+<th>棋子</th>
+<th>基础分数</th>
+<th>每多一种走法的额外分数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>王</td>
+<td>10000</td>
+<td>2</td>
+</tr>
+<tr>
+<td>皇后</td>
+<td>1000</td>
+<td>2</td>
+</tr>
+<tr>
+<td>车</td>
+<td>500</td>
+<td>2</td>
+</tr>
+<tr>
+<td>马</td>
+<td>400</td>
+<td>2</td>
+</tr>
+<tr>
+<td>象</td>
+<td>300</td>
+<td>2</td>
+</tr>
+<tr>
+<td>兵</td>
+<td>100</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<p>在这里我们凭「直觉」，按照棋子的重要性，给了每个棋子一个基础分数。但如果只有基础分数的话就会出现这样的情况：我们只能区分出出现吃子行为时的优势，如果不发生吃子，那么所有局面的优势都是一样的。为了解决这个问题，我们可以为「每一个可能的走法」再增加两点分数，因为在象棋中，我们可以走到一个格子，就说明我们对这个格子有一定的控制能力（如果对方的棋子走到这个格子我们就可以吃掉它），引入这个代表「灵活性」的分数后，我们会认为有更多走法的局面是更具有优势的局面。</p>
+<p>关于局面评估函数应该考虑什么、不应该考虑什么是一个值得思考的话题。因为我们的 AI 主要是靠下文介绍的「搜索」算法来找到最优的走法的，搜索函数会模拟双方的走棋，如果棋子之间存在守护关系，会在搜索中得到体现，有时过于「自作聪明」的评估函数反而会影响到搜索。在五子棋这样简单（搜索树小）的游戏中，我们甚至可以将评估函数精简为一个「判断胜负」的函数，因为按照目前的计算力，是有可能直接在搜索中找到获胜的局面的，而在象棋这种搜索树庞大的游戏中，我们还是需要评估函数的。</p>
+<p>在我们的程序中，我将「灵活性分数」做成了一个默认不开启的选项，默认只计算棋子的基础分数，这是因为计算走法是一个相对开销较大的运算，会比较明显地减少搜索层数（减少一层）。</p>
+<h3 id="极大极小搜索法"><a href="#极大极小搜索法" class="headerlink" title="极大极小搜索法"></a>极大极小搜索法</h3><p>棋类游戏的博弈 AI, 最核心的就是搜索算法，即通过轮流模拟双方走棋，找到最优的走法。搜索的层数就是模拟走棋的回合数，搜索层数越深代表博弈程序可以考虑得越远，能力也就越强，响应地消耗的计算资源也越多。</p>
+<p>我们首先介绍一个非常简单的搜索算法 —— 极大极小搜索法，这个算法平淡无奇，只是深度优先地轮流模拟双方走棋：</p>
+<pre><code class="javascript">function negaMaxSearch(depth: number, board: Board, camp: Camp): number {
+  if (depth &lt;= 0) {
+    return evaluate(board, camp);
+  } else {
+    return getAllMoves(board, camp).reduce( (best, move) =&gt; {
+      return Math.max(best, -negaMaxSearch(depth - 1, board.move(move), anotherCamp(camp)));
+    }, -Infinity);
+  }
+}
+</code></pre>
+<p>我将这个算法实现为了递归的形式，参数 depth 用于控制搜索的深度，每递归一层便减少 1, 当减少到 0 的时候结束递归，使用评估函数评估这个局面的优势值；depth 大于 0 时则递归地搜索当前所有可能的走法（getAllMoves），返回其中优势值最大的局面。</p>
+<p>注意在进行递归时，我们需要用 anotherCamp 来切换阵营，同时对结果取负值。这是因为在象棋中，博弈双方是轮流走棋的，我们需要先模拟自己走棋，再模拟对方走棋。在模拟对方走棋时，我们需要站在对方的角度来考虑 —— 我们需要找到对我方最不利的走法，因为我们需要假设对方是聪明的，是会尽一切可能针对我方的，所以在递归时我们需要对 negaMaxSearch 的结果取负。</p>
+<p><img src="https://o5eoc29h5.qnssl.com/wizard-chess-negamaxsearch.jpg" alt="wizard-chess-negamaxsearch.jpg"></p>
+<p>在我的电脑上，这个算法可以在使用单核心的情况下，花费 1 分钟来搜索 4 层。在开局状态下，搜索树有 9341 个节点，最终评估了 220211 个局面：</p>
+<pre><code>White {search: 9341, evaluate: 220211}
+Black {search: 9341, evaluate: 220211}
+</code></pre><h3 id="Alpha-Beta-剪支"><a href="#Alpha-Beta-剪支" class="headerlink" title="Alpha/Beta 剪支"></a>Alpha/Beta 剪支</h3><p>但其实在前面的搜索树中，有很大一部分节点是「没有意义」的，即无论是否搜索这些节点，对最终的结果都不会有影响，我们可以通过接下来介绍的 Alpha/Beta 剪支算法来跳过对这些无意义的节点的搜索。</p>
+<p><img src="https://o5eoc29h5.qnssl.com/wizard-chess-alphabetasearch.jpg" alt="wizard-chess-alphabetasearch.jpg"></p>
+<p>例如在上图中，如果我们从左到右深度优先地搜索走法树，那么右侧灰色的节点就是我们需要跳过的节点。depth=1 最右标有 5 的节点的左侧子树（5 - 5 - 5）被搜索出之后，depth=1 最右标有 5 的节点的最小值就已经被确定为了 5 —— 因为在 depth=2 时我们需要站在对手的角度找到对我方估值最低的走法，既然左侧子树已经找到了 5, 那么无论其他子树的值是多少，这个节点估值都不可能比 5 更大了。</p>
+<p>如果 depth=1 最右标有 5 的节点的估值小于等于 5, 那么它对于父节点也是没有意义的，因为在 depth=1 的层我们需要找到估值最高的走法，既然在 depth=1 这层我们已经找到了一个估值为 6 的走法，那么我们就对估值小于等于 5 的走法不感兴趣了，因此图中灰色的节点我们都可以跳过。</p>
+<pre><code class="javascript">function alphaBetaSearch(depth: number, board: Board, camp: Camp, currentCamp: Camp, alpha: number, beta: number): number {
+  if (depth &lt;= 0) {
+    return evaluate(board, camp);
+  } else {
+    for move in getAllMoves(board, camp) {
+      if (camp == currentCamp) {
+        alpha = Math.max(alpha,
+          alphaBetaSearch(depth - 1, board.move(move), camp, anotherCamp(currentCamp), alpha, beta)
+        );
+      } else {
+        beta = Math.min(beta,
+          alphaBetaSearch(depth - 1, board.move(move), camp, anotherCamp(currentCamp), alpha, beta)
+        );
+      }
+
+      if (beta &lt;= alpha) {
+        break;
+      }
+    }
+
+    if (camp == currentCamp) {
+      return alpha;
+    } else {
+      return beta;
+    }
+  }
+}
+</code></pre>
+<p>我们在极大极小搜索法的基础上进行了修改，得到了带有剪支（跳过图中灰色节点）功能的 alphaBetaSearch, 它多了 currentCamp, alpha, beta 三个参数。alpha 表示在当前搜索路径中，我方至少可以得到 alpha 的分数，任何低于 alpha 的局面都不考虑（剪支）；beta 表示在当前搜索路径中，对方至少可以拿到 beta 的分数，任何高于 beta 的局面都不考虑（剪支），因对方不会放任你拿到更高的分数的；而 currentCamp 和 camp 将用于在搜索中区分「我方」和「对方」。</p>
+<p>在递归时，我们会区分当前是「我方」还是「对方」。我方走棋时，将最好的估值保存到 alpha, 对方走棋时，我们将最差的估值保存到 beta, 如果某个局面的估值在 beta 和 alpha 之间则进行剪支（break）。</p>
+<table>
+<thead>
+<tr>
+<th>depth</th>
+<th>worst case</th>
+<th>best case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>n</td>
+<td>b^n</td>
+<td>b^⌈n/2⌉+b^⌊n/2⌋−1</td>
+</tr>
+<tr>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>40</td>
+<td>40</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1,600</td>
+<td>79</td>
+</tr>
+<tr>
+<td>3</td>
+<td>64,000</td>
+<td>1,639</td>
+</tr>
+<tr>
+<td>4</td>
+<td>2,560,000</td>
+<td>3,199</td>
+</tr>
+<tr>
+<td>5</td>
+<td>102,400,000</td>
+<td>65,569</td>
+</tr>
+<tr>
+<td>6</td>
+<td>4,096,000,000</td>
+<td>127,999</td>
+</tr>
+<tr>
+<td>7</td>
+<td>163,840,000,000</td>
+<td>2,623,999</td>
+</tr>
+<tr>
+<td>8</td>
+<td>6,553,600,000,000</td>
+<td>5,119,999</td>
+</tr>
+</tbody>
+</table>
+<p>这个表格列出了 Alpha/Beta 剪支搜索在最好和最差的情况下搜索的局面数量级，所谓最好的情况就是每个最左子树都是最理想的估值，其余子树都被剪掉了，最差的情况就是每个子树都有着比左侧子树更理想的估值，因此我们需要搜索所有子树来找到最理想的估值。当然实际情况肯定是会介于最好和最坏的情况之间，在开局状态下，我们的程序表现如下，相比于前面的极大极小搜索，我们剪掉了 95% 的局面，只评估了 15k - 34k 的局面。</p>
+<pre><code>White {search: 1748, evaluate: 15854, cut: 1136}
+Black {search: 2071, evaluate: 34740, cut: 1547}
+</code></pre><p>从上面的数据可以看到很有趣的一点，开局状态下明明黑白双方的棋子位置差不多，但搜索的局面数量却差了一倍。这是因为 Alpha/Beta 搜索会比较严重地依赖搜索每个走法的顺序 —— 如果先搜索的是估值理想的走法，那么就会触发更多的剪支，搜索更少的节点，反之则会搜索更多的节点。而我们完全没有对走法做排序，所以搜索的顺序会取决于棋子在棋盘上出现的顺序 —— 没错，差别就是这么大。</p>
+<p>因此在搜索子树的时候，对子树（走法）做一个预先的排序就显得很重要了，可以很大程度地提高剪支的效率。但同时这又是一个很矛盾的事情 —— 我们搜索就是为了找到最好的走法，但在搜之前却又需要先对走法进行一个排序。所以这个排序必须直观而简单，例如优先搜索皇后、车这类重要的棋子，</p>
+<h3 id="写在后"><a href="#写在后" class="headerlink" title="写在后"></a>写在后</h3><ul>
+<li>GitHub <a href="https://github.com/jysperm/WizardChess" target="_blank" rel="external">https://github.com/jysperm/WizardChess</a></li>
+<li>Demo <a href="http://wizard-chess.leanapp.cn" target="_blank" rel="external">http://wizard-chess.leanapp.cn</a></li>
+</ul>
+<p>说实话，因为我数学基础比较差，也没有进行太多的性能优化，最后实现出来的 AI 非常地弱，基本每一步棋都很「蠢」，但至少实现了一个棋类 AI 应有的骨架。我今后可能不会继续维护这个代码了，所以相比于代码，可能这篇文章对读者的帮助会更大。</p>
+<h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3><p>国际象棋规则：</p>
+<ul>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%9C%8B%E9%9A%9B%E8%B1%A1%E6%A3%8B" target="_blank" rel="external">https://zh.wikipedia.org/wiki/%E5%9C%8B%E9%9A%9B%E8%B1%A1%E6%A3%8B</a></li>
+</ul>
+<p>FEN:</p>
+<ul>
+<li><a href="https://www.xqbase.com/protocol/pgnfen2.htm" target="_blank" rel="external">https://www.xqbase.com/protocol/pgnfen2.htm</a></li>
+<li><a href="https://chessprogramming.wikispaces.com/Forsyth-Edwards+Notation" target="_blank" rel="external">https://chessprogramming.wikispaces.com/Forsyth-Edwards+Notation</a></li>
+</ul>
+<p>Alpha/Beta 搜索：</p>
+<ul>
+<li><a href="https://chessprogramming.wikispaces.com/Alpha-Beta" target="_blank" rel="external">https://chessprogramming.wikispaces.com/Alpha-Beta</a></li>
+<li><a href="https://www.xqbase.com/computer/search_alphabeta.htm" target="_blank" rel="external">https://www.xqbase.com/computer/search_alphabeta.htm</a></li>
+</ul>
+<p>测试数据：</p>
+<ul>
+<li><a href="https://www.chess.com/analysis-board-editor" target="_blank" rel="external">https://www.chess.com/analysis-board-editor</a></li>
+<li><a href="http://zh.lichess.org" target="_blank" rel="external">http://zh.lichess.org</a></li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;blockquote&gt;
+&lt;p&gt;这篇文章由我 6 月末在 LeanCloud 进行的一次技术分享整理而来。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;我高一的时候曾读过一本「代码的力量：C/C++ 中国象棋程序入门与提高」，也想自己试着实现一个，连名字都想好了，就叫 Wizard
+    
+    </summary>
+    
+    
+      <category term="Node.js" scheme="https://jysperm.me/tag/nodejs/"/>
+    
+      <category term="Web" scheme="https://jysperm.me/tag/web/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>为什么我不相信中医</title>
+    <link href="https://jysperm.me/2016/06/why-not-traditional-medicine/"/>
+    <id>https://jysperm.me/2016/06/why-not-traditional-medicine/</id>
+    <published>2016-06-18T16:00:00.000Z</published>
+    <updated>2016-07-03T15:47:07.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>其实关于中医的日志已经在我的草稿箱里放了两年多了，没发出来是觉得把知乎和果壳上的观点重复一遍意义并不大，需要时间再沉淀一下，因此直到现在才发出。</p>
+<p>根据我们的经验，我们对世界的认知并不总是正确的（其实几乎全部是片面的），所以相比于知识，获得知识的方法有时更为重要。首先我对中医并没有一个深入的了解，因此我也没法说出中医的理论究竟有何谬误，所以我先介绍一下现代医学背后的方法。也希望大家着眼于我所描述的现象，而不是「中医」这个代号本身。</p>
+<p>当今的现代医学指导思想之一就是「<a href="https://zh.wikipedia.org/wiki/%E5%BE%AA%E8%AF%81%E5%8C%BB%E5%AD%A6" target="_blank" rel="external">循证医学</a>」，这是对「<a href="https://zh.wikipedia.org/wiki/%E7%A7%91%E5%AD%A6%E6%96%B9%E6%B3%95" target="_blank" rel="external">科学方法</a>」的一种拓展。所谓科学方法是人类在最近几百年所总结出的最有效的探索世界的一系列方法，包括观察并总结规律、做出可以测量的预测、证实预测的结果，可以说现在你每天用到的大部分工具都是遵循科学方法被创造出来的。</p>
+<p>临床医学是一门应用性很强的学科，最终的目标自然是治好人们的疾病，而循证医学要求医生所做出的诊断、用药都要有证据可循。医生必须通过大样本、可查证、可证伪的实验得到的数据去支持他们的诊断和用药。</p>
+<p>从用户的角度，对比中药或中成药的说明书和所谓西药的说明书，几乎中药或中成药的「不良反应」和「禁忌」写的都是「尚不明确」，也不会写药里的哪种成分起什么作用。而西药会写得非常详细，甚至包括每一种成份从多少分钟之后开始生效、和其他药物会有什么互相作用、实验中被观察到的副作用等。</p>
+<p>中药或中成药不写这些的原因其实就是没有数据，即使它真的有效果，也伴随着很大的不确定性和风险。所以现代医学将中医称为「经验医学」或「<a href="https://zh.wikipedia.org/wiki/%E6%9B%BF%E4%BB%A3%E5%8C%BB%E5%AD%A6" target="_blank" rel="external">替代医学</a>」，意味着最好不要将这些手段作为首选的治疗方法。同时并不仅仅是中国有替代医学，世界各国都有各自的传统医学理论，任何一个理论拿过来看都是很荒谬的，同样在外国人看来中医理论也是同样是荒谬的。</p>
+<p>替代医学当然也可以治病，但它和循证医学的区分就在于是否是科学，是否认可科学方法、是否认可诊断和用药需要数据来支撑。所谓因人而异的治疗实际上是在科技不发达时期不得已而为之的做法，在现代如果继续坚持这样的理论就无法得到交叉的、大样本的研究，无法建立一个普适的标准。</p>
+<p>例如你服用一个药之后病好了，如何证明是药起了作用，而不是因为病的自愈，或者生活习惯（医生通常会告诉你不要喝酒不要熬夜）的改变呢？循证医学会通过一种「<a href="https://zh.wikipedia.org/wiki/%E9%9B%99%E7%9B%B2" target="_blank" rel="external">双盲实验</a>」的方式来确定药的效果，就是说同时给实验组和对照组的病人用药，前者用的是真正的药物，而后者是安慰剂，来对比药物的效果和副作用，为了排除安慰剂效应的影响，在整个实验的过程中病人并不知道自己是实验组还是对照组，观察的医生也是不知道的。</p>
+<p>最后简单做一个总结，我没有否认中医可以在某些情况下起到效果，但我希望说明的是这种有效性是没有经过科学方法的证实的、没有数据支撑的，你可以说我过于信仰科学方法了，没错，我的确如此。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;其实关于中医的日志已经在我的草稿箱里放了两年多了，没发出来是觉得把知乎和果壳上的观点重复一遍意义并不大，需要时间再沉淀一下，因此直到现在才发出。&lt;/p&gt;
+&lt;p&gt;根据我们的经验，我们对世界的认知并不总是正确的（其实几乎全部是片面的），所以相比于知识，获得知识的方法有时更为重要
+    
+    </summary>
+    
+    
+      <category term="价值观" scheme="https://jysperm.me/tag/values/"/>
+    
+      <category term="中医" scheme="https://jysperm.me/tag/traditional-medicine/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>从被误解到最流行：论 JavaScript 如何完成华丽转身</title>
+    <link href="https://jysperm.me/2016/06/interesting-javascript/"/>
+    <id>https://jysperm.me/2016/06/interesting-javascript/</id>
+    <published>2016-06-11T16:00:00.000Z</published>
+    <updated>2016-12-24T07:52:16.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>有人说「<a href="http://www.ruanyifeng.com/blog/2011/06/birth_of_javascript.html" target="_blank" rel="external">JavaScript 是花了 10 天时间匆忙被设计出来的语言</a>」，也有人说「<a href="https://blog.codinghorror.com/the-principle-of-least-power" target="_blank" rel="external">凡是能用 JavaScript 写出来的，最终都会用 JavaScript 写出来</a>」。写这篇文并非要对 JavaScript 做一个全面的优劣分析，而是想与大家分享一些存在于 JavaScript 及其生态系统中的、在我看来比较有趣的闪光点。  </p>
+<h3 id="插件化的语言特征"><a href="#插件化的语言特征" class="headerlink" title="插件化的语言特征"></a>插件化的语言特征</h3><p>JavaScript 曾经是一门兼容性最糟糕、升级最困难的语言。开发者们要苦等到所有用户都升级了浏览器，才敢使用新版本的特征。然而在最近几年，随着 <a href="https://babeljs.io/" target="_blank" rel="external">Babel</a> 等编译器的兴起，越来越多的 JavaScript 开发者们都放开了手，开始在生产环境中使用那些尚未被纳入标准的语言特征了。</p>
+<p>使用了 Babel 的项目需要在发布之前引入一个「构建」的步骤，将使用了较新的语言特征的源代码转译为兼容性更好、被所有浏览器所支持的早期版本的 JavaScript，所以开发者就不必再去关心用户的浏览器是否支持这项新特征了。</p>
+<p>Babel 是一个开源的、插件化的编译器框架，JavaScript 的每个语言特征（包括那些还未被纳入标准的）都被实现成了一个插件，插件可以遍历和替换 <a href="https://github.com/thejameskyle/babel-handbook/blob/master/translations/en/plugin-handbook.md" target="_blank" rel="external">AST</a>，进而对编译的结果施加影响。令人兴奋的一点是 Babel 让语言的特征形成了模块化，也就是说开发者可以在构建脚本中来配置要使用的语言特征。</p>
+<p>Babel 的出现大大加速了 JavaScript 的进化。因为一旦有人希望在 JavaScript 中加入一个新特征，他首先会去实现一个 Babel 插件，然后很快就会有开发者去使用这个插件（这个过程不过是修改一下构建脚本）。这样新特征会得到来自一线开发者的验证和反馈，并有效地得以改进，如此形成一个良性循环。对比来看，某一些语言的新特征在设计和普及阶段进展非常缓慢。因为如果一个特征无法成为标准，就不会有开发者使用，而没有开发者使用，标准的制定者又无法得到足够的反馈，进而推迟进入标准的时间。</p>
+<h3 id="总有一种适合你的方言"><a href="#总有一种适合你的方言" class="headerlink" title="总有一种适合你的方言"></a>总有一种适合你的方言</h3><p>除了对 JavaScript 本身的增强，社区中还有着上百种编译成 JavaScript 的「<a href="https://github.com/jashkenas/coffeescript/wiki/list-of-languages-that-compile-to-js" target="_blank" rel="external">方言</a>」。创造一种 JavaScript 的方言并不难，你只要编写一个从源代码到 <a href="https://github.com/estree/estree" target="_blank" rel="external">ES AST</a> 的词法和语法分析器，后续的步骤交给 Babel 就好。社区中比较知名的几种方言有：</p>
+<ul>
+<li><a href="http://coffeescript.org/" target="_blank" rel="external">CoffeeScript</a>：提供更简洁的语法，可以省略大部分的括号和花括号。</li>
+<li><a href="http://www.typescriptlang.org/" target="_blank" rel="external">TypeScript</a>：强类型的 JavaScript，提供编译期类型检查。</li>
+<li><a href="https://github.com/clojure/clojurescript" target="_blank" rel="external">ClojureScript</a>：提供 Clojure（Lisp）风格的语法。</li>
+<li><a href="http://www.purescript.org/" target="_blank" rel="external">PureScript</a>：<a href="https://www.infoq.com/news/2014/09/purescript-haskell-javascript" target="_blank" rel="external">类 Haskell 的语法和类型系统</a>。</li>
+<li><a href="https://facebook.github.io/jsx/" target="_blank" rel="external">JSX</a>：混写 JavaScript 与 HTML（React DOM）。</li>
+</ul>
+<p>这些方言有着各自的风格，从外观来看语法完全不同，但它们最终都会编译成标准的 JavaScript，这意味着它们之间是可以互操作的，你可以在一个 TypeScript 的项目中使用 CoffeeScript 编写的库，反之亦然。你甚至可以在一个项目中混用不同的方言。</p>
+<p>开发者很少需要担心新特征或方言带来的不稳定性，因为代码最终会被编译成标准的 JavaScript，只要编译的过程没有错误，最后都是交由 JavaScript 引擎来执行，这并没有为 JavaScript 引擎带来新的复杂度。一旦有一天你决定不再使用某个特征或方言时也不要紧，直接使用编译后的 JavaScript 就好了。</p>
+<p>这样一来，可以说 JavaScript 不再是一门语言，而是一个 JVM（<em>JavaScript</em> Virtual Machine）了。同时因为浏览器厂商（它们是这个世界上最大的科技巨头）之间的竞争和合作，JavaScript 有着几乎是所有虚拟机语言中最好的性能。</p>
+<h3 id="精简而灵活的语言核心"><a href="#精简而灵活的语言核心" class="headerlink" title="精简而灵活的语言核心"></a>精简而灵活的语言核心</h3><p><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects" target="_blank" rel="external">JavaScript 的标准库</a>仅包含了非常有限的功能，某种程度上来说这也是件好事 —— 精简的标准库给第三方库留出了充分的竞争空间，真正得到大家认可的库才会被广泛使用，而不仅仅因为它被包含在了标准库中。</p>
+<p>JavaScript 语言本身并没有定义得非常好的「范式」，你可以使用函数式的风格，比如函数作为参数和返回值、闭包、<a href="https://github.com/stoeffel/awesome-fp-js" target="_blank" rel="external">lodash 等函数式工具</a>、<a href="https://facebook.github.io/immutable-js" target="_blank" rel="external">Immutable.js</a> 提供的不可变数据类型（ES2015 甚至还包括了<a href="https://github.com/v8/v8/commit/6131ab1edd6e78be01ac90b8f0b0f4f27f308071" target="_blank" rel="external">尾递归优化</a>）；你还可以使用面向对象的风格，比如使用原型 prototype 构造出具有静态成员和实例成员、支持继承和多态的类（ES2015 也添加了 class 这个关键字来更加方便直观地定义类）。</p>
+<p>正是 JavaScript 的这种灵活性，赋予了类库的设计者很大的施展空间。很多知名的类库可以说是创造了一种新的编程范式：</p>
+<ul>
+<li><a href="http://backbonejs.org/" target="_blank" rel="external">Backbone</a>：面向对象的 ORM，通过事件模型来通知对象的变化。</li>
+<li><a href="http://expressjs.com/" target="_blank" rel="external">Express</a>：通过定义串联的「中间件」来处理 HTTP 请求。</li>
+<li><a href="https://facebook.github.io/react" target="_blank" rel="external">React</a>：每当状态发生变化便重新渲染整个页面，减少用户界面状态管理的复杂度。</li>
+</ul>
+<h3 id="不止于浏览器环境"><a href="#不止于浏览器环境" class="headerlink" title="不止于浏览器环境"></a>不止于浏览器环境</h3><p>JavaScript 不仅可以在浏览器中运行，因为它精简的语言核心（甚至不包括任何 IO 相关的功能），现在已经被移植到了其他很多平台：</p>
+<ul>
+<li><a href="https://nodejs.org/" target="_blank" rel="external">Node.js</a>：提供了访问文件系统、进行网络操作的 API，用于构建 Web 后端等服务器程序。</li>
+<li><a href="http://ionicframework.com/" target="_blank" rel="external">Ionic</a> / Cordova：提供访问移动设备的 API，使用 Web 技术来构建移动应用。</li>
+<li><a href="http://electron.atom.io/" target="_blank" rel="external">Electron</a>：让 JavaScript 可以同时访问 Web 和 Node.js 的 API，以便用 Web 技术来构建桌面应用。</li>
+<li><a href="https://facebook.github.io/react-native" target="_blank" rel="external">React Native</a>：用 JavaScript 去操作原生 UI 组件来构建移动应用。</li>
+</ul>
+<p>这些环境下有着和浏览器中完全不同的 API，但运行的都是同样的 JavaScript 代码，你的业务逻辑代码可以在这些环境间共用。JavaScript 社区中大部分已有的、不依赖具体运行环境的工具库都可以不加修改地运行在这些新环境中。</p>
+<h3 id="异步单线程是把双刃剑"><a href="#异步单线程是把双刃剑" class="headerlink" title="异步单线程是把双刃剑"></a>异步单线程是把双刃剑</h3><p>无论在浏览器还是 Node.js 中，JavaScript 都采用了异步单线程的并发模型，所有的 IO 操作都采取异步执行，并通过「回调函数」来接收结果。以 Node.js 为例，引擎内部使用了一个<a href="http://stackoverflow.com/questions/20346097/does-node-js-use-threads-thread-pool-internally" target="_blank" rel="external">固定数量的线程池</a>，通过操作系统的「IO 多路复用」功能来进行 IO 操作，这样即使有大量并发的 IO 操作，也不过是多花了一点内存来维护相关的数据结构，并不会创建新的线程。这也是为什么大家都说 Node.js 适合高并发场景的原因了。同时 JavaScript 暴露给开发者的线程只有一个，只有这个线程会执行 JavaScript 代码，所以开发者不必象其他一些多线程语言那样去关心线程同步和线程安全的问题。JavaScript 开发者对于异步任务的接受程度也更高，他们会尽可能地让没有依赖关系的操作并行执行，<a href="https://jysperm.me/2014/09/1843">让无谓的等待时间最小化</a>。</p>
+<p>作为代价，JavaScript 中所有的 IO 操作都需要通过传递 <a href="http://www.infoq.com/cn/articles/nodejs-callback-hell" target="_blank" rel="external">回调函数</a> 的方式来获取结果，初学者会为此非常苦恼 —— 编写循环、处理异常时会束手束脚，异步回调的写法也非常繁琐，一不留神<a href="http://callbackhell.com/" target="_blank" rel="external">回调函数的嵌套就会失去控制</a>。为此社区创造了很多语言特性和工具来试图解决这个问题，包括 EventEmitter、async.js、Promise、co/generator、async/await 等。虽然基本可以认为 Promise 是未来的趋势，但目前还并没有普及到所有的 JavaScript 开发者，而且在这几种异步流程控制方案之间互相调用也很令人头痛。此外因为只有一个 JavaScript 线程在运行，所以如果在一个函数中有 CPU 密集的计算任务，它就会阻塞整个事件循环的处理，此时需要开发者手工让出线程，来处理事件循环中其他的事件。</p>
+<p>好了，怕篇幅再长反而会分散大家对内容的理解和印象，就此收笔。我这儿还有些其他相关的内容，感兴趣的朋友可以继续读下去。</p>
+<ul>
+<li><a href="http://www.infoq.com/cn/presentations/javascript-the-world-best-programming-language" target="_blank" rel="external">JavaScript - The World’s Best Programming Language</a>（中文演讲）</li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;有人说「&lt;a href=&quot;http://www.ruanyifeng.com/blog/2011/06/birth_of_javascript.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;JavaScript 是花了 10 天时间匆忙被设计出来
+    
+    </summary>
+    
+    
+      <category term="Node.js" scheme="https://jysperm.me/tag/nodejs/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>移除博客评论和微信公众号</title>
+    <link href="https://jysperm.me/2016/05/remove-comments-and-wechat/"/>
+    <id>https://jysperm.me/2016/05/remove-comments-and-wechat/</id>
+    <published>2016-05-15T16:00:00.000Z</published>
+    <updated>2016-07-03T15:47:07.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>最近我对博客做出了一个大胆的改变：移除之前存在了五年的文章评论功能。可以说评论功能一直是博客系统的标配。想起来大概是在 SNS 不那么流行的年代，评论功能将会是读者和作者进行公开的讨论的唯一渠道，但现在已经是 SNS 的时代了，博客的评论显得功能不够丰富也不够即时，所以这个功能显得并不是那么必要了。</p>
+<p>从另一个角度来看，我写了这么多年博客，收到的大部分评论都和文章内容无关 —— 他们在把文章的评论当作留言板来使用，和我打个招呼或者询问一下近况。当然我也曾收到极少部分一些认真撰写的评论，我也希望继续给这些人留出一些空间：我会以邮件的形式接受文章评论，我会挑选其中对读者有价值的部分展示在文章的末尾。</p>
+<p>我希望以这种严肃的、原始的方式来收集优秀的评论，或者 —— 干脆没有评论。我会陆续将之前通过多说收集到的优秀的评论补充到相应文章。</p>
+<p>另一方面，我一直是抵触微信公众号这种封闭技术的，但因为微信的庞大用户群，我也曾在过去的一段时间小范围地试水微信公众号。但最终我还是无法接受它的限制 —— 正文中不能有链接、网页会被重新排版、只能在手机上阅读等。但在这个很少有人去阅读独立博客的年代，我也需要有一个推送的渠道，于是我选择用原始的「邮件订阅」去代替微信公众号（你可以在我的博客和粉丝团首页的边栏上看到订阅按钮），毕竟邮件才是互联网上最通用的「推送协议」。</p>
+<p>虽然目前我选用了一款第三方服务来编排邮件，但因为邮件的通用性，这并不妨碍将来迁移到其他服务甚至自建服务。我曾在知乎回答过一个问题「<a href="https://www.zhihu.com/question/22951230/answer/23400706" target="_blank" rel="external">电子邮件最终会不会被即时通讯工具代替？</a>」，我的回答是不会，因为电子邮件是一个开放的、可拓展的协议，同时也有着去中心化的架构，因此邮件将永远是最正统、最严肃的沟通方式，这也是我在评论和推送这两个问题上都选择了邮件的原因。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;最近我对博客做出了一个大胆的改变：移除之前存在了五年的文章评论功能。可以说评论功能一直是博客系统的标配。想起来大概是在 SNS 不那么流行的年代，评论功能将会是读者和作者进行公开的讨论的唯一渠道，但现在已经是 SNS 的时代了，博客的评论显得功能不够丰富也不够即时，所以这个
+    
+    </summary>
+    
+    
+      <category term="博客" scheme="https://jysperm.me/tag/blog/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>BlockChain 与 Ethereum 介绍</title>
+    <link href="https://jysperm.me/2016/05/blockchain-slides/"/>
+    <id>https://jysperm.me/2016/05/blockchain-slides/</id>
+    <published>2016-04-30T16:00:00.000Z</published>
+    <updated>2016-12-24T07:53:22.000Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote>
+<p>这篇文章由我 3 月末在 LeanCloud 进行的技术分享整理而来，假定读者已有基本的密码学知识且对 Bitcoin 的实现有初步的了解。</p>
+</blockquote>
+<p>Blockchain 也叫区块链，可以认为它是 HashTree（散列树）的一种，也正因如此它有着一些和 HashTree 相同的性质：</p>
+<p><img src="https://o5eoc29h5.qnssl.com/blockchain-hash-tree.jpg" alt="blockchain-hash-tree"></p>
+<blockquote>
+<p>图片来自 <a href="http://happypeter.github.io/bitcoin_basics/book/017_merkle_tree.html" target="_blank" rel="external">http://happypeter.github.io/bitcoin_basics/book/017_merkle_tree.html</a></p>
+</blockquote>
+<p>即在一个树状结构中，每个末端节点都有一个散列值，而非末端节点的散列值则是由其所有直接子节点的散列值散列而来，因此每个节点都直接或间接地包含了其所有子节点的信息。进而，只要任意一个末端节点的散列值变化，其所有父节点的散列值都会发生变化，根节点也必定变化。</p>
+<p>我可以举一个有关 HashTree 的应用：「100% 准备金证明」，它属于「零知识证明（Zero-knowledge proofs）」的这一类问题。我们可以考虑这样一个场景，Bitcion 的持有者为了进行交易，需要将 Bitcoin 寄存在交易所，理论上交易所可以将这笔钱（所有用户寄存的账户余额）挪作它用，这是用户们不希望看到的，而交易所也希望自证清白：交易所首先公布一个自己所持有的 Bitcoin 地址，供大家确认交易所确实持有这么多 Bitcoin 作为准备金，但如何证明这笔钱确实大于所有用户余额的总和呢？换句话说，如何在不公布每个用户的余额（会泄露用户的隐私）的情况下，让每个用户都认可自己的余额被包含在了总的准备金中呢？</p>
+<p><img src="https://o5eoc29h5.qnssl.com/blockchain-proof-of-reserves.png" alt="blockchain-proof-of-reserves"></p>
+<blockquote>
+<p>图片来自 <a href="http://blog.bifubao.com/2014/03/16/proof-of-reserves" target="_blank" rel="external">http://blog.bifubao.com/2014/03/16/proof-of-reserves</a></p>
+</blockquote>
+<p>我们可以构造一个 HashTree，所有的末端节点都代表一个用户，包含了用户余额（<code>Σ</code>）和用户标识（如邮箱地址）的散列（<code>h</code>），而父节点包含了其子节点的余额总和（<code>sum</code>）和所有子节点信息的散列（<code>hash</code>）。对于每一个用户而言，只需向其展示他自己的末端节点和兄弟节点、其所有父节点和父节点的兄弟节点即可，因为这个用户可以通过逐步追溯父节点的方式，确认自己的余额被包含在了父节点中，最后进而包含在了根节点中。</p>
+<p>这样一来，向每个用户展示的信息只有其自己的信息和一些经过聚合的信息，每个用户都可以在不获知其他用余额的情况下确认自己的余额被包含在了根节点中。上图中有一个小错误，<code>h</code> 为 <code>e4df9d12</code> 的节点不应该是一个代表用户的末端节点，而应该是一个经过聚合的信息节点（这个节点可以包含一个有 3333 余额的用户，和一个 0 余额的虚构用户）来避免泄漏某个用户的隐私信息。</p>
+<p>接下来我们来看一下 Git，其实 Git 是一个非常典型的 Blockchain 应用：</p>
+<p><img src="https://o5eoc29h5.qnssl.com/blockchain-git-objects-example.png" alt="blockchain-git-objects-example"></p>
+<blockquote>
+<p>图片来自 <a href="http://gitbook.liuhui998.com/1_2.html" target="_blank" rel="external">http://gitbook.liuhui998.com/1_2.html</a> （GPL v2）</p>
+</blockquote>
+<p>在 Git 中，无论是文件（Blob）、索引（Tree）还是提交（Commit），都有一个由其内容决定的 Hash，如果两个对象有着一样的内容，则有着一样的 Hash。在 Git 中，整个仓库的历史就是一条 Blockchain，每个 Commit 相当于一个 Block，Commit 中包含了前一个 Commit 的 Hash 以及此次修改相关的对象的 Hash，Commit 本身的 Hash 由其内容和这些元信息来决定。</p>
+<p>Git 借助 Blockchain 为仓库来确定了一个唯一的历史 ———— 如果一个 Commit 被修改了，在其之后的所有的 Commit 的 Hash 都会改变。当然，因为 Git 只是一个版本控制工具，所以并没有阻止你去修改历史（毕竟还可以 rebase 然后 <code>push --force</code>），但这种修改会被所有协作者察觉到。  </p>
+<p>另一个 Blockchain 的经典应用就是 Bitcoin 了，也正是 Bitcoin 将 Blockchain 这个词传播开来（而这个概念其实是一直都有的）：</p>
+<p><img src="https://o5eoc29h5.qnssl.com/blockchain-bitcoin-block-data.png" alt="blockchain-bitcoin-block-data"></p>
+<blockquote>
+<p>图片来自 <a href="https://commons.wikimedia.org/wiki/File:Bitcoin_Block_Data.png" target="_blank" rel="external">https://commons.wikimedia.org/wiki/File:Bitcoin_Block_Data.png</a>（CC-BY-SA-3.0）</p>
+</blockquote>
+<p>在 Bitcoin 中，每个 Block（块）包含了一系列 Transaction（交易）和上个 Block 的 Hash，而整个 Blockchain 则构成了一个去中心化的唯一账本。因为每十分钟才会产生一个新的 Block，而 Block 一经产生就会永远留在 Blockchain 上，所以 Blockchain 将交易发生的顺序固定了下来，维护了交易发生的先后顺序，进而确定一个账户是否有足够的余额发起一笔交易。</p>
+<h2 id="Bitcoin"><a href="#Bitcoin" class="headerlink" title="Bitcoin"></a>Bitcoin</h2><p>这个分享的第一个部分是简单地回顾一下 Bitcoin.</p>
+<p>Bitcoin 中 Block 的产生是通过「工作量证明」来实现的，即所有参与「挖矿」的「矿工」都要进行一种与计算力相关的、具有随机性质的散列计算，直到算出一个满足特定条件的随机数，才能获得发布一个 Block 的权利。</p>
+<p>在设定上，每个矿工总是会去信任「最长的链」，在已知的、满足规则的最长的链的基础上去计算下一个 Block，否则你的计算力就会被白白浪费掉 —— 因为其他矿工也总是认可最长的链，而如果你不在最长的链的基础上开始工作，那么就是在和其他所有矿工的计算力对抗。</p>
+<p>Bitcoin 被设计成每 10 分钟生成一个新的 Block, 这个时间是由大家共同通过观察过去几个 Block 的间隔时间，去调整下个 Block 的生成条件的难度去实现的。当过去几个 Block 的生成速度高于预期时，大家就会认为下一个 Block 的生成应该具有更高的难度。</p>
+<p>正常来说，每一个 Bitcoin 节点都需要存储完整的 Blockchain 数据才能去确认一笔交易是否合法 —— 交易的发起者是否拥有足够的余额发起这笔交易。但现在完整的 blockchain 已有 66G，而且还在以每天 0.1G 左右的速度增长。如果要求 Bitcoin 的每个用户都存储完整的区块链未免过于苛刻，因此 Bitcoin 拥有一个「简化确认（SPV, Simplified payment verification）」的机制，所谓的「轻量级客户端」可以选择不存储完整的区块链，而是附着到一个或几个完整节点上，只存储所有 Block 的元信息（Hash、包含交易的 Hash、工作量证明），然后验证每个块的工作量证明，每当需要验证交易时便向完整节点查询这个交易所在的 Block，然后获取这个 Block 中必要的信息（Block 中的交易也是以 HashTree 的方式存储的），以便校验这笔交易是否包含在 Blockchain 中。</p>
+<p><img src="https://o5eoc29h5.qnssl.com/blockchain-bitcoin-state-machine.png" alt="blockchain-bitcoin-state-machine"></p>
+<blockquote>
+<p>图片来自 <a href="https://github.com/ethereum/wiki/wiki/White-Paper" target="_blank" rel="external">https://github.com/ethereum/wiki/wiki/White-Paper</a></p>
+</blockquote>
+<ul>
+<li>Blockchain ↔ 账本 ↔ 状态变更日志</li>
+<li>Transaction ↔ 交易 ↔ 一次状态变更</li>
+<li>Block ↔ 对于当前状态的一次「共识」</li>
+</ul>
+<p>其实我们可以将 Bitcoin 的 Blockchain 想像成一个「状态机」，整个 Blockchain 是一个有状态的「账本」，其中存储着每一笔交易记录，根据这些交易记录可以推算出整个账本在任一时间的「状态」—— 即 Bitcoin 网络中每个账户有多少余额。每个 Transaction 就是一次对状态的变更，而每个 Block 是整个 Bitcoin 网络的矿工对当前状态的一个「共识」，因为 Bitcoin 每 10 分钟生成一个新的 Block，相当于每 10 分钟大家会对所有的账户的余额达成一次共识，而在这十分钟之间，账本的状态其实是一种「混沌」的状态。</p>
+<h2 id="Alt-Coin"><a href="#Alt-Coin" class="headerlink" title="Alt Coin"></a>Alt Coin</h2><p>在比特币的基础上也衍生出来了很多其他密码学货币，通常被称为「山寨币（Alt Coin）」，通常这类货币有两种实现方案：</p>
+<p>第一种是使用自己的、和 Bitcoin 相独立的网络，这样的好处是山寨币可以非常灵活地设计自己的协议和规则，但因为用户量很难达到和 Bitcoin 相当的数量级，所以对恶意攻击的防御能力将非常地弱。</p>
+<p>第二种是去使用 Bitcoin 的网络实现「元协议」，在 Bitocin 的 Transaction 之上附带自定义的信息来实现自己的逻辑，这样的好处是可以利用 Bitcoin 的计算力规模去抵御攻击，但同时因为依附在 Bitcoin 网络上，并不是所有的矿工都会遵守山寨币的规则，因此无法防止不符合规则的 Block 进入 Blockchain，只能在客户端上过滤掉不符合规则的交易，也就无法利用前面提到的 Bitcoin 提供的简化确认的功能了。</p>
+<p>对于这些山寨币而言，Bitcoin 可以提供一个具有大量矿工参与的、能够抵御住很大规模的恶意攻击的 Blockchain，同时 Bitcoin 的 Transaction 上也可以搭载自定义的数据，给山寨币的实现留出了一定空间。</p>
+<p>Bitocin 也提供了一个 <a href="https://en.bitcoin.it/wiki/Script" target="_blank" rel="external">Bitcoin Script</a> 用来实现更为复杂的 Transaction 但因为这并非是 Bitcoin 的核心功能，所以只能进行比较简单的运算，只能非常有限地读取 Blockchain 上的数据，同时因为缺少循环机制，很难编写通用的、图灵完备的逻辑。</p>
+<h2 id="Ethereum"><a href="#Ethereum" class="headerlink" title="Ethereum"></a>Ethereum</h2><p><img src="https://o5eoc29h5.qnssl.com/blockchain-ethereum.png" alt="blockchain-ethereum"></p>
+<blockquote>
+<p>图片来自 <a href="https://www.ethereum.org/assets" target="_blank" rel="external">https://www.ethereum.org/assets</a> （CC 3.0）</p>
+</blockquote>
+<p>「Ethereum（以太坊）」是一个基于区块链的、去中心化的应用平台，它将 Bitcoin 的基础设施 —— 基于密码学的区块链技术构建为了一个通用的平台，并补齐了 Bitcoin 网络的一些缺失功能，以便开发者将自己的去中心化应用运行在 Blockchain 上。</p>
+<p>在详细介绍 Ethereum 之前，我先介绍一下（我所认为的）去中心化网络的两大基础 —— 密码学和博弈。密码学自然不用多说，无非是通过公钥加密、数字签名、散列和摘要算法去从数学上保证安全性；而博弈是说在去中心化的网络中，任何人，包括希望恶意地希望攻击这个网络的人都可能参与，在设计去中心化网络时需要站在每一个参与者的角度去思考其利益关系，确保遵守规则时利益最大化、违反规则时会遭受损失或承担风险。</p>
+<p>然而在数字世界中，发布一段数据是没有成本的，无所谓「利益」和「损失」，因此必须和实体世界建立某种联系，才能去定义「利益」。例如在 Bitocin 网络中，如果攻击者希望去人为地改变 Blcokchain 的走向，需要拥有比其他所有矿工更高的计算力，而在实体世界中，计算力是需要计算设备来提供的，而计算设备是需要从实体世界购买的 —— 甚至有时候即使有钱也没有足够的产能，因此参与 Bitcoin 网络的矿工越多，它抵御攻击的能力将会越强。</p>
+<p>所以说在去中心化网络中，并不是所有问题都是被「技术」解决的，在技术所达不到的部分，必须通过利益、通过经济激励来解决。也是因为「经济激励」的需要，Ethereum 也有一个钱包体系（货币单位叫「Ether（以太）」），每个用户有一个钱包地址作为其唯一标识，在这一点上和 Bitcion 比较类似。</p>
+<p>「Contract（合约）」是 Ethereum 所引入的最重要的概念。在 Bitcoin 中，所有的地址都是属于一个用户的 —— 当我们说「用户」的时候，其实是说一对公钥和私钥。但在 Ethereum 中，除了由一个密钥对所拥有的地址之外，还有一种由「代码」拥有的地址，即 Contract. Contract 由用户发布，其本质是一段代码，在发布之后便无法修改，Contract 像普通账户一样也有一个钱包地址，每当这个地址收到交易时，所关联的代码便会被执行，这些代码：</p>
+<ul>
+<li>能且只能以区块链作为输入和输出，因此计算是可重复的 —— 实际上计算的结果并不需要被存储到区块链，因为随时可以重新进行计算。</li>
+<li>可以调用其他 Contract 中的函数（其他 Contract 的代码和数据同样存在于区块链上）。</li>
+<li>执行过程中可以创建新的交易（操纵自己的钱包余额），这些交易可能会去执行其他的 Contract.</li>
+</ul>
+<p>首先举一个「多人共同持有的钱包」的例子，在 Ethereum 的官方客户端中便有一个创建多人钱包的功能：</p>
+<p><img src="https://o5eoc29h5.qnssl.com/blockchain-ethereum-multi-sig-wallet.jpg" alt="blockchain-ethereum-multi-sig-wallet"></p>
+<p>如图，通过这个功能可以创建出一个与其他 2 个人共同拥有的钱包地址，每个人每天最多使用其中的 100 Ether，如果超过了这个限制，则必须经过另外一个人的同意。</p>
+<p>这个功能实际上会创建出一个 Contract，而上述逻辑是通过 Contract 中的代码来描述的。当你希望从这个共有钱包中支出款项时，你需要向这个共有钱包发一个消息（交易即消息，交易金额可以为零，仅携带数据），然后共有钱包中的代码会被执行，若这个支出请求符合上述逻辑，则发起真正的支出交易，否则这个支出请求会被驳回（没有真正地支出款项）。</p>
+<p>另外一个例子是「对冲合约」，一直都有人吐槽 Bitcoin 作为数字货币其币值（和法定货币的汇率）不稳定，经常出现一天之间币值涨一倍或跌一倍的情况，但如果借助 Contract 实现一个对冲合约便可一定程度上解决这个问题。</p>
+<p>我们将希望保持币值不变的人称为「风险规避者」，将另外一个愿意承担币值波动的风险并从中盈利的人称为「风险承担者」，于是他们便可以约定一个金额（例如 1000 CNY）和一个时间窗口（例如一个月），并创建一个 Contract 执行下列逻辑：</p>
+<ul>
+<li>风险规避者将价值 1000 CNY 的 Ether 发送到 Contract 的钱包地址，风险承担者也将价值 1000 CNY（或更多）的 Ether 发送到 Contract 来应约（如无人应约，风险规避者可取回自己的 Ether）。</li>
+<li>一个月后，风险规避者可以从 Contract 取回当时价值 1000 CNY 的 Ether，而无论 Ether 和 CNY 之间的汇率如何，余下的 Ether 由风险承担者取回。</li>
+</ul>
+<p>如 Ether 价值上涨，风险承担者获利，若 Ether 价值下降，风险承担者亏损，但风险规避者总是不亏不赚。当然，风险规避者和风险承担者可以事先商定一个风险规避者需要支付的「保费」，亦可商定风险承担者需要提供几倍于 1000 CNY 的担保（倍率越高能够承担的风险越大）。</p>
+<p>上面的例子中其实还存在一个不是很好解决的问题，即如何去确定 Ether 和法定货币之间的汇率，在前面我们提到过，Contract 只能访问区块链上的数据，而法定货币是一个存在于实体世界而非密码学世界的数据，我们需要通过某种机制将这类「来自非密码学世界的数据」引入到区块链中。</p>
+<p>我们可以设计另外一个 Contract 来指定这样的逻辑，来从实体世界中征集 Ether 和法定货币之间的汇率，在每个时间窗口（如一小时）中：</p>
+<ul>
+<li>所有人可以向 Contract 缴纳保证金并提供一个汇率。</li>
+<li>在时间窗口结束时，Contract 计算所有人提供的汇率的平均值（按照保证金加权）并公布。</li>
+<li>并将收集到的保证金分配（按照保证金加权）最接近平均值的 25% 的人。</li>
+</ul>
+<p>对于任何一个参与者，因为不知道其他人的出价，所以提交一个真实的汇率有更大的可能性获得奖励，而提交一个很离谱的汇率将会有很大的机率失去保证金。</p>
+<p>当然这个规则其中有几个漏洞，比如如果一个人有非常多的保证金，那么他就可以将平均值拉到一个比真实汇率更高或更低的价格的同时拿到奖励，并且使其他一些提供了准确汇率的人失去保证金。但其实在实体世界中也是一样的，如果你有非常多的钱同样可以抬高或打压一种商品的价格，只不过相比于实体世界，电子货币的体量还很小，并不需要太多钱就可以做到；但其实这样恶意地抬高或打压汇率也是有非常大的风险的，因为你不敢肯定自己缴纳的保证金是足够多的，一旦失败将会失去所有的保证金。</p>
+<p>另外一个漏洞就是「所有人可以向 Contract 缴纳保证金并提供一个汇率」这个步骤是通过创建交易来实现的，而所有的交易会被写到 Blockchain 上，因此你提交的汇率其实是对其他人可见的，进一步给恶意的攻击者创造了机会，接下来我会通过一个「产生随机数」的例子来介绍如何规避这个问题。</p>
+<p>前面我们提到了 Contract 可以读取 Blockchain 上的数据，但 Blockchain 上的数据都是确定的，如果我们要实现一个类似于赌博的应用，该从哪里获得一个随机数呢？</p>
+<p>可以想到的一个随机数来源就是下一个 Block 的 Hash，在大多数情况下，这种程度的随机性足够了。但其实矿工是可以在一定程度上操控这个随机数的，假设一个矿工参与了某个赌博，且赌博的收益大于挖出一个块的收益，那么如果这个矿工挖出了一个将会使自己输掉赌博的块，那么显然这个矿工会选择不去公布这个新的块，这一点在单个矿工的计算力越强的情况下越明显。</p>
+<p>因此我们需要引入一个类似征集汇率的机制来征集随机数种子，然后在每个时间窗口结束时使用这些种子来计算出一个随机数。但就像征集汇率一样，因为参与者是通过创建交易来实现提交汇率的，因此在一个时间窗口之间，每个人提交的随机数对其他人都是可见的，因此一个已经参与了某项赌博的人可以精心挑选一个随机数种子来使其他人已提交的种子加上新的种子所产生的随机数刚好符合他的期望。</p>
+<p>所以我们有必要将征集种子的窗口分为两部分，来取得一个任何人都无法预测和干预的随机数：</p>
+<ul>
+<li>阶段一：所有人可以向 Contract 缴纳保证金并提供「一个随机选定的种子的散列值」。</li>
+<li>阶段二：参与阶段一的人向 Contract 提供未被散列的种子。</li>
+<li>阶段二结束：Contract 将所有合法的种子散列，生成一组随机数并公布；退回阶段二中提供了正确的种子的人的保证金。</li>
+</ul>
+<p>在第一阶段你只知道其他人提交的种子的散列值，而不知道实际的种子，因此无法去精心构造一个种子来干预结果；而在第二阶段中，所有人只是在确认第一阶段提交的种子，而不能提交新的，也无法阻止其他人提交种子。</p>
+<p>前面我们提到 Bitcoin Script 是没有提供循环、递归、跳转之类的能力的，也许 Bitcoin 是出于控制一段 Bitcoin Script 执行时间的考虑，因为根据图灵的「停机定理」，由图灵完备的编程语言所编写的程序，无法总是仅从静态分析的角度判断其是否会在有限的步骤后结束，这样依赖恶意的攻击者便可以构造一个会引起死循环的 Transaction 来干扰矿工的正常工作。</p>
+<p>而 Ethereum 则再次通过「经济激励」绕过了这个问题，Contract 以 opcode（操作码）的形式运行在一个叫 EVM（Ethereum Virtual Machine）的虚拟机上，EVM 是一个自带「计费」的虚拟机，在 EVM 的标准中，根据操作所需要的内存和 CPU 时间，定义了每一种 opcode 所消耗的 Gas，这是一种由 Ether 购得的计算资源。前面提到当一笔交易的目标是 Contract 时，Contract 的代码会被执行，交易的发起者需要为 Contract 执行过程中消耗的 Gas 付费，同时声明一个「愿意支付的最大的 Gas 数量」，如果 Gas 中途耗尽，Contract 的执行将会停止。</p>
+<p>然后我们再重新讨论一下「共识间隔」的问题，前面提到 Bitcoin 每 10 分钟出现一个新的 Block，即整个网络每 10 分钟达成一个「共识」，所以通常的 Bitcoin 交易要等上十几分钟才会被确认，在计算力不是很高的早期，可能要等待一个小时（6 个 Block），大家才会认为这笔交易是可靠的。</p>
+<p>显然更短的共识时间对用户而言会有更好的体验，为什么 Bitcoin 不缩短出块时间呢？这是因为更快的共识间隔会一定程度上增加「中心化矿池」的优势。所谓「矿池」就是指比特币矿工聚在一起挖矿，矿工无条件地听从矿池的指令，最后和矿池来约定收益分成，显然 Bitcoin 作为一个去中心化系统，并不希望这种中心化的矿池有额外的优势。</p>
+<p>当一个矿工 A 挖到一个新的块的时候，他会将这个 Block 广播出去，其他人一旦收到了这个消息，就会立刻基于这个新的块开始工作。而其他人在「A 挖到新的块」和「收到 A 广播的消息」之间这段时间之间的计算实际上是被浪费掉了的，而中心化矿池中的其他矿工则不会有这个问题，因为他们可以更快地得到新产生的块的信息，立刻在新的块的基础上开始工作。</p>
+<p><img src="https://o5eoc29h5.qnssl.com/blockchain-ethereum-without-uncles.png" alt="blockchain-ethereum-without-uncles"></p>
+<p>这个广播的时间可能需要十几秒，对于 10 分钟来讲这点时间并不是十分重要，但如果去缩短共识间隔，中心化矿池的优势将会越来越明显。但 Ethereum 通过引入「叔块（Uncle Block）」的概念解决了这个问题，将共识间隔减少到了 15 秒钟，在支付确认速度上较 Bitcoin 有了很大的提升。</p>
+<p>在 Bitcoin 的 Blockchain 中，一个 Block 只能有一个父块，也只能有一个子块。但在 Ethereum 中，一个新产生的块可以有一个父块和若干个叔块。回到上面的例子，如果在 A 挖到新的块但其他人尚未收到广播的时间中，如果有人挖出了一个新的块，但因为广播较晚没有被大家接受，那么这个块有可能成为下个块的「叔块」—— 这个块所代表的工作量证明会被认为是下一个块的一部分（即这个人挖出下一个块的难度降低了），叔块也仅仅提供工作量证明，其中所包含的交易是无效的。这样一来便补偿了较晚收到广播的客户端在低出块间隔情况下的劣势，具体来讲，直接的叔块提供 50% 的工作量证明、二代叔块提供 25% 的工作量证明以此类推，最多会承认最多五代的叔块。</p>
+<p><img src="https://o5eoc29h5.qnssl.com/blockchain-ethereum-uncles.png" alt="blockchain-ethereum-uncles"></p>
+<blockquote>
+<p>图片来自 <a href="https://blog.ethereum.org/2014/07/11/toward-a-12-second-block-time" target="_blank" rel="external">https://blog.ethereum.org/2014/07/11/toward-a-12-second-block-time</a></p>
+</blockquote>
+<h2 id="尚未解决的问题"><a href="#尚未解决的问题" class="headerlink" title="尚未解决的问题"></a>尚未解决的问题</h2><p>接下来这个部分我向大家介绍一下 Ethereum 目前尚未解决的几个问题。</p>
+<p>首先就是 Ethereum 目前达成共识的方式依然和 Bitcoin 一样是通过 POW（工作量证明）来担保的，只有完成了特定工作量的节点才能够参与 Block 生成的工作，工作量证明的问题就在于会浪费大量的计算力去保证网络的安全性，虽然者也是基于我们前面提到的「经济激励」思想，但其实是可以改进的。Ehtereum 认为更好的方式是用 POS（所有权证明）去代替工作量证明，这样可以极大地提高这个网络的效率 —— 不需要再去进行无意义的计算了。</p>
+<p>既然 Ether 本身就是有价值的，那么为什么不用它本身来进行经济激励呢？所谓 POS 就是说大家用所拥有的 Ether 去做担保，即每一个希望参与 Block 生成（传统意义上的挖矿）的节点（被称为验证人）都需要向系统（这里说的系统是指在协议上做规定，所有节点都认为这笔保证金被「冻结」了）缴纳一笔保证金，然后大家用自己的保证金来对可能成为下一个 Block 的 Block 下注（所谓「可能」的一个重要前提就是这个 Block 必须是符合协议规定的），如果这个块真的成为下一个 Block，那么所有下注的节点将会得到奖励，否则保证金将会被罚没。</p>
+<p>这个模式其实和 POW 非常类似，在 POW 中，矿工用自己的计算力来「下注」，而且如果一旦有一个链更长，就有必要切换到这个链上继续挖矿 —— 因为参与的人越多的链越有可能成为正确的链，最终大家达成一个共识。而在 POS 中，大家使用自己的保证金下注，大家同样倾向于选择已经被很多其他人下注的块（如果它是合法的话），最后达成一个共识。</p>
+<p>POS 势必会增加整个网络的吞吐量 —— 大家不再需要通过进行大量无意义的计算来达成共识了，每个节点的运算量将趋近于执行 Contract 中代码和进行数据验证的计算量。</p>
+<p>当然 POS 之所以目前还未被采用，是因为还存在一些尚未解决的问题，其中之一就是和 POW 一样的 51% 攻击问题，在 POW 中集中全网 51% 的计算力是有一定物理限制的 —— 因为计算力需要计算设备来提供；而相比之下在 POS 中收集全网 51% 的 Ether 则相比之下容易一些 —— 只要你有足够的钱。POS 天然地比 POW 更非复杂，要实现上述的工作逻辑，需要处理例如维护有效的验证人列表、保证金的冻结、罚没和返还、提议区块和投注区块、防止验证人之间的结盟攻击、网络分区之后的恢复等等。</p>
+<p>另外一个话题是「分片」，无论是 Bitcoin 还是 Ethereum, 目前都是在同一个 Blockchain 上完成所有的交易确认，这极大地限制了一个分布式网络的计算能力 —— 每个节点都需要接收、存储、验算每一笔交易，整个网络的处理能力其实等于一个节点的处理能力。</p>
+<p>因此 Ethereum 希望在未来引入一个「分片」的机制，来将整个网络分为若干个部分，之间独立地进行交易验证。但分片之间会通过指针的结构去引用其他分片的数据、通过异步调用的方式去影响其他分片，所以整个网络在用户看来依然是一体的，只不过整个网络的处理能力将会有非常强的可拓展性。目前分片相关的实现还在比较早期的开发阶段，我找到的资料有限，所以就不过多介绍了。</p>
+<h2 id="Contract"><a href="#Contract" class="headerlink" title="Contract"></a>Contract</h2><p>这一部分我将会给大家展示一些实际的、可以工作的 Contract 的代码。Contract 可以由很多种不同范式的语言来编写，最终它们都会被编译成 opcode 在 EVM 上执行，今天我们选择以 Solidity 这个类 JavaScript 的语言为例，它是目前维护得最好的一个 EVM 语言。</p>
+<pre><code class="javascript">contract Test {
+  uint storedData; // State variable
+
+  struct Voter { // Struct
+    uint weight;
+    bool voted;
+    address delegate;
+    uint vote;
+  }
+
+  event HighestBidIncreased(address bidder, uint amount); // Event
+
+  function func() { // Function
+    if (msg.sender.balance &lt; 10 finney) {
+        msg.sender.send(10 finney);
+    }
+
+    sha256(&quot;...&quot;);
+
+    address nameServer = 0x72ba7d8e73fe8eb666ea66babc8116a41bfb10e2;
+    nameServer.delegatecall(&quot;isAvailable&quot;, &quot;MyName&quot;);
+    nameServer.call(&quot;register&quot;, &quot;MyName&quot;);
+  }
+}
+</code></pre>
+<p>以上是一些核心语法的展示，在 Solidity 中你可以声明状态变量（<code>uint storedData;</code>），这些变量的值会永远被保存在 Blockchain 上；可以用 <code>struct</code> 去声明复杂的数据结构；也可以定义函数，这些函数会在收到交易时被执行，交易的发起者可以选择执行哪些函数，所以一个 Contract 可以提供若干个函数，在函数内可以进行逻辑判断、循环、修改变量的值。</p>
+<p>语言内置一些很方便的小功能，例如常见的密码学算法（<code>sha256</code>）、单位换算（<code>10 finney</code>）、直接书写钱包地址（<code>0x72ba7d8e73fe8eb666ea66babc8116a41bfb10e2</code>）等。<code>msg</code> 是内置的全局变量，可以从上面读取与此次交易有关的信息，如发起者、金额等。Contract 可以通过两种方式去调用其他 Contract 的代码，<code>delegatecall</code> 相当于将另一个 Contract 的代码放到当前上下文执行，就好像引入了一个库函数；而 <code>call</code> 则是发起一笔新的交易去触发另一个 Contract 的逻辑。</p>
+<p>那么 Contract 如何从 blockchain 上读取和写入数据呢？这个复杂的工作被抽象为了「状态变量」，上面的 storedData 就是一个状态变量。其实 Contract 执行过程中对状态变量的修改并不会保存到 blockchain 中，因为 Contract 执行的都是确定性的计算 —— Contract 的执行由交易触发，执行过程中只能读取 blockchain 上已有的数据，因此只要我们知道历史上每一笔与这个 Contract 有关的交易，我们就可以随时推算出一个 Contract 在某个时间点上各个状态变量的值。</p>
+<p>接下来我来展示一个真正可用的 Contract —— 在 Ethereum 网络的基础上发行一个属于自己的代币：</p>
+<pre><code class="javascript">contract Coin {
+    // The keyword &quot;public&quot; makes those variables
+    // readable from outside.
+    address public minter;
+    mapping (address =&gt; uint) public balances;
+
+    // Events allow light clients to react on
+    // changes efficiently.
+    event Sent(address from, address to, uint amount);
+
+    // This is the constructor whose code is
+    // run only when the contract is created.
+    function Coin() {
+        minter = msg.sender;
+    }
+    function mint(address receiver, uint amount) {
+        if (msg.sender != minter) return;
+        balances[receiver] += amount;
+    }
+    function send(address receiver, uint amount) {
+        if (balances[msg.sender] &lt; amount) return;
+        balances[msg.sender] -= amount;
+        balances[receiver] += amount;
+        Sent(msg.sender, receiver, amount);
+    }
+}
+</code></pre>
+<blockquote>
+<p>代码来自 <a href="http://solidity.readthedocs.io/en/latest/introduction-to-smart-contracts.html#subcurrency-example" target="_blank" rel="external">http://solidity.readthedocs.io/en/latest/introduction-to-smart-contracts.html#subcurrency-example</a> （MIT）</p>
+</blockquote>
+<p>这个名为 Coin 的 Contract 声明了两个状态变量，<code>minter</code> 用来存储这个代币的创建者，在构造函数（<code>function Coin()</code>）中将第一笔用于创建 Contract 的交易的发起者赋值给了这个变量；还声明了一个钱包地址到数字的映射表 <code>balances</code>, 用来表示每个持有该代币的地址的余额。</p>
+<p><code>mint</code> 这个函数中先判断了交易的发起者是否是该代币的创建者，如果是的话就按照函数参数，将一定数量的代币加给指定的地址。<code>send</code> 这个函数可以被所有人调用，会从交易发起者的地址扣除一定量的余额（如果有足够的余额的话），加到目标地址上，相当于一个转账的功能。</p>
+<p>我们还声明了一个名为 <code>Sent</code> 的事件，事件其实并不会有什么实际的作用，只是便于调试时打印关键性事件，未来也会方便轻量级客户端的实现（轻量级客户端只接受事件而不实际执行 Contract）。</p>
+<p><img src="https://o5eoc29h5.qnssl.com/blockchain-ethereum-mix.jpg" alt="blockchain-ethereum-mix"></p>
+<p>Ethereum 提供了一个叫 Mix 的 IDE 来调试这段代码，在 Mix 的右侧你可以虚构一些 Block 和账户来测试你的 Contract，也可以看到在执行过程中每个状态变量的值的变化情况。值得一提的是 Contract 一旦发布便无法修改，此后的运行完全靠其他人的交易触发，对于每天都在写 Bug 的程序员来讲这一点会令人非常不爽，但是 Contract 的语义本来就是「合约」，一旦你发布了一个合约自然不能去修改它，否则谁还会信任你的合约呢。当然你可以在 Contract 中给自己一些特权（就像前面的 Coin 中那样，只有创建者可以凭空创造代币），但这些代码也存在于 Blockchain 上，其他使用者也是知晓的。</p>
+<p>编写完成后我们就可以用 Ethereum 钱包将这个 Contract 发布到网络上了：</p>
+<p><img src="https://o5eoc29h5.qnssl.com/blockchain-ethereum-create-contract.jpg" alt="blockchain-ethereum-create-contract"></p>
+<p>发布之后你可以关注这个 Contract，随时点到 Contract 的详情界面：</p>
+<p><img src="https://o5eoc29h5.qnssl.com/blockchain-ethereum-wallet-contract.jpg" alt="blockchain-ethereum-wallet-contract"></p>
+<p>在左侧可以看到两个状态变量的值，<code>minter</code> 的值就是我自己的地址，<code>balances</code> 因为是一个映射表，所以你可以输入一个地址去查询它的余额。在右侧你可以向这个 Contract 发起新的交易，有一个下拉菜单可以选择 <code>send</code> 或是 <code>mint</code> 函数，你可以填写传递给 Contract 的参数。因为在这里我们发交易的目的是传递一个消息，而非传递 Ether，所以我们不必设置交易的金额。</p>
+<p>接下来我要介绍一个很有趣的 Contract，这个 Contract 实现了一个「庞氏骗局」的效果，即你可以向这个 Contract 支付 1 Ether 来加入这个游戏，之后每加入三个人，就会按顺序支付给先加入的人 3 Ether:</p>
+<pre><code class="javascript">contract Pyramid {
+    struct Participant {
+        address etherAddress;
+    }
+
+    Participant[] public participants;
+
+    uint public payoutIdx = 0;
+
+    // events make it easier to interface with the contract
+    event NewParticipant(uint indexed idx);
+
+    // fallback function - simple transactions trigger this
+    function() {
+        enter();
+    }
+
+    function enter() {
+        if (msg.value &lt; 1 ether) {
+            msg.sender.send(msg.value);
+            return;
+        }
+
+        if (msg.value &gt; 1 ether) {
+            msg.sender.send(msg.value - 1 ether);
+        }
+
+        uint idx = participants.length;
+        participants.length += 1;
+        participants[idx].etherAddress = msg.sender;
+
+        NewParticipant(idx);
+
+        // for every three new participants we can
+        // pay out to an earlier participant
+        if (idx != 0 &amp;&amp; idx % 3 == 0) {
+            // payout is triple, minus 10 % fee
+            uint amount = 3 ether;
+            participants[payoutIdx].etherAddress.send(amount);
+            payoutIdx += 1;
+        }
+    }
+
+    function getNumberOfParticipants() constant returns (uint n) {
+        return participants.length;
+    }
+}
+</code></pre>
+<blockquote>
+<p>代码简化自 <a href="https://ethereumpyramid.com/contract.html" target="_blank" rel="external">https://ethereumpyramid.com/contract.html</a></p>
+</blockquote>
+<p>代码还算简单，这个 Contract 声明了一个 <code>participants</code> 数组用来按顺序存储所有参与者的钱包地址，还是声明了一个 <code>payoutIdx</code> 用来记录前多少名参与者已经得到了 3 Ether 的返还。<code>enter</code> 实现了这个 Contract 的主要功能，首先是一些参数检查，保证每个参与者都支付了 1 Ether, 然后将新的参与者放到 <code>participants</code> 数组的末尾，最后如果当前参与者的序号刚好是 3 的倍数，就发送 3 Ether 给第 <code>payoutIdx</code> 个参与者，并将 <code>payoutIdx</code> 指向下一个参与者。</p>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p>HashTree:</p>
+<ul>
+<li>白话 Merkle Tree <a href="http://happypeter.github.io/bitcoin_basics/book/017_merkle_tree.html" target="_blank" rel="external">http://happypeter.github.io/bitcoin_basics/book/017_merkle_tree.html</a></li>
+<li>100% 准备金证明 <a href="http://blog.bifubao.com/2014/03/16/proof-of-reserves" target="_blank" rel="external">http://blog.bifubao.com/2014/03/16/proof-of-reserves</a></li>
+<li>Git 对象模型 <a href="http://gitbook.liuhui998.com/1_2.html" target="_blank" rel="external">http://gitbook.liuhui998.com/1_2.html</a></li>
+</ul>
+<p>Bitcoin:</p>
+<ul>
+<li>(Alt Coin) NameCoin <a href="https://namecoin.info/" target="_blank" rel="external">https://namecoin.info/</a></li>
+<li>Bitcoin Script <a href="https://en.bitcoin.it/wiki/Script" target="_blank" rel="external">https://en.bitcoin.it/wiki/Script</a></li>
+<li>Simplified payment verification <a href="https://en.bitcoin.it/wiki/Scalability#Simplifiedpaymentverification" target="_blank" rel="external">https://en.bitcoin.it/wiki/Scalability#Simplifiedpaymentverification</a></li>
+</ul>
+<p>Halting Problem:</p>
+<ul>
+<li>计算的极限（二）：自我指涉与不可判定 <a href="http://songshuhui.net/archives/75957" target="_blank" rel="external">http://songshuhui.net/archives/75957</a></li>
+</ul>
+<p>Ethereum:</p>
+<ul>
+<li>Ethereum <a href="https://www.ethereum.org/" target="_blank" rel="external">https://www.ethereum.org/</a></li>
+<li>White Paper <a href="https://github.com/ethereum/wiki/wiki/White-Paper" target="_blank" rel="external">https://github.com/ethereum/wiki/wiki/White-Paper</a></li>
+<li>Toward a 12-second Block Time <a href="https://blog.ethereum.org/2014/07/11/toward-a-12-second-block-time" target="_blank" rel="external">https://blog.ethereum.org/2014/07/11/toward-a-12-second-block-time</a></li>
+</ul>
+<p>Ethereum Network:</p>
+<ul>
+<li><a href="https://ethstats.net/" target="_blank" rel="external">https://ethstats.net/</a></li>
+<li><a href="https://etherchain.org" target="_blank" rel="external">https://etherchain.org</a></li>
+<li><a href="https://live.ether.camp" target="_blank" rel="external">https://live.ether.camp</a></li>
+</ul>
+<p>Next of Ethereum:</p>
+<ul>
+<li>友善的小精灵 Casper <a href="http://ethfans.org/posts/introducing-casper-friendly-ghost" target="_blank" rel="external">http://ethfans.org/posts/introducing-casper-friendly-ghost</a></li>
+<li>理解 Serenity - 第二部分: Casper <a href="http://ethfans.org/posts/understanding-serenity-part-ii-casper" target="_blank" rel="external">http://ethfans.org/posts/understanding-serenity-part-ii-casper</a></li>
+<li>(Scalability Paper) Notes on Scalable Blockchain Protocols <a href="https://github.com/vbuterin/scalability_paper" target="_blank" rel="external">https://github.com/vbuterin/scalability_paper</a></li>
+<li>Merkling in Ethereum <a href="https://blog.ethereum.org/2015/11/15/merkling-in-ethereum/" target="_blank" rel="external">https://blog.ethereum.org/2015/11/15/merkling-in-ethereum/</a></li>
+</ul>
+<p>Contract:</p>
+<ul>
+<li>ÐAPPS <a href="http://dapps.ethercasts.com/" target="_blank" rel="external">http://dapps.ethercasts.com/</a></li>
+<li>Solidity <a href="https://solidity.readthedocs.org" target="_blank" rel="external">https://solidity.readthedocs.org</a></li>
+<li>Ethereum and Oracles <a href="https://blog.ethereum.org/2014/07/22/ethereum-and-oracles" target="_blank" rel="external">https://blog.ethereum.org/2014/07/22/ethereum-and-oracles</a></li>
+<li>Ethereum Pyramid Contract <a href="https://ethereumpyramid.com/" target="_blank" rel="external">https://ethereumpyramid.com/</a></li>
+<li>RANDAO: A DAO working as RNG of Ethereum <a href="https://github.com/randao/randao" target="_blank" rel="external">https://github.com/randao/randao</a></li>
+</ul>
+<p>Contract IDE:</p>
+<ul>
+<li>Mix <a href="https://github.com/ethereum/mix" target="_blank" rel="external">https://github.com/ethereum/mix</a></li>
+<li>Web IDE <a href="https://chriseth.github.io/browser-solidity" target="_blank" rel="external">https://chriseth.github.io/browser-solidity</a></li>
+<li>Virtual IDE <a href="http://etherscripter.com/" target="_blank" rel="external">http://etherscripter.com/</a></li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;blockquote&gt;
+&lt;p&gt;这篇文章由我 3 月末在 LeanCloud 进行的技术分享整理而来，假定读者已有基本的密码学知识且对 Bitcoin 的实现有初步的了解。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Blockchain 也叫区块链，可以认为它是 HashTree
+    
+    </summary>
+    
+    
+      <category term="比特币" scheme="https://jysperm.me/tag/bitcoin/"/>
+    
+      <category term="密码学" scheme="https://jysperm.me/tag/cryptography/"/>
+    
+      <category term="区块链" scheme="https://jysperm.me/tag/blockchain/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>semver：语义化版本规范在 Node.js 中的实现</title>
+    <link href="https://jysperm.me/2016/04/node-package-semver/"/>
+    <id>https://jysperm.me/2016/04/node-package-semver/</id>
+    <published>2016-04-22T16:00:00.000Z</published>
+    <updated>2016-07-03T15:47:07.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>精子又开了一个新系列！我计划在这个系列中每篇文章介绍一个 NPM（Node Package Manager）上的包，来向大家分享一些我在使用这个包的过程中的经验，同时也会延伸到一些相关的技术，例如如果介绍 redis 这个包，那么我也会顺便介绍一下 Redis. 因为对于一些使用广泛的包我可能需要更多的时间来搜集资料，所以一开始会从一些比较小而专的包开始。</p>
+<h1 id="semver"><a href="#semver" class="headerlink" title="semver"></a>semver</h1><p> 我们先从 <a href="https://www.npmjs.com/package/semver" target="_blank" rel="external">semver</a> 这个不起眼的包开始，它是 <a href="http://semver.org/lang/zh-CN/" target="_blank" rel="external">语义化版本（Semantic Versioning）规范</a> 的一个实现，目前是由 npm 的团队维护的，实现了版本和版本范围的解析、计算、比较，在 NPM 的被依赖（<a href="https://www.npmjs.com/browse/depended" target="_blank" rel="external">Most depended-upon</a>）榜单中排名 34.</p>
+<p> Semantic Versioning 是由 GitHub 的联合创始人 Tom Preston-Werner 建立的一个有关如何命名软件和库（包）版本的规范，用以解决在大型项目中对依赖的版本失去控制的问题（例如你可能因为害怕不兼容而不敢去更新依赖）。现在 Semantic Versioning 已经在开源社区中得到了广泛的认同，Node.js 的包管理工具 npm 也完全基于 Semantic Versioning 来管理依赖的版本。</p>
+<p>semver 定义了两种概念：</p>
+<ul>
+<li>版本是指例如 <code>0.4.1</code>、<code>1.2.7</code>、<code>1.2.4-beta.0</code> 这样表示包的特定版本的字符串。</li>
+<li>范围则是对满足特定规则的版本的一种表示，例如 <code>1.2.3-2.3.4</code>、<code>1.x</code>、<code>^0.2</code>、<code>&gt;1.4</code>.</li>
+</ul>
+<p>在这两种概念上可以进行很多种计算，例如比较两个版本的大小、判断一个版本是否满足一个范围、判断一个版本是否比范围中的任何版本都大等。</p>
+<p>显然这个包的使用场景就是与版本号打交道。例如你有一个客户端工具，需要在每次启动时向服务器发起一个查询来检查更新，那么用 semver 去比较版本将会是一个很好的选择：</p>
+<pre><code>console.log(semver.gt(lastestVersion, currentVersion) ? &#39;New Update available&#39; : &#39;Already lastest version&#39;);
+</code></pre><p>基于 Semantic Versioning 规范，我们还可以计算出两个版本之间的差异程度：</p>
+<pre><code>console.log(semver.diff(lastestVersion, currentVersion) == &#39;major&#39; ? &#39;Major Release&#39; : &#39;Minor or patch Release&#39;);
+</code></pre><p>再比如你在实现一个插件化的系统，每个插件（在 <a href="https://docs.npmjs.com/files/package.json#engines" target="_blank" rel="external">package.json</a> 中）都会声明一个所兼容的主程序的版本范围，而主程序在加载插件时需要检查这个版本并使当地给出警告：</p>
+<pre><code>plugins.forEach(function(plugin) {
+  if (!semver.satisfies(platformVersion, plugin.engines.platform))
+    console.log(plugin.name, &#39;require&#39;, plugin.engines.platform, &#39;but unable to meet&#39;);
+});
+</code></pre><p>在你使用 <a href="https://www.npmjs.com/package/express" target="_blank" rel="external">express</a> 设计一个支持多种版本的 API 服务器时，你可以这样做：</p>
+<pre><code>app.get(&#39;/&#39;, apiVersion(&#39;&lt;0.6&#39;), function(req, res) {
+  res.send(&#39;Less than 0.6&#39;);
+});
+
+app.get(&#39;/&#39;, apiVersion(&#39;1.2.3 - 2.3.4&#39;), function(req, res) {
+  // ...
+});
+
+app.get(&#39;/&#39;, apiVersion(&#39;*&#39;), function(req, res) {
+  res.send(&#39;Unsupported version&#39;);
+});
+</code></pre><p>其中 apiVersion 中间件的一个简单实现：</p>
+<pre><code>function apiVersion(range) {
+  return function(req, res, next) {
+    if (semver.satisfies(req.headers[&#39;accept-version&#39;], range))
+      next();
+    else
+      next &#39;route&#39;; // skip this route
+  };
+}
+</code></pre><p>也许你用字符串计算再配合一点正则也可以完成上述的场景，但你很难做到对 Semantic Versioning 的完备支持，在之后发布新版本后撰写版本号的时候也会受到限制，例如 semver 可以正确地比较 <code>0.9.0</code> 和 <code>0.10.0</code> 以及 <code>0.9.0-beta.1</code>，但自行实现这些支持将会非常繁琐。</p>
+<p>所以其实选择 semver 的理由很简单 —— 让专业的包去完成专业的工作，相信这也是在 Node.js 社区得到了广泛认同的观点。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;精子又开了一个新系列！我计划在这个系列中每篇文章介绍一个 NPM（Node Package Manager）上的包，来向大家分享一些我在使用这个包的过程中的经验，同时也会延伸到一些相关的技术，例如如果介绍 redis 这个包，那么我也会顺便介绍一下 Redis. 因为对于一
+    
+    </summary>
+    
+    
+      <category term="Node.js" scheme="https://jysperm.me/tag/nodejs/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>2015 年度小结（技术方面）</title>
+    <link href="https://jysperm.me/2016/02/programming-of-2015/"/>
+    <id>https://jysperm.me/2016/02/programming-of-2015/</id>
+    <published>2016-02-05T16:00:00.000Z</published>
+    <updated>2016-12-25T09:58:42.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>从 2014 年末开始开发的一个互联网金融项目终于在今年三月份上线了，这是一个 Node.js 编写的 Web 服务，但上线仅仅是个开始，之后的半年时间我们仍在这个项目上进行着密集地开发。</p>
+<p>就像 <a href="https://jysperm.me/2015/01/1976">2014 年度的技术小结</a> 中提到的，2014 一整年我都在进行有关自动测试的实践，经过几个项目的积累，这个项目从头至尾都有着覆盖完整的自动测试，我所有的调试工作也都是借助自动测试完成的，我甚至没有在自己的电脑上运行过这个项目的前端页面。因为路由层面受业务影响很大，经常修改一些功能的行为，所以后来大部分测试都是针对 Model 层面的单元测试。</p>
+<p>这个项目使用了一种「以数据结构为核心」的设计，所谓数据结构就是一个 JavaScript 的 Object, 对应着数据库中数据表的各个字段，这些代表着业务实体的 Object 在项目中的各个函数之间传递。绝大部分函数的参数和返回值都是这种 Object, 它们在这些 Object 上获得或修改数据，并将这些 Object 与数据库同步，即使需要传递额外的数据，也是将数据作为属性附加到相关的 Object 上。可以说这是一种非常 JavaScript 的风格，因为这些 Object 非常近似于数据库中的一行记录，所以在单元测试中很容易构造，非常大地简化了单元测试中「构造特定环境」的这个步骤 —— 函数的输入和输出都是特定结构的 Object, 这对于 JavaScript 来讲太简单了。</p>
+<p>随着功能的添加，业务逻辑变得越来越复杂，因为 Node.js 强制 IO 操作异步的这个特征，异步流程控制变成了一个令人头痛的问题 —— 直到我发现了 Promise。Promise 是 <a href="https://jysperm.me/2015/04/promise-abstract-of-async-task">对异步任务的一种抽象</a>，当我深入地理解了它的工作原理后，才认识到我在学习 Node.js 上走的最大的弯路就是很晚才开始了解和使用 Promise.</p>
+<p>相比于编写 Callback 风格的异步代码，使用 Promise 意味着一种思路上的转变，虽然 Promise 的原理简单，但在具体的使用场景上还是需要自己做很多尝试的，例如具有分支的异步逻辑、循环地处理数据、逐级传递异常等。</p>
+<p>在这个实践的过程中，我逐步地将自己的项目中的异步代码改成基于 Promise. 在和 Express 的配合中，我发现因为 Express 没有对 Promise 的支持，所以 Express 的路由定义实际上变成了 Promise 的「边界」，所有的 Promise 都要在这里进行一次转换，改成 Express 的错误处理机制。于是我想如果有一个支持 Promise 的路由框架将会是一件很有趣的事情，于是我花了几天的时间设计并实现了 <a href="https://github.com/jysperm/Cichorium" target="_blank" rel="external">Cichorium</a>, 这是一个代码只有一百来行，基于 Promise 来提供异步中间件和错误处理的路由框架。</p>
+<p>在使用 Promise 的过程中，也让我对「异常」有了更加深入的认识，异常是现代语言所提供的非常强大的流程控制机制，让本来唯一一条通常的、正确的执行路径变得可以从任何一处中断，并进入一个所谓的异常处理流程。异常可能包括「预期到的情况」和「非预期的情况」，如果在自己的代码中抛出了异常，那么通常是属于可以预期到的情况，例如参数错误、前提条件不满足等，抛出异常的目的是为了中断正常流程，并通知调用者；而非预期的情况则可能是所依赖的库抛出的异常，或因运行时错误 JavaScript 引擎抛出的异常。</p>
+<p>异常会被调用栈上离异常被抛出处最近的处理程序捕捉到，一旦异常处理程序「解决」了这个异常，其他的异常处理程序就不会再得到通知。所以处理程序应当只去处理已知的、必须在此处理的异常，然后将其他的异常继续向其他处理程序抛出，最后到达一个「边界」，例如作为 HTTP 相应发给客户端，或打印一条日志。</p>
+<p>这个项目在上线初期时间赶得比较紧，加上经验不足，在上线后的前几个月时间一直都在遭遇性能问题。中间出现过几次因为并发请求过多，多个请求修改同一条数据进而出现的数据不一致的情况。本来是有一个通过简单的 Redis 锁限制一个用户同时只能有一个写入数据的请求的机制的，但毕竟不是根本的解决方案。于是我开始尝试使用 MySQL 的事务，将一组相关的 SQL 查询放入一个事务中执行，对于有前提条件的更新操作（例如扣余额后余额不能为负数），将前提条件作为一个更新条件，如果执行后发现并没有行被更新，就说明前提条件不满足，然后回滚这个事务，向客户端报告失败。借助于数据库提供的原子性和一致性，即使并发很高，或者程序崩溃，都不会出现数据不一致。</p>
+<p>使用事务只是解决了在高并发情况下的数据一致性的问题，但并没有解决性能问题。这个项目中的数据主要是财务记录，用户的每一次操作都会生成财务记录，这些数据被用来追踪每一笔资金的流向，会被聚合起来用于给用户展示统计信息，这个过程需要对数据进行筛选、分组、排序等复杂的计算。</p>
+<p>显然这些计算如果在数据库中计算会有更好的性能，因为不需要在程序和数据库之间传输大量的数据，而且 MySQL 应该会对这类计算有更好的优化。于是我开始补习 SQL, 将几乎全部的筛选、分组、排序逻辑都在 MySQL 中完成。同时我开始学习如何分析 MySQL 的性能瓶颈，最简单的就是慢查询日志，曾经一度有一些查询需要 300 秒的执行时间。至于解决方案，除了优化查询条件之外最主要的就是加索引了，我也花了一些时间来了解索引背后的原理和最佳实践。</p>
+<p>这些统计数据和时间是强相关的，过去的数据通常来讲就不会再修改了，所以如果能够将这些数据的统计结果缓存起来，将会显著地提高性能。其实本来也有一个简单的缓存机制，用户访问统计信息后会被缓存，但一旦用户执行任何财务操作都会使整个缓存刷新。所以很容易想到的是进行更细粒度的缓存，即在时间的维度上应用所谓的「套娃娃缓存」，在 Redis 中以天为单位缓存发生的财务变动、当日结束时各项统计指标的值。如果某一天的财务数据发生变动，只需以前一天的数据为基础去计算之后的数据，大多数情况下历史数据是不会改变的，只会刷新当天的缓存。</p>
+<p>这项修改花费了不少时间，因为需要重写所有生成统计数据的代码，在前一天的计算结果的基础上计算出当天的统计数据，并连同一些中间结果一起缓存起来，供下一天的计算使用。相当于将原来一个简单明了的计算过程被拆分成了若干个小步骤，步骤之间还需要通过 Redis 来交换数据，看似复杂，但减少了很多不必要的重复计算，上线之后将性能提高了差不多一个数量级。</p>
+<p>这个项目大概是我这一年完成的最满意的项目了，我参与到了绝大部分的设计工作中，也完成了差不多一半的编程工作，从头至尾都有着完整的自动测试覆盖，借助 Promise 实现健壮的异步流程控制和异常处理，在高并发的情况下实践了事务、缓存、索引相关的知识。</p>
+<hr>
+<p>我从年初 <a href="https://jysperm.me/2015/04/atom-getting-started/">开始使用 Atom</a> 完成我的全部工作，选择 Atom 并不是因为它已经有多么好用了，而是因为 Atom 有着优良的设计和活跃的社区。最近两年我工作都是使用 Node.js 来完成的，而 Atom 也基于 Node.js 和 Web 技术构建起来的，甚至 Atom 也是用 CoffeeScript 实现的，这种相同的技术栈，令我非常有「安全感」。我也在了解和学习 Atom 的实现，它有着完全插件化的架构和设计良好的 API, 对我后来重构 RootPanel 都非常有帮助。</p>
+<p>在我了解 Atom 的过程中，我发现中文网络上对 Atom 的讨论非常分散，于是我创建了 <a href="https://atom-china.org/" target="_blank" rel="external">Atom 中文社区</a>，到年末已经有 800个注册用户和 1000 个帖子了。说实话，中文技术社区的氛围并不好，因为可能技术能力较强或英语水平较高的人会直接选择去参与官方的社区，目前也基本上是我一个人在回答问题、翻译官方博客和文档、汇总一些资料，不过既然我还在用 Atom, 就会一直将这个社区维护下去。</p>
+<hr>
+<p><a href="https://github.com/HackPlan/RootPanel" target="_blank" rel="external">RootPanel</a> 在 2015 年上半年依然在缓慢地进行着，因为通过阅读 Atom 的代码学习到了大量有关插件化设计的方法，所以我这半年并没有向 RootPanel 中添加新功能，而是一直在反复地重构 RootPanel 的架构。</p>
+<p>首先是为其中的重要概念建立抽象，例如服务组件（MySQL 数据库、Nginx 站点之类）、计费方案（计费周期、价格、限制）、支付渠道、控制台上的控件等。之前虽然也有针对这些概念进行抽象，但基本上是写到哪里、需要什么接口，就添加一个相应的接口，缺乏一个全局性的规划。进而导致抽象出的概念不够简洁、不够彻底（有一些插件的逻辑仍散落在核心代码中）。</p>
+<p>JavaScript 本身是一个很灵活的语言，对象本身是「无模式」的，属性和方法都可以随意地修改，也提供了「原型链」来支持对象之间的继承关系。为概念建立抽象的一种有效途径就是「面向对象」风格的设计，Atom 就采用了这样的设计，我觉得面向对象对于 RootPanel 可能同样很合适。</p>
+<p>面向对象首先统一了「数据」和「行为」，让数据可以带有行为，而在执行这些行为的时候又不必显式地传递数据；对象本身也是一个抽象层级，只要两个对象有相同的属性和方法（而不论背后的行为），就可以被当作同一种对象操作，即所谓的「鸭子类型」，这对于插件化的系统而言十分便利。</p>
+<p>于是我用了一部分面向对象的风格来重构 RootPanel, 将其中很多概念抽象为了类，为每个模块起一个恰当的名字，减少不同模块之间的依赖；为模块划分「级别」，建立层级一致的抽象 —— 即在任何一个层级来看，抽象都是完整的，让同层级的类来打交道，而不是将层次不一的类混在一起。</p>
+<hr>
+<p>在 2014 年我就一直对 Mongoose 有很多不满，一直想自己造一个轮子，在 RootPanel 的开发过程中也遇到了 Mongoose 的一些坑和一些难以实现的需求，于是今年终于行动起来了，然后就有了 <a href="https://jysperm.me/2015/06/mabolo-mongodb-orm/">Mabolo —— 一个轻量级的 MongoDB ORM</a>。</p>
+<p>我对 Mabolo 的定位是一个简单的、「没有魔法」的 ORM, 每个 Model 都是一个普通的 JavaScript 构造函数，而每个文档则都是由这个构造函数生成的实例 —— 除了几个用来保存内部状态的不可枚举属性之外和普通的对象没有任何区别。Mabolo 不去追踪数据被改变的情况，而是鼓励使用 MongoDB 的原子操作符进行数据更新，Mabolo 仅在更新后帮你将最新的数据同步到这个对象上。</p>
+<p>嵌套对象是 MongoDB 的特色之一，在实际项目中也经常会用到这样的设计，于是我也为 Mabolo 添加了嵌入式对象的支持，允许将 Model 中某个字段的类型设置为另一个 Model. 在储存到数据库前会运行所有子 Model 的验证方法，在从数据库取出结果后会为每个子 Model 字段构造相应的对象，以便在这些子 Model 上运行更新和删除等方法。</p>
+<hr>
+<p>五月初的时候和 Yeechan 等人参加了 <a href="http://segmentfault.com/a/1190000002749031" target="_blank" rel="external">SegmentFault D-Day 上海站</a> 的活动，主要听了有关 Docker 和 React 的主题分享。</p>
+<p>因为我开发 RootPanel 的经验，对 Docker 这种性能损耗极低的虚拟化技术自然十分感兴趣，在参加这次活动之前就去简单地了解过 Docker, 当时我对 Docker 的不解主要在于 Image 只能单继承，这样就不太容易像「搭积木」一样去组合自己想要的环境，这可能是因为文档上面那个搭积木的示意图对我的误导比较大。</p>
+<p>经过这次的主题分享，我才比较全面地了解到基于 Docker 去部署应用的思路，即既然创建容器的成本是极低的，那么可以为系统中的每个部分去创建单独的 Image, 运行单独的容器，然后通过 Docker Compose 这类工具去组合容器。Dockerfile 描述了应用的运行环境和依赖项，而 docker-compose.yml 描述了如何将一个系统中所需要的各个部分组合起来，完成了关于一个系统的完整描述。在实际运行时，因为容器之间的联系非常少，通常只暴露几个网络端口，所以给整个系统带来了非常好的横向拓展的能力，系统的每个部分都可能会运行多个容器，甚至这些容器可能会分布在不同的物理服务器上，同时提供一致的服务。</p>
+<p>因为 Docker 是内核级别的虚拟化，对系统调用的抽象代价很低，而因为使用了 AUFS 对文件系统进行抽象、需要建立虚拟网卡进行端口转发，所以磁盘和网络 IO 的抽象开销相对较大。所以 Docker 更适合计算密集型、依赖复杂（这样才能发挥 Docker Image 的优势）的程序，就是通常 Web 项目中负责处理请求的「应用」这部分，而将数据库等 IO 密集、部署简单、不频繁升级的程序直接部署在物理机上。</p>
+<p>现在 Web 后端程序面临的主要挑战就是高并发，保证单个程序的稳定性，倒不如采用分布式的架构，将一个处理能力强的实例拆分为若干个处理能力较弱的实例，转而保证一旦有实例失效，可以立刻重新创建一个实例接替它继续工作。但如果在实例中储存了一些全局的状态（例如锁）就无法通过启动多个实例的方式来横向拓展。所以比较理想的实践就是将应用实现为「无状态」的，即容器中的应用只根据来自网络的请求进行计算，对数据库、缓存和文件系统的调用同样通过网络去请求容器外部的服务。这样才可以进一步利用 Docker 的优势 —— 容器可以根据规模需要随时去在不同的物理机上创建和销毁而不需要同步数据。</p>
+<p>随着对 Docker 了解的深入，我开始意识到 Docker 对 RootPanel 这类 PaaS 平台是一个「杀手级」的应用，像 RootPanel 那样笨拙地使用一系列 Linux 的机制和工具去隔离用户和直接使用 Docker 相比毫无优势，让我很有将 RootPanel 改为基于 Docker 的架构的冲动。但想来想去还是放弃了这个想法，因为一方面这个改动可能会非常大，另一方面其实已经有了很多非常优秀的基于 Docker 的开源 PaaS 程序了。</p>
+<p>后来我加入 <a href="https://leancloud.cn/" target="_blank" rel="external">LeanCloud </a>负责云引擎的开发工作，云引擎实际上就是一个基于 Docker 的 PaaS 平台，各方面都和 RootPanel 非常相似。既然日常的工作已经是这样一个项目了，所以进一步促使我中止了 RootPanel 的开发。但说实话我对 PaaS 还依然有兴趣，也许有一天我会根据我在 RootPanel 和 LeanCloud 的经验，重新设计一个最简架构的 PaaS 来纪念 RootPanel.</p>
+<p>随着在工作中深入地了解 Docker, 在年末的时候我将我的服务器上应用全部换成了基于 Docker 来运行，这样的好处就是每个应用都可以有自己的环境，而且每个服务的环境和服务之间的依赖关系都被描述在了 Dockerfile 和 compose.yml 中，彻底解决了以前服务器上各种应用「乱七八糟」的现象，以后若要迁移服务器或重新部署将会变得非常容易。</p>
+<hr>
+<p>过去一年我花了不少时间断断续续地将「<a href="http://www.amazon.cn/gp/product/B007VISQ1Y/ref=as_li_ss_tl?ie=UTF8&amp;camp=536&amp;creative=3132&amp;creativeASIN=B007VISQ1Y&amp;linkCode=as2&amp;tag=jysperm07-23" target="_blank" rel="external">JavaScript 权威指南</a>」和「<a href="http://www.amazon.cn/gp/product/B0011AP7RY/ref=as_li_ss_tl?ie=UTF8&amp;camp=536&amp;creative=3132&amp;creativeASIN=B0011AP7RY&amp;linkCode=as2&amp;tag=jysperm07-23" target="_blank" rel="external">计算机程序的构造和解释</a>」看完了，对 JavaScript 的了解也进了一步，其实 JavaScript 对函数式风格的代码还是有很不错的支持的。按我在 JavaScript 中对函数式编程的实践，最有价值的的两点就是「无状态」和「无副作用」。</p>
+<p>随着前端应用越来越复杂，所展现的数据之间的逻辑关系也越来越复杂，也出现了很多框架来解决前端 UI 和数据（即状态）之间的同步问题，其中之一的 React 从一个非常有趣的角度来入手 —— UI 可以是应用状态的一个函数，给定一组状态就有一个确定的 UI. 如果每次状态发生变化都重新渲染整个 UI, 便可以极大地降低管理 UI 和 状态的复杂度。</p>
+<p>React 还在浏览器提供的 DOM 上建立了一层抽象，在每次重新渲染 UI 时，React 操作的都是 Virtual DOM, 而后再去与真正的 DOM 进行对比，更新必要的部分。我觉得这种抽象还是非常有价值的，Virtual DOM 限制了很多操作，但它提供了优化性能的空间，也为将 React 程序迁移到非 Web 平台提供了可能性，例如后来我就尝试过在服务器端使用 React 来渲染 HTML.</p>
+<p>后来我在 RootPanel 和其他一些项目上实验性地使用了 React, 我也使用了官方推荐的 JSX 来编写代码，React 这种将 JavaScript 作为应用主体的做法很不同于一些将 HTML 作为应用主体的框架。有一些人批评 JSX 将这些年好不容易才分开的 HTML 和业务逻辑（JavaScript 代码）又重新混在了一起。而我则认为「模板语言」的出现一方面是因为部分语言表现能力较弱，需要模板语言将 HTML 和琐碎的语法细节分离；另一方面则是试图在数据和冗长的 HTML 表现之间建立一层抽象。JavaScript 本来已有很不错的表现能力，JSX 又添加了一些与 HTML 相融合的语法；React 通过引入「组件」的概念来拓展 HTML 的标签，让用户可以自己创建包含内部逻辑和状态的标签，进而让 HTML 表现不再冗长，所以分离就变得不必要了。</p>
+<p>总体上来讲我对 React 很有好感，因为我觉得 React 很好地实现了一些函数式编程的风格，来简化 UI 编程中对状态的管理，React 鼓励将组件设计为无状态的，同时将渲染过程设计为无副作用的，这样无论何时，只要状态发生改变就重新渲染整个 UI 即可。</p>
+<p>在我后来编写 <a href="https://github.com/leancloud/leanengine-sniper" target="_blank" rel="external">LeanEngine Snipper</a> 的时候，需要在前端进行大量数据处理以便根据用户的筛选来展示图表。一开始没有考虑太多，部分函数是会修改其参数（往往是一个包含大量对象的数组）的，在后来支持用户修改筛选条件时就遇到了问题 —— 原始数据在绘图的各个环节中都有可能被修改，不得不在开始绘图之前对原始数据进行一次 clone, 在后来的性能分析中发现 98% 的时间都花费在了 clone 上面。</p>
+<p>于是我不得不重构代码，让大部分函数不修改参数，而是在参数的基础上返回一个新的对象，将需要 clone 的数据减少到了最小，经过这次的优化，筛选的性能提高了 40 倍以上。从直观感受上来看，每个函数返回新的对象会消耗更多的资源，但在 JavaScript 中，返回新对象实际上只是在拷贝它的属性的引用，并不会花费多少时间，反倒是在 clone 对象时需要遍历所有的属性，才需要花费大量的 CPU 时间。</p>
+<hr>
+<p>因为最近两年都在使用 Node.js, 我希望也使用 Node.js 来驱动我的博客，我最后选择了插件化架构的 Hexo —— 一个静态博客生成器，我自己编写了 <a href="https://github.com/jysperm/hexo-theme-simpleblock" target="_blank" rel="external">主题</a>，并将博客的数据也托管在 <a href="https://github.com/jysperm/blog" target="_blank" rel="external">GitHub</a> 上。后来我将 <a href="http://blog.rpvhost.net/" target="_blank" rel="external">RP 主机博客</a>、<a href="https://jybox.net/" target="_blank" rel="external">粉丝团主页</a> 也都迁移到了 Hexo, 后来新建的 <a href="http://pidan.cat/" target="_blank" rel="external">皮蛋豆腐的博客</a> 也使用了 Hexo.</p>
+<hr>
+<p>今年我作为 <a href="http://hackplan.com/" target="_blank" rel="external">HackPlan</a> 的成员，参与了几次招聘，后来我也作为求职者参加了几次面试。</p>
+<p>国外的一些职业，包括医生、律师，也包括工程师，都普遍地去打造自己的个人品牌，目的是为了找到更好的工作。确实在过去两年中这种个人品牌对我的工作是很有帮助的，在我面试的过程中，我去的几乎所有公司的面试官都表示曾经听说过我。虽说技术岗位以能力为先，但至少如果混个脸熟，双方会有一个基本的信任。</p>
+<p>我当时说在找到工作之后会和大家分享一下参加面试的经验，但后来想了一下，写出来的话应该都是关于我没有选择的那些公司的负面评价，大家都是同行，这样不是很好，所以后来只写了 <a href="https://jysperm.me/2015/11/join-leancloud">加入 LeanCloud</a> 的过程。</p>
+<hr>
+<p>说实话，现在使用 Node.js 的公司依然是少数，因此在求职时我也将 PHP 纳入了考虑。在我离开 PHP 之后，社区发生了许多变化，出现了像 Laravel 这样设计优良的一站式框架，composer 这个包管理器也被越来越多的人接受。为了重新捡起 PHP 这个技能，我花了一些时间用 Laravel 做了一个最简单的论坛系统的轮子 —— <a href="https://github.com/jysperm/labbs-laravel" target="_blank" rel="external">labbs-laravel</a>.</p>
+<p>在之前，无论是 PHP 还是 Node.js 中，我都没有使用过像 Laravel 这种重量级的框架。Laravel 不同于国内一些粗制滥造的重量级框架，虽然它提供了很多功能，但却并不显得臃肿。首先 Laravel 并没有选择造轮子而是构建在 Packagist 中已有的包之上，它有着一个非常精简的核心架构，除了经典的 MVC 支持外，其他的各类功能（认证、缓存、队列）都被抽象成了「服务」，这些服务可以独立为单独的包发布在 Packagist 上，且同类的服务是可以互相替换的。</p>
+<p>Laravel 对我来讲最大的亮点是 ORM 部分（Eloquent），我之前用过的 ORM 比较少，在实现 Mabolo 的过程中一直在纠结如何实现对象之间的引用关系。Eloquent ORM 将关系本身也抽象为了一个类，当你访问一个对象的关系字段时，得到的是一个「关系对象」，你可以在这个对象上进行筛选和查询等操作。其实这样的设计还是非常直观的，但因为我之前闭门造车，一直没能「独立发现」，在新的一年中我会用这样的思路去给 Mabolo 添加关系支持。</p>
+<hr>
+<p>最后如果做个总结的话，我这一年依然主要在编写 Node.js 代码，也写过少量的前端代码，对 JavaScript 的了解越来越深入。这一年的我在关注基于 Promise 的异步流程控制和错误处理、深入了解关系型数据库和 SQL、探索函数式风格的 JavaScript、探索和学习插件化架构的设计、借助 Docker 来管理应用的部署和拓展。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;从 2014 年末开始开发的一个互联网金融项目终于在今年三月份上线了，这是一个 Node.js 编写的 Web 服务，但上线仅仅是个开始，之后的半年时间我们仍在这个项目上进行着密集地开发。&lt;/p&gt;
+&lt;p&gt;就像 &lt;a href=&quot;https://jysperm.me/2015
+    
+    </summary>
+    
+    
+      <category term="年度小结" scheme="https://jysperm.me/tag/summary-of-year/"/>
+    
+      <category term="Node.js" scheme="https://jysperm.me/tag/nodejs/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>2015 年度小结</title>
+    <link href="https://jysperm.me/2015/12/summary-of-2015/"/>
+    <id>https://jysperm.me/2015/12/summary-of-2015/</id>
+    <published>2015-12-30T16:00:00.000Z</published>
+    <updated>2016-07-03T15:47:07.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>转眼间又一年过去了，2015 年初是我在南方过的第一个冬天，没有暖气实在是不好过，从十一月份开始室内的温度就好像定格在了沈阳暖气供应前的那几天，一直持续到来年三月。</p>
+<p>这个冬天我继续热衷于 <a href="https://jysperm.me/2015/02/result-of-time-tracking/">数据统计</a>，使用番茄土豆、Toggl、RescueTime 等工具来统计我在各种活动上的时间开销，这件事坚持了差不多两个月，后来我发现其实这样做意义并不大，而且很累，于是放弃了。</p>
+<p>今年年初我决定将我的博客 从 <a href="https://jysperm.me/2015/02/move-to-hexo/">WordPress 迁移到 Hexo</a>, 在我花了一个月 <a href="https://jysperm.me/2015/07/hexo-theme-simpleblock">自己编写了主题</a> 并导入数据之后成功上线。然后我又花了七个月的时间对之前所有的博客文章的内容和排版进行了一次修订，并删除了极少一部分信息量较低的日志。</p>
+<p>在五月份，因为更新了 Yosemite 之后感觉性能变差了，于是将我的 MacBook Air 卖给了粉丝团里的一位朋友，卖出的钱刚好自己组装一台 Windows 台式机。说起来我当时已有很久不用 Windows 了，不过我并没有觉得 Windows 难用，我还是很快地找到了合适的工具，适应了 Windows 下的日常使用和开发工作。</p>
+<p>在今年六月，我们在昆山的房子租期到了，于是搬到了上海市郊的一栋独栋别墅，紧邻虹桥机场，飞机起飞时几乎占满了整个窗子。我们也讨论过要继续留在昆山还是搬到上海，搬到上海的好处是可以享受一些仅限上海的互联网服务、更方便地参加一些在上海举行的活动。然而搬到上海之后我发现情况和设想有一些出入，因为距离市区实在太远了，附近也没有商业区也没有地铁，出行很不方便，几乎三餐都是靠外卖解决。</p>
+<p>刚好是搬家的时候，cry 姐姐从武汉过来找我玩，在昆山这边住了几天。之后 cry 姐姐在杭州找到了工作，所以后来又和 cry 姐姐见了很多次面，一起去了上海的博物馆、植物园以及宜家。如果有人是靠运气生活在这个社会中的话，大概就是 cry 姐姐了。cry 姐姐有很多坏习惯，但更重要的是她不相信自己可以做出改变，可以成为受大家喜欢的人，大概我并不能改变她，也许 cry 姐姐是一个不需要朋友的人吧。</p>
+<p>七月初，晚上路过一家饭店门口时，看到两只大概一个月的小猫咪，店家说他们并不想养，如果想要可以拿走。我一直很喜欢萌萌的猫咪，也很严肃地计划养一只猫很久了，不过一下子养两只还是让我有点没心理准备，但在考虑了十分钟之后我还是决定带它们走。</p>
+<p>在路上我就给它们起好了名字，身上黑色多一些的叫「皮蛋」，而身上白色多一些的叫「豆腐」。一开始我还纠结它们是否能区分出自己是皮蛋还是豆腐，因为它们总是一起出现，不过后来我发现我想多了。在上海和大家一起住的时候皮蛋豆腐受了大家很多照顾，其实直到后来搬出来自己住的时候我才真正地尽到主人的责任，每天亲自照顾它们，陪它们玩，它们也对我非常信任。</p>
+<p>七月末的时候我出了一趟远门，路线是从上海回沈阳，然后从沈阳到北京玩几天，再回上海。因为卖掉了 MacBook, 缺少一个随身携带的笔记本电脑，于是受 cry 姐姐的蛊惑买了一台 Surface 3, 这差不多是我 2015 年买的最后悔的一样东西，因为刚买过就降了价，而且感觉使用场景并不多，大部分时间都是放在那里吃灰，于是在十一月的时候折价卖给了 IntPtr.</p>
+<p>去北京期间在昱东家住了三天，他先后工作于中国两大互联网公司，一个劲地劝我不要在所谓创业公司浪费时间，要选择可以提供更好的条件、流程和制度更加完善的「大公司」，也和我分享了一些他的「职业规划」。虽然我觉得他和我并不是一路人，但是这些谈话对我还是很有帮助的，也让我严肃地考虑了一下今后的工作。</p>
+<p>从北京回来之后，经过一个月的慎重考虑，我 <a href="https://jysperm.me/2015/09/leaving-hackplan">决定离开 HackPlan</a>, 其实在决定离开的时候其实我还不知道我会去哪一家公司，不过最后我 <a href="https://jysperm.me/2015/11/join-leancloud">选择了 LeanCloud</a>. 加入 LeanCloud 之后我就回到了昆山，因为有了固定的工作时间，下半年我的作息时间规律了不少。但因为第一次一个人租房子住，生活经验不足，几乎每天我都要花很多时间在收拾和清洁房间上 —— 当然这里也少不了皮蛋豆腐的「功劳」。</p>
+<p>在十月末，我决定 <a href="https://jysperm.me/2015/10/rpvhost-shutdown-plan">彻底关闭 RP 主机和 GreenShadow</a>, RP 主机对于我有着非常特殊的意义，它是我坚持最久、用户最多的项目，我也从这个项目赚到了我的第一桶金，甚至能够加入 LeanCloud 也有一部分原因是我维护 RP 主机所积累的经验。但随着我离开学校开始工作，离「每个月只有十元钱却希望建一个网站」的这群人越来越远了；而且现在我在 LeanCloud 的工作是维护一个和 RP 主机类似的 PaaS 服务，所以最后决定关闭 RP 主机。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;转眼间又一年过去了，2015 年初是我在南方过的第一个冬天，没有暖气实在是不好过，从十一月份开始室内的温度就好像定格在了沈阳暖气供应前的那几天，一直持续到来年三月。&lt;/p&gt;
+&lt;p&gt;这个冬天我继续热衷于 &lt;a href=&quot;https://jysperm.me/2015/02/
+    
+    </summary>
+    
+    
+      <category term="生活记录" scheme="https://jysperm.me/tag/live/"/>
+    
+      <category term="年度小结" scheme="https://jysperm.me/tag/summary-of-year/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>建立一个自己的粉丝团是怎样的体验</title>
+    <link href="https://jysperm.me/2015/12/maintain-a-fans-group/"/>
+    <id>https://jysperm.me/2015/12/maintain-a-fans-group/</id>
+    <published>2015-12-18T16:00:00.000Z</published>
+    <updated>2016-07-03T15:47:07.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>我从小就是一个比较喜欢表现自己的人，从小学开始在学校造出一些类似「货币」的概念，拉拢了一群小朋友，当时就有一些粉丝团的感觉了。然而等到小学快毕业的时候，大家都长大了，不信我这一套了，于是我又成了一个孤僻甚至有时会受到排挤的人。</p>
+<p>初中的时候对编程很感兴趣，也在网上发布过一些小作品，慢慢就有人找我提建议或者反馈问题，后来我尝试着制作一个（简陋）的游戏，于是将这些在网络上认识的朋友拉到了一起，建了一个 QQ 群，这就是后来粉丝团的雏形。</p>
+<p>后来做游戏的事情被放在了一边，我继续在计算机领域自学其他的技术，每天会花不少时间泡在各种技术社区中，也就认识了不少朋友 —— 大部分是同龄人。认识他们的时候往往我们的技术水平差不多，但他们因为还要准备中考或者高考，大多把编程的爱好都放下了。随着我的知识的积累，每上一个台阶，都会认识一些新的朋友，他们中很多人都加入了我的 QQ 群。</p>
+<p>这时我还不觉得 QQ 群就是我的粉丝团，当时我也在很多其他人的 QQ 群中，但后来我发现一个 QQ 群里那么多人，难免有我不喜欢的人或行为，而我又没什么办法。于是眼不见心不烦，我不再去看其他的群，只在我的 QQ 群中出现，并且维护一个我认为更有利于交流的环境。这时我的 QQ 群已经带有很鲜明的个人风格了，于是干脆就叫「精子粉丝团」好了。</p>
+<p>后来我的粉丝团还有了 <a href="https://jybox.net" target="_blank" rel="external">自己的网站</a>，甚至后来我还看到一些人也建了一个和我差不多的粉丝团主页，我还是感觉有点小高兴的。</p>
+<p>我在高中的时候决定退学进入互联网行业，于是有了更多时间去学习新知识并在工作中实践，也有了很多的时间去混技术社区。因为我在大部分社区直接使用真名，也因为我这个具有 <a href="https://jysperm.me/avatars/v5.png">标志性的头像</a>，很多人记住了我。</p>
+<p>我不会讲故事，写出的文章大多是我的观点或者我的感受，这些年也一直在坚持写日志（最早的日志写于小学一年级），如果有人接受了我的观点，或者理解了我的感受，我会感到很开心 —— 越多越好，即使是我不认识的人我也会觉得开心，如果有人能从我的观点中受益（然而这通常是很难衡量的），我会更开心。</p>
+<p>为了能让更多人看到我的观点，我也是乐于去发展粉丝数量的，当然维护粉丝团（并不算写文章的时间）肯定是一个非常耗时的事情，我的业余时间很大一部分花在这上面，比如最新一版的粉丝团网站花了差不多一个月的时间，然后今年花了整个上半年来修订一遍博客里所有的日志。</p>
+<p>有人很不理解，跟我说「明明只是朋友而已，你为什么要称他们为粉丝？粉丝不是一种不平等的关系么」。对于我来讲「粉丝」大概就是我喜欢讲一些观点，而你又觉得我讲得很有趣。你当然也可以理解为这就是朋友，或者你也可以认为这是一种行为艺术 —— 讽刺一下社会上的一些偶像团体以及他们的粉丝。</p>
+<p>如果你非要问我究竟有没有影响到我的粉丝团呢，这还真不好说，能加入粉丝团的往往和我有很多的共同点，所以最后如果他们和我有一样的观点，或做出了一样的决定，也不显得奇怪。</p>
+<p>关于我的观点、兴趣爱好、价值观，可以在 <a href="https://jysperm.me/about">这个页面</a> 看到，如果我们有很多共同点的话，欢迎加入我的粉丝团（末尾「联系方式」一节有 QQ 群号）。</p>
+<p>整理自我在知乎的回答：<a href="https://www.zhihu.com/question/38284308/answer/75721868" target="_blank" rel="external">建立或加入一个自己的粉丝群是怎样的体验？</a>。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;我从小就是一个比较喜欢表现自己的人，从小学开始在学校造出一些类似「货币」的概念，拉拢了一群小朋友，当时就有一些粉丝团的感觉了。然而等到小学快毕业的时候，大家都长大了，不信我这一套了，于是我又成了一个孤僻甚至有时会受到排挤的人。&lt;/p&gt;
+&lt;p&gt;初中的时候对编程很感兴趣，也在网
+    
+    </summary>
+    
+    
+      <category term="生活记录" scheme="https://jysperm.me/tag/live/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>加入 LeanCloud</title>
+    <link href="https://jysperm.me/2015/11/join-leancloud/"/>
+    <id>https://jysperm.me/2015/11/join-leancloud/</id>
+    <published>2015-11-28T16:00:00.000Z</published>
+    <updated>2016-07-03T15:47:07.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>去 LeanCloud 面试是两个月前的事情了，在选择公司的时候看到 LeanCloud 的 <a href="https://open.leancloud.cn" target="_blank" rel="external">开放资源</a> 网站，就觉得这会是一家很有趣、很有想法的公司。</p>
+<p>在去面试之前我其实在 LeanCloud 的 <a href="https://open.leancloud.cn/tech-interview-guide.html" target="_blank" rel="external">技术面试指南</a> 上已经看到了上面重点提及了「二分查找」算法，不过我还是没有去看。面试的时候果然提到了二分查找，我大概花了两分钟在纸上用一种介于 CoffeeScript 和 JavaScript 之间的伪代码完成了一个版本。不过马上就被指出一个明显的错误，面试官跟我说不要急，慢一点写。又花了几分钟我又完成了一个版本，不过有没有错误就不知道了。</p>
+<p>在面试之前的几天我听了 Teahour 的一期关于 Docker 的播客（<a href="http://teahour.fm/2015/02/13/docker-introduction.html" target="_blank" rel="external">与马道长聊 Docker</a>），滚滚姐姐在其中介绍了一些 Docker 在 LeanCloud 的应用场景。我从三年前开始自己开发 <a href="https://github.com/jysperm/RootPanel" target="_blank" rel="external">RootPanel</a>, 当时还没有 Docker, 我是使用 Linux 非常原始的方式（用户和文件系统的权限机制）来实现权限隔离的。所以后来出现 Docker 之后我就很感兴趣，很想把 RootPanel 重构为基于 Docker 实现，不过一直没有时间。果然在面试的过程中面试官对我的这个项目很感兴趣，一起讨论了还有哪些方面可以改进、如果重新去设计它应该如何设计。</p>
+<p>在找工作的过程中我去了几家业界有些名气的互联网公司（主要是开发者服务方面的），LeanCloud 的面试过程给我的印象是最好的。没有特别脑残的笔试题或问卷、没有让我等待太久、面试中提出的技术问题都非常专业、没有 HR 来和我谈人生和理想。LeanCloud 也是唯一一家提出可以报销路费的（虽然最后我嫌麻烦并没有报）。</p>
+<p>我连高中都没有正经地念完，完全靠自己的热情掌握了工作中需要用到的技能（<a href="https://jysperm.me/2015/02/programming-from-middle-school">从初中开始编程</a>），LeanCloud 对像我一样的年轻人也有着比较开放的态度。面试结束我就要离开的时候，面试官还拍拍我的肩膀说「没关系，退学没什么的，LeanCloud 也有几个人是中途退学的」。</p>
+<p>整理自我在知乎的回答：<a href="http://www.zhihu.com/question/37394990/answer/72719244" target="_blank" rel="external">加入 LeanCloud 需要具备什么样的能力？</a>。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;去 LeanCloud 面试是两个月前的事情了，在选择公司的时候看到 LeanCloud 的 &lt;a href=&quot;https://open.leancloud.cn&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;开放资源&lt;/a&gt; 网站，就觉得这会是一家很有趣
+    
+    </summary>
+    
+    
+      <category term="生活记录" scheme="https://jysperm.me/tag/live/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>编码：二进制的世界</title>
+    <link href="https://jysperm.me/2015/11/encoding-to-binary/"/>
+    <id>https://jysperm.me/2015/11/encoding-to-binary/</id>
+    <published>2015-11-20T16:00:00.000Z</published>
+    <updated>2016-07-03T15:47:07.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>我们要聊的编码并不是「写代码（Coding）」，而是信息从一种形式被转换为另外一种形式的这个过程，即 Encoding.</p>
+<h3 id="二进制的世界"><a href="#二进制的世界" class="headerlink" title="二进制的世界"></a>二进制的世界</h3><p>就像大家知道的那样，在计算机的世界中，信息必须被转换为二进制（Binary）才能被 CPU 计算、被内存或硬盘存储、在网络上传输。</p>
+<p>相比于我们从小使用的十进制，二进制既不直观，又显得冗长，那么为什么计算机选择二进制作为内部的信息表现形式呢？</p>
+<p>十进制意味着每个数位上有从 0 到 9 十种可能的状态，也就是十进制中的一位可以表示 10 种事物中的一种，两位则可以表示 100 种事物的一种。要不是人有十个手指，其实我们也可以使用八进制（偶尔会在计算机领域使用）或十二进制（时间和角度通常基于十二进制）。</p>
+<p>那么我们可以考虑一下极端情况，最少可以用几进制来表示信息呢？很好猜到答案 —— 二进制，要表达一个有意义的信息，至少要能区分两种的情况中的一种吧。科学家喜欢追求一种「简洁之美」，既然我们找到了表示信息的最简形式，为什么不以它为基础来构筑计算机世界呢。</p>
+<p>这种「信息的最小单位」被称为比特 （Bit），正因为它是信息的最小单位，比特位之间的运算规则也远比十进制简单得多（例如两个比特位相加只有 4 种情况）；在工程上也得到了很多便利，例如比特的两种状态刚好被映射到信号的有无、低电压或高电压、连通或断开等等。</p>
+<h3 id="数字的编码"><a href="#数字的编码" class="headerlink" title="数字的编码"></a>数字的编码</h3><p>因为计算机选择了用比特作为信息的表现形式，所以各种其他的形式的信息必须被以某种方式被转换为若干个比特才能被计算机处理，这种过程就叫「编码」。</p>
+<p>我们先从数字说起，数字是最容易被编码的信息了，因为比特可以被简单地看作二进制的数字，只需将我们平常的十进制数字换算到二进制即可。</p>
+<p>在这种编码方式下，一个数字所需要的比特数正比于它的大小，比如用二进制表示 123 需要 7 个比特，而表示一亿则需要 27 个比特。使用这种方式编码数字存在一些局限性，例如需要大量的比特去表示一个较大的数、无法去表示小数点等。</p>
+<p>所以还存在另一种被普遍使用的方法来编码数字，被称为「浮点数（Floating Point Number）表示法」。这种表示方法非常类似于「科学计数法」，它将一个数字拆分为三个部分来保存：正/负、指数、系数。这样的话，浮点数表示法可以在一个非常大的范围（受限于指数部分的位数）内表示包括小数在内的，具有一定精度（受限于系数部分的位数）数字。</p>
+<h3 id="字符串的编码"><a href="#字符串的编码" class="headerlink" title="字符串的编码"></a>字符串的编码</h3><p>计算机中的「字符串（String）」就是人们通常所说的文字，一个字符串是由若干的「字符（Character）」构成的。而字符则取决于具体的语言，例如英语中的字符包括 26 个英文字母，而汉字则有两万余个字符。</p>
+<p>计算机如何编码字符呢？储存它的图形显然会令问题复杂化，所以最简单的办法就是给每个字符一个编号，在计算机中储存和计算编号，直到需要展示的时候才绘制为人们所见到的图形。</p>
+<p>最简单的一种字符编码方案就是 ASCII 了，它支持 128 个字符，包括大写和小写的 26 个英文字母、数字、英文标点和一些特殊字符。ASCII 将一个字符编码为 8 个比特，但实际只用到了 7 个比特而已（128 刚好是 2 的 7 次方）。</p>
+<h3 id="字符集和字符编码"><a href="#字符集和字符编码" class="headerlink" title="字符集和字符编码"></a>字符集和字符编码</h3><p>为了对各种语言的字符提供支持，后来又出现了很多种将字符编号的规则，这种规则被称为「字符集（Character Set）」，例如中国官方最新的字符集标准被称为 GB18030, 包括了七万多个汉字和一些少数民族的字符。</p>
+<p>字符集之间可能互不兼容，例如同样的一个二进制序列，在一个中文字符集中可能是一个汉字，而在其他的字符集中就可能是另外的字符，甚至是无法显示的字符。所以计算机在显示一段字符串的时候需要知道它的字符集，否则就会出现我们称之为「乱码」的情况，即字符串被以一种错误的字符集被显示，以至于无法阅读。</p>
+<p>通常一段字符串只能使用一种字符集，一旦你选择了一种字符集，你就没有办法表示不在这个字符集中的字符。例如如果你选择了一个中文字符集，那么可能就没办法去表示韩文中的字符。为了解决这种不便，出现了一种叫「Unicode（暂译作通用字符集）」的字符集，它覆盖了世界上绝大部分语言的字符，甚至包括了经常被使用的表情符号（Emoji）。目前大部分的网页、编程语言、操作系统都使用 Unicode 来表示字符串。</p>
+<p>和其他一些直接规定了编码方式的字符集不同，Unicode 本身只是对字符的编号，它定义了几种具体的编码方式。例如 UTF-8 最少使用 8 个比特，最多使用 48 个比特来表示一个字符，适合英文居多的场景（因为 ASCII 中的字符只需要 8 比特）；UTF-32 则总是用 32 个比特表示一个字符，这样固定长度的编码方式会拥有更好的性能。</p>
+<h3 id="来自自然界的信息"><a href="#来自自然界的信息" class="headerlink" title="来自自然界的信息"></a>来自自然界的信息</h3><p>计算机经常还被用来处理图片、音频、视频这类来自自然界的信息。我们所生活在的物理世界可以被认为是「连续」的。例如自然界中的声音，在任意一个时间点都可能会有频率和响度的变化，但在目前的计算机体系来看，这样的数据拥有无限大的信息量，没办法被编码。</p>
+<p>于是我们使用「采样」的方式将这些信息转化为有限的「离散」的信息。例如我们每一毫秒去测量声音的频率，这样计算机就可以去编码每次测量到的频率的数字，将这段声音数字化了。</p>
+<p>这种采样的过程是会丢失信息的，比如在两次测量之间的某一时间点的情况我们是不得而知的，只能推测它大概介于这两次结果之间。所以很好想象，丢失的信息取决于采样的频率，以越短的间隔采样，就会得到越多的信息，越接近原始的信息。</p>
+<p>未完待续，下一篇将会介绍更多有关「编码」的内容。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;我们要聊的编码并不是「写代码（Coding）」，而是信息从一种形式被转换为另外一种形式的这个过程，即 Encoding.&lt;/p&gt;
+&lt;h3 id=&quot;二进制的世界&quot;&gt;&lt;a href=&quot;#二进制的世界&quot; class=&quot;headerlink&quot; title=&quot;二进制的世界&quot;&gt;&lt;/a&gt;
+    
+    </summary>
+    
+    
+      <category term="科普" scheme="https://jysperm.me/tag/science/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>RP 主机和 GreenShadow 关闭计划</title>
+    <link href="https://jysperm.me/2015/10/rpvhost-shutdown-plan/"/>
+    <id>https://jysperm.me/2015/10/rpvhost-shutdown-plan/</id>
+    <published>2015-10-27T16:00:00.000Z</published>
+    <updated>2016-07-03T15:47:07.000Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="GreenShadow-关闭计划"><a href="#GreenShadow-关闭计划" class="headerlink" title="GreenShadow 关闭计划"></a>GreenShadow 关闭计划</h2><p>我创建 GreenShadow 的原因是我自己需要 ShadowSocks, 我的朋友们也需要，于是集中地管理 Shadowsocks 服务是一个比较自然的事情。关闭的原因也很简单，因为众所周知的原因，同类的服务商一个个倒下，虽然 GreenShadow 只是一个用户很少的服务，但也受到了技术上的封锁，导致在部分地区没办法正常地提供服务。</p>
+<p>目前已经关闭了新用户注册，预计在 2015 年末彻底关闭，目前有两百个左右充值过且仍有余额的用户，稍后我会将这篇日志的副本通过邮件发送给这些用户，如果你收到的话可以回复支付宝地址，我会按照当时的余额为你退款。</p>
+<p>关于替代服务，我恐怕没有什么推荐，因为小的服务商并不专业也不是很靠谱，而大的服务商又容易因为众所周知的原因被关掉，所以以后大家得自己想办法了。</p>
+<h2 id="RP-主机关闭计划"><a href="#RP-主机关闭计划" class="headerlink" title="RP 主机关闭计划"></a>RP 主机关闭计划</h2><p>因为五月份的时候关闭了 RP 主机的注册和充值，现在仍有余额的用户只剩不到二十个了，稍后我会将这篇日志的副本通过邮件发送给这些用户，如果你收到的话可以回复支付宝地址，我会按照当时的余额为你退款；对于没有余额（免费试用）的用户，也会发一封邮件来提醒。</p>
+<p>决定关闭 RP 主机的原因是我现在连 RootPanel 也不想继续维护了，而且同类的基于 Docker 的 PaaS 已经非常好用了，如果现在让我重新设计 RP 主机的话，我也肯定是使用 Docker 的容器化技术。</p>
+<p>在此推荐几个 VPS 服务：</p>
+<ul>
+<li>青云的 VPS: 提供无需备案的香港节点，技术实力比较强</li>
+<li>Linode VPS: 老牌 VPS 提供商</li>
+<li>DigitalOcean VPS: 价格较低</li>
+</ul>
+<p>再推荐几个 PaaS 服务：</p>
+<ul>
+<li>Heroku 老牌 PaaS 服务，支持各种语言</li>
+<li>LeanCloud: 提供 Restful API 的结构化数据存储，亦可运行普通的 Node.js 程序</li>
+<li>SAE、BAE 等 …</li>
+</ul>
+<p>因为迁移运行在 RP 上的程序可能会比较耗时，因此会预留稍长的时间，RP 主机预计在 2016 年 3 月完全关闭。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;GreenShadow-关闭计划&quot;&gt;&lt;a href=&quot;#GreenShadow-关闭计划&quot; class=&quot;headerlink&quot; title=&quot;GreenShadow 关闭计划&quot;&gt;&lt;/a&gt;GreenShadow 关闭计划&lt;/h2&gt;&lt;p&gt;我创建 GreenShado
+    
+    </summary>
+    
+    
+      <category term="RP主机" scheme="https://jysperm.me/tag/rpvhost/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>离开 HackPlan</title>
+    <link href="https://jysperm.me/2015/09/leaving-hackplan/"/>
+    <id>https://jysperm.me/2015/09/leaving-hackplan/</id>
+    <published>2015-09-23T16:00:00.000Z</published>
+    <updated>2016-07-03T15:47:07.000Z</updated>
+    
+    <content type="html"><![CDATA[<p><a href="/2013/08/1204/">整整两年过去了</a>，我和团队中其他人走到了一起，<a href="/2015/01/1976/">参与了数十个项目</a>，时薪翻了两番，然而两年前对未来的美好憧憬已经不在。</p>
+<p>在 HackPlan 的工作让我学到了很多，软件开发并不是一个人的战斗，需要和同事一起分工合作来完成一个复杂的软件，相比于技术上的具体问题，协作则是更大的挑战。我们定期进行进行语音会议来保持沟通；使用 Trello 来管理任务进度；设计规范的 HTTP API 来隔离服务器与客户端的工作；添加自动化的测试来减少新代码引入的缺陷；引入 Code Review 来保证代码质量；通过自动化的方式规范部署流程等等。这些规则是随着团队的成长一点点建立起来的，我清楚地记得每一项规则出现的契机，以及执行过程中遇到的困难，因为这其中很多规则都是我参与建立起来的。</p>
+<p>加入 HackPlan 也是我第一次离开家，到一个新的环境，因为我的年纪最小，在生活上得到了其他人非常多的帮助，使我逐步掌握了如何照顾好自己、如何与他人相处。和在学校时不同，在这里是一个大家互相信任的、平等相处的环境，我们都认为对方可以独立思考和决定、可以为自己的行为负责；每个人都有各自的专长，而不是以年龄或分数一概而论。</p>
+<p>当然离开也是有原因的，我们一开始住在苏州的一个小别墅里，后来搬到上海，生活和工作都在一个房子里。因为很少出门，所以失去了很多认识新朋友的机会；因为独处的时间较少，博客日志的产量明显减少。于是我想体验一下「在大城市打拼的普通年轻人」的生活：租个房子一个人住，每天早上来到办公区上班，出行和娱乐则安排在周末。</p>
+<p>我们是一个纯技术团队，但只是将产品做好是不够的，我们的产品是面向终端用户的，必须让尽可能多的用户了解到我们的产品，我们不懂如何营销，甚至不知道如何寻找擅长营销的人才。在这个问题上孙亮并没有表现出在面对开发任务时的执行力，而是一拖再拖，以至于我觉得在未来很长一段时间内都不会有显著改善。</p>
+<p>我在沟通中发现团队中一些成员是认可现在「小作坊」式的公司的，因为这样的工作更加自由和灵活，为了能和互相信任、具有默契的伙伴一起工作，即使公司在商业上不成功、即使错失一些扩大公司规模的机会也是值得的。而我觉得我可能需要一个更大的舞台，所以我选择了离开。</p>
+<p>下一篇日志我想向大家介绍一下我在面试新公司时的故事。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;&lt;a href=&quot;/2013/08/1204/&quot;&gt;整整两年过去了&lt;/a&gt;，我和团队中其他人走到了一起，&lt;a href=&quot;/2015/01/1976/&quot;&gt;参与了数十个项目&lt;/a&gt;，时薪翻了两番，然而两年前对未来的美好憧憬已经不在。&lt;/p&gt;
+&lt;p&gt;在 HackPlan 的工作让
+    
+    </summary>
+    
+    
+      <category term="生活记录" scheme="https://jysperm.me/tag/live/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>标准化商品构成的世界</title>
+    <link href="https://jysperm.me/2015/08/standardized-world/"/>
+    <id>https://jysperm.me/2015/08/standardized-world/</id>
+    <published>2015-08-02T16:00:00.000Z</published>
+    <updated>2016-08-21T14:13:34.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>在之前的几次面试中，孙亮喜欢问应聘者一个问题：假设你有非常多，接近无限的钱可供使用（例如一百亿美元或者更多），这意味着你可以用这笔钱去影响世界、改造世界，那么你最希望用这笔钱干些什么？</p>
+<p>但实际上我们在面试中并没有收到非常有趣的答案，大概是因为很少有人曾严肃地想过这个问题吧。孙亮也问过我这个问题不止一次，前几次我也没想出太有趣的答案，毕竟突然给我一笔钱，还是有点迷茫的（即使是假设），直到最近一次面试后，我才想到了一个比较有趣的答案。</p>
+<p>如果我有一百亿美元的话，我要在我生活可及的地方，创建一个由标准化商品构成的世界，并尽可能地向其他人推销我的观念。</p>
+<p>比如我把玻璃杯不小心打碎了，我可以直接买到一个新的「蓝色圆形矮玻璃杯」，而不必挑来挑去找到和原来一样的杯子，再也不用担心打碎或丢失东西后就买不到一样的了！</p>
+<p>当然我并不是说玻璃杯只能有一种，不同的人可能喜欢不同的杯子，但我们可以通过细致的设计和调查，设计出几十款杯子，每一款杯子有不同的定位，加在一起尽可能地覆盖到所有人的需求，而款式的数量则尽可能地少。每一款杯子都应当经过精心的设计、大量的实验确保它符合定位且足够好用，如果日后发现了设计上的缺陷，当然也要进行更新，但这种更新应该是慎重的。</p>
+<p>有些商品选择很少，比如药品、电池，只要足够好用，没有人在乎它们长什么样。还有些商品则选择很多，比如食品、玩具、衣服，但市面上的这些商品终归有非常大的一部分是劣质的或重复的，也可以对它们进行适当的标准化，可以根据价格划分几个档次，在每个档次内的商品拥有着大致接近的质量和性价比。</p>
+<p>我也看到一些公司在特定的领域以这种方式来销售商品。比如说苹果，同期只有两款手机，分别覆盖轻量级用户和重度用户。大概在这之前，大家都觉得手机是一个比较个人化的商品，但是苹果就实现了单款手机 10% 的市场份额。而且也表现出了标准化的优势：更好的软件兼容性、更多的预算来进行精心的设计、大量的第三方配件等等。</p>
+<p>再比如说肯德基和麦当劳，在国内所有的城市都保持相同的菜单、相同的口味和大致相同的价格，相信对于很多人来讲肯德基和麦当劳是为数不多在陌生地方可以直接进去吃饭的店了。</p>
+<p>再进一步，我希望能够有标准化的房子和家具（宜家的家具就比较标准化了），样搬家或旅行的时候就不用担心住得不习惯了 —— 到时候可能会有标准化的旅店，实现将房间和家具清单发过去，就能够按照标准布置得一模一样。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;在之前的几次面试中，孙亮喜欢问应聘者一个问题：假设你有非常多，接近无限的钱可供使用（例如一百亿美元或者更多），这意味着你可以用这笔钱去影响世界、改造世界，那么你最希望用这笔钱干些什么？&lt;/p&gt;
+&lt;p&gt;但实际上我们在面试中并没有收到非常有趣的答案，大概是因为很少有人曾严肃地想
+    
+    </summary>
+    
+    
+      <category term="idea" scheme="https://jysperm.me/tag/idea/"/>
+    
+  </entry>
+  
+</feed>

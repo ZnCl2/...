@@ -1,0 +1,36 @@
+{
+    "db_name": "GirlHubCheckIn",
+    "db_file": "data/GirlHubCheckIn.db",
+    "version": 2,
+    "maps": {
+        "users/.+/data.json": {
+            "to_table": [ "record" ]
+        },
+        "users/.+/content.json": {
+            "to_json_table": [ "cert_user_id" ],
+            "file_name": "data.json"
+        }
+    },
+    "tables": {
+        "json": {
+            "cols": [
+                ["json_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+                ["directory", "TEXT"],
+                ["file_name", "TEXT"],
+                ["cert_user_id", "TEXT"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX path ON json(directory, file_name)"],
+            "schema_changed": 10
+        },
+        "record": {
+            "cols": [
+                ["zero_id","TEXT PRIMARY KEY"],
+                ["count", "TEXT"],
+                ["date_updated", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX record_key ON record(json_id, date_updated)"],
+            "schema_changed": 12
+        }
+    }
+}

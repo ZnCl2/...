@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>Browsing and publishing Gemini on a... Kobo?! - Archive - MayVaneDay Studios</title>
+		<link href="../style.css" rel="stylesheet" type="text/css" media="all">
+		<meta name="author" content="Vane Vander">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</head>
+	<body class="mayvaneday">
+		<article>
+			<div class="box">
+				<p><h1>Browsing and publishing Gemini on a... Kobo?!</h1></p>
+				<p>published: 2021-01-07</p>
+			</div>
+			<hr>
+			<div class="box">
+				<p>I have a Kobo Libra H2O. It's a little e-ink tablet-like device. While the specs aren't great, it <em>does</em> run Linux, which means theoretically one can run whatever programs they want on it! ...As long as those programs are line-based command-line or written for Kobo's special flavor of Qt.</p>
+			</div>
+			<hr>
+			<div class="box">
+				<h2>Getting shell access to your Kobo</h2>
+				<p>The first step is getting KOReader on the Kobo. Not only is it a much better reading app than the Kobo's built-in Nickel, it <em>also</em> includes a terminal emulator, a text editor, and a SSH server. <a href="https://github.com/koreader/koreader/wiki/Installation-on-Kobo-devices">The install instructions are on the KOReader wiki</a>. I personally recommend using the NickelMenu installation method halfway down the page.</p>
+				<p>After you have KOReader set up, plug your Kobo into a computer with a USB cable.</p>
+				<p><code>cd /path/to/your/kobo/</code></p>
+				<p><code>cd ./.adds/koreader/settings/SSH/</code></p>
+				<p><code>ssh-keygen -trsa -b 2048 -f ~/.ssh/kobo</code></p>
+				<p><code>cp ~/.ssh/kobo.pub ./authorized_keys</code></p>
+				<p>Safely disconnect your Kobo from your computer. Go into KOReader, then tap the gear icon on the top of the screen. Tap "Network". Connect to the same WiFi network your computer is on, then tap on "SSH server" and then "Start SSH server".</p>
+				<code>ssh -i ~/.ssh/kobo -p 2222 root@your_kobo_local_ip_address</code>
+				<p>Shell access should only be necessary for troubleshooting. For this guide, we are more interested in SFTP file transfer.</p>
+			</div>
+			<hr>
+			<div class="box">
+				<h2>Setting up your environment</h2>
+				<p>There are four programs you'll need:</p>
+				<ol>
+					<li><a href="https://github.com/mattn/godown">godown</a>: an HTML to Markdown converter</li>
+					<li><a href="https://github.com/makeworld-the-better-one/gemget">gemget</a>: wget, but for the Gemini protocol</li>
+					<li><a href="https://gitlab.com/davidjpeacock/kurly">kurly</a>: cURL, but written in Golang (since the version of <code>wget</code> that ships with KOReader's Dropbear doesn't support HTTPS for some reason)</li>
+					<li><a href="https://github.com/micromata/dave">dave</a>: a simple WebDAV server</li>
+				</ol>
+				<p>The first three we will install on your Kobo. The last one will go on the server that runs your Gemini site.</p>
+				<p>I specifically picked programs written in Golang because they compile to a single binary. This means no trying to manually resolve dependencies, since the Kobo doesn't have a package manager installed (that I could see). However, they still must be compiled for ARM. I compiled them on my Raspberry Pi 4 (which is also an ARM device) and copied the resulting binaries to my computer. If you want to cross-compile on your local computer instead, you're on your own.</p>
+				<p>The config file for <code>dave</dave> needs to go in <code>~/.swd/config.yaml</code> on the remote server. It should look something like this:</p>
+				<pre>
+address: "domain.tld"    # the bind address
+port: "7778"            # the listening port
+dir: "/path/to/your/gemsite/files"     # the provided base dir
+prefix: "/"       # the url-prefix of the original url
+users:
+#  user:                 # with password 'foo' and jailed access to '/home/webdav/user'
+#    password: "HASHED_PASSWORD"
+#    subdir: "/user"
+  YOURUSERNAME:                # with password 'foo' and access to '/home/webdav'
+    password: "HASHED_PASSWORD"
+tls:
+  keyFile: gemini.key
+  certFile: gemini.crt
+				</pre>
+				<p>You can make a HASHED_PASSWORD by running <code>davecli passwd</code> and following the prompts.</p>
+				<p>After that, you need to get TLS certificates so <code>kurly</code> doesn't <del>shit its pants</del> complain about having no certificates.</p>
+				<p>On your local computer:</p>
+				<p><code>sftp -P 2222 -i ~/.ssh/kobo root@your_kobo_local_ip_address</code></p>
+				<p><code>cd /etc/</code></p>
+				<p><code>mkdir ssl && cd ssl</code></p>
+				<p><code>mkdir certs && cd certs</code></p>
+				<p><code>lcd /usr/share/ca-certificates/mozilla/</code></p>
+				<p><code>put -r *</code></p>
+				<p>This will put all the certificates installed on your computer onto your Kobo. If this is too much for you, you can instead just upload the public key you used for your WebDAV server above (Gemini uses TOFU for its TLS and thus doesn't require a certificate store). Just change the extension to <code>.pem</code> first before uploading.</p>
+				<p>Put your binary program files in <code>/bin/</code>.</p>
+				<p>At this point, you should be all set up. You can disconnect from the SFTP server and turn the SSH server on your Kobo off.</p>
+			</div>
+			<div class="box">
+				<p><h2>The fun commands</h2></p>
+				<p>Next to the gear icon at the top of the KOReader menu is a tool icon. Press it and then press "More tools". There's a terminal emulator!</p>
+				<p>Except it's not interactive, only processing one command at a time, and it doesn't save the state of the terminal in between sessions. While <code>vi</code> is installed, curiously, it's really only for debugging over SSH and isn't usable here. Best case scenario, it'll only print a bunch of terminal control characters and then exit without letting you do anything.</p>
+				<p>To look at an HTTP/S site: <code>/bin/kurly http://example.com | /bin/godown | grep -v -e '^$'</code></p>
+				<p>To look at a Gemini site: <code>/bin/gemget -o - gemini://domain.tld</code></p>
+				<p>To upload a text file: <code>/bin/kurly -T /path/to/file.txt -u 'username:password' "https://domain.tld:port/"</code></p>
+				<p>These are quite a lot to type every time. I recommend saving them as shortcuts so you only have to change the domain or the file path every time instead of retyping everything.</p>
+			</div>
+			<hr>
+			<div class="box">
+				<p align=right>CC BY-NC-SA 4.0 &copy; Vane Vander</p>
+			</div>
+		</article>
+	</body>
+</html>

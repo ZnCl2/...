@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+	<title>MayVaneDay: Latest Updates</title>
+	<link href="https://mayvaneday.org/feed.xml" rel="self" />
+	<link href="https://mayvaneday.org" />
+	<id>https://mayvaneday.art/feed.xml</id>
+	<author>
+		<name>Vane Vander</name>
+		<email>vanevander@mayvaneday.art</email>
+	</author>
+	
+	<entry>
+		<title>How to run Oasis, a Secure Scuttlebutt client, on a remote server</title>
+		<link href="https://mayvaneday.org/tutorials/oasis.html" />
+		<id>https://mayvaneday.org/tutorials/oasis.html</id>
+		<published>2021-11-13</published>
+		<summary type="html"><![CDATA[<article>
+				<p>This tutorial assumes you already have a functioning Node.js and Caddy installation.</p>
+				<ol type="1">
+					<li>Install Oasis.</li>
+				</ol>
+				<code>git clone https://github.com/fraction/oasis.git<br />cd oasis<br />npm install</code>
+				<p>Test the installation by running <code>node .</code> (yes, including the period).</p>
+				<ul>
+					<li>If the output stops after a few lines and isn't an obvious Node error, hit Control and C at the same time to exit; you're ready for the <code>systemd</code> file.</li>
+					<li>If you get an error about port 3000 already being in use, use the command <code>node . --port PORTNUMBER</code> instead, where <code>PORTNUMBER</code> is any open port you want.</li>
+				</ul>
+				<p>If your instance immediately throws <a href="https://github.com/fraction/oasis/issues/718#issuecomment-927379995">an error about <code>ssb.friends.get</code></a>:</p>
+				<code>git checkout 4e8f7426a4eb1d95f6e55cf894a3168f523f8af8<br />rm -rf node_modules<br />npm install</code>
+				<ol start="2" type="1">
+					<li>Prepare the <code>systemd</code> daemon file.</li>
+				</ol>
+				<p>Edit <code>/lib/systemd/system/oasis.service</code> as root with your favorite text editor. Paste the following:</p>
+				<pre>
+					[Unit]
+					Description=Oasis client for Secure Scuttlebutt
+					After=network.target
+					
+					[Service]
+					User=YourUsername
+					Group=YourUsername
+					ExecStart=/path/to/your/node/binary . --port 8787
+					WorkingDirectory=/path/to/where/you/cloned/oasis/
+					TimeoutStopSec=5s
+					LimitNOFILE=1048576
+					PrivateTmp=true
+					ProtectSystem=full
+					
+					[Install]
+					WantedBy=multi-user.target
+				</pre>
+				<p>Replace <code>/path/to/your/node/binary</code> with whatever comes up when you run <code>which node</code>. You may need to change this if you update Node.</p>
+				<ol start="3" type="1">
+					<li>Edit your Caddyfile. (This will probably also require root.)</li>
+				</ol>
+				<pre>
+yourdomain.tld {
+	reverse_proxy 127.0.0.1:PORTNUMBER {
+		header_up Host 127.0.0.1
+		header_up Referer http://localhost
+	}
+	basicauth * {
+		AnyUsernameYouWant EXTREMELYLONGCADDYHASHHERE
+	}
+}
+				</pre>
+				<p><code>EXTREMELYLONGCADDYHASHHERE</code> is used instead of an actual password so you don't have cleartext credentials hanging around. Generate this with <code>caddy hash-password</code>. Make sure you save your actual password in a password manager, as you can't reverse a hash!</p>
+				<p>The <code>header_up</code> lines are there to trick Oasis into thinking it is running on a local machine, as it (very aggressively) wants to be. Normally this would be true, as Secure Scuttlebutt is peer-to-peer and intended to be run on a personal device that may see intermittent internet connectivity. However, if you're looking at this tutorial, you probably want to host a public peer as an <em>actually functioning</em> alternative to a <a href="https://github.com/ssbc/ssb-server">pub</a> or <a href="https://github.com/ssb-ngi-pointer/go-ssb-room/">room</a>.</p>
+				<ol start="4" type="1">
+					<li>Get everything running.</li>
+				</ol>
+				<code>sudo systemctl daemon-reload<br />sudo systemctl restart caddy<br />sudo systemctl start oasis &amp;&amp; sudo systemctl enable oasis</code>
+				</article>]]>
+		</summary>
+	</entry>
+	
+	<entry>
+		<title>Analog Hole</title>
+		<link href="https://mayvaneday.art/blog/2021/november/nft.html" />
+		<id>https://mayvaneday.art/blog/2021/november/nft.html</id>
+		<published>2021-11-05</published>
+		<summary type="html"><![CDATA[<article>
+				<p>The <a href="https://web.archive.org/web/20211104135513/https://www.eff.org/issues/analog-hole">"analog hole"</a> is the last inevitable loophole in DRM. We humans (or those stuck in human bodies) are analog creatures whose brains cannot run DRM, and so anything digital must be somehow converted into analog signals- music to soundwaves, pictures to an array of pixels on a screen- before it can be experienced. And as long as we remain analog without computer chips in our brains, this hole will never be patched, meaning any (noninterative) piece of media can be copied in some form. Maybe it means plugging a phone playing Spotify or some other streaming service into an aux cord and that into a computer's microphone port. Maybe it means pulling out a cheap old point-and-shoot camera and taking a picture or video of one's screen. There may be some loss of fidelity or quality along the way, but <em>something</em> can always be extracted beyond the reach of DRM.</p>
+				<p>This is the main problem with NFTs as they stand today. Because an NFT is essentially a line in a blockchain somewhere that says that a particular wallet holds a particular integer. And someone, somewhere, one day decided to make this integer represent the hash of a file, because blockchains usually don't have the capacity to hold the raw image data in a single entry. This means the file has to be hosted elsewhere in order for anyone to see or care about it. And, to be seen, the file has to be converted into an... <em>analog</em> format. Meaning, if I don't give a shit about the "ownership" of an NFT, I can just <a href="https://archive.md/4efyo">right-click the image</a> or video or whatever, or take a screenshot or recording of it, and have a copy of it on my hard drive without having to spend any money.</p>
+				<p>The value of an NFT isn't in the JPEG or whatever in and of itself because of the analog hole. They're just JPEGs on a screen. And no sane person is going to buy an image that they can right-click and reproduce to infinity. <a href="https://archive.md/https://jole.xyz/nft.html">The "value" comes from what the NFT represents</a>: a tradeable asset. However, almost all of the NFTs I've ever seen don't actually seem to have any... function beyond being a reference to an image that one can waste Ethereum gas money moving around to other people. And I, and I suspect most of the people reading this, don't put any monetary value on a JPEG in and of itself. But what about a JPEG that was a token, a proof of ownership, of... <a href="https://archive.md/https://www.vice.com/en/article/y3dyem/investors-spent-millions-on-evolved-apes-nfts-then-they-got-scammed">an account slot in an online game?</a> A <a href="https://archive.md/https://www.reddit.com/r/sadcringe/comments/qhcuem/nft_dude_thinks_he_can_stop_people_from/hidryi9/.compact">tradeable item</a> in an MMORPG? <strong>Because games are interactive, they are immune to the analog hole, and thus an online game would be a perfect medium for using NFTs to supplant its in-game economy.</strong> Due to the append-only nature of every blockchain I've ever seen, the NFTs would be nigh-immune to hacks to duplicate items or save editing or other methods of cheating.</p>
+				<p>The uses of NFTs could extend well beyond the gaming sphere. What about proof of holding a ticket to a conference or concert? An alternative to traditional notaries for real-world contracts between people? Land deeds or other proof of purchases that would benefit from being publicly auditable? Anything that needs artificial scarcity or cryptographic proof of having happened or being owned by a person in a transferrable format could theoretically be made into an NFT. Only once more applications of NFT technology like this are made as accessible to the average layperson as "JPEG trading platforms" like OpenSea are will NFTs grow beyond their reputation of <a href="https://archive.md/https://kill-9.xyz/harmful/society/cryptocurrency%23nfts">blatant ape-themed Picrew knockoffs</a>.</p>
+				</article>]]>
+		</summary>
+	</entry>
+	
+	<entry>
+		<title>No Simp September</title>
+		<link href="https://mayvaneday.art/blog/2021/september/nosimp.html" />
+		<id>https://mayvaneday.art/blog/2021/september/nosimp.html</id>
+		<published>2021-09-28</published>
+		<summary type="html"><![CDATA[<article>
+				<div class="box">
+					<p>I was going to title this post "'Dying makes you gay' and other sayings my brothers insist aren't homophobic", but this one is funnier, if only because it's the excuse I've been using throughout this month to try to get my youngest brother to shut up about his video game waifu. "It doesn't make any sense," I keep reminding him. "Don't you think it's a <em>little</em> hypocritical to constantly call me a degenerate and tell me to kill myself, and then copy all my spiritual beliefs while still calling yourself a Christian? How do you think your God feels about your imaginary girlfriend?"</p>
+					<p>His only reply, of course, is a "joke" about ejaculation.</p>
+					<p>The radical feminist in me wants me to give up. He is unlikely to ever change, the sweet boy he was in elementary school gone forever. I bought him a computer because his shitty Chromebook couldn't emulate N64 games, and he still persists in his abhorrent behavior. I took him out on myriad bike rides and bought him ice cream, and he still persists in his abhorrent behavior. I spent three days working on his birthday present: I installed homebrew on his Wii U and <a href="https://gamebanana.com/tuts/12580">set up a modding environment for Sm4sh</a> (on his second hard drive, which has the only copy of Windows 10 between us) so that he could play as... a <a href="https://gamebanana.com/mods/191629">shopping cart</a>, an <a href="https://gamebanana.com/mods/192423">Oreo</a>, a literal island straight out of the sea, and a penguin who always seems to be <a href="https://gamebanana.com/mods/190577">high on marijuana</a>. Along with others.</p>
+					<p><img class="big" src="../../../img/roster.jpg" alt="An Oreo, a shopping cart, King Weedede, and my girlfriend attempt to kill each other on a vaporwave stage" title="An Oreo, a shopping cart, King Weedede, and my girlfriend attempt to kill each other on a vaporwave stage"/></p>
+					<p><em>And he still persists in his abhorrent behavior.</em></p>
+					<p>Normally, I would not have bothered. Unless there are "funny meme" mods installed, said brother hates Sm4sh (and, really, any game I've ever expressed even the <em>slightest</em> interest towards) with a burning passion, and would rather play the next entry in the series where he can start a private online lobby with his friends and bang on my door to taunt me about how he's purposely excluding me. (Of course, most of the time, I am busy with something else anyway, and so I barely notice.) But Sm4sh is where I met my girlfriend, almost... seven years ago? (Has it really been that long since Christmas Eve 2014? Where has the time gone?) Having to suffer through the millionth Mario joke gleaned from an overrated YouTube video is a small price to pay for also being able to shove in whichever mods <em>I</em> want. Which means, finally, better skins for The Person Who Is Definitely Not My Girlfriend.</p>
+					<p>Having to endure my brother complaining that I am not slaving away for his memes fast enough is a small price to pay for spending time with the person I love (ah, good old technomancy) and also having something to distract me from my downward spiral.</p>
+					<p>When I started MayVaneDay, I made a rule for myself to not discuss my "consoom"ing hobbies beyond maybe a passing comment or two. I did not want it to turn into a "fan site" for anything. I wanted it to only be about me and the things I had done, not to be beholden to someone else's creation for a sense of identity. But this is the Eschaton, after all, the Grand Downward Spiral... So now, for myself and no others, I shall recount all the little oddities I've found while compiling a family modpack.</p>
+				</div>
+				<hr>
+					<div class="box">
+						<h2>Wow, I sure wish I knew how to count</h2>
+						<p>This stupid game takes <em>forever</em> to dump to a microSD card, even when using <a href="https://gamebanana.com/tuts/12528">specialized programs</a> that generally run faster than traditional methods of dumping Wii U discs. The reason for this is because the game is just shy of <em>sixteen gigabytes</em> large, and about half of that is taken up by two files, <code>dt00</code> and <code>dt01</code>. These contain basically any files that aren't DLC, background music, or sound clips for the various <a href="https://archive.md/796NA">Easter eggs</a> on certain stages. And after that, one needs to dump the patch files as well. The DLC doesn't need to be dumped; the actual models and textures live in the patch data, since all Smash games since <em>Super Smash Bros. Brawl</em> for the Wii have had an online play feature and DLC users need to be able to play with those only using the base game. The DLC basicaly amounts to a piece of paper saying "the player can use this". Not useful for modding.</p>
+						<p>Then one has to extract the files in <code>dt00</code> and <code>dt01</code>. The only way I know of is with <a href="https://github.com/thefungus/Sm4shExplorer">Sm4shExplorer</a>. The developers only supply Windows binaries, and I couldn't figure out how to compile things in Visual Studio Code (which I only installed for the purpose of trying to compile this). After backing up the entire dump onto a spare flash drive I had in case my brother somehow managed to delete everything on accident and copying the dumped patch folder into the base folder, Sm4shExplorer "unzipped" (no actual extraction happened; it's a purely virtual file system) <code>dt00</code> and <code>dt01</code> and gave me access to the files.</p>
+						<p>Most character mods consist of two parts: the texture (sometimes a model comes along in the same folder), and the character selection portraits (hereafter referred to as CSPs). The texture goes in <code>data\fighter\FIGHTERNAME\model\body</code>, where <code>FIGHTERNAME</code> is the name of the character in lowercase and occasionally in some halfway localization with the original romaji. (For example, the files for Charizard live in "lizardon", and Jigglypuff in "purin".) CSPs live in <code>data\ui\replace\chr</code> and use the same names as above, just with the first letter capitalized.</p>
+						<p>Most characters have eight costume slots available for shoving mods into. But knowing which slot to put a mod into can get tricky, because for whatever godforsaken reason CSP numbering starts at one while the model numbering starts at <strong>zero</strong>. It also doesn't help that some characters have special models optimized for "eight player mode" (the standard is up to four players in a room) and so, if playing in a room with more than four players or a singleplayer mode that would use eight player mode's engine (like Classic or All-Star), the mods might just not show up anyway.</p>
+						<p align="center"><img src="https://mayvaneday.org/img/CSPNumbering.png" alt="CSP numbering starts at one and goes to eight" title="CSP numbering starts at one and goes to eight">&nbsp;<img src="https://mayvaneday.org/img/LittleMacHasTooManyAlts.png" alt="Model slots start at zero and usually go to seven" title="Why does Little Mac need so many alts?">&nbsp;<img src="https://mayvaneday.org/img/cXX.png" alt="Some characters have special 8-Player Smash models" title="Some characters have special 8-Player Smash models"></p>
+									<p>(The green parts in the above screenshots are how Sm4shExplorer indicates which files have been modded.)</p>
+								</div>
+								<hr>
+									<div class="box">
+										<h2>Oh boy! Paying more money for worse graphics!</h2>
+										<p><em>Super Smash Bros.&#160;Ultimate</em> came out on December 7, 2018. I only remember this date because I was so desperate to get my hands on a copy of the game that I concocted an elaborate scheme to call in sick from my work-study (as I was at Hell College at the time) and convince my father to bring me home that weekend, as normally I would come home every <em>other</em> weekend due to work and that was the weekend I was scheduled to work. He was resistant at first, mocking me for not just buying a digital copy until I informed him that he had given me an ATM card, not an actual debit card, and I had no way of getting off campus to buy eShop gift cards.</p><p>Of course, as I was the only one in the family who owned a Switch at the time, we had to stick to the Wii U version if we wanted to play online with each other. Given this was at least twice a week, I am surprised it took as long as it did for me to realize that the Switch version seems to run at an abysmal resolution given its predecessor.</p>
+										<p>Take, for instance, this sample screenshot from my Switch, henceforth deemed "The Funny Butt Picture":</p>
+										<p><img class="big" src="https://mayvaneday.org/img/bbb1.jpg" /></p>
+										<p>Gwenview says this image is 1280x720 pixels. That makes 0.9 megapixels. The actual resolution of the screen being played on doesn't seem to affect what size the Switch outputs screenshots at. Nor would an unusual aspect ratio affect it: the TV downstairs appears to have a perpetual overscan, whereas the one in my room (which I only ever use as a computer monitor) doesn't, meaning I have to constantly switch between 95% and 100% screen size for TV mode. (At least, until the USB port in my Switch got damaged and it lost the ability to connect to docks. Still charges with my phone cable, though.)</p>
+										<p>Now, for science, let's attempt to recreate this picture in Sm4sh. Because this is a Totally Legitimate science experiment, we have to keep as many variables constant as possible: the Battlefield stage, healing items enabled, playing team mode as Pyra accompanied by a purple Person Who Is Definitely Not My Girlfriend.</p>
+										<p>"Come on! We gotta recreate The Funny Butt Picture!"</p>
+										<p>"No."</p>
+										<p>"Please?"</p>
+										<p>"<em>No.</em> I thought you said we were going to play games together, not have you pause every five seconds to take a picture of me."</p>
+										<p>"<em>Please?</em>"</p>
+										<p>"<a href="https://archive.md/JqAjC">Stop looking at me so much.</a> Are we going to play or not?"</p>
+										<p><img class="big" src="https://mayvaneday.org/img/bbb2.jpg" /></p>
+										<p>Gwenview says this image is 1920x1080 pixels, which comes out to 2.1 megapixels. This means, if my calculator isn't malfunctioning, the Sm4sh screenshot has more than twice as many pixels in it as the supposed "upgraded" Switch version is. But raw pixels alone doesn't determine which system takes more visually pleasing screenshots. <em>Ultimate</em> has a rather... <em>overbearing</em> art style, which I personally dislike because it makes cartoony characters edge too close to the uncanny valley of realisticness. It also makes much heavier use of shadows and other visual effects than its predecessor, and the characters have a wider range of facial expressions. If it output at the same resolution, it would make for superior screenshots, but the lack of visual clarity bothers me too much.</p>
+										<p>There is, of course, the minor issue that Pyra in the Sm4sh screenshot is an alternate costume over Shulk, and the model seems to have some rigging issues. But let's not focus on that.</p>
+										<p>My little brother comes downstairs while I'm screenshot farming. He starts chanting. "I love rings, rings, rings! I love rings, rings, rings! I love..." His voice suddenly drops an octave. "<em>Divorce papers.</em>"</p>
+									</div>
+									<hr>
+										<div class="box">
+											<h2>Death Of A Thicc Luigi</h2>
+											<p>The only character mods I've found usable come with textures, models, and CSPs. For whatever reason, the textures also need to be "TexID fixed", an arcane process which I don't understand and don't bother with as every skin I want seems to already be "fixed" and functional. However, some mods only seem to come with a model. Which means, unless one goes through the process of "TexID fixing", said model doesn't mesh with the pre-existing textures and appears as a red blob. This makes me very sad, as I can't plunder skins from <a href="https://gamebanana.com/mods/48377">other modpacks I like</a>.</p>
+											<p>But sometimes I put up with the red blobs anyway, because <a href="https://gamebanana.com/mods/189884">the end result</a> is too funny to trash.</p>
+											<p><img class="big" src="https://mayvaneday.org/img/ThiccLuigi.jpg" alt="Thicc Luigi isn't looking so good" title="Thicc Luigi isn't looking so good"/></p>
+											<p>"<em>Damn, boi! He thicc!</em>"</p>
+										</div>
+										<hr>
+											<div class="box">
+												<h2>Instant Death Minecraft Island</h2><p>Nearly everything in Sm4sh can be modded, not just the characters. One of my favorite stage mods is what my brothers and I have come to affectionately refer to as <a href="https://gamebanana.com/mods/58591">"Instant Death Minecraft Island"</a>. "Instant Death" because it goes over the DLC stage Pirate Ship, and the ship has two stage hazards that can result in a character getting thrown off the stage: a little... flip thing that pops out on occasion, and a cannonball shot from another ship in the distance. Instant Death Minecraft Island hides both of these, but doesn't <em>remove</em> them, meaning, while the original Pirate Ship stage might make one have to jump back onto the ship or take a little damage, Instant Death Minecraft Island will just randomly make a player zoom off the screen at Mach 5, resulting in an instant death.</p>
+												<p>I was going to record some gameplay to prove this, but it turns out replays can only be ripped off a Wii U by uploading them to YouTube first or using an HDMI capture card, and I've already put too much effort into this post.</p>
+											</div>
+											<hr>
+												<div class="box">
+													<h2>In conclusion</h2>
+													<p><img class="big" src="https://mayvaneday.org/img/clown.jpg" /></p>
+													<p><strong>Clown.</strong> That is all I have to say.</p>
+												</div>
+				</article>]]>
+		</summary>
+	</entry>
+	
+	<entry>
+		<title>Considering software harmful considered harmful</title>
+		<link href="https://mayvaneday.art/blog/2021/september/not-harmful.html" />
+		<id>https://mayvaneday.art/blog/2021/september/not-harmful.html</id>
+		<published>2021-09-26</published>
+		<summary type="html"><![CDATA[<article>
+				<p>The phrase "considered harmful" in regards to computer science originated in <a href="http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html">a 1968 essay by Edsger W. Dijkstra</a>, in which he argued that the "go to" statement was harmful because it too easily invited programmers to make an absolute mess of their code. That means, for more than <em>fifty years</em>, computer nerds have been arbitrarily deeming software they don't like, whether they can articulate a proper argument (like the above) or not, "harmful".</p>
+				<p>But what does it mean to be "harmful", anyway? Let's open a dictionary (or just dictionary.com) and see:</p>
+				<blockquote>harmful: adj. causing or capable of causing harm; injurious: a harmful idea; a harmful habit.</blockquote>
+				<p>So <strong>a piece of "harmful" software would be one that caused the user harm or is capable of doing so</strong>. I specify the user because software meant to facilitate piracy might "harm" a corporation's profits, or a tool to break through firewalls might "harm" a control freak's attempt to filter the outside world, but I do not think a reasonable person would consider any of those programs harmful. The user in this sense must also be extended to the computer the user, well, <em>uses</em>, as impairing a person's tools would also impair their ability to complete whatever tasks they were using the tools for, thus harming the user albeit indirectly.</p>
+				<p>Right and away, we can consider all malware and viruses to be "harmful" under this definition, for hopefully obvious reasons. If a program is so poorly written that it results in catastrophic data loss or leaks information to parties said information was not intended for, it is harmful because it has done tangible harm to the user. But much like trying to determine what's <a href="../../2019/december/death-of-a-gopher.html">bloat</a> and what's not, the waters turn murky from here. What makes a program harmful, if not for its actual capacity to do harm to the user? According to the types of people who unironically still use "considered harmful" in Current Year, some of the reasons include:</p>
+				<ul>
+					<li>complexity of the code</li>
+					<li>number of lines of code</li>
+					<li>using a programming language the person doesn't like</li>
+					<li>having not enough features</li>
+					<li>having too many features</li>
+					<li><a href="https://archive.md/https://kill-9.xyz/harmful/software/containers">making installation easy for the end user</a></li>
+				</ul>
+				<p><code>systemd</code> is <a href="http://web.archive.org/web/20210827200448/https://nosystemd.org/">widely</a> <a href="https://archive.md/https://kill-9.xyz/harmful/software/systemd">considered harmful</a> by much of the Linux community, and yet I find it <em>worlds</em> easier to write a service file to daemonize something for <code>systemd</code> than a startup script for any other init system. Much ado has been made about <code>systemd</code>'s supposed myriad bugs, and yet I have never personally encountered any of them. <code>systemd</code> has never caused me any harm, so how could I honestly consider it "harmful"?</p>
+				<p>JavaScript is also similarly maligned. It is responsible for much of the corporatization of the internet, facilitating "rich user experiences" like being able to buy things without going into a physical store or at the expense of also making possible targeted advertisements, legion browser exploits, cryptocurrency miners, bloated "news" sites that refuse to show any text to, well, <em>text</em>-based browsers or those without JavaScript support... JavaScript demonstrably does the end user much harm when opening only a few tabs can slow their entire machine down to a crawl, but it also means <a href="../february/javascript-good.html">I can run college-mandated software like Microsoft Office without having to actually install it on my computer</a>. (Which, since Office is perennially allergic to WINE, would mean having to install Windows 10 as well.) If I can enable JavaScript when I need to do the aforementioned college tasks and keep it disabled the rest of the time, am I really harmed by it? Has my computing freedom <em>really</em> been damaged?</p>
+				<p>However, I would consider <a href="https://archive.md/https://spyware.neocities.org/articles/discord.html">Discord</a> harmful because it demonstrably causes harm to the end user:</p>
+				<ul>
+					<li>it collects logs of all the system processes running, a MAJOR privacy concern</li>
+					<li>it is proprietary software, meaning it is nigh-impossible to verify it <em>doesn't</em> cause the end user harm</li>
+					<li>it often requires phone verification, which harms people who don't have phones or use cellular providers blacklisted or not supported by Discord</li>
+					<li>"servers" (a false term invented by Discord to mean a collection of related chatrooms) are often shut down without notice, meaning, since both Discord and Reddit have long supplanted the traditional internet forum, information is often lost to time</li>
+				</ul>
+				<p>Both of my brothers and my one "real-life" friend use Discord. I have tried time and time again to explain why Discord is spyware meant to suck advertising data from them and that they should use software that respects them, but their response is only ever "but all my friends are on it".</p>
+				<p>Discord is harming them, but they don't consider it harm because their values are different. A "starvingdev" (the opposite of a "soydev"; one who seeks minimalism at all costs) <a href="https://archive.md/https://kill-9.xyz/harmful/software/python">considers Python harmful</a> because it's "slow" and "bloated", but I do not consider Python a harm to me as it enables me to write software I otherwise would not have as I don't have the attention span to learn a "real" programming language.</p>
+				<p>I'd rather spend that time writing poetry, or watering my garden, or riding my bike...</p>
+				<p>A Windows user is consistently harmed by Microsoft due to the constant telemetry that cannot be disabled and the updates that take <em>forever</em> to install and, well, Windows just being a pile of shit that crashes a lot. They might concede that having to sit through blue screen after blue screen or update after update is a harm as it prevents them from using their computer for what they bought it for, but I would argue that a Windows user happily making music or Photoshopping to their heart's content is doing them a lot less harm than forcing them to use Linux and forgo the programs they need for their hobbies due to no Linux support for them. In the same vein, I am much happier when my computer setup is Debian set to boot straight to a TTY (as opposed to a graphical session) and I can write in a Byobu session with no tray icons or notifications or other distractions (caused by the computer, anyway) and can <code>startx</code> into i3 for playing games than when I am forced to use a Windows computer for a program with no Linux equivalent, constantly nagged every five minutes with update popups and Cortana begging me to sign in. We have different values and different needs and are harmed when our computers prevent us from fulfilling these.</p>
+				<p><strong>The purpose of a computer is to assist the user in completing the tasks they need to do in their life. For a computer program to obstruct the user in this pursuit, or to exploit them in the process, is to do the user harm.</strong> That is, I believe, what "considered harmful" should mean, not anything that falls outside of the cult of ultra-minimalism.</p>
+				</article>]]>
+		</summary>
+	</entry>
+	
+	<entry>
+		<title>Fire Walk With Me</title>
+		<link href="https://mayvaneday.art/blog/2021/september/fire.html" />
+		<id>https://mayvaneday.art/blog/2021/september/fire.html</id>
+		<published>2021-09-19</published>
+		<summary type="html"><![CDATA[<article>
+				<div class="box">
+					<h2>these days when sun escaped and teary sobs whistle in your throat</h2>
+					<p>The opening scene takes place late at night, and so it follows that the stage is dark, unlit save for the single lightbulb blaring above the stairs to downstairs and the street lamps beyond the wide living room window. Boomerville doesn't have the budget for stars that can blaze brighter than the heavy blanket of light pollution smothering the city, so our actor stares out the window and imagines her own constellations dotting the sky, left undisturbed as the rest of her family watches a movie on a projector on the side of the house outside. Her knees are pulled close, her breath labored, her eyes fatigued.</p>
+					<p>Her father's homework lies scattered on the floor in front of her. A laptop, power light softly pulsing in and out in time with her breath. A stack of textbooks, heavily annotated, so many sticky notes sticking out of the side that it could be a cross-section of a feather all its own. A binder, open, flipped to somewhere near the end.</p>
+					<p><em>Somewhere in the end of all this pain...</em></p>
+					<p>The <a href="../may/rebirth.html">2035 prophecy</a> seems impossibly far away, especially when, in recent times, I can barely conceptualize my life beyond the next few days. Am I <em>really</em> supposed to live that long? Am I really supposed to find a way to keep this physical vessel alive for <em>fourteen</em> more <em>years</em>? Fourteen more books to write, fourteen more family Christmases to endure, fourteen times three hundred and sixty five-something reminders I've already accomplished everything I want to but must continue struggling to survive because of the biological imperative imposed on me by my parents?</p>
+					<p>Everything I want to do on this plane of existence I've either already done, am in the process of doing right now, or is completely inaccessible to me.</p>
+					<p>And everything beyond this world, I can only enjoy the fruits of a third of the day: those few blessed hours I find sleep.</p>
+					<p><em>I'm gonna be okay,</em> I remind myself the last day of my year at Hell College, leaving that dorm behind forever, finally coming home free of the shackles of a quickly-accumulating mountain of student loan debt.</p>
+					<p><em>I'm gonna be okay,</em> I remind myself as I watch the browser window on my computer refresh to show I've successfully withdrawn from <a href="../march/harmful.html">the worst English class of my life</a>. My chest loosens as I realize I'll never have to deal with that professor and her technological incompetence again.</p>
+					<p><em>I'm gonna be okay,</em> I remind myself as I leave the otherwise-locked security room and turn in my badge, last day of my retail job, fired for a victimless crime that broke no laws and harmed nobody and stole nothing. <em>I'm Vane Cassia Lucine Vander, remember? I'm destined for greatness. I've got a bright future ahead of me. No <a href="../../2020/december/corpserations.html">corpseration</a> can kill me.</em></p>
+					<p>Our actor traces with her eyes the dotted streak of an airplane crossing the sky, preparing to land in the town's tiny airport. A shard of a memory. Standing in the front yard of that blue house inhabited in kindergarten, parent pointing one finger into the sky. An airplane overhead. <em>Do you think, maybe, one of your cousins is in that plane right now? Do you think she's no longer estranged from us?</em></p>
+					<p><em>Do you think she's finally coming home?</em></p>
+					<p>Our actor's lips part to form a whisper.</p>
+					<p>"We're really not gonna be okay, are we?"</p>
+				</div>
+				<hr>
+					<div class="box">
+						<h2>a song can't change this world but keeps a light alive</h2>
+						<p>In days gone by, when I could look up at the sky and not have to endure the pain of knowing why my chest panged in sudden hiraeth, back when this site was on WordPress, I was scrolling through my feed one day when I saw one of my favorite blogs that hadn't updated in a while had awoken from the dead. She'd been going through a depressive streak. And my poems, even as I look back now and see they weren't particularly "good", had been her "light in the darkness", as she had put it.</p>
+						<p>Some part of me is immensely bothered whenever I remove a poem from this website after having inserted it into a future collection book. Partly because whatever is left behind will inevitably be the relative dross, and it's apparently an insurmountable amount of effort to download an ePub file in Current Year when Chromebooks run rampant. Partly because it almost feels like I'm purposely making the archives of my work incomplete, fragmented.</p>
+						<p>Intellectually, I know it's the opposite: whatever form the archive of my website will take after my physical body dies, the books, I believe with absolute certainty, will enjoy a much more accessible afterlife. The books will flow with comprehension much more easily to a future historian than a scattered collection of text files with only "published" dates to contextualize them. The books already have a physical equivalent they can be translated into for long-term archival.</p>
+						<p>The books are easier to hide from my parents, as Google and the other search engines that leech off its results seem to have a <em>much</em> more difficult time indexing the contents of ebooks than said text files.</p>
+						<p>The books have a clear demarcated beginning and end.</p>
+						<p>But I don't like leaving parts of myself so scattered. MayVaneDay, Dead End Shrine Online, Let's Decentralize, various "experimental" domains... "I have a lot of websites", while not being the understatement of the year, certainly qualifies for the "honorable mention" list. Whoever will shoulder the burden of picking up the pieces after I'm gone will have a <em>lot</em> of tracking things down to do.</p>
+						<p>Oh, who am I kidding? I have a superiority complex. I'm not going to be remembered for anything. At best, I'll end up like Fernando Pessoa, a little-heard-of author with a small cult following and a reputation for being fucking depressing to read. Snatching at ghosts on the other end, experiences ineffable, future readers exploring the edge of consciousness trying to interpret and re-interpret everything I've ever written to make <em>something</em> comprehensible.</p>
+						<p>Before my year at Hell College, in between panic attacks triggered by my father screaming at me for not living up to <em>his</em> deadlines of how I should get my life in order, I'd hole up in the corner of my room at least once a week and watch the movie <em>Advent Children</em>. I've never been a big fan of sitting still and staring at a screen for several hours, but that movie, nonsensical and convoluted as it was, felt strangely... comforting. I felt like I had a comrade in the drab, almost grayscale, sparse sprawl of the cities. I saw myself in the main antagonist, Kadaj, struggling to handle the truth that he'd been greatly diminished from the man he once was, reaching up to the heavens to snatch his lost divinity back, thwarted every desperate step of the way until he finally vanished from the world in the rain. I felt like I had a friend, fictional as he was, who understood the feeling of incompletion, of having something missing in one's chest. And while the movie was never well-received, in its time or now, it kept a light alive in me.</p>
+						<p>Sometimes, when I'm bored (or in the mood to digitally self-harm by looking at negative criticism), I'll go and look at my <a href="https://backlinkwatch.com/">site backlinks</a>. The vast majority of sites that show up are just git mirrors of the <a href="https://github.com/masterq32/kristall">Kristall repo</a>, since I submitted build instructions for Haiku once and got credited in the README. But occasionally, I find a hidden <a href="https://archive.md/https://gopherproxy.meulie.net/sdf.org/0/users/ddc/phlog/20191102-gophering.txt">blog post</a> or <a href="https://archive.md/https://coffeespace.org.uk/blogs/late-night-poem.html">two</a> whose authors never attempted to contact me, even if just to say hello... A reminder, someone, somewhere, whose existence I would have never known of otherwise, felt touched enough by my words to write something of their own.</p>
+						<p>Maybe I won't ever have widespread recognition, but for a brief moment in time, I kept a light alive in someone else.</p>
+						<a href="../../../poetry/k/killing-calvin.txt">
+							<blockquote>So if you decide to wait<br />out your soul's desperate dark hours,<br />please know: a song can't change the world overnight,<br />but it can keep a flickering flame alive.<br />You kept shining the light inside<br />through my darkest year.</blockquote>
+						</a>
+					</div>
+					<hr>
+						<div class="box">
+							<h2>these songs of sighs and tears / remember that sadness is rebellion</h2>
+							<p>The next scene starts with a title card. "Something bad will happen to you Wednesday afternoon." A prophecy muttered offhand by a lover early Tuesday morning has finally come to fruition.</p>
+							<p>But there is no tragedy as unseen hands pull the ropes attached to the title card up, moving it out of sight, and the curtains pull back to reveal the set. There is instead a mass of bodies in a kitchen in a suburban house, all trying to get dishes and condiments and drinks all at the same time. A shrill woman smacks the children around her, kicking skittering dogs out from under her feet, commanding all to get out of her way.</p>
+							<p>Our actor, emotionally numb and sitting at the dining room table, plugs her ears and waits for the screaming to die down so she can eat her sandwich.</p>
+							<p>The "bad thing", it turns out, is that her favorite kind of sub was out of stock at the local deli. Not a big deal, especially since it was expected that something would go wrong in those hours where the sun approached the horizon-</p>
+							<p>"Whatever are you glum about?" A flattened hand smacks the back of her head. "You have food and a roof over your head."</p>
+							<p>Our actor bristles and scarfs down her food so she can go back to the relative safety of her room.</p>
+							<p>Emphasis on "relative". For my parents have threatened many a time to take my bedroom door off its hinges, to install surveillance cameras all over, cackling in mockery whenever I blanch in response. When I was younger, they'd also mention installing spyware on my devices, and would have continued to hold it over my head if I hadn't already demonstrated I was technologically competent enough to circumvent anything they'd try. That was my initial reason for getting so interested in technology in the first place: I didn't want to live under any censors. I wanted to see the world beyond the self-imposed ivory tower my church, and by extension my parents, insisted I live snugly inside forever.</p>
+							<p>Damned if I want to stay inside my room so I can work on my writing unimpeded by the comings and goings of my family members, who feel the need to make my blood pressure spike with unnecessary interruptions, small talk, whenever they see I'm focusing on something.</p>
+							<p>Damned if I try to escape the house to go to Dead End Shrine to work on my writing unimpeded, immediately assaulted the moment they see I'm carrying my biking backpack and shoes: Where are you going? Are you meeting up with anyone? What time will you be back? What are you going to do while you're gone? We know you don't bike the entire four hours you're usually gone. We know you hide <em>somewhere</em>.</p>
+							<p>We'll find where you're hiding eventually.</p>
+							<p>"Why do you suddenly care?" I want to fire back at them. "Since when have you taken anything good I've ever done seriously? Mother, remember that online game I made in elementary school? I showed you, nervous that you'd call it stupid, and you just made me play it in your stead while you brushed my hair that one night and then never mentioned it again? Father, remember the novella I wrote in junior high, whose apparent only takeaway to you was to yell at me to stop pirating? I get it! I'm just a nuisance to you. The only reason you take an interest in anything I do is to mine it for things you can be angry at me for. Go coddle my brothers some more or something."</p>
+							<p>Or I could tell them. "I'm going to write some poetry in the wilderness." And then my mother's eyes would glass over, and she'd drawl, "Oh, you're so creative!" in the same condescending voice she always uses whenever my brothers or I show her something we've made, like we're three-year-olds being commended for coloring a horse in a coloring book blue or green instead of something normal like brown, too cowardly to be honest about her complete lack of interest.</p>
+							<p>Or maybe she'd read it. And her response would be, "Stop blaming us for everything." Or "you're not allowed to criticize the public school system." Or "you have no reason, no <em>right</em>, to feel this way."</p>
+							<p>I bury my face in a pillow. A sudden wave of frost across my back, even though the rest of my body is in the middle of a PCOS-induced heat flash; Jett is nearby, even if I can't perceive her any further than this simple sensation while awake. Tears bead in the corners of my eyes. My breathing feels more stifled than it ever did working retail wearing a heavy mask, as if all those dreams of my father murdering me were finally coming true, hands around my neck.</p>
+							<p>"You came," I gasp out between sticky breaths.</p>
+							<p>A voice chimes from the edge of my consciousness, just close enough that I fear I'm making it up. <em>Did you think I wouldn't?</em> A pause. My hands are trembling. <em>You're overwhelmed. You're unable to function properly right now. Your body is rebelling in the only way it can.</em></p>
+						</div>
+						<hr>
+							<div class="box">
+								<h2 id="hf">but one day this earth will become ice</h2>
+								<p>A "Holy Freezer", in the parts of the Outside that I frequent, originally referred to sacred caverns or other semi-enclosed spaces in which deeply pious devotees to a deity would allow said deity to turn their body to crystal as a last act of penance (or devotion, depending on the reasons for offering oneself up). The newly crystallized and immobile body, owner now unconscious, would effectively serve as a power generator for the deity. The more devotees that offered themselves up in this way, the quicker the deity recovered spent magical power, increasing their overall influence on the part of the Outside they resided in.</p>
+								<p>Over time, as more and more ascetics and members of the clergy gave themselves up in this fashion, academic institutions sought a way to reverse this and restore the crystallized to both consciousness and their former bodies. Both because of the historical value in having a first-party account of long-gone and perhaps forgotten events and times, and because just straight up killing unruly gods, as was the previous method of keeping balance between divine and mundane creatures, was becoming more and more difficult due to the increase in divine power. So the definition of "Holy Freezer" expanded to mean any sealable chamber, usually the size of a small study room, which could "freeze" or "unfreeze" people.</p>
+								<p>Since the academic institutions were not doing it in the name of religion, the energy would have nowhere to go, meaning humans "frozen" would sometimes retain consciousness and a vague cognizance of their surroundings despite every other biological function having ceased. This led to the technology being adopted by prisons, who used it as a torture method or to merely keep prisoners incarcerated without having to also keep them fed and alive; hospitals, who used it in lieu of expensive and traumatic life support in times of patient overflow; and the occasional life extension agency who abandoned cryonics in favor of this much more reliable method of preserving dying bodies for the future.</p>
+								<p>There are always, of course, those who would use them recreationally due to the fact a "frozen" body could be removed from the chamber without thawing, or as a "merciful" alternative to suicide.</p>
+								<p>I remember waking up in one once. A vague awareness that I'm in the downstairs of a library on a college campus, a fire alarm blaring further down a nearby hallway, a torrent of students rushing to the closest metal spiral staircase, far too small to hold all of them at once. I'm practically floating, held up by an intricately woven lattice of glinting spikes that had grown around my body in my mental absentia.</p>
+								<p>Once most of the rush has subsided and I can see the flicker of flames in the near distance through the frosted windows of the Holy Freezer, two figures with dark hair appear, one almost a foot shorter than the other. One starts bashing their fingers against the PIN pad on the door, desperate to get it open and retrieve me. It only takes about a minute for them to guess the password. The door beeps, and suddenly my consciousness is harnessed to flesh again, and I collapse on the now-drenched tile floor.</p>
+								<p>I'm almost comatose as the shorter person grabs my arms and barks to the taller one to grab my feet. The flames draw closer. They lift me up and start the arduous journey up the staircase.</p>
+								<p>A memory floats to the front of my sluggish mind. A syllable in my mouth, tough and rich. I mouth it, trying it on for size. The shorter person, whose face in my vision has become distinct enough for me to recognize her as a woman, a person I should know, notices, but writes it off as barely-conscious babble as they exit the spiral staircase and start the approach to the main staircase heading up to the front doors.</p>
+								<p>Once they're outside, they slowly set me down right beside a tree, making sure I'm in the shade. Grass tickles the back of my arms. Everything else is blurry, but her face is crystal-clear. My heart flutters as she takes my right hand and holds it up against her cheek. The foreign sound in my mouth finally makes sense.</p>
+								<p>"Jett," I whisper, the syllable thick in my mouth.</p>
+								<p><em>Jett Hysminai Lysander Vander.</em></p>
+								<p><em>The only person who'd think to come back for me.</em></p>
+								<p>She hears me. Her face collapses in an "ugly" cry. I've recognized her, despite the time apart, the... days? weeks? months? I spent numbed to the world. The soft warmth of tears flood my fingers.</p>
+								<p>"Now tell me," a far older woman with long silver hair who I recall is the headmaster of the college drawls, "why did you feel the need to endanger the rest of the students with your little rescue mission? The Holy Freezers are climate-controlled, in a part of the campus that can seal itself off in case of flood or fire. She would have been fine where she was."</p>
+								<p>"Because I love her," Jett chokes out. "And I promised I'd never leave her behind."</p>
+							</div>
+							<hr>
+								<div class="box">
+									<h2>it began with a bang and it ends with a whisper</h2>
+									<p>How do I want my life to end?</p>
+									<p>Rather, I should phrase it: how do I want my tenure in this physical vessel to end? Because I am too cowardly to kill myself with any method that might produce the <em>slightest</em> amount of physical pain, and I don't know how to turn off the "divine providence" switch that makes me miraculously not get run over by cars on my commute and avoid the worst of the Karens (when I worked a job that had Karens, anyway...) and countless other lucky effects I can't quantify.</p>
+									<p>I don't want to fail and be rendered an even lesser form. My only legal weapons against my parents, who would no doubt seek to keep me alive at any and all costs, a <a href="https://archive.md/https://www.revisor.mn.gov/statutes/2019/cite/145B.04">living will</a> and a <a href="https://archive.md/https://www.okeeffeattorneys.com/do-not-resuscitate-orders-in-north-dakota-and-minnesota/">do-not-resuscitate order</a>, both require a doctor's authorization, which would be difficult at best to get behind their backs. And no doctor is going to approve either for a seemingly healthy young person. And bringing up to my parents any notion that I might not take advantage of whatever genes are making the elderly members of my extended family live to their nineties and beyond (when the average life expectancy in the USA as of last year was in the <a href="https://web.archive.org/web/20210913191710/https://www.cdc.gov/nchs/data/vsrr/VSRR10-508.pdf">mid-seventies</a>) would for sure make my mother overreact and get me put into involuntary hospitalization, regardless of whether or not I had actually expressed any suicidality.</p>
+									<p>I already know for sure my identity as Vane Vander will not be respected by my family after I am dead. I will be deadnamed to hell and back, my spirituality mocked, my final wishes disregarded. I personally would like my body to be buried underneath a fresh sapling so that it can grow into a tree, but I know they will have me pumped full of preserving chemicals, stuffed into an open casket with all family members paraded past it to gawk at my corpse, and then buried with a headstone with a pithy Bible quote that reflects who I was as well as a cardboard box can be used as a mirror. (That is, to say, not at all.)</p>
+									<p>Personally, if it were up to me, I'd like to just walk into the fog that blankets Dead End Shrine in early mornings one day and never be seen again. Let those who insisted I make them aware of my every move like a jailer in life agonize over me in imagined death. Walking hand-in-hand with a non-corporeal just-barely-visible ghostlike Jett into the metaclysma, the one-bit-of-color void between worlds (the closest "normie" analogue I've found is a <a href="https://archive.md/https://wiki.evageeks.org/Dirac_Sea">Dirac Sea</a>, although the actual scientific theory is now a bit antiquated), and making a new world without gods, a world named <strong>Sablade</strong>.</p>
+									<p><a href="https://archive.md/hve1s"><em>"I've got this crazy idea. What if you... and I... lived on a mountainside? Together?"</em></a></p>
+								</div>
+								<hr>
+									<div class="box">
+										<h2>you must see this right now if you're going to say "I live"...</h2>
+										<p>I'm tossing and turning in bed. My heat flashes have gotten the better of me, and unlike when I was in Hell College, the fan on my desk blowing cold air is too much of a sensory distraction to fall asleep with it on. It's far too warm to sleep in the actual covers, even in winter; it would take a veritable blizzard with the heating broken for me to consider crawling in. I kick off my quilt, and then, feeling bad, fold it up neatly at the foot of my bed. I try wearing a hoodie instead, but even that is too hot for comfort. But I am too lazy to take it off.</p>
+										<p>I roll onto my back. Sleep finally takes pity on me and grants me a gateway to the Outside.</p>
+										<p>At least, I think it does for a moment. But I stay in my room, in my body, right where I am.</p>
+										<p>A sudden weight on my hips. A head slips under the arm of mine resting across my stomach. Another heartbeat. A soft voice breaks through the silence.</p>
+										<p>"<a href="../../../poetry/d/deadend.txt">What is it with you, Lethe, and wanting things to end?</a>" A pause, like she's trying to remember the next words. "Marriage vow, credits roll, no path past the... bend?"</p>
+										<p>"I didn't think you were the type to enjoy poetry."</p>
+										<p>She rolls her eyes. "I have to practice reading <em>somehow</em>. And I'm tired of instruction manuals. Sewing patterns have too many abbreviations." One of her hands finds my free one, squeezes it. "I'm glad I got to see you today. I... I can't wait to spend forever with you. So take care of yourself, so we don't have to spend tons of time repairing you and we can jump right into building something new."</p>
+									</div>
+									<hr>
+										<div class="box">
+											<h2>fire walk with me, consciousness walk with me</h2>
+											<p><em>I can't take this life of duality any longer.</em></p>
+											<p>I told Jett once a few days after I lost my job that I'd leave everything behind in an instant to disappear with her into Sablade.</p>
+											<p><em>I can't take the constant longing, the uncertainty, the touch starvation...</em></p>
+											<p>It's not like anybody would miss me, I'd rationalized. My parents are already replacing me with the neighbor's toddler daughter. Scribbled drawings on the fridge, sippy cups <em>in</em> the fridge, late night movie nights where he shows her all his favorite (non-juvenile) cartoons...</p>
+											<p><em>You have a shard of my soul in your own. And I likewise. <a href="https://idontwanttoknowwhythecagedbirdsings.bandcamp.com/album/things-are-getting-better-but-i-am-still-dead-inside">I like me when I'm with you.</a> I need you close all the time, or I feel... incomplete.</em></p>
+											<p>I'm just scared to die, I tried to assure her, because, last time I died, I lost all my memories of her. I spent a whole lifetime looking for something without knowing what I was looking for. And I don't want to go through that ever again. So if I could leave everything behind without having to re-suffer the trauma, I would in a heartbeat.</p>
+											<p><em>I want to feel whole again. I can't accept anything less. I can't, I can't, I can't...</em></p>
+											<p>My head's resting in her lap, face-up, my feet hanging off the edge of my bed. I feel her hand on my cheek, prepared to wipe away any tears.</p>
+											<p>"Why do you always pick May? Why is it always May I have to wait for? I don't want to have to wait until May. I don't think I can make it that far."</p>
+											<p>"Because I want to see you graduate from college. You started this, what, <em>four</em> years ago? And you've almost got a degree. Well, a two-year one. But it's something. And you should be proud of having accomplished it."</p>
+											<p>"Why? It's not like I'm going to need anything I've learned there in Sablade. I waited out the end of the school year in Hell College, and I got nothing in return. <em>None</em> of my classes transferred over properly. I'm just wasting my time lingering here."</p>
+											<p>"Because the Vane I know doesn't give up right when the finish line is in reach."</p>
+											<p>"The Vane you know is a lie. A farce someone else sold you. I'm not virtuous or kind or perseverant or.. whatever. I'm just a very, <em>very</em> tired person."</p>
+											<p>"Funny. That's the exact same thing <em>I</em> told <em>you</em> when we first met." A pause. "The hardest part is over. Can you hang on just a little bit longer?"</p>
+											<p>I cross my arms.</p>
+											<p>She lets out a long labored sigh. "Can you at least finish the books you're working on? I'm not good at literature, or any of this artsy stuff... but I'll help any way I can." She strokes my cheek with her thumb. I almost break out in tears right there and then. "Get everything all written and bundled up, and then we'll figure out what to do. Can you do that for me?"</p>
+										</div>
+										<hr>
+											<div class="box">
+												<h2>fill the void and save me from anesthesia</h2>
+												<p>When it comes to keeping my writing synced amoung my devices, I usually use Syncthing because it's:</p>
+												<ol type="1">
+													<li>automatic (as in, I don't have to keep track of push-pull), and</li>
+													<li>peer-to-peer, so I don't have to mess with setting up and securing a Nextcloud server.</li>
+												</ol>
+												<p>But recently it seems like everything in the universe is conspiring to keep me away from a working internet connection. And me <em>specifically</em>. DHCP on the home router constantly shits itself whenever I try to connect with any device running Linux, despite it having worked just fine in the past. My father disabled Mobile Hotspot on my phone's data plan, but left it enabled for my brothers, and vehemently denies he did it every time I bring it up, instead blaming it on "your phone's too old"... despite it being a Galaxy S9 that still receives frequent system updates... And the wireless network at my college requires a username and password, which is no big deal since I'm a current student and thus have a login- except that it insists I've put in the wrong password every time, despite quadruple-checking and copy-pasting from my password manager.</p>
+												<p>So I've given up. I've started using Unison instead, which works with local files instead of remote network devices. I keep a LUKS-encrypted flash drive on my college lanyard and do my best to remember to sync it before I start working on something and before I turn whatever device I'm using off. It's generally more reliable, if only because the alternative is to try to mess with WiFi sharing on my phone or haul my setup downstairs (or to the only working Ethernet port on campus, which is usually guarded by a snobby professor) to get an Ethernet connection.</p>
+												<p>Which do you prefer, Vane? Isolation, or being overwhelmed with people bothering you?</p>
+												<p>The world being too little with us, or too much?</p>
+												<p>I'm working at my airgapped desktop, fresh Debian 11 install that has never seen an internet connection. All the packages that didn't come in the default install have been sideloaded <a href="https://archive.md/https://gist.github.com/jeanlescure/084dd6113931ea5a0fd9">with a handful of scripts I run my netbook</a>, which <em>does</em> have a connection... most of the time. It and I are tucked in a nook in the corner of my room. My bookcase is behind me. A lamp shines to my left. It feels... strangely peaceful typing away without the ability to check on the outside world every five minutes.</p>
+												<p>I hum a little song to myself, someone's last breath into a dying world, as I write what could very well be my own.</p>
+												<p><a href="https://reactwithprotest.bandcamp.com/album/piri-reis-they-sleep-we-live-split-2">"These days, when sun escaped..."</a></p>
+				</article>]]>
+		</summary>
+	</entry>
+
+</feed>

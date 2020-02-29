@@ -1,0 +1,132 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/avatars/v5.png"><link rel="alternate" type="application/rss+xml" title="王子亭的博客" href="https://jysperm.me/atom.xml"><link rel="stylesheet" href="/styles.css"><title>为什么我无法访问一个网站 | 王子亭的博客</title></head><body><div class="container"><div class="columns page-header"><h1>王子亭的博客</h1></div><div class="columns"><div class="navigation"><nav class="menus-main"><a href="/" class="favicon"><img alt="王子亭的博客" src="/avatars/v5.png"></a><a href="/about">关于精子</a><a href="/resume">简历</a><a href="/links">链接</a><a href="/booklist">推荐书单</a><a href="/list">日志列表</a><a href="/ad">广告</a></nav><nav class="right menus-right"><a href="/atom.xml">RSS</a><a target="_blank" href="https://github.com/jysperm/blog">fork on Github</a></nav></div></div><div class="columns"><div class="block-body column three-fourths"><div class="article-widget">精子新上线了一个名为 &nbsp;<a target="_blank" href="https://stream.pub/">Stream</a>&nbsp; 的服务，希望提供一个基于发布、订阅模型的消息服务，提供 HTTP API 并传输结构化的 JSON 数据。</div><article><header><small class="right"><a target="_blank" href="https://github.com/jysperm/blog/blob/master/source/_posts%2F2014-08-01%23%E4%B8%BA%E4%BB%80%E4%B9%88%E6%88%91%E6%97%A0%E6%B3%95%E8%AE%BF%E9%97%AE%E4%B8%80%E4%B8%AA%E7%BD%91%E7%AB%99.md">查看源代码</a></small><h1>为什么我无法访问一个网站</h1></header><div class="article-meta clearfix"><time class="left">2014 8 月 1 日</time><ul class="tags left"></ul><ul class="tags right"><li><a href="/tag/network/">计算机网络</a></li><li><a href="/tag/science/">科普</a></li></ul></div><div class="markdown-body"><p>这是从我开始经营 <a href="https://github.com/jysperm/RootPanel" target="_blank" rel="external">RP 主机</a> 以来，被问及的最多的一个问题。</p>
+<p>本文将以诊断「为什么我无法访问一个网站」的方式，讲述 Web 服务的大致工作流程。</p>
+<h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><ul>
+<li>URL</li>
+<li>DNS</li>
+<li>TCP/IP 连接</li>
+<li>加载资源</li>
+<li>渲染</li>
+</ul>
+<h2 id="URL"><a href="#URL" class="headerlink" title="URL"></a>URL</h2><p>通常来讲，所谓访问一个网站，我们输入给浏览器的是类似于这样的一个地址：</p>
+<pre><code>http://jysperm.me/note/1519
+</code></pre><p>用术语来讲，这是一个 URI, 一个 URI 有两个部分，一是协议，二是定位符。<br>  比如「mailto:jysperm@gmail.com」这是一个邮箱的标识符，其中「mailto」是协议，「jysperm@gmail.com」是定位符。</p>
+<p>再比如「urn:isbn:9787115281487」这是一本书(HTTP 权威指南)的标识符。</p>
+<p>用来表示网页的 URI 有一个比较特殊的名字叫 URL, 它大致分成这几个部分：</p>
+<ul>
+<li>http - 协议</li>
+<li>jysperm.me - 主机名</li>
+<li>/note/1519 - 路径</li>
+</ul>
+<p>除此之外还可能会有类似于「?id=1519」的查询字符串。</p>
+<p>这样的一个 URL, 便可以定位到一个网页。</p>
+<h2 id="DNS"><a href="#DNS" class="headerlink" title="DNS"></a>DNS</h2><p>首先我们要找到为我们提供服务的服务器，即 URL 中的主机名，在这里是 jysperm.me.</p>
+<p>TCP/IP 网络中通过 IP 地址来唯一地定位一台主机，更确切地说，每一块网卡，会有一个唯一的 IP 地址。</p>
+<p>IP 地址形如 117.121.25.186, 它本身是存在一定结构性的，比如 117.121.25.186 和 117.121.25.187，就有非常大的可能性两者的物理距离很近。</p>
+<p>这样的结构性方便于计算机之间互相联络，但不便于人类记忆，于是我们用由字母组成的域名来表示主机。</p>
+<p>我们通过一个叫 DNS 的系统，来将域名翻译成 IP 地址，DNS 系统本身说简单也简单，说复杂也复杂，在这里我们只讲述如何使用，而不研究其原理。</p>
+<p>如果浏览器给你的提示是类似于「无法找到 jysperm.me」或者「无法连接到 jysperm.me」，那么有很大可能性是 DNS 查找失败或者出错。</p>
+<p>我们可以使用 nslookup 这个命令来手动进行 DNS 查询</p>
+<pre><code>&gt; nslookup jysperm.me
+Server: 8.8.8.8
+Address:    8.8.8.8#53
+
+Non-authoritative answer:
+Name:   jysperm.me
+Address: 117.121.25.186
+</code></pre><p>可以看到，我们向 8.8.8.8(Google 的免费公众 DNS), 查询 jysperm.me 这个域名，它返回给我们的结果是 117.121.25.186.</p>
+<p>这里是 8.8.8.8 是系统的默认 DNS 服务器，我们还可以自己来指定 DNS 查询服务器：</p>
+<pre><code>&gt; nslookup jysperm.me 114.114.114.114
+Server: 114.114.114.114
+Address:    114.114.114.114#53
+
+Non-authoritative answer:
+Name:   jysperm.me
+Address: 117.121.25.186
+</code></pre><p>这里使用了国内的 114.114.114.114 进行查询，返回的结果是一样的。</p>
+<p>在某些网络封锁比较严重的国家，DNS 查询的结果可能会被篡改，因为 DNS 本身几乎没有任何安全措施，所以查询到的结果可能并不是可靠的。</p>
+<h2 id="TCP-IP-连接"><a href="#TCP-IP-连接" class="headerlink" title="TCP/IP 连接"></a>TCP/IP 连接</h2><p>知道了服务器的 IP 地址，下一步是建立 TCP 连接。这一步最常遇到的问题有：</p>
+<ul>
+<li>无法连接到服务器/连接超时</li>
+<li>连接被拒绝</li>
+<li>连接被重置</li>
+</ul>
+<p>首先 IP 层面，要向一台主机发送数据，这个主机必须是「可达的」，换句话说就是对方必须在线。</p>
+<p>最简单的，我们可以用 ping 命令验证一个主机是否在线：</p>
+<pre><code>&gt; ping 117.121.25.186
+PING 117.121.25.186 (117.121.25.186): 56 data bytes
+64 bytes from 117.121.25.186: icmp_seq=0 ttl=128 time=138.651 ms
+64 bytes from 117.121.25.186: icmp_seq=1 ttl=128 time=71.345 ms
+64 bytes from 117.121.25.186: icmp_seq=2 ttl=128 time=286.960 ms
+</code></pre><p>ping 使用的是 ICMP ECHO 指令，就好比你跟对方打招呼，问它是否在线，如果对方回应了，就说明它在线。但是，并非所有服务器都会回应 ICMP ECHO.</p>
+<p>如果发现 ping 命令没有回应，类似于下面的情况：</p>
+<pre><code>&gt; ping 59.24.3.173
+PING 59.24.3.173 (59.24.3.173): 56 data bytes
+Request timeout for icmp_seq 0
+Request timeout for icmp_seq 1
+Request timeout for icmp_seq 2
+</code></pre><p>那么就说明你和服务器直接没有建立连通的连接，但是，连接是在那里断开的呢？这时我们可以用 traceroute 来探测数据包所走过的路径：</p>
+<pre><code>&gt; traceroute www.qq.com
+traceroute to www.qq.com (180.96.86.192), 64 hops max, 52 byte packets
+ 1  * * *
+ 2  100.64.0.1 (100.64.0.1)  10.224 ms  5.379 ms  6.794 ms
+ 3  218.4.12.229 (218.4.12.229)  8.342 ms  6.817 ms  8.169 ms
+ 4  218.94.165.2 (218.94.165.2)  8.128 ms  8.259 ms  7.173 ms
+ 5  61.155.133.121 (61.155.133.121)  11.152 ms  9.288 ms  9.990 ms
+ 6  202.102.69.254 (202.102.69.254)  11.464 ms  12.463 ms  11.027 ms
+ 7  180.96.51.94 (180.96.51.94)  13.674 ms  13.192 ms  12.364 ms
+ 8  180.96.48.202 (180.96.48.202)  13.564 ms  11.213 ms  13.945 ms
+ 9  * * *
+</code></pre><p>traceroute 依赖于 ICMP, 并非所有服务器都开启了 ICMP, 因此会有一些路径点被显示为星号。</p>
+<p>我们再来看另一个不可达的例子：</p>
+<pre><code>&gt; traceroute twitter.com
+traceroute to twitter.com (59.24.3.173), 64 hops max, 52 byte packets
+ 1  * * *
+ 2  100.64.0.1 (100.64.0.1)  4.694 ms  4.502 ms  8.044 ms
+ 3  218.4.12.237 (218.4.12.237)  8.874 ms  5.177 ms  8.133 ms
+ 4  218.4.13.49 (218.4.13.49)  15.205 ms  11.400 ms  12.011 ms
+ 5  202.97.55.41 (202.97.55.41)  14.011 ms  15.794 ms  16.518 ms
+ 6  202.97.50.254 (202.97.50.254)  12.207 ms  12.614 ms  13.165 ms
+ 7  202.97.35.78 (202.97.35.78)  12.246 ms
+    202.97.35.22 (202.97.35.22)  13.337 ms
+    202.97.34.126 (202.97.34.126)  13.701 ms
+ 8  202.97.60.33 (202.97.60.33)  58.292 ms  12.432 ms  18.093 ms
+12  * * *
+</code></pre><p>可以看到，最后一个可以追踪到的路径点是 202.97.60.33, 通过一些 IP 库可以查到，这个地址属于「广东省广州市 互联网交换中心」，可以打个电话问问他们那边出了什么情况。</p>
+<h2 id="加载资源"><a href="#加载资源" class="headerlink" title="加载资源"></a>加载资源</h2><p>访问一个网页会发起不止一个请求，除了网页本身还会加载一些例如样式，图片，脚本之类的资源，甚至很多时候还会加载来自其他网站的资源，通过 Chrome 的开发人员工具中的「Network」选项卡，可以看到加载一个页面所发起的所有请求。</p>
+<p>这是一个正常的网站, 所有的资源都加载成功了：</p>
+<p><img src="http://jysperm.me/wp-content/uploads/2014/08/QQ20140801-1.png" alt="正常网站的加载情况"></p>
+<p>再看下面这张图，其中一个资源没有加载完成，导致整个页面都无法完成，这时我们就可以通过上面的方法单独排查这一个请求。</p>
+<p><img src="http://jysperm.me/wp-content/uploads/2014/08/QQ20140801-2.png" alt="没有加载完全的情况"></p>
+<p>通过浏览器来检查一个资源究竟能不能下载在一些复杂情况下并不可靠，因为浏览器会为你的请求加上大量的参数，而且在得到资源后，还会进行渲染。</p>
+<p>因此为了「纯粹」地下载一个资源，我们可以用 curl:</p>
+<pre><code>&gt; curl http://pomotodo.com -I
+HTTP/1.1 302 Moved Temporarily
+Server: nginx
+Date: Fri, 01 Aug 2014 03:51:35 GMT
+Content-Type: text/html
+Content-Length: 154
+Connection: keep-alive
+Location: https://pomotodo.com/
+</code></pre><p>可以看到 <a href="http://pomotodo.com" target="_blank" rel="external">http://pomotodo.com</a> 并非像我们看到的那样显示了一个页面，而是发起了一个到 SSL 版本地址的重定向，SSL 可以保证传输的私密性，目前国内只有很小一部分有节操的网站在使用。</p>
+<h2 id="渲染"><a href="#渲染" class="headerlink" title="渲染"></a>渲染</h2><p>等到所有资源都加载完了，但是页面还是没有内容，或者乱七八糟怎么办？</p>
+<p>在正确地得到所有资源后，浏览器会执行网站提供的脚本，来对资源进行加工，以便像网站制作者期望的那样来展现页面。</p>
+<p>在这个过程中，脚本需要使用浏览器提供的 API 来进行渲染，而不同的浏览器所支持的 API 是有差异的，因此一些制作不是很精良的网站会在不同的浏览器中呈现不同的效果，甚至直接出错。</p>
+<p>在此建议大家选择一个现代而强大的浏览器，比如 Chrome, 这样可以保证浏览器支持网页所需要的功能。</p>
+</div></article><div class="article-widget"><h2 id="-">撰写评论</h2>
+<p>精子写了这么多年博客，收到的优秀评论少之又少，在这个属于 SNS 的时代也并不缺少向作者反馈的渠道。因此如果你希望撰写评论，请发邮件至 <a href="mailto:jysperm@gmail.com?subject=%E8%AF%84%E8%AE%BA%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E6%88%91%E6%97%A0%E6%B3%95%E8%AE%BF%E9%97%AE%E4%B8%80%E4%B8%AA%E7%BD%91%E7%AB%99">jysperm@gmail.com</a> 并注明文章标题，我会挑选对读者有价值的评论附加到文章末尾。</p>
+</div></div><div class="block-sidebar column one-fourth"><div class="widget text-content"><p>精子生于 1995.11.25, 21 岁，英文 ID jysperm.</p>
+<ul>
+<li>有一个 <a href="https://jybox.net">精子粉丝团</a></li>
+<li><a href="http://pidan.cat">皮蛋</a> 和 <a href="http://doufu.cat">豆腐</a> 的主人</li>
+<li>创建了 <a href="https://atom-china.org">Atom 中文社区</a></li>
+<li>坚持十余年的 <a href="https://jysperm.me">独立博客</a> 作者</li>
+<li>高中退学，就职于 <a href="https://leancloud.cn">LeanCloud</a></li>
+<li>在 <a href="https://github.com/jysperm">Github</a> 上积极参与开源社区</li>
+</ul>
+</div><div class="widget text-content"><h2>订阅推送</h2><p>通过邮件订阅精子的博客日志、产品和项目的最新动态，精子承诺每一封邮件都会认真撰写（<a href="http://us13.campaign-archive1.com/home/?u=f4c7c26ec1a5dc400a7a7373e&amp;id=e2136d8929">历史邮件</a>），有想和精子说的话也可以直接回复邮件。</p><div id="mc_embed_signup"><form id="mc-embedded-subscribe-form" action="//jybox.us13.list-manage.com/subscribe/post?u=f4c7c26ec1a5dc400a7a7373e&amp;id=e2136d8929" method="post" name="mc-embedded-subscribe-form" target="_blank" novalidate="" class="validate"><div id="mc_embed_signup_scroll" class="input-group"><input id="mce-EMAIL" type="email" value="" name="EMAIL" placeholder="email address" required="" class="form-control"/><input type="hidden" name="b_f4c7c26ec1a5dc400a7a7373e_e2136d8929" value=""/><span class="input-group-button"><div class="form-actions"><button id="mc-embedded-subscribe" type="submit" value="Subscribe" name="subscribe" class="btn">订阅</button></div></span></div></form></div></div><div class="widget tags"><ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tag/atom/">Atom</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/cpp/">C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/cpp-ppt/">C++讲稿</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/docker/">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/html/">HTML</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/hexo/">Hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/javascript/">JavaScript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/LeanCloud/">LeanCloud</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/lightphp/">LightPHP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/linux/">Linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/mongodb/">MongoDB</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/nodejs/">Node.js</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/php/">PHP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/rpvhost/">RP主机</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/rootpanel/">RootPanel</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/sicp/">SICP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/idea/">idea</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/traditional-medicine/">中医</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/internet/">互联网</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/news/">互联网资讯</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/values/">价值观</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/works/">作品</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/information-security/">信息安全</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/cold-knowledge/">冷知识</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/blockchain/">区块链</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/unit-test/">单元测试</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/blog/">博客</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/去中心化/">去中心化</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/doraemon/">哆啦A梦</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/school-weekly/">学校周记</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/exam/">学校考试</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/cryptography/">密码学</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/xiaolu/">小璐</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/summary-of-year/">年度小结</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/caipai/">彩排</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/xuxueli/">徐雪丽</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/summary/">总结</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/technology/">技术</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/tutorials/">教程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/education/">教育</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/server-side/">服务器端</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/bitcoin/">比特币</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/physical/">物理</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/live/">生活</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/live/">生活记录</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/movie/">电影</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/science/">科普</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/reading-notes/">笔记</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/story-of-sperm/">精子的故事</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/programming/">编程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/programming-language/">编程语言</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/computer-science/">计算机科学</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/network/">计算机网络</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/reading/">读书</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/shopping/">购物</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/software-engineering/">软件工程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/note/">随笔</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/zeroms/">零毫秒</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/hacker/">黑客</a></li></ul></div><div class="widget archives"><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/2017/02/">二月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2017/01/">一月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/12/">十二月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/11/">十一月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/10/">十月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/09/">九月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/08/">八月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/07/">七月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/06/">六月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/04/">四月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/02/">二月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/12/">十二月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/11/">十一月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/10/">十月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/09/">九月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/08/">八月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/07/">七月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/06/">六月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/05/">五月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/04/">四月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/03/">三月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/02/">二月 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/01/">一月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/12/">十二月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/11/">十一月 2014</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/10/">十月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/09/">九月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/08/">八月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/07/">七月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/06/">六月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/05/">五月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/04/">四月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/03/">三月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/02/">二月 2014</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/01/">一月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/12/">十二月 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/11/">十一月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/10/">十月 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/09/">九月 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/08/">八月 2013</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/07/">七月 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/06/">六月 2013</a><span class="archive-list-count">13</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/05/">五月 2013</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/04/">四月 2013</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/03/">三月 2013</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/02/">二月 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/12/">十二月 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/11/">十一月 2012</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/10/">十月 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/09/">九月 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/08/">八月 2012</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/06/">六月 2012</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/05/">五月 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/04/">四月 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/03/">三月 2012</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/02/">二月 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/01/">一月 2012</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/12/">十二月 2011</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/11/">十一月 2011</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/10/">十月 2011</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/09/">九月 2011</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/08/">八月 2011</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/07/">七月 2011</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/06/">六月 2011</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/05/">五月 2011</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/03/">三月 2011</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2010/05/">五月 2010</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2010/01/">一月 2010</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2008/01/">一月 2008</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2007/10/">十月 2007</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2007/09/">九月 2007</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2007/02/">二月 2007</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2006/08/">八月 2006</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2005/08/">八月 2005</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2005/01/">一月 2005</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2003/11/">十一月 2003</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2003/10/">十月 2003</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2003/08/">八月 2003</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2002/08/">八月 2002</a><span class="archive-list-count">1</span></li></ul></div><div class="widget text-content"><p>该博客使用基于 &nbsp;<a href="http://hexo.io">Hexo</a>&nbsp; 的 &nbsp;<a href="https://github.com/jysperm/hexo-theme-simpleblock">simpleblock</a>&nbsp; 主题。博客内容使用 &nbsp;<a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn">CC BY-NC-SA 3.0</a>&nbsp; 授权发布。最后生成于 2017-03-13.</p></div></div></div></div><script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-49193300-1', 'auto');
+ga('send', 'pageview');
+</script></body></html>

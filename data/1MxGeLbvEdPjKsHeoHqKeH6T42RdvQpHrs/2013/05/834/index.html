@@ -1,0 +1,394 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/avatars/v5.png"><link rel="alternate" type="application/rss+xml" title="王子亭的博客" href="https://jysperm.me/atom.xml"><link rel="stylesheet" href="/styles.css"><title>PHP进阶：2.PHP中的新特征(1) | 王子亭的博客</title></head><body><div class="container"><div class="columns page-header"><h1>王子亭的博客</h1></div><div class="columns"><div class="navigation"><nav class="menus-main"><a href="/" class="favicon"><img alt="王子亭的博客" src="/avatars/v5.png"></a><a href="/about">关于精子</a><a href="/resume">简历</a><a href="/links">链接</a><a href="/booklist">推荐书单</a><a href="/list">日志列表</a><a href="/ad">广告</a></nav><nav class="right menus-right"><a href="/atom.xml">RSS</a><a target="_blank" href="https://github.com/jysperm/blog">fork on Github</a></nav></div></div><div class="columns"><div class="block-body column three-fourths"><div class="article-widget">精子新上线了一个名为 &nbsp;<a target="_blank" href="https://stream.pub/">Stream</a>&nbsp; 的服务，希望提供一个基于发布、订阅模型的消息服务，提供 HTTP API 并传输结构化的 JSON 数据。</div><article><header><small class="right"><a target="_blank" href="https://github.com/jysperm/blog/blob/master/source/_posts%2F2013-05-21%23PHP%20%E8%BF%9B%E9%98%B6%EF%BC%9A%E6%96%B0%E7%89%B9%E5%BE%81.md">查看源代码</a></small><h1>PHP进阶：2.PHP中的新特征(1)</h1></header><div class="article-meta clearfix"><time class="left">2013 5 月 21 日</time><ul class="tags left"></ul><ul class="tags right"><li><a href="/tag/php/">PHP</a></li><li><a href="/tag/tutorials/">教程</a></li></ul></div><div class="markdown-body"><blockquote>
+<p>这篇文章的最新版本位于 <a href="http://segmentfault.com/a/1190000000403307" target="_blank" rel="external">PHP 自 5.2 到 5.6 中新增的功能详解</a>，该页面已停止维护 —— 2015.5.29</p>
+</blockquote>
+<p>截至目前(2014.2), PHP 的最新稳定版本是 PHP5.5, 但有差不多一半的用户仍在使用已经不在维护 [注] 的 PHP5.2, 其余的一半用户在使用 PHP5.3 [注].<br>因为 PHP 那“集百家之长”的蛋疼语法，加上社区氛围不好，很多人对新版本，新特征并无兴趣。<br>本文将会介绍自 PHP5.2 起，直至 PHP5.6 中增加的新特征。</p>
+<ul>
+<li>PHP5.2 以前：autoload, PDO 和 MySQLi, 类型约束</li>
+<li>PHP5.2：JSON 支持</li>
+<li>PHP5.3：弃用的功能，匿名函数，新增魔术方法，命名空间，后期静态绑定，Heredoc 和 Nowdoc, const, 三元运算符，Phar</li>
+<li>PHP5.4：Short Open Tag, 数组简写形式，Traits, 内置 Web 服务器，细节修改</li>
+<li>PHP5.5：yield, list() 用于 foreach, 细节修改</li>
+<li>PHP5.6: 常量增强，可变函数参数，命名空间增强</li>
+</ul>
+<p>注：已于2011年1月停止支持： <a href="http://www.php.net/eol.php" target="_blank" rel="external">http://www.php.net/eol.php</a><br>注：<a href="http://w3techs.com/technologies/details/pl-php/5/all" target="_blank" rel="external">http://w3techs.com/technologies/details/pl-php/5/all</a></p>
+<h2 id="PHP5-2以前"><a href="#PHP5-2以前" class="headerlink" title="PHP5.2以前"></a>PHP5.2以前</h2><p>(2006前)<br>顺便介绍一下 PHP5.2 已经出现但值得介绍的特征。</p>
+<h2 id="autoload"><a href="#autoload" class="headerlink" title="autoload"></a>autoload</h2><p>大家可能都知道 <code>__autoload()</code> 函数，如果定义了该函数，那么当在代码中使用一个未定义的类的时候，该函数就会被调用，你可以在该函数中加载相应的类实现文件，如：</p>
+<pre><code>function __autoload($classname)
+{
+    require_once(&quot;{$classname}.php&quot;)
+}
+</code></pre><p>但该函数已经不被建议使用，原因是一个项目中仅能有一个这样的 __autoload() 函数，因为 PHP 不允许函数重名。但当你使用一些类库的时候，难免会出现多个 autoload 函数的需要，于是 spl_autoload_register() 取而代之：</p>
+<pre><code>spl_autoload_register(function($classname)
+{
+    require_once(&quot;{$classname}.php&quot;)
+});
+</code></pre><p>spl_autoload_register() 会将一个函数注册到 autoload 函数列表中，当出现未定义的类的时候，SPL [注] 会按照注册的倒序逐个调用被注册的 autoload 函数，这意味着你可以使用 spl_autoload_register() 注册多个 autoload 函数.</p>
+<p>注：SPL: Standard PHP Library, 标准 PHP 库, 被设计用来解决一些经典问题(如数据结构).</p>
+<h2 id="PDO-和-MySQLi"><a href="#PDO-和-MySQLi" class="headerlink" title="PDO 和 MySQLi"></a>PDO 和 MySQLi</h2><p>即 PHP Data Object, PHP 数据对象，这是 PHP 的新式数据库访问接口。</p>
+<p>按照传统的风格，访问 MySQL 数据库应该是这样子：</p>
+<pre><code>// 连接到服务器，选择数据库
+$conn = mysql_connect(&quot;localhost&quot;, &quot;user&quot;, &quot;password&quot;);
+mysql_select_db(&quot;database&quot;);
+
+// 执行 SQL 查询
+$type = $_POST[&#39;type&#39;];
+$sql = &quot;SELECT * FROM `table` WHERE `type` = {$type}&quot;;
+$result = mysql_query($sql);
+
+// 打印结果
+while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+{
+    foreach($row as $k =&gt; $v)
+        print &quot;{$k}: {$v}\n&quot;;
+}
+
+// 释放结果集，关闭连接
+mysql_free_result($result);
+mysql_close($conn);
+</code></pre><p>为了能够让代码实现数据库无关，即一段代码同时适用于多种数据库(例如以上代码仅仅适用于MySQL)，PHP 官方设计了 PDO.<br>除此之外，PDO 还提供了更多功能，比如：</p>
+<ul>
+<li>面向对象风格的接口</li>
+<li>SQL预编译(prepare), 占位符语法</li>
+<li>更高的执行效率，作为官方推荐，有特别的性能优化</li>
+<li>支持大部分SQL数据库，更换数据库无需改动代码</li>
+</ul>
+<p>上面的代码用 PDO 实现将会是这样：</p>
+<pre><code>// 连接到数据库
+$conn = new PDO(&quot;mysql:host=localhost;dbname=database&quot;, &quot;user&quot;, &quot;password&quot;);
+
+// 预编译SQL, 绑定参数
+$query = $conn-&gt;prepare(&quot;SELECT * FROM `table` WHERE `type` = :type&quot;);
+$query-&gt;bindParam(&quot;type&quot;, $_POST[&#39;type&#39;]);
+
+// 执行查询并打印结果
+foreach($query-&gt;execute() as $row)
+{
+    foreach($row as $k =&gt; $v)
+        print &quot;{$k}: {$v}\n&quot;;
+}
+</code></pre><p>PDO 是官方推荐的，更为通用的数据库访问方式，如果你没有特殊需求，那么你最好学习和使用 PDO.<br>但如果你需要使用 MySQL 所特有的高级功能，那么你可能需要尝试一下 MySQLi, 因为 PDO 为了能够同时在多种数据库上使用，不会包含那些 MySQL 独有的功能。</p>
+<p>MySQLi 是 MySQL 的增强接口，同时提供面向过程和面向对象接口，也是目前推荐的 MySQL 驱动，旧的C风格 MySQL 接口将会在今后被默认关闭。<br>MySQLi 的用法和以上两段代码相比，没有太多新概念，在此不再给出示例，可以参见 PHP 官网文档 [注]。</p>
+<p>注：<a href="http://www.php.net/manual/en/mysqli.quickstart.php" target="_blank" rel="external">http://www.php.net/manual/en/mysqli.quickstart.php</a></p>
+<h3 id="类型约束"><a href="#类型约束" class="headerlink" title="类型约束"></a>类型约束</h3><p>通过类型约束可以限制参数的类型，不过这一机制并不完善，目前仅适用于类和 callable(可执行类型) 以及 array(数组), 不适用于 string 和 int.</p>
+<pre><code>// 限制第一个参数为 MyClass, 第二个参数为可执行类型，第三个参数为数组
+function MyFunction(MyClass $a, callable $b, array $c)
+{
+    // ...
+}
+</code></pre><h2 id="PHP5-2"><a href="#PHP5-2" class="headerlink" title="PHP5.2"></a>PHP5.2</h2><p>(2006-2011)</p>
+<h3 id="JSON-支持"><a href="#JSON-支持" class="headerlink" title="JSON 支持"></a>JSON 支持</h3><p>包括 json_encode(), json_decode() 等函数，JSON 算是在 Web 领域非常常用的数据交换格式，可以被 JS 直接支持，JSON 实际上是 JS 语法的一部分。<br>JSON 系列函数，可以将 PHP 中的数组结构与 JSON 字符串进行转换：</p>
+<pre><code>$array = [&quot;key&quot; =&gt; &quot;value&quot;, &quot;array&quot; =&gt; [1, 2, 3, 4]];
+$json = json_encode($array);
+echo &quot;{$json}\n&quot;;
+
+$object = json_decode($json);
+print_r($object);
+</code></pre><p>输出：</p>
+<pre><code>{&quot;key&quot;:&quot;value&quot;,&quot;array&quot;:[1,2,3,4]}
+stdClass Object
+(
+    [key] =&gt; value
+    [array] =&gt; Array
+        (
+            [0] =&gt; 1
+            [1] =&gt; 2
+            [2] =&gt; 3
+            [3] =&gt; 4
+        )
+)
+</code></pre><p>值得注意的是 json_decode() 默认会返回一个对象而非数组，如果需要返回数组需要将第二个参数设置为 true.</p>
+<h2 id="PHP5-3"><a href="#PHP5-3" class="headerlink" title="PHP5.3"></a>PHP5.3</h2><p>(2009-2012)</p>
+<p>PHP5.3 算是一个非常大的更新，新增了大量新特征，同时也做了一些不向下兼容的修改。</p>
+<h3 id="弃用的功能"><a href="#弃用的功能" class="headerlink" title="弃用的功能"></a>弃用的功能</h3><p>以下几个功能被弃用，若在配置文件中启用，则 PHP 会在运行时发出警告。</p>
+<h4 id="Register-Globals"><a href="#Register-Globals" class="headerlink" title="Register Globals"></a>Register Globals</h4><p>这是 php.ini 中的一个选项(register_globals), 开启后会将所有表单变量($_GET和$_POST)注册为全局变量.<br>看下面的例子：</p>
+<pre><code>if(isAuth())
+    $authorized = true;
+if($authorized)
+    include(&quot;page.php&quot;);
+</code></pre><p>这段代码在通过验证时，将 $authorized 设置为 true. 然后根据 $authorized 的值来决定是否显示页面.</p>
+<p>但由于并没有事先把 $authorized 初始化为 false, 当 register_globals 打开时，可能访问 /auth.php?authorized=1 来定义该变量值，绕过身份验证。</p>
+<p>该特征属于历史遗留问题，在 PHP4.2 中被默认关闭，在 PHP5.4 中被移除。</p>
+<h4 id="Magic-Quotes"><a href="#Magic-Quotes" class="headerlink" title="Magic Quotes"></a>Magic Quotes</h4><p>对应 php.ini 中的选项 magic_quotes_gpc, 这个特征同样属于历史遗留问题，已经在 PHP5.4 中移除。</p>
+<p>该特征会将所有用户输入进行转义，这看上去不错，在第一章我们提到过要对用户输入进行转义。<br>但是 PHP 并不知道哪些输入会进入 SQL , 哪些输入会进入 Shell, 哪些输入会被显示为 HTML, 所以很多时候这种转义会引起混乱。</p>
+<h4 id="Safe-Mode"><a href="#Safe-Mode" class="headerlink" title="Safe Mode"></a>Safe Mode</h4><p>很多虚拟主机提供商使用 Safe Mode 来隔离多个用户，但 Safe Mode 存在诸多问题，例如某些扩展并不按照 Safe Mode 来进行权限控制。<br>PHP官方推荐使用操作系统的机制来进行权限隔离，让Web服务器以不同的用户权限来运行PHP解释器，请参见第一章中的<code>最小权限原则</code>.</p>
+<h3 id="匿名函数"><a href="#匿名函数" class="headerlink" title="匿名函数"></a>匿名函数</h3><p>也叫闭包(Closures), 经常被用来临时性地创建一个无名函数，用于回调函数等用途。  </p>
+<pre><code>$func = function($arg)
+{
+    print $arg;
+};
+
+$func(&quot;Hello World&quot;);
+</code></pre><p>以上代码定义了一个匿名函数，并赋值给了 $func.<br>可以看到定义匿名函数依旧使用 function 关键字，只不过省略了函数名，直接是参数列表。</p>
+<p>然后我们又调用了 $func 所储存的匿名函数。</p>
+<p>匿名函数还可以用 use 关键字来捕捉外部变量：</p>
+<pre><code>function arrayPlus($array, $num)
+{
+    array_walk($array, function(&amp;$v) use($num){
+        $v += $num;
+    });
+}
+</code></pre><p>上面的代码定义了一个 arrayPlus() 函数(这不是匿名函数), 它会将一个数组($array)中的每一项，加上一个指定的数字($num).  </p>
+<p>在 arrayPlus() 的实现中，我们使用了 array_walk() 函数，它会为一个数组的每一项执行一个回调函数，即我们定义的匿名函数。<br>在匿名函数的参数列表后，我们用 use 关键字将匿名函数外的 $num 捕捉到了函数内，以便知道到底应该加上多少。</p>
+<h3 id="魔术方法：invoke-callStatic"><a href="#魔术方法：invoke-callStatic" class="headerlink" title="魔术方法：invoke(), callStatic()"></a>魔术方法：<strong>invoke(), </strong>callStatic()</h3><p>PHP 的面向对象体系中，提供了若干“魔术方法”，用于实现类似其他语言中的“重载”，如在访问不存在的属性、方法时触发某个魔术方法。</p>
+<p>随着匿名函数的加入，PHP 引入了一个新的魔术方法 __invoke().<br>该魔术方法会在将一个对象作为函数调用时被调用：</p>
+<pre><code>class A
+{
+    public function __invoke($str)
+    {
+        print &quot;A::__invoke(): {$str}&quot;;
+    }
+}
+
+$a = new A;
+$a(&quot;Hello World&quot;);
+</code></pre><p>输出毫无疑问是：</p>
+<pre><code>A::__invoke(): Hello World
+</code></pre><p>__callStatic() 则会在调用一个不存在的静态方法时被调用。</p>
+<h3 id="命名空间"><a href="#命名空间" class="headerlink" title="命名空间"></a>命名空间</h3><p>PHP的命名空间有着前无古人后无来者的无比蛋疼的语法：</p>
+<pre><code>&lt;?php
+// 命名空间的分隔符是反斜杠，该声明语句必须在文件第一行。
+// 命名空间中可以包含任意代码，但只有 **类, 函数, 常量** 受命名空间影响。
+namespace XXOO\Test;
+
+// 该类的完整限定名是 \XXOO\Test\A , 其中第一个反斜杠表示全局命名空间。
+class A{}
+
+// 你还可以在已经文件中定义第二个命名空间，接下来的代码将都位于 \Other\Test2 .
+namespace Other\Test2;
+
+// 实例化来自其他命名空间的对象：
+$a = new \XXOO\Test\A;
+class B{}
+
+// 你还可以用花括号定义第三个命名空间
+namespace Other {
+    // 实例化来自子命名空间的对象：
+    $b = new Test2\B;
+
+    // 导入来自其他命名空间的名称，并重命名，
+    // 注意只能导入类，不能用于函数和常量。
+    use \XXOO\Test\A as ClassA
+}
+</code></pre><p>更多有关命名空间的语法介绍请参见官网 [注].</p>
+<p>命名空间时常和 autoload 一同使用，用于自动加载类实现文件：</p>
+<pre><code>spl_autoload_register(
+    function ($class) {
+        spl_autoload(str_replace(&quot;\\&quot;, &quot;/&quot;, $class));
+    }
+);
+</code></pre><p>当你实例化一个类 \XXOO\Test\A 的时候，这个类的完整限定名会被传递给 autoload 函数，autoload 函数将类名中的命名空间分隔符(反斜杠)替换为斜杠，并包含对应文件。<br>这样可以实现类定义文件分级储存，按需自动加载。</p>
+<p>注：<a href="http://www.php.net/manual/zh/language.namespaces.php" target="_blank" rel="external">http://www.php.net/manual/zh/language.namespaces.php</a></p>
+<h3 id="后期静态绑定"><a href="#后期静态绑定" class="headerlink" title="后期静态绑定"></a>后期静态绑定</h3><p>PHP 的 OPP 机制，具有继承和类似虚函数的功能，例如如下的代码：</p>
+<pre><code>class A
+{
+    public function callFuncXXOO()
+    {
+        print $this-&gt;funcXXOO();
+    }
+
+    public function funcXXOO()
+    {
+        return &quot;A::funcXXOO()&quot;;
+    }
+}
+
+class B extends A
+{
+    public function funcXXOO()
+    {
+        return &quot;B::funcXXOO&quot;;
+    }
+}
+
+$b = new B;
+$b-&gt;callFuncXXOO();
+</code></pre><p>输出是：</p>
+<pre><code>B::funcXXOO
+</code></pre><p>可以看到，当在 A 中使用 <code>$this-&gt;funcXXOO()</code> 时，体现了“虚函数”的机制，实际调用的是 <code>B::funcXXOO()</code>.<br>然而如果将所有函数都改为静态函数：</p>
+<pre><code>class A
+{
+    static public function callFuncXXOO()
+    {
+        print self::funcXXOO();
+    }
+
+    static public function funcXXOO()
+    {
+        return &quot;A::funcXXOO()&quot;;
+    }
+}
+
+class B extends A
+{
+    static public function funcXXOO()
+    {
+        return &quot;B::funcXXOO&quot;;
+    }
+}
+
+$b = new B;
+$b-&gt;callFuncXXOO();
+</code></pre><p>情况就没这么乐观了，输出是：</p>
+<pre><code>A::funcXXOO()
+</code></pre><p>这是因为 self 的语义本来就是“当前类”，所以 PHP5.3 给 static 关键字赋予了一个新功能：后期静态绑定：</p>
+<pre><code>class A
+{
+    static public function callFuncXXOO()
+    {
+        print static::funcXXOO();
+    }
+
+    // ...
+}
+
+// ...
+</code></pre><p>这样就会像预期一样输出了：</p>
+<pre><code>B::funcXXOO
+</code></pre><h3 id="Heredoc-和-Nowdoc"><a href="#Heredoc-和-Nowdoc" class="headerlink" title="Heredoc 和 Nowdoc"></a>Heredoc 和 Nowdoc</h3><p>PHP5.3 对 Heredoc 以及 Nowdoc 进行了一些改进，它们都用于在 PHP 代码中嵌入大段字符串。</p>
+<p>Heredoc 的行为类似于一个双引号字符串：</p>
+<pre><code>$name = &quot;MyName&quot;;
+echo &lt;&lt;&lt; TEXT
+My name is &quot;{$name}&quot;.
+TEXT;
+</code></pre><p>Heredoc 以三个左尖括号开始，后面跟一个标识符(TEXT), 直到一个同样的顶格的标识符(不能缩进)结束。<br>就像双引号字符串一样，其中可以嵌入变量。</p>
+<p>Heredoc 还可以用于函数参数，以及类成员初始化：</p>
+<pre><code>var_dump(&lt;&lt;&lt;EOD
+Hello World
+EOD
+);
+
+class A
+{
+    const xx = &lt;&lt;&lt; EOD
+Hello World
+EOD;
+
+    public $oo = &lt;&lt;&lt; EOD
+Hello World
+EOD;
+}
+</code></pre><p>Nowdoc 的行为像一个单引号字符串，不能在其中嵌入变量，和 Heredoc 唯一的区别就是，三个左尖括号后的标识符要以单引号括起来：</p>
+<pre><code>$name = &quot;MyName&quot;;
+echo &lt;&lt;&lt; &#39;TEXT&#39;
+My name is &quot;{$name}&quot;.
+TEXT;
+</code></pre><p>输出：</p>
+<pre><code>My name is &quot;{$name}&quot;.
+</code></pre><h3 id="用-const-定义常量"><a href="#用-const-定义常量" class="headerlink" title="用 const 定义常量"></a>用 const 定义常量</h3><p>PHP5.3 起同时支持在全局命名空间和类中使用 const 定义常量。  </p>
+<p>旧式风格：</p>
+<pre><code>define(&quot;XOOO&quot;, &quot;Value&quot;);
+</code></pre><p>新式风格：</p>
+<pre><code>const XXOO = &quot;Value&quot;;
+</code></pre><p>const 形式仅适用于常量，不适用于运行时才能求值的表达式：</p>
+<pre><code>// 正确
+const XXOO = 1234;
+// 错误
+const XXOO = 2 * 617;
+</code></pre><h3 id="三元运算符简写形式"><a href="#三元运算符简写形式" class="headerlink" title="三元运算符简写形式"></a>三元运算符简写形式</h3><p>旧式风格：</p>
+<pre><code>echo $a ? $a : &quot;No Value&quot;;
+</code></pre><p>可简写成：</p>
+<pre><code>echo $a ?: &quot;No Value&quot;;
+</code></pre><p>即如果省略三元运算符的第二个部分，会默认用第一个部分代替。</p>
+<h3 id="Phar"><a href="#Phar" class="headerlink" title="Phar"></a>Phar</h3><p>Phar即PHP Archive, 起初只是Pear中的一个库而已，后来在PHP5.3被重新编写成C扩展并内置到 PHP 中。<br>Phar用来将多个 .php 脚本打包(也可以打包其他文件)成一个 .phar 的压缩文件(通常是ZIP格式)。<br>目的在于模仿 Java 的 .jar, 不对，目的是为了让发布PHP应用程序更加方便。同时还提供了数字签名验证等功能。</p>
+<p>.phar 文件可以像 .php 文件一样，被PHP引擎解释执行，同时你还可以写出这样的代码来包含(require) .phar 中的代码：</p>
+<pre><code>require(&quot;xxoo.phar&quot;);
+require(&quot;phar://xxoo.phar/xo/ox.php&quot;);
+</code></pre><p>更多信息请参见官网 [注].</p>
+<p>注：<a href="http://www.php.net/manual/zh/phar.using.intro.php" target="_blank" rel="external">http://www.php.net/manual/zh/phar.using.intro.php</a></p>
+<h2 id="PHP5-4"><a href="#PHP5-4" class="headerlink" title="PHP5.4"></a>PHP5.4</h2><p>(2012-2013)</p>
+<h2 id="Short-Open-Tag"><a href="#Short-Open-Tag" class="headerlink" title="Short Open Tag"></a>Short Open Tag</h2><p>Short Open Tag 自 PHP5.4 起总是可用。<br>在这里集中讲一下有关 PHP 起止标签的问题。即：</p>
+<pre><code>&lt;?php
+// Code...
+?&gt;
+</code></pre><p>通常就是上面的形式，除此之外还有一种简写形式：</p>
+<pre><code>&lt;? /* Code... */ ?&gt;
+</code></pre><p>还可以把</p>
+<pre><code>&lt;?php echo $xxoo;?&gt;
+</code></pre><p>简写成：</p>
+<pre><code>&lt;?= $xxoo;?&gt;
+</code></pre><p>这种简写形式被称为 Short Open Tag, 在 PHP5.3 起被默认开启，在 PHP5.4 起总是可用。<br>使用这种简写形式在 HTML 中嵌入 PHP 变量将会非常方便。</p>
+<p>对于纯 PHP 文件(如类实现文件), PHP 官方建议顶格写起始标记，同时 <strong>省略</strong> 结束标记。<br>这样可以确保整个 PHP 文件都是 PHP 代码，没有任何输出，否则当你包含该文件后，设置 Header 和 Cookie 时会遇到一些麻烦 [注].</p>
+<p>注：Header 和 Cookie 必须在输出任何内容之前被发送。</p>
+<h3 id="数组简写形式"><a href="#数组简写形式" class="headerlink" title="数组简写形式"></a>数组简写形式</h3><p>这是非常方便的一项特征！</p>
+<pre><code>// 原来的数组写法
+$arr = array(&quot;key&quot; =&gt; &quot;value&quot;, &quot;key2&quot; =&gt; &quot;value2&quot;);
+// 简写形式
+$arr = [&quot;key&quot; =&gt; &quot;value&quot;, &quot;key2&quot; =&gt; &quot;value2&quot;];
+</code></pre><h3 id="Traits"><a href="#Traits" class="headerlink" title="Traits"></a>Traits</h3><p>所谓Traits就是“构件”，是用来替代继承的一种机制。PHP中无法进行多重继承，但一个类可以包含多个Traits.</p>
+<pre><code>// Traits不能被单独实例化，只能被类所包含
+trait SayWorld
+{
+    public function sayHello()
+    {
+        echo &#39;World!&#39;;
+    }
+}
+
+class MyHelloWorld
+{
+    // 将SayWorld中的成员包含进来
+    use SayWorld;
+}
+
+$xxoo = new MyHelloWorld();
+// sayHello() 函数是来自 SayWorld 构件的
+$xxoo-&gt;sayHello();
+</code></pre><p>Traits还有很多神奇的功能，比如包含多个Traits, 解决冲突，修改访问权限，为函数设置别名等等。<br>Traits中也同样可以包含Traits. 篇幅有限不能逐个举例，详情参见官网 [注].</p>
+<p>注：<a href="http://www.php.net/manual/zh/language.oop5.traits.php" target="_blank" rel="external">http://www.php.net/manual/zh/language.oop5.traits.php</a></p>
+<h3 id="内置-Web-服务器"><a href="#内置-Web-服务器" class="headerlink" title="内置 Web 服务器"></a>内置 Web 服务器</h3><p>PHP从5.4开始内置一个轻量级的Web服务器，不支持并发，定位是用于开发和调试环境。</p>
+<p>在开发环境使用它的确非常方便。</p>
+<pre><code>php -S localhost:8000
+</code></pre><p>这样就在当前目录建立起了一个Web服务器，你可以通过 <a href="http://localhost:8000/" target="_blank" rel="external">http://localhost:8000/</a> 来访问。<br>其中localhost是监听的ip，8000是监听的端口，可以自行修改。</p>
+<p>很多应用中，都会进行URL重写，所以PHP提供了一个设置路由脚本的功能:</p>
+<pre><code>php -S localhost:8000 index.php
+</code></pre><p>这样一来，所有的请求都会由index.php来处理。</p>
+<p>你还可以使用 XDebug 来进行断点调试。</p>
+<h3 id="细节修改"><a href="#细节修改" class="headerlink" title="细节修改"></a>细节修改</h3><p>PHP5.4 新增了动态访问静态方法的方式：</p>
+<pre><code>$func = &quot;funcXXOO&quot;;
+A::{$func}();
+</code></pre><p>新增在实例化时访问类成员的特征：</p>
+<pre><code>(new MyClass)-&gt;xxoo();
+</code></pre><p>新增支持对函数返回数组的成员访问解析(这种写法在之前版本是会报错的)：</p>
+<pre><code>print func()[0];
+</code></pre><h2 id="PHP5-5"><a href="#PHP5-5" class="headerlink" title="PHP5.5"></a>PHP5.5</h2><p>(2013起)</p>
+<h3 id="yield"><a href="#yield" class="headerlink" title="yield"></a>yield</h3><p>yield关键字用于当函数需要返回一个迭代器的时候, 逐个返回值。</p>
+<pre><code>function number10()
+{
+    for($i = 1; $i &lt;= 10; $i += 1)
+        yield $i;
+}
+</code></pre><p>该函数的返回值是一个数组：</p>
+<pre><code>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+</code></pre><h3 id="list-用于-foreach"><a href="#list-用于-foreach" class="headerlink" title="list() 用于 foreach"></a>list() 用于 foreach</h3><p>可以用 list() 在 foreach 中解析嵌套的数组：</p>
+<pre><code>$array = [
+    [1, 2, 3],
+    [4, 5, 6],
+];
+
+foreach ($array as list($a, $b, $c))
+    echo &quot;{$a} {$b} {$c}\n&quot;;
+</code></pre><p>结果：</p>
+<pre><code>1 2 3
+4 5 6
+</code></pre><h3 id="细节修改-1"><a href="#细节修改-1" class="headerlink" title="细节修改"></a>细节修改</h3><p>不推荐使用 mysql 函数，推荐使用 PDO 或 MySQLi, 参见前文。<br>不再支持Windows XP.</p>
+<p>可用 <code>MyClass::class</code> 取到一个类的完整限定名(包括命名空间)。</p>
+<p>empty() 支持表达式作为参数。</p>
+<p>try-catch 结构新增 finally 块。</p>
+</div></article><div class="article-widget"><h2 id="-">撰写评论</h2>
+<p>精子写了这么多年博客，收到的优秀评论少之又少，在这个属于 SNS 的时代也并不缺少向作者反馈的渠道。因此如果你希望撰写评论，请发邮件至 <a href="mailto:jysperm@gmail.com?subject=%E8%AF%84%E8%AE%BA%EF%BC%9APHP%E8%BF%9B%E9%98%B6%EF%BC%9A2.PHP%E4%B8%AD%E7%9A%84%E6%96%B0%E7%89%B9%E5%BE%81(1">jysperm@gmail.com</a>) 并注明文章标题，我会挑选对读者有价值的评论附加到文章末尾。</p>
+</div></div><div class="block-sidebar column one-fourth"><div class="widget text-content"><p>精子生于 1995.11.25, 21 岁，英文 ID jysperm.</p>
+<ul>
+<li>有一个 <a href="https://jybox.net">精子粉丝团</a></li>
+<li><a href="http://pidan.cat">皮蛋</a> 和 <a href="http://doufu.cat">豆腐</a> 的主人</li>
+<li>创建了 <a href="https://atom-china.org">Atom 中文社区</a></li>
+<li>坚持十余年的 <a href="https://jysperm.me">独立博客</a> 作者</li>
+<li>高中退学，就职于 <a href="https://leancloud.cn">LeanCloud</a></li>
+<li>在 <a href="https://github.com/jysperm">Github</a> 上积极参与开源社区</li>
+</ul>
+</div><div class="widget text-content"><h2>订阅推送</h2><p>通过邮件订阅精子的博客日志、产品和项目的最新动态，精子承诺每一封邮件都会认真撰写（<a href="http://us13.campaign-archive1.com/home/?u=f4c7c26ec1a5dc400a7a7373e&amp;id=e2136d8929">历史邮件</a>），有想和精子说的话也可以直接回复邮件。</p><div id="mc_embed_signup"><form id="mc-embedded-subscribe-form" action="//jybox.us13.list-manage.com/subscribe/post?u=f4c7c26ec1a5dc400a7a7373e&amp;id=e2136d8929" method="post" name="mc-embedded-subscribe-form" target="_blank" novalidate="" class="validate"><div id="mc_embed_signup_scroll" class="input-group"><input id="mce-EMAIL" type="email" value="" name="EMAIL" placeholder="email address" required="" class="form-control"/><input type="hidden" name="b_f4c7c26ec1a5dc400a7a7373e_e2136d8929" value=""/><span class="input-group-button"><div class="form-actions"><button id="mc-embedded-subscribe" type="submit" value="Subscribe" name="subscribe" class="btn">订阅</button></div></span></div></form></div></div><div class="widget tags"><ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tag/atom/">Atom</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/cpp/">C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/cpp-ppt/">C++讲稿</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/docker/">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/html/">HTML</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/hexo/">Hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/javascript/">JavaScript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/LeanCloud/">LeanCloud</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/lightphp/">LightPHP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/linux/">Linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/mongodb/">MongoDB</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/nodejs/">Node.js</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/php/">PHP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/rpvhost/">RP主机</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/rootpanel/">RootPanel</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/sicp/">SICP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/idea/">idea</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/traditional-medicine/">中医</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/internet/">互联网</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/news/">互联网资讯</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/values/">价值观</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/works/">作品</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/information-security/">信息安全</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/cold-knowledge/">冷知识</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/blockchain/">区块链</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/unit-test/">单元测试</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/blog/">博客</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/去中心化/">去中心化</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/doraemon/">哆啦A梦</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/school-weekly/">学校周记</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/exam/">学校考试</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/cryptography/">密码学</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/xiaolu/">小璐</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/summary-of-year/">年度小结</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/caipai/">彩排</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/xuxueli/">徐雪丽</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/summary/">总结</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/technology/">技术</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/tutorials/">教程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/education/">教育</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/server-side/">服务器端</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/bitcoin/">比特币</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/physical/">物理</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/live/">生活</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/live/">生活记录</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/movie/">电影</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/science/">科普</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/reading-notes/">笔记</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/story-of-sperm/">精子的故事</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/programming/">编程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/programming-language/">编程语言</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/computer-science/">计算机科学</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/network/">计算机网络</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/reading/">读书</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/shopping/">购物</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/software-engineering/">软件工程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/note/">随笔</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/zeroms/">零毫秒</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/hacker/">黑客</a></li></ul></div><div class="widget archives"><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/2017/02/">二月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2017/01/">一月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/12/">十二月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/11/">十一月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/10/">十月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/09/">九月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/08/">八月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/07/">七月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/06/">六月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/04/">四月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/02/">二月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/12/">十二月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/11/">十一月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/10/">十月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/09/">九月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/08/">八月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/07/">七月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/06/">六月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/05/">五月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/04/">四月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/03/">三月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/02/">二月 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/01/">一月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/12/">十二月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/11/">十一月 2014</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/10/">十月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/09/">九月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/08/">八月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/07/">七月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/06/">六月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/05/">五月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/04/">四月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/03/">三月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/02/">二月 2014</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/01/">一月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/12/">十二月 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/11/">十一月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/10/">十月 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/09/">九月 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/08/">八月 2013</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/07/">七月 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/06/">六月 2013</a><span class="archive-list-count">13</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/05/">五月 2013</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/04/">四月 2013</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/03/">三月 2013</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/02/">二月 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/12/">十二月 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/11/">十一月 2012</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/10/">十月 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/09/">九月 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/08/">八月 2012</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/06/">六月 2012</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/05/">五月 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/04/">四月 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/03/">三月 2012</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/02/">二月 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/01/">一月 2012</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/12/">十二月 2011</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/11/">十一月 2011</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/10/">十月 2011</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/09/">九月 2011</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/08/">八月 2011</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/07/">七月 2011</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/06/">六月 2011</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/05/">五月 2011</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/03/">三月 2011</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2010/05/">五月 2010</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2010/01/">一月 2010</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2008/01/">一月 2008</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2007/10/">十月 2007</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2007/09/">九月 2007</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2007/02/">二月 2007</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2006/08/">八月 2006</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2005/08/">八月 2005</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2005/01/">一月 2005</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2003/11/">十一月 2003</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2003/10/">十月 2003</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2003/08/">八月 2003</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2002/08/">八月 2002</a><span class="archive-list-count">1</span></li></ul></div><div class="widget text-content"><p>该博客使用基于 &nbsp;<a href="http://hexo.io">Hexo</a>&nbsp; 的 &nbsp;<a href="https://github.com/jysperm/hexo-theme-simpleblock">simpleblock</a>&nbsp; 主题。博客内容使用 &nbsp;<a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn">CC BY-NC-SA 3.0</a>&nbsp; 授权发布。最后生成于 2017-03-13.</p></div></div></div></div><script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-49193300-1', 'auto');
+ga('send', 'pageview');
+</script></body></html>

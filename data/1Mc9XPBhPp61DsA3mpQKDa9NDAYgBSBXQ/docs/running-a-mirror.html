@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+ <html>
+ <head>
+   <meta charset="utf-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width="device-width," initial-scale=1">
+   <meta name="author" content="The Tor Project, Inc.">
+   <meta name="description" content="The Tor Project's free software protects your privacy online. Site blocked? Email [mailto:gettor@torproject.org] for help downloading Tor Browser.">
+   <meta name="keywords" content="tor, tor project, tor browser, avoid censorship, traffic analysis, anonymous communications, privacy, avoid surveillance, online security, anonymous online, private browsing, anonymity online, online privacy, protect privacy, private mac browser, private windows browser, private android browser, linux browser, anonymity network, tor network, onion router, onion browser">
+   <meta property="og:image" content="https://www.torproject.org/images/tor-logo.jpg">
+   <title>Tor: Running a Mirror</title>
+   <link rel="icon" href="../images/favicon.ico">
+   <link href="../css/master.min.css" rel="stylesheet">
+   <!--[if lte IE 8]>
+   <link href="../css/ie8-and-down.min.css" rel="stylesheet">
+   <![endif]-->
+   <!--[if lte IE 7]>
+   <link href="../css/ie7-and-down.min.css" rel="stylesheet">
+   <![endif]-->
+   <!--[if IE 6]>
+   <link href="../css/ie6.min.css" rel="stylesheet">
+   <![endif]-->
+</head>
+<body>
+<div id="wrap">
+  <div id="header">
+    <h1 id="logo"><a href="../index.html">Tor</a></h1>
+      <div id="nav">
+        <ul>
+        <li><a href="../index.html">Home</a></li>
+<li><a href="../about/overview.html">About Tor</a></li>
+<li><a class="active documentation running-a-mirror" href="documentation.html">Documentation</a></li>
+<li><a href="../press/press.html">Press</a></li>
+<li><a href="https://blog.torproject.org/blog/">Blog</a></li>
+<li><a href="../about/contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <!-- END NAV -->
+      <div id="calltoaction">
+        <ul>
+          <li class="donate"><a href="../download/download-easy.html">Download</a></li>
+<li class="donate"><a href="../getinvolved/volunteer.html">Volunteer</a></li>
+<li class="donate"><a href="../donate/donate-button.html">Donate</a></li>
+        </ul>
+      </div>
+      <!-- END CALLTOACTION -->
+  </div>
+  <!-- END HEADER -->
+<div id="content" class="clearfix">
+  <div id="breadcrumbs">
+    <a href="../index.html">Home &raquo; </a>
+    <a href="documentation.html">Documentation &raquo; </a>
+    <a href="running-a-mirror.html">Running a Mirror</a>
+  </div>
+  <div id="maincol">
+    <h1>Tor: Running a Mirror</h1>
+    <hr>
+    <p>Thank you for wanting to mirror the Tor website. All of
+    our mirrors are publicly listed on <a href="../getinvolved/mirrors.html">our mirrors
+    page</a>. We've included some sample commands and configuration below
+    to make the initial setup and ongoing maintenance a minimal effort.
+    The Tor website and distribution directory currently require roughly
+    30 GB of disk space, but this number can fluctuate. Expect space
+    requirements of up to 50 GB.
+    </p>
+    <a id="sysconfig"></a>
+    <h2><a class="anchor" href="running-a-mirror.html#sysconfig">Configuring your System</a></h2>
+    <p>
+    If you would like to run a mirror, it's as easy as these commands to download
+    everything a mirror should share with the world:
+    </p>
+    <tt>
+<pre>
+rsync -aq --exclude dist --delete rsync://rsync.torproject.org/website-mirror/ /var/www/mirrors/torproject.org
+rsync -aq --delete rsync://rsync.torproject.org/dist-mirror/ /var/www/mirrors/torproject.org/dist
+</pre>
+    </tt>
+    <p>
+    In order to assure we have reliable and up to date mirrors,
+    please ensure your mirror does at least the following:<br><br>
+    Updates <b>no less</b> than every six hours, but no more frequent than every
+    hour.<br><br>
+    Allows "Directory Index / Indexes" (Index viewing) of the /dist
+    directory.<br><br>
+    Have a valid contact email for administrative communications should your
+    server have issues.<br><br>
+    It is highly recommended for all mirror operators to subscribe to <A
+    href="https://lists.torproject.org/cgi-bin/mailman/listinfo/tor-mirrors">tor-mirrors mailing
+    list</A> where all mirror listing modification requests should go (ADD,
+    CHANGE, DELETE, any other requests/notifications). Also, any technical
+    assistance in setting up your mirror may be found here as well.<br><br>
+    </p>
+    <br><br>
+    <p>
+    An example cronjob to update a full mirror once every 6 hours may look like so:
+    </p>
+    <tt>
+<pre>
+0 */6 * * * rsync -aq --exclude dist --delete rsync://rsync.torproject.org/website-mirror/ /var/www/mirrors/torproject.org
+5 */6 * * * rsync -aq --delete rsync://rsync.torproject.org/dist-mirror/ /var/www/mirrors/torproject.org/dist
+</pre>
+    </tt>
+    <p>
+    For mirror operators that use Apache, we have created a sample virtual host
+    configuration file to use:
+    </p>
+    <tt>
+<pre>
+&lt;VirtualHost 10.10.10.10:80&gt;
+    ServerAdmin youremail@example.com<br>
+    ServerName  ServerNameHere<br>
+
+    DocumentRoot /var/www/mirrors/torproject.org<br>
+
+    &lt;Directory /var/www/mirrors/torproject.org/&gt;<br>
+        Options MultiViews Indexes<br>
+        DirectoryIndex index<br>
+        AllowOverride None<br>
+    &lt;/Directory&gt;<br>
+
+&lt;/VirtualHost&gt;
+</pre>
+    </tt>
+    <p>
+    For mirror operators that use nginx, we created a sample virtual host
+    configuration file to use:
+    </p>
+    <tt>
+<pre>
+server {
+    listen 10.10.10.10:80;
+    server_name your.example.com;
+
+    root /var/www/mirrors/torproject.org;
+    index index.html;
+
+    location  / {
+        autoindex on;
+    }
+}
+</pre>
+    </tt>
+    <p>
+    If you use nginx, please ensure the text/html line in
+    <tt>/etc/nginx/mime.types</tt> matches:
+    </p>
+    <tt>
+<pre>
+text/html                             en html htm shtml;
+</pre>
+    </tt>
+    <br><br>
+    Please ensure that you keep your mirror updated (we suggest automating this
+    task with something like '<tt>cron</tt>'). Our website, source code and
+    binary releases change often. An update frequency of six hours is recommended. Tor users everywhere will thank you.
+    </p>
+    <br>
+    <a id="mirrorops"></a>
+    <h2><a class="anchor" href="running-a-mirror.html#mirrorops">Joining the mirror community</a></h2>
+    <p>
+    If you are running a mirror, please subscribe to the <A
+    href="https://lists.torproject.org/cgi-bin/mailman/listinfo/tor-mirrors">tor-mirrors
+    mailing list</A>, and introduce yourself there. Help for mirror
+    support and configuration issues may also be found on the list.
+    </p>
+    <p>
+    In order to add your mirror, please send a
+    single, comma delimited line of text based on <a
+    href="https://gitweb.torproject.org/project/web/webwml.git/plain/include/tor-mirrors.csv">this
+    file</a> to the mirrors list. Your mirror will then be added manually
+    if it passes availability testing and your provided information is
+    confirmed. Some general pointers on mirrors are:
+    <ol><li> Try not to run your mirror behind a content delivery network
+    (such as Akamai, Cloudflare, Fastly, etc) as most of them block
+    access from countries where the mirror is needed the most.</li>
+    <li> Try not to redirect http to https. Many places in the world
+    cannot use https due to local or national firewalls.</li>
+    </ol>
+    </p>
+  </div>
+  <!-- END MAINCOL -->
+  <div id="sidecol">
+<div class="img-shadow">
+  <div id="sidenav">
+    <ul>
+<li><a href="documentation.html">Documentation Overview</a></li>
+<li><a href="../projects/torbrowser.html">Install Tor Browser</a></li>
+<li><a href="https://guardianproject.info/apps/orbot/">Tor on Android</a></li>
+<li><a href="../projects/projects.html">Other Tor software</a></li>
+<li class="dropdown"><a href="installguide.html">Expert guides</a></li>
+<li class="dropdown"><a href="manual.html">Manuals</a></li>
+<li><a href="https://trac.torproject.org/projects/tor/wiki/">Tor Wiki</a></li>
+<li><a href="faq.html">General FAQ</a></li>
+<li><a href="faq-abuse.html">Abuse FAQ</a></li>
+<li><a href="trademark-faq.html">Trademark FAQ</a></li>
+<li><a href="../eff/tor-legal-faq.html">Tor Legal FAQ</a></li>
+</ul>
+  </div>
+  <!-- END SIDENAV -->
+</div>
+<!-- END IMG-SHADOW -->
+<div class="img-shadow">
+  <div class="infoblock">
+    <h2 class="bulb">Tor Tip</h2>
+    <p>Tor is written for and supported by people like you. <a href="../donate/donate.html">Donate today</a>!</p>
+  </div>
+  <!-- END INFOBLOCK -->
+</div>
+<!-- END IMG-SHADOW -->
+  </div>
+  <!-- END SIDECOL -->
+</div>
+<!-- END CONTENT -->
+    <div id="footer">
+    	<div class="onion"><img src="../images/onion.jpg" alt="Tor" width="78" height="118"></div>
+      <div class="about">
+    <p>Trademark, copyright notices, and rules for use by third parties can be found
+    <a href="trademark-faq.html">in our FAQ</a>.</p>
+<!--
+        Last modified: Fri Aug 11 11:19:58 2017 +0200
+        Last compiled: Tue Aug 22 2017 15:17:21 +0000
+-->
+      </div>
+      <!-- END ABOUT -->
+      <div class="col first">
+      	<h4>About Tor</h4>
+        <ul>
+          <li><a href="../about/overview.html">What Tor Does</a></li>
+          <li><a href="../about/torusers.html">Users of Tor</a></li>
+          <li><a href="../about/corepeople.html">Core Tor People</a></li>
+          <li><a href="../about/sponsors.html">Sponsors</a></li>
+          <li><a href="../about/contact.html">Contact Us</a></li>
+        </ul>
+      </div>
+      <!-- END COL -->
+      <div class="col">
+      	<h4>Get Involved</h4>
+        <ul>
+          <li><a href="../donate/donate-foot.html">Donate</a></li>
+          <li><a href="documentation.html#MailingLists">Mailing Lists</a></li>
+          <li><a href="hidden-services.html">Hidden Services</a></li>
+          <li><a href="../getinvolved/translation.html">Translations</a></li>
+        </ul>
+      </div>
+      <!-- END COL -->
+      <div class="col">
+      	<h4>Documentation</h4>
+        <ul>
+          <li><a href="tor-manual.html">Manuals</a></li>
+          <li><a href="documentation.html">Installation Guides</a></li>
+          <li><a href="https://trac.torproject.org/projects/tor/wiki/">Tor Wiki</a></li>
+          <li><a href="faq.html">General Tor FAQ</a></li>
+        </ul>
+      </div>
+        <div class="col">
+        <a href="https://internetdefenseleague.org/"><img src="../images/InternetDefenseLeague-footer-badge.png" alt="Internet Defense League" width="125" height="125"></a>
+        </div>
+      <!-- END COL -->
+    </div>
+    <!-- END FOOTER -->
+  </div>
+  <!-- END WRAP -->
+</body>
+</html>

@@ -1,0 +1,251 @@
+
+<!DOCTYPE html>
+
+<html>
+<head>
+ <meta name="keywords" content="webtorrent,web,torrent,example,peertopeer,peer,to,coding,zite,video,bitchute,instant,magnet,link">
+ <title>WebTorrent video player with magnet url's</title>
+ <style>
+      #output video {
+        width: 100%;
+      }
+      #progressBar {
+          height: 5px;
+          width: 0%;
+          background-color: #35b44f;
+          transition: width .4s ease-in-out;
+      }
+      body.is-seed .show-seed {
+          display: inline;
+      }
+      body.is-seed .show-leech {
+          display: none;
+      }
+      .show-seed {
+          display: none;
+      }
+      #status code {
+          font-size: 90%;
+          font-weight: 700;
+          margin-left: 3px;
+          margin-right: 3px;
+          border-bottom: 1px dashed rgba(255,255,255,0.3);
+      }
+
+      .is-seed #hero {
+          background-color: #154820;
+          transition: .5s .5s background-color ease-in-out;
+      }
+      #hero {
+          background-color: #2a3749;
+      }
+      #status {
+          color: #fff;
+          font-size: 17px;
+          padding: 5px;
+      }
+      a:link, a:visited {
+          color: #30a247;
+          text-decoration: none;
+      }
+  .content { width: 453px; margin: auto; top: 50%; position: relative; margin-top: 70px; text-align: center; }
+  .button { padding: 5px 10px; background-color: #FFF85F; border-bottom: 2px solid #CDBD1E; -webkit-border-radius: 2px; -moz-border-radius: 2px; -o-border-radius: 2px; -ms-border-radius: 2px; border-radius: 2px ; text-decoration: none; -webkit-transition: all 0.5s; -moz-transition: all 0.5s; -o-transition: all 0.5s; -ms-transition: all 0.5s; transition: all 0.5s ; background-position: left center; }
+  .button:hover { background-color: #FFF400; border-bottom: 2px solid #4D4D4C; -webkit-transition: none ; -moz-transition: none ; -o-transition: none ; -ms-transition: none ; transition: none  }
+  .button:active { position: relative; top: 1px }
+  .button:focus { outline: none }
+  .dl-reco.button { background-color: #85FF5F; border-bottom: 2px solid #73CD1E; }
+  .dl-reco.button:hover { background-color: #00FF27; border-bottom: 2px solid #4C4D4C; }
+  .dl { margin-bottom: 2px; }
+  a .button, a { text-decoration: none !important; color: black; }
+  .seperator { border: 1px solid white; margin: 6px; }
+  body { background: linear-gradient(264deg, #DFDFDF, #FFF) #DFDFDF; transition: all 2s; font-family: Consolas, monospace; }
+  .ch { padding: 5px 10px; background: rgba(200, 200, 200, .5); margin: 10px 0px; transition: all 1s; }
+  .ch-ok { background: rgba(50, 200, 50, .5) }
+  .ch-warn { background: rgba(200, 200, 50, .5) }
+  .ch-nok { background: rgba(200, 50, 50, .5) }
+  h1 { font-size: 2em }
+  body { font-size: 1em }
+    </style>
+ <meta charset="utf-8">
+ <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+ <base href="" target="_top" id="base">
+ <script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+</head>
+<body>
+<div class="content">
+ <h1><a href="offline.html">Click here for offline version</a></h1>
+ <div class="seperator"></div>
+ <h2>Seed files over WebTorrent:</h2>
+	  <h3 id="logHeading" style="display: block;">Log</h3>
+	  <div class="speed"></div>
+	  <div class="log">
+
+	  </div>
+	  <p>Choose a file: <input name="upload" multiple="" type="file"></p>
+	  
+	  <script src="js/bundle.js"></script>
+ 
+	  <script>window.ga = window.ga || function () {
+	  (ga.q = ga.q || []).push(arguments)
+	  }
+	  ga.l = +new Date
+	  ga('create', 'UA-3898076-18', 'auto')
+	  ga('send', 'pageview')</script>
+	  <br/>
+	  <br/>
+	  <div class="seperator"></div>
+      <h2>Play files using the WebTorrent protocol (BitTorrent over WebRTC):</h2>	  
+	  <p>You can input magnet links from places like <br/> <br/> <a href="http://bitchute.com" class="button">BitChute</a></p>
+	  <div class="seperator"></div>
+	  <p>Copy one of these magnet url for a example to put into the prompt:</p>
+	  <input type="text" value="https://webtorrent.io/torrents/sintel.torrent" /> <input type="text" value="magnet:?xt=urn:btih:8faf980da0af003e5858e71b2fd299eb12b1879b&dn=zyfvpcI33aQ.mp4&tr=udp://explodie.org:6969&tr=udp://tracker.coppersurfer.tk:6969&tr=udp://tracker.empire-js.us:1337&tr=udp://tracker.leechers-paradise.org:6969&tr=udp://tracker.opentrackr.org:1337&tr=wss://tracker.openwebtorrent.com&as=https://seed12.bitchute.com/Styxhexenham/zyfvpcI33aQ.mp4&as=https://seed13.bitchute.com/Styxhexenham/zyfvpcI33aQ.mp4&as=https://seed14.bitchute.com/Styxhexenham/zyfvpcI33aQ.mp4&xs=https://www.bitchute.com/torrent/Styxhexenham/zyfvpcI33aQ.webtorrent" />
+	  <br/>  
+    <button id="1">Click here to input a video</button>
+
+    <div id="hero">
+      <div id="output">
+        <div id="progressBar"></div>
+        <!-- The video player will be added here -->
+      </div>
+      <!-- Statistics -->
+      <div id="status">
+        <div>
+          <span class="show-leech">Downloading </span>
+          <span class="show-seed">Seeding </span>
+          <span class="show-leech"> from </span>
+          <span class="show-seed"> to </span>
+          <code id="numPeers">0 peers</code>.
+        </div>
+        <div>
+          <code id="downloaded"></code>
+          of <code id="total"></code>
+          — <span id="remaining"></span><br/>
+          &#x2198;<code id="downloadSpeed">0 b/s</code>
+          / &#x2197;<code id="uploadSpeed">0 b/s</code>
+        </div>
+      </div>
+    </div>
+    <!-- Include the latest version of WebTorrent -->
+    <script src="https://cdn.jsdelivr.net/webtorrent/latest/webtorrent.min.js"></script>
+
+    <!-- Moment is used to show a human-readable remaining time -->
+    <script src="http://momentjs.com/downloads/moment.min.js"></script>
+	
+    <script>
+	  var client = new WebTorrent()
+
+      const button = document.querySelector('button');
+
+      button.onclick = function() {
+		let torrentId = prompt('Input a WebRTC compatible magnet url:');
+
+      // HTML elements
+      var $body = document.body
+      var $progressBar = document.querySelector('#progressBar')
+      var $numPeers = document.querySelector('#numPeers')
+      var $downloaded = document.querySelector('#downloaded')
+      var $total = document.querySelector('#total')
+      var $remaining = document.querySelector('#remaining')
+      var $uploadSpeed = document.querySelector('#uploadSpeed')
+      var $downloadSpeed = document.querySelector('#downloadSpeed')
+
+      // Download the torrent
+      client.add(torrentId, function (torrent) {
+
+        // Torrents can contain many files. Let's use the .mp4 file
+        var file = torrent.files.find(function (file) {
+          return file.name.endsWith('.mp4')
+        })
+
+        // Stream the file in the browser
+        file.appendTo('#output')
+
+        // Trigger statistics refresh
+        torrent.on('done', onDone)
+        setInterval(onProgress, 500)
+        onProgress()
+
+        // Statistics
+        function onProgress () {
+          // Peers
+          $numPeers.innerHTML = torrent.numPeers + (torrent.numPeers === 1 ? ' peer' : ' peers')
+
+          // Progress
+          var percent = Math.round(torrent.progress * 100 * 100) / 100
+          $progressBar.style.width = percent + '%'
+          $downloaded.innerHTML = prettyBytes(torrent.downloaded)
+          $total.innerHTML = prettyBytes(torrent.length)
+
+          // Remaining time
+          var remaining
+          if (torrent.done) {
+            remaining = 'Done.'
+          } else {
+            remaining = moment.duration(torrent.timeRemaining / 1000, 'seconds').humanize()
+            remaining = remaining[0].toUpperCase() + remaining.substring(1) + ' remaining.'
+          }
+          $remaining.innerHTML = remaining
+
+          // Speed rates
+          $downloadSpeed.innerHTML = prettyBytes(torrent.downloadSpeed) + '/s'
+          $uploadSpeed.innerHTML = prettyBytes(torrent.uploadSpeed) + '/s'
+        }
+        function onDone () {
+          $body.className += ' is-seed'
+          onProgress()
+        }
+      })
+
+      // Human readable bytes util
+      function prettyBytes(num) {
+        var exponent, unit, neg = num < 0, units = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+        if (neg) num = -num
+        if (num < 1) return (neg ? '-' : '') + num + ' B'
+        exponent = Math.min(Math.floor(Math.log(num) / Math.log(1000)), units.length - 1)
+        num = Number((num / Math.pow(1000, exponent)).toFixed(2))
+        unit = units[exponent]
+        return (neg ? '-' : '') + num + ' ' + unit
+      }
+	  }
+    </script>
+	<br/>
+	<div class="seperator"></div>
+<b><p>Thank you to <a href="http://webtorrent.io">WebTorrent</a> for providing the open source code!</p></b>
+	<br/>
+	<br/>
+<h2> ZeroNet stats: </h2>
+<div id="out"></div>
+
+<script type="text/javascript" src="js/ZeroFrame.js"></script>
+<br/>
+<script>
+
+class Page extends ZeroFrame {
+	setSiteInfo(site_info) {
+		var out = document.getElementById("out")
+		out.innerHTML =
+			"Page address: " + site_info.address +
+			"<br>- Peers: " + site_info.peers +
+			"<br>- Size: " + site_info.settings.size +
+			"<br>- Modified: " + (new Date(site_info.content.modified*1000))
+	}
+
+	onOpenWebsocket() {
+		this.cmd("siteInfo", [], function(site_info) {
+			page.setSiteInfo(site_info)
+		})
+	}
+
+	onRequest(cmd, message) {
+		if (cmd == "setSiteInfo")
+			this.setSiteInfo(message.params)
+		else
+			this.log("Unknown incoming message:", cmd)
+	}
+}
+page = new Page()
+
+</script>
+</div>
+</body>
+</html>

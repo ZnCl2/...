@@ -1,0 +1,90 @@
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <title>New Sites</title>
+    <meta name="description" content="0Net Site Discovery">
+
+    <link rel="stylesheet" href="assets/app.css">
+</head>
+
+<body>
+
+<div class="container">
+    <div class="row" id="header">
+        <div class="col-md-offset-2 col-md-8">
+            <h1>New 0Net Sites</h1>
+            <p class="lead">
+                A shared list of all new ZeroNet sites.
+                Publish your own, discover existing, and <mark>keep seeding</mark>.
+            </p>
+        </div>
+    </div>
+    <div class="row" id="add-site">
+        <div class="col-md-offset-2 col-md-8"  ng-controller="AddLinkCtrl">
+            <h3>Add a new site to the list:</h3>
+            <form class="form">
+                <div class="row">
+                    <div class="col-md-10">
+                        <div ng-class="{'has-error': invalidLink}">
+                            <input type="text" placeholder="http://127.0.0.1:43110/1LtvsjbtQ2tY7SCtCZzC4KhErqEK3bXD4n" class="form-control" ng-model="link">
+                            <p class="help-block" ng-show="errorMessage">{{errorMessage}}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-primary" ng-click="onAddLink()">Submit Link</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row" id="current-sites" ng-controller="DiscoverCtrl">
+        <div class="col-md-offset-2 col-md-8">
+            <h3>Few Latest Sites to Seed:</h3>
+            <ul ng-repeat="l in links">
+                <li><a href="/{{l}}" class="seedlink">http://127.0.0.1:43110/{{l}}</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="row" id="seeder">
+        <div class="col-md-offset-2 col-md-8">
+            <h2>Become a Seeder:</h2>
+        </div>
+        <div class="col-md-offset-2 col-md-8">
+            <p>If you have a spare node (like a Raspberry PI with external HDD), you can setup a ZeroNet
+                node here, which can automatically download and seen each new site published here.</p>
+        </div>
+        <div class="col-md-offset-2 col-md-8">
+            <h4>Script to download new sites:</h4>
+            <pre><code>
+#!/bin/sh
+
+ZERO_DIR=~/ZeroNet-master
+ZERO_HOST=127.0.0.1
+APP_ID=1LtvsjbtQ2tY7SCtCZzC4KhErqEK3bXD4n
+
+NEW_SITES=`sqlite3 $ZERO_DIR/data/$APP_ID/data/zerosites.db "select address from sites order by added desc limit 5;"`
+for SITE in $NEW_SITES; do
+    echo Check site $SITE
+    curl --silent http://$ZERO_HOST:43110/$SITE > /dev/null
+done
+            </code></pre>
+        </div>
+        <div class="col-md-offset-2 col-md-8">
+            <h4>Cron setup:</h4>
+            <code>
+                */5 * * * * /home/zeronode/autoseed.sh
+            </code>
+        </div>
+    </div>
+
+    <div id="footer">
+
+    </div>
+</div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

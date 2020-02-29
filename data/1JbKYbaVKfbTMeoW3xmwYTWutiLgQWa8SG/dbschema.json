@@ -1,0 +1,41 @@
+{
+    "db_name": "ZeroChat",
+    "db_file": "data/zerovidz.db",
+    "version": 2,
+    "maps": {
+        "users/.+/data.json": {
+            "to_table": [ "message" ]
+        },
+        "users/.+/content.json": {
+            "to_keyvalue": [ "cert_user_id" ]
+        },
+        "data.json":{
+            "to_table": [ "video" ]
+        }
+    },
+    "tables": {
+        "message": {
+            "cols": [
+                ["body", "TEXT"],
+                ["date_added", "INTEGER"],
+                ["video_id","INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX message_key ON message(json_id, date_added)"],
+            "schema_changed": 1
+        },
+        "video": {
+            "cols": [
+                ["video_id", "INTEGER"],
+                ["title", "TEXT"],
+                ["date_added", "INTEGER"],
+                ["src", "TEXT"],
+                ["type","TEXT"],
+                ["poster","TEXT"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX video_key ON video(json_id, video_id)"],
+            "schema_changed": 1
+        }
+    }
+}

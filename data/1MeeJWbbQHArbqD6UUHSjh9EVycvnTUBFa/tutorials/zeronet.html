@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>How to set up a detached and encrypted ZeroNet seedbox on a Raspberry Pi - Archive - MayVaneDay Studios</title>
+		<link href="../style.css" rel="stylesheet" type="text/css" media="all">
+		<meta name="author" content="Vane Vander">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</head>
+	<body class="mayvaneday">
+		<article>
+			<div class="box">
+				<p><h1>How to set up a detached and encrypted ZeroNet seedbox on a Raspberry Pi</h1></p>
+				<p>published: 2019-11-06</p>
+			</div>
+			<hr>
+			<div class="box">
+				<ol style="list-style-type: decimal">
+					<li>Format a USB stick with LUKS:</li>
+				</ol>
+				<p><code>sudo apt install gnome-disk-utility cryptsetup</code></p>
+				<p>If you're running a different distro on your server, the package name will likely vary: it's usually some form of <code>gnome-disks</code>. <code>cryptsetup</code> is required for LUKS, and for some reason, apt doesn't install it by default.</p>
+				<p>Once it installs, make sure your USB stick is plugged in, open a terminal, and run <code>sudo gnome-disks</code>.</p>
+				<p>Hit the gear icon below the partition table and choose <i>Format Partition</i>, then choose LUKS. Enter a strong password (that you'll remember, of course). In the &quot;Volume Label&quot; section, enter &quot;zeronet&quot; just to make this guide a little easier.</p>
+				<ol start="2" style="list-style-type: decimal">
+					<li>Mount the USB stick:</li>
+				</ol>
+				<p><code>sudo nano -$ /etc/fstab</code></p>
+				<p>Put the following line on the bottom:</p>
+				<p><code>/dev/disk/by-label/zeronet /mnt/zeronet auto user,nosuid,nodev,nofail,x-gvfs-show 0 0</code></p>
+				<p>Reboot your server.</p>
+				<p>If /mnt/zeronet isn't accessible by non-root users, execute the following command to fix that:</p>
+				<p><code>sudo chmod -R 777 /mnt/zeronet</code></p>
+				<p>Please note that 777 isn't the safest of permissions; if you know your username and group, a <code>chown</code> instead is safer:</p>
+				<p><code>sudo chown -R username:group /mnt/zeronet</sudo></p>
+				<ol start="3" style="list-style-type: decimal">
+					<li>Download and install the latest version of ZeroNet:</li>
+				</ol>
+				<p><code>cd /mnt/zeronet</code></p>
+				<p><code>git clone https://github.com/HelloZeroNet/ZeroNet</code></p>
+				<p><code>cd ZeroNet</code></p>
+				<p><code>sudo -H pip3 install -r requirements.txt</code></p>
+				<p>Enable the UiPassword plugin, and remove the Multiuser plugin to avoid future issues:</p>
+				<p><code>mv plugins/disabled-UiPassword plugins/UiPassword</code></p>
+				<p><code>rm -rf plugins/disabled-Multiuser</code></p>
+				<p>Then configure it to be accessible over the network:</p>
+				<p><code>nano -$ zeronet.conf</code></p>
+				<p>Paste the following into the text editor:</p>
+				<pre>
+				[global]
+				fileserver_port = 27328
+				ui_ip = your.local.ip.here
+				ui_password = set_a_password_here
+				</pre>
+				<ol start="4" style="list-style-type: decimal">
+					<li>Enable Tor access:</li>
+				</ol>
+				<p><code>sudo apt install tor</code></p>
+				<p><code>sudo nano -$ /etc/tor/torrc</code></p>
+				<p>Uncomment the lines that say <code>ControlPort 9051</code> and <code>CookieAuthentication 1</code>.</p>
+				<p>Save and exit the file, then restart the Tor service:</p>
+				<p><code>sudo systemctl restart tor</code></p>
+				<p>Then give your user permission to read the Tor cookie you just set up:</p>
+				<p><code>sudo usermod -a -G debian-tor YourUsername</code></p>
+				<p>Login and logout of your user, or just reboot the server.</p>
+				<ol start="5" style="list-style-type: decimal">
+					<li>Make a systemd service:</li>
+				</ol>
+				<p><code>sudo nano -$ /etc/systemd/system/zeronet.service</code></p>
+				<p>Paste the following:</p>
+				<pre>
+				[Unit]
+				Description=zeronet
+				After=syslog.target
+				After=network.target
+
+				[Service]
+				Type=simple
+				User=YourUsername
+				WorkingDirectory=/mnt/zeronet/ZeroNet
+				ExecStart=/usr/bin/python3 /mnt/zeronet/ZeroNet/zeronet.py
+				Environment=USER=YourUsername
+				Restart=always
+				StandardError=syslog
+				CPUQuota=80%
+
+				[Install]
+				WantedBy=multi-user.target
+				</pre>
+				<p>Then reload systemd to install the new service:</p>
+				<p><code>sudo systemctl daemon-reload</code></p>
+				<ol start="6" style="list-style-type: decimal">
+					<li>Start ZeroNet:</li>
+				</ol>
+				<p><code>sudo systemctl start zeronet</code></p>
+			</div>
+			<hr>
+			<div class="box">
+				<p align=right>CC BY-NC-SA 4.0 &copy; Vane Vander</p>
+			</div>
+		</article>
+	</body>
+</html>

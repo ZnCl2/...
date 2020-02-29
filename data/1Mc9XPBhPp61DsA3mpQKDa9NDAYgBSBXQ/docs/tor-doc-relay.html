@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+ <html>
+ <head>
+   <meta charset="utf-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width="device-width," initial-scale=1">
+   <meta name="author" content="The Tor Project, Inc.">
+   <meta name="description" content="The Tor Project's free software protects your privacy online. Site blocked? Email [mailto:gettor@torproject.org] for help downloading Tor Browser.">
+   <meta name="keywords" content="tor, tor project, tor browser, avoid censorship, traffic analysis, anonymous communications, privacy, avoid surveillance, online security, anonymous online, private browsing, anonymity online, online privacy, protect privacy, private mac browser, private windows browser, private android browser, linux browser, anonymity network, tor network, onion router, onion browser">
+   <meta property="og:image" content="https://www.torproject.org/images/tor-logo.jpg">
+   <title>Tor Project: Relay Configuration Instructions</title>
+   <link rel="icon" href="../images/favicon.ico">
+   <link href="../css/master.min.css" rel="stylesheet">
+   <!--[if lte IE 8]>
+   <link href="../css/ie8-and-down.min.css" rel="stylesheet">
+   <![endif]-->
+   <!--[if lte IE 7]>
+   <link href="../css/ie7-and-down.min.css" rel="stylesheet">
+   <![endif]-->
+   <!--[if IE 6]>
+   <link href="../css/ie6.min.css" rel="stylesheet">
+   <![endif]-->
+</head>
+<body>
+<div id="wrap">
+  <div id="header">
+    <h1 id="logo"><a href="../index.html">Tor</a></h1>
+      <div id="nav">
+        <ul>
+        <li><a href="../index.html">Home</a></li>
+<li><a href="../about/overview.html">About Tor</a></li>
+<li><a class="active documentation tor-doc-relay" href="documentation.html">Documentation</a></li>
+<li><a href="../press/press.html">Press</a></li>
+<li><a href="https://blog.torproject.org/blog/">Blog</a></li>
+<li><a href="../about/contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <!-- END NAV -->
+      <div id="calltoaction">
+        <ul>
+          <li class="donate"><a href="../download/download-easy.html">Download</a></li>
+<li class="donate"><a href="../getinvolved/volunteer.html">Volunteer</a></li>
+<li class="donate"><a href="../donate/donate-button.html">Donate</a></li>
+        </ul>
+      </div>
+      <!-- END CALLTOACTION -->
+  </div>
+  <!-- END HEADER -->
+<div id="content" class="clearfix">
+  <div id="breadcrumbs">
+    <a href="../index.html">Home &raquo; </a>
+    <a href="documentation.html">Documentation &raquo; </a>
+    <a href="tor-doc-relay.html">Configure Tor Relay</a>
+  </div>
+  <div id="maincol">
+    <h1>Configuring a Tor relay</h1>
+    <hr>
+    <p>
+    The Tor network relies on volunteers to donate bandwidth. The more
+    people who run relays, the faster the Tor network will be. If you have
+    at least 2 megabits/s for both upload and download, please help out
+    Tor by configuring your Tor to be a relay too.
+    </p>
+    <p>You can run a Tor relay on pretty much any operating system. Tor relays
+    work best on current distributions of Linux, FreeBSD, NetBSD, and
+    Windows Server.
+    </p>
+    <p>
+    The best approach for most users is to <a href="tor-relay-debian.html">run your relay on Debian or Ubuntu</a> using
+    the system Tor package &mdash; the deb takes care of running Tor as a
+    separate user, making sure it has enough file descriptors available,
+    starting it at boot, and so on. Tor relays also run nicely on other
+    Linux flavors, and on FreeBSD and NetBSD for those who are comfortable
+    with those operating systems.
+    </p>
+    <hr>
+    <a id="torrc"></a>
+    <h2><a class="anchor" href="tor-doc-relay.html#torrc">Configure Tor by editing the torrc file</a></h2>
+    <br>
+    <p>
+    Tor's
+    configuration file is named 'torrc'.</p>
+    <p>Locate the file on your system, open it with a text editor and add the
+    following lines:</p>
+    <pre>
+    ORPort 443
+    Exitpolicy reject *:*
+    Nickname ididntedittheconfig
+    ContactInfo human@...
+    </pre>
+    <p>If you want to be a bridge, read about the BridgeRelay and
+    ServerTransportPlugin values <a
+    href="pluggable-transports.html">on
+    this page</a>.</p>
+    <p>Tor will use all your bandwidth if you don't set limits for it. Some
+    options are described in <a href="faq.html#LimitTotalBandwidth">these</a>
+    <a href="faq.html#BandwidthShaping">FAQ entries</a>.</p>
+    <p>See the <a href="https://gitweb.torproject.org/tor.git/plain/src/config/torrc.sample.in">sample
+    torrc file</a> and the <a
+    href="tor-manual.html">man
+    page</a> for other Tor options you may want to set.</p>
+    <hr>
+    <a id="check"></a>
+    <h2><a class="anchor" href="tor-doc-relay.html#check">Make sure your relay is reachable</a></h2>
+    <br>
+    <p>If you are using a firewall, open a hole in your firewall
+    so incoming connections can reach the ports you configured
+    (ORPort, plus DirPort if you enabled it). If you have a
+    hardware firewall (Linksys box, cable modem, etc) you might find <a
+    href="http://portforward.com/">portforward.com</a> useful. Also, make sure you
+    allow all <em>outgoing</em> connections too, so your relay can reach the
+    other Tor relays.
+    </p>
+    <p>Restart your relay. If it <a
+    href="faq.html#Logs">logs
+    any warnings</a>, address them.
+    </p>
+    <p>As soon as your relay manages to connect to the network, it will
+    try to determine whether the ports you configured are reachable from
+    the outside. This step is usually fast, but may take up to 20
+    minutes. Look for a <a href="faq.html#Logs">log entry</a> like
+    <pre>Self-testing indicates your ORPort is reachable from the outside. Excellent.</pre>
+    If you don't see this message, it means that your relay is not reachable
+    from the outside &mdash; you should re-check your firewalls, check that it's
+    testing the IP and port you think it should be testing, etc.
+    </p>
+    <p>When your relay has decided that it's reachable, it will upload a "server
+    descriptor" to the directories, to let clients know
+    what address, ports, keys, etc your relay is using. You can search <a
+    href="https://atlas.torproject.org/">Atlas</a> or <a
+    href="https://globe.torproject.org/">Globe</a> for
+    the nickname you configured, to make sure it's there. You may need to wait
+    up to one hour for the directories to publish the new server information.</p>
+    <hr>
+    <a id="after"></a>
+    <h2><a class="anchor" href="tor-doc-relay.html#after">Once your relay is working</a></h2>
+    <br>
+    <p>To learn more about the proper care and feeding for your relay,
+    see the advice on the <a href="tor-relay-debian.html#after">Tor
+    relay on Debian/Ubuntu</a> page.
+    </p>
+    <hr>
+    <p>If you have suggestions for improving this document, please <a
+    href="../about/contact.html">send them to us</a>. Thanks
+    for helping to make the Tor network grow!</p>
+  </div>
+  <!-- END MAINCOL -->
+  <div id="sidecol">
+<div class="img-shadow">
+  <div id="sidenav">
+    <ul>
+<li><a href="documentation.html">Documentation Overview</a></li>
+<li><a href="../projects/torbrowser.html">Install Tor Browser</a></li>
+<li><a href="https://guardianproject.info/apps/orbot/">Tor on Android</a></li>
+<li><a href="../projects/projects.html">Other Tor software</a></li>
+<li class="dropdown"><a class="active" href="installguide.html">Expert guides</a></li>
+<li>
+<ul>
+<li><a href="debian.html">Installing Tor on Debian/Ubuntu</a></li>
+<li><a href="rpms.html">Installing Tor on Fedora/CentOS</a></li>
+<li><a href="tor-doc-unix.html">Installing Tor Source</a></li>
+<li><a href="tor-doc-osx.html">MacPorts</a></li>
+<li><a href="tor-relay-debian.html">Configuring a Relay manually</a></li>
+<li class="active"><a class="active" href="tor-doc-relay.html">Configuring a Relay graphically</a></li>
+<li><a href="tor-hidden-service.html">Configuring a Hidden Service</a></li>
+<li><a href="bridges.html">Understanding bridges</a></li>
+<li><a href="verifying-signatures.html">Verify package signatures</a></li>
+</ul>
+</li>
+<li class="dropdown"><a href="manual.html">Manuals</a></li>
+<li><a href="https://trac.torproject.org/projects/tor/wiki/">Tor Wiki</a></li>
+<li><a href="faq.html">General FAQ</a></li>
+<li><a href="faq-abuse.html">Abuse FAQ</a></li>
+<li><a href="trademark-faq.html">Trademark FAQ</a></li>
+<li><a href="../eff/tor-legal-faq.html">Tor Legal FAQ</a></li>
+</ul>
+  </div>
+  <!-- END SIDENAV -->
+</div>
+<!-- END IMG-SHADOW -->
+<div class="img-shadow">
+  <div class="infoblock">
+    <h2 class="bulb">Tor Tip</h2>
+    <p>Tor is written for and supported by people like you. <a href="../donate/donate.html">Donate today</a>!</p>
+  </div>
+  <!-- END INFOBLOCK -->
+</div>
+<!-- END IMG-SHADOW -->
+  </div>
+  <!-- END SIDECOL -->
+</div>
+<!-- END CONTENT -->
+    <div id="footer">
+    	<div class="onion"><img src="../images/onion.jpg" alt="Tor" width="78" height="118"></div>
+      <div class="about">
+    <p>Trademark, copyright notices, and rules for use by third parties can be found
+    <a href="trademark-faq.html">in our FAQ</a>.</p>
+<!--
+        Last modified: Fri Aug 11 11:19:58 2017 +0200
+        Last compiled: Tue Aug 22 2017 15:17:33 +0000
+-->
+      </div>
+      <!-- END ABOUT -->
+      <div class="col first">
+      	<h4>About Tor</h4>
+        <ul>
+          <li><a href="../about/overview.html">What Tor Does</a></li>
+          <li><a href="../about/torusers.html">Users of Tor</a></li>
+          <li><a href="../about/corepeople.html">Core Tor People</a></li>
+          <li><a href="../about/sponsors.html">Sponsors</a></li>
+          <li><a href="../about/contact.html">Contact Us</a></li>
+        </ul>
+      </div>
+      <!-- END COL -->
+      <div class="col">
+      	<h4>Get Involved</h4>
+        <ul>
+          <li><a href="../donate/donate-foot.html">Donate</a></li>
+          <li><a href="documentation.html#MailingLists">Mailing Lists</a></li>
+          <li><a href="hidden-services.html">Hidden Services</a></li>
+          <li><a href="../getinvolved/translation.html">Translations</a></li>
+        </ul>
+      </div>
+      <!-- END COL -->
+      <div class="col">
+      	<h4>Documentation</h4>
+        <ul>
+          <li><a href="tor-manual.html">Manuals</a></li>
+          <li><a href="documentation.html">Installation Guides</a></li>
+          <li><a href="https://trac.torproject.org/projects/tor/wiki/">Tor Wiki</a></li>
+          <li><a href="faq.html">General Tor FAQ</a></li>
+        </ul>
+      </div>
+        <div class="col">
+        <a href="https://internetdefenseleague.org/"><img src="../images/InternetDefenseLeague-footer-badge.png" alt="Internet Defense League" width="125" height="125"></a>
+        </div>
+      <!-- END COL -->
+    </div>
+    <!-- END FOOTER -->
+  </div>
+  <!-- END WRAP -->
+</body>
+</html>

@@ -1,0 +1,115 @@
+<html>
+ <head>
+  <title>ZOMG TEH BLOG!</title>
+    <meta charset="utf-8" />
+ </head>
+ <body>
+<h1>Мастер-мастер репликация длля PostgreSQL</h1>
+<table width=80% align=center ><td>
+
+<pre>Инструкция актуальна для 9.4, в 9.5 обещают поддержку “из коробки”.</pre>
+
+<li>Репликация настраивается для каждой базы отдельно, инстанции могут быть разными.
+<li>Работы с конфигами и базами проводить от пользователя postgres.
+
+
+<h4>Установка патченных бинарников</h4>
+
+<ol>
+
+
+        <li>Установка репозитория:
+<br>
+    <code> yum install http://packages.2ndquadrant.com/postgresql-bdr94-2ndquadrant/yum-repo-rpms/postgresql-bdr94-2ndquadrant-redhat-1.0-2.noarch.rpm</code> <br>
+</li>
+
+        <li>   Установка собственно бинарников
+<br>
+<code>     yum install postgresql-bdr94-bdr</code>
+<br>
+    Настоятельно рекомендую добавить в PATH (системный или пользователя postgres) путь /usr/pgsql-9.4/bin</li>
+</ol>
+
+<h2>Подготовка инстанции</h2>
+
+
+<pre>Выполнять на всех серверах, участвующих в реплике.</pre>
+
+<h3>    Инициализация</h3>
+
+<code>    initdb -D /opt/PostgreSQL/9.4-BDR/data -A trust -U postgres -E UTF-8</code>
+
+<h3>Правка конфига:</h3>
+
+
+        <h4>postgresql.conf</h4>
+
+
+
+            <code>shared_preload_libraries = 'bdr' <br>
+            wal_level = 'logical' <br>
+            track_commit_timestamp = on <br>
+            max_connections = 100 <br>
+            max_wal_senders = 10 <br>
+            max_replication_slots = 10 <br>
+            max_worker_processes = 10 </code> <br>
+
+        Одна БД запускает 3 worker-процесса. Исходя из этого, рассчитываем и не забываем про остальные 
+        процессы (wal_writer, autovacuum, stat_collector и т.д.) <br>
+
+
+       <h4>pg_hba.conf </h4>
+
+    Добавить на репликацию local и основные айпишники текущего сервера и сервера-репликанта
+ 
+<h4>   Проверить корректность запуском инстанции:</h4>
+
+<code>
+    postgres -D /opt/PostgreSQL/9.4-BDR/data/
+</code>
+
+Если всё стартует, идём далее.
+
+<h3>Перевод существующей базы на BDR</h3>
+
+<h4>    Сделать бекап нужной базы</h4>
+
+<code>
+
+    pg_dump  -p порт_старой_инстанции имябазы -C -f /куданадо/имябазы.dump
+</code>
+
+ <h4>   Восстановить</h4>
+
+<code>
+    psql -p порт_первой_инстанции < /куданадо/имябазы.dump
+</code>
+    <p>Далее производим изменения в базе, развёрнутой на новой инстанции:
+<br>
+     <code>    psql -p порт_первой_инстанции имябазы</code>
+</p> 
+       <p> Для КАЖДОЙ инстанции:
+<br>
+<code>         CREATE EXTENSION btree_gist;
+         CREATE EXTENSION bdr;</code>
+<br>
+       <p> Для ПЕРВОЙ разворачиваемой инстанции:
+<br>
+<code>        SELECT bdr.bdr_group_create( local_node_name := 'mega_node_pysh_pysh1',  \
+        node_external_dsn := 'host=ip_первого_сервера port=порт_первой_инстанции dbname=имябазы');</code>
+</p>
+    <p>    Для ВТОРОЙ:
+<br> <code>
+        SELECT bdr.bdr_group_join( local_node_name := 'mega_node_pysh_pysh_100500',\
+         node_external_dsn := 'host=ip_второго_сервера port=порт_второй_инстанции dbname=имябазы', \
+        join_using_dsn:='host=ip_первого_сервера port=порт_первой_инстанции dbname=имябазы');
+</code>
+</p>
+       <p> Для КАЖДОЙ разворачиваемой инстанции:
+<br> <code>
+        SELECT bdr.bdr_node_join_wait_for_ready();
+</code> 
+        (Должно выдать 1)
+</p>
+После указанных действий все изменения в скопированную базу приезжают в обоих направлениях.
+</body></html>

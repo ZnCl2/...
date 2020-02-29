@@ -1,0 +1,135 @@
+
+<!DOCTYPE html>
+
+<html>
+<head>
+ <title>Perfect ZeroError</title>
+ <meta charset="utf-8">
+ <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+ <base href="" target="_top" id="base">
+ <script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+
+ <script src="js/ZeroFrame.js"></script>
+ <script src="js/mavo.js"></script>
+ <script src="js/database_wrapper.js"></script>
+ <script src="js/mavo-global-zeronet.js"></script>
+ <script src="js/mavo-localstorage-zeronet.js"></script>
+ <link rel="stylesheet" href="css/mavo.css">
+ <link rel="stylesheet" href="css/style.css">
+ <link rel="stylesheet" href="css/bootstrap.css">
+ <link rel="stylesheet" href="css/simple-sidebar.css">
+ <link rel="stylesheet" href="css/font-awesome.css">
+</head>
+<body>
+  <div id="wrapper">
+    <div id="sidebar-wrapper">
+      <ul class="sidebar-nav">
+	<li class="sidebar-brand"><h3>ZeroError<h3><hr/></li>
+	<li>
+	  <main mv-app="parameters" mv-mode="edit" mv-storage="none">
+	    <div class="d-flex flex-row justify-content-between">
+	      <div class="mv-bar"></div>
+	    </div>
+	    <div class="container">
+	      <div class="input-group input-group-sm btn-toolbar" role="toolbar">
+		<input type="text" role="group" class="form-control" property="search" placeholder="Search string" aria-describedby="addon-search">
+		<button role="group" class="btn btn-group input-group-addon" id="addon-search"><i class="fa fa-comment-o" aria-hidden="true"></i></button>
+	      </div>
+	    </div>
+	  </main>
+	  <hr/>
+	</li>
+	<li>
+	  <main mv-app="settings" mv-mode="edit">
+	    <div class="d-flex flex-row justify-content-between">
+	      <div><h4>Settings</h4></div>
+	      <div class="mv-bar mv-ui"></div>
+	    </div>
+	    <div>Topics to show: <span mv-default="10" property="topic_limit"></span></div>
+	    <!-- To add later:
+		 * Comment order
+	      -->
+	  </main>
+	  <hr/>
+	</li>
+	<li class="navbar-footer">
+	  ZeroError by <a target="_blank" href="/Mail.ZeroNetwork.bit/?to=trenta3">trenta3</a>.
+	</li>
+      </ul>
+    </div>
+
+    <div id="page-content-wrapper">
+      <div class="container-fluid">
+	<main mv-app="talk"
+	      mv-storage="zn_global"
+	      mv-zeronet-accepted-domain="zeroid.bit"
+	      mv-data-write="data/users/{auth_address}/data.json"
+	      mv-data-only-query="topic"
+	      mv-data-query-topic="SELECT * FROM topic LEFT JOIN json USING (json_id) ORDER BY topic_timestamp DESC LIMIT [settings.topic_limit];"
+	      mv-data-query-comment="SELECT *
+				     FROM comment
+				     LEFT JOIN json USING (json_id)
+				     WHERE comment.topic_id IN (SELECT topic_id FROM topic ORDER BY topic_timestamp DESC LIMIT [settings.topic_limit]) 
+				     ORDER BY comment_timestamp;"
+	      >
+	  <div id="main-bar" class="mv-bar mv-ui" style="background: blue;">
+	    <button href="#menu-toggle" id="menu-toggle">Toggle Menu</button>
+	  </div>
+	  
+	  <header>
+	    <h1>Talk</h1>
+	  </header>
+	  <div class="d-flex flex-column" mv-mode="edit">
+	    <button class="btn btn-default mv-add-topic"><i class="fa fa-plus" aria-hidden="true"></i>&nbsp; New topic</button>
+	    <div class="div-topic d-flex flex-column" mv-multiple="topic" mv-order="desc" mv-permissions="[if(cert_user_id = window.user.name, 'save edit delete add')]" mv-initial-items="0">
+	      <span class="topic-directory" property="directory" mv-mode="read"></span>
+	      <span class="topic-id" property="id" mv-default="[random(0, 100000)]"></span>
+	      <span class="topic-timestamp" property="topic_timestamp" mv-mode="read" mv-default="[round($now / 1000, 0)]"></span>
+	      <div class="topic-content">
+		<div class="row">
+		  <span class="topic-title text-align-left col-md-12" property="title" mv-default="(Topic Title)" mv-mode="[if(cert_user_id = window.user.name, edit, read)]" mv-permissions="[if(cert_user_id = window.user.name, save edit delete)]"></span>
+		</div>
+		<div class="row">
+		  <span class="topic-body text-justify col-md-12" property="body" mv-default="(Topic Body)" mv-mode="[if(cert_user_id = window.user.name, edit, read)]" mv-permissions="[if(cert_user_id = window.user.name, save edit delete)]"></span><br/>
+		</div>
+	      </div>
+	      <div class="topic-intestation row align-center text-small">
+		<div class="col-md-4">Posted by <span class="topic-user" property="cert_user_id" mv-mode="read" mv-default="[window.user.name]"></span></div>
+		<div class="col-md-4">
+		  <span class="metric"><i class="fa fa-comment-o" aria-hidden="true"></i>&nbsp; [count(comment)]</span>
+		  <span class="metric"><i class="fa fa-thumbs-o-up" aria-hidden="true"></i>&nbsp; 0</span>
+		</div>
+		<div class="col-md-4"><i class="fa fa-clock-o" aria-hidden="true"></i>&nbsp; 1 hour ago</div>
+	      </div>
+	      
+	      <div class="d-flex flex-column topic-comments">
+		<button class="btn btn-default mv-add-comment"><i class="fa fa-plus" aria-hidden="true"></i>&nbsp; New comment</button>
+		<div class="div-comment" mv-multiple="comment" mv-order="desc" mv-permissions="[if(cert_user_id = window.user.name, 'save edit delete add')]" mv-initial-items="0">
+		  <span class="comment-directory" property="directory" mv-mode="read"></span>
+		  <span class="comment-id" property="id" mv-mode="read" mv-default="[random(0, 100000)]"></span>
+		  <span class="comment-timestamp" property="comment_timestamp" mv-mode="read" mv-default="[round($now / 1000, 0)]"></span>
+		  <div class="row">
+		    <span class="comment-user col-md-3" property="cert_user_id" mv-mode="read" mv-default="[window.user.name]"></span>
+		    <span class="comment-body text-justify col-md-9" property="body" mv-default="(Comment Content)" mv-mode="[if(cert_user_id = window.user.name, edit, read)]" mv-permissions="[if(cert_user_id = window.user.name, save edit delete)]"></span><br/>
+		  </div>
+		</div>
+	      </div>
+	    </div>
+	  </div>
+	</main>
+      </div>
+    </div>
+  </div>
+  
+  <script src="js/dragula.min.js"></script>
+  <script src="js/jquery-slim.js"></script>
+  <script src="js/popper.js"></script>
+  <script src="js/bootstrap.js"></script>
+  <script>
+    $("#menu-toggle").click(function(e) {
+        e.preventDefault();
+        $("#wrapper").toggleClass("toggled");
+    });
+  </script>
+</body>
+</html>

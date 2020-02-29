@@ -1,0 +1,74 @@
+
+<div class="form-new clearfix">
+
+<!-- Page: Main -->
+<div class="center topics-list">
+ <form id="form">
+    <p>
+        Instance: <input id="server" type="text" value="{{ server }}">
+    </p>
+    <p>
+        <label><input id="local" type="checkbox"> Local</label>
+    </p>
+    <p>
+        <button>Fetch!</button>
+    </p>
+  </form>
+
+<div id="result"></div>
+</div>
+
+<script>
+// Mastodon public
+$("#form").on("submit", function() {
+  var requestUrl = document.getElementById("server").value;
+  if (!requestUrl) return;
+
+  if (requestUrl.indexOf("://") < 0) {}
+    requestUrl = "https://" + requestUrl;
+
+  if (requestUrl[requestUrl.length - 1] != "/")
+    requestUrl += "/";
+
+  requestUrl += "api/v1/timelines/public";
+
+  if (document.getElementById("local").checked)
+    requestUrl += "?local=true";
+
+  var $result = $("#result");
+  $result.html("取得中");
+
+  $.getJSON(requestUrl)
+    .done(function(data) {
+        $result.html("");
+        data.forEach(function(toot) {
+            var $user = $("<div />");
+            var $userLink = $("<a />").attr("href", toot.account.url);
+            $userLink.append($("<img width='40' />").attr("src", toot.account.avatar));
+            $userLink.append($("<span />").text(toot.account.username));
+            $user.append($userLink);
+
+            var $content = $("<div />").html(toot.content);
+
+            var $footer = $("<div />");
+            var $createdAt = $("<a />")
+                .attr("href", toot.url)
+                .text(toot.created_at);
+            $footer.append($createdAt);
+
+            var $toot = $("<div />");
+            $toot
+                .append($("<hr />"))
+                .append($user)
+                .append($content)
+                .append($footer);
+            $result.append($toot);
+        });
+    })
+    .fail(function() {
+        $result.html("取得できませんでした");
+    });
+
+  return false;
+});
+</script>

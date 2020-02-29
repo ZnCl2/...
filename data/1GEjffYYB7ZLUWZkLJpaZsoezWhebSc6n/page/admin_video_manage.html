@@ -1,0 +1,109 @@
+<section class="content-header">
+      <h1>
+        视频管理
+      <small>
+          <a href="addvideo">添加视频</a>
+      </small>
+      </h1>
+      <script>
+       $('a[href="addvideo"]').on('click', function(e) {
+           e.preventDefault();
+           $(".content-wrapper").empty();
+           Page.getfile("page/admin_add_video.html", function(data) {
+               $(".content-wrapper").append(data);
+           });
+       });
+      </script>
+    </section>
+
+    <!-- Main content -->
+    <section id="content" class="content">
+<div class="box">
+            <div class="box-header">
+              <h3 class="box-title">分类列表</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+              <table id="videolist" class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>操作</th>
+                  <th>ID</th>
+                  <th>名称</th>
+                  <th>子标题</th>
+                  <th>分类</th>
+                  <th>可用</th>
+                  <th>创建时间</th>
+                  <th>更新时间</th>
+                </tr>
+                </thead>
+                <tbody>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th>操作</th>
+                        <th>ID</th>
+                        <th>名称</th>
+                        <th>子标题</th>
+                        <th>分类</th>
+                        <th>可用</th>
+                        <th>创建时间</th>
+                        <th>更新时间</th>
+                </tr>
+                </tfoot>
+              </table>
+            </div>
+            <!-- /.box-body -->
+          </div>
+    </section>
+    <!-- /.content -->
+  <!-- /.content-wrapper -->
+  <script>
+   console.log(window);
+   var $table = $('#videolist').DataTable({
+       processing:true,
+       serverSide:true,
+       ajax: function (data, callback, settings){
+           window.admin.getvideo(function(video) {
+               callback({data:video});
+           });
+       },
+       "columns":[
+           {"data":null, render: function(data, type, row){
+               return '<a href="modify">' + '修改</a>'+ '|' + '<a href="del">' + '删除</a>';
+           }},
+           {"data":"video_id"},
+           {"data":"title"},
+           {"data":"subtitle"},
+           {"data":null},
+           {"data":null},
+           {"data":"create_at", render: function(data, type, row){return formattimestamp(data);}},
+           {"data":"update_at", render: function(data, type, row){return formattimestamp(data);}}
+           //{"data":"json_id"}
+       ]
+   });
+   $("#videolist_tbody").on('click', 'a', function(e) {
+       e.preventDefault();
+       var attr = $(this).attr('href');
+       var tr = this.closest('tr');
+       var d = $table.row(tr).data();
+       switch(attr) {
+           case "modify":
+               $(".content-wrapper").empty();
+               Page.getfile("page/admin_modify_video.html", function(data) {
+                   $(".content-wrapper").append(data);
+                   modify_video(d);
+               });
+               break;
+           case "del":
+               window.admin.delvideo(d, function(res) {
+                   if (res != "ok") {
+                       alert("error"+res);
+                   } else {
+                       $("#video-manage").trigger('click');
+                   }
+               });
+               break;
+       }
+   });
+  </script>

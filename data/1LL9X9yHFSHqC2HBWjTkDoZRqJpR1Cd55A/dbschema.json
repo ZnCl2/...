@@ -1,0 +1,60 @@
+{
+    "db_name": "OneMarket",
+    "db_file": "data/market.db",
+    "version": 2,
+    "maps": {
+        "users/.+/data.json": {
+            "to_table": [
+                {"node": "message", "table": "message"},
+                {"node": "products", "table": "products"}
+            ]
+        },
+        "users/.+/content.json": {
+            "to_keyvalue": [ "cert_user_id" ]
+        },
+        "categories.json": {
+            "to_table": [
+				{"node": "categories", "table": "categories"}
+			]
+        }
+    },
+    "tables": {
+        "message": {
+            "cols": [
+                ["body", "TEXT"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX message_key ON message(json_id, date_added)"],
+            "schema_changed": 3
+        },
+        "categories": {
+            "cols": [
+                ["category_id", "INTEGER"],
+                ["name", "TEXT"],
+                ["description", "TEXT"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX category_key ON categories(json_id, category_id)"],
+            "schema_changed": 4
+        },
+        "products": {
+            "cols": [
+                ["product_id", "INTEGER"],
+                ["sku", "TEXT"],
+                ["name", "TEXT"],
+                ["description", "TEXT"],
+                ["country", "TEXT"],
+                ["category", "INTEGER"],
+                ["image", "TEXT"],
+                ["max_qty", "INTEGER"],
+                ["price", "FLOAT"],
+                ["vendor", "TEXT"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX product_key ON products(json_id, product_id)"],
+            "schema_changed": 12
+        }
+    }
+}

@@ -1,0 +1,48 @@
+{
+    "db_name": "ZeroError",
+    "db_file": "data/users/zeroerror.db",
+    "version": 2,
+    "maps": {
+	".*/data.json": {
+	    "to_table": [
+		{ "node": "topic", "table": "topic" },
+		{ "node": "comment", "table": "comment" }
+	    ]
+	},
+	".*/content.json": {
+	    "to_json_table": [ "cert_user_id", "cert_auth_user" ],
+	    "file_name": "data.json"
+	}
+    },
+    "tables": {
+	"topic": {
+	    "cols": [
+		["id", "INTEGER"],
+		["topic_timestamp", "INTEGER"],
+		["title", "TEXT"],
+		["body", "TEXT"],
+		["json_id", "INTEGER REFERENCES json (json_id)"]
+	    ],
+	    "schema_changed": 2
+	},
+	"comment": {
+	    "cols": [
+		["id", "INTEGER"],
+		["topic_id", "INTEGER"],
+		["comment_timestamp", "INTEGER"],
+		["body", "TEXT"],
+		["json_id", "INTEGER REFERENCES json (json_id)"]
+	    ],
+	    "schema_changed": 3
+	},
+	"json": {
+	    "cols": [
+		["json_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+		["directory", "TEXT"],
+		["file_name", "TEXT"],
+		["cert_user_id", "TEXT"]
+	    ],
+	    "schema_changed": 5
+	}
+    }
+}

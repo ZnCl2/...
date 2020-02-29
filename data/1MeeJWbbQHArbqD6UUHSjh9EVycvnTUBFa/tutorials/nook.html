@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>How to root the Nook 1st Gen on Linux - Archive - MayVaneDay Studios</title>
+		<link href="../style.css" rel="stylesheet" type="text/css" media="all">
+		<meta name="author" content="Vane Vander">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</head>
+	<body class="mayvaneday">
+		<article>
+			<div class="box">
+				<p><h1>How to root the Nook 1st Gen on Linux</h1></p>
+				<p>published: 2021-07-15</p>
+			</div>
+			<hr>
+			<div class="box">
+				<p><i>Note: this guide assumes you already have ADB installed.</i></p>
+				<ol type="1"><li><a href="../dl/nook/">Download the prerequisite files.</a></li></ol>
+				<p>At the very least, you need the launcher APK, <code>ratc.bin</code>, and <code>exploit.html</code>. These files <em>should</em> also be accesible on <a href="https://forum.xda-developers.com/showthread.php?t=2395798">this XDA Forums thread.</a></p>
+				<p>Rename <code>exploit.html</code> to <code>index.html</code>.</p>
+				<ol start="2" type="1"><li>Setup the crash server.</li></ol>
+				<p>Run <code>sudo python3 -m http.server --bind YOUR_COMPUTERS_LOCAL_IP_HERE 80</code> in the directory with the <code>index.html</code> file in it.</p>
+				<ol start="3" type="1"><li>Crash your Nook's browser to enable ADB.</li></ol>
+				<p>Open http://YOUR_COMPUTERS_LOCAL_IP_HERE in your Nook's built-in web browser (make sure that your computer and Nook are on the same network). The browser should refresh a few times and then crash to the home menu.</p>
+				<ol start="4" type="1"><li>Connect to your Nook over ADB.</li></ol>
+				<p><code>adb connect YOUR_NOOKS_LOCAL_IP_HERE</code></p>
+				<p>If ADB refuses to connect, run step 3 again until it connects. This might take one try; this might take a hundred tries.</p>
+				<ol start="5" type="1"><li>Get and edit <code>/init.rc</code>.</li></ol>
+				<p><code>adb pull /init.rc</code></p>
+				<p>Open <code>/init.rc</code> in your favorite text editor.</p>
+				<p>Find the line that says <code>service adbd /sbin/adbd</code>.</p>
+				<p>Below that should say <code>disabled</code>. Change that to <code>enabled</code>.</p>
+				<ol start="6" type="1"><li>Get root access.</li></ol>
+				<p>Repeat step 4 to connect to the Nook. Once connected:</p>
+				<p><code>adb push ratc.bin /sqlite_stmt_journals</code></p>
+				<p><code>adb shell</code></p>
+				<p><code>cd /sqlite_stmt_journals</code></p>
+				<p><code>/system/bin/chmod 777 ./ratc.bin</code></p>
+				<p><code>./ratc.bin</code></p>
+				<p>Several lines of output will appear. Do not press anything. A few seconds later, adb will disconnect you.</p>
+				<p><code>adb kill-server</code></p>
+				<ol start="7" type="1"><li>Push the patched <code>init.rc</code> to the Nook.</li></ol>
+				<p>Repeat step 4, as usual.</p>
+				<p><code>adb push init.rc /</code></p>
+				<p>If all goes well, your Nook should now be rooted with adbd running on reboot.</p>
+				<p>Go to the source link on the top of these instructions and install whatever apps you want. You <em>must</em> install, at the very minimum, <code>ru.mynook.launcher.apk</code> in order to access any of the other third-party apps installed.</p>
+				<p>To install apps over ADB:</p>
+				<p><code>adb install APP_NAME_HERE.apk</code></p>
+			</div>
+			<hr>
+			<div class="box">
+				<p align=right>CC BY-NC-SA 4.0 &copy; Vane Vander</p>
+			</div>
+		</article>
+	</body>
+</html>

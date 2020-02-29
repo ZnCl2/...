@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>How to install Syncthing on Tails - Archive - MayVaneDay Studios</title>
+		<link href="../style.css" rel="stylesheet" type="text/css" media="all">
+		<meta name="author" content="Vane Vander">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</head>
+	<body class="mayvaneday">
+		<article>
+			<div class="box">
+				<p><h1>How to install Syncthing on Tails</h1></p>
+				<p>published: 2019-07-01</p>
+			</div>
+			<hr>
+			<div class="box">
+				<ol type="1">
+					<li>Create a persistent volume in Tails. If you already have a persistent volume configured with Additional Software, Dotfiles, and Personal Data enabled, skip to step 2.</li>
+				</ol>
+				<p>After your first boot, go to the Applications menu in the top left corner. Open the Tails menu, and then select “Configure persistent volume”. Follow the on-screen instructions. At the very least, enable Additional Software, Dotfiles, and Personal Data. When the on-screen instructions tell you to reboot, do so.</p>
+				<ol start="2" type="1">
+					<li><a href="https://tails.boum.org/doc/first_steps/welcome_screen/administration_password/index.en.html">Set up an admin password on Tails.</a></li>
+				</ol>
+				<p>On boot, go to the advanced settings button in Tails Greeter (the first window that pops up, before you go to the desktop). Click on the plus button, then select Administration Password. Type in a password of your choice and click Add.</p>
+				<ol start="3" type="1">
+					<li>Install Syncthing.</li>
+				</ol>
+				<p><code>sudo apt install syncthing</code></p>
+				<ol start="4" type="1">
+					<li>Configure Syncthing to use Tails’ SOCKS5 proxy and use your Persistent folder for its configuration.</li>
+				</ol>
+				<p>Open ~/.bashrc in your favorite text editor. At the end of the file, add the following lines:</p>
+				<p><code>export all_proxy=socks5://127.0.0.1:9150</code></p>
+				<p><code>alias sta=‘syncthing --home=/home/amnesia/Persistent/.config/syncthing’</code></p>
+				<p>Save and close the file. Copy it into your persistent Dotfiles folder, usually at <code>/live/persistence/TailsData_unlocked/dotfiles/</code>.</p>
+				<ol start="5" type="1">
+					<li>Initialize and start Syncthing.</li>
+				</ol>
+				<p>Reboot and unlock your persistent volume. Once on the desktop, open a terminal and type <code>sta</code>.</p>
+				<ol start="6" type="1">
+					<li>Configure Tor Browser to connect to the Syncthing web interface.</li>
+				</ol>
+				<p>Open Tor Browser (obviously). Open the hamburger menu and click on Preferences. At the very bottom, click on “Settings” next to “Configure how Tor Browser connects to the internet”. In the “no proxy for” box, type in “127.0.0.1” without the quotes.</p>
+				<p>Click the OK box and exit Preferences. Open another terminal and type:</p>
+				<p><code>sudo iptables -I OUTPUT -o lo -p tcp --dport 8384 -j ACCEPT</code></p>
+				<p>You will need to do step 6 every time you reboot Tails, as there is currently no way to make this persistent.</p>
+			</div>
+			<hr>
+			<div class="box">
+				<p align=right>CC BY-NC-SA 4.0 &copy; Vane Vander</p>
+			</div>
+		</article>
+	</body>
+</html>

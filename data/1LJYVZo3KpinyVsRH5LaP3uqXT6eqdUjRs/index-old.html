@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title></title>
+    <meta charset="utf-8">
+    <meta content="text/html; charset=utf-8" http-equiv="content-type">
+    <meta content="width=device-width" name="viewport">
+    <link href="css/all.css?version=5.2055" rel="stylesheet">
+    <link href="css/base.css?version=6" rel="stylesheet">
+    <link href="css/player.css?version=8.6" rel="stylesheet">
+    <base href="" id="base" target="_top">
+    <script>
+        setTimeout(function() {
+                base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/([&?])wrapper=False/, "$1").replace(/&$/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "") // Fix urls
+            }, 100) // 100ms later, to workaround double js download in chrome
+    </script>
+    <style>
+        .leftmenu ul {
+            list-style-image: url('img/menu-ico3.jpg');
+        }
+        @media all and (max-width: 1100px) {
+            .icon-upload {
+                display: none !important;
+            }
+            .feed_icon {
+                display: none !important;
+            }
+            .top-menu {
+                display: none !important;
+            }
+        }
+        @media all and (max-width: 800px) {
+            .leftmenu {
+                width: 0% !important;
+                margin-right: 0px;
+                display: none !important;
+            }
+            .feature_notice {
+                display: none !important;
+            }
+            .feed_icon {
+                display: none !important;
+            }
+            .icon-upload {
+                display: none !important;
+            }
+            .pc-logo {
+                display: none !important;
+            }
+            .search-bar {
+                width: 300px !important;
+            }
+            .toggle-menu {
+                display: none !important;
+            }
+            .mobile-logo {
+                display: block !important;
+            }
+            .video_container {
+                margin-left: 0px !important;
+                width: 100% !important;
+            }
+            #output video {
+                width: 480px;
+                height: 270px;
+            }
+            .player-output {
+                width: 480px;
+                height: 270px !important;
+            }
+            .center {
+                max-width: 480px !important;
+            }
+            .video-information {
+                height: 32px !important;
+            }
+            .screen-warning {
+                height: 48px !important;
+            }
+	    .icon-x {
+	    	margin-top: -7.5px;
+	    }
+        }
+        @media all and (max-width: 500px) {
+            .search-bar {
+                width: 175px !important;
+            }
+            .search-menu {
+                display: none !important;
+            }
+            .video-information {
+                height: 32px !important;
+            }
+            .screen-warning {
+                height: 48px !important;
+            }
+            .center {
+                max-width: 320px !important;
+            }
+            #output video {
+                width: 320px;
+                height: 180px;
+            }
+            .player-output {
+                width: 320px;
+                height: 180px !important;
+            }
+	    .icon-x {
+	    	margin-top: -7.5px;
+	    }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- editbar -->
+
+    <div class="editbg"></div>
+    <div class="editbar bottombar">
+        <ul class="markdown-help">
+            <li># H1</li>
+            <li>## H2</li>
+            <li>### H3</li>
+            <li><i>_italic_</i>
+            </li>
+            <li><b>**bold**</b>
+            </li>
+            <li>~~<s>strikethrough</s>~~</li>
+            <li>- Lists</li>
+            <li>1. Numbered lists</li>
+            <li>[Links](http://www.zeronet.io)</li>
+            <li>[References][1]
+                <br> [1]: Can be used</li>
+            <li>![image alt](img/logo.png)</li>
+            <li>Inline <code>`code`</code>
+            </li>
+            <li><code>```python<br>
+      print "Code block"<br>
+      ```</code>
+            </li>
+            <li>&gt; Quotes</li>
+            <li>--- Horizontal rule</li>
+        </ul><a class="icon-help" href="#Markdown+help">?</a> Editing: <span class="object">Post:21.body</span> <a class="button save" href="#Save">Save</a> <a class="button button-delete button-outline delete" href="#Delete">Delete</a> <a class="cancel" href="#Cancel">Cancel</a>
+    </div>
+    <!-- EOF editbar -->
+
+    <!-- Head with menu links -->
+
+    <div class="topmenu">
+
+        <!-- TOGGLE MENU -->
+
+        <a class="toggle-menu" href="#" onclick="showhide()" style="float: left; margin-top: 22px; margin-left: 15px"><img src="img/menu-ico4.jpg" style="opacity: 0.5; width: 24px; height: 24px">
+        </a>
+
+        <!-- LOGO -->
+
+        <a href="?Home"><img class="pc-logo" src="img/logo.png" style="float: left; width: 225px; height: 67px;">
+        </a>
+
+        <!-- LOGO (MOBILE) -->
+
+        <a href="?Home"><img class="mobile-logo" src="img/mobile-kitty.jpg" style="display: none; float: left; height: 50px; margin-right: 5px; margin-top: 8px">
+        </a>
+
+        <!-- SEARCH BAR -->
+
+        <div class="search-bar" id="searchbar" style="float: left; margin-top: 15px; width: 400px">
+            <div>
+                <input class="text" id="torrent_search" placeholder="Search" type="text">
+            </div>
+        </div>
+
+        <!-- SEARCH CATEGORY -->
+
+        <div class="search-menu" id="searchmenu" style="float: left; margin-top: 17px; margin-left: 5px">
+            <select id="torrent_search_category" name="search_category" style="width:100px; height:30px;">
+                <option id="all" value="all">
+                    All videos
+                </option>
+                <option id="movies" value="movies">
+                    Movies
+                </option>
+                <option id="tv" value="tv">
+                    TV
+                </option>
+                <option id="music" value="music">
+                    Music
+                </option>
+                <option id="others" value="others">
+                    Others
+                </option>
+            </select>
+        </div>
+
+        <!-- UPLOAD BUTTON -->
+
+        <div class="feed_icon" style="float: right; margin-right: 75px; margin-top: 17px">
+            <a class="feed-follow feed-follow-list" href="#Follow"><span class=
+      'text-follow'>Newsfeed</span><span class='text-following'>Feeding</span>
+      <div class="icon-feed"></div></a>
+        </div>
+        <a href="./upload/" target="_top">
+            <div class="icon-upload" id="uploadbutton" style="float: right; margin-right: 75px; margin-top: 20px"></div>
+        </a>
+
+        <!-- TOP MENU -->
+
+        <div class="top-menu" id="altmenu" style="float: left; margin-top: 24px; display: none">
+            <a href="./">Home</a> &middot; <a href="./upload/" target="_top">Upload</a> &middot; <a href="https://instant.io/" target="_top">Instant.io</a> &middot; <a href="https://github.com/FaCuZ/torrentmedia" target="_top">Torrent Media</a> &middot; <a href="https://webtorrent.io/desktop">WebTorrent.Desktop</a> &middot; <a href="https://zeronet.io/">ZeroNet</a> &middot; <a href="http://127.0.0.1:43110/1FUQPLXHimgCvYHH7v3bJXspJ7bMBUXcEb/">ZeroTube</a> &middot; <a href="https://github.com/kopy-kate/kopy-kate">Source code</a> &middot; <a href="https://webtorrent.io/faq">Does WebRTC Reveal IP?</a> &middot;
+        </div>
+    </div>
+
+    <!-- Head -->
+    <!-- EOF Head -->
+
+    <div class="message-big">
+        Initial sync in progress...
+    </div>
+
+    <!-- Page: Main -->
+
+    <div class="topics-list">
+
+        <!-- LEFT MENU -->
+
+        <div class="leftmenu" id="leftmenu" style="display: block; background-color: #ffffff; position: absolute; margin-right: 10px; width: 18%; margin-top: -4px">
+            <div style="margin: 10px; font-size: 14px">
+                <p style="color: #6d6d6d; font-size: 12px">Site version: v1.3.1 BETA</p>
+                <p style="color: #6d6d6d; font-size: 12px">WebTorrent: v0.97</p>
+                <ul style="margin: 10px; padding: 10px">
+                    <li><a href="./">Home</a>
+                    </li>
+                    <li><a href="https://instant.io/" target="_top">Instant.io</a>
+                    </li>
+                    <li><a href="https://github.com/FaCuZ/torrentmedia" target="_top">Torrent Media</a>
+                    </li>
+                    <li><a href="https://webtorrent.io/desktop">WebTorrent.Desktop</a>
+                    </li>
+                    <li><a href="https://zeronet.io/">ZeroNet</a>
+                    </li>
+                    <li><a href="http://127.0.0.1:43110/1FUQPLXHimgCvYHH7v3bJXspJ7bMBUXcEb/">ZeroTube</a>
+                    </li>
+                    <li><a href="https://github.com/kopy-kate/kopy-kate">Source code</a>
+                    </li>
+                    <li><a href="https://webtorrent.io/faq">Does WebRTC Reveal IP?</a>
+                    </li>
+                </ul>
+                <p style="color: #6d6d6d; font-size: 12px">Supported browsers:</p>
+                <p><img src="img/firefox-symbol.png" style="width: 32px; height: 32px"><img src="img/chrome-symbol.png" style="width: 32px; height: 32px">
+                </p>
+            </div>
+        </div>
+
+        <!-- VIDEO LIST CONTAINER -->
+
+        <div class="video_container" style="position: absolute; width: 60%; min-width: 300px; margin-left: 20%">
+
+            <div class="topics-loading" style="display: none">
+                <img src="img/loading.gif">Loading...
+            </div>
+            <div class="topics">
+                <div class="feature_notice" style="background-color: #ffffff; color: #C70039; font-size: 12px; margin-bottom: 10px">
+                    <b>Your video featured & webseeded for 0.0050BTC a month! Contact KopyKate (<a href=
+          "http://127.0.0.1:43110/Mail.ZeroNetwork.bit/?to=kopykate">ZeroNet Mail</a>, <a href=
+          "mailto:kopykate@protonmail.com?subject=Would%20you%20be%20happy%20to%20feature%20my%20video?">
+          Standard E-Mail</a>).</b>
+                </div>
+
+                <!-- Template: Topic -->
+
+                <div class="topic template">
+                    <a class="image nolink" href="#">
+                        <div class="icon icon-topic-chat" style="margin-top: -9.5px;"></div>
+                    </a>
+                    <div style="margin-left: 90px">
+                        <div class="title" style="font-weight: bold; font-size: 15px">
+                            <a class="title-link" href="#">Title</a>
+                        </div>
+                        <div class="body" style="font-size: 12px; color: #6d6d6d;">
+                            Description
+                        </div>
+                        <a class="link" href="#">
+                            <div class="icon icon-link"></div><span class="link-url"></span>
+                        </a>
+                        <div class="info">
+                            <a class="score" href="#Upvote"><span class="score-inactive"><span class=
+              "icon-up">^</span><span class="score-num">1</span></span> <span class=
+              "score-active"><span class="icon-up">^</span><span class=
+              "score-num">2</span></span></a>
+                            <a class="comment-num" href="#"></a> <span class="added">added</span> &#9473; submitted by <span class="user_name">user_name</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EOF Template: Topic main -->
+
+            </div><a class="topics-more" href="#More">Show more videos</a>
+        </div>
+    </div>
+
+    <!-- EOF Page: Main -->
+
+    <!-- Page: Topic -->
+
+    <div class="center topics-full">
+
+        <div class="player-output" id="output" style="height: 437px; margin-left: auto; margin-right: auto; color: #fff; background-color: #000; display: none">
+            <div id="loadingspan" style="color: #fff; padding: 10px;">
+                Waiting for peers... (For new torrents, this can take up to 30-60 seconds!)
+            </div>
+            <div id="progressBar"></div>
+
+            <!-- The video player will be added here -->
+
+        </div>
+
+<div id="warning-message" class="screen-warning" style="background-color: #1c73ff; color: white; font-size: 12px">
+                <div style="height: 16px; padding: 8px 8px">
+                    <div style="float: left"><b>Right click and select 'Fullscreen' to toggle view. For Chrome & Mobile, use Alternate
+                Player!</b>
+                    </div>
+                    <a href="#" onclick="showhideMessage()">
+                        <div class="icon-x" style="float: right; margin-right: 8px"></div>
+                    </a>
+                </div>
+            </div>
+
+        <div class="topic topic-full" style="padding-left: 0px; padding: 0px 0px; margin-bottom: 5px; margin-top: 5px">
+
+            <div class="statsbar" id="statsbar" style="margin-top: 5px; margin-left: 5px; display: none">
+                <div id="status">
+                    <div style="color: #6d6d6d">
+                        <b>Down:</b> <span id="downloadSpeed">0 b/s</span> <b>Up:</b> <span id="uploadSpeed">0 b/s</span> <b>Peers:</b> <span class="show-leech"></span>
+                        <span class="show-seed"></span> <span id="numPeers">0</span> <b>Total:</b>
+                        <span id="downloaded">0</span> / <span id="total"></span> <span id="remaining">0</span>
+                        <br>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-left: 10px; margin-top: 10px; margin-right: 10px; margin-bottom: 10px">
+
+
+                <!-- Player container -->
+
+                <div class="player-container">
+
+                    <!-- Video player! -->
+
+                    <div id="hero">
+
+                        
+
+                        <div style="background-color: #fff; margin-top: 5px">
+                            <h2 class="title"><span class="title-link" id="videotitle">Title</span></h2>
+                        </div>
+
+                        <!-- Statistics -->
+
+                        <div class="video-information" style="height: 16px; color: black; padding: 8px 8px; border-top: 1px solid; border-color: #eee">
+
+                            <div class="magnetbar" style="float: left; margin-top: -8px; margin-right: 5px; opacity: 0.5"></div>
+
+                            <div id="chromelink" style="float: left; margin-top: -8px; margin-right: 5px; opacity: 0.5"></div>
+
+<div style="float: right; margin-top: -7.5px; opacity: 0.5"><a class="feed-follow feed-follow-show" href="#Follow"><span class=
+      'text-follow'></span><span class='text-following'></span>
+      <div class="icon-feed"></div></a></div>
+
+<div style="float: right; margin-top: -4px; margin-right: -5px; font-size: 14px"><a class="score" href="#Upvote"><div class="icon-like" style="float: left; margin-top: -1px"></div><div style="float: left"><span class="score-inactive"><span class=
+          "icon-up"></span><span class="score-num">?</span></span> <span class=
+          "score-active"><span class="icon-up"></span><span class="score-num">0</span></span></div></a></div>
+
+
+
+                        </div>
+
+                    </div>
+
+                    <div class="info">
+                        
+                        <span class="user_name">username</span> posted <span class="added">added</span>
+                    </div>
+
+                    <div class="body" style="font-size: 12px; margin-bottom: 5px; white-space: pre-line">
+                        Body
+                    </div>
+                    <div style="float: left; font-size:10px">
+                        <b>Category</b>
+                    </div>
+                    <div class="category_bar" style="float: left; margin-left: 15px; font-size:10px; margin-bottom: 5px">
+                        ?
+                    </div>
+
+                    <!-- Video information -->
+
+                    <div class="info">
+
+                        <!-- Video player Info -->
+
+                        <div style="display: none">
+                            DEBUG:
+                            <form>
+                                <label for="torrentId">Download from a magnet link:</label>
+                                <input id="magnet" name="torrentId" placeholder="magnet:">
+                                <button id="submitmagnet" type="submit">Download</button>
+                            </form>
+                        </div>
+
+                    </div>
+
+                    <!-- Load the torrent file from the post description -->
+
+                </div>
+            </div>
+        </div>
+
+        <!-- New comment -->
+
+        <div class="comment comment-new">
+            <div class="info">
+                <a class="user_name user_name-my certselect" href="#Change+user" title='Change user'>user_name</a> &#9473; <span class="added">new comment</span>
+            </div>
+            <div class="body">
+                <a class="button button-submit button-certselect certselect" href="#Change+user">
+                    <div class='icon-profile'></div>Sign in as...</a>
+                <textarea id="comment_body"></textarea> <a class="button button-submit button-submit-form" href="#Submit+comment">Submit comment</a>
+                <div style='float: right; margin-top: -6px; position: relative; text-align: right'>
+                    <div class="user-size user-size-used">
+                        Used space: 22k/1000k
+                    </div>
+                    <div class="user-size">
+                        Used space: 22k/1000k
+                    </div>
+                    <div class="user-size-warning">
+                        You are running out of your allowed space, please contact the site's admin at <a href="#">unknown</a> to raise your limit.
+                    </div>
+                </div>
+                <div style="clear: both"></div>
+            </div>
+        </div>
+
+        <!-- Comments -->
+        <div class="comments center">
+
+            <!-- Template: Comment -->
+            <div class="comment template">
+                <div style="float: left"><img src="img/user-icon.png">
+                </div>
+                <div class="info" style="margin-left: 64px">
+                    <span class="user_name">user_name</span> &#9473; <span class="added">added</span>
+                    <a class="score" href="#Upvote"><span class="score-inactive"><span class=
+          "icon-up">^</span><span class="score-num">1</span></span> <span class=
+          "score-active"><span class="icon-up">^</span><span class="score-num">2</span></span></a>
+                    <a class="reply" href="#Reply">
+                        <div class="icon icon-reply"></div><span class="reply-text">Reply</span>
+                    </a>
+                </div>
+                <div class="body" style="font-size: 14px; margin-left: 64px">
+                    Body
+                </div>
+            </div>
+            <!-- EOF Template: Comment -->
+        </div>
+    </div>
+    <!-- EOF Page: Topic -->
+    <!-- Template: menu -->
+    <div class="menu template">
+        <a class="menu-item template" href="#">Template</a>
+    </div>
+    <!-- EOF Template: menu -->
+    <script src="js/webtorrent.js">
+    </script>
+    <script src="js/moment.min.js">
+    </script>
+    <script src="js/player.js?version=7">
+    </script>
+    <script src="js/all.js?=version=7.04" type="text/javascript">
+    </script>
+    <script>
+        function showhide() {
+            if (document.getElementById('leftmenu').style.display == 'none') {
+                document.getElementById('leftmenu').style.display = 'block';
+            } else {
+                if (document.getElementById('leftmenu').style.display == 'block') {
+                    document.getElementById('leftmenu').style.display = 'none';
+                }
+            }
+        }
+
+        function showhideMessage() {
+            document.getElementById('warning-message').style.display = 'none';
+        }
+    </script>
+    <script>
+        $(".head .more a").each(function(i, elem) {
+            $(elem).attr("href", Text.fixLink($(elem).attr("href")))
+        });
+    </script>
+</body>
+
+</html>

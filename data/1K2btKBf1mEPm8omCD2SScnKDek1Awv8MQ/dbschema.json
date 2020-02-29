@@ -1,0 +1,101 @@
+{
+    "db_name": "blog",
+    "db_file": "data/blog.db",
+    "version": 2,
+    "maps": {
+        ".+/data.json":{
+            "to_table": [
+                {"node": "blog", "table": "blog"},
+                {"node": "comment", "table": "comment"},
+                {"node": "like", "table": "like"},
+                {"node": "menu_item", "table": "menu_item"},
+                {"node": "post", "table": "post"},
+                {"node": "settings", "table": "settings"}
+            ]
+        }
+    },
+    "tables": {
+        "blog": {
+            "cols": [
+                ["blog_id", "TEXT"],
+                ["blog_title", "TEXT"],
+                ["blog_description", "TEXT"],
+                ["blog_logo_file", "TEXT"],
+                ["blog_date_added", "INTEGER"],
+                ["blog_user", "TEXT"],
+                ["blog_user_id", "TEXT"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX blog_key ON blog(json_id, blog_date_added)"],
+            "schema_changed": 1
+        },
+        "comment": {
+            "cols": [
+                ["comment_id", "TEXT"],
+                ["comment_post_id","TEXT"],
+                ["comment_user_id","TEXT"],
+                ["comment_parent_id","TEXT"],
+                ["comment_body", "TEXT"],
+                ["comment_body_parsed","TEXT"],
+                ["comment_image_file", "TEXT"],
+                ["comment_video_file", "TEXT"],
+                ["comment_date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX comment_key ON comment(json_id, comment_date_added)"],
+            "schema_changed": 1
+        },
+        "like": {
+            "cols": [
+                ["like_id", "TEXT"],
+                ["like_post_id","TEXT"],
+                ["like_user_id","TEXT"],
+                ["like_date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX like_key ON like(json_id, like_date_added)"],
+            "schema_changed": 1
+        },
+        "menu_item": {
+            "cols": [
+                ["menu_item_id", "TEXT"],
+                ["menu_item_title", "TEXT"],
+                ["menu_item_link", "TEXT"],
+                ["menu_item_date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX menu_item_key ON menu_item(json_id, menu_item_date_added)"],
+            "schema_changed": 1
+        },
+        "post": {
+            "cols": [
+                ["post_id", "TEXT"],
+                ["post_category", "INTEGER"],
+                ["post_title", "TEXT"],
+                ["post_body", "TEXT"],
+                ["post_body_parsed","TEXT"],
+                ["post_image_file", "TEXT"],
+                ["post_video_file", "TEXT"],
+                ["post_date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX post_key ON post(json_id, post_date_added)"],
+            "schema_changed": 1
+        },
+        "settings": {
+            "cols": [
+                ["user_id", "TEXT"],
+                ["avatar_type", "TEXT"],
+                ["avatar_image", "TEXT"],
+                ["avatar_jdenticon_string", "TEXT"],
+                ["avatar_girdy_string", "TEXT"],
+                ["menu_show", "BOOLEAN"],
+                ["menu_item_count","INTEGER"],
+                ["date_added","INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX settings_key ON settings(json_id, date_added)"],
+            "schema_changed": 1
+        }
+    }
+}

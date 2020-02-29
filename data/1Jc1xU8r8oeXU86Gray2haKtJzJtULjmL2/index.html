@@ -1,0 +1,50 @@
+
+<!DOCTYPE html>
+
+<html>
+<head>
+ <title>New ZeroNet site!</title>
+ <meta charset="utf-8">
+ <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+ <base href="" target="_top" id="base">
+ <script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+</head>
+<body>
+
+<a href="w3c.zip/index.htm"> 点击进入W3C </a>
+
+<div id="out"></div>
+
+<script type="text/javascript" src="js/ZeroFrame.js"></script>
+
+
+
+<script>
+
+class Page extends ZeroFrame {
+	setSiteInfo(site_info) {
+		var out = document.getElementById("out")
+		out.innerHTML =
+			"W3C地址:" + site_info.address +
+			"<br> 您现在可以发现W3C的" + site_info.peers + "个节点"
+	}
+
+	onOpenWebsocket() {
+		this.cmd("siteInfo", [], function(site_info) {
+			page.setSiteInfo(site_info)
+		})
+	}
+
+	onRequest(cmd, message) {
+		if (cmd == "setSiteInfo")
+			this.setSiteInfo(message.params)
+		else
+			this.log("Unknown incoming message:", cmd)
+	}
+}
+page = new Page()
+
+</script>
+
+</body>
+</html>

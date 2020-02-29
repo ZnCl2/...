@@ -1,0 +1,253 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Untitled Document.md</title><style></style></head><body id="preview">
+<h1><a id="FAQ__ZeroNet____0"></a>FAQ по ZeroNet на русском языке</h1>
+<h4><a id="___15441___3"></a>Должен ли порт 15441 быть открытым?</h4>
+<p>Нет, это <strong>не обязательно</strong>, Вы можете просматривать и пользоваться Зеросайтами с закрытым портом.
+Однако, для создания новых сайтов мы крайне рекомендуем вам держать порт открытым.</p>
+<p>После запуска ZeroNet пытается открыть порт на Вашем роутере, используя
+<a href="https://wikipedia.org/wiki/Universal_Plug_and_Play">UPnP</a>, но, в случае, если это не получилось, Вы можете попытаться открыть его вручную:</p>
+<ul>
+<li>Попробуйте запустить веб-интерфейс Вашего роутера в браузере по адресу:  <a href="http://192.168.1.1">http://192.168.1.1</a>
+или <a href="http://192.168.0.1">http://192.168.0.1</a></li>
+<li>Проверьте, стоит ли галочка напротив пункта “Enable UPnP support” (или аналогичного)</li>
+</ul>
+<p>Если это не помогло, попытайтесь найти раздел с переброской портов “port forwarding”. Он может отличаться на каждой модели роутера. Здесь находится обучающий ролик на Youtube <a href="https://www.youtube.com/watch?v=aQXJ7sLSz14">Here is a tutorial on YouTube.</a> Перебросить необходимо порт 15441.</p>
+<hr>
+<h4><a id="__ZeroNet_____21"></a>Как в ZeroNet обстоят дела с анонимностью?</h4>
+<p>ZeroNet не более анонимен чем BitTorrent, но приватность (возможность выяснить кто является создателем конкретного сайта или автором отдельного комментария) повышается с ростом сети и увеличением количеством пиров у каждого сайта.</p>
+<p>ZeroNet подходит для работы с анонимными сетями: вы можете легко спрятать свой IP адрес, используя сеть Tor.</p>
+<hr>
+<h4><a id="__ZeroNet__Tor_31"></a>Как использовать ZeroNet через Tor?</h4>
+<p>Если вы хотите спрятать свой IP, установите последнюю версию ZeroNet, а затем запустите его со следующим параметром: <code>zeronet.py --tor always</code></p>
+<p>На Windows нет необходимости в дополнительных настройках, так как Tor работает “из коробки”. Для других ОС следуйте <a href="https://www.torproject.org/docs/installguide.html">инструкции по установке Tor</a>,
+отредактируйте Ваш файл конфигурации torrc, убрав <code>#</code> из строки <code># ControlPort 9051</code> а затем перезапустите сервис Tor и ZeroNet.</p>
+<blockquote>
+<p><strong>Совет:</strong> Вы можете проверить свой IP адрес на странице ZeroNet <a href="http://127.0.0.1:43110/Stats">статистики</a>.</p>
+</blockquote>
+<blockquote>
+<p><strong>Совет:</strong> Если у вас возникают ошибки при соединении с сетью убедитесь, что у Вас установлена последняя версия Tor (необходима версия не ниже 0.2.7.5)</p>
+</blockquote>
+<hr>
+<h4><a id="__ZeroNet___Tor__Linux_46"></a>Как заставить ZeroNet работать через Tor под Linux?</h4>
+<p>Обновите Tor до последней версии (не ниже 0.2.7.5), и следуйте этой <a href="https://www.torproject.org/docs/debian.html.en">инструкции</a>. Например, для Debian:</p>
+<ul>
+<li><code>echo 'deb http://deb.torproject.org/torproject.org jessie main'&gt;&gt; /etc/apt/sources.list.d/tor.list</code></li>
+<li><code>gpg --keyserver keys.gnupg.net --recv 886DDD89</code></li>
+<li><code>gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -</code></li>
+<li><code>apt-get update</code></li>
+<li><code>apt-get install tor</code></li>
+</ul>
+<p>Отредактируйте config для включения контроля протокола:</p>
+<ul>
+<li><code>mcedit /etc/tor/torrc</code></li>
+<li>Удалите символ <code>#</code> из строки <code>ControlPort 9051</code> и <code>CookieAuthentication 1</code> (строка ~57)</li>
+<li><code>/etc/init.d/tor restart</code></li>
+<li>Добавьте себе разрешение на чтение авторских cookie при помощи <code>usermod -a -G debian-tor [yourlinuxuser]</code>&lt;br&gt;(если вы не используете Debian проверьте группу пользователей файла командой <code>ls -al /var/run/tor/control.authcookie</code>)</li>
+<li>Разлогиньтесь и залогиньтесь снова под своим пользователем для применения групповых изменений</li>
+</ul>
+<blockquote>
+<p><strong>Совет:</strong> Вы можете проверить корректность работы Tor командой <code>echo 'PROTOCOLINFO' | nc 127.0.0.1 9051</code></p>
+</blockquote>
+<blockquote>
+<p><strong>Совет:</strong> Это также можно делать без изменения torrc (или используя старые версии клиента Tor) при помощи команды: <code>zeronet.py --tor disable --proxy 127.0.0.1:9050 --disable_udp</code>, но тогда у Вас не будет возможности связываться с другими адресами .onion.</p>
+</blockquote>
+<hr>
+<h4><a id="_____________72"></a>Могу ли я использовать одно и тоже имя пользователя (никнейм) на разных машинах?</h4>
+<p>Да, для этого достаточно скопировать на другую машину файл <code>data/users.json</code>.</p>
+<hr>
+<h4><a id="____bit_80"></a>Как мне зарегистрировать домен .bit?</h4>
+<p>Используйте для этого криптовалюту <a href="https://namecoin.info/">Namecoin</a>.
+Для управления своими доменами используйте клиентский графический интерфейс или <a href="http://christopherpoole.github.io/registering-a-.bit-domain-with-namecoin/">интерфейс командной строки</a>.</p>
+<p>После того как регистрация завершена необходимо отредактировать запись домена, добавив в нее специальный раздел, например такой:</p>
+<pre><code><span class="hljs-collection">{
+...
+    <span class="hljs-string">"zeronet"</span>: <span class="hljs-collection">{
+        <span class="hljs-string">""</span>: <span class="hljs-string">"1EU1tbG9oC1A8jz2ouVwGZyQ5asrNsE4Vr"</span>,
+        <span class="hljs-string">"blog"</span>: <span class="hljs-string">"1BLogC9LN4oPDcruNz3qo1ysa133E9AGg8"</span>,
+        <span class="hljs-string">"talk"</span>: <span class="hljs-string">"1TaLk3zM7ZRskJvrh3ZNCDVGXvkJusPKQ"</span>
+    }</span>,
+...
+}</span>
+</code></pre>
+<p>“” - означает домен верхнего уровня, а “blog” и “talk” - это домены нижнего уровня.</p>
+<blockquote>
+<p><strong>Совет:</strong> You can buy Namecoin for Bitcoin or other cryptocurrencies using <a href="https://shapeshift.io/">shapeshift.io</a>.</p>
+</blockquote>
+<blockquote>
+<p><strong>Совет:</strong> Other possibilities to register .bit domains: <a href="https://domaincoin.net/">domaincoin.net</a>, <a href="https://peername.com/">peername.com</a>, <a href="https://dotbit.me/">dotbit.me</a></p>
+</blockquote>
+<blockquote>
+<p><strong>Совет:</strong> You can verify your domain on <a href="http://namecha.in/">namecha.in</a>, for example: <a href="http://namecha.in/name/d/zeroid">zeroid.bit</a></p>
+</blockquote>
+<blockquote>
+<p><strong>Совет:</strong> You should use only <a href="http://wiki.namecoin.info/?title=Domain_Name_Specification_2.0#Valid_Domains">lower-cased letters, numbers and - in your domains</a>.</p>
+</blockquote>
+<blockquote>
+<p><strong>Совет:</strong> To make ZeroHello to link your domain instead of your site’s address, add a domain key to your content.json. (<a href="https://github.com/HelloZeroNet/ZeroBlog/blob/master/content.json#L6">Example</a>)</p>
+</blockquote>
+<hr>
+<h4><a id="Can_I_use_the_generated_site_addressprivate_key_to_accept_Bitcoin_payments_115"></a>Can I use the generated site address/private key to accept Bitcoin payments?</h4>
+<p>Yes, it’s a standard Bitcoin address. The private key is WIF formatted, so you can import it in most clients.</p>
+<blockquote>
+<p><strong>Совет:</strong> It’s not recommended to keep a high amount of money on your site’s address, because you have to enter your private key every time you modify your site.</p>
+</blockquote>
+<hr>
+<h4><a id="What_happens_when_someone_hosts_malicious_content_125"></a>What happens when someone hosts malicious content?</h4>
+<p>The ZeroNet sites are sandboxed, they have the same privileges as any other website you visit over the Internet.
+You are in full control of what you are hosting. If you find suspicious content you can stop hosting the site at any time.</p>
+<hr>
+<h4><a id="Is_it_possible_to_install_ZeroNet_to_a_remote_machine_134"></a>Is it possible to install ZeroNet to a remote machine?</h4>
+<p>Yes, you have to enable the UiPassword plugin by renaming the <strong>plugins/disabled-UiPassword</strong> directory to <strong>plugins/UiPassword</strong>,
+then start ZeroNet on the remote machine using &lt;br&gt;<code>zeronet.py --ui_ip &quot;*&quot; --ui_password anypassword</code>.
+This will bind the ZeroNet UI webserver to all interfaces, but to keep it secure you can only access it by entering the given password.</p>
+<blockquote>
+<p><strong>Совет:</strong> You can also restrict the interface based on ip address by using <code>--ui_restrict ip1 ip2</code>.</p>
+</blockquote>
+<blockquote>
+<p><strong>Совет:</strong> You can specify the password in config file by creating a <code>zeronet.conf</code> file and add <code>[global]</code>, <code>ui_password = anypassword</code> lines to it.</p>
+</blockquote>
+<hr>
+<h4><a id="Is_there_anyway_to_track_the_bandwidth_ZeroNet_is_using_147"></a>Is there anyway to track the bandwidth ZeroNet is using?</h4>
+<p>The sent/received bytes are displayed at ZeroNet’s sidebar.&lt;br&gt;(open it by dragging the topright <code>0</code> button to left)</p>
+<blockquote>
+<p><strong>Совет:</strong> Per connection statistics page: <a href="http://127.0.0.1:43110/Stats">http://127.0.0.1:43110/Stats</a></p>
+</blockquote>
+<hr>
+<h4><a id="What_happens_if_two_people_use_the_same_keys_to_modify_a_site_157"></a>What happens if two people use the same keys to modify a site?</h4>
+<p>Every content.json file is timestamped, the clients always accepts the newest one.</p>
+<hr>
+<h4><a id="Does_ZeroNet_uses_Bitcoins_blockchain_165"></a>Does ZeroNet uses Bitcoin’s blockchain?</h4>
+<p>No, ZeroNet only using the cryptography of Bitcoin for site addresses and content signing/verification.
+The users identification is also based on Bitcoin’s <a href="https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki">BIP32</a> format.</p>
+<p>Namecoin’s blockchain is being used for domain registrations.</p>
+<hr>
+<h4><a id="Does_ZeroNet_only_support_HTML_CSS_websites_176"></a>Does ZeroNet only support HTML, CSS websites?</h4>
+<p>ZeroNet is built for dynamic, real-time updated websites, but you can serve any kind of files using it.
+(VCS repositories, your own thin-client, database, etc.)</p>
+<hr>
+<h4><a id="How_can_I_create_a_new_ZeroNet_site_185"></a>How can I create a new ZeroNet site?</h4>
+<p><a href="/using_zeronet/create_new_site/">Follow those instructions.</a></p>
+<hr>
+<h4><a id="How_does_it_work_192"></a>How does it work?</h4>
+<ul>
+<li>When you want to open a new site it asks visitors IP addresses from BitTorrent network</li>
+<li>First downloads a file named <strong>content.json</strong>, which holds all other filenames,
+<strong>hashes</strong> and the site owner’s cryptographic signature</li>
+<li><strong>Verifies</strong> the downloaded content.json file using the site’s <strong>address</strong> and the site owner’s <strong>signature</strong> from the file</li>
+<li><strong>Downloads other file</strong> (html, css, js…) and verifies them using the SHA512 hash fro content.json file</li>
+<li>Each visited site becomes <strong>also served by you</strong>.</li>
+<li>If the site owner (who has the private key for the site address) <strong>modifies</strong> the site, then he/she signs
+the new content.json and <strong>publishes it to the peers</strong>. After the peers have verified the content.json
+integrity (using the signature), they <strong>download the modified files</strong> and publish the new content to other peers.</li>
+</ul>
+<p>More info:
+<a href="/using_zeronet/sample_sites/">Description of ZeroNet sample sites</a>,
+<a href="https://docs.google.com/presentation/d/1_2qK1IuOKJ51pgBvllZ9Yu7Au2l551t3XBgyTSvilew/pub">Slides about how does ZeroNet work</a></p>
+<hr>
+<h4><a id="___ZeroNet__211"></a>Есть ли в ZeroNet поиск?</h4>
+<p>На данный момент (февраль 2016) в сети работает поисковик сайтов по ключевым словам <a href="http://127.0.0.1:43110/zerosearch.bit">http://127.0.0.1:43110/zerosearch.bit</a>
+Полнотекстовый поиск внутри сайтов пока не реализован. Частичная реализация тут: <a href="http://127.0.0.1:43110/192dZ1EG5tU7PnCfuwGMDEBrr2eLqvs4t3">http://127.0.0.1:43110/192dZ1EG5tU7PnCfuwGMDEBrr2eLqvs4t3</a></p>
+<hr>
+<h4><a id="_______ZeroNet_____219"></a>Как мне узнать какие сайты есть в ZeroNet? Как обнаружить новые сайты?</h4>
+<p>Воспользоваться поиском сайтов по ключевым словам: <a href="http://127.0.0.1:43110/zerosearch.bit">http://127.0.0.1:43110/zerosearch.bit</a>
+Зайти в спецраздел на ZeroTalk: <a href="http://127.0.0.1:43110/Talk.ZeroNetwork.bit/?Topic:3_168qV1Xxp2EyszrzdECLUwXrn9wGYjDdar/NEW+WEBSITE+share+it+here">http://127.0.0.1:43110/Talk.ZeroNetwork.bit/?Topic:3_168qV1Xxp2EyszrzdECLUwXrn9wGYjDdar/NEW+WEBSITE+share+it+here</a>
+Зайти на специальный сайт: <a href="http://127.0.0.1:43110/0list.bit">http://127.0.0.1:43110/0list.bit</a>
+Зайти в ZeroNet через один из гейтвеев (например <a href="http://bit.no.com:43110">http://bit.no.com:43110</a>). Обычно, они уже знают много сайтов внутри ZeroNet, причем там их можно отсортировать по количеству пиров или дате обновления.</p>
+<hr>
+<h4><a id="____Tor__229"></a>Как просматривать зеросайты через Tor браузер?</h4>
+<p>Для этого наберите в Tor браузере строку “about:preferences#advanced”, нажамите на кнопку “Settings” (“Настройки”), затем выберите пункт “Manual proxy configuration” и добавьте адрес “127.0.0.1” в поле “No Proxy for”.</p>
+<hr>
+<h4><a id="___________237"></a>Почему свежие комментарии появлются ниже (после) уже существующих? Неправильный порядок комментариев.</h4>
+<p>Вожможно, у одного или нескольких участников беседы выставлено неправильное системное время. Они должны переставить его правильно. Сверить время можно тут:  <a href="http://time.is/">http://time.is/</a></p>
+<hr>
+<h4><a id="_______ZeroNet_245"></a>Как форматировать текст на форумах и блогах ZeroNet?</h4>
+<p>Вам сюда: <a href="http://127.0.0.1:43110/16unhVWi9eLuZ4tosVtBd9eDqDTYzbgMSL/?Post:2:%D0%92%D0%BE%D0%B7%D0%BC%D0%BE%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D0%B8+%D0%B1%D0%BB%D0%BE%D0%B3-%D0%BF%D0%BB%D0%B0%D1%82%D1%84%D0%BE%D1%80%D0%BC%D1%8B">http://127.0.0.1:43110/16unhVWi9eLuZ4tosVtBd9eDqDTYzbgMSL/?Post:2:Возможности+блог-платформы</a>
+Записи в блоге убираются под кат при помощи трех дефисов <code>---</code></p>
+<hr>
+<h4><a id="___Namecoin____253"></a>Где мне взять Namecoin’ы для оплаты домена?</h4>
+<p>На любой бирже криптовалют (например <a href="https://btc-e.com/exchange/nmc_usd">https://btc-e.com/exchange/nmc_usd</a>) их или в обменнике (например: <a href="https://shapeshift.io/#">https://shapeshift.io/#</a>). Можно также вежливо (на английском языке) попросить монеты здесь: <a href="http://127.0.0.1:43110/blog.0list.bit/?Post:2:Free+.bit+Domains+for+ZeroNet+Sites">http://127.0.0.1:43110/blog.0list.bit/?Post:2:Free+.bit+Domains+for+ZeroNet+Sites</a></p>
+<hr>
+<h4><a id="_______ZeroTalk_259"></a>Как создать подфорум или групповой топик на ZeroTalk-клоне?</h4>
+<p>Отредактируйте ваш файл <code>data/users/youruserid/data.json</code> и добавьте туда <code>&quot;type&quot;: &quot;group&quot;</code> в настройках топика, который вы хотите превратить в групповой. Пример: <a href="http://127.0.0.1:43110/Talk.ZeroNetwork.bit/data/users/1KbV1e1u6P6AsY8XNBydgtbtN8iSB5WMyG/data.json%22topic%22:">http://127.0.0.1:43110/Talk.ZeroNetwork.bit/data/users/1KbV1e1u6P6AsY8XNBydgtbtN8iSB5WMyG/data.json&quot;topic&quot;:</a></p>
+<pre><code>{
+   <span class="hljs-string">"body"</span>: <span class="hljs-string">"Articles about Bitcoin, Torrent and Peer To Peer networks"</span>, 
+   <span class="hljs-string">"added"</span>: <span class="hljs-number">1436262090</span>, 
+   <span class="hljs-string">"type"</span>: <span class="hljs-string">"group"</span>, 
+   <span class="hljs-string">"topic_id"</span>: <span class="hljs-number">1</span>, 
+   <span class="hljs-string">"title"</span>: <span class="hljs-string">"P2P news flow"</span>
+ }, ...
+</code></pre>
+<hr>
+<h4><a id="__Project_Milestorm__ZeroNet_274"></a>Чем различаются Project Milestorm и ZeroNet?</h4>
+<p>Первый имеет закрытый исходный код, работает только со своим браузером “из коробки”, не поддерживает динамический контент. По состоянию на февраль 2016.</p>
+<hr>
+<h4><a id="__Freenet__ZeroNet_279"></a>Чем различаются Freenet и ZeroNet?</h4>
+<p>Freenet</p>
+<ul>
+<li>Сайты не могут быть удалены</li>
+<li>Не используется Java Scrypt</li>
+<li>Необходимо несколько минут для синхронизации</li>
+<li>Работает быстрее, если подержать некоторое время запущенным</li>
+<li>Сложнее в освоении для пользователя</li>
+<li>Наибольшая безопасность при использовании только в доверенном кругу</li>
+<li>Подходит для тех, кто живет в странах с жесткой цензурой</li>
+<li>Написан на Java</li>
+</ul>
+<p>Zeronet</p>
+<ul>
+<li>Сайты можно удалять</li>
+<li>В основном используется Java Scrypt</li>
+<li>Мгновенная синхронизация</li>
+<li>Приятный интерфейс</li>
+<li>Чем популярнее сайт, тем быстрее он загружается</li>
+<li>Поддержка работы через сеть Tor</li>
+<li>Написан на Python</li>
+</ul>
+<hr>
+<h4><a id="__IPFS__ZeroNet_302"></a>Чем различаются IPFS и ZeroNet?</h4>
+<p>IPFS не работает на смартфонах, не работает через Tor, предназначен для хранения и передачи файлов. ZeroNet заточен под P2P-хостинг динамических вебсайтов.</p>
+<hr>
+<h4><a id="______ZeroNet_______307"></a>Какие есть плюсы и минусы у ZeroNet в сравнении с другими подобными проектами?</h4>
+<p>Плюсы:</p>
+<ul>
+<li>легкость установки</li>
+<li>легкость использования</li>
+<li>легкость создания и наполнения сайтов</li>
+<li>доступность из обычного интернета через гейтвей (в т.ч. со смартфонов)</li>
+</ul>
+<p>Минусы:</p>
+<ul>
+<li>меньшая анонимность чем у Freenet или i2p, даже при использовании Tor</li>
+<li>необходимость Java Scrypt для работы</li>
+</ul>
+<hr>
+<h4><a id="___gateways__ZeroNet_322"></a>Какие есть гейтвеи (gateways) в ZeroNet?</h4>
+<ul>
+<li><a href="http://bit.no.com:43110/Talk.ZeroNetwork.bit">http://bit.no.com:43110/Talk.ZeroNetwork.bit</a></li>
+<li><a href="http://zero.pags.to:43110/Talk.ZeroNetwork.bit">http://zero.pags.to:43110/Talk.ZeroNetwork.bit</a></li>
+<li><a href="http://45.63.123.191:43110">http://45.63.123.191:43110</a></li>
+<li><a href="https://zeronet.classcoder.com/">https://zeronet.classcoder.com/</a></li>
+</ul>
+<hr>
+<h4><a id="_____ZeroMail________330"></a>При попытке отправить письмо через ZeroMail выскакивает ошибка. В чем может быть причина?</h4>
+<p>Возможно, Вы превысили лимит выделенного под письма места. Обратитесь к nofish на форуме ZeroTalk: <a href="http://127.0.0.1:43110/Talk.ZeroNetwork.bit/?Topic:4_17i7Y7r8nTaCfLbCAuaKyc4R5BbKZYU2Hr/Invalid+private+key+for+ZeroMail">http://127.0.0.1:43110/Talk.ZeroNetwork.bit/?Topic:4_17i7Y7r8nTaCfLbCAuaKyc4R5BbKZYU2Hr/Invalid+private+key+for+ZeroMail</a>
+В будущем будет реализована функция автоматического удаления старых писем при достижении лимита.</p>
+<hr>
+<h4><a id="______ZeroNet_337"></a>Какого объема файлы/сайты можно выкладывать в ZeroNet?</h4>
+<p>Не рекомендуется выкладывать файлы/сайты объемом свыше 1 Мб в силу того, что сейчас в ZeroNet установлен лимит времени скачивания около 1 минуты. Т.е. для успешного распространения в сети файлы должны пересылаться пирами в течение указанного времени. Лимит установлен потому что 40% узлов пользуются подключением через сеть Tor, которая чувствительна к объему трафика.</p>
+<hr>
+<h4><a id="_____ZeroTalk_344"></a>Как закрепить топик/тему наверху в ZeroTalk-клоне?</h4>
+<p>Добавить <code>URI</code> топика в раздел <code>settings.topic_sticky_uris</code> файла <code>content.json</code>.</p>
+<hr>
+<h4><a id="_____Multiuser_plugin_349"></a>Как включить плагин многопользовательского режима (Multiuser plugin)?</h4>
+<p>Переименуйте внутреннюю папку <code>plugins/Disabled-Multiuser</code> как <code>plugins/Multiuser</code> и перезапустите ZeroNet. Теперь, на сайте ZeroHello у Вас должна появиться возможность смены отдельных ZeroID. Для повторного входа в Ваш прежний ZeroID понадобится ввод ключа <code>master_seed</code> из файла <code>data/users.json</code>.</p>
+<hr>
+<h4><a id="____ZeroID_354"></a>Как сменить (создать несколько) ZeroID?</h4>
+<ul>
+<li>Включите многопользовательский режим (метод описан в данном документе), запишите <code>master_seed</code> текущего пользователя.</li>
+<li>Зайдите на ZeroHello, нажмите <code>User</code> -&gt; <code>Logout</code> -&gt; <code>Login to another account</code> для выхода из текущего ID</li>
+<li>Зайдите на ZeroID, нажмите <code>Get auth cert</code>, введите новый <code>username</code>, нажмите <code>send request</code> и подождите, пока будет создаваться новый сертификат</li>
+<li>Зайдите на ZeroHello и сохраните <code>master_seed</code> нового пользователя, нажав <code>User</code> -&gt; <code>Show your master_seed</code></li>
+<li>При возврате к предыдущему ID потребуется снова ввести его <code>master_seed</code>.</li>
+</ul>
+
+</body></html>

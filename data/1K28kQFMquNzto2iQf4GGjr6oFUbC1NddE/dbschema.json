@@ -1,0 +1,57 @@
+{
+    "db_name": "Zeropolls",
+    "db_file": "data/users/zeropolls.db",
+    "version": 2,
+    "maps": {
+        ".+/data.json": {
+            "to_table": [
+                {
+                  "node": "polls",
+                  "table": "poll"
+                },
+                {
+                  "node": "comments",
+                  "table": "comment"
+                },
+                {"node": "poll_vote", "table": "poll_vote", "key_col": "poll_uri", "val_col": "vote"}
+            ]
+        },
+        ".+/content.json": {
+            "to_keyvalue": [ "cert_user_id" ]
+        }
+    },
+    "tables": {
+        "poll": {
+            "cols": [
+                ["poll_id", "INTEGER"],
+                ["question", "TEXT"],
+                ["answers", "TEXT"],
+                ["hidden", "INTEGER"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX poll_key ON poll(json_id, date_added)"],
+            "schema_changed": 5
+        },
+        "poll_vote": {
+      			"cols": [
+        				["poll_uri", "TEXT"],
+        				["vote", "INTEGER"],
+        				["json_id", "INTEGER REFERENCES json (json_id)"]
+      			],
+      			"indexes": ["CREATE UNIQUE INDEX poll_vote_key ON poll_vote(poll_uri, json_id)", "CREATE INDEX poll_vote_uri ON poll_vote(poll_uri)"],
+      			"schema_changed": 2
+      	},
+        "comment": {
+      			"cols": [
+                ["comment_id", "INTEGER"],
+        				["poll_uri", "TEXT"],
+                ["body", "TEXT"],
+        				["date_added", "INTEGER"],
+        				["json_id", "INTEGER REFERENCES json (json_id)"]
+      			],
+      			"indexes": ["CREATE INDEX comment_poll_uri ON comment(poll_uri)", "CREATE INDEX comment_json_id ON comment(json_id)"],
+      			"schema_changed": 6
+      	}
+    }
+}

@@ -1,0 +1,29 @@
+int intLerpARGB(int c1, int c2, int lerp)
+{
+    int a = (c1>>24)& 0xFF;
+    int r = (c1>>16)& 0xFF;
+    int g = (c1>>8) & 0xFF;
+    int b = (c1)    & 0xFF;
+    
+    int a2 = (c2>>24)& 0xFF;
+    int r2 = (c2>>16)& 0xFF;
+    int g2 = (c2>>8) & 0xFF;
+    int b2 = (c2)    & 0xFF;
+    
+    a = intLerp256(a, a2, lerp);
+    r = intLerp256(r, r2, lerp);
+    g = intLerp256(g, g2, lerp);
+    b = intLerp256(b, b2, lerp);
+    
+    return toInt(a,r,g,b);
+}
+
+int intLerp256(int A, int B, int F)
+{
+    return (A*(256-F) + B*F) >> 8;
+}
+
+int toInt(int a, int r, int g, int b)
+{
+    return ( a<<24 | r<<16 | g<<8 | b );
+}

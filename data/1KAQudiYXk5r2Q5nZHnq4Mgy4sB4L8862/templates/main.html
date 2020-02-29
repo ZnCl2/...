@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <title>Dream Station</title>
+
+
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <link rel="stylesheet" type="text/css" href="css/main.css">
+
+  <!-- models -->
+  <link rel="stylesheet" type="text/css" href="css/search-box.css">
+  <link rel="stylesheet" type="text/css" href="css/drag-container.css">
+  <link rel="stylesheet" type="text/css" href="css/menus.css">
+  <link rel="stylesheet" type="text/css" href="css/btn-v1.css">
+
+  <link rel="stylesheet" type="text/css" href="css/font-awesome.min.css">
+
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.css">
+
+
+  <!-- views styles -->
+  <link rel="stylesheet" type="text/css" href="css/playlist.css">
+  <link rel="stylesheet" type="text/css" href="css/search.css">
+
+</head>
+<body>
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol xmlns="http://www.w3.org/2000/svg" id="sbx-icon-search-3" viewBox="0 0 40 41">
+    <path d="M26.51 28.573c-2.803 2.34-6.412 3.748-10.35 3.748C7.236 32.32 0 25.087 0 16.16 0 7.236 7.235 0 16.16 0c8.926 0 16.16 7.235 16.16 16.16 0 4.213-1.61 8.048-4.25 10.925L40 39.015l-1.524 1.524L26.51 28.572zm-10.35 2.132c8.033 0 14.545-6.512 14.545-14.544S24.193 1.617 16.16 1.617 1.617 8.128 1.617 16.16c0 8.033 6.512 14.545 14.545 14.545z"
+          fill-rule="evenodd" />
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" id="sbx-icon-clear-5" viewBox="0 0 20 20">
+    <path d="M10 20c5.523 0 10-4.477 10-10S15.523 0 10 0 0 4.477 0 10s4.477 10 10 10zm1.35-10.123l3.567 3.568-1.225 1.226-3.57-3.568-3.567 3.57-1.226-1.227 3.568-3.568-3.57-3.57 1.227-1.224 3.568 3.568 3.57-3.567 1.224 1.225-3.568 3.57zM10 18.272c4.568 0 8.272-3.704 8.272-8.272S14.568 1.728 10 1.728 1.728 5.432 1.728 10 5.432 18.272 10 18.272z"
+          fill-rule="evenodd" />
+  </symbol>
+</svg>
+
+<div class="present" lavatube-area="main">
+
+  <div class="top-panel">
+    <div style="display: table; width: calc(100% - 82px)">
+      <div class="middle controls">
+        <div class="inner" style="text-align: center">
+          <div style="display: inline-block; margin-top: 5px">
+            <div style="display: table;">
+              <div class="middle"><div class="inner control"><i class="fa fa-backward" aria-hidden="true"></i></div></div>
+              <div class="middle"><div class="inner control"><i id="player-controls-play" class="fa fa-play bigger" aria-hidden="true" lavatube-onclick="onToggleAudio()"></i></div></div>
+              <div class="middle"><div class="inner control"><i class="fa fa-forward" aria-hidden="true"></i></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div lavatube-area="top-panel-playing" style="padding-left: 4vw; padding-right: 4vw;">
+        <div lavatube-if="playing != undefined" class="middle playing" style="background-image: url('optional/music/{{ playing.folder }}/cover-smoll.jpg')">
+          <div class="title">{{ playing.song }}
+            <i class="fa fa-ellipsis-h more" aria-hidden="true" lavatube-onclick="onPlayingMore(event, this)"></i>
+          </div>
+          <div class="description">{{ playing.artist }} ー {{ playing.album }}</div>
+
+          <div class="progress-bar">
+            <div class="progress">
+              <div class="color">
+                <div class="button"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div lavatube-if="playing == undefined" class="middle playing" style="background-image: url('default/music-note.png')">
+          <div class="title">Dream Station</div>
+          <div class="description"></div>
+        </div>
+      </div>
+
+
+      <div class="middle volume">
+        <div class="inner" style="text-align: center">
+          <div style="display: inline-block; margin-top: 5px">
+            <div style="display: table;">
+              <div class="middle"><div class="inner control"><i class="fa fa-volume-down" aria-hidden="true" lavatube-onclick="onVolumeMin()"></i></div></div>
+              <div class="middle"><div class="inner" style="margin-top: -7px">
+                <div class="volume-bar"></div>
+              </div></div>
+              <div class="middle"><div class="inner control"><i class="fa fa-volume-up" aria-hidden="true" lavatube-onclick="onVolumeMax()"></i></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="middle ext">
+        <div class="inner">
+          <div class="control"><i class="fa fa-commenting-o" aria-hidden="true"></i></div>
+          <div class="control"><i class="fa fa-list" aria-hidden="true"></i></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="left-panel">
+
+    <div class="search-bar">
+      <form novalidate="novalidate" onsubmit="return false;" class="searchbox sbx-custom">
+        <div role="search" class="sbx-custom__wrapper">
+          <input type="search" lavatube-oninput="onSearch(this)" lavatube-onclick="onSearchClick(this)" placeholder="{{ lang.search }}" autocomplete="off" required="required" class="sbx-custom__input">
+          <button type="submit" title="Submit your search query." class="sbx-custom__submit">
+            <svg role="img" aria-label="Search">
+              <use xlink:href="#sbx-icon-search-3"></use>
+            </svg>
+          </button>
+          <button type="reset" title="Clear the search query." lavatube-onclick="onClearSearch()" class="sbx-custom__reset">
+            <svg role="img" aria-label="Reset">
+              <use xlink:href="#sbx-icon-clear-5"></use>
+            </svg>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="menu">
+      <ul>
+        <div class="title">{{ lang.dreamStationMusic }}</div>
+
+        <li lavatube-onclick="onBrowse()"><div class="border" style="background: linear-gradient(180deg, rgba(246, 114, 136, 1) 0%, rgba(245, 70, 102, 1) 100%);">
+          <i class="fa fa-music" aria-hidden="true"></i></div> {{ lang.browse }}</li>
+
+        <li><div class="border" style="background: linear-gradient(180deg, rgba(245, 70, 102, 1) 0%, rgba(245, 57, 167, 1) 100%);">
+          <i class="fa fa-clock-o" aria-hidden="true"></i></div> {{ lang.recentlyAdded }}</li>
+
+      </ul>
+
+      <ul lavatube-area="playlists">
+        <div class="title">{{ lang.playlist }} <i class="fa fa-plus-circle add-btn" aria-hidden="true" lavatube-onclick="onAddNewPlaylist()"></i></div>
+        <li lavatube-foreach="playlist in playlists" lavatube-onclick="onSelectPlaylist('{{ playlist.id }}')" class="{{ playlist.id == selectedPlaylistId ? 'selected' : '' }}">{{ playlist.name }} <i class="fa fa-trash remove" aria-hidden="true" lavatube-onclick="onRemovePlaylist(event, '{{ playlist.id }}')"></i></li>
+      </ul>
+    </div>
+
+
+
+    <div class="language noselect" lavatube-onclick="onToggleLanguages(event, this)">
+      <i class="fa fa-globe" aria-hidden="true"></i> {{ lang.name }} <i class="fa fa-angle-up" aria-hidden="true"></i>
+    </div>
+    <a class="about" href="?do=about"> <i class="fa fa-info" aria-hidden="true"></i> {{ lang.about }}</a>
+
+  </div>
+
+
+  <div class="drag-container">
+    <div class="middle">
+      <div style="text-align: center;">
+        <span style="background-color: rgba(240, 240, 240, 0.9); padding: 16px; border-radius: 4px">
+          <i class="fa fa-music" aria-hidden="true"></i> {{ lang.addMusic }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" lavatube-area="container"></div>
+
+  <div class="overlay-absolute" id="overlayLoading">
+    <div class="middle">
+      <div style="text-align: center"> <div class="loading"> <img src="loading.gif" style="width: 64px; height: 64px"> </div> </div>
+    </div>
+  </div>
+
+</div>
+
+<audio id="test-audio" src="">
+  Your browser does not support the audio tag.
+</audio>
+
+</body>
+</html>

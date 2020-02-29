@@ -1,0 +1,43 @@
+<script>
+         window.btvideo.getvideo(function(data) {
+             parsepage($(".pagination"), data);
+             var $place = $("#post_container");
+             $place.empty();
+             $.each(data, function(i, one) {
+                 console.log(one);
+                 var $add = $("<li/>").attr({"class":"post box row"});
+                 var img_path = (one.screens && one.screens.length>0) ?one.screens[0].url :'';
+                 var $image = $("<img/>").attr({"src": img_path,"alt": one.title});
+                 var $title = $("<a/>").attr({"href":"?action=play&video="+one.video_id, "class":"zoom", "rel":"bookmark", "title":one.title})
+                                       .append($image)
+                                       .append($("<div/>").attr({"class":"zoomOverlay"}));
+                                       /*.on('click', function(e) {
+                                           e.preventDefault();
+                                           btvideo.action_parse['play'](one.video_id);
+                                       });
+                 */
+                 var $thumbnail = $("<div/>").attr({"class":"thumbnail"})
+                                             .append($title);
+                 $add.append($thumbnail);
+                 var $title2 = $("<a/>").attr({"href":"?action=play&video="+one.video_id, "rel":"bookmark", "title":one.title})
+                                        .text(one.title);
+                 /*
+                                        .on('click', function(e){
+                                            e.preventDefault();
+                                            btvideo.action_parse['play'](one.video_id);
+                                        });
+                 */
+                 var $article = $("<div/>").attr({"class":"article"}).append($("<h2/>").append($title2));
+                 $add.append($article);
+                 var $info =$("<div/>").attr({"class":"info"});
+                 var $span = $("<span/>").attr({"class":"info_category info_ico"});
+                 $.each(one.categorys, function(ii, c) {
+                     var $a = $("<a/>").attr({"href":"./?category="+c.category_id, "rel":"category tag"}).text(c.name);
+                     $span.append($a);
+                 });
+                 $info.append($span);
+                 $add.append($info);
+                 $place.append($add);
+             });
+         });
+</script>

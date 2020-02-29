@@ -1,0 +1,36 @@
+{
+  "db_name": "musics",
+  "db_file": "data/musics.db",
+  "version": 2,
+  "maps": {
+    "users/.+/data.json": {
+      "to_table": ["musics","played"]
+    }
+  },
+  "tables": {
+    "musics": {
+      "cols": [
+        ["id", "INTEGER PRIMARY KEY NOT NULL DEFAULT 0"],
+        ["title", "VARCHAR(666) NOT NULL DEFAULT ''"],
+        ["mp3", "VARCHAR(666) NOT NULL DEFAULT ''"],
+        ["json_id", "INTEGER REFERENCES json (json_id) DEFAULT 0"]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX musics_key ON musics(id, json_id)",
+        "CREATE UNIQUE INDEX musics_id ON musics(id)"
+      ],
+      "schema_changed": 1
+    },
+    "played": {
+      "cols": [
+        ["music", "INTEGER NOT NULL DEFAULT 32767"],
+        ["json_id", "INTEGER REFERENCES json (json_id) DEFAULT 0"]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX played_key ON played(music, json_id)",
+        "CREATE INDEX played_music ON played(music)"
+      ],
+      "schema_changed": 1
+    }
+  }
+}

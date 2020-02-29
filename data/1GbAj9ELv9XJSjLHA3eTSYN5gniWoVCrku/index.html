@@ -1,0 +1,642 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta http-equiv="Access-Control-Allow-Origin" content="*">
+<meta http-equiv="cache-control" content="max-age=0" />
+<meta http-equiv="cache-control" content="no-cache,no-store, must-revalidate" />
+<meta http-equiv="expires" content="SAT, 01 Jan 2000 1:00:00 GMT" />
+<meta http-equiv="expires" content="0" />
+<meta http-equiv="pragma" content="no-cache" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="gfw/css/bootstrap.min.css" rel="stylesheet">
+<style type="text/css">
+#main {
+	margin: 80px 20px 10px 20px;
+}
+
+#title {
+	font-size: 24px;
+}
+
+#prompt, #mainmsg{
+	margin-top: 30px;
+}
+
+#pkey, #bitmessage {
+	margin-top: 10px;
+	text-align: center;
+	width: 80%;
+	font-family: Georgia, "Times New Roman", Times, serif;
+}
+
+#alert {
+	margin-top: 10px;
+	width: 90%;
+	word-wrap: break-word;
+	display: none;
+}
+
+#open, #gfwpress, #msgsend {
+	margin-top: 10px;
+	width: 100px;
+}
+
+#node {
+	margin-top: 10px;
+	width: 90%;
+	display: none;
+}
+
+#qrinput {
+	margin-top: 10px;
+	width: 90%;
+	display: none;
+}
+
+select {
+	padding: initial;
+	background: #fff;
+	box-shadow: inset 0 -1px 3px rgba(0, 0, 0, 0.1);
+}
+
+#qrsets, #plugin_out {
+	margin-top: 10px;
+	width: 60%;
+}
+
+#qrcode {
+	margin-top: 10px;
+	width: 60%;
+	height: auto;
+	display: none;
+}
+
+#download {
+	margin-top: 50px;
+	width: 90%;
+}
+
+#copyright {
+	margin-top: 50px;
+	width: 100%;
+	font-family: Georgia, "Times New Roman", Times, serif;
+}
+</style>
+
+<link rel="stylesheet" href="css/all.css?site_modified={site_modified}" />
+<base href="" target="_top" id="base">
+<script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+</head>
+<body id="PageSites" class="{themeclass}">
+<div id="Trigger"></div>
+<div align="center" id="main">
+  <div id="title">
+    翻墙锦囊
+  </div>
+  <div id="prompt">
+    请输入密钥
+  </div>
+  <div>
+    <input name="pkey" type="text" id="pkey" value="BRBVMHAM6BMMOTKBSJHID7EAHTQ4VFTNN" class="form-control" align="left">
+  </div>
+  <div >
+    <button class="button btn-secondary" id="open" name="open">大杀器锦囊</button>&nbsp;&nbsp;<button class="button btn-primary" id="gfwpress" name="gfwpress">本站锦囊</button>
+  </div>
+  <div id="alert" class="alert alert-warning" role="alert" align="left">
+  </div>
+  <div>
+    <div name="qrinput" id="qrinput"></div>
+    <div><img id="qrcode"></img></div>
+    <pre id="node" class="alert alert-success" role="alert" align="left"></pre>
+  </div>
+  <div id="download">
+    <p> <a href="/1E2WNr2JDMYSrQ2AcRn3vaYVdwaoAUJb8f/" class="btn btn-outline-info btn-sm" role="button">转到大杀器首页</a>&nbsp;&nbsp;<a href="/Mail.ZeroNetwork.bit/?to=cntank" class="btn btn-outline-success btn-sm" role="button">给我发邮件</a></p>
+  </div>
+  <div id="mainmsg" style="display: none;">
+请输入留言<br><textarea id="bitmessage" class="form-control" rows="3" wrap="soft" style="align-content:left; text-align:left; overflow:auto;"></textarea>
+<button class="button btn-primary" id="msgsend" name="msgsend">发送比特信</button>
+  </div>
+  <div id="plugin_out">
+    <button class="button btn-primary" id="checkplugin" name="checkplugin">BitMessage</button>
+  </div>
+  <div id="copyright"><a href="/1GbAj9ELv9XJSjLHA3eTSYN5gniWoVCrku/">cnpress.duia.ro</a>&nbsp;&copy;2017-2027 | Powerd by <a href="https://zeronet.io/">ZeroNet</a>
+  </div>
+</div>
+<script src="gfw/js/jquery-3.2.1.min.js"></script> 
+<script src="qrcode/qr.min.js"></script>
+<script src="gfw/js/popper.min.js"></script> 
+<script src="gfw/js/bootstrap.min.js"></script> 
+<script src="gfw/js/cryptojs/components/core.js"></script> 
+<script src="gfw/js/cryptojs/components/md5.js"></script> 
+<script src="gfw/js/cryptojs/components/evpkdf.js"></script> 
+<script src="gfw/js/cryptojs/components/enc-base64.js"></script> 
+<script src="gfw/js/cryptojs/components/cipher-core.js"></script> 
+<script src="gfw/js/cryptojs/components/aes.js"></script> 
+<script src="gfw/js/cryptojs/components/hmac.js"></script> 
+<script src="gfw/js/cryptojs/components/sha1.js"></script> 
+<script src="gfw/js/cryptojs/components/sha256.js"></script> 
+<script type="text/javascript">
+
+	$(document).ready(function(e) {  			
+     
+			$("#msgsend").click(function(e) {
+      var message = document.getElementById("bitmessage").value;
+      try {
+        $("#alert").text("Message sending...").show();
+        Page.sendMessage({text: message}, (function(_this) {
+    return function(response) {
+  		if (response) {
+			try {
+  		var out = document.getElementById("alert");
+			out.innerHTML = "<pre>" + JSON.stringify(response, null, "  ") + "</pre>";
+			}
+			catch(e){$("#alert").text("BitMessage 返回信息：<p>" + dump(response) + "</br><a href=\"#Install+bitmessage+plugin\" onclick=\"return installBMSPlugin();\">Install Bitmessage Plugin</a>").show();}
+    } else out.innerHTML = "Empty response on bitmessage plugin cmd."
+  };})(this));
+      }
+      catch(e){$("#alert").text('BitMessage 发送出错！').show();}
+      return false;
+     });
+     
+			$("#checkplugin").click(function(e) {
+      try {
+        Page.reloadServerInfo((function(_this) {
+        return function(sinfo) {
+  		   var out = document.getElementById("plugin_out");
+  		if (sinfo.plugins_rev) {
+			var rev = sinfo.plugins_rev["Bitmessage"];
+			out.innerHTML = "<a href=\"#Install+bitmessage+plugin\" onclick=\"return installBMSPlugin();\">Install Bitmessage Plugin</a>";
+     Page.reloadPluginInfo();
+     $("#mainmsg").show();
+		} else {
+			Page.cmd("wrapperNotification", ["warn","你的 ZeroNet 版本不支持在线安装插件。", 3000]);}
+          }
+     })(this));
+}
+catch(e){$("#alert").text('BitMessage 插件出错！').show();}
+     });
+     
+			$("#open").click(function(e) {
+				
+				var pkey = $.trim($("#pkey").val());
+				
+				if (pkey == '') {
+					try {Page.cmd("wrapperNotification", ["error", "请输入密钥！", 3000]);}catch(e){$("#alert").text('请输入密钥').show();}
+					
+					$("#pkey").focus();
+					
+					$("#node").hide();
+					
+					return false;
+					
+				}
+				
+				var regex = '^[A-Z0-9]{33}$';
+				
+				if (!pkey.match(regex)) {
+					try {Page.cmd("wrapperNotification", ["error", "密钥错误！正确的密钥包含33个大写字母或数字！", 3000]);}catch(e){$("#alert").text('密钥错误！正确的密钥包含33个大写字母或数字').show();}
+					
+					$("#pkey").focus();
+					
+					$("#node").hide();
+					
+					return false;
+					
+				}				
+				
+				var md5 = CryptoJS.MD5(pkey + "\nGFW.Press").toString(CryptoJS.enc.Hex);
+
+				$.ajax({type: "GET", url: "gfw.press/" + md5 + ".jsonp?r=" + Math.random(), dataType: "jsonp",	 jsonpCallback: 'callback', crossDomain:true,
+					
+								success: function(encrypted) {
+									
+									var decrypted = CryptoJS.AES.decrypt(encrypted.data, pkey + "\nGFW.Press");
+									
+									var info = decrypted.toString(CryptoJS.enc.Utf8);
+									
+									if (info == null || info == '') {
+										try {Page.cmd("wrapperNotification", ["error", "密钥错误！请使用正确的密钥", 6000]);}catch(e){$("#alert").text('密钥错误！请使用正确的密钥').show();}
+										
+										$("#pkey").focus();
+										
+										$("#node").hide();
+										
+										return false;
+										
+									} else {
+										
+										$("#open").prop("disabled", true);
+										
+										setTimeout('$("#open").prop("disabled", false)', 4000);
+									
+										$("#node").hide();
+										
+										$("#node").text(info);
+										
+										$("#node").show(2000);
+										
+										return true;
+										
+									}
+									
+								},
+								
+								error: function(req, textStatus , err) {
+									try {Page.cmd("wrapperNotification", ["progress", '锦囊尚未到达，请稍候重试，可能需要等待几分钟或几十分钟', 10000]);} catch(e){$("#alert").text('锦囊尚未到达，请稍候重试，可能需要等待几分钟或几十分钟').show();}
+									
+									$("#node").hide();
+									
+									return false;
+									
+								}
+						
+				});								
+
+				$.ajax({type: "GET", url: "gfw.qr/" + md5 + ".jsonp?r=" + Math.random(), dataType: "jsonp",	 jsonpCallback: 'qrcodes', crossDomain:true,
+					
+								success: function(encrypted) {
+									try {
+									var decrypted = CryptoJS.AES.decrypt(encrypted.data, pkey + "\nGFW.Press");
+									
+									var info = decrypted.toString(CryptoJS.enc.Utf8);
+									} catch (e) {}
+									if (info == null || info == '') {
+										try {Page.cmd("wrapperNotification", ["error", "世界变了样！", 6000]);}catch(e){$("#alert").text('世界变了样！').show();}
+										
+										return false;
+										
+									}
+
+									var qrstrings = JSON.parse(info);
+									
+									if (! qrstrings) {
+										try {Page.cmd("wrapperNotification", ["error", "二维码错误！", 6000]);}catch(e){$("#alert").text('二维码错误！').show();}
+										
+										$("#qrinput").hide();
+										
+										$("#qrcode").hide();
+										
+										return false;
+										
+									} else {
+									
+										var parent = document.getElementById("qrinput");
+										
+										var dynamiclist_cbi_init = function() {
+											while (parent.firstChild) {
+												parent.removeChild(parent.firstChild);
+											}
+											var sel = document.createElement("select");
+											sel.id = "qrsets";
+											sel.name = "qrsets";
+											sel.index = 0;
+											sel.className = "form-control select custom-select";
+											sel.onchange = function() {
+												qr_update(this.value);
+											};
+											parent.appendChild(sel);
+
+											for (var idx = 0; idx < qrstrings.length; idx++) {
+												var item=qrstrings[idx];
+												var opt = document.createElement("option");
+												opt.value = item.url;
+												opt.appendChild(document.createTextNode(item.index));
+												sel.appendChild(opt);
+											}
+										}
+										
+										dynamiclist_cbi_init();
+										
+										document.getElementById("qrsets").onchange();
+										
+										$("#alert").hide();
+										
+										$("#open").prop("disabled", true);
+										
+										setTimeout('$("#open").prop("disabled", false)', 4000);
+									
+										$("#qrinput").show(2200);
+										
+										$("#qrcode").show(2400);
+										
+										$("#qrsets").focus();
+										
+										return true;															
+									}
+								},
+								
+								error: function(req, textStatus , err) {
+									try {Page.cmd("wrapperNotification", ["error", "锦囊二维码尚未到达！", 3000]);}catch(e){$("#alert").text('锦囊二维码尚未到达！').show();}
+									
+									$("#qrinput").hide();
+									
+									$("#qrcode").hide();
+									
+									return false;
+									
+								}
+						
+				});
+
+			});
+			
+			$("#gfwpress").click(function(e) {
+				
+				var pkey = $.trim($("#pkey").val());
+				
+				if (pkey == '') {
+					try {Page.cmd("wrapperNotification", ["error", "请输入密钥！", 3000]);}catch(e){$("#alert").text('请输入密钥').show();}
+					
+					$("#pkey").focus();
+					
+					$("#node").hide();
+					
+					return false;
+					
+				}
+				
+				var regex = '^[A-Z0-9]{33}$';
+				
+				if (!pkey.match(regex)) {
+					try {Page.cmd("wrapperNotification", ["error", "密钥错误！正确的密钥包含33个大写字母或数字！", 3000]);}catch(e){$("#alert").text('密钥错误！正确的密钥包含33个大写字母或数字').show();}
+					
+					$("#pkey").focus();
+					
+					$("#node").hide();
+					
+					return false;
+					
+				}				
+				
+				var md5 = CryptoJS.MD5(pkey + "\n_We_can_reach_every_corner_in_the_world!").toString(CryptoJS.enc.Hex);
+
+				$.ajax({type: "GET", url: "cnpress/" + md5 + ".jsonp?r=" + Math.random(), dataType: "jsonp",	 jsonpCallback: 'cnpress', crossDomain:true,
+					
+								success: function(encrypted) {
+									
+									var decrypted = CryptoJS.AES.decrypt(encrypted.data, pkey + "\n_We_can_reach_every_corner_in_the_world!");
+									
+									var info = decrypted.toString(CryptoJS.enc.Utf8);
+									
+									if (info == null || info == '') {
+										try {Page.cmd("wrapperNotification", ["error", "密钥错误！请使用正确的密钥", 6000]);}catch(e){$("#alert").text('密钥错误！请使用正确的密钥').show();}
+										
+										$("#pkey").focus();
+										
+										$("#node").hide();
+										
+										return false;
+										
+									} else {
+										
+										$("#gfwpress").prop("disabled", true);
+										
+										setTimeout('$("#gfwpress").prop("disabled", false)', 4000);
+									
+										$("#node").hide();
+										
+										$("#node").text(info);
+										
+										$("#node").show(2000);
+										
+										return true;
+										
+									}
+									
+								},
+								
+								error: function(req, textStatus , err) {
+									try {Page.cmd("wrapperNotification", ["progress", '锦囊尚未到达，请稍候重试，可能需要等待几分钟或几十分钟', 10000]);} catch(e){$("#alert").text('锦囊尚未到达，请稍候重试，可能需要等待几分钟或几十分钟').show();}
+									
+									$("#node").hide();
+									
+									return false;
+									
+								}
+						
+				});								
+
+				$.ajax({type: "GET", url: "cnpress.qr/" + md5 + ".jsonp?r=" + Math.random(), dataType: "jsonp",	 jsonpCallback: 'pressqr', crossDomain:true,
+					
+								success: function(encrypted) {
+									try {
+									var decrypted = CryptoJS.AES.decrypt(encrypted.data, pkey + "\n_We_can_reach_every_corner_in_the_world!");
+									
+									var info = decrypted.toString(CryptoJS.enc.Utf8);
+									} catch (e) {}
+									if (info == null || info == '') {
+										try {Page.cmd("wrapperNotification", ["error", "世界变了样！", 6000]);}catch(e){$("#alert").text('世界变了样！').show();}
+										
+										return false;
+										
+									}
+
+									var qrstrings = JSON.parse(info);
+									
+									if (! qrstrings) {
+										try {Page.cmd("wrapperNotification", ["error", "二维码错误！", 6000]);}catch(e){$("#alert").text('二维码错误！').show();}
+										
+										$("#qrinput").hide();
+										
+										$("#qrcode").hide();
+										
+										return false;
+										
+									} else {
+									
+										var parent = document.getElementById("qrinput");
+										
+										var dynamiclist_cbi_init = function() {
+											while (parent.firstChild) {
+												parent.removeChild(parent.firstChild);
+											}
+											var sel = document.createElement("select");
+											sel.id = "qrsets";
+											sel.name = "qrsets";
+											sel.index = 0;
+											sel.className = "form-control select custom-select";
+											sel.onchange = function() {
+												qr_update(this.value);
+											};
+											parent.appendChild(sel);
+
+											for (var idx = 0; idx < qrstrings.length; idx++) {
+												var item=qrstrings[idx];
+												var opt = document.createElement("option");
+												opt.value = item.url;
+												opt.appendChild(document.createTextNode(item.index));
+												sel.appendChild(opt);
+											}
+										}
+										
+										dynamiclist_cbi_init();
+										
+										document.getElementById("qrsets").onchange();
+										
+										$("#alert").hide();
+
+										$("#gfwpress").prop("disabled", true);
+										
+										setTimeout('$("#gfwpress").prop("disabled", false)', 4000);
+
+										
+										$("#qrinput").show(2200);
+										
+										$("#qrcode").show(2400);
+										
+										$("#qrsets").focus();
+										
+										return true;															
+									}
+								},
+								
+								error: function(req, textStatus , err) {
+									try {Page.cmd("wrapperNotification", ["error", "锦囊二维码尚未到达！", 3000]);}catch(e){$("#alert").text('锦囊二维码尚未到达！').show();}
+									
+									$("#qrinput").hide();
+									
+									$("#qrcode").hide();
+									
+									return false;
+									
+								}
+						
+				});
+
+			});
+	
+	});		
+
+</script>
+<!--[if lt IE 9]><script src=external-lib/es5-shim.min.js"></script><![endif]-->
+<script>
+var qr_input_handler = $('#qrsets');
+
+function qr_hash() {
+  return window.location.hash.substring(1)
+}
+
+function qr_render(text) {
+  qr.image({
+    image: document.getElementById("qrcode"),
+    level: "Q",
+    size: 7,
+    value: text,
+  });
+}
+
+var last = ""
+function qr_update(text) {
+  if (text == last)
+    return
+  last = text
+
+  qr_render(text)
+  qr_input_handler.val(text)
+  //window.location.hash = "#" + encodeURIComponent(text)
+  //window.location.hash = "#" + text
+  //console.log("updated to: " + text)
+}
+
+(function qr_main() {
+  qr_input_handler.bind('keyup keypress blur change cut copy paste', function(event) {
+    qr_update(qr_input_handler.val())
+  })
+/*
+  qr_input_handler.bind('hashchange', function(event) {
+    qr_update(qr_hash())
+  })
+*/
+  var text = qr_hash()
+
+  if (text.length < 1) text = ""
+  qr_update(text)
+})()
+
+function encode_utf8(s) {
+  return unescape(encodeURIComponent(s));
+}
+
+function decode_utf8(s) {
+  return decodeURIComponent(escape(s));
+}
+function utf8_to_str(a) {
+    for(var i=0, s=''; i<a.length; i++) {
+        var h = a[i].toString(16)
+        if(h.length < 2) h = '0' + h
+        s += '%' + h
+    }
+    return decodeURIComponent(s)
+}
+function utf8_from_str(s) {
+    for(var i=0, enc = encodeURIComponent(s), a = []; i < enc.length;) {
+        if(enc[i] === '%') {
+            a.push(parseInt(enc.substr(i+1, 2), 16))
+            i += 3
+        } else {
+            a.push(enc.charCodeAt(i++))
+        }
+    }
+    return a
+}
+function dump(x, indent) {
+    var indent = indent || '';
+    var s = '';
+    if (Array.isArray(x)) {
+        s += '[';
+        for (var i=0; i<x.length; i++) {
+            s += dump(x[i], indent)
+            if (i < x.length-1) s += ', ';
+        }
+        s +=']';
+    } else if (x === null) {
+      s = 'NULL';
+    } else switch(typeof x) {
+        case 'undefined':
+            s += 'UNDEFINED';
+            break;
+        case 'object':
+            s += "{ ";
+            var first = true;
+            for (var p in x) {
+                if (!first) s += indent + '  ';
+                s += p + ': ';
+                s += dump(x[p], indent + '  ');
+                s += "\n"
+                first = false;
+            }
+            s += '}';
+            break;
+        case 'boolean':
+            s += (x) ? 'TRUE' : 'FALSE';
+            break;
+        case 'number':
+            s += x;
+            break;
+        case 'string':
+            s += '"' + x + '"';
+            break;
+        case 'function':
+            s += '<FUNCTION>';
+            break;
+        default:
+            s += x;
+            break;
+    }
+    return s;
+}
+
+function installBMSPlugin() {
+		try {
+     Page.cmd("wrapperNotification", ["info", "BitMessage 插件安装...", 3000]);
+     Page.cmd("pluginAddRequest", "plugins/Bitmessage");
+   }
+   catch(e){$("#alert").text('BitMessage 安装出错！').show();}
+		return false
+}
+</script>
+<script type="text/javascript" src="js/all.js?lang={lang}&site_modified={site_modified}"></script>
+</body>
+</html>

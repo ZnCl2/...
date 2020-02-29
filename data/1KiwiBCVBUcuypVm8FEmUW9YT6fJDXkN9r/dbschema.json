@@ -1,0 +1,54 @@
+{
+	"db_name": "Kiwipedia",
+	"db_file": "Kiwipedia.db",
+	"version": 3,
+	"maps": {
+		".*data/users/.+/content.json": {
+			"to_json_table": ["cert_user_id"]
+		},
+		"^data/users/.+/data.json": {
+			"to_table": [
+				"hubs"
+			]
+		},
+		"^merged-Kiwipedia/.+/data/users/.+/.+.json": {
+			"to_table": [
+				"article"
+			]
+		}
+	},
+	"tables": {
+		"json": {
+			"cols": [
+				["json_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+				["site", "TEXT"],
+				["directory", "TEXT"],
+				["file_name", "TEXT"],
+				["cert_user_id", "TEXT"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX path ON json(directory, site, file_name)"],
+			"schema_changed": 4
+		},
+		"hubs": {
+			"cols": [
+				["language", "TEXT"],
+				["subgroup", "TEXT"],
+				["address", "TEXT"],
+				["slug", "TEXT"],
+				["json_id", "INTEGER"]
+			],
+			"schema_changed": 3
+		},
+		"article": {
+			"cols": [
+				["title", "TEXT"],
+				["text", "TEXT"],
+				["slug", "TEXT"],
+				["date_updated", "INTEGER"],
+				["imported", "TEXT"],
+				["json_id", "INTEGER"]
+			],
+			"schema_changed": 2
+		}
+	}
+}

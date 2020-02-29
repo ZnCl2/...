@@ -1,0 +1,82 @@
+{
+	"next_topic_id": 1,
+	"topic": [],
+	"topic_vote": {},
+	"next_comment_id": 12,
+	"comment": {
+		"1600857431_1L4dZcDF2maSKHDy788yhxpYnBWnXadUtS": [
+			{
+				"comment_id": 1,
+				"body": "What do you get from \"cat /proc/sys/net/ip_forward\"? \n\nIf it's set to 0, IP forwarding is not enabled. If you get 1, that's not the problem, what Linux distribution are you using?\n\nAny time you're running Linux as a VPN server (which functionally makes it a router), IP forwarding must be enabled.",
+				"added": 1611810737
+			}
+		],
+		"1528234320_1L4dZcDF2maSKHDy788yhxpYnBWnXadUtS": [
+			{
+				"comment_id": 2,
+				"body": "Comcast uses 75.75.75.75 and 75.75.76.76, but they're open to everyone.\n\nOpenDNS (acquired by Cisco) is 208.67.222.222 and 208.67.220.220.\n\nI sometimes fall back to Level3's old DNS resolvers at 4.2.2.2 and 4.2.2.3",
+				"added": 1611810934
+			}
+		],
+		"1584106140_1Jgu3kQaBojGnFj82E6Gd3tsyAsKCk5SX6": [
+			{
+				"comment_id": 3,
+				"body": "It depends. Often the throughput limitations for cable/DOCSIS/HFC are enforced on the modem itself. The configuration payloads(including bandwidth policy) are cryptographically signed by the provider. Unless you can intercept the payloads on the HFC side of the modem, manipulate them, and re-sign them with a trusted key, it's not likely.\n\nAnother method is using policy enforcement as your traffic transits the provider network. In a cellular network this is handled by two entities called the PCRF (Policy/Charging Rules Function) and the PCEF (Policy/Charging Enforcement Function). You're going to have a hard time getting past those as ALL of your traffic passes through them - it's encapsulated in a device-specific tunnel (called GTP) until it breaks out just before transiting the PCEF. Cable operators use something similar, including a system by Sandvine (widely used by Comcast to deal with torrent traffic a few years back). \n\nDSL operators will typically do policy enforcement in a similar tunnel fashion (usually a simple rate/usage limit) if you use PPPoE. If your DSL provider uses DHCP, they'll have something more like Sandvine, much of the time.\n\nIn the first scenario, you're basically out of luck, unless they've whitelisted certain services.\n\nIn the second scenario, it depends on how good the policy enforcement software is - all systems have blind spots, but they're constantly getting updated, in most cases, to address these. Most of the time, they would go unnoticed, but often, once they're discovered, people go overboard and generate traffic patterns that stand out in metrics.\n\nISPs are smart these days,  and they have tools to identify abnormal traffic patterns. Unfortunately users take advantage of blind spots and make them blatantly obvious to the network operators - then it gets fixed and no more free HBO weekend.",
+				"added": 1611811460
+			}
+		],
+		"1583915794_1L4dZcDF2maSKHDy788yhxpYnBWnXadUtS": [
+			{
+				"comment_id": 4,
+				"body": "> [ulrichard](#comment_2_1PSaHi14Xh4Kjo3yyjDgbRtj4YLQgWV4QJ): ... \"ensures that your ISP cannot collect and sell personal information related to your browsing behavior. \"-> For this to be true, one has to also use TOR or a VPN.\n\nTrue. Even though the payload isn't visible when using HTTPS, the headers, including domain and URI are visible to a snooping network operator.\n\nJust run up Wireshark and look for \"https\" and you'll see the headers.",
+				"added": 1611811544
+			}
+		],
+		"1582105711_1L4dZcDF2maSKHDy788yhxpYnBWnXadUtS": [
+			{
+				"comment_id": 5,
+				"body": "Clonezilla can also be handy if you need to shove disk/partition images to SMB/CIFS or NFS locations. (It can do disk/partition to disk/partition directly as well.)",
+				"added": 1611811635
+			}
+		],
+		"1552755084_1L4dZcDF2maSKHDy788yhxpYnBWnXadUtS": [
+			{
+				"comment_id": 6,
+				"body": "Synology DS1019 has been a champ. 5x 6TB disks in RAID6. It works great with my Macs as well as my Windows and Linux systems. I even have a Kubernetes cluster (Ubuntu 20.04) using the NFS for persistent volume storage.",
+				"added": 1611811746
+			}
+		],
+		"1547562197_1L4dZcDF2maSKHDy788yhxpYnBWnXadUtS": [
+			{
+				"comment_id": 7,
+				"body": "This is much like upgrading the OS on an old computer. Is it possible? Probably. Will you be happy with the result? YMMV.",
+				"added": 1611812127
+			}
+		],
+		"1533110363_1L4dZcDF2maSKHDy788yhxpYnBWnXadUtS": [
+			{
+				"comment_id": 8,
+				"body": "Personally, I tend to break routing instead of using a firewall. When I start the VPN, I add static routes specifically for the VPN servers, then remove the default route from the system. \n\nOnce the VPN tunnel comes up, a default route is added via the newly-created tunnel (or two routes via the tunnel: 0.0.0.0/1 and 128.0.0.0/1). As these two routes catch ALL network traffic and are more specific than the default, they will override the default route, even if it had been left in place.\n\nThis ensures that the ONLY way traffic can leave the system (toward any network it's not directly connected to) is via the VPN.\n\nNOTE: Do be conscious of your DNS servers. If your VPN server(s) are on your LAN, they will still be reachable and may leak DNS requests unencrypted. Ideally the DNS servers used would be within the VPN provider's network.",
+				"added": 1611812418
+			}
+		],
+		"1531467560_1L4dZcDF2maSKHDy788yhxpYnBWnXadUtS": [],
+		"1518168486_1L4dZcDF2maSKHDy788yhxpYnBWnXadUtS": [
+			{
+				"comment_id": 10,
+				"body": "As I understand PRISM, it's a capture of raw data from ISP pipes. Much of it would be encrypted (who knows which private keys they have access to, or if they've implemented MITM in different networks).\n\nThe name itself is emblematic of the collection method, as in fiber optic systems. A prism would be used to implement a passive optical tap, sending a duplicate of EVERYTHING that passes across the cable without the sending/receiving party having any indication of a tap.\n\nOften the only indication that a tap is in place is a drop in optical power, but even this could be addressed with amplification.\n\nBottom line: The operators participating are likely handing over a duplicate of every packet traversing the networks. If you don't control the cryptography end-to-end, or trust the other end's diligence, consider communications public.",
+				"added": 1611812758
+			}
+		],
+		"1518862720_1L4dZcDF2maSKHDy788yhxpYnBWnXadUtS": [
+			{
+				"comment_id": 11,
+				"body": "I believe NTFS calls the equivalent of links/symlinks a \"junction\", but it's been a while since I did much with Windows.",
+				"added": 1611812802
+			}
+		]
+	},
+	"comment_vote": {
+		"2_1PSaHi14Xh4Kjo3yyjDgbRtj4YLQgWV4QJ": 1
+	}
+}

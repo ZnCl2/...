@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <title>New ZeroNet site!</title>
+ <meta charset="utf-8">
+ <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+ <base href="" target="_top" id="base">
+ <script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+ <link rel="stylesheet" href="/1Hy9jq14bkNAGJKhk1cNphBkCacnXLEUve/style.css">
+</head>
+<body class="{themeclass}">
+	<div id="top"></div>
+	<header>
+		<div class="header">
+			<a class="header_icon" href="/1Hy9jq14bkNAGJKhk1cNphBkCacnXLEUve/">
+				<img src="/1Hy9jq14bkNAGJKhk1cNphBkCacnXLEUve/image/avatar.png">
+			</a>
+			<div class="header_title">
+				<a class="sitename" href="/1Hy9jq14bkNAGJKhk1cNphBkCacnXLEUve/">私のゼロネット備忘録</a>
+				<a class="sitename_eng" href="/1Hy9jq14bkNAGJKhk1cNphBkCacnXLEUve/english.html">My Memorandum of ZeroNet</a>
+			</div>
+		</div>
+	</header>
+	<div class="pagelist">
+		<nav>
+			<ul>
+				<li><a href="/1Hy9jq14bkNAGJKhk1cNphBkCacnXLEUve/index.html">ホーム</a></li>
+				<li><a href="/1Hy9jq14bkNAGJKhk1cNphBkCacnXLEUve/english.html">ENGLISH</a></li>
+				<li><a href="/1Hy9jq14bkNAGJKhk1cNphBkCacnXLEUve/about.html">私について</a></li>
+				<li><a href="/1Hy9jq14bkNAGJKhk1cNphBkCacnXLEUve/links.html">リンク集</a></li>
+				<li><a href="/1Hy9jq14bkNAGJKhk1cNphBkCacnXLEUve/contact.html">チャット</a></li>
+				<li><a href="/1JpHdKRSE6tGdNyCCtfkXVQC4uqmnaMkpw/">ブログ</a></li>
+			<ul>
+		</nav>
+	</div>
+	<article>
+		<div class="section">
+			<h2>チャットスペース</h2>
+			<p>チュートリアルを見ながらZeroChatを作成してみました。私への連絡等、自由に使用してください。たまに私も使います。ソースは自分が理解しやすいように少しだけ改変しています。（行末に;をつける程度の改変）チュートリアル通り作ったつもりですがバグがあるかもしれません。使用は自己責任でお願いします。</p>
+			<p>現在、以下の証明書署名者?(cert-signer)に対応しています。</p>
+			<ul>
+				<li>zeroid.bit</li>
+				<li>nanasi</li>
+			</ul>
+			<h3>参考文献</h3>
+			<ul>
+				<li><a href="/Blog.ZeroNetwork.bit/?Post:99:ZeroChat+tutorial+new">ZeroChat tutorial (new)</a></li>
+				<li><a href="/1GxAJch4zcd1wCJ2YF9GKHLp2RwqAWarNi/">恒心教ZeroNet支部</a></li>
+			</ul>
+		</div>
+		<div class="section" style="text-align: center">
+			<h2>チャットスペース</h2>
+			<a href="#Select+user" id="select_user" onclick="return page.selectUser()">ユーザーを選択</a>
+			<input type="text" id="message">
+			<input type="button" id="send" value="送信！" onclick="return page.sendMessage()" />
+			<div class="chat_log">
+				<ul id="messages">
+					<li><b>システム</b>: ゼロチャットにようこそ！</li>
+				</ul>
+			</div>
+		</div>
+		<style>
+		.chat_log{
+			max-height: 800px;
+			margin: 0 32px;
+			padding: 8px;
+			overflow: auto;
+			text-align: left;
+		}
+
+		.chat_log ul{
+			list-style-type: none;
+			margin: 0;
+			padding: 0;
+		}
+		.chat_log li{
+			display: block;
+			background-color: #373844;
+			padding: 15px 25px;
+			margin: 2px 0;
+			color: #e1e1e1;
+		}
+		.chat_log .info{
+			margin-bottom: 7px;
+			font-size: 14px;
+			font-weight: bold;
+		}
+		.chat_log .info .date{
+			margin-bottom: 4px;
+			font-size: 12px;
+			color: #AAA;
+		}
+		.chat_log p{
+			margin-top: 8px;
+			margin-bottom: 8px;
+		}
+		.theme-light .chat_log li{
+			background-color: #FFFFFF;
+			color: #333332;
+		}
+		</style>
+		<script type="text/javascript" src="js/ZeroFrame.js"></script>
+		<script>
+		class ZeroChat extends ZeroFrame {
+			addMessage(username,message){
+				let message_escaped = message.replace(/</g,"&lt;").replace(/>/g,"&gt;"); //メッセージ内のHTMLタグをエスケープする
+				if(this.messages != undefined){
+					this.messages.innerHTML += '<li><div class="info">' + username + '</div><p>' + message_escaped + "</p></li>";
+				}
+			}
+
+			onOpenWebsocket(){
+				this.messages = document.getElementById("messages");
+
+				//ページ更新時に入力したメッセージを表示する
+				this.loadMessages();
+
+				//チュートリアルには書かれていたけれど、this.loadMessages();で消えてしまうのでコメントアウト
+				//this.addMessage("システム","ZeroFrame APIを呼び出す準備が出来ました！");
+
+				this.cmd("siteInfo",{},(site_info) => {
+					if(site_info.cert_user_id){
+						document.getElementById("select_user").innerText = site_info.cert_user_id;
+					}
+					this.site_info = site_info;
+				});
+			}
+
+			selectUser(){
+				this.cmd("certSelect",{accepted_domains: ["zeroid.bit","nanasi"]});
+				return false;
+			}
+
+			onRequest(cmd,message){
+				if(cmd == "setSiteInfo"){
+					if(message.params.cert_user_id){
+						document.getElementById("select_user").innerHTML = message.params.cert_user_id;
+					}else{
+						document.getElementById("select_user").innerHTML = "ユーザーを選択";
+					}
+					this.site_info = message.params; //アクセスを許可した後の為にサイト情報を保存します
+				}
+
+				//ファイルが更新されたらメッセージを再度読み込む
+				if(message.params.event[0] == "file_done"){
+					this.loadMessages();
+				}
+			}
+
+			sendMessage(){ //送信ボタンを押したときにメッセージをdata.jsonファイルに追加、署名、そして他のユーザーに送信します。
+				if(!this.site_info.cert_user_id){ //アカウントが選択されていなかったらエラーを表示する
+					this.cmd("wrapperNotification",["info","あなたのアカウントを選んでください。"]);
+					return false;
+				}
+				
+				//データファイルパスを代入
+				let data_inner_path = "data/users/" + this.site_info.auth_address + "/data.json";
+				let content_inner_path = "data/users/" + this.site_info.auth_address + "/content.json";
+				
+				//現在のメッセージを読み込む
+				this.cmd("fileGet",{"inner_path": data_inner_path, "required": false},(data) => {
+					if(data){
+						data = JSON.parse(data); //現在のファイルを解析する
+					}else{ //まだ存在しなかったらデフォルトのデータを使用する
+						data = { "message": [] };
+					}
+
+					//新しいメッセージをデータに追加する
+					data.message.push({
+						"body": document.getElementById("message").value,
+						"date_added": Date.now()
+					});
+
+					//データ配列をUTF-8のjsonデータにエンコードする
+					let json_raw = unescape(encodeURIComponent(JSON.stringify(data,undefined,"\t")));
+
+					//ファイルをディスクに書き込む
+					this.cmd("fileWrite", [data_inner_path, btoa(json_raw)],(res) => {
+						if(res == "ok"){
+							//メッセージ入力欄をリセットする
+							document.getElementById("message").value = "";
+							//変更されたユーザーファイルを署名する
+							this.cmd("siteSign",{"inner_path": content_inner_path},(res) => {
+								//メッセージを読み込む
+								this.loadMessages();
+								//他のユーザーに送信する
+								this.cmd("sitePublish", {"inner_path": content_inner_path, "sign": false});
+							});
+						}else{
+							this.cmd("wrapperNottification", [ "error", "ファイル書き込みエラー: #{res}"]);
+						}
+					});
+				});
+
+				return false;
+			}
+
+
+			loadMessages(){ //dbQueryコマンドを使用してSQLデータベースにロードされたメッセージを読み込みます
+				this.cmd("dbQuery", ["SELECT * FROM message LEFT JOIN json USING (json_id) ORDER BY date_added DESC"], (messages) => {
+					document.getElementById("messages").innerHTML = ""; //最初は毎回メッセージを消す
+					for(let i = 0;i < messages.length;i++){
+						let dateText = (new Date(messages[i].date_added)).toLocaleString();
+						let user_id = messages[i].cert_user_id;
+						if(user_id == "m64i@zeroid.bit"){
+							user_id = "<span style=\"color: #F00\">m64i</span>@zeroid.bit";
+						}else if(user_id == "1Hcyh6dCQKs9j@nanasi"){
+							user_id = "<span style=\"color: #C33\">1Hcyh6dCQKs9j</span>@nanasi";
+						}
+						this.addMessage(user_id + ' ━ <span class="date">' + dateText + "</span>",messages[i].body);
+					}
+					//チュートリアルには書かれていなかったけど、最後に最初に書かれていたメッセージがほしい！（コダワリ）
+					this.addMessage("システム","ゼロチャットにようこそ！");
+				});
+			}
+		}
+
+		page = new ZeroChat();
+		</script>
+	</article>
+	<footer>
+		<div class="pagetop">
+			<a href="#top">PAGE TOP</a>
+		</div>
+		<div class="footer_title">
+			<a class="sitename" href="/1Hy9jq14bkNAGJKhk1cNphBkCacnXLEUve">私のゼロネット備忘録</a>
+			<a class="sitename_eng" href="/1Hy9jq14bkNAGJKhk1cNphBkCacnXLEUve/english.html">My Memorandum of ZeroNet</a>
+			<a class="siteurl" href="/1Hy9jq14bkNAGJKhk1cNphBkCacnXLEUve">http://127.0.0.1:43110/1Hy9jq14bkNAGJKhk1cNphBkCacnXLEUve/</a>
+		</div>
+		<div class="copyright">
+		©2020 すまるん All rights Reserved.<br>
+		Powered By ZeroNet
+		</div>
+	</footer>
+</body>
+</html>

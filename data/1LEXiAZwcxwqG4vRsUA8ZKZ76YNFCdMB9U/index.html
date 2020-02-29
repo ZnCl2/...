@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link href='//fonts.googleapis.com/css?family=Open+Sans:400,300,600,700' rel='stylesheet' type='text/css'>
+
+	<link rel="stylesheet" href="css/style.css">
+	<script src="js/modernizr.js"></script>
+	<title>Ask Lexi</title>
+
+	<style>
+	#preview {
+		margin-bottom: 50px;
+	}
+	</style>
+</head>
+
+<body>
+
+<header>
+	<h1>Ask Lexi</h1>
+</header>
+
+<div id="preview">
+<!-- placeholder for markdown display -->
+</div>
+
+<script src="js/jquery-2.1.1.js" type="text/javascript"></script>
+<script src="js/jquery.mobile.custom.min.js" type="text/javascript"></script>
+<script src="js/marked.min.js" type="text/javascript"></script>
+<script src="js/ZeroFrame.js" type="text/javascript"></script>
+<script src="js/main.js" type="text/javascript"></script>
+<script src="js/welcome.js" type="text/javascript"></script>
+
+<script>
+/* ZeroFrame stuff. */
+const zeroFrame = new ZeroFrame()
+
+function readFile(file, callback) {
+    zeroFrame.cmd('fileGet', [file, false], callback)
+}
+
+const getSearchTerm = function () {
+	/* Initialize holder for search term. */
+	let searchTerm = ''
+
+	/* Initialize URL. */
+	const url = window.location.href
+
+	/* Retrieve querystring start position. */
+	const qsStart = url.indexOf('?')
+
+	/* Parse querystring. */
+	if (qsStart !== -1) {
+		const qs = url.slice(qsStart + 1)
+
+		/* Search for other params. */
+		const extraStart = qs.indexOf('&')
+
+		if (extraStart !== -1) {
+			searchTerm = qs.slice(0, extraStart)
+		} else {
+			searchTerm = qs
+		}
+
+		console.info(`Found search term [ ${searchTerm} ] in the URL.`)
+	} else {
+		console.info(`A search term COULD NOT be found in the URL.\n\n${url}`)
+		searchTerm = null
+	}
+
+	/* Invalidate wrapper nonce. */
+	if (searchTerm.slice(0, 13) == 'wrapper_nonce') {
+		searchTerm = ''
+	}
+
+	/* Return the search term. */
+	return searchTerm.toLowerCase()
+}
+
+/* Retrieve the search term. */
+const search = getSearchTerm()
+
+if (search) {
+	/* Read the source (markdown) file. */
+	readFile(`docs/${search}.md`, (content) => {
+		if (content) {
+			const markdown = marked(content)
+
+			/* Update the markup holder. */
+			$('#preview').html(markdown)
+		} else {
+			$('#preview').html(`<h1>[ ${search} ] was not found.</h1>`)
+			// welcome()
+		}
+	})
+} else {
+	/* Display welcome screen. */
+	welcome()
+}
+
+</script>
+
+</body>
+</html>

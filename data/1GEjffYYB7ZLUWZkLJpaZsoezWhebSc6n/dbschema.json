@@ -1,0 +1,751 @@
+{
+  "db_name": "btvideo",
+  "db_file": "data/btvideo.db",
+  "version": 2,
+    "maps": {
+    "users/.+/data.json": {
+      "to_table": [
+          "video",
+          "tag",
+          "track",
+        "category",
+        "director",
+        "actor",
+        "country",
+        "language",
+        "writer",
+        "screen",
+        "videourl",
+        "video_screen",
+        "video_category",
+        "video_director",
+        "video_actor",
+        "video_country",
+        "video_language",
+        "video_writer",
+          "video_url",
+          "video_tag"
+      ]
+    },
+    "users/.+/content.json": {
+      "to_keyvalue": [
+        "cert_user_id"
+      ]
+    },
+        "data.json": {
+            "to_table": [
+                "tag",
+                "track",
+                "video",
+                "category",
+                "director",
+                "actor",
+                "country",
+                "language",
+                "writer",
+                "screen",
+                "videourl",
+                "video_screen",
+                "video_category",
+                "video_director",
+                "video_actor",
+                "video_country",
+                "video_language",
+                "video_writer",
+                "video_url",
+                "video_tag"
+            ]
+    }
+  },
+  "tables": {
+    "video": {
+      "cols": [
+        [
+          "video_id",
+          "TEXT"
+        ],
+        [
+          "title",
+          "TEXT"
+        ],
+        [
+          "intro",
+          "TEXT default ''"
+        ],
+        [
+          "subtitle",
+          "TEXT default ''"
+        ],
+        [
+          "parent_id",
+          "TEXT default ''"
+        ],
+        [
+          "create_at",
+          "TIMESTAMP"
+        ],
+        [
+          "update_at",
+          "TIMESTAMP"
+        ],
+        [
+          "json_id",
+          "INTEGER REFERENCES json (json_id)"
+        ]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX video_json ON video(json_id, video_id)",
+        "CREATE UNIQUE INDEX video_index ON video(title, subtitle)"
+      ],
+      "schema_changed": 1527240659
+    },
+    "tag": {
+      "cols": [
+        [
+          "tag_id",
+          "TEXT"
+        ],
+        [
+          "name",
+          "TEXT UNIQUE"
+        ],
+        [
+          "enable",
+          "INTEGER default 0"
+        ],
+        [
+          "create_at",
+          "TIMESTAMP"
+        ],
+        [
+          "update_at",
+          "TIMESTAMP"
+        ],
+        [
+          "json_id",
+          "INTEGER REFERENCES json (json_id)"
+        ]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX tag_json ON tag(json_id, tag_id)",
+        "CREATE INDEX tag_id ON tag(tag_id)"
+      ],
+      "schema_changed": 1527240659
+    },
+      "track": {
+          "cols": [
+              [
+                  "track_id",
+                  "TEXT"
+              ],
+              [
+                  "video_id",
+                  "TEXT"
+              ],
+              [
+                  "src",
+                  "TEXT default ''"
+              ],
+              [
+                  "enable",
+                  "INTEGER default 0"
+              ],
+              [
+                  "defaultlabel",
+                  "INTEGER default 0"
+              ],
+              [
+                  "srclang",
+                  "TEXT default ''"
+              ],
+              [
+                  "create_at",
+                  "TIMESTAMP"
+              ],
+              [
+                  "update_at",
+                  "TIMESTAMP"
+              ],
+              [
+                  "json_id",
+                  "INTEGER REFERENCES json (json_id)"
+              ]
+          ],
+          "indexes": [
+              "CREATE UNIQUE INDEX track_json ON track(json_id, track_id)",
+              "CREATE UNIQUE INDEX track_video_src ON track(video_id, src)",
+              "CREATE INDEX track_video_id ON track(video_id)"
+          ],
+          "schema_changed": 1527240659
+      },
+    "category": {
+      "cols": [
+        [
+          "category_id",
+          "TEXT"
+        ],
+        [
+          "name",
+          "TEXT UNIQUE"
+        ],
+        [
+          "parent_id",
+          "TEXT default ''"
+        ],
+        [
+          "enable",
+          "INTEGER default 0"
+        ],
+        [
+          "level",
+          "INTEGER default 0"
+        ],
+        [
+          "create_at",
+          "TIMESTAMP"
+        ],
+        [
+          "update_at",
+          "TIMESTAMP"
+        ],
+        [
+          "json_id",
+          "INTEGER REFERENCES json (json_id)"
+        ]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX category_json ON category(json_id, category_id)",
+        "CREATE INDEX category_id ON category(category_id)"
+      ],
+      "schema_changed": 1527240659
+    },
+    "director": {
+      "cols": [
+        [
+          "director_id",
+          "TEXT"
+        ],
+        [
+          "name",
+          "TEXT"
+        ],
+        [
+          "intro",
+          "TEXT default ''"
+        ],
+        [
+          "create_at",
+          "TIMESTAMP"
+        ],
+        [
+          "update_at",
+          "TIMESTAMP"
+        ],
+        [
+          "json_id",
+          "INTEGER REFERENCES json (json_id)"
+        ]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX director_json ON director(json_id, director_id)",
+        "CREATE INDEX director_id ON director(director_id)"
+      ],
+      "schema_changed": 1527240659
+    },
+    "actor": {
+      "cols": [
+        [
+          "actor_id",
+          "TEXT"
+        ],
+        [
+          "name",
+          "TEXT"
+        ],
+        [
+          "intro",
+          "TEXT default ''"
+        ],
+        [
+          "create_at",
+          "TIMESTAMP"
+        ],
+        [
+          "update_at",
+          "TIMESTAMP"
+        ],
+        [
+          "json_id",
+          "INTEGER REFERENCES json (json_id)"
+        ]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX actor_json ON actor(json_id, actor_id)",
+        "CREATE INDEX actor_id ON actor(actor_id)"
+      ],
+      "schema_changed": 1527240659
+    },
+    "country": {
+      "cols": [
+        [
+          "country_id",
+          "TEXT"
+        ],
+        [
+          "name",
+          "TEXT"
+        ],
+        [
+          "create_at",
+          "TIMESTAMP"
+        ],
+        [
+          "update_at",
+          "TIMESTAMP"
+        ],
+        [
+          "json_id",
+          "INTEGER REFERENCES json (json_id)"
+        ]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX country_json ON country(json_id, country_id)",
+        "CREATE INDEX country_id ON country(country_id)"
+      ],
+      "schema_changed": 1527240659
+    },
+    "language": {
+      "cols": [
+        [
+          "language_id",
+          "TEXT"
+        ],
+        [
+          "name",
+          "TEXT"
+        ],
+        [
+          "create_at",
+          "TIMESTAMP"
+        ],
+        [
+          "update_at",
+          "TIMESTAMP"
+        ],
+        [
+          "json_id",
+          "INTEGER REFERENCES json (json_id)"
+        ]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX language_json ON language(json_id, language_id)",
+        "CREATE INDEX language_id ON language(language_id)"
+      ],
+      "schema_changed": 1527240659
+    },
+    "writer": {
+      "cols": [
+        [
+          "writer_id",
+          "TEXT"
+        ],
+        [
+          "name",
+          "TEXT"
+        ],
+        [
+          "intro",
+          "TEXT default ''"
+        ],
+        [
+          "create_at",
+          "TIMESTAMP"
+        ],
+        [
+          "update_at",
+          "TIMESTAMP"
+        ],
+        [
+          "json_id",
+          "INTEGER REFERENCES json (json_id)"
+        ]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX writer_json ON writer(json_id, writer_id)",
+        "CREATE INDEX writer_id ON writer(writer_id)"
+      ],
+      "schema_changed": 1527240659
+    },
+    "screen": {
+      "cols": [
+        [
+          "pic_id",
+          "TEXT"
+        ],
+        [
+          "url",
+          "TEXT"
+        ],
+        [
+          "type",
+          "TEXT default ''"
+        ],
+        [
+          "info",
+          "TEXT default ''"
+        ],
+        [
+          "create_at",
+          "TIMESTAMP"
+        ],
+        [
+          "update_at",
+          "TIMESTAMP"
+        ],
+        [
+          "json_id",
+          "INTEGER REFERENCES json (json_id)"
+        ]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX screen_json ON screen(json_id, pic_id)",
+        "CREATE INDEX pic_id ON screen(pic_id)"
+      ],
+      "schema_changed": 1527240659
+    },
+    "videourl": {
+      "cols": [
+        [
+          "url_id",
+          "TEXT"
+        ],
+        [
+          "url",
+          "TEXT"
+        ],
+        [
+          "type",
+          "TEXT default ''"
+        ],
+        [
+          "info",
+          "TEXT default ''"
+        ],
+        [
+          "create_at",
+          "TIMESTAMP"
+        ],
+        [
+          "update_at",
+          "TIMESTAMP"
+        ],
+        [
+          "json_id",
+          "INTEGER REFERENCES json (json_id)"
+        ]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX videourl_json ON videourl(json_id, url_id)",
+        "CREATE INDEX url_id ON videourl(url_id)"
+      ],
+      "schema_changed": 1527240659
+    },
+    "video_screen": {
+      "cols": [
+        [
+          "id",
+          "INTEGER"
+        ],
+        [
+          "pic_id",
+          "TEXT not NULL"
+        ],
+        [
+          "video_id",
+          "TEXT not NULL"
+        ],
+        [
+          "create_at",
+          "TIMESTAMP"
+        ],
+        [
+          "update_at",
+          "TIMESTAMP"
+        ],
+        [
+          "json_id",
+          "INTEGER REFERENCES json (json_id)"
+        ]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX videoscreen_json ON video_screen(json_id, id)",
+        "CREATE UNIQUE INDEX videopic ON video_screen(pic_id, video_id)"
+      ],
+      "schema_changed": 1527240659
+    },
+      "video_tag": {
+      "cols": [
+        [
+          "id",
+          "INTEGER"
+        ],
+        [
+          "tag_id",
+          "TEXT not NULL"
+        ],
+        [
+          "video_id",
+          "TEXT not NULL"
+        ],
+        [
+          "create_at",
+          "TIMESTAMP"
+        ],
+        [
+          "update_at",
+          "TIMESTAMP"
+        ],
+        [
+          "json_id",
+          "INTEGER REFERENCES json (json_id)"
+        ]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX videotag_json ON video_tag(json_id, id)",
+        "CREATE UNIQUE INDEX videotag ON video_tag(tag_id, video_id)"
+      ],
+      "schema_changed": 1527240659
+    },
+    "video_category": {
+      "cols": [
+        [
+          "id",
+          "INTEGER"
+        ],
+        [
+          "category_id",
+          "TEXT not NULL"
+        ],
+        [
+          "video_id",
+          "TEXT not NULL"
+        ],
+        [
+          "create_at",
+          "TIMESTAMP"
+        ],
+        [
+          "update_at",
+          "TIMESTAMP"
+        ],
+        [
+          "json_id",
+          "INTEGER REFERENCES json (json_id)"
+        ]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX videocategory_json ON video_category(json_id, id)",
+        "CREATE UNIQUE INDEX videocate ON video_category(category_id, video_id)"
+      ],
+      "schema_changed": 1527240659
+    },
+    "video_director": {
+      "cols": [
+        [
+          "id",
+          "INTEGER"
+        ],
+        [
+          "director_id",
+          "TEXT not NULL"
+        ],
+        [
+          "video_id",
+          "TEXT not NULL"
+        ],
+        [
+          "create_at",
+          "TIMESTAMP"
+        ],
+        [
+          "update_at",
+          "TIMESTAMP"
+        ],
+        [
+          "json_id",
+          "INTEGER REFERENCES json (json_id)"
+        ]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX videodirector_json ON video_director(json_id, id)",
+        "CREATE UNIQUE INDEX videodirector ON video_director(director_id, video_id)"
+      ],
+      "schema_changed": 1527240659
+    },
+    "video_actor": {
+      "cols": [
+        [
+          "id",
+          "INTEGER"
+        ],
+        [
+          "actor_id",
+          "TEXT not NULL"
+        ],
+        [
+          "video_id",
+          "TEXT not NULL"
+        ],
+        [
+          "create_at",
+          "TIMESTAMP"
+        ],
+        [
+          "update_at",
+          "TIMESTAMP"
+        ],
+        [
+          "json_id",
+          "INTEGER REFERENCES json (json_id)"
+        ]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX videoactor_json ON video_actor(json_id, id)",
+        "CREATE UNIQUE INDEX videoactor ON video_actor(actor_id, video_id)"
+      ],
+      "schema_changed": 1527240659
+    },
+    "video_country": {
+      "cols": [
+        [
+          "id",
+          "INTEGER"
+        ],
+        [
+          "country_id",
+          "TEXT not NULL"
+        ],
+        [
+          "video_id",
+          "TEXT not NULL"
+        ],
+        [
+          "create_at",
+          "TIMESTAMP"
+        ],
+        [
+          "update_at",
+          "TIMESTAMP"
+        ],
+        [
+          "json_id",
+          "INTEGER REFERENCES json (json_id)"
+        ]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX videocountry_json ON video_country(json_id, id)",
+        "CREATE UNIQUE INDEX videocountry ON video_country(country_id, video_id)"
+      ],
+      "schema_changed": 1527240659
+    },
+    "video_language": {
+      "cols": [
+        [
+          "id",
+          "INTEGER"
+        ],
+        [
+          "language_id",
+          "TEXT not NULL"
+        ],
+        [
+          "video_id",
+          "TEXT not NULL"
+        ],
+        [
+          "create_at",
+          "TIMESTAMP"
+        ],
+        [
+          "update_at",
+          "TIMESTAMP"
+        ],
+        [
+          "json_id",
+          "INTEGER REFERENCES json (json_id)"
+        ]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX videolanguage_json ON video_language(json_id, id)",
+        "CREATE UNIQUE INDEX videolanguage ON video_language(language_id, video_id)"
+      ],
+      "schema_changed": 1527240659
+    },
+    "video_writer": {
+      "cols": [
+        [
+          "id",
+          "INTEGER"
+        ],
+        [
+          "writer_id",
+          "TEXT not NULL"
+        ],
+        [
+          "video_id",
+          "TEXT not NULL"
+        ],
+        [
+          "create_at",
+          "TIMESTAMP"
+        ],
+        [
+          "update_at",
+          "TIMESTAMP"
+        ],
+        [
+          "json_id",
+          "INTEGER REFERENCES json (json_id)"
+        ]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX videowriter_json ON video_writer(json_id, id)",
+        "CREATE UNIQUE INDEX videowriter ON video_writer(writer_id, video_id)"
+      ],
+      "schema_changed": 1527240659
+    },
+    "video_url": {
+      "cols": [
+        [
+          "id",
+          "INTEGER"
+        ],
+        [
+          "url_id",
+          "TEXT not NULL"
+        ],
+        [
+          "video_id",
+          "TEXT not NULL"
+        ],
+        [
+          "create_at",
+          "TIMESTAMP"
+        ],
+        [
+          "update_at",
+          "TIMESTAMP"
+        ],
+        [
+          "json_id",
+          "INTEGER REFERENCES json (json_id)"
+        ]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX videourl2_json ON video_url(json_id, id)",
+        "CREATE UNIQUE INDEX vou ON video_url(url_id, video_id)"
+      ],
+      "schema_changed": 1527240659
+    }
+  }
+}

@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Post-Mortem</title>
+		<meta charset="utf-8">
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<base href="" target="_top" id="base">
+		<script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+
+		<link rel="stylesheet" type="text/css" href="css/global.css">
+		<link rel="stylesheet" type="text/css" href="css/header.css">
+		<link rel="stylesheet" type="text/css" href="css/footer.css">
+		<link rel="stylesheet" type="text/css" href="css/timelapse.css">
+		<link rel="stylesheet" type="text/css" href="css/content.css">
+	</head>
+	<body>
+		<ul>
+			<li>
+				On Aug 21, 2016 Kaffie
+				<a href="/Me.ZeroNetwork.bit/?Post/12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv/1NWh3WAty57FH8at1WtrZigMrdhrDkuPzh/29">found</a>
+				that certificate signing is useless. On Aug 30, 2016 this was
+				<a href="/Blog.ZeroNetwork.bit/?Post:91">fixed</a>.
+			</li>
+			<li>
+				A short while before Jun 15, 2017 ZeroMux found a proxy bypass
+				vulnerability. On Jun 15, 2017 this was
+				<a href="/Blog.ZeroNetwork.bit/?Post:111">fixed</a>.
+			</li>
+			<li>
+				A short while before Jun 15, 2017 Beardog108 found an XSS
+				vulnerability using DNS rebinding. On Jun 15, 2017 this was
+				<a href="/Blog.ZeroNetwork.bit/?Post:111">fixed</a>.
+			</li>
+			<li>
+				A short while before Mar 7, 2018 I've found a sandbox escape
+				vulnerability. On Mar 7, 2018 this was
+				<a href="/Blog.ZeroNetwork.bit/?Post:127">fixed</a>.
+			</li>
+			<li>
+				In September of 2018 I've found a set of
+				<a href="/1HcLPSR5ss1ehsqP8kU2Sa2TJyDVcGADTp/">vulnerabilties</a>.
+				Surprisingly, on Sep 27, 2018 Amorgan found it exploited on his
+				proxy. On Sep 30, 2018 this was
+				<a href="/Blog.ZeroNetwork.bit/?Post:138">fixed</a>.
+			</li>
+		</ul>
+
+		<p>
+			ZeroNet was born on Jan 13, 2015. Since then, a lot of features were
+			added. ZeroNet aged and slowly became a big project. More
+			vulnerabilities were found and reported. That's okay for big
+			projects &mdash; we all make mistakes. But, surprisingly,
+			vulnerabilties became more and more dangerous. The first
+			vulnerability I could find was about certificates, the second one
+			could reveal your IP and sensitive data, the next one introduced an
+			XSS, the next one could steal your keys, the next one could run any
+			code on your computer.
+		</p>
+
+		<p>
+			This is not how big software should behave.
+		</p>
+
+		<p>
+			ZeroNet is still hosted by a single person &mdash; nofish. This has
+			lead to introduction of bugs that could have not existed in the
+			first place. On Jul 1, 2019 I gained attention at ZeroTalk with the
+			<a href="/Talk.ZeroNetwork.bit/?Topic:1562000931_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di">ZeroNet is ruled by one person</a>
+			thread. The idea was to make people think about ZeroNet security.
+			Some people agreed, some didn't, but the attention was gained.
+			Nofish reacted with "we'll add plugin support and multisig support
+			and convert the GitHub user to an organization". Since then, plugins
+			have been implemented, but nothing has been done to solve
+			centralization problems.
+		</p>
+
+		<p>
+			On Aug 21, 2019 I proposed a less revolutionary scheme with the
+			<a href="/Talk.ZeroNetwork.bit/?Topic:1566397383_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di/What+clearnet+Git+hosting+would+you+use+for+ZeroNet">What clearnet Git hosting would you use for ZeroNet</a>
+			topic. The idea was to switch to a system that would make making
+			less, or at least fixing bugs easier. Some people agreed, some
+			didn't. Nofish didn't react.
+		</p>
+
+		<p>
+			ZeroNet is the best decentralized network I've ever seen. But
+			without help from users, developers, and &mdash;especially&mdash;
+			nofish, we can't keep it alive and make it better.
+		</p>
+
+		<p>
+			If you can't use words, you use force, don't you?
+
+		<header>
+			<h1>ThAt OnE tHiNg</h1>
+			<h2>Vulnerability Post-Mortem</h2>
+		</header>
+
+		<div class="timelapse">
+			<div class="timelapse-timeline"></div>
+
+			<div class="timelapse-event">
+				<div class="timelapse-marker"></div>
+				<div class="timelapse-date">
+					June, 2019
+				</div>
+				<div class="timelapse-title">
+					Possible security issue found
+				</div>
+			</div>
+			<div class="timelapse-event">
+				<div class="timelapse-marker"></div>
+				<div class="timelapse-date">
+					August 10, 2019
+				</div>
+				<div class="timelapse-title">
+					Exploit search speedup due to
+					<a href="/Talk.ZeroNetwork.bit/?Topic:1562000931_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di">
+						ignorance of several skilled ZeroNet users
+					</a>
+				</div>
+			</div>
+			<div class="timelapse-event">
+				<div class="timelapse-marker"></div>
+				<div class="timelapse-date">
+					August 10, 2019
+				</div>
+				<div class="timelapse-title">
+					Proof-of-concept exploit ready
+				</div>
+			</div>
+			<div class="timelapse-event">
+				<div class="timelapse-marker"></div>
+				<div class="timelapse-date">
+					August 11, 2019
+				</div>
+				<div class="timelapse-title">
+					Exploit tested and confirmed by Robione, Anthyg and Amorgan
+				</div>
+			</div>
+			<div class="timelapse-event">
+				<div class="timelapse-marker"></div>
+				<div class="timelapse-date">
+					August 11, 2019
+				</div>
+				<div class="timelapse-title">
+					Exploit sent to nofish
+				</div>
+			</div>
+			<div class="timelapse-event">
+				<div class="timelapse-marker"></div>
+				<div class="timelapse-date">
+					August 12, 2019
+				</div>
+				<div class="timelapse-title">
+					Visitation tracker set
+				</div>
+			</div>
+			<div class="timelapse-event">
+				<div class="timelapse-marker"></div>
+				<div class="timelapse-date">
+					August 12, 2019
+				</div>
+				<div class="timelapse-title">
+					Private key logger added to the exploit
+				</div>
+			</div>
+			<div class="timelapse-event">
+				<div class="timelapse-marker"></div>
+				<div class="timelapse-date">
+					August 17, 2019
+				</div>
+				<div class="timelapse-title">
+					Nofish replied
+				</div>
+			</div>
+			<div class="timelapse-event">
+				<div class="timelapse-marker"></div>
+				<div class="timelapse-date">
+					August 18, 2019
+				</div>
+				<div class="timelapse-title">
+					Vulnerability half-fixed
+				</div>
+			</div>
+			<div class="timelapse-event">
+				<div class="timelapse-marker"></div>
+				<div class="timelapse-date">
+					August 23, 2019
+				</div>
+				<div class="timelapse-title">
+					Vulnerability fixed for real
+				</div>
+			</div>
+		</div>
+
+		<p>
+			The idea was to send nofish a fake mail to check the following:
+		</p>
+
+		<ul>
+			<li>
+				It's dangerous to visit unknown links even from trusted people
+				(though, can you call me a trusted person?). Will nofish open
+				it?
+			</li>
+			<li>
+				ZeroNet is a good target for hackers, will nofish check site
+				contents before running the exploit?
+			</li>
+			<li>
+				If yes, what will he do?
+			</li>
+			<li>
+				If not, will nofish remove leaked data after running the
+				exploit, and how fast?
+			</li>
+		</ul>
+
+		<p>
+			The following clickbait mail was sent:
+		</p>
+
+		<blockquote>
+			<p>
+				Hello, @nofish.
+			</p>
+
+			<p>
+				I'm making a site for key sharing right now. Basically, the idea
+				is sharing site/user/etc. private keys for different services
+				(including ZeroNet) between different people -- maybe for big
+				companies and small teams. I wanted to make sure it works
+				smoothly on ZeroNet, but I'm having trouble testing it on
+				different devices, so I'm asking you to help me verify that it
+				works well. I hope you have some free time to help me.
+			</p>
+
+			<p>
+				The site is at [removed address]. The version is mostly
+				proof-of-concept, and only works with ZeroNet keys yet. The keys
+				are stored encrypted, so it's safe to put real keys there.
+				Anyways, press "Create bin" and wait a bit. It might take some
+				time, please keep calm.
+			</p>
+
+			<p>
+				I'll be interested to learn whether it worked well for you.
+				Please tell me!
+			</p>
+		</blockquote>
+
+		<p>
+			As you can probably see, the mail content gave a cue about the site
+			being possibly dangerous.
+		</p>
+
+		<p>
+			Good news: nofish found the exploit before running it and replied to
+			me with:
+		</p>
+
+		<blockquote>
+			<p>
+				Thanks for the PoC. I really appreciate your work, but please
+				don't try to exploit me if you found any vulnerabilities.
+			</p>
+
+			<p>
+				Working on the fix :)
+			</p>
+		</blockquote>
+
+		<p>
+			Bad news. There are a couple, so here's a list:
+		</p>
+
+		<ul>
+			<li>
+				My mail screamed "this is scam" every second. Only an idiot
+				would believe it;
+			</li>
+			<li>
+				The site mentioned ZeroNet private keys a couple of times, which
+				looks suspiciously;
+			</li>
+			<li>
+				I asked nofish, while most other developers would probably just
+				visit it without expecting a problem;
+			</li>
+			<li>
+				The issue wasn't really fixed the first time, even though I
+				included the fix in my next mail (sent immediately after
+				nofish'es reply).
+			</li>
+		</ul>
+
+		<p>
+			Who knows when and how many times was this vulnerability used to
+			steal keys or setup a cryptolocker? And who knows who will find the
+			next vulnerabilty?..
+		</p>
+
+		<p>
+			Something has to be done. ZeroNet stopped being a pet project at
+			least 2 years ago; still, nothing has changed since then.
+			Developers, look at my
+			<a href="/Talk.ZeroNetwork.bit/?Topic:1566397383_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di/What+clearnet+Git+hosting+would+you+use+for+ZeroNet">GitLab switch proposal</a>.
+			Users, check what pages visit. If you're asked to visit a random
+			ZeroNet link, that might be scam. Verify who sends to the message.
+			Use a proxy before opening the site to avoid downloading illegal
+			content. Keep safe.
+		</p>
+
+		<header>
+			<h2>ZeroNet is not just a program,</h2>
+			<h2>it's the people who use it</h2>
+		</header>
+
+		<p>
+			Shortly before finding the vulnerabilty I released the
+			<a href="/Talk.ZeroNetwork.bit/?Topic:1562000931_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di">ZeroNet is ruled by one person</a>
+			and
+			<a href="/Talk.ZeroNetwork.bit/?Topic:1566397383_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di/What+clearnet+Git+hosting+would+you+use+for+ZeroNet">What clearnet Git hosting would you use for ZeroNet</a>
+			threads. Unfortunately, many skilled ZeroNet users thought that I am
+			exaggerating and changing the current way is not required. Now, when
+			this post-mortem is released, I have more proofs.
+		</p>
+
+		<p>
+			I'm now going to reply to the comments I haven't replied to before.
+		</p>
+
+		<blockquote>
+			<p>
+				<b>@h3bhkj5gqz4n3pjm:</b> That's why I'm going to use a lot, but
+				a lot "us" and "we" to make it look like we're old friends, when
+				we've never met.
+			</p>
+		</blockquote>
+
+		<p>
+			(yes, that's a weird choice whom to reply to) Exactly. ZeroNet was
+			the place where I found real friends. Sure, we've never met; I don't
+			even know how most people I chat with everyday look like, neither do
+			they know how I look like. But we create zites together, create
+			tools or just talk about non-technical themes. I'm talking about
+			Krixano, Anthyg and other people who contributed to this
+			post-mortem.
+		</p>
+
+		<blockquote>
+			<p>
+				<b>@kaffie:</b> ZeroHello is under his controller, but you can
+				point your homepage to be anything. You can clone zerohello, and
+				then use your cloned version. Problem solved. ZeroHello is given
+				a special admin permission by the ZN client by default, but you
+				can grant this special permission to any site you'd like. IE,
+				disable the default zerohello, and just use your cloned one, so
+				nofish can't touch it. ZeroUpdate is similar to zerohello. Same
+				goes for zeroname. zeroupdate and zeroname are referred to by
+				zn, but you can edit which site is pointed to, and you can clone
+				both sites so nofish can't touch them.
+			</p>
+		</blockquote>
+
+		<p>
+			Now count how many times this was done by people. Not by us,
+			developers &mdash; I'm talking about users. There are no sticky
+			topics on ZeroTalk about how to avoid centralization, there's no
+			alarm on ZeroHello. ZeroUpdate is used as an update source when you
+			click "Update" button, even if you only accidentally downloaded it.
+			And, more importantly, what's the point of cloning ZeroUpdate when
+			no one will update it?
+		</p>
+
+		<p>
+			What we need is not many projects run by a single person each, we
+			need a single project run by many people. A person can make an
+			accidental mistake or introduce a security issue. People who use
+			their fork will be vulnerable. In case the project is run by many
+			people, making a big bug would be impossible.
+		</p>
+
+		<blockquote>
+			<p>
+				<b>@kaffie:</b> Admin rights for zites do not let the zites run
+				backend code.
+			</p>
+		</blockquote>
+
+		<p>
+			This is something I didn't expect from a skilled developer. This was
+			proven to be false with this vulnerabilty.
+		</p>
+
+		<blockquote>
+			<p>
+				<b>@kaffie:</b> You can prevent malicious code from running by
+				simply updating your ZN client by hand. In terms of
+				cryptography, zites can't steal your private keys, even with
+				admin permissions, if you don't run the code on the site (which
+				is entirely optional). Nofish controls his own sites. And
+				zerohello, one of them, is given admin permissions to do site
+				management. You can take this permission away, and give it to a
+				site you yourself control and own.
+			</p>
+		</blockquote>
+
+		<p>
+			It was shown above that this isn't true. Also, there can be
+			vulnerabilties, and not updating ZeroNet code makes it even worse.
+		</p>
+
+		<blockquote>
+			<p>
+				<b>@myriri:</b> It's sounding almost like you're advocating for
+				some form of association to be in charge of zeronet and its
+				future. Which wouldn't exactly be a bad idea but runs into the
+				dangerous problem of maybe creating a group who can be coerced
+				by spooks.
+			</p>
+		</blockquote>
+
+		<p>
+			Krixano and me figured out how to fix this: ZeroNet core would
+			download and apply a change if at least one ZeroNet maintainer from
+			at least half countries accept the fix. This means that all
+			maintainers are equal now, would it be nofish, me or mkg20001.
+		</p>
+
+		<p>
+			This will prevent government forcing you to fake a security update.
+			We should pick people from countries that are not allies &mdash; for
+			example, a person from Russia and a person from the US, as well as
+			from neutral countries. Notably, that's probably the only case when
+			countries being unfriendly is a feature.
+		</p>
+
+		<p>
+			<b>Response from Krixano:</b> How is continuing to keep ZeroNet run
+			by one person better than having it run by a group? Both can be
+			coerced, but with a group, it's less of a chance.
+		</p>
+
+		<header>
+			<h2>Vulnerabilty details</h2>
+		</header>
+
+		<p>
+			The article above was mostly for users; but if you're a developer,
+			you're most likely interested in the details of the vulnerabilty.
+		</p>
+
+		<h2>Step 1</h2>
+
+		<p>
+			The first part of "ThAt OnE tHiNg" vulnerabilty is not really easy
+			to notice if you don't know what you're looking for. Still, the code
+			was written badly so it wasn't a surprise.
+		</p>
+
+		<p>
+			This is the definition of render() function from
+			<a href="https://github.com/HelloZeroNet/ZeroNet/blob/e16611f15ab06216c07baa5e0ebf3214e3ae6b07/src/Ui/UiRequest.py#L295-L299">src/Ui/UiRequest.py</a>:
+		</p>
+
+		<pre>
+def render(self, template_path, *args, **kwargs):
+	template = open(template_path, encoding="utf8").read()
+	for key, val in list(kwargs.items()):
+		template = template.replace("{%s}" % key, "%s" % val)
+	return template.encode("utf8")
+		</pre>
+
+		<p>
+			And here is the only place where it's called in
+			<a href="https://github.com/HelloZeroNet/ZeroNet/blob/e16611f15ab06216c07baa5e0ebf3214e3ae6b07/src/Ui/UiRequest.py#L480-L503">src/Ui/UiRequest.py</a>:
+		</p>
+
+		<pre>
+return self.render(
+	"src/Ui/template/wrapper.html",
+	server_url=server_url,
+	inner_path=inner_path,
+	file_url=re.escape(file_url),
+	file_inner_path=re.escape(file_inner_path),
+	address=site.address,
+	title=html.escape(title),
+	body_style=body_style,
+	meta_tags=meta_tags,
+	query_string=re.escape(inner_query_string),
+	wrapper_key=site.settings["wrapper_key"],
+	ajax_key=site.settings["ajax_key"],
+	wrapper_nonce=wrapper_nonce,
+	postmessage_nonce_security=postmessage_nonce_security,
+	permissions=json.dumps(site.settings["permissions"]),
+	show_loadingscreen=json.dumps(show_loadingscreen),
+	sandbox_permissions=sandbox_permissions,
+	rev=config.rev,
+	lang=config.language,
+	homepage=homepage,
+	themeclass=themeclass,
+	script_nonce=script_nonce
+)
+		</pre>
+
+		<p>
+			What render() should do is substitute variables. What is does in
+			reality is substituting variables one-by-one. Let me illustrate it
+			with an example:
+		</p>
+
+		<ul>
+			<li>File content: "{a}"</li>
+			<li>Variable a: "{b}"</li>
+			<li>Variable b: "c"</li>
+		</ul>
+
+		<p>
+			What we expect from render() is "{b}", but what we get in reality is
+			"c". Amusingly, swapping variables fixes this:
+		</p>
+
+		<ul>
+			<li>File content: "{a}"</li>
+			<li>Variable b: "c"</li>
+			<li>Variable a: "{b}"</li>
+		</ul>
+
+		<p>
+			...returns "{b}", the correct value.
+		</p>
+
+		<p>
+			Now, let's try to exploit this issue in real ZeroNet code. One of
+			the variables we can control is "meta_tags". It depends on "favicon"
+			property of site's content.json. Thus, using "[{wrapper_key}]" as a
+			favicon actually results in accessing "[abacaba]" URL:
+		</p>
+
+		<pre>
+"favicon": "[{wrapper_key}]"
+		</pre>
+
+		<p>
+			This file doesn't exist; luckily, this is a feature: there's a
+			"siteBadFiles" UiWebsocket command. Among a few missing files, we'll
+			find the real wrapper key.
+		</p>
+
+		<h2>Step 2</h2>
+
+		<p>
+			After getting a wrapper key, we can make ZeroNet do powerful things.
+			One of the features we are now capable of is configSet UiWebsocket
+			command. It allows setting a couple of variables, including
+			"open_browser" &mdash; a variable set by the configuration page and
+			then used by ZeroNet on startup. Namely, it opens the browser
+			specified by the "open_browser" variable.
+		</p>
+
+		<p>
+			We now have a thought-out plan:
+		</p>
+
+		<ul>
+			<li>Set favicon to "[{wrapper_key}]";</li>
+			<li>Ask the target to visit the site;</li>
+			<li>Get wrapper key with "siteBadFiles" command;</li>
+			<li>Use it to connect to UiWebsocket directly;</li>
+			<li>Set "open_browser" variable to "data/siteaddress/boom.exe";</li>
+			<li>Restart ZeroNet with "serverShutdown" command.</li>
+		</ul>
+
+		<p>
+			Boom! The target has now executed our exe file. Depending on how
+			they run ZeroNet, that might be a root account. Even if it isn't, a
+			lot of harm can be done:
+		</p>
+
+		<ul>
+			<li>A cryptolocker can be set;</li>
+			<li>Your private keys can be stolen;</li>
+			<li>Illegal content might be downloaded;</li>
+			<li>You might be deanonymized.</li>
+		</ul>
+
+		<p>
+			The fix is already live at rev4191. This post-mortem is out without
+			a proof-of-concept. Many scriptkiddies have joined ZeroNet (because
+			of 08chan) recently; real developers won't have trouble checking
+			that this vulnerabilty is real.
+		</p>
+
+		<footer>
+			<p>
+				This post-mortem was made possible by:
+			</p>
+
+			<ul>
+				<li>
+					Ivanq (aka GitCenter) &mdash; vulnerability, exploit and
+					writing post-mortem;
+				</li>
+				<li>
+					Krixano &mdash; writing and proofreading post-mortem;
+				</li>
+				<li>
+					Amorgan (aka ZeroLSTN) &mdash; testing;
+				</li>
+				<li>
+					Anthyg (aka Glightstar) &mdash; testing;
+				</li>
+				<li>
+					Robione &mdash; testing;
+				</li>
+				<li>
+					Nofish &mdash; creating the vulnerabilty.
+				</li>
+			</ul>
+
+			<center>
+				<p>
+					Never.
+				</p>
+
+				<p>
+					Believe.
+				</p>
+
+				<p>
+					Anyone.
+				</p>
+			</center>
+		</footer>
+	</body>
+</html>

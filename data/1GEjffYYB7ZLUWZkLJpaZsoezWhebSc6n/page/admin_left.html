@@ -1,0 +1,127 @@
+<li  class="header">MAIN NAVIGATION</li>
+<li class="treeview">
+    <a href="#">
+        <i class="fa fa-dashboard"></i> <span>Dashboard</span>
+        <span class="pull-right-container">
+            <i class="fa fa-angle-left pull-right"></i>
+        </span>
+    </a>
+    <ul class="treeview-menu">
+    </ul>
+</li>
+<li class="treeview">
+    <a href="#">
+        <i class="fa fa-files-o"></i>
+        <span>分类管理</span>
+        <span class="pull-right-container">
+            <span class="label label-primary pull-right">4</span>
+        </span>
+    </a>
+    <ul class="treeview-menu">
+        <li id="category-manage"><a href="#"><i class="fa fa-circle-o"></i> 分类管理</a></li>
+        <!-- li id="testlogin"><a href="#"><i class="fa fa-circle-o"></i> 登陆测试</a></li-->
+        <script>
+         $("#category-manage").on('click', function(e) {
+             e.preventDefault();
+             $(".content-wrapper").empty();
+             Page.getfile("page/admin_category_manage.html", function(data) {
+                 $(".content-wrapper").append(data);
+             });
+             //window.admin.category_manage();
+         });
+         $("#testlogin").on('click', function(e) {
+             //Page.cmd("wrapperNotification", ["info", "Please, select your account."]);
+             //Page.cmd("certSelect", [["zeroid.bit"]], function(site_info){
+                 console.log(Page.site_info);
+                 var inner_path = "data/data.json";
+                 if (true||Page.site_info.cert_user_id) {
+                     inner_path = "data/users/"+Page.site_info.auth_address+"/data.json";
+                 }
+                 window.admin.checkdata(inner_path, function(res){
+                     console.log(res);
+                 }, function(data){
+                     var category = {"name":"test", "parent_id":"", "enable":1, level:0};
+                     category['category_id'] = Page.site_info.cert_user_id+data.nextcategory_id;
+                     category['create_at'] = timestamp();
+                     category['update_at'] = timestamp();
+                     data.nextcategory_id += 1;
+                     data.category.unshift(category);
+                     console.log(data);
+                     var json_raw = unescape(encodeURIComponent(JSON.stringify(data, undefined, '\t')));
+                     Page.cmd("fileWrite",  [inner_path, btoa(json_raw)], function(res){
+                         console.log("write "+ res);
+                         console.log(res);
+                         if (Page.site_info.cert_user_id) {
+                             Page.cmd("sitePublish", {"inner_path": inner_path}, function(res) {
+                                 console.log("publish"+res);
+                             });
+                         } else {
+                             console.log(Page.site_info);
+                             if (Page.site_info.privatekey) {
+                                 Page.cmd("sitePublish", ["stored"], function(res) {
+                                     console.log("public with stored"+res);
+                                 });
+                             } else {
+                                 Page.cmd("wrapperPrompt", ["enter private key:", "password"], function(privatekey) {
+                                     console.log("get privatekey:"+privatekey);
+                                     Page.site_info.privatekey = privatekey;
+					                           Page.cmd("siteSign", ["stored", "content.json"], function(res) {
+						                             console.log("Sign result"+ res);
+                                     });
+                                     Page.cmd("sitePublish", [privatekey], function(res) {
+                                         console.log("publish with key"+res);
+                                     });
+                                 });
+                             }
+                         }
+                     });
+                 });
+             //});
+         });
+        </script>
+    </ul>
+</li>
+<li class="treeview">
+    <a href="#">
+        <i class="fa fa-files-o"></i>
+        <span>标签管理</span>
+        <span class="pull-right-container">
+            <span class="label label-primary pull-right">4</span>
+        </span>
+    </a>
+    <ul class="treeview-menu">
+        <li id="tag-manage"><a href="#"><i class="fa fa-circle-o"></i> 视频标签 </a></li>
+        <script>
+         $("#tag-manage").on('click', function(e) {
+             e.preventDefault();
+             $(".content-wrapper").empty();
+             Page.getfile("page/admin_tag_manage.html", function(data) {
+                 $(".content-wrapper").append(data);
+             });
+             });
+        </script>
+    </ul>
+</li>
+
+<li class="treeview">
+    <a href="#">
+        <i class="fa fa-files-o"></i>
+        <span>视频管理</span>
+        <span class="pull-right-container">
+            <span class="label label-primary pull-right">4</span>
+        </span>
+    </a>
+    <ul class="treeview-menu">
+        <li id="video-manage"><a href="#"><i class="fa fa-circle-o"></i> 视频管理 </a></li>
+        <script>
+         $("#video-manage").on('click', function(e) {
+             e.preventDefault();
+             $(".content-wrapper").empty();
+             Page.getfile("page/admin_video_manage.html", function(data) {
+                 $(".content-wrapper").append(data);
+             });
+         });
+        </script>
+    </ul>
+</li>
+

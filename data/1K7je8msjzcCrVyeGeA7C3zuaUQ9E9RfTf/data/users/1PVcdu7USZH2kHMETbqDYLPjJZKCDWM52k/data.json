@@ -1,0 +1,64 @@
+{
+	"next_topic_id": 2,
+	"topic": [
+		{
+			"topic_id": 1,
+			"title": "Getting zeronet running with tor",
+			"body": "Additionally to the ControlPort stuff mentioned in the [docs](/17Kom2G5qNDc6NaQwv445h1gFzxkY3ZtZe/faq/#how-to-use-zeronet-with-tor) you have to do:\n\n`echo 'CookieAuthFileGroupReadable 1' >> /etc/tor/torrc`\n`chmod g+xr /var/lib/tor/ `\n`usermod -a -G tor zeronet`\n\nif you want to use the ‘tor: always’ setting:\n\n`echo 'tor = always' >> /etc/zeronet.conf`\n\n… worked for me, had anyone have further issues?",
+			"added": 1456953610
+		}
+	],
+	"topic_vote": {},
+	"next_comment_id": 9,
+	"comment": {
+		"1_1PVcdu7USZH2kHMETbqDYLPjJZKCDWM52k": [
+			{
+				"comment_id": 1,
+				"body": "we probably need to write an modified service-file which fixes the permissions",
+				"added": 1456987019
+			},
+			{
+				"comment_id": 2,
+				"body": "I got it fixed, I used a timer and modified the zeronet service (`systemctl edit zeronet`)\n\n[here is the files content (NullPaste)](/1MgHVPCE1ve6QfKrgsqCURzRj72HrRWioz/?1PVcdu7USZH2kHMETbqDYLPjJZKCDWM52k_0)\n\nYou start the whole thing with `systemctl start zeronet.timer`",
+				"added": 1457128448
+			}
+		],
+		"1_1FZxKCwPzn7rvLaNi2rE7QHwvyq14XVWzi": [
+			{
+				"comment_id": 3,
+				"body": "Chromium … mostly vanilla I think. Want to switch to icecat, but it's not running there",
+				"added": 1457298355
+			},
+			{
+				"comment_id": 7,
+				"body": "(Now) Icecat with a special profile for zeronet: all addons but profile-switcher disabled, invalid proxy settings to block all external sources",
+				"added": 1457791228
+			}
+		],
+		"1_14TDWFVHuTXNcg8pp6LRr7v9ZcfbFsMSyx": [
+			{
+				"comment_id": 4,
+				"body": "can't build that one, get \n\n    install: cannot stat 'contrib/debian/manpages/namecoind.1': No such file or directory\n\nlike the other guy in the comments",
+				"added": 1457608234
+			},
+			{
+				"comment_id": 5,
+				"body": "this is the ‘fixed’ PKGBUILD: http://127.0.0.1:43110/1MgHVPCE1ve6QfKrgsqCURzRj72HrRWioz/?1PVcdu7USZH2kHMETbqDYLPjJZKCDWM52k_7\n\n    systemctl start namecoin\n    namecoin-cli -conf=../.namecoin/namecoin.conf help",
+				"added": 1457622501
+			},
+			{
+				"comment_id": 6,
+				"body": "oops sorry … -.-\n\nline 100 shouldn't be there, accidentially pasted that in there ",
+				"added": 1457790067
+			}
+		],
+		"1_1MahZJTzjoEMMCv2jBReDWhyNGRhN5tvDq": [
+			{
+				"comment_id": 8,
+				"body": "I'm using for opening ports on my local machine's firewall. But since I'm using TOR now, it's not neccessary any longer.\n\n    # /etc/systemd/system/zeronet.service.d/override.conf\n    [Service]\n    PermissionsStartOnly=true\n    ExecStartPre=/usr/bin/iptables -A TCP -p tcp -m tcp --dport 15441 -j ACCEPT\n    ExecStopPost=/usr/bin/iptables -D TCP -p tcp -m tcp --dport 15441 -j ACCEPT",
+				"added": 1458566757
+			}
+		]
+	},
+	"comment_vote": {}
+}

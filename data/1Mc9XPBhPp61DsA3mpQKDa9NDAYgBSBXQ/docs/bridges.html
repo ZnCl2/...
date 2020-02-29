@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+ <html>
+ <head>
+   <meta charset="utf-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width="device-width," initial-scale=1">
+   <meta name="author" content="The Tor Project, Inc.">
+   <meta name="description" content="The Tor Project's free software protects your privacy online. Site blocked? Email [mailto:gettor@torproject.org] for help downloading Tor Browser.">
+   <meta name="keywords" content="tor, tor project, tor browser, avoid censorship, traffic analysis, anonymous communications, privacy, avoid surveillance, online security, anonymous online, private browsing, anonymity online, online privacy, protect privacy, private mac browser, private windows browser, private android browser, linux browser, anonymity network, tor network, onion router, onion browser">
+   <meta property="og:image" content="https://www.torproject.org/images/tor-logo.jpg">
+   <title>Tor Project: Bridges</title>
+   <link rel="icon" href="../images/favicon.ico">
+   <link href="../css/master.min.css" rel="stylesheet">
+   <!--[if lte IE 8]>
+   <link href="../css/ie8-and-down.min.css" rel="stylesheet">
+   <![endif]-->
+   <!--[if lte IE 7]>
+   <link href="../css/ie7-and-down.min.css" rel="stylesheet">
+   <![endif]-->
+   <!--[if IE 6]>
+   <link href="../css/ie6.min.css" rel="stylesheet">
+   <![endif]-->
+</head>
+<body>
+<div id="wrap">
+  <div id="header">
+    <h1 id="logo"><a href="../index.html">Tor</a></h1>
+      <div id="nav">
+        <ul>
+        <li><a href="../index.html">Home</a></li>
+<li><a href="../about/overview.html">About Tor</a></li>
+<li><a class="active documentation bridges" href="documentation.html">Documentation</a></li>
+<li><a href="../press/press.html">Press</a></li>
+<li><a href="https://blog.torproject.org/blog/">Blog</a></li>
+<li><a href="../about/contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <!-- END NAV -->
+      <div id="calltoaction">
+        <ul>
+          <li class="donate"><a href="../download/download-easy.html">Download</a></li>
+<li class="donate"><a href="../getinvolved/volunteer.html">Volunteer</a></li>
+<li class="donate"><a href="../donate/donate-button.html">Donate</a></li>
+        </ul>
+      </div>
+      <!-- END CALLTOACTION -->
+  </div>
+  <!-- END HEADER -->
+<!-- TODO: update screenshots -->
+<!-- TODO: rewrite "running a bridge" section -->
+<!-- TODO: add obfs4 how-tos -->
+<div id="content" class="clearfix">
+  <div id="breadcrumbs">
+    <a href="../index.html">Home &raquo; </a>
+    <a href="documentation.html">Documentation &raquo; </a>
+    <a href="bridges.html">Bridges</a>
+  </div>
+  <div id="maincol">
+    <a id="BridgeIntroduction"></a>
+    <h2><a class="anchor" href="bridges.html#BridgeIntroduction">Tor: Bridges</a></h2>
+    <hr>
+    <p>
+    <img width="7%" height="7%" style="float: left;" src="../images/icon-Obfsproxy.jpg" alt="">
+    <b>Tip:</b>
+    Having trouble connecting to Tor? You may need to use a different <b>pluggable
+    transport</b>. <a class="anchor" href="bridges.html#PluggableTransports">Click here for
+    more information</a>.
+    </p>
+    <p>
+    Bridge relays (or "bridges" for short) are Tor relays that aren't listed in
+    the main Tor directory. Since there is no complete public list of them, even if
+    your ISP is filtering connections to all the known Tor relays, they probably
+    won't be able to block all the bridges. If you suspect your access to the
+    Tor network is being blocked, you may want to use bridges.
+    </p>
+    <p>
+    The addition of bridges to Tor is a step forward in the blocking
+    resistance race. It is perfectly possible that even if your ISP filters
+    the Internet, you do not require a bridge to use Tor. So you should try
+    to use Tor without bridges first, since it might work.
+    </p>
+    <p>
+    Note that it's also possible that Tor is non-functional for other
+    reasons. The latest version of <a href="../projects/torbrowser.html">
+    Tor Browser</a> tries to give you better hints about why Tor is having
+    problems connecting. You should also read <a href="faq.html#DoesntWork">the
+    FAQ about problems with running Tor properly</a> when you have issues.
+    If you feel that the issue is clearly related to Tor being blocked, or
+    you'd simply like to try because you're unsure or feeling adventurous,
+    please read on. Ensure that you're using the <a href="../download/download.html#Dev">latest
+    Tor Browser for your platform</a>.
+    </p>
+    <p>
+    To use a bridge, you have two options. Tor Browser now provides some
+    bridges by default. You can enable these easily. Unfortunately, because
+    these bridges are publically distributed, it is easy for censors to block
+    some of them, so some of them may not work. In this case, you'll need to
+    locate different bridges. Furthermore, you'll need to configure Tor Browser
+    with whichever bridge address you intend to use. If your Internet connection
+    requires the use of a proxy, you'll probably need to configure Tor Browser
+    to use it first. If you don't think you need to configure a proxy for your
+    Internet connection, you probably don't. Give it a try and if you have
+    issues, <a href="../about/contact.html#support">ask us for help</a>.
+    </p>
+    <p>
+    <ul>
+    <li><a href="bridges.html#PluggableTransports">Obfuscated Bridges and Pluggable Transports</a></li>
+    <li><a href="bridges.html#Understanding">Understanding Bridge Configuration Lines</a></li>
+    <li><a href="bridges.html#AddTorNotWorks">Adding bridges in Tor Browser when Tor doesn't work</a></li>
+    <li><a href="bridges.html#AddTorWorks">Adding bridges in Tor Browser when Tor does work</a></li>
+    <li><a href="bridges.html#FindingMore">Finding more bridges for Tor</a></li>
+    </ul>
+    </p>
+    <a id="PluggableTransports"></a>
+    <h2><a class="anchor" href="bridges.html#PluggableTransports">Pluggable Transports</a></h2>
+    <hr>
+    <p>Over the last few years, censors have found ways to block Tor even when
+    clients are using bridges. They usually do this by installing special
+    boxes at ISPs that peek into network traffic and detect Tor; when Tor
+    is detected they block the traffic flow.
+    </p>
+    <p>To circumvent such sophisticated censorship Tor introduced
+    <a href="pluggable-transports.html"><i>pluggable transports</i></a>.
+    These transports manipulate all Tor traffic between the client and its
+    first hop such that it is not identifiable as a Tor connection. If the
+    censor can't decide if the connection is a Tor connection, then they are
+    less likely to block it.</p>
+    <p>Sadly, pluggable transports are not immune to detection, if a censor
+    is given enough time. In the past, we promoted obfs and obfs2 as safe
+    transports. These are now deprecated and were replaced by obfs3,
+    scramblesuit, fte, and obfs4.</p>
+    <p>Bridges which support pluggable transports can be used with Tor Browser
+    easily. Tor Browser includes some pre-configured bridges and you can get
+    more from <a href="bridges.html#FindingMore">BridgeDB</a>, if those don't work.</p>
+    <a id="Understanding"></a>
+    <h2><a class="anchor" href="bridges.html#Understanding">Understanding A Bridge Configuration Line</a></h2>
+    <hr>
+    <p>
+    As an example, when you obtain a bridge from https://bridges.torproject.org,
+    you'll get a bridge entry that looks like the following:
+    </p>
+    <pre><samp>
+    141.201.27.48:443 4352e58420e68f5e40bf7c74faddccd9d1349413
+    </samp>
+    </pre>
+    <p>
+    Understanding the components of a bridge line isn't strictly required
+    but may prove useful. You can skip this section if you'd like.<br>
+    The first element is the IP address of the bridge: <tt>'141.201.27.48'</tt><br>
+    The second element is the port number: <tt>'443'</tt><br>
+    The third element, the fingerprint (unique identifier of the
+    bridge), is optional:
+    <tt>'4352e58420e68f5e40bf7c74faddccd9d1349413'</tt><br>
+    <p>
+    <img width="7%" height="7%" style="vertical-align:middle" src="../images/icon-Obfsproxy.jpg" alt="">
+         <span><b>Pluggable transports tip:</b></span>
+    </p>
+    <p>
+    If your bridge line looks like this:
+    <pre><samp>
+    obfs3 141.201.27.48:420 4352e58420e68f5e40bf7c74faddccd9d1349413
+    </samp>
+    </pre>
+    The first element is the name of the pluggable transport
+    technology used by the bridge. For example, in the case above, the
+    bridge is using the <i>obfs3</i> pluggable transport.
+    </p>
+    <a id="UsingBridges"></a>
+    <h2><a class="anchor" href="bridges.html#UsingBridges">Using bridges with Tor
+    Browser</a></h2>
+    <hr>
+    <ul>
+    <li><a href="bridges.html#AddTorNotWorks">Adding bridges in Tor Browser when Tor doesn't work</a></li>
+    <li><a href="bridges.html#AddTorWorks">Adding bridges in Tor Browser when Tor does work</a></li>
+    </ul>
+    <a id="AddTorNotWorks"></a>
+    <h3><a href="bridges.html#AddTorNotWorks">Adding bridges in Tor Browser when Tor <em>does not</em> work:</a></h3>
+    <hr>
+    <p>First, you should read <a href="faq.html#DoesntWork">the
+    FAQ about problems with running Tor properly</a> when you have issues.
+    Sometimes Tor does not work due to a silly mistake rather than your
+    ISP interfering with your Internet connection.</p>
+    <br><br>
+    <h3>1) To add a bridge, follow the instructions on screen. Click the
+        "Configure" button.
+    </h3>
+    <br>
+    <img src="../images/tb-tor-launcher-startup.png" alt="Tor Browser's Initial Configuration page" width="485" height="436">
+    <br><br><br>
+    <h3>2) If you must configure a proxy then select "Yes" and enter the
+        details on the following page.
+        <br>If you do not use a proxy then select "No" and click "Next".
+        <br>If you do not know if you must configure a proxy then you likely
+        do not need to do it.
+    </h3>
+    <br>
+    <img src="../images/tb-tor-launcher-no-proxy.png" alt="Tor Browser's Proxy page" width="485" height="437">
+    <br><br><br>
+    <h3>3) After you configure a proxy or skip over that configuration page,
+        the following page asks "Does your Internet Service Provider (ISP)
+        block or otherwise censor connections to the Tor Network?". Select
+        "Yes" and then click "Next".</h3>
+    <br>
+    <img src="../images/tb-tor-launcher-isp-interference.png" alt="Tor Browser's Bridge page" width="485" height="432">
+    <br><br><br>
+    <h3>4) Now you have two configuration options. You can use bridges which are
+        preconfigured and provided with Tor Browser, or you can specify your
+        own bridge(s).</h3>
+    <br>
+    <img src="../images/tb-tor-launcher-bridges-options.png" alt="Tor Browser's Bridge Configuration page" width="483" height="436">
+    <br><br><br>
+    <h3>5a) If you want to use one of the provided bridges, then choose the
+    transport type you want to use. obfs3 is currently the recommend
+    type, but depending on where you are located another type may work better
+    for you. If you have any questions, please <a href="../about/contact.html#support">contact
+    us.</a></h3>
+    <br>
+    <img src="../images/tb-tor-launcher-bridges-provided.png" alt="Tor Browser's Bridge Configuration page - provided bridges" width="483" height="433">
+    <br><br><br>
+    <h3>5b) Alternatively, if you want to use a <a href="bridges.html#FindingMore">custom
+    bridge</a>, then select "Enter custom bridges" and copy-and-paste the
+    bridge information into the textbox.
+    </h3>
+    <br>
+    <img src="../images/tb-tor-launcher-bridges-custom.png" alt="Tor Browser's Bridge Configuration page - provided bridges" width="561" height="434">
+    <br><br><br>
+    <h3>6) After you decide which bridges you want to use, click "Connect".
+    Tor should now be able to load successfully and the browser window
+    should appear.</h3>
+    <br>
+    <img src="../images/tb-frontpage.png" alt="Tor Browser's Front Page" width="525" height="198">
+    <br><br><br><br>
+    <a id="AddTorWorks"></a>
+    <h3><a href="bridges.html#AddTorWorks">Adding bridges in Tor Browser when Tor <em>does</em> work:</a></h3>
+    <hr>
+    <p>The following instructions assume Tor Browser successfully loads and
+    you are able to surf the web. If you do not see the web browser when you
+    run Tor Browser (like in step (1) below), you may need to follow the
+    <a href="bridges.html#AddTorNotWorks">instructions above</a>.
+    <br><br>
+    <h3>1) Start Tor Browser:</h3>
+    <br>
+    <img src="../images/tb-frontpage.png" alt="Tor Browser's Front Page" width="525" height="198">
+    <br><br><br>
+    <h3>2) To begin using bridges, open Tor Browser's Network Settings:</h3>
+    <br>
+    <img src="../images/tb-tor-button-menu.png" alt="Tor Browser's TorButton Menu" width="525" height="275">
+    <br><br><br>
+    <h3>3) Select "My Internet Service Provider (ISP) blocks connections to the Tor network":</h3>
+    <br>
+    <img src="../images/tb-bridge-networksettings.png" alt="Tor Browser's Network Settings page" width="525" height="510">
+    <br><br><br>
+    <h3>4) Now you have two configuration options. You can use bridges which are
+        preconfigured and provided with Tor Browser, or you can specify your
+        own bridge(s).</h3>
+    <br>
+    <img src="../images/tb-bridges-options-from-browser.png" alt="Tor Browser's TorButton Menu" width="488" height="397">
+    <br><br><br>
+    <h3>5a) If you want to use one of the provided bridges, then choose the
+    transport type you want to use. obfs3 is currently the recommend
+    type, but depending on where you are located another type may work better
+    for you. If you have any questions, please <a href="../about/contact.html#support">contact
+    us.</a></h3>
+    <br>
+    <img src="../images/tb-bridges-provided-from-browser.png" alt="My Internet Service Provider (ISP) blocks connections to the Tor network" width="494" height="545">
+    <br><br><br>
+    <h3>5b) Alternatively, if you want to use a <a href="bridges.html#FindingMore">custom
+    bridge</a>, then select "Enter custom bridges" and copy-and-paste the
+    bridge information into the textbox.
+    </h3>
+    <br>
+    <img src="../images/tb-bridges-custom-from-browser.png" alt="Add bridges in the custom bridges textbox" width="512" height="542">
+    <br><br><br>
+    <p>
+    Tor will only use one bridge at a time, but it is good to add more than one
+    bridge so you can continue using Tor even if your first bridge becomes
+    unavailable.
+    </p>
+    <br><br>
+    <a id="FindingMore"></a>
+    <h2><a class="anchor" href="bridges.html#FindingMore">Finding more bridges for Tor</a></h2>
+    <hr>
+    <p>
+    If you need to get bridges, you can get a bridge by visiting
+    <a href="https://bridges.torproject.org/">https://bridges.torproject.org/</a>
+    with your web browser.
+    </p>
+    <p>
+    You can also get bridges by sending mail to bridges@bridges.torproject.org
+    with the line "get bridges" by itself in the body of the mail. You'll need
+    to send this request from a Gmail, Riseup!, or Yahoo! account, though
+    &mdash; we only accept these providers because otherwise we make it too
+    easy for an attacker to make a lot of email addresses and learn about all
+    the bridges. Almost instantly, you'll receive a reply that includes:
+    </p>
+    <pre>
+    Here are your bridges:
+
+     60.16.182.53:9001
+     87.237.118.139:444
+     60.63.97.221:443
+
+    </pre>
+    <p>
+    Similarly, if you need bridges with a specific pluggable transport, the
+    process is just as easy. First, decide which type you want. Currently we
+    provide obfs2, obfs3, scramblesuit, and fte. If you don't know which one
+    you should choose, then obfs3 is usually a good choice. Send an email to
+    bridges@bridges.torproject.org with "get transport obfs3" by itself in
+    the body of the email (replace "obfs3" with whichever pluggable transport
+    you want to use). You should receive an email like this:
+    </p>
+    <pre>
+    Here are your bridges:
+
+      obfs3 60.16.182.53:9001 cc8ca10a63aae8176a52ca5129ce816d011523f5
+      obfs3 87.237.118.139:444 0ed110497858f784dfd32d448dc8c0b93fee20ca
+      obfs3 60.63.97.221:443 daa5e435819275f88d695cb7fce73ed986878cf3
+    </pre>
+    <p>
+    Once you've received the email with bridge information, you can
+    continue the configuration steps outlined <a href="bridges.html#UsingBridges">above</a>.
+    </p>
+    <a id="RunningABridge"></a>
+    <h2><a class="anchor" href="bridges.html#RunningABridge">Running a Tor Bridge</a></h2>
+    <hr>
+    <p>
+    If you want to help out, you should <a href="faq.html#RelayOrBridge">decide whether you want to run a normal Tor
+    relay or a bridge relay</a>. You can configure your bridge either
+    manually or graphically:
+    <ul>
+    <li>manually <a href="faq.html#torrc">edit
+    your torrc file</a> to be just these four lines:<br>
+    <pre><code>
+    SocksPort 0
+    ORPort auto
+    BridgeRelay 1
+    Exitpolicy reject *:*
+    </code></pre></li>
+    </ul>
+    </p>
+    <p>
+    When configured as a bridge, your server will <b>not</b> appear in the public
+    Tor network.
+    </p>
+    <p>
+    Your bridge relay will automatically publish its address to the bridge
+    authority, which will give it out via https or email as above.
+    You can construct the bridge address
+    using the <a href="bridges.html#Understanding">format above</a> (you can find the
+    fingerprint in your Tor log files or in <tt>/var/lib/tor/fingerprint</tt>
+    depending on your platform).
+    </p>
+    <p>
+    If you would like to learn more about our bridge
+    design from a technical standpoint, please read the <a
+    href="https://gitweb.torproject.org/torspec.git/tree/attic/bridges-spec.txt">Tor bridges
+    specification</a>. If you're interested in running an unpublished bridge
+    or other non-standard uses, please do read the specification.
+    </p>
+  </div>
+  <!-- END MAINCOL -->
+  <div id="sidecol">
+<div class="img-shadow">
+  <div id="sidenav">
+    <ul>
+<li><a href="documentation.html">Documentation Overview</a></li>
+<li><a href="../projects/torbrowser.html">Install Tor Browser</a></li>
+<li><a href="https://guardianproject.info/apps/orbot/">Tor on Android</a></li>
+<li><a href="../projects/projects.html">Other Tor software</a></li>
+<li class="dropdown"><a class="active" href="installguide.html">Expert guides</a></li>
+<li>
+<ul>
+<li><a href="debian.html">Installing Tor on Debian/Ubuntu</a></li>
+<li><a href="rpms.html">Installing Tor on Fedora/CentOS</a></li>
+<li><a href="tor-doc-unix.html">Installing Tor Source</a></li>
+<li><a href="tor-doc-osx.html">MacPorts</a></li>
+<li><a href="tor-relay-debian.html">Configuring a Relay manually</a></li>
+<li><a href="tor-doc-relay.html">Configuring a Relay graphically</a></li>
+<li><a href="tor-hidden-service.html">Configuring a Hidden Service</a></li>
+<li class="active"><a class="active" href="bridges.html">Understanding bridges</a></li>
+<li><a href="verifying-signatures.html">Verify package signatures</a></li>
+</ul>
+</li>
+<li class="dropdown"><a href="manual.html">Manuals</a></li>
+<li><a href="https://trac.torproject.org/projects/tor/wiki/">Tor Wiki</a></li>
+<li><a href="faq.html">General FAQ</a></li>
+<li><a href="faq-abuse.html">Abuse FAQ</a></li>
+<li><a href="trademark-faq.html">Trademark FAQ</a></li>
+<li><a href="../eff/tor-legal-faq.html">Tor Legal FAQ</a></li>
+</ul>
+  </div>
+  <!-- END SIDENAV -->
+</div>
+<!-- END IMG-SHADOW -->
+<div class="img-shadow">
+  <div class="infoblock">
+    <h2 class="bulb">Tor Tip</h2>
+    <p>Tor is written for and supported by people like you. <a href="../donate/donate.html">Donate today</a>!</p>
+  </div>
+  <!-- END INFOBLOCK -->
+</div>
+<!-- END IMG-SHADOW -->
+  </div>
+  <!-- END SIDECOL -->
+</div>
+<!-- END CONTENT -->
+    <div id="footer">
+    	<div class="onion"><img src="../images/onion.jpg" alt="Tor" width="78" height="118"></div>
+      <div class="about">
+    <p>Trademark, copyright notices, and rules for use by third parties can be found
+    <a href="trademark-faq.html">in our FAQ</a>.</p>
+<!--
+        Last modified: Fri Aug 11 11:19:58 2017 +0200
+        Last compiled: Tue Aug 22 2017 15:17:34 +0000
+-->
+      </div>
+      <!-- END ABOUT -->
+      <div class="col first">
+      	<h4>About Tor</h4>
+        <ul>
+          <li><a href="../about/overview.html">What Tor Does</a></li>
+          <li><a href="../about/torusers.html">Users of Tor</a></li>
+          <li><a href="../about/corepeople.html">Core Tor People</a></li>
+          <li><a href="../about/sponsors.html">Sponsors</a></li>
+          <li><a href="../about/contact.html">Contact Us</a></li>
+        </ul>
+      </div>
+      <!-- END COL -->
+      <div class="col">
+      	<h4>Get Involved</h4>
+        <ul>
+          <li><a href="../donate/donate-foot.html">Donate</a></li>
+          <li><a href="documentation.html#MailingLists">Mailing Lists</a></li>
+          <li><a href="hidden-services.html">Hidden Services</a></li>
+          <li><a href="../getinvolved/translation.html">Translations</a></li>
+        </ul>
+      </div>
+      <!-- END COL -->
+      <div class="col">
+      	<h4>Documentation</h4>
+        <ul>
+          <li><a href="tor-manual.html">Manuals</a></li>
+          <li><a href="documentation.html">Installation Guides</a></li>
+          <li><a href="https://trac.torproject.org/projects/tor/wiki/">Tor Wiki</a></li>
+          <li><a href="faq.html">General Tor FAQ</a></li>
+        </ul>
+      </div>
+        <div class="col">
+        <a href="https://internetdefenseleague.org/"><img src="../images/InternetDefenseLeague-footer-badge.png" alt="Internet Defense League" width="125" height="125"></a>
+        </div>
+      <!-- END COL -->
+    </div>
+    <!-- END FOOTER -->
+  </div>
+  <!-- END WRAP -->
+</body>
+</html>

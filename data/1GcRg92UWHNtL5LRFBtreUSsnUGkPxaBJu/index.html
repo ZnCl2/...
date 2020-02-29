@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>IPFS Test</title>	
+	<script src="video/build/jquery.js"></script>	
+	<script src="video/build/mediaelement-and-player.min.js"></script>
+	<link rel="stylesheet" href="video/build/mediaelementplayer.min.css" />
+	<link rel="subresource" href="http://localhost:8080/ipfs/QmdunRrWGLhuCYpDPXvKuCvCGSAZhr7Fw3ZwycxtEUGeeP">
+</head>
+<body onload="onload()"><center>
+<h1>Test of IPFS</h1>
+<p>You will be required to have IPFS on your system to watch the below video. The resolve time for the video can take some time.</p>
+<p id="pinning">If you are waiting for the video to resolve, I suggest <button onclick="pin();">pinning the video</button> and <button onclick="resolve();">resolving to a direct peer</button>. It helps a lot.<p> 
+<h2><a href=http://127.0.0.1:43110/16pz3DbSRyz7D7e3qsxWMq98Z8VztJZN4j/>CHECK OUT THE FULL IPFS TEST SITE HERE</a></h2>
+<!-- simple single file method -->
+<video width="1280" height="720" id="player1" controls="controls" poster="video.jpg" preload="none">
+<source type="video/mp4" src="http://localhost:8080/ipfs/QmdunRrWGLhuCYpDPXvKuCvCGSAZhr7Fw3ZwycxtEUGeeP" />
+</video>
+	
+<span id="player1-mode"></span>
+<script>
+$('audio,video').mediaelementplayer();
+</script>
+<script>
+function pin() {
+  var url = 'http://localhost:5001/api/v0/pin/add?arg=QmdunRrWGLhuCYpDPXvKuCvCGSAZhr7Fw3ZwycxtEUGeeP&recursive=true'
+  var win = window.open(url, '_blank');
+}
+function resolve() {
+  var url = 'http://localhost:5001/api/v0/swarm/connect?arg=/ip4/192.99.57.55/tcp/4001/ipfs/QmbMFoDwwZz8ZPj7PGrkC6VwmSBiMLzUbcQbhifC1XhkWD'
+  var win = window.open(url, '_blank');
+}
+function onload() {
+	$.ajax({
+		url: 'http://localhost:8080/ipfs/QmdunRrWGLhuCYpDPXvKuCvCGSAZhr7Fw3ZwycxtEUGeeP',
+		success: function() {},
+		error: function(e) {
+			$(document.body).prepend($('<div style="margin: 20px; padding: 10px; color: #fff; background: #ff4444; font-family: Helvetica, sanserif;">Your system doesn\'t seem to be running IPFS. But that\'s ok. <a style="color:#fff;font-weight:bold" href="https://ipfs.io/">You can get IPFS here</a>. It\'s free.</div>'));
+		}
+	});
+}
+</script>
+</center>
+</body>
+</html>

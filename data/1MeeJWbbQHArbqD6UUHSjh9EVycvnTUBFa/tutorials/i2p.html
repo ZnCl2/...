@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>How to create an I2P eepsite on Caddy on Debian 10 - Archive - MayVaneDay Studios</title>
+		<link href="../style.css" rel="stylesheet" type="text/css" media="all">
+		<meta name="author" content="Vane Vander">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</head>
+	<body class="mayvaneday">
+		<article>
+			<div class="box">
+				<p><h1>How to create an I2P eepsite on Caddy on Debian 10</h1></p>
+				<p>first published: 2021-02-08</p>
+			</div>
+			<hr>
+			<div class="box">
+				<ol style="list-style-type: decimal">
+					<li>Install I2PD (an I2P router that is lighter on resources than the original I2P).</li>
+				</ol>
+				<p><code>sudo apt install i2pd</code></p>
+				<ol start="2" style="list-style-type: decimal">
+					<li>Install the Caddy web server.</li>
+				</ol>
+				<p><code>echo "deb [trusted=yes] https://apt.fury.io/caddy/ /" | sudo tee -a /etc/apt/sources.list.d/caddy-fury.list</code></p>
+				<p><code>sudo apt update; sudo apt install caddy -y</code></p>
+				<ol start="3" style="list-style-type: decimal">
+					<li>Edit <code>/var/lib/i2pd/tunnels.conf</code> to create the eepsite.</li>
+				</ol>
+				<p>Open /var/lib/i2pd/tunnels.conf in your favorite text editor. (Please note that this usually requires root privileges.)</p>
+				<p>Go to the end of the file and add:</p>
+				<pre>
+[mycooleepsite]
+type = http
+host = 127.0.0.1
+port = 80
+keys = mycooleepsite.dat
+				</pre>
+				<ol start="4" style="list-style-type: decimal">
+					<li>Restart I2PD.</li>
+				</ol>
+				<p><code>sudo systemctl restart i2pd</code></p>
+				<ol start="5" style="list-style-type: decimal">
+					<li>Find out your new eepsite's hash.</li>
+				</ol>
+				<p>Open <code>http://127.0.0.1:7070</code> in a web browser that can access that machine's localhost.</p>
+				<p>If you don't know what you're doing, run the following:</p>
+				<p><code>sudo apt install lynx -y</code></p>
+				<p><code>lynx http://127.0.0.1:7070</code></p>
+				<p>Go to the "I2P Tunnels" page. (In Lynx, press the down arrow until "I2P Tunnels" is highlighted, and then press the enter key.)</p>
+				<p>In the "Server Tunnels" section, there should be a string that looks something like <code>VERYLONGHASH.b32.i2p</code>. Copy the VERYLONGHASH part.</p>
+				<ol start="6" style="list-style-type: decimal">
+					<li>Configure Caddy to serve the eepsite.</li>
+				</ol>
+				<p>Open <code>/etc/caddy/Caddyfile</code> as root with your favorite text editor.</p>
+				<p>Type the following in:</p>
+				<pre>
+http://VERYLONGHASH.b32.i2p {
+	root * /your/website/file/path/here
+	file_server
+	encode gzip
+}
+				</pre>
+				<p>The &quot;http://&quot; in front of the address is important as that tells Caddy to not try to enable HTTPS for that website. HTTPS is unnecessary for I2P eepsites as all traffic to and from the server is already encrypted in transit. And since I2P eepsites aren't accessible on the normal clearnet, the request for Let's Encrypt to give Caddy a certificate would fail as they wouldn't be able to access the domain.</p>
+				<ol start="7" style="list-style-type: decimal">
+					<li>Restart Caddy to apply your changes.</li>
+				</ol>
+				<p><code>sudo systemctl restart caddy</code></p>
+			</div>
+			<hr>
+			<div class="box">
+				<p align=right>CC BY-NC-SA 4.0 &copy; Vane Vander</p>
+			</div>
+		</article>
+	</body>
+</html>

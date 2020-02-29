@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>IPFS Test</title>	
+	<script src="video/build/jquery.js"></script>	
+	<script src="video/build/mediaelement-and-player.min.js"></script>
+	<link rel="stylesheet" href="video/build/mediaelementplayer.min.css" />
+	<script src="video/demo/testforfiles.js"></script>	
+</head>
+<body><center>
+<h1>Test of IPFS</h1>
+<p>You will be required to have IPFS on your system to watch the below video. The resolve time for the video can take some time.</p>
+<p id="pinning">If you are waiting for the video to resolve, I suggest <button onclick="openInNewTab('http://localhost:5001/api/v0/pin/add?arg=QmdunRrWGLhuCYpDPXvKuCvCGSAZhr7Fw3ZwycxtEUGeeP&recursive=true');">pinning the video</button>. It helps a lot.<p>
+
+<!-- simple single file method -->
+<video width="1280" height="720" src="http://localhost:8080/ipfs/QmdunRrWGLhuCYpDPXvKuCvCGSAZhr7Fw3ZwycxtEUGeeP"
+	type="video/mp4" 
+	id="player1"
+	controls="controls"
+	preload="none"
+	poster="video.jpg">
+</video>
+	
+<span id="player1-mode"></span>
+<script>
+
+$('audio,video').mediaelementplayer({
+	//mode: 'shim',
+});
+</script>
+<script>
+/* This system will not work in zeronet because of sandboxing.
+function pinning() {	
+    var url = 'http://localhost:5001/api/v0/pin/add?arg=QmdunRrWGLhuCYpDPXvKuCvCGSAZhr7Fw3ZwycxtEUGeeP&recursive=true';
+    var xhr = createCORSRequest('GET', url);
+    if (!xhr) {
+  	throw new Error('CORS not supported');
+	document.getElementById("pinning").innerHTML = "Pinning request could not be completed because CORS is not supported on your browser.";
+    }
+
+    xhr.onloadstart = function() {
+  	console.log('Request starting...');
+	document.getElementById("pinning").innerHTML = "Pinning started. This will take a long time to complete.";
+    };
+    xhr.ontimeout = function() {
+  	console.log('Request timed out. :(');
+	document.getElementById("pinning").innerHTML = "Pinning could not be completed due to a timeout error.";
+    };
+    xhr.onload = function() {
+	var responseText = xhr.responseText;
+	console.log(responseText);
+	document.getElementById("pinning").innerHTML = "Video Pinning was successful. :D";
+    };
+
+    xhr.onerror = function() {
+	console.log('There was an error!');
+	document.getElementById("pinning").innerHTML = "Pinning could not be completed.";
+    };    
+
+    xhr.send();
+}
+function createCORSRequest(method, url) {
+  var xhr = new XMLHttpRequest();
+  if ("withCredentials" in xhr) {
+
+    // Check if the XMLHttpRequest object has a "withCredentials" property.
+    // "withCredentials" only exists on XMLHTTPRequest2 objects.
+    xhr.open(method, url, true);
+
+  } else if (typeof XDomainRequest != "undefined") {
+
+    // Otherwise, check if XDomainRequest.
+    // XDomainRequest only exists in IE, and is IE's way of making CORS requests.
+    xhr = new XDomainRequest();
+    xhr.open(method, url);
+
+  } else {
+
+    // Otherwise, CORS is not supported by the browser.
+    xhr = null;
+
+  }
+  return xhr;
+}*/
+function openInNewTab(url) {
+  var win = window.open(url, '_blank');
+  // win.focus();
+  document.getElementById("pinning").innerHTML = "";
+  
+}
+
+</script>
+</center>
+</body>
+</html>

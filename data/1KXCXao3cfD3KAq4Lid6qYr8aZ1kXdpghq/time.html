@@ -1,0 +1,105 @@
+<body>
+	<span id="time"></span>
+</body>
+<script>
+var unitime = 0;
+function uniCal(s,ts)
+{
+	//2992 leap days from 0HE (Holocene/Human Era) to 1970
+	//4372000 days
+	s = s+27 ; //Add in leap seconds that were missed due to unix
+	//s += 43200; //Shift new day to noon
+	//var hedays = 2902+(11970*365); //Days between 0HE and 1970
+	var hedays = 2440587 //Julian Day for jan 1 1970
+	s = s/0.864; //uni seconds since 1970
+
+	s += hedays*100000; //true time
+
+	if(ts)
+		unitime = s;
+
+	var d = Math.floor(s/100000);
+	var q = Math.floor(d/100);
+	var y = Math.floor(q/10);
+	s -= d*100000;
+	d -= q*100;
+	q -= y*10;
+	w = Math.floor(d/10);
+	d -= w*10;
+	var h = Math.floor(s/10000); //Get whole hours
+    s -= h*10000;
+    var m = Math.floor(s/100); //Get remaining minutes
+    s -= m*100;
+    s = Math.floor(s)
+	return y+"/"+q+"/"+w+"w"+d+"."+h+":"+(m < 10 ? '0'+m : m)+":"+(s < 10 ? '0'+s : s);
+}
+function earthCal(s) {
+	var date = new Date();
+	var year = date.getUTCFullYear();
+	var yearstart = Date.parse(year+"-01-01");
+	s -= yearstart/1000; //Adjust for parsing current year
+
+	s = s/0.864; //Convert regular seconds into new seconds
+
+	var d = Math.floor(s/100000); //Get whole days
+	var q = Math.floor(d/91);
+	s -= d*100000;
+	d -= q*91;
+	w = Math.floor(d/10);
+	d -= w*10;
+	var h = Math.floor(s/10000); //Get whole hours
+    s -= h*10000;
+    var m = Math.floor(s/100); //Get remaining minutes
+    s -= m*100;
+    return q+"/"+w+"w"+d+"."+h+":"+(m < 10 ? '0'+m : m)+":"+Math.floor(s < 10 ? '0'+s : s); //zero padding on minutes and seconds
+
+	return s;
+}
+
+function noleaptime()
+{
+	var dat = new Date();
+	s = dat.getTime()/1000;
+
+	var y = Math.floor(s/31536000);
+	s -= y*31536000;
+	var d = Math.floor(s/86400); //Get whole days
+	s -= d*86400;
+    var h = Math.floor(s/3600); //Get whole hours
+    s -= h*3600;
+    var m = Math.floor(s/60); //Get remaining minutes
+    s -= m*60;
+    return y+"y "+d+"d "+h+"h "+(m < 10 ? '0'+m : m)+"m "+Math.floor(s < 10 ? '0'+s : s)+"s"; //zero padding on minutes and seconds
+}
+
+function display()
+{
+var date = new Date()
+var nowdt = date.getTime();
+var offset = -(date.getTimezoneOffset() / 60);
+var newoff = Math.floor((offset*3600)/0.864);
+var o = Math.floor((offset*3600)/0.864)*0.864;
+var now = (nowdt/1000) + o;
+var disp = document.getElementById("time");
+disp.innerHTML = ""
+disp.innerHTML += "Standard Local Time: "+date.toString()+"<br>";
+disp.innerHTML += "Your Timezone Offset: "+offset+"/"+newoff+"<br>"
+disp.innerHTML += "Timestamp: "+unitime+"<br>";
+disp.innerHTML += "Date and Time: "+uniCal(nowdt/1000,1)+"<br>"
+disp.innerHTML += "Local Time: "+uniCal(now,0)+"<br>";
+disp.innerHTML += "<br>";
+disp.innerHTML += "Should we use this? Or just go full radical?";
+disp.innerHTML += "<br>";
+disp.innerHTML +="Earth Cal. Standard Time: "+earthCal(nowdt/1000)
+disp.innerHTML += "<br>";
+disp.innerHTML += "Earth Cal. Local Time: "+earthCal(now)
+disp.innerHTML += "<br>";
+
+//console.log(secondsTimeSpanToHMS(now))
+}
+
+setInterval(function(){
+				display();
+			}, 100);
+
+</script>

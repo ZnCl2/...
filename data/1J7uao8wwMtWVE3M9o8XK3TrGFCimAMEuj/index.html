@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8" />
+	<title>L'Édifice</title>
+	<link href="css/videojs.css" rel="stylesheet" />
+    <script src="js/video.min.js"></script>
+    <link href="css/videoBlocCoq.css" rel="stylesheet" />
+    <script src="js/TweenLite.min.js"></script>
+	<script src="js/Draggable.min.js"></script>
+	<script src="js/CSSPlugin.min.js"></script>
+</head>
+<body>
+	<script type="text/javascript">
+		window.onload = function() {
+			var list = [
+				["SpecialNormal", 640, 360, 1090, 621],
+				["MaximeRaymond", 640, 360, 509, 100],
+				["MartinLessard", 640, 360, 562, 652],
+				["EliseGravel", 640, 360, 49, 36],
+				["CarolineAllard", 640, 360, 992, 119],
+				["NicolasLangelier", 640, 360, 1068, 375],
+				["BlaiseRenaud", 640, 360, 87, 499],
+				["annonce", 640, 360, 602, 343]
+			];
+			list.forEach(function (element) {
+				var video = document.createElement('video');
+				video.id = element[0];
+				video.setAttribute('class', 'video-js videoBlocCoq');
+				video.poster = 'img/' + element[0] + ".jpg";
+				video.controls = 'true';
+				video.preload = 'none';
+				video.width = element[1];
+				video.height = element[2];
+				video.setAttribute('data-setup', '{"language":"fr"}');
+				video.style.position = 'absolute';
+
+				var source = document.createElement('source');
+				source.src = 'http://lo2jnb7p4cvfxyae.onion/1J7uao8wwMtWVE3M9o8XK3TrGFCimAMEuj/mp4/' + element[0] + '.360p.mp4';
+				source.type = 'video/mp4';
+
+				video.appendChild(source);
+				document.body.appendChild(video);
+
+				var player = videojs(element[0]);
+				player.on('firstplay', function() {this.loadingSpinner.addClass('pasPrete')});
+				player.on('playing', function(){this.loadingSpinner.removeClass('pasPrete')});
+				player.on('error', function(){
+					this.loadingSpinner.removeClass('pasPrete');
+					var error = (this.errorDisplay.el_).getElementsByClassName('vjs-modal-dialog-content')[0];
+					error.innerHTML = error.innerText;
+				});
+				player.on('canplay', function() {
+					this.loadingSpinner.removeClass('pasPrete');
+				})
+
+				//make draggable
+				Draggable.create('#'+element[0], {
+					type:"top,left",
+					edgeResistance:0.5,
+					cursor: 'inherit'
+				});
+
+				//set position
+				document.getElementById(element[0]).style.left = String(element[3]) + 'px';
+				document.getElementById(element[0]).style.top = String(element[4]) + 'px';
+			})
+		}
+
+		//add new language
+		videojs.addLanguage('fr', {
+			"Play": "Lecture",
+			"Pause": "Pause",
+			"Current Time": "Temps actuel",
+			"Duration Time": "Durée",
+			"Remaining Time": "Temps restant",
+			"Stream Type": "Type de flux",
+			"LIVE": "DIRECT",
+			"Loaded": "Prêt",
+			"Progress": "Progression",
+			"Fullscreen": "Plein écran",
+			"Non-Fullscreen": "Fenêtré",
+			"Mute": "Sourdine",
+			"Unmuted": "Son activé",
+			"Playback Rate": "Vitesse",
+			"Subtitles": "Sous-titres",
+			"subtitles off": "Sous-titres désactivés",
+			"Captions": "Sous-titres",
+			"captions off": "Sous-titres désactivés",
+			"Chapters": "Chapitres",
+			"You aborted the video playback": "Vous avez interrompu la lecture de la vidéo.",
+			"A network error caused the video download to fail part-way.": "Une erreur de réseau a interrompu le téléchargement de la vidéo.",
+			"The media could not be loaded, either because the server or network failed or because the format is not supported.": "Oups !! Ça marche pas. Soit parce que l'oignon est dead, soit que tor a besoin d'un massage, ou soit ton proxy est pas bien setté. Besoin d'aide pour le proxy ? Par <a href=\"/1MZTSurvwBMiVGcMgRQTtM1tGnjBbQKA3z/\">ici</a> yo.",
+			"The video playback was aborted due to a corruption problem or because the video used features your browser did not support.": "La lecture de la vidéo a été interrompue à cause d'un problème de corruption ou parce que la vidéo utilise des fonctionnalités non prises en charge par votre navigateur.",
+			"No compatible source was found for this video.": "Ton navigateur est pourri. <a href=\"/1MZTSurvwBMiVGcMgRQTtM1tGnjBbQKA3z/\">Fait quelque chose.</a>"
+		});
+	</script>
+</body>
+</html>

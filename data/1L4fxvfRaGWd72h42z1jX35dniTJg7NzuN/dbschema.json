@@ -1,0 +1,33 @@
+{
+    "db_name": "ZeroBooru",
+    "db_file": "data/zerobooru.db",
+    "version": 2,
+    "maps": {
+        "users/.+/images.json": {
+            "to_table": [ "images" ]
+        },
+        "users/.+/content.json": {
+            "to_keyvalue": [ "cert_user_id" ]
+        }
+    },
+    "tables": {
+        "images": {
+            "cols": [
+                ["hashsum", "STRING"],
+                ["path", "STRING"],
+                ["pathThumb", "STRING"],
+                ["height", "INTEGER"],
+                ["width", "INTEGER"],
+                ["heightThumb", "INTEGER"],
+                ["widthThumb", "INTEGER"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": [
+                "CREATE UNIQUE INDEX image_key ON images(json_id, date_added)",
+                "CREATE UNIQUE INDEX hash ON images(hashsum)"
+            ],
+            "schema_changed": 2
+        }
+    }
+}

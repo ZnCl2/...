@@ -1,0 +1,35 @@
+void line(int x1, int y1, int x2, int y2, 
+          int c, IntBuffer screen)
+{
+    int dx = x2 - x1;
+    int dy = y2 - y1;
+    dx = (dx < 0)? -dx : dx;
+    dy = (dy < 0)? -dy : dy;
+    int sx = (x1 < x2)? 1 : -1;
+    int sy = (y1 < y2)? 1 : -1;
+    int err = dx - dy;
+    int x = x1, y = y1;
+    
+    while (true) 
+    {
+        screen.plot(x, y, c);
+        
+        if (x == x2)
+        if (y == y2)
+            break;
+        
+        int e2 = err << 1;
+        
+        if (e2 > -dy) 
+        {
+            err = err - dy;
+            x += sx;
+        }
+        
+        if (e2 < dx) 
+        {
+            err = err + dx;
+            y += sy;
+        }
+    }
+}

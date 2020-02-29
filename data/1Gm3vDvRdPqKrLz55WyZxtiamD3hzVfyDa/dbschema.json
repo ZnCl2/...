@@ -1,0 +1,29 @@
+{
+  "db_name": "ZeroChat",
+  "db_file": "data/zerowiki.db",
+  "version": 2,
+  "maps": {
+    "users/.+/data.json": {
+      "to_table": ["pages"]
+    },
+    "users/.+/content.json": {
+      "to_keyvalue": ["cert_user_id"]
+    }
+  },
+  "tables": {
+    "pages": {
+      "cols": [
+        ["id", "TEXT"],
+        ["body", "TEXT"],
+        ["slug", "TEXT"],
+        ["date_added", "INTEGER"],
+        ["json_id", "INTEGER REFERENCES json (json_id)"]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX page_key ON pages(json_id, date_added)",
+        "CREATE UNIQUE INDEX id ON pages(id)"
+      ],
+      "schema_changed": 1
+    }
+  }
+}

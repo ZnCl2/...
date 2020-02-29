@@ -1,0 +1,162 @@
+<html lang="en">
+	<head>
+		<title>Setting up your own darknet site - Let's Decentralize</title>
+		<meta charset="UTF-8">
+		<meta name="author" content="Vane Vander">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link href="./style.css" rel="stylesheet" type="text/css" title="main" media="all">
+		<meta http-equiv="onion-location" content="http://xanthexikes7btjqlkakrxjf546rze2n4ftnqzth6qk52jdgrf6jwpqd.onion/setup.html" />
+	</head>
+	<body>
+		<h1>Setting up your own darknet site</h1>
+		<div class="card">
+			<p>Note: This guide assumes that you have at least two <i>functioning</i> brain cells and basic knowledge of Linux. <b>We're going to use Debian 10 in this guide.</b> If you're using a different distro or operating system, you're on your own.</p>
+			<p>All terminal commands should be run as root. If you're not root, execute <code>sudo -i</code> and input your password and you should be there. Again, if you're using <code>doas</code> instead, you're on your own (and probably already know what you're doing).</p>
+		</div>
+		<p>&nbsp;</p>
+		<div class="card">
+			<h2>What darknet do you want to use?</h2>
+			<p align="center">
+				<a href="#tor">
+					<img src="./img/logos/tor.png" alt="Tor" title="Tor">
+				</a>
+				&nbsp;
+				<a href="#yggdrasil">
+					<img src="./img/logos/yggdrasil.png" alt="Yggdrasil" title="Yggdrasil">
+				</a>
+				<a href="#i2p">
+					<img src="./img/logos/i2p.svg" alt="I2P" title="I2P">
+				</a>
+			</p>
+		</div>
+		<p>&nbsp;</p>
+		<h2>Setting up the darknet itself</h2>
+		<div class="card">
+			<h3 id="tor">
+				<a class="setup">Tor</a>
+			</h3>
+			<p>Install Tor.</p>
+			<p><code>apt install tor</code></p>
+			<p>Edit /etc/tor/torrc to allow connections to and from the hidden service.</p>
+			<p><code>nano -$ /etc/tor/torrc</code></p>
+			<p>Go to the lines that say:</p>
+			<p><code>#HiddenServiceDir /var/lib/tor/hidden_service/</code><br />
+			<code>#HiddenServicePort 80 127.0.0.1:80</code></p>
+			<p>Uncomment them by deleting the <code>#</code> mark in front of each line.</p>
+			<p>If you want, you can change the <code>HiddenServiceDir</code> directory, but you will need to remember it for later. (You will need to do this if you want multiple Tor hidden services.) For security purposes, keep the new directory inside of <code>/var/lib/tor/</code>.</p>
+			<p>Save and exit the text editor, then restart the Tor process.</p>
+			<p><code>systemctl restart tor@default</code></p>
+			<p>Now get the address of your new service. (If you picked a different <code>HiddenServiceDir</code>, now is the time to remember it.)</p>
+			<p><code>cat /var/lib/tor/hidden_service/hostname</code></p>
+			<p>Whatever comes up is your address for when you set up your web server.</p>
+			<hr>
+			<p>Which web server do you want to use?</p>
+			<p align="center">
+				<a href="#caddy">[Caddy]</a>
+				<!--<a href="#darkhttpd">[darkhttpd]</a>-->
+			</p>
+		</div>
+		<p>&nbsp;</p>
+		<div class="card">
+			<h3 id="yggdrasil">
+				<a class="setup">Yggdrasil</a>
+			</h3>
+			<p>Install Yggdrasil.</p>
+			<p><code>apt install dirmngr -y</code></p>
+			<p><code>gpg --fetch-keys https://neilalexander.s3.dualstack.eu-west-2.amazonaws.com/deb/key.txt</code></p>
+			<p><code>gpg --export 569130E8CA20FBC4CB3FDE555898470A764B32C9 | sudo apt-key add -</code></p>
+			<p><code>echo 'deb http://neilalexander.s3.dualstack.eu-west-2.amazonaws.com/deb/ debian yggdrasil' | sudo tee /etc/apt/sources.list.d/yggdrasil.list</code></p>
+			<p><code>apt update; apt install yggdrasil -y</code></p>
+			<p>Now start Yggdrasil to get its IP address.</p>
+			<p><code>systemctl start yggdrasil; systemctl enable yggdrasil</code></p>
+			<p><code>journalctl -xe -u yggdrasil</code></p>
+			<p>There will be a line near the bottom that says "Your IPv6 address is". This is your address for when you set up your web server.</p>
+			<p>Press Control and C together to exit <code>journalctl</code>.</p>
+			<p>Configure some peers.</p>
+			<p>Open <a href="https://publicpeers.neilalexander.dev/">this page</a> in a new tab in your browser, and open your Yggdrasil configuration on your server:</p>
+			<p><code>nano -$ /etc/yggdrasil.conf</code></p>
+			<p>At the top of the configuration file will be a section that looks like this:</p>
+			<p><code>Peers: []</code></p>
+			<p>Pick some peers from the list and add them to that section of the file (one per line) so it now looks something like this:</p>
+			<pre>
+Peers:
+[
+	tcp://50.236.201.218:56088
+	tcp://lancis.iscute.moe:49273
+	tcp://45.77.107.150:34660
+	tls://longseason.1200bps.xyz:13122
+	tcp://8.9.30.45:34371
+	tls://107.189.4.167:42024
+]
+			</pre>
+			<p>Save and exit the text editor, then restart the Yggdrasil process.</p>
+			<p><code>systemctl restart yggdrasil</code></p>
+			<hr>
+			<p>Which web server do you want to use?</p>
+			<p align="center">
+				<a href="#caddy">[Caddy]</a>
+				<!--<a href="#darkhttpd">[darkhttpd]</a>-->
+			</p>
+		</div>
+		<p>&nbsp;</p>
+		<div class="card">
+			<h3 id="i2p">
+				<a class="setup">I2P</a>
+			</h3>
+			<p>Install I2Pd.</p>
+			<p><code>apt install i2pd lynx -y</code></p>
+			<p>Edit I2Pd's configuration file to allow connections to and from the hidden service.</p>
+			<p><code>nano -$ /var/lib/i2pd/tunnels.conf</code></p>
+			<p>Go to the end of the file and add:</p>
+			<pre>
+[mycooleepsite]
+type = http
+host = 127.0.0.1
+port = 80
+keys = mycooleepsite.dat
+			</pre>
+			<p>Restart I2Pd.</p>
+			<p><code>systemctl restart i2pd</code></p>
+			<p>Find out your new eepsite's hash.</p>
+			<p><code>lynx http://127.0.0.1:7070</code></p>
+			<p>Go to the "I2P Tunnels" page. (In Lynx, press the down arrow until "I2P Tunnels" is highlighted, and then press the enter key.)</p>
+			<p>In the "Server Tunnels" section, there should be a string that looks something like <code>VERYLONGHASH.b32.i2p</code>. The whole thing (including the <code>.b32.i2p</code>) is your address for when you set up your web server.</p>
+			<hr>
+			<p>Which web server do you want to use?</p>
+			<p align="center">
+				<a href="#caddy">[Caddy]</a>
+				<!--<a href="#darkhttpd">[darkhttpd]</a>-->
+			</p>
+		</div>
+		<p>&nbsp;</p>
+		<h2>Setting up the web server</h2>
+		<div class="card">
+			<h3 id="caddy">
+				<a class="setup">Caddy</a>
+			</h3>
+			<p>Install Caddy.</p>
+			<p><code>echo "deb [trusted=yes] https://apt.fury.io/caddy/ /" | tee -a /etc/apt/sources.list.d/caddy-fury.list</code></p>
+			<p><code>apt update; apt install caddy -y</code></p>
+			<p>Edit the Caddyfile to serve the site.</p>
+			<p><code>nano -$ /etc/caddy/Caddyfile</code></p>
+			<p>Paste the following in:</p>
+			<pre>
+http://address {
+	root * /your/website/file/path/here
+	file_server
+	encode gzip
+	bind 127.0.0.1
+}
+			</pre>
+			<p>"address" should be the, well, <i>address</i> of your new site, given in the last step of its section. (Yggdrasil IPv6 addresses should be enclosed in brackets.)</p>
+			<p><code>/your/website/file/path/here</code> should be the actual path to your website's files.</p>
+			<p><code>bind 127.0.0.1</code> will (hopefully) prevent the easiest of deanonymization attacks. (Delete this line for Yggdrasil services.) Let's Decentralize is not responsible for your personal safety, and it is up to you to harden your server's security further.</p>
+			<p>Now restart Caddy to apply your changes.</p>
+			<p><code>systemctl restart caddy</code></p>
+		</div>
+		<hr>
+		<p align="center">
+			<small>made with &lt;3 by your friends at <a href="https://mayvaneday.art">MayVaneDay</a></small>
+		</p>
+	</body>
+</html>

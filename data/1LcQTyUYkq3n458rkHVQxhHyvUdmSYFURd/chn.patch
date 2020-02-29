@@ -1,0 +1,113 @@
+diff --git a/index.html b/index.html
+index 3f9746c..11bd24c 100644
+--- a/index.html
++++ b/index.html
+@@ -52,9 +52,9 @@
+  <h2 data-editable="description"></h2>
+  <a href="#Follow" class="feed-follow"><span class='text-follow'>Follow in Newsfeed</span><span class='text-following'>Following</span><div class="icon-feed"></div></a>
+  <hr>
+- <a href="?Toc=dateDesc">TOC by date</a>
++ <a href="?Toc=dateDesc">按时间索引</a>
+  <br>
+- <a href="?Toc=tagAll">TOC by tag</a>
++ <a href="?Toc=tagAll">按标签索引</a>
+  <hr>
+  <div class="links" data-editable="links"></div>
+ 
+@@ -98,10 +98,10 @@
+      <span class="score-active"> <span class="icon-up">^</span><span class="score-num">1</span> </span>
+     </a>-->
+     <br>
+-      <span class="tag" data-editable="tag" data-editable-mode="simple">tag: </span>
++      <span class="tag" data-editable="tag" data-editable-mode="simple">标签: </span>
+    </div>
+    <div class="body" data-editable="body">Body</div>
+-   <a class="more" href="#"><span class='readmore'>Read more</span> →</a>
++   <a class="more" href="#"><span class='readmore'>点我阅读全文</span> →</a>
+   </div>
+   <!-- EOF Template: post -->
+ 
+@@ -115,7 +115,7 @@
+    <span class="published" data-editable="date_published" data-editable-mode="timestamp">21 hours ago &middot; 2 min read</span>
+    <a href="#Like" class="like" title="Like this post"><div class="icon-heart"></div><div class="icon-heart icon-heart-anim"></div> <span class="num"></span></a>
+    <br>
+-      <span class="tag" data-editable="tag" data-editable-mode="simple">tag: </span>
++      <span class="tag" data-editable="tag" data-editable-mode="simple">标签: </span>
+   </div>
+ 
+   <div class="body" data-editable="body"></div>
+@@ -181,4 +181,4 @@
+ 
+ <script type="text/javascript" src="js/all.js" asyc></script>
+ </body>
+-</html>
+\ No newline at end of file
++</html>
+diff --git a/js/ZeroBlog.coffee b/js/ZeroBlog.coffee
+index 6e67691..c0356d5 100644
+--- a/js/ZeroBlog.coffee
++++ b/js/ZeroBlog.coffee
+@@ -270,7 +270,7 @@ class ZeroBlog extends ZeroFrame
+     tag =""
+     #query untagged
+     if tagType.match /^None/
+-      tag="all untagged"
++      tag="尚未分类"
+       queryString = """SELECT date_published,title,post_id FROM post
+       WHERE post_id NOT IN (SELECT DISTINCT (post_id) FROM tag)
+       ORDER BY date_published DESC"""
+@@ -299,7 +299,7 @@ class ZeroBlog extends ZeroFrame
+ 
+ 
+         @applyPostdata($(".post-full"),
+-          title:"posts of tag:"+tag
++          title:"以下文章被分类在:"+tag
+           post_id:-1
+           votes:-1
+           comments:-1
+@@ -336,7 +336,7 @@ class ZeroBlog extends ZeroFrame
+         tagged = res[2..]
+ 
+         if tagged.length > 0
+-          markdown += "tagged:\n\n"
++          markdown += "已分类:\n\n"
+ 
+         for one in tagged
+           escaped = encodeURIComponent(one.value)
+@@ -346,12 +346,12 @@ class ZeroBlog extends ZeroFrame
+         untagged=total_post - res[1].count
+ 
+         if untagged != 0
+-          markdown += "\n[untagged:#{untagged} post(s)]\
++          markdown += "\n[尚未分类:#{untagged} post(s)]\
+             (?Toc=tagNone)"
+ 
+ 
+         @applyPostdata($(".post-full"),
+-          title:"index by tag"
++          title:"按标签索引"
+           post_id:-1
+           votes:-1
+           comments:-1
+@@ -402,7 +402,7 @@ class ZeroBlog extends ZeroFrame
+             :"+post.title+"](?Post:#{post.post_id})\n"
+ 
+         @applyPostdata($(".post-full"),
+-          title:"index by date"
++          title:"按日期索引"
+           post_id:-1
+           votes:-1
+           comments:-1
+diff --git a/js/lib/helper.js b/js/lib/helper.js
+index 8fa3a34..7fe5eb9 100644
+--- a/js/lib/helper.js
++++ b/js/lib/helper.js
+@@ -9,7 +9,7 @@ function tagToHtml(tag){
+   }
+ 
+   if (tag.length==0) {
+-    return "<a href='?Toc=tagNone'>not tagged</a>";    
++    return "<a href='?Toc=tagNone'>尚未分类</a>";    
+   }
+ 
+ 

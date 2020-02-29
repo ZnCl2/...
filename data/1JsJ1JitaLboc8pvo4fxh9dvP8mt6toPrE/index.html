@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset=utf-8>
+    <title>Snake Game</title>
+    <meta name=robots content="noindex, nofollow">
+
+    <link rel="stylesheet" media="screen" href="press-start-2p.css" type="text/css"/>
+
+
+
+ <style>
+        body {
+            padding: 0;
+            margin: 0;
+            overflow: hidden
+        }
+
+        #canvas {
+            background: #000
+        }
+
+        #menu,
+        #reMenu {
+            position: absolute;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000
+        }
+
+        #reMenu {
+            background: 0 0
+        }
+
+        a,
+        h1,
+        p {
+            position: relative;
+            z-index: 1;
+            font: 72px "Press Start 2P", cursive;
+            color: #fff;
+            text-align: center;
+            margin: 0
+        }
+
+        a {
+            font-size: 16px;
+            margin: 0;
+            display: inline-block;
+            position: relative;
+            left: 0
+        }
+
+        h1 {
+            margin-top: 5%
+        }
+
+        p {
+            font-size: 16px;
+            margin-top: 10px;
+            padding-left: 200px
+        }
+
+        a#restart,
+        a#start,
+        a#tweet,
+        p#loading {
+            font-size: 24px;
+            display: block;
+            width: 120px;
+            top: 30%;
+            left: 0;
+            border-top: 5px solid #fff;
+            border-bottom: 5px solid #fff;
+            padding: 10px;
+            text-decoration: none;
+            margin: 0 auto
+        }
+
+        a#restart {
+            width: 165px;
+            top: 20%
+        }
+
+        a#tweet {
+            top: 25%;
+            width: 342px
+        }
+
+        #score {
+            bottom: 10px;
+            position: absolute;
+            z-index: 1;
+            padding-left: 10px;
+            font-size: 16px
+        }
+
+        p#loading {
+            border: none;
+            font-size: 16px;
+            top: 20%;
+            width: 200px
+        }
+
+        a#start {
+            top: 100%
+        }
+
+        #info2 {
+            padding: 0
+        }
+    </style>
+    <script>
+        window.open = function() {}, window.alert = function() {}, window.print = function() {}, window.prompt = function() {}, window.confirm = function() {};
+    </script>
+    <script>
+        if (window !== window.top && "#dontkillanim" !== location.hash) {
+            window.is_webkit = /(webkit)[ \/]([\w.]+)/.exec(window.navigator.userAgent.toLowerCase()), window.max_timer = window.is_webkit ? 2e3 : 20;
+            var pauseCSSAnimations = function() {
+                    var e = function() {
+                            var e = document.getElementsByTagName("body")[0];
+                            e.addEventListener("webkitAnimationStart", n, !1), e.addEventListener("webkitAnimationIteration", n, !1), e.addEventListener("animationstart", n, !1), e.addEventListener("animationiteration", n, !1)
+                        },
+                        n = function(e) {
+                            var n = e.target,
+                                t = e.type.toLowerCase();
+                            (-1 !== t.indexOf("animationstart") || -1 !== t.indexOf("animationiteration")) && setTimeout(!1, function() {
+                                "paused" !== n.style.webkitAnimationPlayState && (n.style.webkitAnimationPlayState = "paused"), "paused" !== n.style.MozAnimationPlayState && (n.style.MozAnimationPlayState = "paused"), "paused" !== n.style.animationPlayState && (n.style.animationPlayState = "paused")
+                            }, window.max_timer)
+                        };
+                    e()
+                },
+                pauseJSAnimations = function() {
+                    if (window.setInterval = function(e) {
+                            var n = [],
+                                t = function() {
+                                    var t, i = this,
+                                        o = arguments;
+                                    return "function" != typeof o[0] && o[0] === !1 ? (o = Array.prototype.slice.call(arguments), o = o.slice(1), t = e.apply(i, o)) : (t = e.apply(i, o), n.push(t)), t
+                                };
+                            return t.clearAll = function() {
+                                for (var e; e = n.pop();) clearInterval(e)
+                            }, t
+                        }(window.setInterval), window.setTimeout = function(e) {
+                            var n = [],
+                                t = function() {
+                                    var t, i = this,
+                                        o = arguments;
+                                    return "function" != typeof o[0] && o[0] === !1 ? (o = Array.prototype.slice.call(arguments), o = o.slice(1), t = e.apply(i, o)) : (t = e.apply(i, o), n.push(t)), t
+                                };
+                            return t.clearAll = function() {
+                                for (var e; e = n.pop();) clearTimeout(e)
+                            }, t
+                        }(window.setTimeout), setTimeout(!1, function() {
+                            setTimeout.clearAll(), setInterval.clearAll()
+                        }, window.max_timer), window.__requestAnimFrame = window.requestAnimationFrame || void 0, window.__cancelAnimFrame = window.cancelAnimationFrame || void 0, window.__vendors = ["webkit", "moz", "ms", "o"], window.__registered_rafs = [], window.__requestFrame = function(e) {
+                            if (window.__requestAnimFrame) {
+                                var n = window.__requestAnimFrame(e);
+                                return __registered_rafs.push(n), n
+                            }
+                        }, !window.__requestAnimFrame)
+                        for (var e = 0; e < window.__vendors.length; e++) window.__requestAnimFrame || (window.__requestAnimFrame = window[window.__vendors[e] + "RequestAnimationFrame"], window[window.__vendors[e] + "RequestAnimationFrame"] = __requestFrame), window.__cancelAnimFrame || (window.__cancelAnimFrame = window[window.__vendors[e] + "CancelAnimationFrame"] || window[window.__vendors[e] + "CancelRequestAnimationFrame"]);
+                    setTimeout(!1, function() {
+                        if (window.__requestAnimFrame)
+                            for (var e; e = window.__registered_rafs.pop();) window.__cancelAnimFrame(e)
+                    }, window.max_timer)
+                };
+            window !== window.top && pauseJSAnimations();
+            var __pauseAnimations = function() {
+                window !== window.top && pauseCSSAnimations()
+            }
+        } else __pauseAnimations = function() {};
+    </script>
+
+    <body onload=__pauseAnimations()><canvas id=canvas></canvas>
+        <div id=reMenu>
+            <h1 id=snake2>Snake</h1>
+            <p id=info2>Game Over</p><a href="javascript: void(0)" id=restart onclick=reset()>Restart</a> </div>
+        <div id=menu>
+            <h1 id=snake>Snake</h1><a href="javascript: void(0)" id=start onclick=init()>Start</a>
+            <p id=loading>Loading...</p>
+        </div>
+        <p id=score>Score: 0</p><audio id=main_music loop><source src=main.mp3 type="audio/mp3"></audio><audio id=gameOver><source src=go.mp3 type="audio/mp3"></audio><audio id=food><source src=food.mp3 type="audio/mp3"></audio>
+        <script>
+            function showButton() {
+                start.style.top = "30%", loading.style.top = "100%"
+            }
+
+            function init() {
+                function e() {
+                    ctx.fillStyle = "black", ctx.fillRect(0, 0, w, h)
+                }
+
+                function n() {
+                    var e = 10;
+                    r = [];
+                    for (var n = e - 1; n >= 0; n--) r.push({
+                        x: n,
+                        y: 0
+                    })
+                }
+
+                function t() {
+                    for (var e = 0; e < r.length; e++) {
+                        var n = r[e];
+                        ctx.fillStyle = "white", ctx.fillRect(n.x * l, n.y * l, l, l)
+                    }
+                }
+
+                function i() {
+                    var e = r[0].x,
+                        n = r[0].y;
+                    document.onkeydown = function(e) {
+                        var n = e.keyCode;
+                        37 == n && "right" != s ? setTimeout(function() {
+                            s = "left"
+                        }, 30) : 38 == n && "down" != s ? setTimeout(function() {
+                            s = "up"
+                        }, 30) : 39 == n && "left" != s ? setTimeout(function() {
+                            s = "right"
+                        }, 30) : 40 == n && "up" != s && setTimeout(function() {
+                            s = "down"
+                        }, 30), n && e.preventDefault()
+                    }, "right" == s ? e++ : "left" == s ? e-- : "up" == s ? n-- : "down" == s && n++;
+                    var t = r.pop();
+                    if (t.x = e, t.y = n, r.unshift(t), (e >= w / l || -1 >= e || n >= h / l || -1 >= n) && (0 == m && (d = "wall", a()), m++), e == v.x && n == v.y) {
+                        coll = 1, v = new p;
+                        var t = {
+                            x: e,
+                            y: n
+                        };
+                        r.unshift(t), score += 10, scoreText.innerHTML = "Score: " + score, foodMusic.pause(), foodMusic.currentTime = 0, foodMusic.play(), 45 >= c && c++, clearInterval(u), u = setInterval(o, 1e3 / c)
+                    } else
+                        for (var i = 1; i < r.length; i++) {
+                            var f = r[i];
+                            e == f.x && n == f.y && (0 == m && (d = "self", a()), m++)
+                        }
+                }
+
+                function o() {
+                    e(), t(), i(), v.draw()
+                }
+
+                function a() {
+                    clearInterval(u), mainMusic.pause(), goMusic.play();
+                //    var e = document.getElementById("tweet");
+                //    e.href = 'http://twitter.com/share?&text=I scored ' + score + ' points in the Snake game&count=horizontal&via=qoracoin&url=http://snake.qora.co.in';
+                    var n = document.getElementById("info2");
+                    "wall" == d ? n.innerHTML = y[Math.floor(Math.random() * y.length)] : "self" == d && (n.innerHTML = f[Math.floor(Math.random() * f.length)]), reMenu.style.zIndex = "1"
+                }
+                mainMusic.play(), menu.style.zIndex = "-1";
+                var r, s, u, d, l = 10,
+                    c = 25,
+                    m = 0,
+                    f = [];
+                f[0] = "There's plenty of food. Don't eat yourself!", f[1] = "Is your body tastier than the food?", f[2] = "AArrgghhh!! I bit myself!!", f[3] = "Do you have Autophagia?";
+                var y = [];
+                y[0] = "You broke your head!", y[1] = "The wall is stronger than it seems!", y[2] = "There's no way to escape the game...", y[3] = "LOOK MA! NO HEAD..!!", y[4] = "Can't see the wall? Huh?";
+                var p = function() {
+                        this.x = Math.round(Math.random() * (w - l) / l), this.y = Math.round(Math.random() * (h - l) / l), this.draw = function() {
+                            ctx.fillStyle = "white", ctx.fillRect(this.x * l, this.y * l, l, l)
+                        }
+                    },
+                    v = new p;
+                (reset = function() {
+                    n(), v = new p, reMenu.style.zIndex = "-1", s = "right", m = 0, c = 30, "undefined" != typeof u && clearInterval(u), u = setInterval(o, 1e3 / c), score = 0, scoreText.innerHTML = "Score: " + score, mainMusic.currentTime = 0, mainMusic.play()
+                })()
+            }
+
+            function startMenu() {
+                menu = document.getElementById("menu"), reMenu = document.getElementById("reMenu"), scoreText = document.getElementById("score"), reMenu.style.zIndex = "-1"
+            }
+            for (var mainMusic = document.getElementById("main_music"), foodMusic = document.getElementById("food"), goMusic = document.getElementById("gameOver"), files = [mainMusic, foodMusic, goMusic], counter = 0, start = document.getElementById("start"), loading = document.getElementById("loading"), i = 0; i < files.length; i++) {
+                var file = files[i];
+                file.addEventListener("loadeddata", function() {
+                    counter++;
+                    var e = Math.floor(counter / files.length * 100);
+                    loading.innerHTML = "Loading " + e + "%", 100 == e && showButton()
+                })
+            }
+            var canvas = document.getElementById("canvas"),
+                ctx = canvas.getContext("2d"),
+                w = window.innerWidth,
+                h = window.innerHeight;
+            canvas.height = h, canvas.width = w;
+            var reset, scoreText, menu, reMenu, score = 0;
+            startMenu();
+        </script>

@@ -1,0 +1,159 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/avatars/v5.png"><link rel="alternate" type="application/rss+xml" title="王子亭的博客" href="https://jysperm.me/atom.xml"><link rel="stylesheet" href="/styles.css"><title>Ubuntu 14.04 VPS 部署 PHP 环境及 WordPress | 王子亭的博客</title></head><body><div class="container"><div class="columns page-header"><h1>王子亭的博客</h1></div><div class="columns"><div class="navigation"><nav class="menus-main"><a href="/" class="favicon"><img alt="王子亭的博客" src="/avatars/v5.png"></a><a href="/about">关于精子</a><a href="/resume">简历</a><a href="/links">链接</a><a href="/booklist">推荐书单</a><a href="/list">日志列表</a><a href="/ad">广告</a></nav><nav class="right menus-right"><a href="/atom.xml">RSS</a><a target="_blank" href="https://github.com/jysperm/blog">fork on Github</a></nav></div></div><div class="columns"><div class="block-body column three-fourths"><div class="article-widget">精子新上线了一个名为 &nbsp;<a target="_blank" href="https://stream.pub/">Stream</a>&nbsp; 的服务，希望提供一个基于发布、订阅模型的消息服务，提供 HTTP API 并传输结构化的 JSON 数据。</div><article><header><small class="right"><a target="_blank" href="https://github.com/jysperm/blog/blob/master/source/_posts%2F2014-09-01%23Ubuntu%2014.04%20VPS%20%E9%83%A8%E7%BD%B2%20PHP%20%E7%8E%AF%E5%A2%83%E5%8F%8A%20WordPress.md">查看源代码</a></small><h1>Ubuntu 14.04 VPS 部署 PHP 环境及 WordPress</h1></header><div class="article-meta clearfix"><time class="left">2014 9 月 1 日</time><ul class="tags left"></ul><ul class="tags right"><li><a href="/tag/php/">PHP</a></li><li><a href="/tag/linux/">Linux</a></li></ul></div><div class="markdown-body"><h2 id="软件及版本选择"><a href="#软件及版本选择" class="headerlink" title="软件及版本选择"></a>软件及版本选择</h2><ul>
+<li><p>Ubuntu 14.04</p>
+<p>  Ubuntu 是目前用户数量数一数二的发行版，背后有大土豪维护，可以说是轻量级用户的最佳选择。而 14.04 是目前最新的 LTS 版本，目前已经发布了半年了，基本是目前支持最好的版本。</p>
+</li>
+<li><p>Nginx</p>
+<p>  Nginx 是一个轻量级的，配置灵活，擅长并发的 Web 服务器。</p>
+</li>
+<li><p>PHP-FPM</p>
+<p>  PHP-FPM 是目前官方推荐的最佳的运行模式。</p>
+</li>
+<li><p>MariaDB</p>
+<p>  MySQL 的替代品，毕竟目前 MySQL 的创始人已经不建议我们使用 MySQL 了。</p>
+</li>
+</ul>
+<h2 id="基本配置"><a href="#基本配置" class="headerlink" title="基本配置"></a>基本配置</h2><p>通常当你创建了一台 VPS, 你会得到一个 IP 和一个 root 密码，所以，先用 ssh 登上你的服务器：</p>
+<pre><code>ssh root@106.186.21.33
+# 如果有警告输入 yes 来确认，然后输入你的 root 密码
+</code></pre><p>配置一下公钥登录，省着每次登录都要输入密码，非常建议像我一样把公钥上传到一个公开的地址，这样只要一条命令就可以设置好：</p>
+<pre><code>mkdir ~/.ssh; curl &#39;https://raw.githubusercontent.com/jysperm/meta/master/Key/JyAir.pub&#39; &gt;&gt; ~/.ssh/authorized_keys; chmod -R 700 ~/.ssh;
+</code></pre><p>然后更新一下软件包列表，升级现有软件包：</p>
+<pre><code>apt-get update
+apt-get upgrade
+</code></pre><p>修改一下主机名，最好改成一个确实可以访问到这台服务器的域名：</p>
+<pre><code>vi /etc/hostname
+vi /etc/hosts
+</code></pre><h2 id="安装软件包"><a href="#安装软件包" class="headerlink" title="安装软件包"></a>安装软件包</h2><pre><code>apt-get install nginx postfix php5-fpm mariadb-server memcached
+apt-get install php-pear php5-mysql php5-curl php5-gd php5-mcrypt php5-memcache
+apt-get install python make screen git wget zip unzip iftop vim curl htop iptraf nethogs
+</code></pre><ul>
+<li>nginx: Web 服务器</li>
+<li>postfix: SMTP 服务器，用来支持从本地发送邮件</li>
+<li>php5-fpm: PHP 进程管理器，及 PHP 解释器</li>
+<li>mariadb-server: 类 MySQL 数据库</li>
+<li>memcached: 基于内存的缓存，很多程序会用到</li>
+<li>php-pear: PHP 的包管理器</li>
+<li>php5-mysql: PHP MySQL 数据库驱动</li>
+<li>php5-curl: 一个 HTTP 协议库</li>
+<li>php5-gd: 一个图像处理库</li>
+<li>php5-mcrypt: 一个加密算法库</li>
+<li>php5-memcache: Memcached 驱动</li>
+<li>python: 一个常用的脚本语言解释器</li>
+<li>make: 一个常用的构建工具</li>
+<li>screen: 一个常用的 Shell 会话管理工具</li>
+<li>git: 一个常用的版本控制工具</li>
+<li>wget, curl: 常用的文件下载工具</li>
+<li>zip, unzip: ZIP 压缩和解压工具</li>
+<li>iftop, iptraf, nethogs: 常用的流量监控工具</li>
+<li>vim: 一个常用的编辑器</li>
+<li>htop: 一个常用的进程监控工具</li>
+</ul>
+<h2 id="安装-WordPress"><a href="#安装-WordPress" class="headerlink" title="安装 WordPress"></a>安装 WordPress</h2><p>新建一个普通用户，并切换到该用户</p>
+<pre><code>adduser wordpress
+su wordpress
+cd ~
+</code></pre><p>下载 WordPress, 请自行到官网查看最新版本的下载地址：</p>
+<pre><code>wget http://cn.wordpress.org/wordpress-3.9-zh_CN.zip
+</code></pre><p>解压文件：</p>
+<pre><code>unzip wordpress-*.zip
+</code></pre><p>设置文件权限：</p>
+<pre><code>chmod -R 750 wordpress
+</code></pre><p>删除安装包：</p>
+<pre><code>rm wordpress-*.zip
+</code></pre><p>回到 root:</p>
+<pre><code>exit
+</code></pre><h2 id="配置-PHP-FPM"><a href="#配置-PHP-FPM" class="headerlink" title="配置 PHP-FPM"></a>配置 PHP-FPM</h2><p>为 WordPress 创建一个进程池：</p>
+<pre><code>vi /etc/php5/fpm/pool.d/wordpress.conf
+</code></pre><p>这是一份很典型的配置文件，通过监听 Unix Socket 来提供服务，动态调节进程数，最高 10 个进程，最低 3 个进程：</p>
+<pre><code>[wordpress]
+
+user = wordpress
+group = wordpress
+
+listen = /home/wordpress/phpfpm.sock
+
+listen.owner = wordpress
+listen.group = wordpress
+listen.mode = 0660
+
+pm = dynamic
+pm.max_children = 10
+pm.min_spare_servers = 3
+pm.max_spare_servers = 5
+
+slowlog = /home/wordpress/phpfpm.slowlog
+request_slowlog_timeout = 5s
+request_terminate_timeout = 15s
+
+php_admin_value[error_log] = /home/wordpress/phpfpm_error.log
+php_admin_flag[log_errors] = On
+</code></pre><h2 id="配置-Nginx"><a href="#配置-Nginx" class="headerlink" title="配置 Nginx"></a>配置 Nginx</h2><p>删掉 Nginx 的默认站点：</p>
+<pre><code>rm /etc/nginx/sites-enabled/default
+</code></pre><p>新建一个站点：</p>
+<pre><code>vi /etc/nginx/sites-enabled/wordpress
+</code></pre><p>这份配置文件已将请求重写到 index.php, 可以直接在 WordPress 中使用「固定链接」功能：</p>
+<pre><code>server {
+    listen 80;
+    server_name jysperm.me;
+
+    root /home/wordpress/wordpress;
+    index index.html index.php;
+    autoindex off;
+
+    location / {
+        try_files $uri $uri/ /index.php;
+    }  
+
+    location ~ \.php$ {  
+        fastcgi_pass unix:///home/wordpress/phpfpm.sock;
+        include fastcgi_params;
+        fastcgi_index index.php;
+    }
+}
+</code></pre><p>如果你希望把其他所有域名都跳转到你的站点，可以添加这么一段：</p>
+<pre><code>server {
+    listen 80 default_server;
+    listen [::]:80 default_server ipv6only=on;
+    rewrite ^/(.*)$ http://jysperm.me permanent;
+}
+</code></pre><p>然后我们需要修正 Nginx 和 PHP-FPM 配合的一个 Bug:</p>
+<pre><code>vi /etc/nginx/fastcgi_params
+</code></pre><p>将 <code>fastcgi_param SCRIPT_FILENAME</code> 开头的行改为：</p>
+<pre><code>fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+</code></pre><p>为 Nginx 添加读取 WordPress 文件的权限：</p>
+<pre><code>usermod -G wordpress -a www-data
+</code></pre><h2 id="配置-MySQL"><a href="#配置-MySQL" class="headerlink" title="配置 MySQL"></a>配置 MySQL</h2><p>进入 MySQL 控制台：</p>
+<pre><code>mysql -p
+# 需要输入你的 MySQL root 密码
+
+# 创建数据库
+CREATE DATABASE `wordpress`;
+
+# 为 WordPress 新建用户
+CREATE USER &#39;wordpress&#39;@&#39;localhost&#39; IDENTIFIED BY &#39;password&#39;;
+
+# 授予权限
+GRANT ALL PRIVILEGES ON  `wordpress` . * TO  &#39;wordpress&#39;@&#39;localhost&#39;;
+
+# 退出
+QUIT
+</code></pre><h2 id="重启"><a href="#重启" class="headerlink" title="重启"></a>重启</h2><p>好了，已经配置完成了，我们直接重启服务器即可，这样所有服务都会重启并使用新的配置：</p>
+<pre><code>reboot
+</code></pre></div></article><div class="article-widget"><h2 id="-">撰写评论</h2>
+<p>精子写了这么多年博客，收到的优秀评论少之又少，在这个属于 SNS 的时代也并不缺少向作者反馈的渠道。因此如果你希望撰写评论，请发邮件至 <a href="mailto:jysperm@gmail.com?subject=%E8%AF%84%E8%AE%BA%EF%BC%9AUbuntu%2014.04%20VPS%20%E9%83%A8%E7%BD%B2%20PHP%20%E7%8E%AF%E5%A2%83%E5%8F%8A%20WordPress">jysperm@gmail.com</a> 并注明文章标题，我会挑选对读者有价值的评论附加到文章末尾。</p>
+</div></div><div class="block-sidebar column one-fourth"><div class="widget text-content"><p>精子生于 1995.11.25, 21 岁，英文 ID jysperm.</p>
+<ul>
+<li>有一个 <a href="https://jybox.net">精子粉丝团</a></li>
+<li><a href="http://pidan.cat">皮蛋</a> 和 <a href="http://doufu.cat">豆腐</a> 的主人</li>
+<li>创建了 <a href="https://atom-china.org">Atom 中文社区</a></li>
+<li>坚持十余年的 <a href="https://jysperm.me">独立博客</a> 作者</li>
+<li>高中退学，就职于 <a href="https://leancloud.cn">LeanCloud</a></li>
+<li>在 <a href="https://github.com/jysperm">Github</a> 上积极参与开源社区</li>
+</ul>
+</div><div class="widget text-content"><h2>订阅推送</h2><p>通过邮件订阅精子的博客日志、产品和项目的最新动态，精子承诺每一封邮件都会认真撰写（<a href="http://us13.campaign-archive1.com/home/?u=f4c7c26ec1a5dc400a7a7373e&amp;id=e2136d8929">历史邮件</a>），有想和精子说的话也可以直接回复邮件。</p><div id="mc_embed_signup"><form id="mc-embedded-subscribe-form" action="//jybox.us13.list-manage.com/subscribe/post?u=f4c7c26ec1a5dc400a7a7373e&amp;id=e2136d8929" method="post" name="mc-embedded-subscribe-form" target="_blank" novalidate="" class="validate"><div id="mc_embed_signup_scroll" class="input-group"><input id="mce-EMAIL" type="email" value="" name="EMAIL" placeholder="email address" required="" class="form-control"/><input type="hidden" name="b_f4c7c26ec1a5dc400a7a7373e_e2136d8929" value=""/><span class="input-group-button"><div class="form-actions"><button id="mc-embedded-subscribe" type="submit" value="Subscribe" name="subscribe" class="btn">订阅</button></div></span></div></form></div></div><div class="widget tags"><ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tag/atom/">Atom</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/cpp/">C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/cpp-ppt/">C++讲稿</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/docker/">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/html/">HTML</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/hexo/">Hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/javascript/">JavaScript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/LeanCloud/">LeanCloud</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/lightphp/">LightPHP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/linux/">Linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/mongodb/">MongoDB</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/nodejs/">Node.js</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/php/">PHP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/rpvhost/">RP主机</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/rootpanel/">RootPanel</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/sicp/">SICP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/web/">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/idea/">idea</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/traditional-medicine/">中医</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/internet/">互联网</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/news/">互联网资讯</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/values/">价值观</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/works/">作品</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/information-security/">信息安全</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/cold-knowledge/">冷知识</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/blockchain/">区块链</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/unit-test/">单元测试</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/blog/">博客</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/去中心化/">去中心化</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/doraemon/">哆啦A梦</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/school-weekly/">学校周记</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/exam/">学校考试</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/cryptography/">密码学</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/xiaolu/">小璐</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/summary-of-year/">年度小结</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/caipai/">彩排</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/xuxueli/">徐雪丽</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/summary/">总结</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/technology/">技术</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/tutorials/">教程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/education/">教育</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/server-side/">服务器端</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/bitcoin/">比特币</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/physical/">物理</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/live/">生活</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/live/">生活记录</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/movie/">电影</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/science/">科普</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/reading-notes/">笔记</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/story-of-sperm/">精子的故事</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/programming/">编程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/programming-language/">编程语言</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/computer-science/">计算机科学</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/network/">计算机网络</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/reading/">读书</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/shopping/">购物</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/software-engineering/">软件工程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/note/">随笔</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/zeroms/">零毫秒</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tag/hacker/">黑客</a></li></ul></div><div class="widget archives"><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/2017/02/">二月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2017/01/">一月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/12/">十二月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/11/">十一月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/10/">十月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/09/">九月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/08/">八月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/07/">七月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/06/">六月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/04/">四月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2016/02/">二月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/12/">十二月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/11/">十一月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/10/">十月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/09/">九月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/08/">八月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/07/">七月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/06/">六月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/05/">五月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/04/">四月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/03/">三月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/02/">二月 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2015/01/">一月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/12/">十二月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/11/">十一月 2014</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/10/">十月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/09/">九月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/08/">八月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/07/">七月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/06/">六月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/05/">五月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/04/">四月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/03/">三月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/02/">二月 2014</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2014/01/">一月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/12/">十二月 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/11/">十一月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/10/">十月 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/09/">九月 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/08/">八月 2013</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/07/">七月 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/06/">六月 2013</a><span class="archive-list-count">13</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/05/">五月 2013</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/04/">四月 2013</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/03/">三月 2013</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2013/02/">二月 2013</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/12/">十二月 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/11/">十一月 2012</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/10/">十月 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/09/">九月 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/08/">八月 2012</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/06/">六月 2012</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/05/">五月 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/04/">四月 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/03/">三月 2012</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/02/">二月 2012</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2012/01/">一月 2012</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/12/">十二月 2011</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/11/">十一月 2011</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/10/">十月 2011</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/09/">九月 2011</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/08/">八月 2011</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/07/">七月 2011</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/06/">六月 2011</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/05/">五月 2011</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2011/03/">三月 2011</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2010/05/">五月 2010</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2010/01/">一月 2010</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2008/01/">一月 2008</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2007/10/">十月 2007</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2007/09/">九月 2007</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2007/02/">二月 2007</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2006/08/">八月 2006</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2005/08/">八月 2005</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2005/01/">一月 2005</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2003/11/">十一月 2003</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2003/10/">十月 2003</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2003/08/">八月 2003</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/2002/08/">八月 2002</a><span class="archive-list-count">1</span></li></ul></div><div class="widget text-content"><p>该博客使用基于 &nbsp;<a href="http://hexo.io">Hexo</a>&nbsp; 的 &nbsp;<a href="https://github.com/jysperm/hexo-theme-simpleblock">simpleblock</a>&nbsp; 主题。博客内容使用 &nbsp;<a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn">CC BY-NC-SA 3.0</a>&nbsp; 授权发布。最后生成于 2017-03-13.</p></div></div></div></div><script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-49193300-1', 'auto');
+ga('send', 'pageview');
+</script></body></html>
