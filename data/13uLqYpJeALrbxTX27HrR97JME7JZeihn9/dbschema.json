@@ -1,0 +1,57 @@
+{
+	"db_name": "cable",
+	"db_file": "data/cable.db",
+	"version": 2,
+	"maps": {
+		"users/.+/data.json": {
+			"to_table": [
+                {
+                    "node": "movie",
+                    "table": "movie"
+                },
+                {
+                    "node": "watched",
+                    "table": "watched"
+                },
+                {
+                    "node": "watchlist",
+                    "table": "watchlist"
+                }
+            ]
+		},
+		"users/.+/content.json": {
+			"to_keyvalue": [ "cert_user_id" ]
+		}
+	},
+	"tables": {
+		"movie": {
+			"cols": [
+				["name", "TEXT"],
+				["year", "TEXT"],
+				["trakt_id", "TEXT"],
+				["date_added", "INTEGER"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX movie_key ON movie(json_id, trakt_id)"],
+			"schema_changed": 1
+		},
+		"watched": {
+			"cols": [
+				["trakt_id", "TEXT"],
+				["date_added", "INTEGER"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX watched_key ON watched(json_id, trakt_id)"],
+			"schema_changed": 1
+		},
+		"watchlist": {
+			"cols": [
+				["trakt_id", "TEXT"],
+				["date_added", "INTEGER"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX watchlist_key ON watchlist(json_id, trakt_id)"],
+			"schema_changed": 1
+		}
+	}
+}

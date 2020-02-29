@@ -1,0 +1,159 @@
+<html>
+<head>
+  <title>Google</title>
+  <style>
+    body{
+      font-family: futura;
+    }
+    @font-face{
+        font-family: futura;
+        src: url(fonts/Futura-Light.ttf) format("truetype");
+    }
+  </style>
+  <link rel="stylesheet" href="main.css" /> 
+</head>
+<body style="background-color:white;" onload="startLoop()" onkeypress="return enterSearch(event)">
+  <div class="top-toolbar">
+    <nav>
+    </nav>
+  </div>
+  <div class="search">
+    <div class="logo">
+      <h1 style="font-size: 92pt; font-family: futura, Segoe UI, Arial; font-weight: lighter; margin-bottom: 0px; display: inline-block; margin-right: 10px;">Bwoi</h1><h3 style="font-family: futura, Segoe UI; display: inline-block; margin-right: 10px; font-size: 16pt;">Games (beta)</h3>
+
+    </div>
+    <input class="search-bar" id="search-bar" type="search" autofocus x-webkit-speech/>
+    <div class="search-nav">
+      <div class="search-button">
+        <a href="#" onclick="doSearch()"><button onclick="doSearch()">Bwoi Game Search</button></a>
+        <a href="#"><button onclick="doFeelingLucky()" style="display:inline-block;">Take me there!</button></a>
+      </div>
+    </div>
+    <div id="note" style="font-family: futura, Segoe UI, Arial; font-weight: normal; font-size: 12pt;"><h3>Please note that results link to the internet - not to ZeroNet!<br>The Bwoi team does not endorse the illegal downloading of games.</h3></div>
+    <div id="searchresults" style="background-color: #FAFAFA; font-family: circularBook, Segoe UI, Arial; font-weight: normal; margin-top: 10px; color: white; background-color: #000000; opacity: 0.5"></div>
+  </div>
+
+  <div class="footer"  style="position: relative; left: -8px; opacity: 0.7; color: white;">
+  <footer class="bottom-toolbar">
+    <nav class="footer-left">
+    </nav>
+    <nav class="footer-right">
+      <a href="/Mail.ZeroNetwork.bit/?to=bwoi" style="color: white;">Link dead?</a>
+    </nav>
+  </footer>
+  </div>
+  <script href="js/jquery-1.12.1.min.js"></script>
+  <script>
+
+
+    var i = 0;
+    var iFrequency = 300;
+    var myInterval = 0;
+    var kaffiedex = "";
+
+
+    function startLoop() {
+      //if(myInterval > 0) clearInterval(myInterval);
+      //myInterval = setInterval( "doSomething()", iFrequency );
+      //getIndexing();
+    }
+    function doSomething()
+    {
+      i++;
+      //document.getElementById("dev").innerHTML = (i % 2 == 0) ? "est 1457020800 // now with .bit support // in development_" : "est 1457020800 // now with .bit support // in development&nbsp;&nbsp;";    
+    }
+    function contains(a, obj) {
+        var i = a.length;
+        while (i--) {
+           if (a[i] === obj) {
+               return true;
+           }
+        }
+        return false;
+    }
+
+    function hash(o){
+        return o.name;
+    }    
+    function enterSearch(e) {
+      if (e.keyCode == 13) {
+          doSearch();
+      }
+    }
+    function doSearch()
+    {
+      if (document.getElementById("search-bar").value == "")
+        return;
+      var results = [];
+      var searchSuccessful = false;
+      var namesURL = "names.json";
+      var xmlHttp = new XMLHttpRequest();
+      xmlHttp.open( "GET", namesURL, false );
+      xmlHttp.send( null );
+      obj = JSON.parse(xmlHttp.responseText);
+      document.getElementById("searchresults").innerHTML = "<h1 style=\"display: inline-block;\">S</h1><h2 style=\"display: inline-block;\">EARCH</h2><h1 style=\"display: inline-block; margin-left: 5px;\">R</h1><h2 style=\"display: inline-block;\">ESULTS</h2><h3 style=\"color:red;\">Please note that the Bwoi team does not maintain, nor is involved with, any of these links.</h3>";
+        for(var key in obj){
+          var attrName = key;
+          attrName = attrName.toLowerCase();
+          var attrValue = obj[key];
+          // split string into array of name and keywords
+	        if (attrName.indexOf(document.getElementById("search-bar").value.toLowerCase()) > -1 && results.indexOf(attrValue) == -1)
+	        {
+	            var url = attrValue;
+	            searchSuccessful = true;
+	            results.push(attrValue);
+	            document.getElementById("searchresults").innerHTML += "<h3><a href=\"" + url + "\" target=\"_blank\" style=\"color: white;\">" + attrName + "</a></h3>";
+	        }          
+        }
+      
+      document.getElementById("searchresults").innerHTML += ((!searchSuccessful) ? "<h3 style=\"color: white;\">No results!</h3>" : "") + "<div id=\"filler\" style=\"height: 28px;\"></div>";
+    }
+
+    function OpenInNewTab(url) {
+      var win = window.open(url, '_blank');
+      win.focus();
+    }
+
+    function doFeelingLucky()
+    {
+      if (document.getElementById("search-bar").value == "")
+        return;
+      var results = [];
+      var searchSuccessful = false;
+      var namesURL = "names.json";
+      var xmlHttp = new XMLHttpRequest();
+      xmlHttp.open( "GET", namesURL, false );
+      xmlHttp.send( null );
+      obj = JSON.parse(xmlHttp.responseText);
+        for(var key in obj){
+          var attrName = key;
+          var attrValue = obj[key];
+          attrName = attrName.replace(".bit", "");
+
+          // split string into array of name and keywords
+          var kwSplit = attrName.split("[");
+          if (kwSplit[1] != undefined)
+          {
+            for(var keyword in kwSplit[1].split(","))
+            {
+                if (((attrName.indexOf(document.getElementById("search-bar").value.toLowerCase()) > -1 || attrValue.indexOf(document.getElementById("search-bar").value.toLowerCase()) > -1 || keyword.indexOf(document.getElementById("search-bar").value.toLowerCase()) > -1) && results.indexOf(attrValue) < 0) && !searchSuccessful && kwSplit[1].indexOf("nsfw") == -1)
+                {
+                  searchSuccessful = true;
+                  OpenInNewTab("http://127.0.0.1:43110/" + attrValue);
+                }                   
+            }          
+          }
+          else
+          {
+            if ((attrName.indexOf(document.getElementById("search-bar").value.toLowerCase()) > -1 || attrValue.indexOf(document.getElementById("search-bar").value.toLowerCase()) > -1) && !searchSuccessful)
+            {
+              searchSuccessful = true;
+              OpenInNewTab("http://127.0.0.1:43110/" + attrValue);
+            }              
+          }
+          indexing += 1;
+        }
+    }
+  </script>
+</body>
+</html>

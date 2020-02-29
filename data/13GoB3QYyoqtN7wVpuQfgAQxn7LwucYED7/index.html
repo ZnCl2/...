@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <script type="text/javascript" src="js-libs/marked.min.js"></script>
+    <script type="text/javascript" src="js-libs/jquery.min.js"></script>
+    <link rel="stylesheet" href="css/main.css" />
+  </head>
+<body>
+
+<div class="container">
+
+<div class="header">
+  <a id="home" class="home">&lt;&lt;</a>
+  <a id="repo" href="/1EtWCTxuY34N4C8incQgjTw8M2S2TPvZwF">&gt;&gt;</a>
+</div>
+
+<div id="message">Loading...</div>
+<video width="400" height="300" controls>
+  <source src="helloworld.webm" type="video/webm" />
+</video>
+
+</div>
+
+<script type="text/javascript" src="js/ZeroFrame.js"></script>
+
+<script>
+
+var MSG_TIMEOUT = 2500;
+
+class Page extends ZeroFrame {
+    setSiteInfo(site_info) {
+        this.site_info = site_info;
+
+        $("#home").attr("href", "/"+site_info.address);
+
+        this.cmd("fileGet", ["index.md"], function(txt) {
+            $("#message").html(marked(txt));
+        });
+    }
+
+    checkNews() {
+        this.cmd("dbQuery", ["SELECT * FROM news"], function(news) {
+            console.log(news);
+            for (var i = 0; i < news.length; ++i) {
+                console.log(news[i]);
+            }
+        });
+        var query = "SELECT '' as event_uri, 'post' as type, date_added as date_added, 'test' as title, body as body, '' as url FROM news";
+        this.cmd("feedFollow", [{"Posts": [query, []]}], function(res) {
+            console.log(res);
+        });
+    }
+
+    onOpenWebsocket() {
+        this.cmd("siteInfo", [], function(site_info) {
+            page.setSiteInfo(site_info);
+        })
+    }
+
+    onRequest(cmd, message) {
+        if (cmd == "setSiteInfo")
+            this.setSiteInfo(message.params)
+        else
+            this.log("Unknown incoming message:", cmd)
+    }
+}
+page = new Page();
+$(document).ready(function() {
+    page.checkNews();
+});
+
+</script>
+
+</body>
+</html>

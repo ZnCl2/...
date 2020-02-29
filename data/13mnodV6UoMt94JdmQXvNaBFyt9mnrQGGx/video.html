@@ -1,0 +1,199 @@
+<html>
+<head>
+  <title>Google</title>
+  <link rel="stylesheet" href="main.css" /> 
+</head>
+  <div class="top-toolbar">
+<body style="background-color:white;" onload="startLoop()" onkeypress="return keyPressed(event)">
+    <nav>
+    </nav>
+  </div>
+  <div class="search">
+    <div class="logo">
+      <h1 style="font-size: 92pt; font-family: Segoe UI, Arial; font-weight: lighter; margin-bottom: 0px; display: inline-block; margin-right: 10px;" id="logo">Bwoi</h1><h3 style=" display: inline-block; margin-right: 10px;">Video</h3>
+    </div>
+    <div id="indexing" style="font-size: 10pt; font-family: Segoe UI, Arial; font-weight: normal; margin-top: 10px;">currently hosting 000 videos</div>
+    <div id="searchresults" style="background-color: #FAFAFA; font-family: Segoe UI, Arial; font-weight: normal; margin-top: 10px;"></div>
+  </div>
+
+  <div class="footer">
+  <footer class="bottom-toolbar">
+    <nav class="footer-left">
+      <a href="/domains4free.bit">Domain kindly provided by Glock</a> | <a href="/search.kaffie.bit">Not finding any results? Try Kaffiene!</a>
+    </nav>
+    <nav class="footer-right">
+      <a href="/Mail.ZeroNetwork.bit/?to=bwoi">Site missing?</a> | <a href="slander.html">Public Service Announcement <span style="color: red">(updated)</span></a>
+    </nav>
+  </footer>
+  </div>
+  <script href="js/jquery-1.12.1.min.js"></script>
+  <script>
+
+    var tags = [];
+    var i = 0;
+    function startLoop() {
+      getIndexing();
+      diceRoll(false);
+    }
+
+    function diceRoll(isTrue){
+      if (Math.floor(Math.random() * 100) == 99 || isTrue)
+      {
+        document.getElementById("logo").innerHTML = "iowB <span style=\"color:red\">;)</span>";
+      }
+    }
+    function contains(a, obj) {
+        var i = a.length;
+        while (i--) {
+           if (a[i] === obj) {
+               return true;
+           }
+        }
+        return false;
+    }
+
+    function getIndexing()
+    {
+      var indexing = 0;
+      var dupes = 0;
+      var namesURL = "names.json";
+      var xmlHttp = new XMLHttpRequest();
+      var sites = [];
+      xmlHttp.open( "GET", namesURL, false );
+      xmlHttp.send( null );
+      obj = JSON.parse(xmlHttp.responseText);
+        for(var key in obj){
+            var kwSplit = key.split("[");
+            if (kwSplit[1] != undefined)
+            {
+              
+                tags.push(kwSplit[1]);
+            }
+            if (sites.indexOf(obj[key]) > -1)
+            {
+              dupes += 1;
+            }
+            sites.push(obj[key]);
+            indexing += 1;
+        }
+
+      document.getElementById("indexing").innerHTML = "currently hosting ~" + Math.round(indexing / 10)*10 + " videos";
+
+    }
+
+    function hash(o){
+        return o.name;
+    }    
+    function keyPressed(e) {
+      if (e.keyCode == 13) {
+          doSearch();
+      }
+      else
+      {
+        // omnibox coming soon...
+      }
+    }
+    function doSearch()
+    {
+      if (document.getElementById("search-bar").value == "")
+        return;
+      if (document.getElementById("search-bar").value == "letsracebwoi")
+      {
+        diceRoll(true);
+        return;
+      }
+      var results = [];
+      var searchSuccessful = false;
+      var namesURL = "names.json";
+      var xmlHttp = new XMLHttpRequest();
+      xmlHttp.open( "GET", namesURL, false );
+      xmlHttp.send( null );
+      obj = JSON.parse(xmlHttp.responseText);
+      document.getElementById("searchresults").innerHTML = "<h1 style=\"display: inline-block;\">S</h1><h2 style=\"display: inline-block;\">EARCH</h2><h1 style=\"display: inline-block; margin-left: 5px;\">R</h1><h2 style=\"display: inline-block;\">ESULTS</h2>";
+        for(var key in obj){
+          var attrName = key;
+          var attrValue = obj[key];
+          attrName = attrName.replace(".bit", "");
+          // split string into array of name and keywords
+          var kwSplit = attrName.split("[");
+          if (kwSplit[1] != undefined)
+          {
+            for(var keyword in kwSplit[1].split(","))
+            {
+                if (((attrName.indexOf(document.getElementById("search-bar").value.toLowerCase()) > -1 || attrValue.indexOf(document.getElementById("search-bar").value.toLowerCase()) > -1 || keyword.indexOf(document.getElementById("search-bar").value.toLowerCase()) > -1) && results.indexOf(attrValue) < 0) && results.indexOf(attrValue) == -1)
+                {
+                    
+                    searchSuccessful = true;
+                    results.push(attrValue);
+                    var url = attrValue;
+                    if (kwSplit[1].indexOf("nsfw") > -1)
+                      document.getElementById("searchresults").innerHTML += "<h3><a href=\"/" + url + "\" target=\"_blank\">" + kwSplit[0] + "</a> <span style=\"color: red; font-size: 10pt;\">(NSFW)</span><br>" +  attrValue + "</h3>";
+                    else
+                      document.getElementById("searchresults").innerHTML += "<h3><a href=\"/" + url + "\" target=\"_blank\">" + kwSplit[0] + "</a><br>" +  attrValue + "</h3>";
+                }                   
+            }          
+          }
+          else
+          {
+            if ((attrName.indexOf(document.getElementById("search-bar").value.toLowerCase()) > -1 || attrValue.indexOf(document.getElementById("search-bar").value.toLowerCase()) > -1) && results.indexOf(attrValue) == -1)
+            {
+                var url = attrValue;
+                searchSuccessful = true;
+                results.push(attrValue);
+                document.getElementById("searchresults").innerHTML += "<h3><a href=\"/" + url + "\" target=\"_blank\">" + kwSplit[0] + "</a><br>" +  attrValue + "</h3>";
+            }              
+          }
+          indexing += 1;
+        }
+      
+      document.getElementById("searchresults").innerHTML += ((!searchSuccessful) ? "<h3>No results!</h3>" : "") + "<div id=\"filler\" style=\"height: 30px;\"></div>";
+    }
+
+    function OpenInNewTab(url) {
+      var win = window.open(url, '_blank');
+      win.focus();
+    }
+
+    function doFeelingLucky()
+    {
+      if (document.getElementById("search-bar").value == "")
+        return;
+      var results = [];
+      var searchSuccessful = false;
+      var namesURL = "names.json";
+      var xmlHttp = new XMLHttpRequest();
+      xmlHttp.open( "GET", namesURL, false );
+      xmlHttp.send( null );
+      obj = JSON.parse(xmlHttp.responseText);
+        for(var key in obj){
+          var attrName = key;
+          var attrValue = obj[key];
+          attrName = attrName.replace(".bit", "");
+
+          // split string into array of name and keywords
+          var kwSplit = attrName.split("[");
+          if (kwSplit[1] != undefined)
+          {
+            for(var keyword in kwSplit[1].split(","))
+            {
+                if (((attrName.indexOf(document.getElementById("search-bar").value.toLowerCase()) > -1 || attrValue.indexOf(document.getElementById("search-bar").value.toLowerCase()) > -1 || keyword.indexOf(document.getElementById("search-bar").value.toLowerCase()) > -1) && results.indexOf(attrValue) < 0) && !searchSuccessful && kwSplit[1].indexOf("nsfw") == -1)
+                {
+                  searchSuccessful = true;
+                  OpenInNewTab("http://127.0.0.1:43110/" + attrValue);
+                }                   
+            }          
+          }
+          else
+          {
+            if ((attrName.indexOf(document.getElementById("search-bar").value.toLowerCase()) > -1 || attrValue.indexOf(document.getElementById("search-bar").value.toLowerCase()) > -1) && !searchSuccessful)
+            {
+              searchSuccessful = true;
+              OpenInNewTab("http://127.0.0.1:43110/" + attrValue);
+            }              
+          }
+          indexing += 1;
+        }
+    }
+  </script>
+</body>
+</html>

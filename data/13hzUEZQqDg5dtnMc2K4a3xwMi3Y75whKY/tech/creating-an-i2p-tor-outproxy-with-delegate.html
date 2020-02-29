@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+  <!-- Beautiful Jekyll | MIT license | Copyright Dean Attali 2016 -->
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <title>Creating An I2P Tor Outproxy With DeleGate</title>
+
+  <meta name="author" content="Dread Pirate Westley" />
+
+  
+  <meta name="description" content="by Miracle Max">
+  
+
+  <link rel="alternate" type="application/rss+xml" title="Dread Pirates Society - Lessons from life on board the pirate ship Revenge" href="/13hzUEZQqDg5dtnMc2K4a3xwMi3Y75whKY/feed.xml" />
+
+  
+
+  
+
+  
+    
+      <link rel="stylesheet" href="/13hzUEZQqDg5dtnMc2K4a3xwMi3Y75whKY/css/bootstrap.min.css" />
+    
+      <link rel="stylesheet" href="/13hzUEZQqDg5dtnMc2K4a3xwMi3Y75whKY/css/bootstrap-social.css" />
+    
+      <link rel="stylesheet" href="/13hzUEZQqDg5dtnMc2K4a3xwMi3Y75whKY/css/main.css" />
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+    <!-- Facebook OpenGraph tags -->
+  
+
+  
+  <meta property="og:title" content="Creating An I2P Tor Outproxy With DeleGate" />
+  
+
+   
+  <meta property="og:description" content="by Miracle Max">
+  
+
+
+  <meta property="og:type" content="website" />
+
+  
+  <meta property="og:url" content="http://127.0.0.1:43110/13hzUEZQqDg5dtnMc2K4a3xwMi3Y75whKY/tech/creating-an-i2p-tor-outproxy-with-delegate.html" />
+  <link rel="canonical" href="http://127.0.0.1:43110/13hzUEZQqDg5dtnMc2K4a3xwMi3Y75whKY/tech/creating-an-i2p-tor-outproxy-with-delegate.html" />
+  
+
+  
+  <meta property="og:image" content="http://127.0.0.1:43110/13hzUEZQqDg5dtnMc2K4a3xwMi3Y75whKY/img/westley.jpg" />
+  
+  
+
+  <!-- Twitter summary cards -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:site" content="@" />
+  <meta name="twitter:creator" content="@" />
+
+  
+  <meta name="twitter:title" content="Creating An I2P Tor Outproxy With DeleGate" />
+  
+
+  
+  <meta name="twitter:description" content="by Miracle Max">
+  
+
+  
+  <meta name="twitter:image" content="http://127.0.0.1:43110/13hzUEZQqDg5dtnMc2K4a3xwMi3Y75whKY/img/westley.jpg" />
+  
+
+</head>
+
+
+  <body>
+
+    
+  
+    <nav class="navbar navbar-default navbar-fixed-top navbar-custom">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      
+        <a class="navbar-brand" href="http://127.0.0.1:43110/13hzUEZQqDg5dtnMc2K4a3xwMi3Y75whKY">Dread Pirates Society</a>
+      
+    </div>
+
+    <div class="collapse navbar-collapse" id="main-navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+          <li class="navlinks-container">
+            <a class="navlinks-parent" href="javascript:void(0)">The Crew</a>
+            <div class="navlinks-children">
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/13hzUEZQqDg5dtnMc2K4a3xwMi3Y75whKY/westley.html">Westley</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/13hzUEZQqDg5dtnMc2K4a3xwMi3Y75whKY/regulars.html">The Regulars</a>
+
+                
+              
+            </div>
+          </li>
+        
+        
+        
+          <li>
+            
+            
+
+
+
+
+
+<a href="/13hzUEZQqDg5dtnMc2K4a3xwMi3Y75whKY/categories/">Categories</a>
+
+          </li>
+        
+        
+        
+          <li>
+            
+            
+
+
+
+
+
+<a href="/13hzUEZQqDg5dtnMc2K4a3xwMi3Y75whKY/book-club/">Book Club</a>
+
+          </li>
+        
+        
+        
+          <li class="navlinks-container">
+            <a class="navlinks-parent" href="javascript:void(0)">Mirrors</a>
+            <div class="navlinks-children">
+              
+                
+                  
+            
+
+
+
+
+
+<a href="http://dreadpiratessociety.i2p">i2p</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="http://127.0.0.1:43110/13hzUEZQqDg5dtnMc2K4a3xwMi3Y75whKY">ZeroNet</a>
+
+                
+              
+            </div>
+          </li>
+        
+        
+      </ul>
+    </div>
+
+	
+	<div class="avatar-container">
+	  <div class="avatar-img-border">
+	    <a href="http://127.0.0.1:43110/13hzUEZQqDg5dtnMc2K4a3xwMi3Y75whKY ">
+	      <img class="avatar-img" src="/13hzUEZQqDg5dtnMc2K4a3xwMi3Y75whKY/img/miracleMax.jpg" />
+		</a>
+	  </div>
+	</div>
+	
+
+  </div>
+</nav>
+
+
+    <!-- TODO this file has become a mess, refactor it -->
+
+
+
+
+
+<header class="header-section ">
+
+<div class="intro-header no-img">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="post-heading">
+          <h1>Creating An I2P Tor Outproxy With DeleGate</h1>
+		  
+		    
+			<h2 class="post-subheading">by Miracle Max</h2>
+			
+		  
+		  
+		  
+		  <span class="post-meta">Posted on January 27, 2018</span>
+		  
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</header>
+
+
+
+
+
+<div class="container">
+  <div class="row">
+    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+      <article role="main" class="blog-post">
+        <p>Tor is a natural outproxy for I2P, but the problem is that Tor is a socks5 proxy and I2P only supports http outproxies. To create a simple forwarding proxy, you can use DeleGate, but the best solution is probably to use privoxy to forward to I2P or Tor based on the url.</p>
+
+<h2 id="i2p-and-outproxies">I2P and Outproxies</h2>
+
+<p>I2P was designed mostly to be it’s own network, but there is support for using an outproxy to connect to the outside web (or another darknet). I2P has great support for hidden services, but there are only one or two public outproxies available right now.</p>
+
+<p>Tor, on the other hand seems to have been created with a focus on outproxies, and while it supports hidden services, it doesn’t do it as well as I2P.</p>
+
+<p>Using I2P for hidden services with Tor as an outproxy seems like a good combination. Unfortunately, I2P can only use http proxies; not socks5 ones such as Tor.</p>
+
+<h2 id="delegate-a-tiny-forwarding-proxy">DeleGate: a Tiny Forwarding Proxy</h2>
+
+<p>DeleGate is a small and flexible proxy server. It’s about 4.3M large, and you can use it to just do what we want; act as an http proxy that forwards everything to the socks5 Tor proxy.</p>
+
+<p>There are a ton of options for DeleGate, but all we need is a command like the following:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>delegated -P1234 SERVER=http SOCKS=localhost:9050 ADMIN=user@domain
+</code></pre></div></div>
+
+<p>What comes after the <em>-P</em> is the port you want to use and <em>SOCKS=</em> is for your Tor proxy. <em>ADMIN=</em> is an email address that DeleGate will send error messages to.</p>
+
+<h3 id="installing">Installing</h3>
+
+<p>I wasn’t able to get DeleGate to compile from source, but the latest pre-compiled binary worked.</p>
+
+<h2 id="setting-up-i2p">Setting up I2P</h2>
+
+<p>After starting the DeleGate proxy, you can add it as a hidden service to I2P, copy the new .i2p address, and use that as the outproxy for the I2P http and https tunnels.</p>
+
+<h2 id="results">Results</h2>
+
+<p>Although I did get this to work, the onion page I loaded (<a href="http://uj3wazyk5u4hnvtk.onion/">The Pirate Bay</a>), was missing images and css. I didn’t spend any more time trying to figure out why that was.</p>
+
+<p>I may return to this some time later to see if I can figure out what was going on, but for now I’m sticking with a method that works well: Using privoxy to select which proxy to forward to.</p>
+
+      </article>
+
+      
+        <div class="blog-tags">
+          Tags:
+          
+          
+	  <a href="/13hzUEZQqDg5dtnMc2K4a3xwMi3Y75whKY/tag/i2p/">i2p</a>
+          
+	  <a href="/13hzUEZQqDg5dtnMc2K4a3xwMi3Y75whKY/tag/tor/">tor</a>
+          
+	  <a href="/13hzUEZQqDg5dtnMc2K4a3xwMi3Y75whKY/tag/max/">max</a>
+          
+          
+        </div>
+      
+
+      
+
+      <ul class="pager blog-pager">
+        
+        <li class="previous">
+          <a href="/13hzUEZQqDg5dtnMc2K4a3xwMi3Y75whKY/tech/browse-both-i2p-and-tor-using-privoxy.html" data-toggle="tooltip" data-placement="top" title="Browse Both I2P And Tor Using Privoxy">&larr; Previous Post</a>
+        </li>
+        
+        
+        <li class="next">
+          <a href="/13hzUEZQqDg5dtnMc2K4a3xwMi3Y75whKY/wealth/liquidating-my-individual-investment-accounts.html" data-toggle="tooltip" data-placement="top" title="Liquidating My Individual Investment Accounts">Next Post &rarr;</a>
+        </li>
+        
+      </ul>
+
+      
+    </div>
+  </div>
+</div>
+
+
+    <footer>
+  <div class="container beautiful-jekyll-footer">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <ul class="list-inline text-center footer-links">
+          
+          
+		  
+	  
+      
+		  
+          <li>
+            <a href="mailto:dreadpiratewestl" title="Email me">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+          
+		  
+		  
+		  
+      
+      
+      
+      
+      
+		  
+        </ul>
+        <p class="copyright text-muted">
+		  
+		      
+		      <a href="mailto:dreadpiratewestl" title="ZeroMail">Dread Pirate Westley</a>
+                      
+                  
+		  &nbsp;&bull;&nbsp;
+		  2019
+
+		  
+		  &nbsp;&bull;&nbsp;
+		  <a href="http://127.0.0.1:43110/13hzUEZQqDg5dtnMc2K4a3xwMi3Y75whKY">DreadPiratesSociety</a>
+		  
+	    </p>
+	        <!-- Please don't remove this, keep my open source work credited :) -->
+		<p class="theme-by text-muted">
+		  Theme by
+		  <a href="http://deanattali.com/beautiful-jekyll/" target="_blank">beautiful-jekyll</a>
+		</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+    
+
+
+
+
+
+
+  
+    <!-- doing something a bit funky here because I want to be careful not to include JQuery twice! -->
+    
+      <script>
+      	if (typeof jQuery == 'undefined') {
+      	  document.write('<script src="/13hzUEZQqDg5dtnMc2K4a3xwMi3Y75whKY/js/jquery-1.11.2.min.js"></scr' + 'ipt>');
+      	}
+      </script>
+    
+  
+    <!-- doing something a bit funky here because I want to be careful not to include JQuery twice! -->
+    
+	<script src="/13hzUEZQqDg5dtnMc2K4a3xwMi3Y75whKY/js/bootstrap.min.js"></script>
+    
+  
+    <!-- doing something a bit funky here because I want to be careful not to include JQuery twice! -->
+    
+	<script src="/13hzUEZQqDg5dtnMc2K4a3xwMi3Y75whKY/js/main.js"></script>
+    
+  
+
+
+
+
+  
+  
+  </body>
+</html>

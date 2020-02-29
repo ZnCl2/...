@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Genre</title>
+		<meta charset="utf-8">
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<base href="" target="_top" id="base">
+		<script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+	</head>
+	<body>
+		<div style="text-align: center">
+			<p>Give your genre a name. Don't worry if Publishing fails for now. Hit the Apply button when done.</p>
+			<label for="genre-name">Genre Name</label>
+			<input id="genre-name" type="text" onkeypress="return validateGenreName(event)" placeholder="Rock"/>
+			<button onclick="applyContent()">Apply</button>
+		</div>
+		<br>
+		<div style="text-align: center">
+			<p>Once done naming, press Head Back to return to the music site.</p>
+			<label for="return-site">Custom Music Site</label>
+			<input id="return-site" type="text" value="http://127.0.0.1:43110/ZeroLSTN.bit"/>
+			<button onclick="headBack()">Head Back</button>
+		</div>
+		<script type="text/javascript" src="js/ZeroFrame.js"></script>
+		<script type="text/javascript">
+			let zeroFrame = new ZeroFrame();
+
+			function validateGenreName(event) {
+				// Only allow genres with alphanumeric characters
+				var genreTitle = document.getElementById("genre-name").value + event.key;
+				var pattern = new RegExp(/^[a-zA-Z0-9 ]*$/);
+				var valid = pattern.test(genreTitle);
+				return valid
+			}
+			
+			function applyContent() {
+				var content_path = "content.json";
+
+				// Read from the site's root content.json
+				zeroFrame.cmd("fileGet", { inner_path: content_path, required: false }, (data) => {
+					if (!data) {
+						zeroFrame.cmd("wrapperNotification", ["error", "Error: Unable to access root content.json."])
+						return;
+					} else {
+						data = JSON.parse(data);
+					}
+
+					// Set user-given name
+					data.title = document.getElementById("genre-name").value;
+
+					// Write content back to content.json
+					var json_raw = unescape(encodeURIComponent(JSON.stringify(data, undefined, "\t")));
+					zeroFrame.cmd("fileWrite", [content_path, btoa(json_raw)], (res) => {
+						if (res === "ok") {
+							// Sign and Publish content
+							zeroFrame.cmd("siteSign", { privatekey: "stored", inner_path: content_path }, () => {
+								zeroFrame.cmd("sitePublish", { inner_path: content_path, sign: false });
+							});
+						} else {
+							zeroFrame.cmd("wrapperNotification", ["error", "File write error: " + JSON.stringify(res)]);
+						}
+					});
+				});
+			}
+
+			function headBack() {
+				// Get custom site address
+				var customSite = document.getElementById("return-site").value;
+				var mainAddress = customSite.split("/").slice(-1)[0];
+
+				// Get our site name and address
+				zeroFrame.cmd("siteInfo", [], siteInfo => {
+					// Append site information to it
+					var fullURL = "/" + mainAddress + "/?/addGenre/" + siteInfo.content.title + "/" + siteInfo.address;
+					console.log(fullURL)
+
+					// Navigate to it
+					location.href = fullURL;
+				});
+			}
+		</script>
+	</body>
+</html>

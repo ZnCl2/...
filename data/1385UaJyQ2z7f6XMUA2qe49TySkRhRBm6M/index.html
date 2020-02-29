@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>Zero Arkanoid</title>
+    <meta charset="utf-8">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <style>* { padding: 0; margin: 0; } canvas { background: #dedbdb; display: block; margin: 0 auto; }</style>
+    <div> ∅<a href="http://127.0.0.1:43110/1Nf5N17qApJmmo5vXRdgr1ENR2A8dRTSgF/"><span style="color: #008000;">Zero Games Project</span></a> ∅ <a href="http://127.0.0.1:43110/1NTiftFFfh1reTZU3wfhKeFJJVbUzD2Qas/"><span style="color: #008000;">Zero Arkanoid Lite</span></a> ∅
+     </div>
+    <h1 style="text-align: center;"><span style="color: #008000;"><strong>∅ Zero Arkanoid ∅</strong></span></h1>
+&nbsp;
+    <h2 style="text-align: center;"><span style="color: #20cd0e;">PC only!</span></h2>
+&nbsp;
+</head>
+<body>
+
+<canvas id="myCanvas" width="650" height="480"></canvas>
+
+<script>
+    var canvas = document.getElementById("myCanvas");
+    var ctx = canvas.getContext("2d");
+    var ballRadius = 10;
+    var x = canvas.width/2;
+    var y = canvas.height-30;
+    var dx = 2;
+    var dy = -2;
+    var paddleHeight = 10;
+    var paddleWidth = 75;
+    var paddleX = (canvas.width-paddleWidth)/2;
+    var rightPressed = false;
+    var leftPressed = false;
+    var brickRowCount = 20;
+    var brickColumnCount = 5;
+    var brickWidth = 20;
+    var brickHeight = 20;
+    var brickPadding = 10;
+    var brickOffsetTop = 30;
+    var brickOffsetLeft = 30;
+    var score = 0;
+    var lives = 5;
+    var bricks = [];
+    for(c=0; c<brickColumnCount; c++) {
+        bricks[c] = [];
+        for(r=0; r<brickRowCount; r++) {
+            bricks[c][r] = { x: 0, y: 0, status: 1 };
+        }
+    }
+    document.addEventListener("keydown", keyDownHandler, false);
+    document.addEventListener("keyup", keyUpHandler, false);
+    document.addEventListener("mousemove", mouseMoveHandler, false);
+    function keyDownHandler(e) {
+        if(e.keyCode == 39) {
+            rightPressed = true;
+        }
+        else if(e.keyCode == 37) {
+            leftPressed = true;
+        }
+    }
+    function keyUpHandler(e) {
+        if(e.keyCode == 39) {
+            rightPressed = false;
+        }
+        else if(e.keyCode == 37) {
+            leftPressed = false;
+        }
+    }
+    function mouseMoveHandler(e) {
+        var relativeX = e.clientX - canvas.offsetLeft;
+        if(relativeX > 0 && relativeX < canvas.width) {
+            paddleX = relativeX - paddleWidth/2;
+        }
+    }
+    function collisionDetection() {
+        for(c=0; c<brickColumnCount; c++) {
+            for(r=0; r<brickRowCount; r++) {
+                var b = bricks[c][r];
+                if(b.status == 1) {
+                    if(x > b.x && x < b.x+brickWidth && y > b.y && y < b.y+brickHeight) {
+                        dy = -dy;
+                        b.status = 0;
+                        score++;
+                        if(score == brickRowCount*brickColumnCount) {
+                            alert("YOU WIN!");
+                            document.location.reload();
+                        }
+                    }
+                }
+            }
+        }
+    }
+    function drawBall() {
+        ctx.beginPath();
+        ctx.arc(x, y, ballRadius, 0, Math.PI*2);
+        ctx.fillStyle = "#d93b04";
+        ctx.fill();
+        ctx.closePath();
+    }
+    function drawPaddle() {
+        ctx.beginPath();
+        ctx.rect(paddleX, canvas.height-paddleHeight, paddleWidth, paddleHeight);
+        ctx.fillStyle = "#008000";
+        ctx.fill();
+        ctx.closePath();
+    }
+    function drawBricks() {
+        for(c=0; c<brickColumnCount; c++) {
+            for(r=0; r<brickRowCount; r++) {
+                if(bricks[c][r].status == 1) {
+                    var brickX = (r*(brickWidth+brickPadding))+brickOffsetLeft;
+                    var brickY = (c*(brickHeight+brickPadding))+brickOffsetTop;
+                    bricks[c][r].x = brickX;
+                    bricks[c][r].y = brickY;
+                    ctx.beginPath();
+                    ctx.rect(brickX, brickY, brickWidth, brickHeight);
+                    ctx.fillStyle = "#20cd0e";
+                    ctx.fill();
+                    ctx.closePath();
+                }
+            }
+        }
+    }
+    function drawScore() {
+        ctx.font = "18px Arial";
+        ctx.fillStyle = "#008000";
+        ctx.fillText("Score: "+score, 8, 20);
+    }
+    function drawLives() {
+        ctx.font = "18px Arial";
+        ctx.fillStyle = "#008000";
+        ctx.fillText("Lives: "+lives, canvas.width-65, 20);
+    }
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBricks();
+        drawBall();
+        drawPaddle();
+        drawScore();
+        drawLives();
+        collisionDetection();
+        if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) {
+            dx = -dx;
+        }
+        if(y + dy < ballRadius) {
+            dy = -dy;
+        }
+        else if(y + dy > canvas.height-ballRadius) {
+            if(x > paddleX && x < paddleX + paddleWidth) {
+                dy = -dy;
+            }
+            else {
+                lives--;
+                if(!lives) {
+                    alert("GAME OVER");
+                    document.location.reload();
+                }
+                else {
+                    x = canvas.width/2;
+                    y = canvas.height-30;
+                    dx = 3;
+                    dy = -3;
+                    paddleX = (canvas.width-paddleWidth)/2;
+                }
+            }
+        }
+        if(rightPressed && paddleX < canvas.width-paddleWidth) {
+            paddleX += 7;
+        }
+        else if(leftPressed && paddleX > 0) {
+            paddleX -= 7;
+        }
+        x += dx;
+        y += dy;
+        requestAnimationFrame(draw);
+    }
+    draw();
+</script>
+    
+    <br>
+    
+     <div id="footer">
+     <h3 style="text-align: center;"><span style="color: #008000;">Donation address:</span></h3>
+         
+         <h3 style="text-align: center;"><span style="color: #20cd0e;">Bitcoin:</span></h3> <h4 style="text-align: center;"><span style="color: #008000;">1JBeDQYZQmTEzS564ZMjRvvfGeCAuqmVJs</span></h4>
+         
+         <h3 style="text-align: center;"><span style="color: #20cd0e;">Bitcoin Cash:</span></h3> <h4 style="text-align: center;"><span style="color: #008000;">1BHYR2gTvf4DwVehfenvTvhREnKdbREsc3</span></h4>
+         
+         <h3 style="text-align: center;"><span style="color: #20cd0e;">Litecoin:</span></h3> <h4 style="text-align: center;"><span style="color: #008000;">LfbpDMajPqWvdNaj3wSYGH2R51xPH3q8rX</span></h4>
+       
+&nbsp;
+     
+      
+  </div>
+
+</body>
+</html>
+
+
