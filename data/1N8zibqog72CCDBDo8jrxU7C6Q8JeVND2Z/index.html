@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <title>{{page.title}}</title>
+ <meta charset="utf-8">
+ <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+ <base href="" target="_top" id="base">
+ <link rel="icon" type="image/png" href="/favicon.png" />
+</head>
+<body>
+
+  <template id="hydeview_wrapper_template">
+    {{ content }}
+  </template>
+  <div id="hydeview_wrapper">
+    <div style="color: white">
+    <p>Loading, please wait...</p>
+    <p>If this message persists, consider reloading page.</p>
+    <p>
+      This site is built with free software JS and unfortunately will not work
+      without it as intended. If you want, you can just browse files in data/
+      directory, they are mostly plain .md; alternatively, you can run jekyll to generate static version of site.
+    </p>
+    </div>
+  </div>
+
+  <script type="text/javascript" src="js/thirdparty/ZeroFrame.js"></script>
+  <script type="text/javascript" src="js/thirdparty/jquery.min.js"></script>
+  <script type="text/javascript" src="js/thirdparty/marked.min.js"></script>
+  <script type="text/javascript" src="js/thirdparty/js-yaml.min.js"></script>
+  <script type="text/javascript" src="js/thirdparty/mustache.min.js"></script>
+  <script type="text/javascript" src="js/thirdparty/webvttparser.js"></script>
+  <script type="text/javascript" src="js/hydeview.js"></script>
+  <script type="text/javascript">
+    // this is beyond redemption, but seems to work
+    // slightly different code is used for firefox and chromium-based browsers
+    // not tested on more exotic ones
+    function loadVTT(n, addr) {
+        page.cmd("fileGet", [`${page.getRoot()}/${addr}`], function(vtt) {
+	    if (vtt !== null && vtt !== undefined) {
+		var video = document.querySelector('video');
+		if (browserIsBad) {
+		    console.log("your browser does weird things to subs :/");
+		    var original = video.textTracks[n];
+		    var track = video.addTextTrack('subtitles', original.label, original.srclang);
+		    original.mode = "hidden";
+		} else {
+		    var track = video.textTracks[n];
+		}
+
+		const parser = new WebVTTParser();
+		const tree = parser.parse(vtt, 'subtitles');
+		console.log(tree);
+		for (var i = 0; i < tree.cues.length; ++i) {
+		    const cue = tree.cues[i];
+		    const cc = new VTTCue(cue.startTime, cue.endTime, cue.text);
+		    track.addCue(cc);
+		}
+	    }
+	});
+    }
+    $(document).ready(function() {
+	page.feedClickToJump = true;
+	page.initialize("");
+	browserIsBad = window.chrome !== undefined;
+    });
+  </script>
+  <!-- <script type="text/javascript" src="js/thirdparty/vtt.js"></script> -->
+</body>
+</html>

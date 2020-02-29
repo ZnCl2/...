@@ -1,0 +1,69 @@
+{
+    "db_name": "ZeroChat",
+    "db_file": "data/zerochat.db",
+    "version": 2,
+    "maps": {
+        "users/.+/data.json": {
+            "to_table": [ "user", "message", "conversation" ]
+        },
+        "users/.+/encrypted_storage.json": {
+            "to_table": [ "encrypted_storage" ]
+        },
+        "users/.+/content.json": {
+            "to_json_table": [ "address" ],
+            "file_name": "data.json"
+        }
+    },
+    "tables": {
+        "json": {
+            "cols": [
+                ["json_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+                ["directory", "TEXT"],
+                ["file_name", "TEXT"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX path ON json(directory, file_name)"],
+            "schema_changed": 17
+        },
+        "user": {
+          "cols": [
+                    ["username", "TEXT"],
+                    ["auth_address", "TEXT"],
+                    ["json_id", "INTEGER REFERENCES json (json_id)"]
+                ],
+                "indexes": ["CREATE UNIQUE INDEX user_key ON user(json_id)", 
+                            "CREATE UNIQUE INDEX user_username ON user(username)", 
+                            "CREATE UNIQUE INDEX user_auth_address ON user(auth_address)"],
+                "schema_changed": 17
+        },
+        "message": {
+            "cols": [
+                ["body", "TEXT"],
+                ["date_added", "INTEGER"],
+                ["addressed_to", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE INDEX message_key ON message(json_id)",
+                        "CREATE INDEX message_addressed_to ON message(addressed_to)"],
+            "schema_changed": 17
+        },
+        "conversation": {
+            "cols": [
+                ["user", "INTEGER REFERENCES json (json_id)"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX conversation_key ON conversation(json_id, user)"],
+            "schema_changed": 17
+        },
+        "encrypted_storage": {
+            "cols": [
+                ["secret_name", "BLOB"],
+                ["secret_value", "BLOB"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE INDEX encrypted_storage_key ON encrypted_storage(json_id)"],
+            "schema_changed": 17
+        }
+    }
+}

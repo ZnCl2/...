@@ -1,0 +1,185 @@
+{
+	"next_topic_id": 3,
+	"topic": [
+		{
+			"topic_id": 1,
+			"title": "bug with connections limit",
+			"body": "I got lots of this in logs:\nDEBUG    FileServer Conn#45335 (IP) [?] > Closing connection: (IP) Connect error: IOError: cannot watch more than 1024 sockets in ConnectionServer.py line 142 > Connection.py line 107 > socket.py line 242 > core.pyx line 468 > core.pyx line 813, waiting_requests: 0, sites: 0, buff: 0...\nTray menu shows near the same value.\nThe actual problem is zn drops localhost connections too, so i can't access zites in the browser.\nI think there must be exception for that, first of all, plus some logic limiting connections, probably related to a peer count on each site hosted.\n// Yes, i have many zites connected.",
+			"added": 1509002639
+		},
+		{
+			"topic_id": 1618036543,
+			"title": "zeronet errors",
+			"body": "can't open official zeroblog, stays emply page with circle at top left\nconsole has lots of this. overload?\n\n[2021-04-10 09:30:55,404] ERROR Site:1SAkaN..y3yt Json merged-ZeroMe/.../content.json load error: OperationalError: database is locked in <core>/src/Site/SiteStorage.py line 364 > ...\n[2021-04-10 09:31:57,234] ERROR WorkerManager:1ABFCa..bz3m 212.239.158.89:11692: Error writing: data/users/.../content.json (<class 'Debug.Debug.Notify'>: Worker skipping (reason: Task timeout))\n[2021-04-10 09:31:57,238] ERROR WorkerManager:1ABFCa..bz3m 212.239.158.89:11692: Error writing data/users/.../content.json: Worker skipping (reason: Task timeout)\n[2021-04-10 09:31:57,245] ERROR Site:1SAkaN..y3yt Json merged-ZeroMe/.../data/users/.../content.json load error: OperationalError: database is locked in <core>/src/Site/SiteStorage.py line 364 > ...\n[2021-04-10 09:31:57,339] ERROR WorkerManager:1ABFCa..bz3m xxx.onion:17558: Error writing: data/users/...../content.json (<class 'Debug.Debug.Notify'>: Worker skipping (reason: Task timeout))\n",
+			"added": 1618036541
+		}
+	],
+	"topic_vote": {
+		"1515489402_16HcyFK8526ZYJBKPpSDCbpJv6WWBNvENj": 1
+	},
+	"next_comment_id": 26,
+	"comment": {
+		"1_1APx2pf1wNGFz4mWCN2sFzrtTGzrLKZUQ2": [
+			{
+				"comment_id": 1,
+				"body": "was 3094, now updated to 3125. will look for changes\n\n.. okay. now tray says connections ~2000 and site is not responding again.",
+				"added": 1509014202
+			},
+			{
+				"comment_id": 4,
+				"body": "version 0.6.1 rev 3223 - problem still here.\n zn taking more and more connections upon start, and after some hours it bumps to some limit over 1000.\nSo i think here we need improvements in 2 areas:\n- For those who like to host many sitez, there should be option to raise or unlock top limit, and/or add new limits for lowering connections to any particular site. I can see in stats some sites hold 10...20 connections opened.\nIf the site has many other peers besides me, i'd prefer to serve it as less as possible.\n- Since it is obvious, sites tend to pile up in users cache, some cleanup function should be added, with logic simple as this: if the site was not requested (remotely or by me) for some time (configurable of course, like a month or year) - delete it, IF there is enough other peers serving it. or any. or do not count this. This function may be triggered once a day and display standart message, saying \"there are some megabytes you may save, press here\" or the like",
+				"added": 1516981331
+			},
+			{
+				"comment_id": 5,
+				"body": "- ~1000 subdirs in /data\n- several errors like this\nERROR    - Unhandled exception\nTraceback (most recent call last):\n  File \"z\\Python\\lib\\site-packages\\gevent\\greenlet.py\", line 327, in run\n    result = self._run(*self.args, **self.kwargs)\n  File \"z\\ZeroNet\\src\\Worker\\Worker.py\", line 78, in downloader\n    site.storage.write(task[\"inner_path\"], buff)\n  File \"plugins\\BigFile\\BigfilePlugin.py\", line 362, in write\n    return super(SiteStoragePlugin, self).write(inner_path, content)\n  File \"z\\ZeroNet\\src\\Site\\SiteStorage.py\", line 219, in write\n    self.onUpdated(inner_path)\n  File \"plugins\\MergerSite\\MergerSitePlugin.py\", line 290, in onUpdated\n    super(SiteStoragePlugin, self).onUpdated(inner_path, file)\n  File \"z\\ZeroNet\\src\\Site\\SiteStorage.py\", line 289, in onUpdated\n    self.getDb()\n  File \"z\\ZeroNet\\src\\Site\\SiteStorage.py\", line 81, in getDb\n    changed_tables = self.db.checkTables()\n  File \"z\\ZeroNet\\src\\Db\\Db.py\", line 210, in checkTables\n    table_settings.get(\"indexes\", []), version=table_settings.get(\"schema_changed\", 0)\n  File \"z\\ZeroNet\\src\\Db\\DbCursor.py\", line 131, in needTable\n    self.createIndexes(table, indexes)\n  File \"z\\ZeroNet\\src\\Db\\DbCursor.py\", line 121, in createIndexes\n    self.execute(index)\n  File \"z\\ZeroNet\\src\\Db\\DbCursor.py\", line 75, in execute\n    res = self.cursor.execute(query)\nOperationalError: index tag_uk_key already exists\n- and some of this type, near the end of log (the moment with problems, and the text says it clearly\nERROR    - Unhandled exception\nTraceback (most recent call last):\n  File \"z\\Python\\lib\\site-packages\\gevent\\greenlet.py\", line 327, in run\n    result = self._run(*self.args, **self.kwargs)\n  File \"plugins\\AnnounceZero\\AnnounceZeroPlugin.py\", line 49, in announceTracker\n    tracker_protocol, tracker_address, fileserver_port, add_types, my_peer_id, mode\n  File \"z\\ZeroNet\\src\\Site\\Site.py\", line 822, in announceTracker\n    tracker = UdpTrackerClient(ip, int(port))\n  File \"z\\ZeroNet\\src\\lib\\subtl\\subtl.py\", line 43, in __init__\n    self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)\n  File \"z\\Python\\lib\\site-packages\\gevent\\socket.py\", line 242, in __init__\n    self._read_event = io(fileno, 1)\n  File \"core.pyx\", line 468, in gevent.core.loop.io (gevent/gevent.core.c:8496)\n  File \"core.pyx\", line 813, in gevent.core.io.__init__ (gevent/gevent.core.c:14699)\nIOError: cannot watch more than 1024 sockets\n- i see most connections are OUT type. port is opened and reachable, btw\n- (and since i got into logs anyway) there is another type of errors, not related to the problem i think\nERROR    - Unhandled exception\nTraceback (most recent call last):\n  File \"z\\Python\\lib\\site-packages\\gevent\\greenlet.py\", line 327, in run\n    result = self._run(*self.args, **self.kwargs)\n  File \"z\\ZeroNet\\src\\Connection\\Connection.py\", line 202, in messageLoop\n    self.log(\"Socket error: %s\" % Debug.formatException(err))\n  File \"z\\ZeroNet\\src\\Connection\\Connection.py\", line 84, in log\n    self.server.log.debug(\"%s > %s\" % (self.name, text))\nUnicodeDecodeError: 'ascii' codec can't decode byte 0xcf in position 35: ordinal not in range(128)",
+				"added": 1516992983
+			}
+		],
+		"5_19imiBWm39vSNQpp9a4y3zwHyasYJsMDp2": [
+			{
+				"comment_id": 2,
+				"body": "Is there any resource catalog for that network?\n\nGot some pointers from here https://louis.center/p2p-social-networking/",
+				"added": 1511861321
+			}
+		],
+		"1515489402_16HcyFK8526ZYJBKPpSDCbpJv6WWBNvENj": [
+			{
+				"comment_id": 3,
+				"body": "hello. great site, thank you!\n\nbug:\nwhen you attach cover art, it is displayed full size and you can get to save button only if zoom out entire page, even on fhd screen\nafter that, [i can't see the image anywhere]  edit: found it, on now playing page ;)\n\nmissing features:\n sorting by latest uploads\n browsing by genre\n search\n uploading many files at once\n pop-up tooltips for ui elements, like wtf is cloud icon, or triple minus on the queue",
+				"added": 1516270854
+			}
+		],
+		"1519632694_13E6xCFLmbGYCNAPrKd3m5o6gTgnzMW4rd": [
+			{
+				"comment_id": 6,
+				"body": "Can you tell what other files are containing, and should i backup them?\ncert-rsa.pem and key-rsa.pem - seems to me are important\nchart, content .db files - i guess it is collected statistics on traffic, etc",
+				"added": 1519646809
+			}
+		],
+		"1532889245_1NBvhfRTw3aBnasNwmSJ4YBWeRhnxAuiSy": [
+			{
+				"comment_id": 7,
+				"body": "Bitmessage is currently flooded with spam and there is no easy countermeasure for that. It results in heavy traffic and cpu usage. Public chats are unusable as of now.\nRetroshare distant chat is fast and reliable, if you are well connected. Anonymity beyond your trusted peers is granted by message relaying logic, and no tor or i2p layer required.",
+				"added": 1532941466
+			}
+		],
+		"1538407463_14ytAKDfNjArMTqGecTi7ginG3aZTsRAum": [
+			{
+				"comment_id": 8,
+				"body": "ipfs has a problem with storing files, it duplicates them on disk to make available for network and local use.\nipfs was designed as future replacement of torrent, that is already obsolete but is currently used in zeronet.\nwhen it is mature enough, it may be reasonable to move zn on it's rails",
+				"added": 1538425440
+			}
+		],
+		"1540133695_1DfrA2M9Qra6stqT6tzwNMYNweswY54KAC": [
+			{
+				"comment_id": 9,
+				"body": "FYI, there are some groupchats, the bots are:\n\ngroupbot\n56A1ADE4B65B86BCD51CC73E2CD4E542179F47959FE3E0E21B4B0ACDADE51855D34D34D37CB5\nkalinabot\n12EDB939AA529641CE53830B518D6EB30241868EE0E5023C46A372363CAEC91C2C948AEFE4EB\ndobrobot\n03F47F0AE26BE32C73579CBA2C5421A159EDFF74535A7E8C6480398D93A0EA2E02B1B20B80D7\nlainbot\n415732B8A549B2A1F9A278B91C649B9E30F07330E8818246375D19E52F927C57F08A44E082F6\ntoxync\n96BE12EB9AF2F6851704412FA2981E03E32BBD18D40F6040D01F107A20CACC07639D8D4F2A94",
+				"added": 1540193595
+			}
+		],
+		"1549953207_1LGLe311PAqQm63B2A1MnFctPm8W25XC1i": [
+			{
+				"comment_id": 10,
+				"body": "pressed download. got redirected to ring. lold. / already using.\n\nbtw, retroshare get updated, check it out\n https://retroshareteam.wordpress.com/2019/02/12/release-notes-for-v0-6-5/",
+				"added": 1549960681
+			}
+		],
+		"1549955063_16dEowtNbV89NxPcDrAKkmnuXtiJVoVcDm": [
+			{
+				"comment_id": 11,
+				"body": "from what i experienced, only problem with updates were when i run internal update function on old windows bundle package, it got completely broken .\nbut this is the case only package related, networking part or old and new versions are totally compatible. for now.",
+				"added": 1549960905
+			},
+			{
+				"comment_id": 12,
+				"body": "yes. don't touch it if it's working. backup all before updates. just as always.",
+				"added": 1549964142
+			},
+			{
+				"comment_id": 13,
+				"body": "http://127.0.0.1:43110/Blog.ZeroNetwork.bit/?Post:136#Comments",
+				"added": 1549964866
+			}
+		],
+		"1553006405_1Gn3VCPeEdJaKUhFQKaJzS8DmdqnC4F7uB": [
+			{
+				"comment_id": 14,
+				"body": "https://retroshare.guifi.net:8080/\nhttp://pool.elrepo.io/",
+				"added": 1553065785
+			},
+			{
+				"comment_id": 15,
+				"body": "1 yes they have to add you back. by mail or chat/forum exchange or whatever.\nyou still can reach their files indirectly if any other node can route to him.\n2 you can create signed ids on people page\n3 some channels may be empty and abandoned. some may content posts older than default sync time, check context menu. you can post to channels only when you have write permission granted by owner",
+				"added": 1553250067
+			},
+			{
+				"comment_id": 18,
+				"body": "There is some transit data, you can check in tray menu - statistics - turtle router - anonymous tunnels.\nCPU usage usually comes from subscribed forums count.",
+				"added": 1557732440
+			}
+		],
+		"1555652637_1LGApmQZPN49nawg4HQQgf8ToVUPxGe2Zq": [
+			{
+				"comment_id": 16,
+				"body": "hls:networkError_manifestLoadTimeOut",
+				"added": 1555656997
+			},
+			{
+				"comment_id": 17,
+				"body": "Works now, awesome. Now, pirated tv streams are wanted :)",
+				"added": 1555743095
+			}
+		],
+		"1567613355_1N2qEDMQmLEuDo7QwvPvHMRmS69LMViDUf": [
+			{
+				"comment_id": 19,
+				"body": "check https://pathephone.github.io/ - uses IPFS, so pretty much distributed.",
+				"added": 1567677037
+			}
+		],
+		"1580253527_16NS3rBdW9zpLmLSQoD8nLTtNVsRFtVBhd": [
+			{
+				"comment_id": 20,
+				"body": "cabal.chat\nricochet / tor chat / tor messenger\nmesh.im",
+				"added": 1580284899
+			}
+		],
+		"1580575907_17FotRRc6msHBzM2jrs6tQCmpLaXi1kHd5": [
+			{
+				"comment_id": 21,
+				"body": "> [wtfnix](#comment_7_17FotRRc6msHBzM2jrs6tQCmpLaXi1kHd5): I fixed it by adjusting my config: [...]\nis it working now with ipv4?",
+				"added": 1580632339
+			}
+		],
+		"1593886909_1EQgeyAy9uQj8GCkPm7ha3jFdrj8Fz8pjL": [
+			{
+				"comment_id": 22,
+				"body": "reinventing emule? why?",
+				"added": 1594022316
+			}
+		],
+		"1597367837_1BaoKFcxVPG6NEagoQhg78Cw3U2njNudd": [
+			{
+				"comment_id": 23,
+				"body": "There was project like this https://en.wikipedia.org/wiki/GoTenna but problem is you always need their special hardware.\nWhen you want to fix internet for masses you need something working with what people already have - smartphones, - so it must be software, using regular wifi for radio comms.",
+				"added": 1597393723
+			}
+		],
+		"1597851898_17viT3RZEU8RDUTwGFy2fo3CE3krdJYB4e": [
+			{
+				"comment_id": 24,
+				"body": "pornolab.net",
+				"added": 1597904732
+			}
+		],
+		"1608496457_1NKBfyUfw7Rx5uUnsBsA1rYMwL9BbUNssF": [
+			{
+				"comment_id": 25,
+				"body": "Just replace tor.exe and all .dlls, don't touch everything else",
+				"added": 1608533925
+			}
+		]
+	},
+	"comment_vote": {}
+}

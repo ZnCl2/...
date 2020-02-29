@@ -1,0 +1,195 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="MnNStory: 我和一个女同学15年的故事">
+<meta name="keywords" content="MnNStory,校园爱情,15年,女同学,女生">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<title>祝福</title>
+<script src="jquery.js"></script>
+<script src="qrcode.js"></script>
+<script>
+function loadCSS(href) {
+	var cssLink = $("<link rel='stylesheet' type='text/css' href='"+href+"'>");
+	$("head").append(cssLink);
+	return cssLink;
+};
+
+var relocate;
+
+$(function(){
+            var device="computer";
+        var fontSize=($(window).width()/25).toFixed(0);
+        relocate=relocateC;
+    
+	loadCSS("main_"+device.substring(0, 1)+".css").load(function(){
+		relocate();
+		setTimeout(relocate, 1000);
+		setTimeout(function(){
+			var fontSize=$('body').css('fontSize');
+			var qrcode = new QRCode(document.getElementById("QRCode"), {
+				width : parseInt(fontSize)*7,
+				height : parseInt(fontSize)*7
+			});
+
+			qrcode.makeCode(window.location.href);
+		}, 1000);
+	});
+
+	$(window).resize(relocate);
+
+    
+	function relocateC(){
+		function bottom($el){
+			return $el.position().top + $el.outerHeight(true);
+		}
+
+		var $footer=$('#footer');
+		$footer.css({
+			top: 0,
+			display: 'none'
+		});
+		var top=Math.max(
+			bottom($('#textWrapper')),
+			bottom($('#contents')),
+			$(document).height() - $footer.outerHeight()
+		);
+		$footer.css({
+			top: top,
+			display: 'block'
+		});
+	}
+
+        $('.patch-more').click(function(){
+        var page=$(this).data('page');
+        var paragraph=$(this).data('paragraph');
+
+        location.href='page'+page+'.html#paragraph='+paragraph;
+    });
+
+    setTimeout(function () {
+                    var ret=document.referrer.match(/#paragraph=(\d+)/);
+                if (!ret) {
+            return;
+        }
+        var paragraph=ret[1]-1;
+
+        var objParagraph=$('#text p:eq('+paragraph+')');
+        var flash=function () {
+            objParagraph.css('color', 'red');
+            setTimeout(function() {
+                objParagraph.css('color', 'initial');
+            }, 1000);
+        };
+        $('html, body').animate({
+            scrollTop: objParagraph.offset().top-$('#textWrapper').offset().top,
+        }, 500, flash);
+    }, 100);
+
+    var pIndex=0;
+    $('#text p').each(function () {
+        ++pIndex;
+        if (!$(this).attr('id')) {
+            //$(this).attr('id', 'paragraph_'+pIndex);
+        }
+    });
+});
+
+function showComments(){
+	$.blockUI({
+		message: $('#disqus_thread'),
+	});
+
+	$('body').click($.unblockUI);
+}
+</script>
+</head>
+<body>
+<div id="cover" style="background-color: #F1F1F1; position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 2048;"></div>
+<div id="nav">
+	<div class="Three">
+		<div id="navLeft" class="left c">
+			<a href="page11.html" class="blackText">&lt;&lt;&lt;prev</a>		</div>
+		<div id="navRight" class="right c">
+			<a href="page13.html" class="blackText">next&gt;&gt;&gt;</a>		</div>
+		<div id="navTitle" class="middle">
+			祝福		</div>
+	</div>
+	<div class="Three m">
+		<div class="left" style="width: 4em">
+			<a href="page11.html" class="blackText">&lt;&lt;&lt;</a>		</div>
+		<div class="right" style="width: 4em">
+			<a href="page13.html" class="blackText">&gt;&gt;&gt;</a>		</div>
+		<div class="middle">
+			<a href="/index.html" class="blackText">[Home]</a>
+		</div>
+	</div>
+</div>
+<div id="images" class="c">
+	<a href="downloads/mnnstory.zip" target="_blank"> <img src="download.png" style="width: 100%;" title="下载" alt="Download" /> </a>
+	<p id="QRCode"></p>
+</div>
+<div id="contents" class="c">
+	<p class="contents_d0"><a href="index.html">目录</a></p>
+	<ul class="contents_d1"><li><a href='page1.html'>上册</a>
+<ul class="contents_d2"><li><a href='page2.html'>引子</a>
+</li><li><a href='page3.html'>初识</a>
+</li><li><a href='page4.html'>别情</a>
+</li><li><a href='page5.html'>追求</a>
+</li><li><a href='page6.html'>梦想</a>
+</li><li><a href='page7.html'>重逢</a>
+</li><li><a href='page8.html'>憧憬</a>
+</li><li><a href='page9.html'>移民</a>
+</li><li><a href='page10.html'>心愿</a>
+</li><li><a href='page11.html'>数学中最难的是概率</a>
+</li><li>祝福
+</li><li><a href='page13.html'>附录：秦始皇妈妈的故事</a>
+</ul></li><li><a href='page14.html'>上册配乐</a>
+</li><li><a href='page32.html'>下册</a>
+</li><li><a href='page47.html'>下册配乐</a>
+</li><li><a href='page49.html'>订正簿</a>
+</ul></div>
+<div id="disqus_thread"></div>
+<script>
+	var disqus_config = function () {
+		this.page.url = 'http://mnnstory.onion';
+		this.page.identifier = 12;
+		this.page.title = '祝福'
+	};
+
+
+	(function() {
+		var d = document, s = d.createElement('script');
+
+		s.src = '//mnnstory.disqus.com/embed.js';
+
+		s.setAttribute('data-timestamp', +new Date());
+		(d.head || d.body).appendChild(s);
+	})();
+</script>
+<div id="textWrapper">
+	<div id="text">
+		<p>小年夜，当我起床的时候，发现她把微信里的头像换成了自己的照片，是她在臺灣旅游时拍的。灰黑色的上衣，里面是白色，长发披肩。圆圆的脸，微笑虽不甜蜜，但却很自然。找了找，酒窝还在。眼神少了2009年的那种稚气，但仍有活力，略带自信。她站在一扇门前，门板上写的文字看上去是臺灣的某个老品牌。她一本正经的手势，像是在向众人展示她最得意的成就。奇怪的是，唯独这一次，她不像是穿着很紧的衣服，我却看得到她胸部隐隐的轮廓。</p>
+<p>在写这篇文章的时候，我仍时不时看看她的这张照片。我很清楚我已经不可能忘记她了，我再也不会想去伤害她了，其实这样才不会伤害自己。对于我成功移民的事，她恭喜了我，虽然更多地是出于礼貌。对于她的婚姻，我是否也应该祝福一下呢？只是让我说出口，却也很难。也许，这个时候，我可以给她送去点温暖、关心和忠告。</p>
+<p>我想起了她5年以前对而立之年的憧憬，和一直以来的追求，我想到她到现在还没有用心对待自己的婚房——转念一想，她毕竟也已经过了恋爱的洗礼，婚礼在即——对也好，错也罢，在大年夜半夜11:14，我经过构思，通过微信发去了这段：</p>
+<p>“新年就要来临，我想送给你这些话：我们都将迎来全新的而立之年，在而立之年我们都将脱离父母，各自拥有自己的家。家不仅仅是贷款买来的一套砖墙，家需要用心去爱护。生活的点点滴滴，买菜、烧饭、洗衣等等，都需要用热情去浇灌。遇到困难时，请不要失去信心。”</p>
+<p>一个多小时后，年初一的凌晨，我收到了她的回复，口气基本符合她的性格和立场，在情理之中。看到这里，读者也基本可以猜到个八九不离十。内容略……</p>
+<p class="ending">
+（写于2016年2月13日，农历元月初六）</p>	</div>
+</div>
+<div id="footer">
+	<div id="declaration">
+		本故事为作者亲身经历
+	</div>
+	<div id="bannerLine" class="Three">
+				<div class="middle">
+            			    <a href="about.html">MnNStory, 1 Sep 2001 - 12 Mar 2016</a>
+            		</div>
+	</div>
+	<hr class="m" />
+	<div id="switch2c" class="m">
+		<a href="">电脑版</a>
+	</div>
+</div>
+</body>
+</html>

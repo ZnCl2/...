@@ -1,0 +1,71 @@
+{
+	"next_topic_id": 1,
+	"topic": [],
+	"topic_vote": {},
+	"next_comment_id": 13,
+	"comment": {
+		"1566248008_1KSUcqHRcq26pF5vJ2297jrNcAzkNvLtSH": [
+			{
+				"comment_id": 1,
+				"body": "@08admin: can I send you a private message somehow?",
+				"added": 1566250148
+			},
+			{
+				"comment_id": 2,
+				"body": "> [littlepaw](#comment_9_16VcDM9UrXq4VY2MAKJhfuiN1DoG5ktAD3): I did that and the problem still didn't go away. I guess I'll go and re-download the entire site, seeders don't beat me up please. Is saving the current site as .zip the best method for backing up it's data? Thanks again for your time and effort, by the way ^ω^\n\nBtw it doesn't want to work for me either. There are a few files stuck at updating, but otherwise I tried update, check files, database rebuild, reload in various combination, restarting zeronet, trying a different browser, etc, to no avail. If I manually replace js/all.js from a backup, that's the only thing that fixes this thing. Nothing interesting in the debug console either.",
+				"added": 1566250793
+			},
+			{
+				"comment_id": 3,
+				"body": "Okay, it looks like somewhy it didn't update index.html. I manually deleted it (zeronet/1DdPHedr5Tz55EtQWxqvsbEXPdc4uCVi9D/index.html), and now zeronet downloaded it instantly...",
+				"added": 1566251227
+			},
+			{
+				"comment_id": 4,
+				"body": "Is it possible to mass mute spammers somehow? The old spam threads reappeared for me, and since the update if I mute somebody, this piece of shit redirects me to the first page of the board, so it's even more painful to ban more that a few people. I guess I should figure out how to do this from the API, because the UX is hideous.\nEdit: of course, when the mute user button does anything at all.\nEdit2: I manually added them to my filters.json and deleted their files. At least the catalog is now usable. Clicking on thumbnails doesn't work in Palemoon, it just opens the image in the current tab instead of embedding it.",
+				"added": 1566340168
+			},
+			{
+				"comment_id": 5,
+				"body": "> [pexo](#comment_132_1DfrA2M9Qra6stqT6tzwNMYNweswY54KAC): reload database looks for and finds any changes in the dbschema.json file which is used to build the database from the files of the zite. rebuild database uses the currently known version of dbschema.json to rebuild the database. Doing rebuild database first and then reload database is pointless. [...]\n\nOk, this is garbage under palemoon. I've tested both the 08chan one (30f239c), and the one on millchan (128431c), and it's the same. If I click on rows per page on the main page, nothing happens, if I click on an image, it replaces the current browser tab with the image, instead of embedding it (and if I hit back, it goes back to the thread, but it reloads the page and forgets the position), and other buttons (under the arrow next to the posts) work like once every 50 times. Sometimes it's enough if I just mash my mouse button like an idiot, sometimes reload helps, sometimes I give up and open chromium just to click on a button.\nI might go back to the old 08chan version, even if it had less features and more bugs, at least it worked.",
+				"added": 1566464148
+			},
+			{
+				"comment_id": 6,
+				"body": "Btw, if you want to fix buttons under palemoon, do the following:\n1. Download millchan from git, build it\n2. Edit `node_modules/vue/dist/vue.js`, find the `var useMicrotaskFix = ` line and replace it with false. Alternatively add a proper check to disable this \"workaround\" on palemoon.\n3. `npm run dev` If you want a prod build, you'll have to edit `vue.min.js`. At this point it's probably easier to figure out how to generate `vue.min.js`. Alternatively edit `webpack.config.js` to use the non-minified version of vue in prod.\nIt will be still horribly slow on threads with many images, this lazy page loading available in recent millchan versions is a major performance hog.",
+				"added": 1566859779
+			},
+			{
+				"comment_id": 7,
+				"body": "> [ssdifnskdjfnsdjk](#comment_920_1L4dZcDF2maSKHDy788yhxpYnBWnXadUtS): i built it around 2 weeks ago, and can not find vue.js in the zeronet site folder. Anyone knows which file (possibly some .js) i need to edit to make the Follow function working? Or @08admin try to re-run the upgrade to apply new millchan functions to 08chan? [...]\nIf you run `npm install`, it will download a bunch of files from npm, I think that is the command that's supposed to download vue.js (but I'm not a web developer, so I'm not sure).\nIt won't be in the normal zeronet site, webpack packs every js file into a single gigantic one.",
+				"added": 1566902789
+			},
+			{
+				"comment_id": 8,
+				"body": "> [pexo](#comment_136_1DfrA2M9Qra6stqT6tzwNMYNweswY54KAC): Where there any warnings/errors in the web console? Did you have bad files? From what you said, it seems to be an compatibility issue with vue or any vue components that millchan uses. Have you tried the Tor Browser does it work there?\n\nNothing at all. Check the code around `if (useMicrotaskFix)`, it just won't execute the event handler under certain conditions. I didn't bother to figure out this workaround heap, but since palemoon is forked from firefox (52 I think?) the exclusion should probably apply to this browser too.\nI can't test it under tor browser, since it requires GTK3.\n\n> [pexo](#comment_136_1DfrA2M9Qra6stqT6tzwNMYNweswY54KAC): They should be the opposite of that. Is millchan just as fast as 08chan? There are notably performance boosts on both Firefox and Tor Browser in testing.\nThe fastest version is the old 08chan. The current 08chan version is bearable, millchan git from a few days ago (38ce267 to be exact) is horribly slow, the browser becomes barely responsible for minutes when loading a thread with many images for the first time. And navigation is weird too, for example I have to press end 4-6 times to actually get to the end of the thread because of this lazy loading.",
+				"added": 1567019944
+			},
+			{
+				"comment_id": 9,
+				"body": "> [tomoko](#comment_2_1Nrjz2bkDJAMcVyPidS2gKLZ4UUyrnQRLe): You can see here the performance measurements of loading a thread in the version 30f239c vs version c90d9f35 (current head).This shows a performance improvement of ~6 times. Also, the main thread block is virtually non-existent in the updated version.[...]\n\nAFAIK PaleMoon is pretty much still running on a single thread, blocking a single thread blocks the whole browser. Maybe I'll try to update millchan again to see the current git master.\nAbout image loading: but something clearly changed, click on expand images, and you get 100% CPU usage and a browser rendering at 2FPS for something like 30 seconds.",
+				"added": 1567062941
+			},
+			{
+				"comment_id": 10,
+				"body": "> [pexo](#comment_137_1DfrA2M9Qra6stqT6tzwNMYNweswY54KAC): Wait so it schedules webworker ticks into mainthread ticks or how are these handled? [...]\nI have no idea, maybe they're running on different threads, but pretty much everything else runs in a single thread. Layouting, rendering, js of the website, javascript of the browser chrome, network, etc. A single unresponsible page can slow down the whole thing. The classic mozilla feeling.\n\nCan I somehow mass purge thumbnails for a thread? I've updated millchan to c90d9f3 and now it looks a bit snappier, but I don't know whether it's because something changed with millchan, or I just have most of the images cached. It slowed down horribly when I clicked on expand on 3-4 post with 50+ images, even with the old version after a reload it was much better while zerochan had the thumbnails cached.",
+				"added": 1567109890
+			},
+			{
+				"comment_id": 11,
+				"body": "I just checked this: http://pmav.eu/stuff/javascript-webworkers/ and it looks like Palemoon at least runs webworkers in separate threads. But in this case they were also niced threads with lower priority, I don't know if this is specific to this test case or webworkers in general, but in the latter case it means the time millchan spends in webworkers is insignificant. (My cpu monitor draws normal and nice cpu activity with different colors, so I can spot them pretty easily)",
+				"added": 1567114577
+			},
+			{
+				"comment_id": 12,
+				"body": "> [pexo](#comment_146_1DfrA2M9Qra6stqT6tzwNMYNweswY54KAC): Maybe you should talk to the palemoon devs to backport some of the quantum updates of regular firefox\nThat's highly unlikely as Palemoon doesn't use any Rust code. Plus the main Palemoon developer is an arrogant furfag, I'd rather avoid being affiliated with them.\n\nSome notes about performace: it looks like memory wasn't the only thing firefox 52 ESR leaked like there's no tomorrow, performace degrades too with uptime. So after a restart millchan works better than a few days later.\nAnd with initial image loading, I have that little progress bar on the top of the screen drawn by zeronet, it does too have a performance impact.",
+				"added": 1567640086
+			}
+		]
+	},
+	"comment_vote": {}
+}

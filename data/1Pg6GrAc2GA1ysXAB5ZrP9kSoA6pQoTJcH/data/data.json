@@ -1,0 +1,76 @@
+{
+	"title": "零网编程博客",
+	"description": "My ZeroBlog.",
+	"links": "- [Source code](https://github.com/HelloZeroNet)",
+	"next_post_id": 13,
+	"demo": false,
+	"modified": 1605938016,
+	"post": [
+		{
+			"post_id": 12,
+			"title": "New blog post",
+			"date_published": 1605925952.723,
+			"body": "Blog post body"
+		},
+		{
+			"post_id": 11,
+			"title": "如何开启tracker服务",
+			"date_published": 1547654514,
+			"body": "升级到最新版本3571过后，不仅可以在用户之间交换有效的tracker服务器，还可以让那些打开bootstrap功能（将plugins文件夹名的disabled-去掉）的主动节点（有公网IP）变成tracker服务器。也就是人人（有公网IP）都可以变成tracker服务器。"
+		},
+		{
+			"post_id": 10,
+			"title": "ZeroNet如何实现局域网跨网段用户互联?",
+			"date_published": 1547493742.925,
+			"body": "zeronet 的本地用户发现功能，因为采用了广播通信，而广播信号无法跨网段传播，所以两个不同网段的局域网用户（在同一个大的局域网内，可以用相互ping通）无法自动发现彼此。\n此时可以采用用户添加模式实现不同网段但在同一个更大的局域网的两个用户互联。\n用户添加模式，列如 网段为172.20.55.1的172.20.55.33 用户A 想连接上 网段为172.20.56.1的172.20.56.46用户B，可以让用户A 在浏览器中添加\n`http://127.0.0.1:43110/1HeLLo4uzjaLetFx6NH3PMwFP3qbRbTf3D/?zeronet_peers=172.20.56.1:1544`\n其中1544是用户B的本地广播服务器默认监听端口，从而实现A可以连接上B。"
+		},
+		{
+			"post_id": 9,
+			"title": "站点内容中插入图片和视频的正确方法",
+			"date_published": 1547230616.621,
+			"body": "默认每个 ZeroNet 站点设定的空间占用（SIZE LIMIT）是 10MB，这意味着除非浏览者主动设定，否则 ZeroNet 只会下载最多 10MB 的内容。对于博客和留言板这类应用肯定没大问题，但对于内容需要图片或视频媒介的站点就很难办。说严重一些，这个限制甚至影响了 ZeroNet 平台应用开发的未来可能性。\n\n目前 ZeroNet 的解决方案这个叫 **optional files** 的特性，有关这个特性在开发过程中的讨论可以在 Github 上详细了解：[https://github.com/HelloZeroNet/ZeroNet/issues/163](https://github.com/HelloZeroNet/ZeroNet/issues/163) 。\n\n### optional files 和 files 的区别\n\n一个是可选的，一个是非可选的。废话 (╯°□°）╯︵ ┻━┻\n\n1.  optional files 不会计算在 SIZE LIMIT 中\n2.  optional files 不会被主动发布到节点中，而 files 是一定会发布的\n3.  optional files 只有当被第一个访问者访问时，才会被下载（从你的电脑直接传输）\n4.  所有下载过这个文件的节点会为这些文件做种，继续分发，以便让其他人访问\n\n这个设计导致的最大不同是正常情况下你可以把所有内容发布给节点，这时候你拔了网线（离线），你的站点内容可以由缓存过的节点继续提供。但 optional files 必须等至少有一人访问过，才能被持续分发。使用时需要了解这件事。\n\n> optional files 需要你自己先做种，等有人访问（下载）后才能保证内容一直有节点持续提供。\n\n### 如何使用 optional files\n\n所需的资料当然是察看官方的开发者文档，在这个章节中有描述：[Structure of content.json](https://zeronet.readthedocs.org/en/latest/site_development/content_json/#optional)\n\n文档说得很含糊，`[你的站点地址]/data/content.json` 中的 `files_optional` 定义了所有的 optional files：\n\n```\n\"data/myvideo.mp4\": {\n  \"sha512\": \"538c09328aa52765443464135cef644c144346418378199fa5cef61837819538\",\n  \"size\": 832103\n}\n```\n\n文档说这些文件描述信息自动被添加进来的，不需要自己写。\n\n真正我们需要定义的是另一个叫 `optional` 的配置参数，我的这一项是这么写的：\n\n```\n\"optional\": \"(data/images/.*)\",\n```\n\n把上面这行配置添加到 `modified` 一行下方。参数是一个正则表达式，意思是 `[你的站点地址]/data/images/` 文件夹下的所有文件都是 optional files。定义好之后，我们去创建 images 这个文件夹，把图片或视频放在里面。运行：\n\n```\nzeronet.py siteSign [你的站点地址] --publish\n```\n\n等待完成后，你再次打开 `[你的站点地址]/data/content.json` 会发现，`files_optional` 中已经自动帮你生成了目录下所有文件的描述信息。\n\n### 如何把文件插入到文章内容中\n\n文件已经成功添加到配置文件里，下面我们就只需要在文章中使用标准的 Markdown 图片标签，就能使用这些添加的内容了。例如：\n\n```\n![](data/images/test.png)\n```\n\n写好内容并发布后，如果你在另一个 ZeroNet 节点访问这个页面，你会发现文字内容瞬间出现（因为已经早就分发缓存了），但这张图片会逐渐加载。这个过程就是正在向最初图片存放节点下载文件的过程。\n\n> 欢迎大家分享和指正，如果我的文章对你有帮助，欢迎点击精神污染 Logo 下方的 **Follow in newsfeed **按钮关注和支持我，谢谢 🙏\n\n原文地址：\n\n[http://127.0.0.1:43110/1JwFyNA2aKbKLoGkNcScRSCX4auEU5iRJN/?Post:6:ZeroNet+站点内容中插入图片和视频的正确方法+-+optional+files](http://127.0.0.1:43110/1JwFyNA2aKbKLoGkNcScRSCX4auEU5iRJN/?Post:6:ZeroNet+站点内容中插入图片和视频的正确方法+-+optional+files)"
+		},
+		{
+			"post_id": 7,
+			"title": "修复ZeroNet程序",
+			"date_published": 1547104438.567,
+			"body": "  在使用ZeroNet的时候，我经常发现，不知道什么原因，程序就打不开了，点击没有反应，最初我只好重新使用下载的原始程序，导致大量网站资源丢失，后来我想既然原始的程序能用，是不是我损坏的程序用原始的程序覆盖后能恢复呢？测试了一下，果然恢复正常了！而且所有资源都完好无损，这样我就把原始程序做了个自解压程序，当发现软件损坏时，运行一下就修复了，方便的很！\n\n这是自解压的脚本：\n\n* * *\n\n;下面的注释包含自解压脚本命令\n\nPath=.\\ZeroNet-win-dist\nSavePath\nSetup=ZeroNet.exe\nSilent=2\nOverwrite=1\n\n* * *\n\n<span data-cke-bookmark=\"1\" style=\"display: none;\"> </span><span data-cke-bookmark=\"1\" style=\"display: none;\"> </span>"
+		},
+		{
+			"post_id": 6,
+			"title": "ZeroNet域名解析原理以及 如何注册域名",
+			"date_published": 1547039777.637,
+			"body": "当我们在ZeroNet上建立了自己的网站之后想要像TaLk或Me以及其他站点一样给自己的站点上一个域名，我们该怎么做呢？在UiRequestPlugin.py#L49我们可以看到，在默认情况下ZeroNet 的站点域名解析是基于1Name2NXVi1RDPDgf5617UoW7xA6YrhM9F这个Zite的，打开这个站点的文件夹，我们可以看到在这个站点的data目录下有个names.json文件，（点击这里即可看到 ）打开之后可以看到域名以及对应的站点公钥地址都是以“域名”:“站点公钥地址”这样的简单k-v模式json格式储存的，那么，我们怎么让这个names.json文件里记录下自己想要的域名以及对应的Zite地址呢？\n\n通过文档我们可以知道，这个站点目前是由@Nofish的程序在VPS上24小时365无休自动维护的，他的程序通过读取 NameCoin （一个去中心化的域名解析项目）网络中域名解析记录里的\"zeronet\"字段来自动更新这一列表，那么，我们该如何注册一个NameCoin网络的.bit域名，并且让自己的站点也能让他人通过该域名访问呢？\n\n首先，若要确保你自己可以控制你的域名，你需要下载一个NameCoin客户端，官网下载地址：https://namecoin.org/download/，下载好了之后在本地安装运行等待同步完成，在等待同步的同时，你可以去聚币网注册一个账户并下载任意一币种的轻钱包，，之后充值购买那一币种，再去把它提现到自己的钱包（在这里，我使用的是DogeCoin，优点是转账交易费十分低廉，只有1狗币（约合人民币0.001380元）），再到ShapeShift将你购买的虚拟币转换成NameCoin转到自己的NameCoin钱包地址，这样你便得到了NameCoin。\n\n之后，访问https://namecha.in/name/d/ + 你想要的域名去查询域名是否已经出售，如https://namecha.in/name/d/zeronetwork 显示的便是ZeroNetWork.bit的域名注册信息。找好了还没被注册的域名之后，到本地运行的NameCoin客户端的ManageNames选项卡去，在输入框内按照提示输入域名（不要.bit后缀，如d/zeronetwork）然后点击提交，确认提示框之后到弹出窗口的Custom Configuration选项卡中输入框内输入自己的站点域名配置，如NewGFWTalk的域名配置为{\"zeronet\":{\"\":\"19BPUZYAdCMxExKHoVSG3cG95wfUfFTEC9\",\"dev\":\"1AYpPewPtystyZxhHp4a5VFNrgJfmsWRU6\"}}，即在访问http://127.0.0.1:43110/NewGFWTalk.bit 时会解析到http://127.0.0.1:43110/19BPUZYAdCMxExKHoVSG3cG95wfUfFTEC9，访问http://127.0.0.1:43110/dev.NewGFWTalk.bit 时会解析到http://127.0.0.1:43110/1AYpPewPtystyZxhHp4a5VFNrgJfmsWRU6 ，按照自己需求配置就好。然后确定提交，开着电脑做工3个小时以上，以确保全网确认，之后你的域名就可以使用了。（如果要让别人从ZeroHello点进去一样访问的是带域名的，记得到自己的站点根目录下content.json内加入\"domain\": \"xxxx.bit\",一项并签名发布）。\n\n当然，如果你想自己实现一个域名解析服务让别人用，只需要创建一个站点然后在站点的data目录下按照k-v模式自己写一个names.json文件让别人在启动ZeroNet时带上--bit_resolver 你的站点地址就好。\n\nPS：\n\n如果你愿意，可以在注册聚币网账户时填写我的邀请码：490958\n注意，目前NameCoin的区块链大小已将近4G，需要的同步时间视网络情况大致在4个小时到16个小时左右\n之所以选择聚币网是因为这里存入资金为50元起，支持支付宝、银行卡付款，且提币限额低，比起比特儿起存100，不适合建站使用。但又因为这里不能直接购买域名币，所以要中转\n软文推广，如果想要购买域名币又不想上面那样几个交易网站来回折腾，或者不想投这么多钱到那些交易网站难得麻烦，可以联系我购买域名以及域名币，1个域名1毛钱，1.6一个域名币，付款方式微信支付宝银行转账比特币狗狗币都接受，我在ZeroNet上的ID为12hstudy，ZeroMail我就好\n\n[原文链接](https://steemit.com/cn/@hahadaxia/zeronet)"
+		},
+		{
+			"post_id": 5,
+			"title": "zeronet文档",
+			"date_published": 1547017891.324,
+			"body": "[https://zeronet.readthedocs.io/en/latest/faq/#how-to-use-zeronet-in-tor-browser](https://zeronet.readthedocs.io/en/latest/faq/#how-to-use-zeronet-in-tor-browser)\n\n这是英文版的零网说明文档，没有被大陆封锁，最好使用谷歌浏览器，点击翻译，即可翻译成中文！"
+		},
+		{
+			"post_id": 4,
+			"title": "零网每日更新的Trackers list",
+			"date_published": 1547014570.904,
+			"body": "零网每日更新的Trackers list\n\n* * *\n\n[https://github.com/ngosang/trackerslist](https://github.com/ngosang/trackerslist)\n\n1、打开网址（大陆可能要翻墙），下载文件，打开并复制内容\n\n![0.png (0x0)](data/img/post_4_0.png)\n\n2、打开零网设置\n\n![1.png (0x0)](data/img/post_4_1.png)\n\n3、黏贴到Trackers列表中，然后保存设置\n\n![2.png (0x0)](data/img/post_4_2.png)"
+		},
+		{
+			"post_id": 3,
+			"title": "零网网站key和发布",
+			"date_published": 1546872688.934,
+			"body": "自己网站的key如何找到：\n\n      打开 ..\\data\\users.json \n      之后找到你的网站地址（例如查找3kgaUbXXXpyAAAAAAAAAA12UZFXu2SazKIh1）,有一行\n\n      \"privatekey\": \"5K5qG**********9ZtD431\" 就是key了\n\n      注意：不是 auth_privatekey 不要搞混了。。。\n\n由于users.json文件包含了你创建的所有网站key，所以，定时备份users.json很重要！\n\n* * *\n\n用克隆方法建立的网站发布时无需输入key，但如果你有多个账号，则用其他账号发布时，则需要输入key，不太方便。能不能一个网站被多个账号发布而不用输入key呢？按下面的操作后，无需输入key就可直接发布，方法是打开网站创始者账号的data目录下的users.json文件，在文件中查找网站比特码，例如16tbSVDMM1LCrA6e5XDwbSLP6c4yjTLKeV，找到如下所示代码\n\n### -----------------------------------------------------\n\n```\n  \"16tbSVDMM1LCrA6e5XDwbSLP6c4yjTLKeV\": {\n    \"auth_address\": \"1Evvvvvvvvvvvvvvvvv312\", \n    \"auth_privatekey\": \"5JouKvvvvvvvvvvvvvvvvvvvvYrpggYZ\", \n    \"cert\": \"zeroid.bit\", \n    \"follow\": {\n      \"Posts\": [\n        \"SELECT post_id AS event_uri, 'post' AS type, date_published AS date_added, title AS title, body AS body, '?Post:' || post_id AS url FROM post\", \n        [\n          \"\"\n        ]\n      ], \n      \"Username mentions\": [\n        \"SELECT 'mention' AS type, date_added, post.title AS title, keyvalue.value || ': ' || comment.body AS body, '?Post:' || comment.post_id || '#Comments' AS url FROM comment LEFT JOIN json USING (json_id) LEFT JOIN json AS json_content ON (json_content.directory = json.directory AND json_content.file_name='content.json') LEFT JOIN keyvalue ON (keyvalue.json_id = json_content.json_id AND key = 'cert_user_id') LEFT JOIN post ON (comment.post_id = post.post_id) WHERE comment.body LIKE '%[youname%' OR comment.body LIKE '%@youname%'\", \n        [\n          \"\"\n        ]\n      ]\n    }, \n    \"privatekey\": \"5KXLVVVV 这是网站key vvvvvvvvvEN\"\n  },\n```\n\n* * *\n\n将上面代码复制到当前账号的users.json文件中(找到\"sites\"复制到下面一行)，并将其中的的youname替换为你现在的零网账号，现在您的当前账号已成为该网站的创始者之一，可以直接发布而无需输入key！\n\n![DfiiXM3U8AAfceH.jpg (0x0)](data/img/post_3_DfiiXM3U8AAfceH.jpg)​​​​​​​ok，休息一下，我要喝杯茶了：》"
+		},
+		{
+			"post_id": 2,
+			"title": "祝贺网页编程博客开通",
+			"date_published": 1546690184.259,
+			"body": "今天是2019年1月5日，我回到了零网！"
+		},
+		{
+			"post_id": 1,
+			"title": "Congratulations!",
+			"date_published": 1433033779.604,
+			"body": "Your zeronet blog has been successfully created!"
+		}
+	]
+}

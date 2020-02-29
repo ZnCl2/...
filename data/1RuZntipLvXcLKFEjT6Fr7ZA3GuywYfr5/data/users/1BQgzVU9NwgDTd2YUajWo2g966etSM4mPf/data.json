@@ -1,0 +1,52 @@
+{
+	"next_topic_id": 1,
+	"topic": [],
+	"topic_vote": {},
+	"next_comment_id": 9,
+	"comment": {
+		"1_1G8pkNe3Znuc2rE4d8JbwfgHWKrvwz4vfk": [
+			{
+				"comment_id": 1,
+				"body": "C/C++, Python, JS",
+				"added": 1524762369
+			},
+			{
+				"comment_id": 2,
+				"body": "на PHP тоже когда-то писАл",
+				"added": 1524762449
+			}
+		],
+		"1_1Lr8RdHxBpY8EWZ6rwD8CvVAaMkg2yGtXf": [
+			{
+				"comment_id": 3,
+				"body": "Ubuntu, Gentoo.\nВ качестве декстопа OSX.",
+				"added": 1524762582
+			}
+		],
+		"1_1L4c3c1p78xUx8DAxZvqCnj84WjLpcEECY": [
+			{
+				"comment_id": 4,
+				"body": "Я использую связку OpenVPN + dante-socks5.\nВсё это, конечно, разворачивается на европейском VPS.\nЧтобы \"приземлить\" прокси в локальной сети, я использую redsocks на роутере.\nВ результате имею примерно такое правило iptables:\n\n...\n$iptables -t nat -F REDSOCKS\n...\n$iptables -t nat -A POSTROUTING -o ${WAN} -j MASQUERADE\n...\n$iptables -t nat -N REDSOCKS\n$iptables -t nat -A REDSOCKS -d 0.0.0.0/8 -j RETURN\n$iptables -t nat -A REDSOCKS -d 10.0.0.0/8 -j RETURN\n$iptables -t nat -A REDSOCKS -d 127.0.0.0/8 -j RETURN\n$iptables -t nat -A REDSOCKS -d 169.254.0.0/16 -j RETURN\n$iptables -t nat -A REDSOCKS -d 172.16.0.0/12 -j RETURN\n$iptables -t nat -A REDSOCKS -d 192.168.0.0/16 -j RETURN\n$iptables -t nat -A REDSOCKS -d 224.0.0.0/4 -j RETURN\n$iptables -t nat -A REDSOCKS -d 240.0.0.0/4 -j RETURN\n\n$iptables -t nat -A REDSOCKS -p tcp -j REDIRECT --to-ports 12345\n$iptables -t nat -A OUTPUT -p tcp -m owner --uid-owner sb0y -j REDSOCKS\n$iptables -t nat -A OUTPUT -p tcp -m owner --uid-owner root -j REDSOCKS\n\n...\n$iptables -t nat -A PREROUTING -i network -p tcp -d google.com -j REDIRECT --to-ports 12345\n...\n\nИз недостатков: iptables резольвит домены в айпишники на этапе добавления \\ обновления правила.\nА айпишники, скрывающиеся за доменами иногда меняются. Поэтому, в качестве временного решения, я поставил этот скрипт на ежечасный запуск в cron.\nПо-хорошему надо писать программу, которая будет держать и обновлять списки домен=IP и пересылать tcp \nпакеты. Думаю накидать прототип на python, ведь проблема, в связи с последними событиями, остра.",
+				"added": 1524763379
+			},
+			{
+				"comment_id": 6,
+				"body": "> [anotherneko](#comment_57_1LvGFs28pbTRSvaM94DNRK1z1Z6CaoAFZ7): Честно говоря не вижу никаких упоминаний доменов или чего-то, что нужно резолвить кроме uid.\n> И да, почему бы не смерджить 224.0.0.0/4 и 240.0.0.0/4 в 224.0.0.0/3 ?\n\nА смысл? iptables -- фронт для netfilter, это и будет сделано на этапе добавлений правил, чтобы не хранить в памяти несколько цепочек.\nРазнесение по цепям не более чем удобство, для повышения гибкости скрипта инициализации.",
+				"added": 1524919323
+			},
+			{
+				"comment_id": 8,
+				"body": "> [anotherneko](#comment_57_1LvGFs28pbTRSvaM94DNRK1z1Z6CaoAFZ7): Честно говоря не вижу никаких упоминаний доменов или чего-то, что нужно резолвить кроме uid.\n\nвот же\n\n$iptables -t nat -A PREROUTING -i network -p tcp -d google.com -j REDIRECT --to-ports 12345\n\nВсе коннекты, которые идут к IP за google.com будут направлены на прокси редиректор redsocks.\nЭто позволяет получить рабочий http и даже https.\n\nВ сухом остатке получается шлюз в сети, который умеет \"умно\" обходить блокировки не тратя время на прокси и VPN приседания, когда это не нужно.\n\nЭто критично, например, если играете в какую-то сетевую игрушку и не хотите получить высокий пинг.",
+				"added": 1524974312
+			}
+		],
+		"1_1H6rUrbroXkZvGGjVwmtjqCmA8iWVhZ5ZR": [
+			{
+				"comment_id": 5,
+				"body": "> [sangokas](#comment_15_1E4vzAAE4vRWc4TnnDJiJ5SvbNTq17emb): На windows как? Там же линукс\n\nна windows есть hyper-v с linux",
+				"added": 1524770155
+			}
+		]
+	},
+	"comment_vote": {}
+}

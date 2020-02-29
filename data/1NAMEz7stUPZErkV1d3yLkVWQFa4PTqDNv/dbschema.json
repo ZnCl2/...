@@ -1,0 +1,81 @@
+{
+	"db_name": "nameyo",
+	"db_file": "data/nameyo.db",
+	"version": 2,
+	"maps": {
+		"users/.+/content.json": {
+			"to_json_table": ["cert_user_id"],
+			"file_name": "data.json"
+		},
+		"users/.+/data.json": {
+			"to_table": [
+				{
+					"table": "requests",
+					"node": "requests",
+					"key_col": "domain"
+				}
+			]
+		},
+		"issuers/.+/dns.json": {
+			"to_table": [
+				{
+					"table": "responses",
+					"node": "responses"
+				}
+			]
+		},
+		"moderators/.+/data.json": {
+			"to_table": [
+				{
+					"table": "safety",
+					"node": "safety",
+					"key_col": "address"
+				}
+			]
+		}
+	},
+	"tables": {
+		"json": {
+			"cols": [
+				["json_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+				["directory", "TEXT"],
+				["file_name", "TEXT"],
+				["cert_user_id", "TEXT"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX path ON json(directory, file_name)"],
+			"schema_changed": 2
+		},
+		"requests": {
+			"cols": [
+				["domain", "TEXT"],
+				["address", "TEXT"],
+				["date_added", "INTEGER"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX request ON requests(domain, json_id)"],
+			"schema_changed": 2
+		},
+		"responses": {
+			"cols": [
+				["domain", "TEXT"],
+				["address", "TEXT"],
+				["auth_address", "TEXT"],
+				["result", "INTEGER"],
+				["date_added", "INTEGER"],
+				["to_date_added", "INTEGER"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE INDEX response ON responses(domain)"],
+			"schema_changed": 2
+		},
+		"safety": {
+			"cols": [
+				["address", "TEXT"],
+				["score", "INTEGER"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE INDEX safe_site ON safety(address)"],
+			"schema_changed": 2
+		}
+	}
+}

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en-us">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>js-dos api</title>
+  <style type="text/css">
+
+
+	#divaround {
+     height: 100%;
+     white-space: nowrap;
+     text-align: center;
+    }
+
+
+	#content {
+      width: 640px;
+      height: 400px;
+      position: absolute;
+	   left: 50%;
+      top: 50%;
+	     margin: -200px 0 0 -320px;
+    }
+
+
+
+    .dosbox-container {
+      width: 640px;
+      height: 400px;
+    }
+
+    .dosbox-container > .dosbox-overlay {
+    
+      width: 640px;
+      height: 400px;
+      position: absolute;
+	    left: 50%;
+      top: 50%;
+	  margin: -240px 0 0 -320px;
+    }
+
+
+    .dosbox-start {
+      font-size: 35px !important;
+    }
+  </style>
+</head>
+
+<body class="custom-background">
+<div id="divaround">
+<div id="content">
+  <div id="dosbox">
+  </div>
+  <button onclick="dosbox.requestFullScreen();">Make fullscreen</button>
+
+  
+  <script type="text/javascript" src="js-dos-api.js"></script>  
+  <script type="text/javascript">  
+    function openGame(zip,start)
+    {      
+         var dosbox = new Dosbox({
+          id: "dosbox",
+          onload: function(dosbox) {
+            dosbox.run(zip, start);
+          },
+          onrun: function(dosbox, app) {
+            console.log("App '" + app + "' is runned");
+          }
+        });   
+         if(zip)
+         {
+            $('.dosbox-start').trigger( "click" );        
+        }
+    }
+    function getURLParameter(name) {
+      return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null
+    }   
+    openGame(getURLParameter('zip'),getURLParameter('start'));
+  </script>
+</div>
+</div>
+</body>
+
+</html>

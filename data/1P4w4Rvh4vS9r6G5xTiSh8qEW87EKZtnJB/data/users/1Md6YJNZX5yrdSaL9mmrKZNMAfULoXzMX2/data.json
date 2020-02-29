@@ -1,0 +1,24 @@
+{
+    "issues": [
+        {
+            "title": "The signers list does not work properly",
+            "body": "Hi!\n\nI stumbled upon an issue accessing the zite http://127.0.0.1:43110/1Code5125iycoEFCMi9a4XVejFwauoyGqj/. The error in the log:\n\n```no-highlight\n[03:21:04] Site:1Code5..yGqj content.json: verify sign error: VerifyError: Valid signs: 0/1 in ContentManager.py line 888\n[03:21:04] WorkerManager:1Code5..yGqj c7utmigvqefitdht.onion:23684: Verify failed: content.json, error: Valid signs: 0/1, failed peers: 7, workers: 1\n```\n\nThe zite is signed with a key which is different from the zite address key, using the `signers` list. So I guessed the trouble is related to `getValidSigners()`. I added a couple of logging lines in `verifyFile()` to print the signers list:\n\n```python\n                if signs:  # New style signing\n                    valid_signers = self.getValidSigners(inner_path, new_content)\n                    signs_required = self.getSignsRequired(inner_path, new_content)\n                    self.log.debug(\"Signers from new_content: %s\" % \",\".join(new_content[\"signers\"][:]))\n                    self.log.debug(\"Signers from getValidSigners(): %s\" % \",\".join(valid_signers))\n```\n\nAnd got the following:\n\n```no-hightlight\n[09:16:21] Site:1Code5..yGqj Signers from new_content: 16HcyFK8526ZYJBKPpSDCbpJv6WWBNvENj\n[09:16:21] Site:1Code5..yGqj Signers from getValidSigners(): 1Code5125iycoEFCMi9a4XVejFwauoyGqj\n[09:16:21] Site:1Code5..yGqj content.json: verify sign error: VerifyError: Valid signs: 0/1 in ContentManager.py line 889\n```\n\nIt looks like `getValidSigners()` ignores the signers list in the content being verified and always tries to use the `content.json` from the data folder. Since we do not have any `content.json` saved yet, `getValidSigners()` returns the wrong list.\n\nPossible fix:\n\n```diff\ndiff --git a/src/Content/ContentManager.py b/src/Content/ContentManager.py\nindex 1d8617f..5b76492 100644\n--- a/src/Content/ContentManager.py\n+++ b/src/Content/ContentManager.py\n@@ -691,7 +691,10 @@ class ContentManager(object):\n     def getValidSigners(self, inner_path, content=None):\n         valid_signers = []\n         if inner_path == \"content.json\":  # Root content.json\n-            if \"content.json\" in self.contents and \"signers\" in self.contents[\"content.json\"]:\n+            if content is not None:\n+                if \"signers\" in content:\n+                    valid_signers += content[\"signers\"][:]\n+            elif \"content.json\" in self.contents and \"signers\" in self.contents[\"content.json\"]:\n                 valid_signers += self.contents[\"content.json\"][\"signers\"][:]\n         else:\n             rules = self.getRules(inner_path, content)\n\n```\n\n(Note: `if \"signers\" in content` is placed to a separate line to make the proper handling of the `elif` condition possible.)\n\nAdditional info: \n* The topic at ZeroLSTN@ZeroTalk: http://127.0.0.1:43110/Talk.ZeroLSTN.bit/?Topic:1528948559_1Md6YJNZX5yrdSaL9mmrKZNMAfULoXzMX2/ZeroLSTN+Git+Center+is+unavailable\n* The full log with `VerifyError`s: http://127.0.0.1:43110/1CiXRY9ATZSoZqBzwMfXEMsKtPRt2aQoF2/data/users/1Md6YJNZX5yrdSaL9mmrKZNMAfULoXzMX2/1Code5125iycoEFCMi9a4XVejFwauoyGqj-connection-error-log.txt\n\n",
+            "date_added": 1528973650244,
+            "open": 1,
+            "reopened": 0,
+            "tags": "bug",
+            "id": 0
+        }
+    ],
+    "next_issue_id": 1,
+    "issue_comments": [
+        {
+            "issue_id": 0,
+            "issue_json": "data/users/1Md6YJNZX5yrdSaL9mmrKZNMAfULoXzMX2",
+            "body": "@gitcenter:\n\nI don't think so.\n\nThe signers list has its own sign, signed with the primary private key of the site. (The `signers_sign` field of the content.json)\nIt has nothing to do with the content.json sign. It is checked in verifyFile() every time ZeroNet receives the new content.json, so the situation you described isn't possible.\n\nThe main idea behind that is that you can use your primary private key to allow other key(s) signing your content.json. So you can keep your primary private key in a safe place, without needing it each time you modify your site. If your secondary key leaks, you generate another one and resign the signers list. For example, you can do it in an isolated environment and manually copy the `signers_sign` field to the Internet-connected computer.\n\nThe bug prevents that feature to work.",
+            "date_added": 1535432959535,
+            "id": 0
+        }
+    ],
+    "next_issue_comment_id": 1
+}

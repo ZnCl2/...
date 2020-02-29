@@ -1,0 +1,256 @@
+{
+	"next_post_id": 39,
+	"next_comment_id": 23,
+	"next_follow_id": 15,
+	"avatar": "jpg",
+	"user_name": "Bluishcoder",
+	"hub": "1SunAWK2VUT9GQK32MpwRfFPVgcBSJN9a",
+	"intro": "Author of the [Bluishcoder](https://bluishcoder.co.nz) clearnet blog [mirrored on ZeroNet](http://127.0.0.1:43110/1BLuish1ZbwVfPaCSDVQkg5WW58hqEoYQw)",
+	"post": [
+		{
+			"post_id": 1539345004,
+			"body": "[MOSREF](http://127.0.0.1:43110/bluishcoder.bit/2009/11/28/using-wasp-lisp-secure-remote-injection.html) the secure remote injection framework written in Wasp Lisp has a console process that spawns and communicates with remote nodes running on other machines called drones. Through the console you can execute lisp code or shell commands on the drones, copy files between them, etc.\n\nThe drones connect to the console via an IP address/hostname and port that the console listens on. For a project I want to be able to run the console behind a TOR onion service and have the drones connect through the onion address.\n\nThis turns out to be quite easy as Wasp Lisp has a package for implementing a SOCKS client and server. The server side is used in the MOSREF `proxy` command to enable a SOCKS proxy to run on the console that provides access to the internal networks of the drones.\n\nThe TOR daemon provides SOCKS support - to use Wasp's client side library to retrieve a web page over TOR we can use:\n\n    >> (import \"lib/socks-client\")\n    :: #t \n    >> (define (get-page out)\n           (send \"GET / HTTP/1.1\\r\\n\" out)\n           (send \"Host: mh7mkfvezts5j6yu.onion\\r\\n\" out)\n           (send \"\\r\\n\" out)))\n    :: get-page\n    >> (define a (tcp-socks4-connect \"\" \"127.0.0.1\" \"9050\" \"mh7mkfvezts5j6yu.onion\" 80))\n    :: [os-connection CB0338B0]\n    >> (get-page a)\n    :: [os-output CB047E50]\n    >> (wait a)\n    ....page contents...\n    >> (send 'close a)\n\nIn that example I retrieve the page of my weblog via its onion address.\n\nTo make MOSREF drones that connect via TOR I modify the drone code that the console compiles to check if the address is an onion address and if it is connect via the SOCKS proxy [in this github commit](https://github.com/doublec/WaspVM/commit/ee19cbf089562013fb9f5ccd9760660cdce4efc7).\n\nThis is enough to get a simple use case working. If I configure Tor on a server to have an onion service that connects to the consoles listening port I can then create drones that connect using it:\n\n    $ mosref\n    console> set addr=myhiddenservice.onion\n    Set.\n    console> set port=12345\n    Set.\n    console> drone drone1 drone1 linux-x86_64\n    Drone executable created.\n    Listening for drone on 12345...\n\nStarting the drone on another machine that is running tor will connect via the tor daemon through the onion address:\n\n    # On drone machine\n    $ ./drone1\n    ...connecting messages...\n\n    # On console\n    console> nodes\n    drone1 online\n    console> on drone1 do (+ 10 20)\n    :: 30\n\nConsole/Drone communication is already encrypted so the main benefit of this is using Tor for its firewall evading mechanism and hiding the origin of the console. It's possible, via the Tor daemon API, to create onion services on demand which might be a useful addition to the MOSREF console.",
+			"date_added": 1539344993
+		}
+	],
+	"post_like": {
+		"1Mk5sVKeCrwMc3wSD11jM7DZTiqF5D9BaD_1507905837": 1507935524,
+		"1Mk5sVKeCrwMc3wSD11jM7DZTiqF5D9BaD_1508022656": 1508043718,
+		"1Mk5sVKeCrwMc3wSD11jM7DZTiqF5D9BaD_1508141650": 1508190122,
+		"17sao6LTxEKVuZFaFbDT5MvdpG6xP8WCQY_1": 1520300032
+	},
+	"comment": [
+		{
+			"comment_id": 1,
+			"body": "@Ekaterina: Good points. I see from the Hacker News thread that Beaker doesn't support windows yet too. ZeroNet seems to be the furtherest along in terms of functionality and available sites.",
+			"post_uri": "1JGLcd9SrxuxdEYR2AGTVR6MeyVw8qQt9L_1507886561",
+			"date_added": 1507887060
+		},
+		{
+			"comment_id": 2,
+			"body": "If you are the user `thatzerodude` on Hacker News, your comments are showing as 'dead' and not visible to most users - unless they have a certain karma and have an option set in their settings. You might be shadowbanned. I noticed your dead comment replying in the thread on my post. I 'vouched' your comment so that it appears - I'm not sure what affect that has on future comments you make.",
+			"post_uri": "1JGLcd9SrxuxdEYR2AGTVR6MeyVw8qQt9L_1507901696",
+			"date_added": 1507903528
+		},
+		{
+			"comment_id": 3,
+			"body": "@Ekaterina: It's a mirror of my clearnet blog going back to 2002 so has a lot of data. It doesn't use ZeroNet features since it was a direct mirror that I did back in the early days of ZeroNet. I moved some of the screencasts to optional files and I've been thinking how best to make some of the other content optional - eg, maybe making only the main page and posts on the main page non-optional files.\n\nThe reason it probably didn't work for you is exactly the file size. Some seeders have never agreed to the file increase - maybe they are proxies or not operated by a human. As a result there's nodes out there serving old content. At least that's what I see when I sometimes try to get it on a new node - I get an old version where I had tried removing all the files to get it to seed.",
+			"post_uri": "1JGLcd9SrxuxdEYR2AGTVR6MeyVw8qQt9L_1507886561",
+			"date_added": 1507932489
+		},
+		{
+			"comment_id": 4,
+			"body": "@Ekaterina: All the post content is markdown (I use an old version of Jekyll) so I could write something that converted it to something more ZeroNet friendly instead of a direct mirror. It's one of those things on my ever increasing \"Want TODO list\". Ideally keeping it under the default size limit would stop the \"Size increase? No way\" reaction to those size prompts.",
+			"post_uri": "1JGLcd9SrxuxdEYR2AGTVR6MeyVw8qQt9L_1507886561",
+			"date_added": 1507933463
+		},
+		{
+			"comment_id": 5,
+			"body": "Where do pictures go when you post them? Are they stored on the hub?",
+			"post_uri": "1JGLcd9SrxuxdEYR2AGTVR6MeyVw8qQt9L_1507934479",
+			"date_added": 1507934508
+		},
+		{
+			"comment_id": 6,
+			"body": "@Ekaterina: Neat, thanks!",
+			"post_uri": "1JGLcd9SrxuxdEYR2AGTVR6MeyVw8qQt9L_1507934479",
+			"date_added": 1507934973
+		},
+		{
+			"comment_id": 7,
+			"body": "@Ekaterina: There's probably about 20MB of generated HTML. The rest is video files for screencasts, PDFs, etc. I can definitely reduce things. For making things optional I'm just adding them to the \"optional\" key in the `content.json`. To make my workflow easy I just copy the generated Jekyll HTML to ZeroNet, modify `content.json` if I want to \"ignore\" or make things optional then sign/publish.",
+			"post_uri": "1JGLcd9SrxuxdEYR2AGTVR6MeyVw8qQt9L_1507886561",
+			"date_added": 1507935189
+		},
+		{
+			"comment_id": 8,
+			"body": "@Bluishcoder: I forgot about the sidebar stats. There's 25MB of HTML. I've made more files optional and it's down to 30MB total now.",
+			"post_uri": "1JGLcd9SrxuxdEYR2AGTVR6MeyVw8qQt9L_1507886561",
+			"date_added": 1507936116
+		},
+		{
+			"comment_id": 9,
+			"body": "@Ekaterina: I've signed and published it - and I've tested other nodes that successfully got it. But it's random whether your node requests from a node containing an old version where all the files were removed and they haven't approved the size change so they never get an update. I found a few \"Update site\" or \"Check files\" makes it eventually retrieve.",
+			"post_uri": "1JGLcd9SrxuxdEYR2AGTVR6MeyVw8qQt9L_1507886561",
+			"date_added": 1507938365
+		},
+		{
+			"comment_id": 10,
+			"body": "@Ekaterina: See [here for an issue](https://github.com/HelloZeroNet/ZeroNet/issues/598#issuecomment-259380688)  (internet link) that discusses what I think is the problem.",
+			"post_uri": "1JGLcd9SrxuxdEYR2AGTVR6MeyVw8qQt9L_1507886561",
+			"date_added": 1507938564
+		},
+		{
+			"comment_id": 11,
+			"body": "@Ekaterina: That had some workaround ideas I might try. Like using `content.json` includes so that the root `content.json` is under the limit so some content seeds for those nodes that don't agree to the site size change. I wonder if having sites that don't agree to the size change stop seeding would be a solution to outdated content being seeded.",
+			"post_uri": "1JGLcd9SrxuxdEYR2AGTVR6MeyVw8qQt9L_1507886561",
+			"date_added": 1507939775
+		},
+		{
+			"comment_id": 12,
+			"body": "@Binchan: The approach I took on Freenet was to unpack the zim file and adjust the URLs in the HTML. Much the same could be done on ZeroNet. Hosting the zim itself and using JS to read it is an option like you say. I'm not sure there's much to be gained from a Wikipedia mirror on ZN though.",
+			"post_uri": "1JGLcd9SrxuxdEYR2AGTVR6MeyVw8qQt9L_1507950093",
+			"date_added": 1507980836
+		},
+		{
+			"comment_id": 13,
+			"body": "@Ekaterina: Great!",
+			"post_uri": "1JGLcd9SrxuxdEYR2AGTVR6MeyVw8qQt9L_1507886561",
+			"date_added": 1508039509
+		},
+		{
+			"comment_id": 14,
+			"body": "Hello!",
+			"post_uri": "17sao6LTxEKVuZFaFbDT5MvdpG6xP8WCQY_1",
+			"date_added": 1520300038
+		},
+		{
+			"comment_id": 15,
+			"body": "@Oncatcoaster: Thanks!",
+			"post_uri": "1JGLcd9SrxuxdEYR2AGTVR6MeyVw8qQt9L_1549780055",
+			"date_added": 1549834492
+		},
+		{
+			"comment_id": 16,
+			"body": "@leftside: Yes, very vintage looking. The camera and lens are both from the 1950s which contributes to the look.",
+			"post_uri": "1JGLcd9SrxuxdEYR2AGTVR6MeyVw8qQt9L_1550179421",
+			"date_added": 1550304111
+		},
+		{
+			"comment_id": 17,
+			"body": "@leftside: It was from a set of photos taken during a film club photowalk around a zoo.",
+			"post_uri": "1JGLcd9SrxuxdEYR2AGTVR6MeyVw8qQt9L_1550304237",
+			"date_added": 1550359373
+		},
+		{
+			"comment_id": 18,
+			"body": "@SSDifnskdjfnsdjk: Interesting, thanks. This does make it more difficult to do the attack I mentioned. The issue with the size limit still exists though. I wonder if it's worthwhile having sites that are seeding, but haven't accepted the size limit change, automatically temporarily stop seeding until the size limit is accepted. The peer knows it's out of date, so could temporarily stop seeding at that point if it can't update.",
+			"post_uri": "1JGLcd9SrxuxdEYR2AGTVR6MeyVw8qQt9L_1561326409",
+			"date_added": 1561329601
+		},
+		{
+			"comment_id": 19,
+			"body": "@caryoscelus: I'm beginning to think that's the best idea. I avoided optional files for a while after having issues with them but that was a while ago. I think they've been fixed since, from browsing the change logs.",
+			"post_uri": "1JGLcd9SrxuxdEYR2AGTVR6MeyVw8qQt9L_1561326409",
+			"date_added": 1561373201
+		},
+		{
+			"comment_id": 20,
+			"body": "@caryoscelus: Will having at least one 24/7 node seeding the optional files available over tor and opennet provide this?",
+			"post_uri": "1JGLcd9SrxuxdEYR2AGTVR6MeyVw8qQt9L_1561326409",
+			"date_added": 1561375547
+		},
+		{
+			"comment_id": 21,
+			"body": "@caryoscelus: Sorry, \"opennet\" was Freenet terminology slipping out. I meant non-tor by that. Thanks for your comments.",
+			"post_uri": "1JGLcd9SrxuxdEYR2AGTVR6MeyVw8qQt9L_1561326409",
+			"date_added": 1561411376
+		},
+		{
+			"comment_id": 22,
+			"body": "I definitely struggle with straight horizons with this camera. The viewfinder is basically a square rectangle piece of metal with a hole in it that pops up when the camera is unfolded. Keeping it straight is a challenge.",
+			"post_uri": "1JGLcd9SrxuxdEYR2AGTVR6MeyVw8qQt9L_1561411868",
+			"date_added": 1561501040
+		}
+	],
+	"follow": [
+		{
+			"follow_id": 1,
+			"hub": "1SunAWK2VUT9GQK32MpwRfFPVgcBSJN9a",
+			"auth_address": "1ASnkxvbHStfRQDRChK7Jp8CrvhvD3MbHF",
+			"user_name": "Xori",
+			"date_added": 1507932988
+		},
+		{
+			"follow_id": 2,
+			"hub": "1SunAWK2VUT9GQK32MpwRfFPVgcBSJN9a",
+			"auth_address": "1Mk5sVKeCrwMc3wSD11jM7DZTiqF5D9BaD",
+			"user_name": "Ekaterina",
+			"date_added": 1507932999
+		},
+		{
+			"follow_id": 3,
+			"hub": "1oranGeS2xsKZ4jVsu9SVttzgkYXu4k9v",
+			"auth_address": "1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3h",
+			"user_name": "Binchan",
+			"date_added": 1507980849
+		},
+		{
+			"follow_id": 4,
+			"hub": "1RedkCkVaXuVXrqCMpoXQS29bwaqsuFdL",
+			"auth_address": "1J3rJ8ecnwH2EPYa6MrgZttBNc61ACFiCj",
+			"user_name": "Nofish",
+			"date_added": 1512218875
+		},
+		{
+			"follow_id": 5,
+			"hub": "1SunAWK2VUT9GQK32MpwRfFPVgcBSJN9a",
+			"auth_address": "1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di",
+			"user_name": "Git Center",
+			"date_added": 1512219321
+		},
+		{
+			"follow_id": 6,
+			"hub": "12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv",
+			"auth_address": "12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu",
+			"user_name": "Krixano",
+			"date_added": 1512219461
+		},
+		{
+			"follow_id": 7,
+			"hub": "1SunAWK2VUT9GQK32MpwRfFPVgcBSJN9a",
+			"auth_address": "17sao6LTxEKVuZFaFbDT5MvdpG6xP8WCQY",
+			"user_name": "Stavrosk",
+			"date_added": 1520300045
+		},
+		{
+			"follow_id": 8,
+			"hub": "1N9sU8qh3S4ei9PHE1qQyYPbcckJomvwMd",
+			"auth_address": "15hL2gR4oCSgKBbndn3MxY8Hc5xoy1vqCe",
+			"user_name": "Daniell Mesquita",
+			"date_added": 1539345084
+		},
+		{
+			"follow_id": 9,
+			"hub": "1BLueGvui1GdbtsjcKqCf4F67uKfritG49",
+			"auth_address": "1PniNzyi8fygvwyBaLpA9oBDVWZ5fXuJUw",
+			"user_name": "Balancer73",
+			"date_added": 1539345311
+		},
+		{
+			"follow_id": 10,
+			"hub": "1oranGeS2xsKZ4jVsu9SVttzgkYXu4k9v",
+			"auth_address": "16NS3rBdW9zpLmLSQoD8nLTtNVsRFtVBhd",
+			"user_name": "Styromaniac",
+			"date_added": 1539400093
+		},
+		{
+			"follow_id": 11,
+			"hub": "1SunAWK2VUT9GQK32MpwRfFPVgcBSJN9a",
+			"auth_address": "1L4dZcDF2maSKHDy788yhxpYnBWnXadUtS",
+			"user_name": "SSDifnskdjfnsdjk",
+			"date_added": 1561329629
+		},
+		{
+			"follow_id": 12,
+			"hub": "12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv",
+			"auth_address": "1PSaHi14Xh4Kjo3yyjDgbRtj4YLQgWV4QJ",
+			"user_name": "ulrichard",
+			"date_added": 1561412159
+		},
+		{
+			"follow_id": 13,
+			"hub": "1White24UrrwQrD86o6Vrc1apgZ1x1o51",
+			"auth_address": "13oRBYqNeUr6Tvgt4KkAT9FT4XRiKFBjnE",
+			"user_name": "caryoscelus",
+			"date_added": 1561500931
+		},
+		{
+			"follow_id": 14,
+			"hub": "12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv",
+			"auth_address": "1NWh3WAty57FH8at1WtrZigMrdhrDkuPzh",
+			"user_name": "Kaffie",
+			"date_added": 1565323276
+		}
+	]
+}

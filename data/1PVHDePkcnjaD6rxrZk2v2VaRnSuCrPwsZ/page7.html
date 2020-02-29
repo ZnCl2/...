@@ -1,0 +1,196 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="MnNStory: 我和一个女同学15年的故事">
+<meta name="keywords" content="MnNStory,校园爱情,15年,女同学,女生">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<title>重逢</title>
+<script src="jquery.js"></script>
+<script src="qrcode.js"></script>
+<script>
+function loadCSS(href) {
+	var cssLink = $("<link rel='stylesheet' type='text/css' href='"+href+"'>");
+	$("head").append(cssLink);
+	return cssLink;
+};
+
+var relocate;
+
+$(function(){
+            var device="computer";
+        var fontSize=($(window).width()/25).toFixed(0);
+        relocate=relocateC;
+    
+	loadCSS("main_"+device.substring(0, 1)+".css").load(function(){
+		relocate();
+		setTimeout(relocate, 1000);
+		setTimeout(function(){
+			var fontSize=$('body').css('fontSize');
+			var qrcode = new QRCode(document.getElementById("QRCode"), {
+				width : parseInt(fontSize)*7,
+				height : parseInt(fontSize)*7
+			});
+
+			qrcode.makeCode(window.location.href);
+		}, 1000);
+	});
+
+	$(window).resize(relocate);
+
+    
+	function relocateC(){
+		function bottom($el){
+			return $el.position().top + $el.outerHeight(true);
+		}
+
+		var $footer=$('#footer');
+		$footer.css({
+			top: 0,
+			display: 'none'
+		});
+		var top=Math.max(
+			bottom($('#textWrapper')),
+			bottom($('#contents')),
+			$(document).height() - $footer.outerHeight()
+		);
+		$footer.css({
+			top: top,
+			display: 'block'
+		});
+	}
+
+        $('.patch-more').click(function(){
+        var page=$(this).data('page');
+        var paragraph=$(this).data('paragraph');
+
+        location.href='page'+page+'.html#paragraph='+paragraph;
+    });
+
+    setTimeout(function () {
+                    var ret=document.referrer.match(/#paragraph=(\d+)/);
+                if (!ret) {
+            return;
+        }
+        var paragraph=ret[1]-1;
+
+        var objParagraph=$('#text p:eq('+paragraph+')');
+        var flash=function () {
+            objParagraph.css('color', 'red');
+            setTimeout(function() {
+                objParagraph.css('color', 'initial');
+            }, 1000);
+        };
+        $('html, body').animate({
+            scrollTop: objParagraph.offset().top-$('#textWrapper').offset().top,
+        }, 500, flash);
+    }, 100);
+
+    var pIndex=0;
+    $('#text p').each(function () {
+        ++pIndex;
+        if (!$(this).attr('id')) {
+            //$(this).attr('id', 'paragraph_'+pIndex);
+        }
+    });
+});
+
+function showComments(){
+	$.blockUI({
+		message: $('#disqus_thread'),
+	});
+
+	$('body').click($.unblockUI);
+}
+</script>
+</head>
+<body>
+<div id="cover" style="background-color: #F1F1F1; position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 2048;"></div>
+<div id="nav">
+	<div class="Three">
+		<div id="navLeft" class="left c">
+			<a href="page6.html" class="blackText">&lt;&lt;&lt;prev</a>		</div>
+		<div id="navRight" class="right c">
+			<a href="page8.html" class="blackText">next&gt;&gt;&gt;</a>		</div>
+		<div id="navTitle" class="middle">
+			重逢		</div>
+	</div>
+	<div class="Three m">
+		<div class="left" style="width: 4em">
+			<a href="page6.html" class="blackText">&lt;&lt;&lt;</a>		</div>
+		<div class="right" style="width: 4em">
+			<a href="page8.html" class="blackText">&gt;&gt;&gt;</a>		</div>
+		<div class="middle">
+			<a href="/index.html" class="blackText">[Home]</a>
+		</div>
+	</div>
+</div>
+<div id="images" class="c">
+	<a href="downloads/mnnstory.zip" target="_blank"> <img src="download.png" style="width: 100%;" title="下载" alt="Download" /> </a>
+	<p id="QRCode"></p>
+</div>
+<div id="contents" class="c">
+	<p class="contents_d0"><a href="index.html">目录</a></p>
+	<ul class="contents_d1"><li><a href='page1.html'>上册</a>
+<ul class="contents_d2"><li><a href='page2.html'>引子</a>
+</li><li><a href='page3.html'>初识</a>
+</li><li><a href='page4.html'>别情</a>
+</li><li><a href='page5.html'>追求</a>
+</li><li><a href='page6.html'>梦想</a>
+</li><li>重逢
+</li><li><a href='page8.html'>憧憬</a>
+</li><li><a href='page9.html'>移民</a>
+</li><li><a href='page10.html'>心愿</a>
+</li><li><a href='page11.html'>数学中最难的是概率</a>
+</li><li><a href='page12.html'>祝福</a>
+</li><li><a href='page13.html'>附录：秦始皇妈妈的故事</a>
+</ul></li><li><a href='page14.html'>上册配乐</a>
+</li><li><a href='page32.html'>下册</a>
+</li><li><a href='page47.html'>下册配乐</a>
+</li><li><a href='page49.html'>订正簿</a>
+</ul></div>
+<div id="disqus_thread"></div>
+<script>
+	var disqus_config = function () {
+		this.page.url = 'http://mnnstory.onion';
+		this.page.identifier = 7;
+		this.page.title = '重逢'
+	};
+
+
+	(function() {
+		var d = document, s = d.createElement('script');
+
+		s.src = '//mnnstory.disqus.com/embed.js';
+
+		s.setAttribute('data-timestamp', +new Date());
+		(d.head || d.body).appendChild(s);
+	})();
+</script>
+<div id="textWrapper">
+	<div id="text">
+		<p>很快大三了，我们系大三以后搬到了另一个校园去，而很多其他系的同学仍然留在原来的校园里。我打听到，她也会搬，而且和我同一个校园。这个校园更小，有更多机会能见到她。我甚至查到了她在哪里上课，但却从不去找她。</p>
+<p>到了大三快要结束的时候，在一个偶然的机会，一个跨系的活动上，其他众多认识的同学面前，我又见到了她。我和她打招呼，她一脸不友好，说很寒心的话，我只得默然走开。可是，那一次活动中，我眼角余光中经常看到她偷偷地凝望着我。而当四目相交时，她又避开了我的眼光，就这样好几次。</p>
+<p>这个跨系的活动，不只是办这一次。不久，我又见到了她，这次是在校园的一个僻静的角落中，活动开始之前。她坐在路边，我远远地看见了她。她皱着眉头轻轻地念出了我的名字，声音有如深夜的一声鸟鸣，划破了孤寂。</p>
+<p>我停下脚步，就像见到一只胆怯的小花猫一样，远远地不敢靠近，但又目不转睛地望着她。只见她脸上表情很奇怪，也许是困惑。我垂头丧气地问她近来可好，然后零零碎碎地说起了许多关于她的事。她静静地听着我的语无伦次，等我说罢，眼睛望在地上空的地方。隔了片刻，目光又渐渐凝聚了起来。也不问我是怎么知道这些事的，仍然皱着眉头，缓缓说道：“你的意思好像是如此这般？”</p>
+<p>等我回答完毕，她表情显得自然了点，轻声说道：“你走吧，活动就要开始了。”我却如塑像一样，呆立在原地，不知该怎么办好。她避开了我的眼光，又皱了皱眉，略微提高了一点声音说了遍：“你走吧，我马上就会来的。”这次语气稍稍坚定了一点。我注视了她良久，终于低着头，慢慢地走远了。</p>
+<p>这一幕与我经常做的那个梦何其相似。这个梦，我最近还经常在做，不过后来在梦境中，这条熟悉的道路上，多出了一条歪歪斜斜的岔路。在雾霾中，岔路的路牌模模糊糊，甚是诡异。当我在现实中，再走这条路时，意外地发现，我搬走的那两年里，还真的新开出了条岔路，而且还真的如梦中那样歪歪斜斜，路牌都看不清。这一切究竟是真是幻？</p>
+<p>这个学期第三次见到她，是在校园里的一条小路上，课间。我们都是笑嘻嘻的，至少我已恢复到能够假装轻松了。我们又交流了一些关于学习的问题，这一次却是我先提出：“走吧，我要去上课了。”</p>
+<p>若干年后，我回忆别情和重逢，模仿新古典风格，作了两首短曲，从未发表过。但每次听，都勾起我的回忆。</p>	</div>
+</div>
+<div id="footer">
+	<div id="declaration">
+		本故事为作者亲身经历
+	</div>
+	<div id="bannerLine" class="Three">
+				<div class="middle">
+            			    <a href="about.html">MnNStory, 1 Sep 2001 - 12 Mar 2016</a>
+            		</div>
+	</div>
+	<hr class="m" />
+	<div id="switch2c" class="m">
+		<a href="">电脑版</a>
+	</div>
+</div>
+</body>
+</html>

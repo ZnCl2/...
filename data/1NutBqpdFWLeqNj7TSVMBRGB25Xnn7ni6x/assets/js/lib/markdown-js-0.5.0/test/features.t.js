@@ -1,0 +1,5 @@
+/**
+ * ojraskatzeronet v0.1.0
+ * @author Otto J. Rask
+ */
+function test_dialect(e,t){var r=require("fs"),i=require("path"),a=require("tap"),n=function(e){return r.readFileSync(e,"utf8")},s=function(e){try{return r.statSync(e).isFile()}catch(t){if("ENOENT"==t.code)return!1;throw t}};a.test(e,function(a){for(var o in t)!function(t){a.test(t,function(a){var o=i.join(__dirname,"features",t),u=r.readdirSync(o);u=u.filter(function(e){return e.match(/\.text$/)}),u=u.map(function(e){return e.replace(/\.text$/,"")});for(var c in u){var d=e+"/"+t+"/"+u[c].substring(u[c].lastIndexOf("/")+1),l=i.join(o,u[c]);text=n(l+".text");var f=JSON.parse(n(l+".json")),m=markdown.toHTMLTree(text,e);a.equivalent(m,f,d,{todo:s(l+".todo")})}a.end()})}(t[o])})}var markdown=require("../lib/markdown"),dialects={};dialects.Gruber=["blockquotes","code","emphasis","headers","horizontal_rules","images","linebreaks","links","lists"],dialects.Maruku=dialects.Gruber.slice(0),dialects.Maruku.push("meta","definition_lists","tables");for(var d in dialects)test_dialect(d,dialects[d]);

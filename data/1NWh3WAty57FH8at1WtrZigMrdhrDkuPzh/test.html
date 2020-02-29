@@ -1,0 +1,252 @@
+<html>
+<script src="jquery-3.1.0.min.js"></script>
+<link rel="stylesheet" href="css/all.css" />
+<script type="text/javascript" src="ZeroFrame.js"></script>
+<style>
+    .head-container { 
+        background-color: white;
+        -webkit-box-shadow: 0px -7px 32px rgba(0,0,0,0.15);
+        -moz-box-shadow: 0px -7px 32px rgba(0,0,0,0.15);
+        -o-box-shadow: 0px -7px 32px rgba(0,0,0,0.15);
+        -ms-box-shadow: 0px -7px 32px rgba(0,0,0,0.15);
+        box-shadow: 0px -7px 32px rgba(0,0,0,0.15) ; 
+    }
+    .logo
+    {
+      font-size: 30px;
+    }
+    .black {
+      color: #000000;
+    }
+    .blue {
+      color: #0140CA;
+    }
+    .red {
+      color: #DD1812;
+    }
+    .yellow {
+      color: #FCCA03;
+    }
+    .green {
+      color: #16A61E;
+    }
+</style>
+<script>
+var opened = false;
+function gup( name, url ) {
+  if (!url) url = location.href;
+  name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+  var regexS = "[\\?&]"+name+"=([^&#]*)";
+  var regex = new RegExp( regexS );
+  var results = regex.exec( url );
+  return results == null ? null : results[1];
+}
+var zp = gup('zp',location.href)
+var httppass = gup('httppass',location.href)
+class Page extends ZeroFrame {}
+page = new Page();
+
+page.settings = {};
+
+function getsettings()
+{
+  page.cmd("userGetSettings", [], function(res) {
+              if(res.error)
+                console.log("ERROR "+res.error)
+              //if(page.settings == {} || page.settings == null)
+                page.settings = res;
+              console.log("Loaded: ", page.settings, res)
+
+              var save = false;
+              if(page.settings["httppass"] == null || page.settings["httppass"] == "incomplete")
+              {
+                if(window.location.hostname == "kaffie.bit" || 
+                  window.location.hostname == "kaffie.zeroid" ||
+                  window.location.hostname == "kaffii.bit" || 
+                  window.location.hostname == "zero" || httppass)
+                {
+                  page.settings["httppass"] = "true";
+                  httppass = "true";
+                }else
+                {
+                  page.settings["httppass"] = "incomplete";
+                } 
+                save = true;
+              }
+              if(page.settings["zeropass"] == null || page.settings["zeropass"] == "incomplete")
+              {
+                console.log("ZP = "+page.settings["zeropass"]+", "+zp);
+                if(zp)
+                {
+                  page.settings["zeropass"] = "true";
+                  zp = "true";
+                }else
+                {
+                  page.settings["zeropass"] = "incomplete";
+                }
+                save = true;
+              }
+              if(save == true)
+              {
+              console.log(page.settings);
+              page.cmd("userSetSettings", [page.settings], function(res){});
+              if(gup('httppass',location.href))
+                window.top.close();
+              }
+              console.log("loaded!")
+              if(page.settings["httppass"] == "true")
+              {
+                $('#content1').html("<span class='green'>pass</span>")
+                httppass = "true";
+              }else if(page.settings["httppass"] == "incomplete")
+              {
+                console.log("Run zero/ test "+httppass+" "+page.settings["httppass"]);
+                if(opened == false)
+                {
+                page.cmd("wrapperOpenWindow", ["http://zero/1NWh3WAty57FH8at1WtrZigMrdhrDkuPzh/test.html?httppass=1", "_blank", "width=550,height=600,location=no,menubar=no"]);
+                opened = true;
+                setTimeout(function(){
+                    getsettings();
+                    //alert("hello!")
+                }, 2000);
+                }
+                //var myWindow = window.open("", "myWindow", "width=200,height=100");
+                //myWindow.document.write("<p>This is 'myWindow'</p>");
+                //$('#test').html('<iframe src="http://zero/kaffie.bit/test.html?zp=1&prtl='+location.origin+'" style=" visibility: hidden; width: 0px; height: 0px; position:absolute;"></iframe>');
+              }
+              if(page.settings["zeropass"] == "true")
+              {
+                zp = "true";
+                $('#content2').html("<span class='green'>pass</span>")
+              }else if(page.settings["zeropass"] == "incomplete")
+              {
+                console.log("Run ZP test "+zp+" "+page.settings["zeropass"]);
+                $('#test').html('<iframe src="zero://1NWh3WAty57FH8at1WtrZigMrdhrDkuPzh/test.html?zp=1&prtl='+location.origin+'" style=" visibility: hidden; width: 0px; height: 0px; position:absolute;"></iframe>');
+                //page.settings["zeropass"] = "false";
+                //page.cmd("userSetSettings", [page.settings], function(res){});
+              }
+  });
+}
+getsettings();
+
+function setsettings()
+{
+console.log("Set: ", page.settings);
+page.cmd("userSetSettings", [page.settings], function(res){});
+}
+
+url = '/'
+
+//console.log(window.location.hostname)
+if(window.location.hostname == "kaffie.bit" || window.location.hostname == "kaffii.bit" || window.location.hostname == "zero")
+{
+    console.log("zero/")
+    url = "http://kaffii.bit/"
+    page.settings["httppass"] = "true";
+    setsettings();
+    //reloadtest()
+}
+
+function reg()
+{
+navigator.registerProtocolHandler("zero",
+                                  location.origin+"/1NWh3WAty57FH8at1WtrZigMrdhrDkuPzh/?u=%s",
+                                  "ZeroLink handler");
+}
+function reloadtest()
+{
+  page.settings["httppass"] = "incomplete";
+  page.settings["zeropass"] = "incomplete";
+  page.cmd("userSetSettings", [page.settings], function(res)
+    {
+      if(location.origin == 'http://kaffie.bit' || location.origin == 'http://kaffii.bit')
+      window.location = 'http://kaffii.bit/test.html';
+    else
+      window.location = url+'kaffii.bit/test.html';
+    });
+    //location.href=url+'kaffie.bit/test.html'
+    /*if(location.origin == 'http://kaffie.bit')
+      window.location = 'http://kaffie.bit/test.html';
+    else
+      window.location = url+'kaffie.bit/test.html';*/
+}
+
+
+/*var prtl = gup('prtl',location.href)
+if(prtl != "" && prtl != null)
+{
+  if(prtl == "http://kaffie.bit" || prtl == "http://zero")
+    window.location = "test.html?zp"
+  else
+    window.location = prtl+"/kaffie.bit/test.html?zp"
+}*/
+
+var hash = location.search.replace(/wrapper_nonce=.+/g,'');//= gup('zp',location.href)
+
+</script>
+<body>
+
+  <div id="head-container" class="head-container">
+      <a href="./" target='_top' id="logo" class="black">Kaffie<span class = "yellow">.</span><span class = "red">b</span><span class = "green">i</span><span class = "blue">t</span></a>
+        <span style="padding-left: 10px; padding-right: 10px">
+        <script>document.write('<a href="'+url+'1NWh3WAty57FH8at1WtrZigMrdhrDkuPzh" target=\'_top\'>')</script>Home</a> |
+        <script>document.write('<a href="'+url+'1K3tM7irQqSX4Hx3JvNgkimkQzY6jPtBfz" target=\'_top\'>')</script>ID</a> | 
+        <script>document.write('<a href="'+url+'1Mr5rX9TauvaGReB4RjCaE6D37FJQaY5Ba" target=\'_top\'>')</script>Search</a> | 
+        <script>document.write('<a href="'+url+'1N6zp6jCXPBktNMPfe7UJBpQGyfCq7k2M8" target=\'_top\'>')</script>Blog</a> | 
+        <script>document.write('<a href="'+url+'12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv" target=\'_top\'>')</script>Hub</a>
+      </span>
+    </div>
+    <div id="header" class="splash" align="center">
+      <h1>ZeroNet Protocol Test</h1>
+      <span id="msg1">http://zero/ Test: </span><span id="content1"><span class="red">fail</span></span>
+      <br>
+      <span id="msg2">zero:// Test: </span><span id="content2"><span class="red">fail</span></span>
+      <br/>
+      <span id="test"></span>
+
+  <a href="zero://1Mr5rX9TauvaGReB4RjCaE6D37FJQaY5Ba" target="_top">Test zero:// links.</a><br>
+  <a href="http://zero/1Mr5rX9TauvaGReB4RjCaE6D37FJQaY5Ba" target="_top">Test http://zero/ links.</a><br>
+  <a href="zeronet.pac" target="_top">.Pac to configure http://zero/ links.</a><br>
+
+  <button onclick="reloadtest()">Test Again</button>
+    <button onclick="reg()">Register Protocol</button>
+  </div>
+</body>
+
+<script>
+
+                  
+//$('#content1').load("http://zero/kaffie.bit/test.txt", function() {  });
+
+
+/*
+var httppass = gup('httppass',location.href)
+var zp = gup('zp',location.href)
+if(httppass == null || httppass == 0)
+{
+  console.log("hp test")
+  newurl = 'http://zero/kaffie.bit/test.html?zp='+zp+'&httppass=1&prtl='+location.origin;
+  document.write('<iframe src="'+newurl+'" style=" visibility: hidden; width: 100px; height: 100px; position:absolute;"></iframe>');
+  httppass = 0;
+}
+if(httppass != null && httppass == 1)
+{
+  $('#content1').html("<span class='green'>pass</span>")
+  httppass = 1;
+}
+if(httppass != null && httppass == 0)
+{
+  httppass = 0;
+}
+
+if(zp == null)
+{
+  console.log("zp null")
+  document.write('<iframe src="zero://kaffie.bit/test.html?zp=1&prtl='+location.origin+'" style=" visibility: hidden; width: 0px; height: 0px; position:absolute;"></iframe>');
+}else
+{
+  //location.href = "zero://kaffie.bit/test.html?zp?prtl="+location.origin+""
+  //document.write('<iframe src="zero://kaffie.bit/test.html?zp=1&httppass='+httppass+'&prtl='+location.origin+'" style=" visibility: hidden; width: 0px; height: 0px; position:absolute;"></iframe>');
+}*/
+</script>
+</html>

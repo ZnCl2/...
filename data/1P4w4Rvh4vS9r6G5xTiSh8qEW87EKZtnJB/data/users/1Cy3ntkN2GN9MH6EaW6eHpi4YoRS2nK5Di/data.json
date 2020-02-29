@@ -1,0 +1,221 @@
+{
+    "issues": [
+        {
+            "title": "Cannot clone large site",
+            "body": "I am trying to clone a site (this repository, tbh). ZeroNet shows `Cloning site...` and then fails with:\n\n> Internal error: VerifyError: Content too large 16953319B > 10485760B, aborting task...",
+            "date_added": 1512199511275,
+            "open": false,
+            "reopened": 0,
+            "tags": "bug,clone,site,content.json,sign",
+            "id": 0
+        },
+        {
+            "title": ":params not replaced all times in Newsfeed",
+            "body": "`:params` not replaced all times in Newsfeed.\n\nExample code:\n```sql\nSELECT tbl.type AS type, tbl.date_added AS date_added, tbl.title AS title, tbl.action AS body, tbl.url AS url FROM (\n            SELECT\n                'comment' AS type, issue_actions.date_added AS date_added, issues_json.title AS title, issue_actions.action AS action, issue_actions.param AS param, 'repo/issues/view/?' || issues_json.site || '/' || issues_json.id || '@' || REPLACE(issues_json.directory, 'data/users/', '') AS url\n            FROM\n                issue_actions\n            LEFT JOIN\n                (SELECT id, title, body, json_id, site, directory FROM issues LEFT JOIN json USING (json_id)) AS issues_json\n            ON\n                (issue_actions.issue_id = issues_json.id AND issue_actions.issue_json = issues_json.directory)\n            LEFT JOIN\n                (SELECT cert_user_id, json_id AS action_json_id FROM json) AS action_json\n            ON\n                (action_json.action_json_id = issue_actions.json_id)\n            WHERE\n                issues_json.site IN (:params) AND issue_actions.json_id IN (SELECT json_id FROM json WHERE json.site = issues_json.site)\n\n            UNION ALL\n\n            SELECT\n                'comment' AS type, pull_request_actions.date_added AS date_added, pull_requests_json.title AS title, pull_request_actions.action AS action, pull_request_actions.param AS param, 'repo/pull-requests/view/?' || pull_requests_json.site || '/' || pull_requests_json.id || '@' || REPLACE(pull_requests_json.directory, 'data/users/', '') AS url\n            FROM\n                pull_request_actions\n            LEFT JOIN\n                (SELECT id, title, body, json_id, site, directory FROM pull_requests LEFT JOIN json USING (json_id)) AS pull_requests_json\n            ON\n                (pull_request_actions.pull_request_id = pull_requests_json.id AND pull_request_actions.pull_request_json = pull_requests_json.directory)\n            LEFT JOIN\n                (SELECT cert_user_id, json_id AS action_json_id FROM json) AS action_json\n            ON\n                (action_json.action_json_id = pull_request_actions.json_id)\n            WHERE\n                pull_requests_json.site IN (:params) AND pull_request_actions.json_id IN (SELECT json_id FROM json WHERE json.site = pull_requests_json.site)\n        ) AS tbl\n```\n\nBoth `:params` get replaced by `?,?,?`. But as only 3 placeholder values are passed instead of 6, sql doesn't compile.\n\nSolution: calculate `:params` count in SQL string and multiply params array by that count.\n\n[Source](/Me.ZeroNetwork.bit/?Post/1SunAWK2VUT9GQK32MpwRfFPVgcBSJN9a/1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di/1512849555)",
+            "date_added": 1513084112226,
+            "open": false,
+            "reopened": 0,
+            "tags": "bug,newsfeed,params,sql",
+            "id": 1
+        }
+    ],
+    "next_issue_id": 2,
+    "issue_comments": [
+        {
+            "issue_id": 0,
+            "issue_json": "data/users/1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di",
+            "body": "Thanks!",
+            "date_added": 1512403818622,
+            "id": 0
+        },
+        {
+            "issue_id": 0,
+            "issue_json": "data/users/1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3h",
+            "body": "I believe that would be fine too.",
+            "date_added": 1512659075137,
+            "id": 1
+        },
+        {
+            "issue_id": 0,
+            "issue_json": "data/users/1Md6YJNZX5yrdSaL9mmrKZNMAfULoXzMX2",
+            "body": "This is a very bad idea.\n\nPretend someone *locally* adds himself to `content.json`, then signs it with *his* private key and publishes it. The network would find him in `signers` list and think that he can edit the site, though he added him to `signers` himself.",
+            "date_added": 1530971487693,
+            "id": 2
+        }
+    ],
+    "next_issue_comment_id": 3,
+    "pull_requests": [
+        {
+            "title": "Implement filePeek and filePoke",
+            "body": "This PR adds filePeek and filePoke commands.\n\n**filePeek**\n1. `inner_path` - file to read.\n2. `start` - offset to read from.\n3. `length` - length of chunk (may be smaller if not enough bytes). Can be None which means read to the end.\n4. `required` - like `fileGet`.\n5. `format` - like `fileGet`.\n6. `timeout` - like `fileGet`.\n\n**filePoke**\n1. `inner_path` - file to write.\n2. `offset` - offset to write to. If larger than file, file will be padded with nulls.\n3. `content_base64` - data to write. File is extended if `offset + len(content_base64) > file_size`.\n4. `ignore_bad_files` - like `fileWrite`.\n\nPatch:\n```diff\ndiff --git a/src/Site/SiteStorage.py b/src/Site/SiteStorage.py\nindex 1334912..9dd0cbb 100644\n--- a/src/Site/SiteStorage.py\n+++ b/src/Site/SiteStorage.py\n@@ -181,6 +181,10 @@ class SiteStorage(object):\n     # Open file object\n     def read(self, inner_path, mode=\"r\"):\n         return open(self.getPath(inner_path), mode).read()\n+    def peek(self, inner_path, offset, length=None, mode=\"r\"):\n+        file = open(self.getPath(inner_path), mode)\n+        file.seek(offset)\n+        return file.read() if length is None else file.read(length)\n\n     # Write content to file\n     def write(self, inner_path, content):\n@@ -201,6 +205,31 @@ class SiteStorage(object):\n                     file.write(content)\n         del content\n         self.onUpdated(inner_path)\n+    def poke(self, inner_path, content, offset=None):\n+        file_path = self.getPath(inner_path)\n+        # Create dir if not exist\n+        file_dir = os.path.dirname(file_path)\n+        if not os.path.isdir(file_dir):\n+            os.makedirs(file_dir)\n+        # Write file\n+        if hasattr(content, 'read'):  # File-like object\n+            with open(file_path, \"ab\" if offset is None else \"r+b\") as file:\n+                if offset is not None:\n+                    file.seek(offset)\n+                shutil.copyfileobj(content, file)  # Write buff to disk\n+        else:  # Simple string\n+            if inner_path == \"content.json\" and os.path.isfile(file_path):\n+                if offset is None:\n+                    helper.atomicWrite(file_path, content, mode=\"a\")\n+                else:\n+                    helper.atomicWrite(file_path, content, offset=offset)\n+            else:\n+                with open(file_path, \"ab\" if offset is None else \"r+b\") as file:\n+                    if offset is not None:\n+                        file.seek(offset)\n+                    file.write(content)\n+        del content\n+        self.onUpdated(inner_path)\n\n     # Remove file from filesystem\n     def delete(self, inner_path):\ndiff --git a/src/Ui/UiWebsocket.py b/src/Ui/UiWebsocket.py\nindex 104c738..1828f6d 100644\n--- a/src/Ui/UiWebsocket.py\n+++ b/src/Ui/UiWebsocket.py\n@@ -537,6 +537,55 @@ class UiWebsocket(object):\n         for ws in self.site.websockets:\n             if ws != self:\n                 ws.event(\"siteChanged\", self.site, {\"event\": [\"file_done\", inner_path]})\n+    def actionFilePoke(self, to, inner_path, offset, content_base64, ignore_bad_files=False):\n+        valid_signers = self.site.content_manager.getValidSigners(inner_path)\n+        auth_address = self.user.getAuthAddress(self.site.address)\n+        if not self.site.settings[\"own\"] and auth_address not in valid_signers:\n+            self.log.error(\"FilePoke forbidden %s not in valid_signers %s\" % (auth_address, valid_signers))\n+            return self.response(to, {\"error\": \"Forbidden, you can only modify your own files\"})\n+\n+        # Try not to overwrite files currently in sync\n+        content_inner_path = re.sub(\"^(.*)/.*?$\", \"\\\\1/content.json\", inner_path)  # Also check the content.json from same directory\n+        if (self.site.bad_files.get(inner_path) or self.site.bad_files.get(content_inner_path)) and not ignore_bad_files:\n+            found = self.site.needFile(inner_path, update=True, priority=10)\n+            if not found:\n+                self.cmd(\n+                    \"confirm\",\n+                    [_[\"This file still in sync, if you write it now, then the previous content may be lost.\"], _[\"Write content anyway\"]],\n+                    lambda (res): self.actionFilePoke(to, inner_path, offset, content_base64, ignore_bad_files=True)\n+                )\n+                return False\n+\n+        try:\n+            import base64\n+            content = base64.b64decode(content_base64)\n+            # Save old file to generate patch later\n+            if (\n+                inner_path.endswith(\".json\") and not inner_path.endswith(\"content.json\") and\n+                self.site.storage.isFile(inner_path) and not self.site.storage.isFile(inner_path + \"-old\")\n+            ):\n+                try:\n+                    self.site.storage.rename(inner_path, inner_path + \"-old\")\n+                except Exception:\n+                    # Rename failed, fall back to standard file write\n+                    f_old = self.site.storage.open(inner_path, \"rb\")\n+                    f_new = self.site.storage.open(inner_path + \"-old\", \"wb\")\n+                    shutil.copyfileobj(f_old, f_new)\n+\n+            self.site.storage.poke(inner_path, content, offset)\n+        except Exception, err:\n+            self.log.error(\"File write error: %s\" % Debug.formatException(err))\n+            return self.response(to, {\"error\": \"Write error: %s\" % Debug.formatException(err)})\n+\n+        if inner_path.endswith(\"content.json\"):\n+            self.site.content_manager.loadContent(inner_path, add_bad_files=False, force=True)\n+\n+        self.response(to, \"ok\")\n+\n+        # Send sitechanged to other local users\n+        for ws in self.site.websockets:\n+            if ws != self:\n+                ws.event(\"siteChanged\", self.site, {\"event\": [\"file_done\", inner_path]})\n\n     def actionFileDelete(self, to, inner_path):\n         if (\n@@ -619,6 +668,20 @@ class UiWebsocket(object):\n             body = base64.b64encode(body)\n         return self.response(to, body)\n\n+    def actionFilePeek(self, to, inner_path, start, length=None, required=True, format=\"text\", timeout=300):\n+        try:\n+            if required or inner_path in self.site.bad_files:\n+                with gevent.Timeout(timeout):\n+                    self.site.needFile(inner_path, priority=6)\n+            body = self.site.storage.peek(inner_path, start, length, \"rb\")\n+        except Exception, err:\n+            self.log.error(\"%s fileGet error: %s\" % (inner_path, err))\n+            body = None\n+        if body and format == \"base64\":\n+            import base64\n+            body = base64.b64encode(body)\n+        return self.response(to, body)\n+\n     def actionFileNeed(self, to, inner_path, timeout=300):\n         try:\n             with gevent.Timeout(timeout):\ndiff --git a/src/util/helper.py b/src/util/helper.py\nindex 0da5bdd..04bab30 100644\n--- a/src/util/helper.py\n+++ b/src/util/helper.py\n@@ -12,9 +12,11 @@ import gevent\n from Config import config\n\n\n-def atomicWrite(dest, content, mode=\"w\"):\n+def atomicWrite(dest, content, mode=\"w\", offset=None):\n     try:\n         with open(dest + \"-tmpnew\", mode) as f:\n+            if offset is not None:\n+                f.seek(offset)\n             f.write(content)\n             f.flush()\n             os.fsync(f.fileno())\n```",
+            "date_added": 1512592440226,
+            "merged": 0,
+            "fork_address": "1PgzSiLSD5rRWQgRCDzUrSRU7KkAuso6Jn",
+            "fork_branch": "filepeek",
+            "tags": "file,ui,action,actions,uiwebsocket",
+            "id": 0
+        }
+    ],
+    "next_pull_request_id": 1,
+    "pull_request_comments": [
+        {
+            "pull_request_id": 0,
+            "pull_request_json": "data/users/1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di",
+            "body": "Nofish, please reply if it works.",
+            "date_added": 1512659323073,
+            "id": 0
+        },
+        {
+            "pull_request_id": 0,
+            "pull_request_json": "data/users/1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di",
+            "body": "> ajax\n\nThat monkey-patch from ZeroFrame, yeah?",
+            "date_added": 1512663285851,
+            "id": 1
+        },
+        {
+            "pull_request_id": 0,
+            "pull_request_json": "data/users/1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di",
+            "body": "> `return XMLHttpRequest.prototype.realOpen.realOpen(method, url, async)`\n\nLooks like a bug.",
+            "date_added": 1512831256389,
+            "id": 2
+        },
+        {
+            "pull_request_id": 0,
+            "pull_request_json": "data/users/1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di",
+            "body": "Yep, this solution is an alternative to `filePeek`, but what about `filePoke`? E.g. I am working on Mercurial support and I need to change a part of a *big* file.",
+            "date_added": 1512831630028,
+            "id": 3
+        },
+        {
+            "pull_request_id": 0,
+            "pull_request_json": "data/users/1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di",
+            "body": "What is\n\n```\nXMLHttpRequest.prototype.realOpen.realOpen\n```\n\nWhy `realOpen` twice?",
+            "date_added": 1514285925821,
+            "id": 4
+        },
+        {
+            "pull_request_id": 0,
+            "pull_request_json": "data/users/18S47ArorYtHtcicjdGi6VZdhgJgwhrud7",
+            "body": "What about sending `{\"error\": \"...\"}` or `null` instead of `{}` on error?",
+            "date_added": 1522424338330,
+            "id": 5
+        }
+    ],
+    "next_pull_request_comment_id": 6,
+    "issue_reactions": [
+        {
+            "comment_id": 2,
+            "comment_json": "data/users/1J3rJ8ecnwH2EPYa6MrgZttBNc61ACFiCj",
+            "issue_id": 1,
+            "issue_json": "data/users/1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di",
+            "reaction": "thumbs-up"
+        },
+        {
+            "comment_id": -1,
+            "comment_json": "data/users/164x9q7LJPLX4SMbhqLPraKAGZRPa2gTFe",
+            "issue_id": 0,
+            "issue_json": "data/users/164x9q7LJPLX4SMbhqLPraKAGZRPa2gTFe",
+            "reaction": "thumbs-up"
+        },
+        {
+            "comment_id": 1,
+            "comment_json": "data/users/1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3h",
+            "issue_id": 1,
+            "issue_json": "data/users/1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3h",
+            "reaction": "thumbs-up"
+        },
+        {
+            "comment_id": 1,
+            "comment_json": "data/users/1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3h",
+            "issue_id": 1,
+            "issue_json": "data/users/1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3h",
+            "reaction": "heart"
+        },
+        {
+            "comment_id": 0,
+            "comment_json": "data/users/1JdGajsRmeCbZofurLsGcBZaaFg7ao16PQ",
+            "issue_id": 0,
+            "issue_json": "data/users/164x9q7LJPLX4SMbhqLPraKAGZRPa2gTFe",
+            "reaction": "thumbs-up"
+        },
+        {
+            "comment_id": -1,
+            "comment_json": "data/users/1K7tW4WEbso38uMs4RN3W7GihA6tTqrApz",
+            "issue_id": 0,
+            "issue_json": "data/users/1K7tW4WEbso38uMs4RN3W7GihA6tTqrApz",
+            "reaction": "thumbs-up"
+        },
+        {
+            "comment_id": -1,
+            "comment_json": "data/users/1Md6YJNZX5yrdSaL9mmrKZNMAfULoXzMX2",
+            "issue_id": 0,
+            "issue_json": "data/users/1Md6YJNZX5yrdSaL9mmrKZNMAfULoXzMX2",
+            "reaction": "thumbs-down"
+        },
+        {
+            "comment_id": 3,
+            "comment_json": "data/users/1J3rJ8ecnwH2EPYa6MrgZttBNc61ACFiCj",
+            "issue_id": 0,
+            "issue_json": "data/users/1NoM7QuFsNPWJBqVCezV9oxQP7NofoWXir",
+            "reaction": "heart"
+        },
+        {
+            "comment_id": -1,
+            "comment_json": "data/users/1NoM7QuFsNPWJBqVCezV9oxQP7NofoWXir",
+            "issue_id": 0,
+            "issue_json": "data/users/1NoM7QuFsNPWJBqVCezV9oxQP7NofoWXir",
+            "reaction": "thumbs-up"
+        },
+        {
+            "comment_id": -1,
+            "comment_json": "data/users/1Nrjz2bkDJAMcVyPidS2gKLZ4UUyrnQRLe",
+            "issue_id": 1,
+            "issue_json": "data/users/1Nrjz2bkDJAMcVyPidS2gKLZ4UUyrnQRLe",
+            "reaction": "thumbs-up"
+        },
+        {
+            "comment_id": -1,
+            "comment_json": "data/users/1Nrjz2bkDJAMcVyPidS2gKLZ4UUyrnQRLe",
+            "issue_id": 1,
+            "issue_json": "data/users/1Nrjz2bkDJAMcVyPidS2gKLZ4UUyrnQRLe",
+            "reaction": "heart"
+        },
+        {
+            "comment_id": -1,
+            "comment_json": "data/users/1DfrA2M9Qra6stqT6tzwNMYNweswY54KAC",
+            "issue_id": 10,
+            "issue_json": "data/users/1DfrA2M9Qra6stqT6tzwNMYNweswY54KAC",
+            "reaction": "thumbs-up"
+        }
+    ],
+    "pull_request_reactions": [
+        {
+            "comment_id": 0,
+            "comment_json": "data/users/18S47ArorYtHtcicjdGi6VZdhgJgwhrud7",
+            "pull_request_id": 0,
+            "pull_request_json": "data/users/18S47ArorYtHtcicjdGi6VZdhgJgwhrud7",
+            "reaction": "thumbs-up"
+        },
+        {
+            "comment_id": -1,
+            "comment_json": "data/users/18S47ArorYtHtcicjdGi6VZdhgJgwhrud7",
+            "pull_request_id": 0,
+            "pull_request_json": "data/users/18S47ArorYtHtcicjdGi6VZdhgJgwhrud7",
+            "reaction": "thumbs-up"
+        },
+        {
+            "comment_id": -1,
+            "comment_json": "data/users/18S47ArorYtHtcicjdGi6VZdhgJgwhrud7",
+            "pull_request_id": 0,
+            "pull_request_json": "data/users/18S47ArorYtHtcicjdGi6VZdhgJgwhrud7",
+            "reaction": "heart"
+        },
+        {
+            "comment_id": 1,
+            "comment_json": "data/users/18S47ArorYtHtcicjdGi6VZdhgJgwhrud7",
+            "pull_request_id": 0,
+            "pull_request_json": "data/users/18S47ArorYtHtcicjdGi6VZdhgJgwhrud7",
+            "reaction": "thumbs-up"
+        }
+    ]
+}

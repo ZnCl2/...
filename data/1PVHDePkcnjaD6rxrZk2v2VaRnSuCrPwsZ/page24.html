@@ -1,0 +1,223 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="MnNStory: 我和一个女同学15年的故事">
+<meta name="keywords" content="MnNStory,校园爱情,15年,女同学,女生">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<title>Reflection</title>
+<script src="jquery.js"></script>
+<script src="qrcode.js"></script>
+<script>
+function loadCSS(href) {
+	var cssLink = $("<link rel='stylesheet' type='text/css' href='"+href+"'>");
+	$("head").append(cssLink);
+	return cssLink;
+};
+
+var relocate;
+
+$(function(){
+            var device="computer";
+        var fontSize=($(window).width()/25).toFixed(0);
+        relocate=relocateC;
+    
+	loadCSS("main_"+device.substring(0, 1)+".css").load(function(){
+		relocate();
+		setTimeout(relocate, 1000);
+		setTimeout(function(){
+			var fontSize=$('body').css('fontSize');
+			var qrcode = new QRCode(document.getElementById("QRCode"), {
+				width : parseInt(fontSize)*7,
+				height : parseInt(fontSize)*7
+			});
+
+			qrcode.makeCode(window.location.href);
+		}, 1000);
+	});
+
+	$(window).resize(relocate);
+
+    
+	function relocateC(){
+		function bottom($el){
+			return $el.position().top + $el.outerHeight(true);
+		}
+
+		var $footer=$('#footer');
+		$footer.css({
+			top: 0,
+			display: 'none'
+		});
+		var top=Math.max(
+			bottom($('#textWrapper')),
+			bottom($('#contents')),
+			$(document).height() - $footer.outerHeight()
+		);
+		$footer.css({
+			top: top,
+			display: 'block'
+		});
+	}
+
+        $('.patch-more').click(function(){
+        var page=$(this).data('page');
+        var paragraph=$(this).data('paragraph');
+
+        location.href='page'+page+'.html#paragraph='+paragraph;
+    });
+
+    setTimeout(function () {
+                    var ret=document.referrer.match(/#paragraph=(\d+)/);
+                if (!ret) {
+            return;
+        }
+        var paragraph=ret[1]-1;
+
+        var objParagraph=$('#text p:eq('+paragraph+')');
+        var flash=function () {
+            objParagraph.css('color', 'red');
+            setTimeout(function() {
+                objParagraph.css('color', 'initial');
+            }, 1000);
+        };
+        $('html, body').animate({
+            scrollTop: objParagraph.offset().top-$('#textWrapper').offset().top,
+        }, 500, flash);
+    }, 100);
+
+    var pIndex=0;
+    $('#text p').each(function () {
+        ++pIndex;
+        if (!$(this).attr('id')) {
+            //$(this).attr('id', 'paragraph_'+pIndex);
+        }
+    });
+});
+
+function showComments(){
+	$.blockUI({
+		message: $('#disqus_thread'),
+	});
+
+	$('body').click($.unblockUI);
+}
+</script>
+</head>
+<body>
+<div id="cover" style="background-color: #F1F1F1; position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 2048;"></div>
+<div id="nav">
+	<div class="Three">
+		<div id="navLeft" class="left c">
+			<a href="page23.html" class="blackText">&lt;&lt;&lt;prev</a>		</div>
+		<div id="navRight" class="right c">
+			<a href="page25.html" class="blackText">next&gt;&gt;&gt;</a>		</div>
+		<div id="navTitle" class="middle">
+			Reflection		</div>
+	</div>
+	<div class="Three m">
+		<div class="left" style="width: 4em">
+			<a href="page23.html" class="blackText">&lt;&lt;&lt;</a>		</div>
+		<div class="right" style="width: 4em">
+			<a href="page25.html" class="blackText">&gt;&gt;&gt;</a>		</div>
+		<div class="middle">
+			<a href="/index.html" class="blackText">[Home]</a>
+		</div>
+	</div>
+</div>
+<div id="images" class="c">
+	<a href="downloads/mnnstory.zip" target="_blank"> <img src="download.png" style="width: 100%;" title="下载" alt="Download" /> </a>
+	<p id="QRCode"></p>
+</div>
+<div id="contents" class="c">
+	<p class="contents_d0"><a href="index.html">目录</a></p>
+	<ul class="contents_d1"><li><a href='page1.html'>上册</a>
+</li><li><a href='page14.html'>上册配乐</a>
+<ul class="contents_d2"><li><a href='page15.html'>朋友别哭</a>
+</li><li><a href='page16.html'>铁血丹心</a>
+</li><li><a href='page17.html'>四张机</a>
+</li><li><a href='page18.html'>巴赫C大调前奏曲（上课铃）</a>
+</li><li><a href='page19.html'>三大仪式（上课铃）</a>
+</li><li><a href='page20.html'>水调歌头</a>
+</li><li><a href='page21.html'>滚滚长江东逝水</a>
+</li><li><a href='page22.html'>Music of the Night（熄灯音乐）</a>
+</li><li><a href='page23.html'>All I Ask of You（晨起音乐）</a>
+</li><li>Reflection
+</li><li><a href='page25.html'>Sanctuary</a>
+</li><li><a href='page26.html'>别情（the White Lies）</a>
+</li><li><a href='page27.html'>重逢（the Misty Way）</a>
+</li><li><a href='page28.html'>照片（Solemn Waltz）</a>
+</li><li><a href='page29.html'>白蝶（Pale Butterflies）</a>
+</li><li><a href='page30.html'>白月光</a>
+</li><li><a href='page31.html'>爱的天国</a>
+</ul></li><li><a href='page32.html'>下册</a>
+</li><li><a href='page47.html'>下册配乐</a>
+</li><li><a href='page49.html'>订正簿</a>
+</ul></div>
+<div id="disqus_thread"></div>
+<script>
+	var disqus_config = function () {
+		this.page.url = 'http://mnnstory.onion';
+		this.page.identifier = 24;
+		this.page.title = 'Reflection'
+	};
+
+
+	(function() {
+		var d = document, s = d.createElement('script');
+
+		s.src = '//mnnstory.disqus.com/embed.js';
+
+		s.setAttribute('data-timestamp', +new Date());
+		(d.head || d.body).appendChild(s);
+	})();
+</script>
+<div id="textWrapper">
+	<div id="text">
+		<audio src="E9A696E9A1B5/E4B88AE5868CE9858DE4B990/Reflection.opus" autoplay controls loop style="width: 100%; height: 2em; margin-bottom: 1em;">
+	对不起，你的浏览器太陈旧了，不支持播放这段音乐。
+</audio>
+<textarea rows="15" readonly style="width: 100%; font-size: smaller; overflow: auto;  -webkit-overflow-scrolling: touch;">
+Look at me
+ I will never pass for a perfect bride
+ Or a perfect daughter
+ Can it be
+ I'm not meant to play this part?
+ Now I see
+ That if I were truly to be myself
+ I would break my fam'ly's heart
+
+Who is that girl I see
+ Staring straight
+ Back at me
+ Why is my reflection someone
+ I don't know?
+ Somehow I cannot hide
+ Who I am
+ Though I've tried
+ When will my reflection show
+ Who I am inside?
+ When will my reflection show
+ Who I am inside</textarea>
+<p>这是第九首。是迪斯尼动画片《花木兰》中的一首插曲。</p>
+<p>电影于1998年上映，那时候我们刚进预备班而已。</p>
+<p>这首插曲描绘的是主人公花木兰在遭遇了挫折后，对自我的困惑和迷茫。</p>
+<p>老同学是否也在高考失利后，以及大学学习的逆境中，有类似的感觉呢？</p>
+<p>唱这首歌，是试图用代入法，体会她当时的心境。</p>	</div>
+</div>
+<div id="footer">
+	<div id="declaration">
+		本故事为作者亲身经历
+	</div>
+	<div id="bannerLine" class="Three">
+				<div class="middle">
+            			    <a href="about.html">MnNStory, 1 Sep 2001 - 12 Mar 2016</a>
+            		</div>
+	</div>
+	<hr class="m" />
+	<div id="switch2c" class="m">
+		<a href="">电脑版</a>
+	</div>
+</div>
+</body>
+</html>

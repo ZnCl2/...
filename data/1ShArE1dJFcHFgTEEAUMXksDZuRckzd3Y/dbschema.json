@@ -1,0 +1,55 @@
+{
+  "db_name": "Torrent Share",
+  "db_file": "data/torrents.db",
+  "version": 2,
+  "maps": {
+    "users/.+/data.json": {
+      "to_table": [
+        { "node": "torrents", "table": "torrents" },
+        { "node": "torrent_info", "table": "torrent_info" }
+      ]
+    },
+    "users/.+/content.json": {
+      "to_json_table": [ "cert_user_id" ],
+      "file_name": "data.json"
+    }
+  },
+  "tables": {
+    "json": {
+      "cols": [
+        ["json_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+        ["directory", "TEXT"],
+        ["file_name", "TEXT"],
+        ["cert_user_id", "TEXT"]
+      ],
+      "indexes": ["CREATE UNIQUE INDEX path ON json(directory, file_name)"],
+      "schema_changed": 10
+    },
+    "torrents": {
+      "cols": [
+        ["torrent_id", "TEXT"],
+        ["name", "TEXT"],
+        ["category", "TEXT"],
+        ["description", "TEXT"],
+        ["createdAt", "DATE"],
+        ["json_id", "INTEGER REFERENCES json (json_id)"]
+      ],
+      "indexes": ["CREATE UNIQUE INDEX torrent_key ON torrents(torrent_id, name)"],
+      "schema_changed": 10
+    },
+    "torrent_info": {
+      "cols": [
+        ["name", "TEXT"],
+        ["torrent_id", "TEXT"],
+        ["magnet", "TEXT"],
+        ["comment", "TEXT"],
+        ["info_hash", "TEXT"],
+        ["created", "DATE"],
+        ["createdBy", "TEXT"],
+        ["json_id", "INTEGER REFERENCES json (json_id)"]
+      ],
+      "indexes": ["CREATE UNIQUE INDEX torrent_info_key ON torrent_info(json_id, name)"],
+      "schema_changed": 10
+    }
+  }
+}

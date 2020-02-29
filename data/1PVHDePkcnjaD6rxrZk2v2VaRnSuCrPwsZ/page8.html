@@ -1,0 +1,216 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="MnNStory: 我和一个女同学15年的故事">
+<meta name="keywords" content="MnNStory,校园爱情,15年,女同学,女生">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<title>憧憬</title>
+<script src="jquery.js"></script>
+<script src="qrcode.js"></script>
+<script>
+function loadCSS(href) {
+	var cssLink = $("<link rel='stylesheet' type='text/css' href='"+href+"'>");
+	$("head").append(cssLink);
+	return cssLink;
+};
+
+var relocate;
+
+$(function(){
+            var device="computer";
+        var fontSize=($(window).width()/25).toFixed(0);
+        relocate=relocateC;
+    
+	loadCSS("main_"+device.substring(0, 1)+".css").load(function(){
+		relocate();
+		setTimeout(relocate, 1000);
+		setTimeout(function(){
+			var fontSize=$('body').css('fontSize');
+			var qrcode = new QRCode(document.getElementById("QRCode"), {
+				width : parseInt(fontSize)*7,
+				height : parseInt(fontSize)*7
+			});
+
+			qrcode.makeCode(window.location.href);
+		}, 1000);
+	});
+
+	$(window).resize(relocate);
+
+    
+	function relocateC(){
+		function bottom($el){
+			return $el.position().top + $el.outerHeight(true);
+		}
+
+		var $footer=$('#footer');
+		$footer.css({
+			top: 0,
+			display: 'none'
+		});
+		var top=Math.max(
+			bottom($('#textWrapper')),
+			bottom($('#contents')),
+			$(document).height() - $footer.outerHeight()
+		);
+		$footer.css({
+			top: top,
+			display: 'block'
+		});
+	}
+
+        $('.patch-more').click(function(){
+        var page=$(this).data('page');
+        var paragraph=$(this).data('paragraph');
+
+        location.href='page'+page+'.html#paragraph='+paragraph;
+    });
+
+    setTimeout(function () {
+                    var ret=document.referrer.match(/#paragraph=(\d+)/);
+                if (!ret) {
+            return;
+        }
+        var paragraph=ret[1]-1;
+
+        var objParagraph=$('#text p:eq('+paragraph+')');
+        var flash=function () {
+            objParagraph.css('color', 'red');
+            setTimeout(function() {
+                objParagraph.css('color', 'initial');
+            }, 1000);
+        };
+        $('html, body').animate({
+            scrollTop: objParagraph.offset().top-$('#textWrapper').offset().top,
+        }, 500, flash);
+    }, 100);
+
+    var pIndex=0;
+    $('#text p').each(function () {
+        ++pIndex;
+        if (!$(this).attr('id')) {
+            //$(this).attr('id', 'paragraph_'+pIndex);
+        }
+    });
+});
+
+function showComments(){
+	$.blockUI({
+		message: $('#disqus_thread'),
+	});
+
+	$('body').click($.unblockUI);
+}
+</script>
+</head>
+<body>
+<div id="cover" style="background-color: #F1F1F1; position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 2048;"></div>
+<div id="nav">
+	<div class="Three">
+		<div id="navLeft" class="left c">
+			<a href="page7.html" class="blackText">&lt;&lt;&lt;prev</a>		</div>
+		<div id="navRight" class="right c">
+			<a href="page9.html" class="blackText">next&gt;&gt;&gt;</a>		</div>
+		<div id="navTitle" class="middle">
+			憧憬		</div>
+	</div>
+	<div class="Three m">
+		<div class="left" style="width: 4em">
+			<a href="page7.html" class="blackText">&lt;&lt;&lt;</a>		</div>
+		<div class="right" style="width: 4em">
+			<a href="page9.html" class="blackText">&gt;&gt;&gt;</a>		</div>
+		<div class="middle">
+			<a href="/index.html" class="blackText">[Home]</a>
+		</div>
+	</div>
+</div>
+<div id="images" class="c">
+	<a href="downloads/mnnstory.zip" target="_blank"> <img src="download.png" style="width: 100%;" title="下载" alt="Download" /> </a>
+	<p id="QRCode"></p>
+</div>
+<div id="contents" class="c">
+	<p class="contents_d0"><a href="index.html">目录</a></p>
+	<ul class="contents_d1"><li><a href='page1.html'>上册</a>
+<ul class="contents_d2"><li><a href='page2.html'>引子</a>
+</li><li><a href='page3.html'>初识</a>
+</li><li><a href='page4.html'>别情</a>
+</li><li><a href='page5.html'>追求</a>
+</li><li><a href='page6.html'>梦想</a>
+</li><li><a href='page7.html'>重逢</a>
+</li><li>憧憬
+</li><li><a href='page9.html'>移民</a>
+</li><li><a href='page10.html'>心愿</a>
+</li><li><a href='page11.html'>数学中最难的是概率</a>
+</li><li><a href='page12.html'>祝福</a>
+</li><li><a href='page13.html'>附录：秦始皇妈妈的故事</a>
+</ul></li><li><a href='page14.html'>上册配乐</a>
+</li><li><a href='page32.html'>下册</a>
+</li><li><a href='page47.html'>下册配乐</a>
+</li><li><a href='page49.html'>订正簿</a>
+</ul></div>
+<div id="disqus_thread"></div>
+<script>
+	var disqus_config = function () {
+		this.page.url = 'http://mnnstory.onion';
+		this.page.identifier = 8;
+		this.page.title = '憧憬'
+	};
+
+
+	(function() {
+		var d = document, s = d.createElement('script');
+
+		s.src = '//mnnstory.disqus.com/embed.js';
+
+		s.setAttribute('data-timestamp', +new Date());
+		(d.head || d.body).appendChild(s);
+	})();
+</script>
+<div id="textWrapper">
+	<div id="text">
+		<p>这些事以后，加上毕业那一年找工作的忙碌，似让我心病好多了。但有时，当我寂寞时，仍会唉声叹气。</p>
+<p>2008年，我们本科毕业的那年，这次我并没有利用网络漏洞，而是从她的口中听说了好消息，她经过四年无懈的努力，终于直升读上了心爱的研究生课程。</p>
+<p>我偶尔仍和她联系，我很清楚，她并不把聊天看作谈恋爱。但是对于我来说，这是对相思之苦最好的缓解，只要有机会和她说两句，似乎还有点虚幻的希望。</p>
+<p>我和她说话偶尔会不小心出粗口，但和别人却极少。一次，我通过QQ对她说：“我们作为工程师，经常被人称为某工。有一回，一位年轻的女同事和人打电话，口口声声称对方‘项工’。大家都笑了。”我想说，听上去像唱戏一样，但还没打出来，她回了一行“色色的笑”的表情，紧接着说了个类似的笑话。事后，我略有负罪感。</p>
+<p>我感觉到一切似乎都已在淡化时，2009年末，冬天，我的QQ上，好久没有点亮的她的头像却闪了起来。打开一看，她没说话，只传来了她的一张报名照。我心中暗暗产生了一点喜悦，又叹了一口气，所叹者，正是这种暗喜。这张报名照，我至今仍存在电脑中。</p>
+<p>照片中的她穿着黑色的外套，白色的衬衫，略有点正式。马尾辫散开，批在肩上。圆圆的脸不如之前那样精神，但仍焕发着朝气，眼睛中闪着光辉。淡淡的笑意，却似带有微微的拘谨，酒窝隐隐可见。</p>
+<p>我很小心地评价了一下她的照片，然后问她为什么要发给我。她的回答是，不知道如何把照片复制到电子文档中，就先贴到QQ窗口上发过来，再从聊天记录里提取。</p>
+<p>他说要报名参加某某活动，需要某种格式的报名照，让我帮她在电脑上修改。我美术小学开始就没及格过，只能硬着头皮乱弄。她又说，希望我给她改改简历。我仔细地读了好几遍，发现错误还不少，帮她一一指出。她说：“你好仔细啊。”我仔细？凭良心讲，我是出了名的粗心大意，而她的一丝不苟还闹过笑话呢。之所以我会那么认真，是因为她写简历和做作业一样，都是付出了十分努力，而我对于她的事，何止拿出了十二分的气力。</p>
+<p>这么多年过去了，我重读了当时存下的QQ聊天记录。我所说的话，哪里只是在帮一个同学改简历啊？明明是对她的人以及她生活的关心，和对她人格的莫名崇拜和敬畏。而她却似充耳不闻。</p>
+<p>我们通过电话和网络，又聊开了，她还是三句不离学习和梦想。与之前不同，她再也不说忙了，只讲很累、很难。她又一次经常告诉我她的一些担心，有些仍有点莫名其妙。我适当地安慰几句，对一些过份荒唐的担心，则和她开开小玩笑。有一次，我从很远的地方过来，正好路过她家附近，发短信问她在家吗？可以出来见见吗？她却不理我。</p>
+<p>虽然我此时此刻真的希望可以天天和她多聊聊，却又有一点点在防她，因为我的工作是很多人眼红的，我怕她又打我工作的主意，想再利用我一次。她很快就觉察出了我的顾虑，就把我这种想法点破，让我当时相信了至少这次她并不是想利用我。</p>
+<p>这以后，她的“废话”似乎多了点。有时，还把身边的小故事说给我听，我还是第一次听她讲起她奶奶。这让我感觉，她似也并不那样无法接近。</p>
+<p>和她谈起高中同学聚会，告诉她，一些曾经的乖孩子，竟也学会了抽烟。她说：“人是分层次的。这种人，本就应该是这样发展的。”</p>
+<p>很快，她研究生也要毕业了。邻近毕业的她有各种憧憬，有一次她问我。“你说，我到了而立之年能而立吗？”她当时的内心似有些矛盾，时而略显脆弱，时而自信心膨胀。我极力迎合她的积极情绪，也常常自我贬低一下。</p>
+<p>这段时间，我仍时不时做有关她的梦。还是做梦都想见她，但做梦都见不到她。反复出现的新梦境是这样的：</p>
+<p>我们初中的数学老师在报成绩，不知道为什么，竟报到了她的名字（她在我隔壁班，而且初中的时候我不认识她），她居然考了年级第一。我非常高兴，希望赶快下课，可以提前告诉她这个好消息，满足她心里的那份憧憬。此时真的响起了下课铃，我也醒了，却原来是闹铃声……</p>
+<p>我也做一些有她脸的梦，但很少很少，而且那张圆圆的、红红的笑脸都只是一闪而过。</p>
+<p>当她问我收入时，习惯性地，我把税后收入打了个八折告诉了她。我想她一定会很高兴，但她似乎是失望。回头去看我当时的回答，唯独这一次，我应该一点都不谦虚，甚至可以适度地吹嘘。</p>
+<p>当时我的经济状况，年薪十万有余，工作稳定清闲，有着各种福利。父母市区有两套房子，而我是独生子。我还自己贷款，在其中一套的同一个小区内，买了另一套。按当时的情况计算，即使我收入原地踏步，五年都不需要用现金还这笔贷款，全部可以用公积金余额抵充。这样的条件，本也不须吹嘘，只要实话实说，绝大多数女人是会满意的。</p>
+<p>我当时并不理解她作为一个女生的那一套实惠哲学。在上海，任何一个女人要嫁给男人，除了爱以外，房子、车子、票子都是需要通盘考虑的。她是这个时代的人，这样的想法不为过，反而是我落伍了。假如再给我一次机会，我还是愿意不谦虚的。因为这样，或许我们能谈一场恋爱。</p>
+<p>现实是，听到我这个回答后，她和我的话就越说越少了。我再一次说破，“我还是很爱你的”，但已经追不上她了。她还补了句：“最近看了一部电视剧，男主角反复被女主角耍。看得我气死了。”</p>
+<p>她后来说要去买手机，问我意见。我对她把选购的原则和技巧说得很详细（我这方面还真具备一些专业知识），她却很冷淡。我提议一起去买，她不理睬。第二天告诉我，已经和爸爸一起去买好了。</p>
+<p>当时的我，情感已得到了一定的释放，所以并不十分痛苦。</p>
+<p>&nbsp;</p>
+<hr />
+<p style="font-size: smaller; font-family: \534E\6587\6977\4F53; text-align: center;">
+神奇的分割线</p>
+<hr />	</div>
+</div>
+<div id="footer">
+	<div id="declaration">
+		本故事为作者亲身经历
+	</div>
+	<div id="bannerLine" class="Three">
+				<div class="middle">
+            			    <a href="about.html">MnNStory, 1 Sep 2001 - 12 Mar 2016</a>
+            		</div>
+	</div>
+	<hr class="m" />
+	<div id="switch2c" class="m">
+		<a href="">电脑版</a>
+	</div>
+</div>
+</body>
+</html>

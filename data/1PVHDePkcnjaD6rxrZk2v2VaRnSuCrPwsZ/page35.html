@@ -1,0 +1,292 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="MnNStory: 我和一个女同学15年的故事">
+<meta name="keywords" content="MnNStory,校园爱情,15年,女同学,女生">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<title>重逢</title>
+<script src="jquery.js"></script>
+<script src="qrcode.js"></script>
+<script>
+function loadCSS(href) {
+	var cssLink = $("<link rel='stylesheet' type='text/css' href='"+href+"'>");
+	$("head").append(cssLink);
+	return cssLink;
+};
+
+var relocate;
+
+$(function(){
+            var device="computer";
+        var fontSize=($(window).width()/25).toFixed(0);
+        relocate=relocateC;
+    
+	loadCSS("main_"+device.substring(0, 1)+".css").load(function(){
+		relocate();
+		setTimeout(relocate, 1000);
+		setTimeout(function(){
+			var fontSize=$('body').css('fontSize');
+			var qrcode = new QRCode(document.getElementById("QRCode"), {
+				width : parseInt(fontSize)*7,
+				height : parseInt(fontSize)*7
+			});
+
+			qrcode.makeCode(window.location.href);
+		}, 1000);
+	});
+
+	$(window).resize(relocate);
+
+    
+	function relocateC(){
+		function bottom($el){
+			return $el.position().top + $el.outerHeight(true);
+		}
+
+		var $footer=$('#footer');
+		$footer.css({
+			top: 0,
+			display: 'none'
+		});
+		var top=Math.max(
+			bottom($('#textWrapper')),
+			bottom($('#contents')),
+			$(document).height() - $footer.outerHeight()
+		);
+		$footer.css({
+			top: top,
+			display: 'block'
+		});
+	}
+
+        $('.patch-more').click(function(){
+        var page=$(this).data('page');
+        var paragraph=$(this).data('paragraph');
+
+        location.href='page'+page+'.html#paragraph='+paragraph;
+    });
+
+    setTimeout(function () {
+                    var ret=document.referrer.match(/#paragraph=(\d+)/);
+                if (!ret) {
+            return;
+        }
+        var paragraph=ret[1]-1;
+
+        var objParagraph=$('#text p:eq('+paragraph+')');
+        var flash=function () {
+            objParagraph.css('color', 'red');
+            setTimeout(function() {
+                objParagraph.css('color', 'initial');
+            }, 1000);
+        };
+        $('html, body').animate({
+            scrollTop: objParagraph.offset().top-$('#textWrapper').offset().top,
+        }, 500, flash);
+    }, 100);
+
+    var pIndex=0;
+    $('#text p').each(function () {
+        ++pIndex;
+        if (!$(this).attr('id')) {
+            //$(this).attr('id', 'paragraph_'+pIndex);
+        }
+    });
+});
+
+function showComments(){
+	$.blockUI({
+		message: $('#disqus_thread'),
+	});
+
+	$('body').click($.unblockUI);
+}
+</script>
+</head>
+<body>
+<div id="cover" style="background-color: #F1F1F1; position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 2048;"></div>
+<div id="nav">
+	<div class="Three">
+		<div id="navLeft" class="left c">
+			<a href="page34.html" class="blackText">&lt;&lt;&lt;prev</a>		</div>
+		<div id="navRight" class="right c">
+			<a href="page36.html" class="blackText">next&gt;&gt;&gt;</a>		</div>
+		<div id="navTitle" class="middle">
+			重逢		</div>
+	</div>
+	<div class="Three m">
+		<div class="left" style="width: 4em">
+			<a href="page34.html" class="blackText">&lt;&lt;&lt;</a>		</div>
+		<div class="right" style="width: 4em">
+			<a href="page36.html" class="blackText">&gt;&gt;&gt;</a>		</div>
+		<div class="middle">
+			<a href="/index.html" class="blackText">[Home]</a>
+		</div>
+	</div>
+</div>
+<div id="images" class="c">
+	<a href="downloads/mnnstory.zip" target="_blank"> <img src="download.png" style="width: 100%;" title="下载" alt="Download" /> </a>
+	<p id="QRCode"></p>
+</div>
+<div id="contents" class="c">
+	<p class="contents_d0"><a href="index.html">目录</a></p>
+	<ul class="contents_d1"><li><a href='page1.html'>上册</a>
+</li><li><a href='page14.html'>上册配乐</a>
+</li><li><a href='page32.html'>下册</a>
+<ul class="contents_d2"><li><a href='page33.html'>心愿</a>
+</li><li><a href='page34.html'>概率</a>
+</li><li>重逢
+</li><li><a href='page36.html'>街景</a>
+</li><li><a href='page37.html'>追求</a>
+</li><li><a href='page38.html'>梦想</a>
+</li><li><a href='page39.html'>糖果</a>
+</li><li><a href='page40.html'>夕阳无限好</a>
+</li><li><a href='page41.html'>电影</a>
+</li><li><a href='page42.html'>怪谁</a>
+</li><li><a href='page43.html'>寄语</a>
+</li><li><a href='page44.html'>移民</a>
+</li><li><a href='page45.html'>永远</a>
+</li><li><a href='page46.html'>附录：幸福的惊人科学发现</a>
+</ul></li><li><a href='page47.html'>下册配乐</a>
+</li><li><a href='page49.html'>订正簿</a>
+</ul></div>
+<div id="disqus_thread"></div>
+<script>
+	var disqus_config = function () {
+		this.page.url = 'http://mnnstory.onion';
+		this.page.identifier = 35;
+		this.page.title = '重逢'
+	};
+
+
+	(function() {
+		var d = document, s = d.createElement('script');
+
+		s.src = '//mnnstory.disqus.com/embed.js';
+
+		s.setAttribute('data-timestamp', +new Date());
+		(d.head || d.body).appendChild(s);
+	})();
+</script>
+<div id="textWrapper">
+	<div id="text">
+		<p>考虑到X国理发很贵，我本打算周日去剃头。但因周六要见她，我周五就提前剪了，虽然当时心中仍在为她是否真会赴约而忐忑。</p>
+<p>周六中午，经过犹豫，我还是喝了点酒，量只有往常的一半不到。应以平常心对待之，我饮酒向来节制，基本都是刚感到有点晕，就马上停的，这点酒绝对不会影响到我见她。况且X国的酒虽好，这种类型却没。吃完饭，我洗了澡，收拾了一下外表，穿着为X国移民生活准备的新衣，提前一小时出发了。</p>
+<p>在轨交车厢中，我只觉莫名地紧张。我告诉自己，一定要冷静。为了让自己放松，我拿出手机，读了些短篇笑话。</p>
+<p>手机响了。
+</p>
+<div class="mnn">
+	<span class="mnnName">M: </span><span class="mnnQuote">出发</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">拖延症患者</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">老西门？那我坐地铁？</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">&lt;愁&gt;</span>（1:48pm）<br />
+	<span class="mnnName">N: </span><span class="mnnQuote">我9号线小南门出站</span>（1:55pm）<br />
+	<span class="mnnName">M: </span><span class="mnnQuote">呀，你不早说，我去坐10号线了</span><br />
+	<span class="mnnName">N: </span><span class="mnnQuote">地铁里信号收不到，对不起哦</span><br />
+	<span class="mnnName">N: </span><span class="mnnQuote">其实可以<a href="#comment_1" class="issue">11路</a><sup id="issue_1">1</sup>的</span><br />
+	<span class="mnnName">N: </span><span class="mnnQuote">直接走，更健康</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">我天天坐9号线的，那里的信号确实很差</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">我一站路就到老西门了</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">在10号线上</span><br />
+	<span class="mnnName">N: </span><span class="mnnQuote">&lt;地图位置信息&gt;</span><br />
+	<span class="mnnName">N: </span><span class="mnnQuote">我往河南南路蓬莱路路口走过来</span><br />
+	<span class="mnnName">N: </span><span class="mnnQuote">你往那个路口走近吗？</span><br />
+	<span class="mnnName">N: </span><span class="mnnQuote">在我们两人的中点</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">蛮叫我导航一计</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">&lt;愁&gt;</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">&lt;地图位置信息&gt;</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">大哥，服了你啊，昨天你不是说老西门的嘛</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">2公里……</span><br />
+</div>
+<p>我很后悔没把位置约详细。两公里有夸张，一公里多是有的。
+</p>
+<div class="mnn">
+	<span class="mnnName">N: </span><span class="mnnQuote">各走一公里</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">那我还要走回来……因为等下准备去老西门国美买电器</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">&lt;愁&gt;</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">好吧好吧</span><br />
+	<span class="mnnName">N: </span><span class="mnnQuote">额</span><br />
+	<span class="mnnName">N: </span><span class="mnnQuote">锻炼身体，绿动健康</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">大哥我出站了，咱们不要乱走了，先定个地方吧</span><br />
+	<span class="mnnName">N: </span><span class="mnnQuote">我往河南南路蓬莱路口走过来</span><br />
+	<span class="mnnName">N: </span><span class="mnnQuote">&lt;开启实时位置信息&gt;</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">我先去买个喝的</span><br />
+</div>
+<p>我还没到就迫不及待地要买饮料，让她买吧。等待最让人着急，这会儿功夫先和她手机上说两句吧。
+</p>
+<div class="mnn">
+	<span class="mnnName">N: </span><span class="mnnQuote">随便啦</span><br />
+	<span class="mnnName">N: </span><span class="mnnQuote">水果</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">嘿，我说了要帮你买嘛</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">说好的喝下午茶，你的那杯等下吧</span><br />
+</div>
+<p>她到底准备下午做什么？我迷糊了。
+</p>
+<p>我疑心，她是不是故意要逗我笑？重读了一遍聊天记录，却哪有？我又自作多情了。
+</p>
+<div class="mnn">
+	<span class="mnnName">N: </span><span class="mnnQuote">那么电器呢？</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">我们下午茶要喝多久啊</span><br />
+	<span class="mnnName">N: </span><span class="mnnQuote">看你速度啦</span><br />
+	<span class="mnnName">N: </span><span class="mnnQuote">你先外面喝一杯，里面就喝得慢了</span><br />
+</div>
+<p>我当然希望越久越好。一样要这么说，当时为何不讲“喝到3月14日，然后我直接去赶飞机”呢？
+</p>
+<div class="mnn">
+	<span class="mnnName">N: </span><span class="mnnQuote">你到哪里了？</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">我共享了</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">你看一下</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">感觉走错了</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">&lt;愁&gt;</span><br />
+	<span class="mnnName">N: </span><span class="mnnQuote">别急</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">我们可以逛文庙</span><br />
+</div>
+<p>她终于说了句我求之不得的话。
+</p>
+<div class="mnn">
+	<span class="mnnName">N: </span><span class="mnnQuote">随便</span><br />
+	<span class="mnnName">N: </span><span class="mnnQuote">离开上海前去孔老二那里拜拜……应该说看看，还是有点意义的</span>（语音）<br />
+	<span class="mnnName">M: </span><span class="mnnQuote">我是正好走过这里</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">十几年没来了</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">那我等你，不走了</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">我到了</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">&lt;狡猾&gt;&lt;狡猾&gt;&lt;狡猾&gt;</span><br />
+</div>
+<p>她走的路不到总距离的四分之一。占这么点小便宜就得意了？
+</p>
+<div class="mnn">
+	<span class="mnnName">N: </span><span class="mnnQuote">好</span><br />
+</div>
+<p>我加快了步伐，专心赶路。在最后一个十字路口，我见到手机中，代表她的箭头转个不停。不知待会儿，将先看到她正面还是背影。
+</p>
+<p>隔着马路，我望见了老西门的牌楼下，等候着我的笑容。
+</p>
+<p>那张脸仍然圆圆的，五官端端正正，虽历岁月，却不杂风尘。
+</p>
+<p>这一幕，可惜，我却没用照相机记录下来。
+</p>
+<p>我沉住气，缓缓地走向了她……
+</p>
+<hr class="comment" />
+<p class="comment" id='comment_1'><a href="#issue_1" class="comment">[1]</a>
+上海话，意思是走路。
+</p>
+<p>&nbsp;</p>	</div>
+</div>
+<div id="footer">
+	<div id="declaration">
+		本故事为作者亲身经历
+	</div>
+	<div id="bannerLine" class="Three">
+				<div class="middle">
+            			    <a href="about.html">MnNStory, 1 Sep 2001 - 12 Mar 2016</a>
+            		</div>
+	</div>
+	<hr class="m" />
+	<div id="switch2c" class="m">
+		<a href="">电脑版</a>
+	</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,304 @@
+{
+	"next_topic_id": 7,
+	"topic": [
+		{
+			"topic_id": 1545423165,
+			"title": "ZeroNet improvements (updated 2018-12-29)",
+			"body": "####Protocol-level compression/ file propagation\n\n- [Protocol] Ability to request X **files in bulk** from a peer as a Gzipped Tar archive (or some other format), this is useful for sites with many small files (e.g., ZeroMe, ZeroMail, ZeroTalk)\n- [Protocol] **Protocol level (Gzip) compression** (web servers have had Gzip-compression for years, what's holding back putting this in ZeroNet?) (Issue [#1282](https://github.com/HelloZeroNet/ZeroNet/issues/1282))\n- [Protocol] Ability to add `index.html.gz` or `index.html.xz` and be accessible by `index.html` instead of having to put the file in a `.zip` or `.tar.gz`.\n\n####Deduplication\n\nA lot of stuff is duplicated on the ZeroNet network (and on disk) because people simply copy-paste a lot of ZeroNet application code --- among other things. Here are some ideas on how to solve this problem:\n\n- [Protocol (or client-side)] To save bandwidth download files based on their hash **within a site**: instead of downloading files based on their file path download them by their file hash to prevent duplication or re-downloading when a file has been re-named (Issue [#1318](https://github.com/HelloZeroNet/ZeroNet/issues/1318)).\n- [Protocol] Ability to download files based on their hash **across multiple sites**, this isn't the easiest to do since it'd require a rewrite of the way ZeroNet requests files though still very possible (and should've been done at the very beginning ...) (Issues [#564](https://github.com/HelloZeroNet/ZeroNet/issues/564) and [#115](https://github.com/HelloZeroNet/ZeroNet/issues/115))\n- [Client-side] Ability for users to access a file based on the hash instead of the file path, like: http://127.0.0.1:43110/hash/<hash>\n\n####Storage\n\n- [Client-side] Small files can be stored in a SQLite database, for performance and portability reasons\n- [Client-side] On-disk compressed storage (for all, or some file types)\n- [Client-side] To reduce disk usage store files based on their hash (for later maybe) \n\n####Partial site downloading\n\n- [Client-side] Ask what the user wants to download for each site, so you can, for example, browse a site without downloading images based on its extension (.jpg, .png).\n- [Client-side] Temporary downloading of the essential files required for displaying the homepage (for example) so you can decide whether you want to continue normally or leave and delete the site. Files can be kept in memory or in a temporary directory.\n- [Client-side] Download only the user content which changed last month, year, etc (useful for previewing dynamic sites like ZeroMe, ZeroTalk, etc)\n\n####ZeroNet site importing/exporting\n\n- [Client-side] There's already an option for people to export already downloaded sites but no possibility for people to (easily) import exported sites, besides manually extracting to your `data` folder. \n- [Client-side] Ability to directly use ZIPs of exports without extracting (ZIP fully supports this)\n- [Client-side] Exclude `<database>.db` from export (everything will have to be verified again anyway)\n\n####Reduce potential Spam/DDoS\n\nZeroNet sites can be easily taken down by creating hundreds of user certs signed by whatever certificate authority the site accepts and just create as many posts as an user is allowed to create times the amount of users created. There's still no way to mitigate this and anyone can do it. I know this is a hard thing to solve but here are some methods:\n\n- [Protocol] Rate-limit the amount of new users a peer can introduce in the ZeroNet network (so you do not have a single peer that introduces thousands of new users into the network).\n- [Protocol] Instead of a (PoW based) certificate authority accept user certificates based on PoW (there's absolutely no reason not to give site owners that option; and there already is a `cert_signers_pattern` so why no `user_cert_pattern` ?) \n- [Protocol] [POW content signing (GitHub)](https://github.com/HelloZeroNet/ZeroNet/issues/1815)\n\n\n####Site maintenance (low priority)\n\n- [Protocol] Add a `redirect_to` option (which replaces the current site with the site in the `redirect_to`)\n- ~~[Protocol] Add a `freeze_after` and `freeze_before` of a site's user content after a certain date (ZeroNet peers will reject or accept user content beyond or before a certain date).~~ Can be problematic with initial synchonization. (Issue [#1802](https://github.com/HelloZeroNet/ZeroNet/issues/1802))\n\n####Full-text search (low priority)\n\n- [Client-side] Either SQLite might be utilized to do Full-text search [with FTS(5)](https://sqlite.org/fts5.html) (requires it to be compiled with the `--enable-fts5` flag) or SQLite can be replace with Elastic Search (which can also be used as a database) (Somewhere in the future)\n\n\n####Create Python APIs compatible with common dbschema.json files (low priority)\n\n- [Client-side] Think of dbschema.json files used by ZeroTalk, ZeroMe, ZeroBlog or whatever. This can be utilized, for example, to create non-Javascript UIs and functionality. See [this forum thread](http://127.0.0.1:43110/Talk.ZeroNetwork.bit/?Topic:1545441215_13CFz29UuNbUx54HmLqQBfxPQNN2FmfdAq/)\n\n\n####Support for ZeroNet certificate switching (low priority)\n- [Client-side] See issue [#1813](https://github.com/HelloZeroNet/ZeroNet/issues/1813) \n\n---\n\nThis is an incomplete and unrefined list. And please **give your feedback and own suggestions for how to improve ZeroNet and make it better for all of us.**",
+			"added": 1545423164
+		},
+		{
+			"topic_id": 1545441215,
+			"title": "(Python) APIs compatible with (common) dbschema.json files; use ZeroNet without Javascript, WebSockets or the Browser",
+			"body": "There's a way to make dynamic ZeroNet sites function without Javascript, WebSockets or the Browser, here's how:\n\nEvery dynamic ZeroNet site has a `dbschema.json` which are often simply copy-pasted from other ZeroNet applications. Because of this it is possible to write a Python API compatible with any given `dbschema.json` file and make, for example, a non-Javascript web-based UI and functionality for it.\n\nThis is very do-able since you only have to write a few UIs for forums, blogs, chat rooms whatever and adapt it to be compatible with any given `dbschema.json`.\n\nIs this something people are looking for at all? It might open up ZeroNet to a different audience, make it cache-able behind a reverse proxy, easier to crawl, performance enhancement, etc. Also it doesn't have to be a web-interface it could also be a terminal-based interface or whatever you'd like",
+			"added": 1545441213
+		},
+		{
+			"topic_id": 1545519505,
+			"title": "6 shared ZeroID accounts you can use for \"anonymous\" posting",
+			"body": "A thread for sharing ZeroID accounts. Please note that **anyone can edit, remove or corrupt**  the files signed by this shared user certificate.\n\n####anonymouslogin@zeroid.bit\n\n```\n{\n  \"1MX2KbPNTofExJ6FgSQM8MKJN5koE2TfV6\": {\n    \"certs\": {\n      \"zeroid.bit\": {\n        \"auth_address\": \"17AMQVbBa12XB3xFWKDnP2dCEx92TaiY7X\", \n        \"auth_privatekey\": \"5KCuecgDtGyLB1u1Z5ErXFmzY5LFCcrUH8rcVHsoLYPgktvDwZ4\", \n        \"auth_type\": \"web\", \n        \"auth_user_name\": \"anonymouslogin\", \n        \"cert_sign\": \"G2Vic5dDAe4DEFnXPisWahbEKjPpTrT5T01UX/ZOgS5CECFcsqiJ589jfHRamnetcwH5423GL58gb4xfXq8yknQ=\"\n      }\n    }, \n    \"master_seed\": \"7d0ae0e2bebafb7d02440979c407896796727e30a5d2c27565ed1d1ea2ba4f87\",\n```\n\n####anonlogin@zeroid.bit\n\n```\n{\n  \"15gMTmrsgqJadtDobHqq4SS1QuQfntcdYh\": {\n    \"certs\": {\n      \"zeroid.bit\": {\n        \"auth_address\": \"19r2tS5GqeMQnxmyPq9ufD79LXoMVDszDU\", \n        \"auth_privatekey\": \"5KFD8hPy9Ya5pxwa2L3P1mTPeVSDzcc8r8Xhk3S2AvxxBTPVcrJ\", \n        \"auth_type\": \"web\", \n        \"auth_user_name\": \"anonlogin\", \n        \"cert_sign\": \"HIplNArXxwmv6MuJa7e6BgoQl+LcFyunzMUIASy4WOWTfIZpRWJFMwF/mZigV4w4EuESOrl9ZZGtj7qbI6/jgFg=\"\n      }\n    }, \n    \"master_seed\": \"f8a2db8f0f471ae4ac9cbf1225082790b683e7fd0df1ed7dbb4177dd051e1e21\",\n```\n\n\n####anonymoose@zeroid.bit\n\n```\n{\n  \"13wW6gU7w4hEmLpYikPQQiLf9Fu1JWcg8p\": {\n    \"certs\": {\n      \"zeroid.bit\": {\n        \"auth_address\": \"12Y8rPJTMwJ3tTh5j81JPy6HrMf4KvY6Uq\", \n        \"auth_privatekey\": \"5JG8aTEv3N6akiF4JJ8A8cYzRPTv8ekyMj1e7v7U2Xv2QAWCVzi\", \n        \"auth_type\": \"web\", \n        \"auth_user_name\": \"anonymoose\", \n        \"cert_sign\": \"GxYxeMgJ3IXx6k527mBZUKuybmgaepbJZ6XPAkO57d6iKcoO7ZlTEyWNV8eL8kHfXZryuyB9WwSeKAJzc4MLnO4=\"\n      }\n    }, \n    \"master_seed\": \"b9306105cab09071d20a89e6cef5badf73472507d33d58359f43a327c314a4e3\",\n```\n\n####bananon@zeroid.bit\n\n```\n{\n  \"1BV4QDsbTVYZj1S5jm5MQMgqnnBWdncBzz\": {\n    \"certs\": {\n      \"zeroid.bit\": {\n        \"auth_address\": \"1HEBittLV8ADkGMhNehgZKsciCokp1RhUW\", \n        \"auth_privatekey\": \"5JFUusZvmVPwibYfXHKakMUQoVETGjiYfsGZEPbQXjwmNwjwHbi\", \n        \"auth_type\": \"web\", \n        \"auth_user_name\": \"bananon\", \n        \"cert_sign\": \"G93PUopNEVVBwVEptnwQ2RNKQOXESgStrtqDWs0TmXPrH7ji3iOBnT6oRZDmYAPF6eG388S2N74JG1lxGDFkonI=\"\n      }\n    }, \n    \"master_seed\": \"5a9e3a5040ad8ed8891e8740b3c88707b8aa288b7048e8e42ba72dcacb826b94\",\n```\n\n####shareduser@zeroid.bit\n\n```\n{\n  \"1MLTrdo4LXnqMmKs9ahSqVY9X7Y8Hk4B6j\": {\n    \"certs\": {\n      \"zeroid.bit\": {\n        \"auth_address\": \"1Fi8DX6DCYM65akSho5nuAZRmKxn9Yf77R\", \n        \"auth_privatekey\": \"5KbPLmiR7raEpDjjxKvZYPxk8MF3S3WWdLhcu5rJCbb1WSXDn5T\", \n        \"auth_type\": \"web\", \n        \"auth_user_name\": \"shareduser\", \n        \"cert_sign\": \"HO7wbZbmvSTxr2SqWXTDhS/eDM9L4kIMqJHWiwseYFEugfFwHZAq1wPM0mQS63xL+cyZ16cYmaSic68u8MaeY7g=\"\n      }\n    }, \n    \"master_seed\": \"be1d20522e8741cf44395a82cd8a84db3bf1a61cca53d3b6a86efc4f454c1895\",```\n\n\n####~~shared@zeroid.bit~~\n\n(No master seed available)\n\n```\n    \"certs\": {\n      \"zeroid.bit\": {\n        \"auth_address\": \"1FtYC6HShYNJ983pxQunrhHafM9pUVBahw\", \n        \"auth_privatekey\": \"5Jagsu39zEAarkZ3UUQHPfSFUVM2oibG1WgKK9NwbDESpmLZGoc\", \n        \"auth_type\": \"web\", \n        \"auth_user_name\": \"shared\", \n        \"cert_sign\": \"G1qSVCukOC8+/VkrsmOrmaN2XajNujRdyw4v3BdKrzrzsDY+m4BYL+KynEQ7oZ9kMDDbDJNuJ2jPnzGgFEQyZ3s=\"\n      }\n    }, \n```\n\n\n#How add the user certificates\n\n- Turn off ZeroNet\n- Backup `data/users.json`\n- Open `data/users.json`\n- Replace `\"certs\": { [...] },` by one of the `\"certs\": { [...] },` above:\n- Save and start ZeroNet\n\n##How to use the master seed for use in ZeroNet proxies \n\n- On the homepage of the proxy click on  (something like) `User: 1MX2K..TfV6`\n- Click on `Logout`\n- Click on `Login to another account`\n- Enter the `\"master_seed\"` to the input of \"Login to another account:\" and `Login`\n- Go to ZeroID and wait for a certificate (should be automatic)\n- Now you're ready to post on ZeroNet\n\n\nIf you have your own ZeroID user certificate you want to share with people, provide them in the comments below and I'll add them to the list.",
+			"added": 1545519502
+		},
+		{
+			"topic_id": 1546708965,
+			"title": "What TCP/IP Fingerprint do you have?",
+			"body": "Just want to know whether mine is different than yours, here's my fingerprint (on both Windows and Linux using Tor Browser):\n\n`Linux 3.11 and newer | Language: Unknown | Link: Ethernet or modem | MTU: 1500 | Distance 14 Hops`\n\nYou can check yours at [BrowserLeaks](https://browserleaks.com/ip)",
+			"added": 1546708961
+		},
+		{
+			"topic_id": 1546726166,
+			"title": "Torrent Dumps",
+			"body": "Here's a list of Torrent dumps that I know of. This is useful for those who want to create their own Torrent search engine (maybe even for ZeroNet)\n\n---\n\n**ThePirateBay.org dumps** (latest and older dumps available)\n\nhttps://thepiratebay.org/static/dump/csv/\n\nGzip-compressed it's only ~100MB (though there is no Seeder/Leecher information so that makes it quite hard to pick a good and working torrent)\n\n---\n\n**Kat.cr dump** (= KickAss) from June 2015 (~640MB)\n\nhttps://web.archive.org/web/20150609001718if_/http://kat.cr/dailydump.txt.gz\n\n**KickAss.to dump** from April 2015 (~640 MB)\n\nhttps://web.archive.org/web/20150425133349if_/http://kickass.to/dailydump.txt.gz\n\nData structure:\n\n>torrent_info_hash|torrent_name|torrent_category|torrent_info_url|torrent_download_url\n>|size|category_id|files_count|seeders|leechers|upload_date\n\nTorrent Dump information:\n\nhttps://web.archive.org/web/20150518164224/https://kat.cr/api/\n\n---\n\n**TorrentProject.se dump** from July 2016 (~610 MB) [NOTE: I couldn't download it from Archive.org]\n\nhttps://web.archive.org/web/20160721213429if_/https://torrentproject.se/dailydump.txt.gz\n\nTorrent Dump information:\n\nhttps://web.archive.org/web/20160721213302/https://torrentproject.se/api\n\n---\n\n**Bitsnoop.com dump** from May 2016 (size uknown) [NOTE: I couldn't download it from Archive.org]\n\nhttps://web.archive.org/web/20160327181910if_/http://ext.bitsnoop.com/export/b3_all.txt.gz\n\nTorrent Dump information:\n\nhttps://web.archive.org/web/20170324033525/https://bitsnoop.com/info/api.html",
+			"added": 1546726161
+		},
+		{
+			"topic_id": 1547060088,
+			"title": "\"Optional file ID\" (hashfield) is useless when a site has >65536 optional files",
+			"body": "Looking at the [ZeroNet network protocol documentation](http://127.0.0.1:43110/1DocsYf2tZVVMEMJFHiDsppmFicZCWkVv1/help_zeronet/network_protocol/) the `hashfield` for the optional files are only 2 bytes so they're completely useless when a site has more than 65536 optional files and will likely result in many false positives.\n\n~~I'd encourage the `hashfield` size to be increased to, say, 4 bytes.~~",
+			"added": 1547060082
+		}
+	],
+	"topic_vote": {
+		"1544937960_1JcHMiQxXHX9q3ZK2LF9rZjvg3MUtTpcK": 1,
+		"1547014808_1JGp4gaBwTZ6rjuLytHJ1o9C93kfk7UQiD": 1
+	},
+	"next_comment_id": 51,
+	"comment": {
+		"1545419387_1Mx5xcSVsv8mdsXtKwBPD8X1SEfzN2VR5u": [
+			{
+				"comment_id": 1,
+				"body": "The update mechanism is using both the ZeroNet homepage and the [update site](http://127.0.0.1:43110/1UPDatEDxnvHDo7TXvq6AEBARfNkyfxsp) (which has the updated ZeroNet code). Both of them are ZeroNet sites with more privileges.",
+				"added": 1545424101
+			}
+		],
+		"1545423165_13CFz29UuNbUx54HmLqQBfxPQNN2FmfdAq": [
+			{
+				"comment_id": 2,
+				"body": "@james007\n\nI can certainly program, and I might consider creating a fork that creates an optimized version of ZeroNet, we'll see.\n\n>complaining about it\n\nNot really, I'm sharing ideas on how ZeroNet can be improved (should maybe have chosen a different username and title, haha)\n\n>some JavaScript sandboxing\n\nWhat do you mean? ZeroNet already has Javascript sandboxing (if the Browser supports it, that is)",
+				"added": 1545427423
+			},
+			{
+				"comment_id": 4,
+				"body": "@styromaniac\n\nDoes that work with non-Dotbit domains as well?",
+				"added": 1545427910
+			},
+			{
+				"comment_id": 5,
+				"body": ">Deduplication: Immutable/hash based files would be good idea, but it would not be a replacement for current solution as it has larger overhead, than current solution\n\nThat's true. It'd require a whole re-write as well if you were to do this cross-site. Client-side solutions can still be applied though (simply do not re-download an already downloaded file based on its hash).\n\n>Compression: It would not be hard to add, but it would increase cpu/memory usage, so I dont think its worth it:\n\nI think it'd be pretty minor. Have you or anyone tested it?\n\n>It's recommended to use optional files\n\nThat's defined by the site owner, not the end-user.\n\n>ZeroNet site importing: Just copy to data dir.\n\nSure, that's an option. But since there is an `export` option why would there be no `import` option. It'd make it easier for people to share exports of ZeroNet sites.",
+				"added": 1545430072
+			},
+			{
+				"comment_id": 6,
+				"body": "@ssdifnskdjfnsdjk That's my main concern with ZeroNet at the moment, though maybe the size limit might prevent that spam to a degree.\n\n@nofish You've done great work by the way.",
+				"added": 1545430200
+			},
+			{
+				"comment_id": 8,
+				"body": "@styromaniac\n\nThat seems like a bug then...",
+				"added": 1545439199
+			},
+			{
+				"comment_id": 12,
+				"body": "@polar2\n>not so urgent.\n\nSure. It'd be nice if it was implemented though.\n\n>View your data folder\n\nOf course but it's about convenience and people would have to know about that.\n\n>Freeze\n\nUpdated the post\n\n>your username is \"funny\"\n\nIt's pretty shitty. I know.",
+				"added": 1545482876
+			},
+			{
+				"comment_id": 13,
+				"body": "@trenta3 Thanks, might be worth looking into as well (added it to the post)\n\n(Though it would require SQLite to be compiled with the `--enable-fts5` flag by the way)",
+				"added": 1545496128
+			},
+			{
+				"comment_id": 14,
+				"body": "@thunder33345 Right, it's a big difference of having the site owner decide what my client downloads and the end-user deciding what gets downloaded.\nMy client already only downloads HTML, JSON, CSS, Javascript and other \"essential\" resources.\n\nRegarding the content-addressed file access I think it's best to gradually migrate to it, starting with the client-side (so the protocol doesn't have to be changed)",
+				"added": 1545515900
+			},
+			{
+				"comment_id": 17,
+				"body": ">hope that this wont be just a 1 time throw away account\n\nSadly I do this very often. And I wasn't very creative with my name choice this time ;)\n\n>i doubt it needs protocol changes for dedupe\n\nIt doesn't really and I could and should already be working on it. The only thing that would require a protocol change is downloading a file based on its hash alone without having to first download all site metadata until one has figured out which site has that particular file.\n\n>having multiple names without all the multiuser hacks\n\nMuch needed and possible. I'll add it.\n\n>Web Of Trust\n\nCould be an interesting solution to ZeroNet's problems. But it will probably be too complicated to add.",
+				"added": 1545518729
+			},
+			{
+				"comment_id": 24,
+				"body": "@quantumworld Right, I don't like block-lists, word filters, or @thunder33345 's idea (didn't read your whole post, sorry):\n\n>an api to allow site to add blocks on behalf of user to nuke all instance of say illegal content off their disk by adding a regex to that board without relying on user block there should be multiple blocking mode, one begin a prompt user to allow or block on request, and a silent block\n\nIt's kind of ironic how quickly ZeroNet has adopted shareable user and site blocklists ...",
+				"added": 1546011490
+			},
+			{
+				"comment_id": 26,
+				"body": "@hexator\n\n>One idea I had was archival stores using cloud storage.\n\nI think some user-friendly import functionality solves that issue. Because people will naturally use other file sharing methods when they can easily import/export ZIP files of a Zite.\n\n@thunder33345 \n\n>forced to download certain boards on Millchan\n\nYou're only downloading the textual content not the images on there but I can see why you'd find that problematic (as do I). Anyway, I'm not entirely settled on how the user control should work yet, but I agree with you that the user should be able to decide what should or what should not be downloaded though I don't like shared block-lists or anything too aggressive.\n\n>i dont like the user blocklist though... sites are acceptable since it's just a warning\n\nRight, user block-lists are the most problematic because it's hidden from view.",
+				"added": 1546040473
+			},
+			{
+				"comment_id": 31,
+				"body": "@klu9 In case of Millchan you want to only download the images of boards you're interested in which would require a bit more advanced user control over the downloading of files.\nSome options: \n- Ability to temporarily browse a site and only download the essentials so you can get a preview of the site (just like browsing the web normally) and decide whether you want to keep it or not. (There is so much low-quality or illegal crap on ZeroNet you don't want to seed)\n- Ability to browse the site with a file extension whitelist or blacklist (e.g, no images, or only the textual content)",
+				"added": 1546050379
+			}
+		],
+		"1515669115_1L4dZcDF2maSKHDy788yhxpYnBWnXadUtS": [
+			{
+				"comment_id": 3,
+				"body": "@htgozn\n\n>21GB of redundant data\n\nThat's quite a lot....",
+				"added": 1545427791
+			}
+		],
+		"1545308490_1CSyXuUPje7aUipDKqm3xhm6BKH3SjDZUu": [
+			{
+				"comment_id": 10,
+				"body": "Maybe if you use the files in the official repository it'll work: https://github.com/HelloZeroNet/ZeroMail",
+				"added": 1545445037
+			}
+		],
+		"1545441215_13CFz29UuNbUx54HmLqQBfxPQNN2FmfdAq": [
+			{
+				"comment_id": 11,
+				"body": ">You can directly read .db file. It is SQLite.\n\nRight. And since people often re-use the same `dbschema.json` file you can re-use the same API to that database as well.",
+				"added": 1545482571
+			},
+			{
+				"comment_id": 18,
+				"body": "I think you can do `[zeronet] siteSign <address> <private key> `",
+				"added": 1545575143
+			}
+		],
+		"1543643463_17AMQVbBa12XB3xFWKDnP2dCEx92TaiY7X": [
+			{
+				"comment_id": 15,
+				"body": ">Why don't you use the anonymouslogin account more often?\n\nBecause I can delete and alter everything @anonymouslogin said. But it might be a good experiment and I've added `shared@zeroid.bit` so people have more choice (see [this thread](http://127.0.0.1:43110/Talk.ZeroNetwork.bit/?Topic:1545519505_13CFz29UuNbUx54HmLqQBfxPQNN2FmfdAq/Shared+ZeroID+accounts))",
+				"added": 1545516026
+			}
+		],
+		"1545515632_17AMQVbBa12XB3xFWKDnP2dCEx92TaiY7X": [
+			{
+				"comment_id": 16,
+				"body": "Because you only fetch a portion of peers available from the trackers. 0net is running 24/7 so it'll see more ZeroNet peers than a client that has been running for a shorter amount of time. A lot of those peers are probably dead peers by the way.",
+				"added": 1545516302
+			}
+		],
+		"1545519505_13CFz29UuNbUx54HmLqQBfxPQNN2FmfdAq": [
+			{
+				"comment_id": 19,
+				"body": "I'll have to write a script that archives all changes being made to these accounts --- to possibly revert malicious or accidental corruption",
+				"added": 1545664281
+			},
+			{
+				"comment_id": 21,
+				"body": "@xianc78 That's a possibility. I'm not sure what's the best way going forward with ZeroNet's way of handling user data, perhaps Proof-of-Work signing would work, or some kind of peer consensus protocol... if something like that is implemented anonymous user content will be more workable.",
+				"added": 1545690556
+			},
+			{
+				"comment_id": 23,
+				"body": ">Generating a great number of one-time accounts either should not generate a problem or ZeroNet will face the same problem when the normal accounts reach that number.\n\nThe main problem with many accounts is that it'll create at minimum the duplicate amount of files on-disk (`data.json` and `content.json`). And all these (small on average) files will have to be downloaded individually from peers on the ZeroNet network. This can be solved by a new way of propagating many files on the ZeroNet network (request X files in bulk as a Gzipped tar from peer) and storage on disk (small files can be stored in a SQLite database)\n\n>I think it is better to use these accounts randomly.\n\nI'm doing that as well now. They have come in handy I must say (especially for proxies)",
+				"added": 1546010612
+			},
+			{
+				"comment_id": 25,
+				"body": "@quantumworld Or simply backing up the `data/users.json` file and replacing it whenever you want to use your different ZeroNet account. Still a terrible way of handling multiple IDs :)",
+				"added": 1546012547
+			},
+			{
+				"comment_id": 41,
+				"body": "@bananon ZeroTalk is not the best place for this no. I won't be able to recover the master_seed for `shared@zeroid.bit` but it can still be used if you have access to `users.json`",
+				"added": 1546884939
+			}
+		],
+		"1545642302_1b4WB9mZcpjKdQUnYvGBgTMeatTxXTBnf": [
+			{
+				"comment_id": 20,
+				"body": ">Is there a better wiki for ZeroNet that allows multiple people to edit it, and maybe even supports user accounts\n\nYes there is [ZeroWiki](http://127.0.0.1:43110/138R53t3ZW7KDfSfxVpWUsMXgwUnsDNXLP/) but whenever someone makes a single change to any page it copies the whole article to the file of the user that made the change (not very efficient)",
+				"added": 1545664668
+			}
+		],
+		"1545851840_19r2tS5GqeMQnxmyPq9ufD79LXoMVDszDU": [
+			{
+				"comment_id": 29,
+				"body": "It's your `master_address` which is derived from the `master_seed` like so:\n\nGo to `ZeroNet/src`, open Python (2) and run:\n```\nfrom Crypt import CryptBitcoin\nCryptBitcoin.privatekeyToAddress(\"7d0ae0e2bebafb7d02440979c407896796727e30a5d2c27565ed1d1ea2ba4f87\")\n```",
+				"added": 1546042653
+			}
+		],
+		"1546045810_131Seivv6aH8vnohPmYPcPwPfZ1a5ubMMs": [
+			{
+				"comment_id": 30,
+				"body": "At the top you can see three dots, click on that and you'll see a list of options:\n`Order sites by peers`\n`Order sites by update time`",
+				"added": 1546049583
+			},
+			{
+				"comment_id": 32,
+				"body": "@klu9 Time to fork the ZeroNet homepage :)",
+				"added": 1546127298
+			}
+		],
+		"1546138183_12NqXRG5Ur6HzBsgR2kgPxmcWGhR9sxSLi": [
+			{
+				"comment_id": 33,
+				"body": "Here are the [latest ZeroNet docs](http://127.0.0.1:43110/1DocsYf2tZVVMEMJFHiDsppmFicZCWkVv1/) you can get sense of how the ZeroNet protocol works [here](http://127.0.0.1:43110/1DocsYf2tZVVMEMJFHiDsppmFicZCWkVv1/help_zeronet/network_protocol/)",
+				"added": 1546182714
+			}
+		],
+		"1546299446_1L4dZcDF2maSKHDy788yhxpYnBWnXadUtS": [
+			{
+				"comment_id": 34,
+				"body": "@styromaniac\n\nOpenSUSE was founded by Novell (defunct as of November 2014) and Novell was acquired by **Micro Focus International plc**",
+				"added": 1546526429
+			},
+			{
+				"comment_id": 35,
+				"body": "@styromaniac I just looked at OpenSUSE's Wikipedia page. You got close though",
+				"added": 1546526677
+			}
+		],
+		"1544911802_14cqdxte9VRXGe4WYEY49Htx1HxUqKNGrP": [
+			{
+				"comment_id": 36,
+				"body": "[Fight the New Drug](https://fightthenewdrug.org/)",
+				"added": 1546527288
+			}
+		],
+		"1546708965_13CFz29UuNbUx54HmLqQBfxPQNN2FmfdAq": [
+			{
+				"comment_id": 37,
+				"body": "Thanks @hexator\n\nI've tried it on another Windows computer and the TCP/IP fingerprint is (only the `Distance` varied):\n\n `Linux 3.11 and newer | Language: Unknown | Link: Ethernet or modem | MTU: 1500 | Distance 12`\n\nNot sure if the BrowserLeaks test is accurate.",
+				"added": 1546720146
+			},
+			{
+				"comment_id": 39,
+				"body": "@ssdifnskdjfnsdjk Hm, odd. I've tried on Windows 8,  Windows 7 and on a Debian-based Linux distro and they all show the same result for me, though the `MTU` and `Distance` seem to vary (haven't tried on a Wi-Fi-connected device yet)\n\n>Btw. check this related topic\n\nThere's a lot more to be concerned about, even when using Tor Browser (which leaks your platform through `navigator.platform`)\n\n---\n\nA Windows 10 laptop connected to Wi-fi gave me this result:\n\n`Linux 2.2.x-3.x (no timestamps) | Language: Unknown | Link: Ethernet or modem | MTU: 1500 | Distance 8`",
+				"added": 1546723269
+			},
+			{
+				"comment_id": 40,
+				"body": "Good news, when using Tor (Browser) the TCP/IP fingerprint will be that of the exit node, not your own. I thought I saw a Tor Browser ticket stating that the TCP/IP stack could be used to fingerprint its users, apparently not. All tests I've done were with the latest Tor Browser Bundle on various OSes and devices.",
+				"added": 1546728507
+			}
+		],
+		"1544937960_1JcHMiQxXHX9q3ZK2LF9rZjvg3MUtTpcK": [],
+		"1546815090_1L4dZcDF2maSKHDy788yhxpYnBWnXadUtS": [
+			{
+				"comment_id": 42,
+				"body": "ZeroNet can't access your `/root/.tor/control_auth_cookie` which is logical because that would require giving ZeroNet root access. Add this to your `torrc` file:\n\n```\nControlPort 9222\nCookieAuthentication 1\nCookieAuthFileGroupReadable 1\n```\n\nAnd add yourself to the `tor` group, like so:\n\n`adduser YOUR_USERNAME tor`\n\n And connect ZeroNet to that control port:\n\n`--tor_controller 127.0.0.1:9222`\n",
+				"added": 1546886045
+			},
+			{
+				"comment_id": 44,
+				"body": "@ssdifnskdjfnsdjk I'm not sure how to solve your problem, but you can always use Tor by using it in combination with Tor Browser, here's how:\n\n- [Download Tor Browser](https://www.torproject.org/download/download-easy.html.en)\n- Go to \"Preferences\" by clicking on the hamburger menu (top right) or by going to `about:preferences`\n- Under \"Network Proxy\" click on \"Setting ...\"\n- Add `127.0.0.1` to \"No proxy for\"\n- Launch ZeroNet with the following options:\n\n`--tor_controller 127.0.0.1:9151 --tor_proxy 127.0.0.1:9150 --tor always`\n\nMaybe this can help you further:\n\nhttp://127.0.0.1:43110/1DocsYf2tZVVMEMJFHiDsppmFicZCWkVv1/faq/#how-to-make-zeronet-work-with-tor-under-linuxmacos\n\nAlso you can simply use the Tor proxy without connecting to the Tor controller (as stated in the above link), like so:\n\n`zeronet.py --tor disable --proxy 127.0.0.1:9050 --disable_udp`",
+				"added": 1547050062
+			}
+		],
+		"1546726166_13CFz29UuNbUx54HmLqQBfxPQNN2FmfdAq": [
+			{
+				"comment_id": 43,
+				"body": "@james007 Thanks",
+				"added": 1546891733
+			}
+		],
+		"1547060088_13CFz29UuNbUx54HmLqQBfxPQNN2FmfdAq": [
+			{
+				"comment_id": 45,
+				"body": "While we're on the topic of ZeroNet's network protocol, I'd love to see the ability to request a file based on its (`site_address` +) `sha512` hash instead of `site_address` + `path`, this makes much more sense.\n",
+				"added": 1547060872
+			},
+			{
+				"comment_id": 47,
+				"body": "@nofish Not entirely useless no, but only having 2 byte long digests will cause a lot of false positives so you'll have to attempt to request a file from a peer until you've found the peer that actually has the file.\n\n>but it would double the data stored in memory, database and to be transferred between clients.\n\nDidn't know it was stored persistently, why is that? But you're right you'd have to weigh the pros against the cons.",
+				"added": 1547063144
+			},
+			{
+				"comment_id": 48,
+				"body": "@nofish Alright, makes sense. Anyway, now the total size for the hashfields cannot(?) exceed 128KiB while having 4 bytes will make it possible for a peer to send a 8192MiB hashfield... so that's not a good idea :)\n\nIs there a cap on the maximum hashfield size yet? Because there's no reason it should exceed 128KiB",
+				"added": 1547063623
+			}
+		],
+		"1547014808_1JGp4gaBwTZ6rjuLytHJ1o9C93kfk7UQiD": [
+			{
+				"comment_id": 46,
+				"body": "@redlibertyreal Communism and Marxism are still very much utilized and appreciated by China's Communist Party to consolidate their power, these ideologies have always resulted in unnecessary bloodshed and consolidation of power simply because **it does not work no matter it's intentions and weasel words.**\n\nI find it extremely saddening how little we have been educated and care about the Bolshevik revolution, the Holodomor, the Gulag systems, the Armenian genocide, the Great Leap Backwards, China's Laogai system, North Korea's death camps, and what-not ...",
+				"added": 1547061277
+			},
+			{
+				"comment_id": 49,
+				"body": "> [quantumworld](#comment_122_1AdWXZdPUimpXoGNXUBde2CHR7gLf4onxE): How are they able to block zeronet from China?\n\nThere are many ways to detect a ZeroNet user if (s)he is not using Tor, that is:\n\n- ZeroID requires you to connect to `qc.to`\n- The traffic to the BitTorrent tracker is distinguishable from the default BitTorrent usage\n- The ZeroNet tracker `zero.booth.moe`\n- The FileServer port which can be probed\n- The unique ZeroNet peer traffic fingerprint\n- Simply by MITMing the ZeroNet peer certificates and replacing it, there's no way to detect whether MITM attacks happened due to lack of verification and certification (Trust On First Use, or TOFU, would help but would require a bit more persistence)\n\nAnd probably more I forgot.",
+				"added": 1547083067
+			}
+		],
+		"1547226852_16NS3rBdW9zpLmLSQoD8nLTtNVsRFtVBhd": []
+	},
+	"comment_vote": {}
+}

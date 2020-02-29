@@ -1,0 +1,40 @@
+{
+	"title": "onecoder's blog",
+	"description": "My ZeroBlog.",
+	"links": "- [Source code](https://github.com/HelloZeroNet)",
+	"next_post_id": 6,
+	"demo": false,
+	"modified": 1488724671,
+	"post": [
+		{
+			"post_id": 5,
+			"title": "win7安装namecoin以及.bit域名",
+			"date_published": 1488648626.008,
+			"body": "昨天在win7系统里面试了一下.bit域名解析，在这里记录一下。\n\n先说理解 namecoin是一种域名币，通过NMC可以购买.bit域名。\n目前.bit域名还不能在常规的dns系统使用，必须借助nmcontrol软件实现。\nnamecoin同步了一个完整的区块链，可以查询.bit域名。\n在本地安装nmcontrol，自动启动一个dns server，通过RPC调用namecoin获取.bit域名的信息。\n如果要在本机使用.bit域名，将本机的dns指向127.0.0.1,启动nmcontrol处理理.bit域名，其他域名会转给常规dns处理。\n这个软件存在的问题：我的笔记本在公司里面必须使用公司内网的DNS，必须要指定一下，否则内网就用不了了。\n\nwin7下安装的参考https://github.com/namecoin/nmcontrol，步骤如下：\n\n一、下载安装namecoin-QT.exe nmcontrol.exe并安装 \nnamecoin必须要同步，大概三四天才能同步完成，共3.5G，目前只知道慢慢同步，欢迎大家提供新思路。\n\n二、安装python pip 下载get.py 安装pip 下载pywin32\n在https://www.python.org/ftp/python/2.7.13/python-2.7.13.msi下载python2.7\n在https://bootstrap.pypa.io/get-pip.py下载get-pip.py \n然后执行python.exe get-pip.py\npip install bottle\n在https://sourceforge.net/projects/pywin32/files%2Fpywin32/ 下载适合你的pywin32\n\n三、设置配置文件\nWindows下 \n\nNMControl 配置文件目录 %appdata%\\Nmcontrol\nNamecoin 配置文件目录 %appdata%\\Namecoin\n\n在C:\\Users\\$YOURNAME\\AppData\\Roaming\\Namecoin\\ 新建namecoin.conf 添加rpc设置\nserver=1\nrpcuser=winston\nrpcpassword=USE_THIS_STRING_TO_GET_ROBBED._JUST_HAMMER_YOUR_KEYBOARD\nnamehistory=1\n\n在C:\\Users\\$YOURNAME\\AppData\\Roaming\\Nmcontrol\\conf\\ 配置server-dns.conf 添加\ndisable_standard_lookups=0\nresolver=114.114.114.114, ;可以选择其他dns，注意最后面要加逗号\n\n四、调试执行\n下载nmcontrol 源码 https://github.com/namecoin/nmcontrol.git，进行build\nbuild_windows_console.bat\nbuild_windows_gui.bat\n执行过程有报错，但是后面没影响，具体什么原因未知\n启动nmcontrol  两种方式\npython nmcontrolwin.pyw  # GUI version\npython nmcontrol.py --debug=1  #console&debug&log\n\n调试方法：\n终端开启debug模式\n查看日志 C:\\Users\\$YOURNAME\\AppData\\Roaming\\Nmcontrol\\log.txt 文件查看错误提示\n\n测试方法：\nnslookup.exe baidu.com 127.0.0.1 \nnslookup.exe 0.bit 127.0.0.1\n此处注意，我注册的onecoder.bit是在zeronet使用，没有ipv4地址，所以没有显示，但是命令行终端调试会显示查询到的json结果\n\n一切没问题后，关闭测试窗口，启动安装版本的nmcontrl即可\n\n其他：\n在linux安装的wiki参考https://wiki.namecoin.info/index.php?title=Install_and_Configure_Namecoin 但是我的VPS是centos6，好多软件都版本太老，gcc等基础软件都不支持。等我有时间弄一个centos7试一下。\n\n另外关于namecoin注册.bit域名的json格式，记录如下\n假设域名为example.bit 1.2.3.4\n子域名为www.example.bit 1.2.3.5\n\nzeronet域名 \n{\"zeronet\":{\"\":\"1HeLLo4uzjaLetFx6NH3PMwFP3qbRbTf3D\",\"subdomain\":\"1HeLLo4uzjaLetFx6NH3PMwFP3qbRbTf3D\"}}\nIP形式\n{\"ip\":\"1.2.3.4\", \"map\": {\"www\": {\"ip\":\"1.2.3.5\"}}} \n以下两个不太懂，仅作记录\n都指向一个IP\n{\"ns\": [\"1.2.3.4\", \"1.2.3.5\"]}\n指向另一个域名\n{\"ns\": [\"ns0.web-sweet-web.net\", \"ns1.web-sweet-web.net\", \"ns0.xname.org\"]}\n其他格式参考 \nhttps://wiki.namecoin.info/index.php?title=Register_and_Configure_.bit_Domains#How_to_configure_your_domain\n\n暂时就写到这里了。"
+		},
+		{
+			"post_id": 4,
+			"title": "设置bit域名",
+			"date_published": 1488424213.974,
+			"body": "买了个bit域名玩玩，onecoder.bit\n\nblog 地址 ：[http://127.0.0.1:43110/onecoder.bit/](http://127.0.0.1:43110/onecoder.bit/)\n\n参考的文档，一并感谢：\n\n东先生的blog ：[http://127.0.0.1:43110/mydf.bit/?Post:47#Comments](http://127.0.0.1:43110/mydf.bit/?Post:47#Comments)\n\n论坛：[http://127.0.0.1:43110/NewGFWTalk.bit/?Topic:3_1CwbqLCD6TdkinNNNb4GneZxbsoJ6Mw6oE/ZeroNet](http://127.0.0.1:43110/NewGFWTalk.bit/?Topic:3_1CwbqLCD6TdkinNNNb4GneZxbsoJ6Mw6oE/ZeroNet)\n\n主要的步骤：\n\n1、下载namecoin-QT，同步数据，并生成namecoin账号。同步了两天多，太慢了\n\n2、我之前在localbitcoins.com上买了比特币，之后在[https://zh.shapeshift.io/#/coins 转](https://zh.shapeshift.io/#/coins转)换成namecoin ，以后可是试试博客提到的\n\n3、在namecoin客户端manage names，点击submit，提示错误 This transaction requires a transaction fee of at least 0.0035 because of its amount, complexity, or use of recently received funds ，可能是transaction余额不足，过了有半个小时自己好了。到这步特别崩溃，余额和账户都有，完全不知道啥原因，估计是网络没有记录吧。\n\n4、注册好域名，设置blog，等待生效。我没有专门等待，大概四个小时就可以了。\n\nbit域名很便宜啊，一个域名0.02NMC，大概CNY也就2分钱左右，哪个朋友有需要注册的，可以联系我！\n\nBTC转NMC\nhttps://btc-e.com/\nhttps://zh.shapeshift.io/#/coins\n购买BTC\nhttps://localbitcoins.com/"
+		},
+		{
+			"post_id": 3,
+			"title": "zeronet初印象",
+			"date_published": 1488384322.443,
+			"body": "这几天刚开始玩ZeroNet，感觉很新鲜，像一个世外桃源。\n\n这里没有那么多的杂乱的信息，有的是各种志愿者提供的服务，感觉特别好。\n\n确实是一种回归，返璞归真，就是大家共享信息，互相交流的平台，就像首页的地球图片一样，也许在地球的各个角落，但是没有距离感。\n\n就这么写吧\n\n下载了ZeroMux ，以下是我的文件保存地址，（其实没什么文件要保存的）\n\nhttp://127.0.0.1:43110/1NuaaadVekX98c4Tdyg9UCWJUceJ5aZ9xK/ZeroMux/"
+		},
+		{
+			"post_id": 2,
+			"title": "some todolist\t",
+			"date_published": 1488271112.57,
+			"body": "bit domain\n\nzeromux\n\nmarkdown\n\nlet's encrypt\n\nchange blog  and sync to git(github)"
+		},
+		{
+			"post_id": 1,
+			"title": "Congratulations!",
+			"date_published": 1433033779.604,
+			"body": "Your zeronet blog has been successfully created!"
+		}
+	]
+}

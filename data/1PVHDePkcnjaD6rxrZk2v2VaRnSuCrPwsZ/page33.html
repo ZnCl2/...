@@ -1,0 +1,214 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="MnNStory: 我和一个女同学15年的故事">
+<meta name="keywords" content="MnNStory,校园爱情,15年,女同学,女生">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<title>心愿</title>
+<script src="jquery.js"></script>
+<script src="qrcode.js"></script>
+<script>
+function loadCSS(href) {
+	var cssLink = $("<link rel='stylesheet' type='text/css' href='"+href+"'>");
+	$("head").append(cssLink);
+	return cssLink;
+};
+
+var relocate;
+
+$(function(){
+            var device="computer";
+        var fontSize=($(window).width()/25).toFixed(0);
+        relocate=relocateC;
+    
+	loadCSS("main_"+device.substring(0, 1)+".css").load(function(){
+		relocate();
+		setTimeout(relocate, 1000);
+		setTimeout(function(){
+			var fontSize=$('body').css('fontSize');
+			var qrcode = new QRCode(document.getElementById("QRCode"), {
+				width : parseInt(fontSize)*7,
+				height : parseInt(fontSize)*7
+			});
+
+			qrcode.makeCode(window.location.href);
+		}, 1000);
+	});
+
+	$(window).resize(relocate);
+
+    
+	function relocateC(){
+		function bottom($el){
+			return $el.position().top + $el.outerHeight(true);
+		}
+
+		var $footer=$('#footer');
+		$footer.css({
+			top: 0,
+			display: 'none'
+		});
+		var top=Math.max(
+			bottom($('#textWrapper')),
+			bottom($('#contents')),
+			$(document).height() - $footer.outerHeight()
+		);
+		$footer.css({
+			top: top,
+			display: 'block'
+		});
+	}
+
+        $('.patch-more').click(function(){
+        var page=$(this).data('page');
+        var paragraph=$(this).data('paragraph');
+
+        location.href='page'+page+'.html#paragraph='+paragraph;
+    });
+
+    setTimeout(function () {
+                    var ret=document.referrer.match(/#paragraph=(\d+)/);
+                if (!ret) {
+            return;
+        }
+        var paragraph=ret[1]-1;
+
+        var objParagraph=$('#text p:eq('+paragraph+')');
+        var flash=function () {
+            objParagraph.css('color', 'red');
+            setTimeout(function() {
+                objParagraph.css('color', 'initial');
+            }, 1000);
+        };
+        $('html, body').animate({
+            scrollTop: objParagraph.offset().top-$('#textWrapper').offset().top,
+        }, 500, flash);
+    }, 100);
+
+    var pIndex=0;
+    $('#text p').each(function () {
+        ++pIndex;
+        if (!$(this).attr('id')) {
+            //$(this).attr('id', 'paragraph_'+pIndex);
+        }
+    });
+});
+
+function showComments(){
+	$.blockUI({
+		message: $('#disqus_thread'),
+	});
+
+	$('body').click($.unblockUI);
+}
+</script>
+</head>
+<body>
+<div id="cover" style="background-color: #F1F1F1; position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 2048;"></div>
+<div id="nav">
+	<div class="Three">
+		<div id="navLeft" class="left c">
+			<a href="page32.html" class="blackText">&lt;&lt;&lt;prev</a>		</div>
+		<div id="navRight" class="right c">
+			<a href="page34.html" class="blackText">next&gt;&gt;&gt;</a>		</div>
+		<div id="navTitle" class="middle">
+			心愿		</div>
+	</div>
+	<div class="Three m">
+		<div class="left" style="width: 4em">
+			<a href="page32.html" class="blackText">&lt;&lt;&lt;</a>		</div>
+		<div class="right" style="width: 4em">
+			<a href="page34.html" class="blackText">&gt;&gt;&gt;</a>		</div>
+		<div class="middle">
+			<a href="/index.html" class="blackText">[Home]</a>
+		</div>
+	</div>
+</div>
+<div id="images" class="c">
+	<a href="downloads/mnnstory.zip" target="_blank"> <img src="download.png" style="width: 100%;" title="下载" alt="Download" /> </a>
+	<p id="QRCode"></p>
+</div>
+<div id="contents" class="c">
+	<p class="contents_d0"><a href="index.html">目录</a></p>
+	<ul class="contents_d1"><li><a href='page1.html'>上册</a>
+</li><li><a href='page14.html'>上册配乐</a>
+</li><li><a href='page32.html'>下册</a>
+<ul class="contents_d2"><li>心愿
+</li><li><a href='page34.html'>概率</a>
+</li><li><a href='page35.html'>重逢</a>
+</li><li><a href='page36.html'>街景</a>
+</li><li><a href='page37.html'>追求</a>
+</li><li><a href='page38.html'>梦想</a>
+</li><li><a href='page39.html'>糖果</a>
+</li><li><a href='page40.html'>夕阳无限好</a>
+</li><li><a href='page41.html'>电影</a>
+</li><li><a href='page42.html'>怪谁</a>
+</li><li><a href='page43.html'>寄语</a>
+</li><li><a href='page44.html'>移民</a>
+</li><li><a href='page45.html'>永远</a>
+</li><li><a href='page46.html'>附录：幸福的惊人科学发现</a>
+</ul></li><li><a href='page47.html'>下册配乐</a>
+</li><li><a href='page49.html'>订正簿</a>
+</ul></div>
+<div id="disqus_thread"></div>
+<script>
+	var disqus_config = function () {
+		this.page.url = 'http://mnnstory.onion';
+		this.page.identifier = 33;
+		this.page.title = '心愿'
+	};
+
+
+	(function() {
+		var d = document, s = d.createElement('script');
+
+		s.src = '//mnnstory.disqus.com/embed.js';
+
+		s.setAttribute('data-timestamp', +new Date());
+		(d.head || d.body).appendChild(s);
+	})();
+</script>
+<div id="textWrapper">
+	<div id="text">
+		<p>2016年2月5日，离大年夜仅两天。晚上，我和老同学通了电话。对于她的思念并未被时间淡化，唯有见她一面，才能缓解这种痛苦。能约她出来一次，是我此时最大的心愿。</p>
+<p>电话中，她声音起初轻而软，和记忆中相仿，但没讲几句，就开始低沉嗓子说话。不知是因紧张，还是对我有陌生感，刻意表现出认真和尊重。</p>
+<p>听到她已订婚，我并未立即放弃约她出来的意愿。我边叹息边向她倾诉对上海的留恋，希望她能体会到我对她的惜别之情。结果却让我当时很失望。</p>
+<p>问她“这5年”做了哪些事，她似乎更在意工作情况，问了很久，才整理出：她去了香港、澳门、臺灣和韩国旅游。去年9月与人相亲，觉得满意，准备今年5月结婚。她对这5年的结论是：“被你问起，才发现这5年，我似也没做什么事。”她承认自己是工作狂，也反省说，虽然婚礼在即，对于新房装修的事，一直没心思去管。</p>
+<p>她对学习与事业的投入，曾令我甚为恼火。我怀疑过她只因学习和事业才与我接触，或是用只谈这两件事的方法让我无从接近她。然而此时，我却终于相信了她是真把这两件事看得很重。</p>
+<p>当我讲到就要去X国定居时，她似把此事视为我职场的成就。针对我的难舍之情，她只是劝我，也许将来还会回上海，自己却没惜别之意。对我生活中或许将遇到的困难，她关心甚少。唯一让我察觉到她感情的一句话是：“那你过去以后，父母怎么办呢？”我解释了X国的移民政策，并给出结论，以后他们可以过来一起住。</p>
+<p>之前，与不太熟悉的同事谈起我移民的事，对方对我的衣食住行，都表达了关心。与她的反应有强烈的反差。我也承认，她的态度本也符合情理。</p>
+<p>和她浑浑噩噩地聊了半小时多后，电话结束了。深夜，漆黑中，我用各种理由试图说服自己，不应该再想找她。这让我一夜无眠。</p>
+<p>除夕的半夜，我经过构思，用小心而客气的语气，发去了对她人生及婚姻的祝福和忠告。年初一午夜12:39，她的回应让我更寒心：</p>
+<p>“嗯嗯，这个时代这个国度，他们会剥夺你很多东西，但是！但是他们剥夺不了我的梦想！新年快乐！猴年<a href="#comment_1" class="issue">猴塞雷</a><sup id="issue_1">1</sup>！”</p>
+<p>众所周知，新年送祝福，就是挑别人爱听的说。可她的回复除了套话和热词，只有内心独白——“我只为梦想而战！”。甚至，对我的善意，她都没表态。 “谢谢，新年快乐！”恐怕都比这段话好。</p>
+<p>我想了各种办法来补偿这种遗憾。</p>
+<p>我把关于她的许多回忆，不论是开心的和悲伤的，都记了下来，共1.4万字整。我翻唱、改编和创作了15首曲子，宣泄心中情感。</p>
+<p>我去了已变成寺庙的小学。在复兴路上的“大肠面”，我排了一个半小时队，才得以回味童年时的美食。同样为了追忆童年，我专程去吃了三次“缩头面”。我还回到了我一直住到大一的老房子，并和83岁的老邻居谈了良久，发现她口音还分尖团。</p>
+<p>我与一起玩到大的表哥告了别。他准备今年11月结婚，说本来要我当伴郎，但现在不行了。不过以后度蜜月，会来X国找我，一起游山玩水。我很高兴。</p>
+<p>最后，我决定把爷爷的遗像带在身上，随我一起登机飞向新生活。我向爷爷许愿：“我一定要从思念她的痛苦中解脱出来！”</p>
+<p>我相信，这么许多事情都做了，多少会有点效果。但即将离开上海的最后一周，我又梦到了她：</p>
+<p>梦中，我的心愿终于实现了。这一次，我见到了久违的她的脸。向她倾吐一切对她的感情。她听得入了神，听完后伤心地说，其实她并不爱她未婚夫，只因父母逼婚才不得已而为之。我信以为真，但她却越走越远，最后转身进了汽车，在远处消失。我才想到，她刚才或许只是安慰我。</p>
+<p>梦醒后，我对自己说，无论如何，就算是最后一线希望，我也要再试试。不管她答应与否，不论见了面后她会如何，都要比一味地压抑好。</p>
+<p>我把上册改了又改，标题由起初的“我单恋一个女同学15年的故事”，到“遗憾”，最后改为“回忆录”。写在纸上的事，往往更清晰。在反复修改和阅读中，我强烈地感到，她并非无情。</p>
+<hr class="comment" />
+<p class="comment" id='comment_1'><a href="#issue_1" class="comment">[1]</a>网络流行词，来源于广东话，很厉害的意思。
+</p>
+<p>&nbsp;</p>	</div>
+</div>
+<div id="footer">
+	<div id="declaration">
+		本故事为作者亲身经历
+	</div>
+	<div id="bannerLine" class="Three">
+				<div class="middle">
+            			    <a href="about.html">MnNStory, 1 Sep 2001 - 12 Mar 2016</a>
+            		</div>
+	</div>
+	<hr class="m" />
+	<div id="switch2c" class="m">
+		<a href="">电脑版</a>
+	</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,367 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>
+      
+        HTTP Live Streaming 笔记 - 
+      
+      早起
+    </title>
+    
+    <meta name="author" content="Been Woo">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/css-social-buttons/css/zocial.stripped.css">
+    <link href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/css/pygments.css" rel="stylesheet" type="text/css" media="all">
+    <link href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/css/darkstrap.css" rel="stylesheet" type="text/css" media="all">
+    <link href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- fav and touch icons -->
+    <!-- Update these with your own images
+      <link rel="shortcut icon" href="images/favicon.ico">
+      <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+      <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+      <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+    -->
+  </head>
+
+  <body>
+    <div id="page-wrap">
+      <div class="navbar">
+        <div class="navbar-inner">
+          <div class="container">
+            <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </a>
+
+            <a class="brand" href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq">早起</a>
+
+            <div class="nav-collapse">
+              <ul class="nav">
+                
+                
+                
+
+
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/archive.html">归档</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/tags.html">标签</a></li>
+      	
+      
+    
+  
+
+
+
+              </ul>
+              <ul class="nav pull-right social visible-desktop">
+                <li class="divider-vertical"></li>
+                
+                <li>
+                  <a href="https://github.com/sqbing" class="zocial github icon" target="_blank">
+                    <span class="hidden-desktop">Github</span>
+                  </a>
+                </li>
+                
+                
+                
+                <li>
+                  <a href="https://twitter.com/sqbing" class="zocial twitter icon" target="_blank">
+                    <span class="hidden-desktop">Twitter</span>
+                  </a>
+                </li>
+                
+                
+                
+                <li>
+                  <a href="http://www.linkedin.com/in/beenwoo" class="zocial linkedin icon" target="_blank">
+                    <span class="hidden-desktop">LinkedIn</span>
+                  </a>
+                </li>
+                
+                
+                <li>
+                  <a href="http://feeds.feedburner.com/feedname" class="zocial rss icon" target="_blank">
+                    <span class="hidden-desktop">FeedBurner</span>
+                  </a>
+                </li>
+                
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="container">
+        <div class="content">
+          
+<div class="page-header">
+  <h1>
+    HTTP Live Streaming 笔记 
+    
+      <small></small>
+    
+  </h1>
+</div>
+
+<div class="row">
+  <div class="span8">
+    <h1>Playlist</h1>
+
+<ul>
+<li>m3u8：扩展的M3U文件，以行分割，每一行结尾是LF或者CR LF。每一行表示一个URI，空行（被忽略）或者以#开头（注释或者tag/标签）。不能包含空格（？）。</li>
+<li>URI：表示一个分片或者一个playlist文件。可能是相对路径，若是，则根据该playlist路径拼凑完整路径。</li>
+<li>Media Playlist：仅包含分片的palylist</li>
+<li>Master Playlist：仅包含playlist的playlist</li>
+<li>Tags：以#EXT开头，所有其他的以#开头的行均是注释。</li>
+<li>duartion：所有分片duration之和</li>
+<li><p>编码：HTTP Content-Type &quot;application/vnd.apple.mpegurl&quot;的m3u8文件为UTF-8编码，HTTP Content-Type &quot;audio/mpegurl&quot;的m3u文件为US-ASCII编码</p></li>
+<li><p>AttributeName=AttributeValue,AttributeName=AttributeValue,…</p>
+
+<p>AttributeName不能包含空格，只能由A～Z和&quot;-&quot;组成，同一个AttributeName在一个attribute list中不能重复。
+AttributeValue只能是10进制数字，十六进制数字(0x/0X)，十进制浮点数，引号包裹的字符串（“），没有引号包裹的可枚举字符串（？），十进制分辨率(widthxheight)</p></li>
+</ul>
+
+<h2>EXTM3U</h2>
+
+<p>区分M3U8和M8U文件的标签</p>
+
+<h2>EXTINF</h2>
+
+<p>标识分片的duration，格式：</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">#EXTINF:&lt;duration&gt;,&lt;value&gt;
+</code></pre></div>
+<p>duration是十进制数字或者十进制浮点数，单位为秒，协议版本号低于3的仅使用十进制证书
+value可选</p>
+
+<h2>EXT-X-BYTERANGE:&lt;n&gt;[@o]</h2>
+
+<p>表示sub-range of resource
+n表示sub-range长度，单位为字节
+o是一个十进制整数，标识sub-range的起始位置，从resource的开始位置的偏移量，单位为字节
+协议版本号从4开始使用该标签</p>
+
+<h2>EXT-X-TARGETDURATION:&lt;s&gt;</h2>
+
+<p>表示playlist文件中可能出现的最大duration
+s是最大duration，以秒为单位</p>
+
+<h2>EXT-X-MEDIA-SEQUENCE:&lt;number&gt;</h2>
+
+<p>标识playlist文件中出现的第一个sequence number，仅出现一次</p>
+
+<h2>EXT-X-KEY:<attribute-list></h2>
+
+<p>作用域到下一个包含相同KEYFORMAT attribute的EXT-X-KEY标签之前
+METHOD：NONE, AES-128, SAMPLE-AES，若为NONE，则必须包含URI,VI,KEYFORMAT,KEYFORMATVERSIONS；若为AES-128，则必须包含URI，可选VI；若为SAMPLE-AES，可选VI
+URI：key的URI
+IV：Initialization Vector，十六进制整数，协议从版本号2开始包含此变量
+KEYFORMAT：引用字符串
+KEYFORMATVERSIONS：引用字符串，出现在协议版本号5中</p>
+
+<h2>EXT-X-PROGRAM-DATE-TIME:<a href="YYYY-MM-DDThh:mm:ssZ">YYYY-MM-DDThh:mm:ssZ</a></h2>
+
+<p>接下来的第一个的分片时间</p>
+
+<h2>EXT-X-ALLOW-CACHE:<YES|NO></h2>
+
+<p>客户端是否可以缓存分片用于回放，仅能出现一次</p>
+
+<h2>EXT-X-PLAYLIST-TYPE:<EVENT|VOD></h2>
+
+<p>playlist是否可修改</p>
+
+<h2>EXT-X-ENDLIST</h2>
+
+<p>表示不再有分片，仅能出现一次</p>
+
+<h2>EXT-X-MEDIA:<attribute-list></h2>
+
+<p>用于表示同一内容的不同选择(alternative reditions)，比如只包含音频的英语，法语和西班牙语音轨，或者仅包含视频的两个摄像机机位，format相同
+URI可选
+TYPE三选一，VIDEO/AUDIO/SUBTITLES，同一GROUP的必须相同
+GROUP-ID引用字符串
+LANGUAGE可选 引用字符串，参考RFC 5646，若AUTOSELECT为YES，则LANGUAGE必须有效
+NAME引用字符串，同一GROUP的必须不同
+DEFAULT二选一YES/NO，同一GROUP仅有一个为YES
+AUTOSELECT二选一YES/NO
+FORCED二选一YES/NO 可选
+CHARACTERISTICS引用字符串 可选</p>
+
+<h2>EXT-X-STREAM-INF:<attribute-list>&lt;URI&gt;</h2>
+
+<p>表示URI为playlist
+BANDWIDTH必须包含，十进制整数，单位为比特
+PROGRAM-ID Master Playlist中通过不同的PROGRAM-ID表示相同presentation的不同编码
+CODECS引用字符串，value通过逗号分割，建议包含
+RESOLUTION 视频分辨率
+AUDIO 引用字符串，和GROUP-ID相同
+VIDEO 引用字符串，和GROUP-ID相同
+SUBTITLES 引用字符串，和GROUP-ID相同</p>
+
+<h2>EXT-X-DISCONTUNUITY</h2>
+
+<p>媒体信息发生变化，媒体信息包括文件格式，tracks的数量和类型，编码参数，编码顺序(encoding sequence)，时间戳顺序(timestamp sequence)</p>
+
+<h2>EXT-X-I-FRAMES-ONLY</h2>
+
+<p>表示分片只包含I帧，协议从版本号4开始包含此标签</p>
+
+<h2>EXT-X-MAP:<attribute-list></h2>
+
+<p>标识如何获取分片的PAT/PMT，对该标签之后的分片有效
+仅和EXT-X-I-FRAMES-ONLY一起出现，建议只用在没有PAT/PMT开头的分片
+协议从版本号5开始使用该标签
+URI引用字符串
+BYTERANGE引用字符串</p>
+
+<h2>EXT-X-I-FRAME-STREAM-INF:<attribute-list></h2>
+
+<p>表示I帧列表
+URI
+BANDWIDTH</p>
+
+<h2>EXT-X-VERSION:<n></h2>
+
+<p>协议版本号</p>
+
+<h1>额外的注意：</h1>
+
+<ol>
+<li>media segment：分片</li>
+<li>编码 MPEG-2 Transport Stream/MPEG audio elementary stream/WebVTT（字幕）</li>
+<li>TS分片必须仅包含一个MPEG-2 Program。每一个TS分片都应当以PAT和PMT开头。视频分片必须包含一个I帧（完整GOP？）</li>
+<li>TS或者audio elementacontentry stream分片必须保证sequence number连续，时间戳连续，除非是第一个分片或者出现了EXT-X-DISCONTINUITY标签。</li>
+</ol>
+
+    <hr>
+    <div class="pagination btn-group">
+      
+        <a class="btn prev" href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/2014/05/05/Test-From-Gitblog/index.html" title="Test From Gitblog">&larr; Previous</a>
+      
+        <a class="btn" href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/archive.html">Archive</a>
+      
+        <a class="btn next" href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/2014/06/24/MP4-to-HLS-based-on-nginx-http-mp4-module/index.html" title="MP4 to HLS based on nginx-http-mp4-module">Next &rarr;</a>
+      
+    </div>
+    <hr>
+    
+
+
+  <div id="disqus_thread"></div>
+<script type="text/javascript">
+    
+    var disqus_shortname = 'sqbingongithub'; // required: replace example with your forum shortname
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+
+  </div>
+  
+  <div class="span4">
+    <section>
+      <h4>Published</h4>
+      <div class="date"><span>24 June 2014</span></div>
+           
+    </section>
+    
+      <section>
+        <h4>Categories</h4>
+        
+      </section>
+         
+             
+  </div>
+</div>
+
+
+        </div>
+      </div> <!-- /container -->
+
+      <div class="footer-push"></div>
+    </div><!--/.page-wrap -->
+
+    <footer>
+      <div class="container">
+        <p>&copy; 2016 Been Woo
+          with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
+          and <a href="http://github.com/dhulihan/hooligan" target="_blank">The Hooligan Theme</a>
+        </p>
+      </div>
+    </footer>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/js/jquery.min.js"><\/script>')</script>
+    <script src="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/bootstrap/js/bootstrap.min.js"></script>
+
+    
+
+
+  <script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-44682525-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+
+  </body>
+</html>
+

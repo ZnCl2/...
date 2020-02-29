@@ -1,0 +1,1 @@
+tlds = ("yo", "yu", "of", "inf", "zn", "list")

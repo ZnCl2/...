@@ -1,0 +1,53 @@
+{
+	"db_name": "ZeroUp",
+	"db_file": "data/users/zshare.db",
+	"version": 2,
+	"maps": {
+		".+/content.json": {
+			"to_json_table": [ "cert_auth_type", "cert_user_id" ],
+			"file_name": "data.json"
+		},
+		".+/data.json": {
+			"to_table": [
+        {"node": "file", "table": "file", "key_col": "file_name"},
+        {"node": "post", "table": "post"}
+			],
+      "to_keyvalue":[ "next_post_id"]
+		}
+	},
+	"tables": {
+		"json": {
+			"cols": [
+				["json_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+				["directory", "TEXT"],
+				["file_name", "TEXT"],
+				["cert_auth_type", "TEXT"],
+				["cert_user_id", "TEXT"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX path ON json(directory, file_name)"],
+			"schema_changed": 1
+    },
+    "post": {
+      "cols": [
+				["id", "INTEGER"],
+				["title", "TEXT"],
+        ["date_added", "DATETIME"],
+        ["post_type", "INT"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX post_id ON post(json_id, id)"],
+			"schema_changed": 1
+    },
+		"file": {
+			"cols": [
+				["file_name", "TEXT"],
+				["size", "INT"],
+        ["date_added", "DATETIME"],
+        ["post_id", "INTEGER"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX file_key ON file(date_added, json_id)"],
+			"schema_changed": 1
+		}
+	}
+}

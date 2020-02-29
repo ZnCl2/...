@@ -1,0 +1,297 @@
+{
+  "db_name": "UAReleases",
+  "db_file": "UAReleases.db",
+  "version": 2,
+  "maps": {
+    "data/categories.json": {
+      "to_table": [
+        {
+          "node": "categories",
+          "table": "categories"
+        }
+      ]
+    },
+    "data/users/.+/data.json": {
+      "to_table": [
+        {
+          "node": "topics",
+          "table": "topics",
+          "key_col": "topic_id"
+        },
+        {
+          "node": "comments",
+          "table": "comments",
+          "key_col": "comment_id"
+        },
+        {
+          "node": "magnets",
+          "table": "magnets",
+          "key_col": "magnet_id"
+        },
+        {
+          "node": "ratings",
+          "table": "ratings",
+          "key_col": "rating_id"
+        }
+      ]
+    },
+    "data/users/.+/content.json": {
+      "to_json_table": [
+        "cert_auth_type",
+        "cert_user_id"
+      ],
+      "file_name": "data.json"
+    }
+  },
+  "tables": {
+    "categories": {
+      "cols": [
+        [
+          "json_id",
+          "INTEGER REFERENCES json (json_id)"
+        ],
+        [
+          "category_id",
+          "INTEGER PRIMARY KEY"
+        ],
+        [
+          "parent_id",
+          "INTEGER"
+        ],
+        [
+          "name",
+          "TEXT"
+        ]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX category_key ON categories(category_id, json_id)"
+      ],
+      "schema_changed": 2
+    },
+    "topics": {
+      "cols": [
+        [
+          "json_id",
+          "INTEGER REFERENCES json (json_id)"
+        ],
+        [
+          "topic_id",
+          "INTEGER"
+        ],
+        [
+          "added",
+          "DATETIME"
+        ],
+        [
+          "category_id",
+          "INTEGER REFERENCES categories (category_id)"
+        ],
+        [
+          "cover_timestamp",
+          "DATETIME"
+        ],
+        [
+          "details",
+          "TEXT"
+        ],
+        [
+          "imdb",
+          "TEXT"
+        ],
+        [
+          "parent_topic_uri",
+          "TEXT"
+        ],
+        [
+          "title_lc",
+          "TEXT"
+        ],
+        [
+          "title",
+          "TEXT"
+        ],
+        [
+          "type",
+          "TEXT"
+        ],
+        [
+          "youtube_url",
+          "TEXT"
+        ]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX topic_key ON topics(topic_id, json_id)"
+      ],
+      "schema_changed": 2
+    },
+    "comments": {
+      "cols": [
+        [
+          "json_id",
+          "INTEGER REFERENCES json (json_id)"
+        ],
+        [
+          "comment_id",
+          "INTEGER"
+        ],
+        [
+          "target_type",
+          "VARCHAR(20)"
+        ],
+        [
+          "target_hash",
+          "TEXT"
+        ],
+        [
+          "target_id",
+          "INTEGER"
+        ],
+        [
+          "body",
+          "TEXT"
+        ],
+        [
+          "added",
+          "DATETIME"
+        ]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX comment_key ON comments(json_id, comment_id)"
+      ],
+      "schema_changed": 2
+    },
+    "ratings": {
+      "cols": [
+        [
+          "json_id",
+          "INTEGER REFERENCES json (json_id)"
+        ],
+        [
+          "rating_id",
+          "INTEGER"
+        ],
+        [
+          "target_type",
+          "VARCHAR(20)"
+        ],
+        [
+          "target_hash",
+          "TEXT"
+        ],
+        [
+          "target_id",
+          "INTEGER"
+        ],
+        [
+          "direction",
+          "TEXT"
+        ]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX rating_key ON ratings(json_id, rating_id)",
+        "CREATE UNIQUE INDEX rating_key_detailed ON ratings(json_id, target_type, target_id, target_hash)"
+      ],
+      "schema_changed": 2
+    },
+    "magnets": {
+      "cols": [
+        [
+          "json_id",
+          "INTEGER REFERENCES json (json_id)"
+        ],
+        [
+          "magnet_id",
+          "INTEGER"
+        ],
+        [
+          "target_type",
+          "VARCHAR(20)"
+        ],
+        [
+          "target_hash",
+          "TEXT"
+        ],
+        [
+          "target_id",
+          "INTEGER"
+        ],
+        [
+          "added",
+          "DATETIME"
+        ],
+        [
+          "files",
+          "TEXT"
+        ],
+        [
+          "xt",
+          "TEXT"
+        ],
+        [
+          "dn",
+          "TEXT"
+        ],
+        [
+          "dl",
+          "TEXT"
+        ],
+        [
+          "tr",
+          "TEXT"
+        ],
+        [
+          "publisher_url",
+          "TEXT"
+        ],
+        [
+          "publisher",
+          "TEXT"
+        ],
+        [
+          "size",
+          "TEXT"
+        ]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX magnet_key ON magnets(json_id, magnet_id)",
+        "CREATE UNIQUE INDEX magnet_key_detailed ON magnets(target_type, target_id, target_hash, xt, tr, json_id)"
+      ],
+      "schema_changed": 2
+    },
+    "json": {
+      "cols": [
+        [
+          "json_id",
+          "INTEGER PRIMARY KEY AUTOINCREMENT"
+        ],
+        [
+          "site",
+          "TEXT"
+        ],
+        [
+          "directory",
+          "TEXT"
+        ],
+        [
+          "file_name",
+          "TEXT"
+        ],
+        [
+          "cert_auth_type",
+          "TEXT"
+        ],
+        [
+          "cert_user_id",
+          "TEXT"
+        ]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX path ON json(directory, site, file_name)"
+      ],
+      "schema_changed": 2
+    }
+  },
+  "feeds": {
+    "Topics": "SELECT title as title, details as body, added as date_added, 'topic' AS type, '/?/topic/' || json_id || '/' || topic_id AS url FROM 'topics'"
+  }
+}

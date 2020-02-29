@@ -1,0 +1,60 @@
+{
+	"db_name": "ZeroMart",
+	"db_file": "data/ZeroMart.db",
+	"version": 2,
+	"maps": {
+		"users/.+/data.json": {
+			"to_table": [ 
+				"userdata",
+				{"node": "userdata", "table": "userdata", "key_col": "user_id", "val_col": "user"} 
+			]
+		},
+		"users/.+/products.json": { 
+			"to_keyvalue": [ "cert_user_id" ]
+		},
+		"users/.+/comment.json": { 
+			"to_keyvalue": [ "cert_user_id" ]
+		},
+		"users/.+/rating.json": {
+			"to_table": [
+				"ratings",
+				{"node": "rating", "table": "rating", "key_col": "rating_uri", "val_col": "rate"} 
+			]
+		},
+		"data.json": {
+			"to_table": [ "feeaddys" ],
+			"to_keyvalue": [ "btcaddy" ]
+		}
+
+	},
+	"tables": {
+		"userdata": {
+			"cols": [
+				["user_id", "INTEGER"],
+				["useralias", "TEXT"],
+				["date_added", "INTEGER"],
+				["publickey", "INTEGER"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX userdata_user_id ON userdata(json_id, user_id)", "CREATE INDEX user_id_key ON userdata(user_id, publickey)"],
+			"schema_changed": 1426195823
+		},
+		"rating": {
+			"cols": [
+				["rating_uri", "TEXT"],
+				["rate", "INTEGER"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE INDEX rating_rating_uri ON rating(rating_uri)", "CREATE INDEX rating_json_id ON rating(json_id)"],
+			"schema_changed": 1426195822
+		},
+		"feeaddys": {
+			"cols": [
+				["btcaddy", "TEXT"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX feeaddys_btcaddy ON feeaddys(json_id, btcaddy)"],
+			"schema_changed": 1426195823
+		}
+	}
+}

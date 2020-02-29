@@ -1,0 +1,214 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="MnNStory: 我和一个女同学15年的故事">
+<meta name="keywords" content="MnNStory,校园爱情,15年,女同学,女生">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<title>永远</title>
+<script src="jquery.js"></script>
+<script src="qrcode.js"></script>
+<script>
+function loadCSS(href) {
+	var cssLink = $("<link rel='stylesheet' type='text/css' href='"+href+"'>");
+	$("head").append(cssLink);
+	return cssLink;
+};
+
+var relocate;
+
+$(function(){
+            var device="computer";
+        var fontSize=($(window).width()/25).toFixed(0);
+        relocate=relocateC;
+    
+	loadCSS("main_"+device.substring(0, 1)+".css").load(function(){
+		relocate();
+		setTimeout(relocate, 1000);
+		setTimeout(function(){
+			var fontSize=$('body').css('fontSize');
+			var qrcode = new QRCode(document.getElementById("QRCode"), {
+				width : parseInt(fontSize)*7,
+				height : parseInt(fontSize)*7
+			});
+
+			qrcode.makeCode(window.location.href);
+		}, 1000);
+	});
+
+	$(window).resize(relocate);
+
+    
+	function relocateC(){
+		function bottom($el){
+			return $el.position().top + $el.outerHeight(true);
+		}
+
+		var $footer=$('#footer');
+		$footer.css({
+			top: 0,
+			display: 'none'
+		});
+		var top=Math.max(
+			bottom($('#textWrapper')),
+			bottom($('#contents')),
+			$(document).height() - $footer.outerHeight()
+		);
+		$footer.css({
+			top: top,
+			display: 'block'
+		});
+	}
+
+        $('.patch-more').click(function(){
+        var page=$(this).data('page');
+        var paragraph=$(this).data('paragraph');
+
+        location.href='page'+page+'.html#paragraph='+paragraph;
+    });
+
+    setTimeout(function () {
+                    var ret=document.referrer.match(/#paragraph=(\d+)/);
+                if (!ret) {
+            return;
+        }
+        var paragraph=ret[1]-1;
+
+        var objParagraph=$('#text p:eq('+paragraph+')');
+        var flash=function () {
+            objParagraph.css('color', 'red');
+            setTimeout(function() {
+                objParagraph.css('color', 'initial');
+            }, 1000);
+        };
+        $('html, body').animate({
+            scrollTop: objParagraph.offset().top-$('#textWrapper').offset().top,
+        }, 500, flash);
+    }, 100);
+
+    var pIndex=0;
+    $('#text p').each(function () {
+        ++pIndex;
+        if (!$(this).attr('id')) {
+            //$(this).attr('id', 'paragraph_'+pIndex);
+        }
+    });
+});
+
+function showComments(){
+	$.blockUI({
+		message: $('#disqus_thread'),
+	});
+
+	$('body').click($.unblockUI);
+}
+</script>
+</head>
+<body>
+<div id="cover" style="background-color: #F1F1F1; position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 2048;"></div>
+<div id="nav">
+	<div class="Three">
+		<div id="navLeft" class="left c">
+			<a href="page44.html" class="blackText">&lt;&lt;&lt;prev</a>		</div>
+		<div id="navRight" class="right c">
+			<a href="page46.html" class="blackText">next&gt;&gt;&gt;</a>		</div>
+		<div id="navTitle" class="middle">
+			永远		</div>
+	</div>
+	<div class="Three m">
+		<div class="left" style="width: 4em">
+			<a href="page44.html" class="blackText">&lt;&lt;&lt;</a>		</div>
+		<div class="right" style="width: 4em">
+			<a href="page46.html" class="blackText">&gt;&gt;&gt;</a>		</div>
+		<div class="middle">
+			<a href="/index.html" class="blackText">[Home]</a>
+		</div>
+	</div>
+</div>
+<div id="images" class="c">
+	<a href="downloads/mnnstory.zip" target="_blank"> <img src="download.png" style="width: 100%;" title="下载" alt="Download" /> </a>
+	<p id="QRCode"></p>
+</div>
+<div id="contents" class="c">
+	<p class="contents_d0"><a href="index.html">目录</a></p>
+	<ul class="contents_d1"><li><a href='page1.html'>上册</a>
+</li><li><a href='page14.html'>上册配乐</a>
+</li><li><a href='page32.html'>下册</a>
+<ul class="contents_d2"><li><a href='page33.html'>心愿</a>
+</li><li><a href='page34.html'>概率</a>
+</li><li><a href='page35.html'>重逢</a>
+</li><li><a href='page36.html'>街景</a>
+</li><li><a href='page37.html'>追求</a>
+</li><li><a href='page38.html'>梦想</a>
+</li><li><a href='page39.html'>糖果</a>
+</li><li><a href='page40.html'>夕阳无限好</a>
+</li><li><a href='page41.html'>电影</a>
+</li><li><a href='page42.html'>怪谁</a>
+</li><li><a href='page43.html'>寄语</a>
+</li><li><a href='page44.html'>移民</a>
+</li><li>永远
+</li><li><a href='page46.html'>附录：幸福的惊人科学发现</a>
+</ul></li><li><a href='page47.html'>下册配乐</a>
+</li><li><a href='page49.html'>订正簿</a>
+</ul></div>
+<div id="disqus_thread"></div>
+<script>
+	var disqus_config = function () {
+		this.page.url = 'http://mnnstory.onion';
+		this.page.identifier = 45;
+		this.page.title = '永远'
+	};
+
+
+	(function() {
+		var d = document, s = d.createElement('script');
+
+		s.src = '//mnnstory.disqus.com/embed.js';
+
+		s.setAttribute('data-timestamp', +new Date());
+		(d.head || d.body).appendChild(s);
+	})();
+</script>
+<div id="textWrapper">
+	<div id="text">
+		<p>我还爱她吗？</p>
+<p>这个问题不妨讲透。</p>
+<p>15年前，为了研讨音乐，我们曾一起哼《婚礼进行曲》。马上就有同学起哄道：“某某和某某共唱《婚礼进行曲》，说明什么？”</p>
+<p>闭上眼睛，此事仿佛刚发生，我真希望那一刻能够成为永远。</p>
+<p>一个低沉庄重的声音问道：“你是否愿意……”还没说完，我就抢答道：“我愿意！”</p>
+<p>然后我就听到了她慌乱的声音：“不对不对，不是这个人！”睁开眼睛，她却已经30了。</p>
+<p>当然，以上内容纯属幻想。</p>
+<p>幻想有罪吗？ </p>
+<p>无论我内心有多龌龊，中国和X国，都没有思想警察。</p>
+<p>幻想有错吗？</p>
+<p>这么好的姑娘，难道你就不想娶她吗？</p>
+<p>幻想会让我痛苦吗？</p>
+<p>当我得知她已订婚的那刻，并没有怎么难受，因为我早就预感到她会嫁给别人了。而我是何时坦然接受这个结局的，我努地回忆过，却已不记得了。也许，我从来就没有为此痛苦过。</p>
+<p>能娶到这样的女子回家，就好比中巨额奖金。没有人会因中不到大奖而痛苦。同样，人海茫茫，能与心爱的人两情相悦，并不比中大奖有更高的概率，未能如愿，也完全没理由痛苦。</p>
+<p>总之，痛苦是不存在，也没道理的。</p>
+<p>However, every time an image of her smiling in someone else's arms pops up in my mind, I have to force myself to stop visualising it.</p>
+<p>那个低沉的声音又继续道：“你是否愿意永远……”</p>
+<p>“永遠儂个魂啊？熱儂个大頭昏！儂沒聽到伊講啥啊？儂啊是胸罩帶子故事裏向个戇大老師？還是儂耳朵打八折，或者兩隻耳朵當中隻老鬼三撥啥物事塞牢之弗靈光哉，噶勒介簡單个事體也拎弗清？”</p>
+<p>说到永远，我永远更愿意相信她是值得爱的人。还有，我永远忘不了她。</p>
+<p>至于其他关于永远的问题，还是让“某个人”来回答吧——“应该叫男朋友吧”。</p>
+<p>同学，你那两个字还不会念吗？我提示你一下，和“项工”谐音。假如你仍有困难，就回到我们共同的高中去进修进修，让我们的数学老师来教诲你。他有个绝招，若你有问题不明白，要“看三遍，读三遍，背三遍，抄写三遍，复习三遍，再默三遍。”一定能懂的。</p>
+<p>“我不活了！”</p>
+<p>别，别啊！我来辅导你……</p>
+<p class="ending">（2016年4月15日开始记录，5月6日完成初稿，6月2日停止修改。）</p>	</div>
+</div>
+<div id="footer">
+	<div id="declaration">
+		本故事为作者亲身经历
+	</div>
+	<div id="bannerLine" class="Three">
+				<div class="middle">
+            			    <a href="about.html">MnNStory, 1 Sep 2001 - 12 Mar 2016</a>
+            		</div>
+	</div>
+	<hr class="m" />
+	<div id="switch2c" class="m">
+		<a href="">电脑版</a>
+	</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <link rel="icon" href="favicon.ico">
+
+    <title>SUPeer</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <style>
+    .container {
+        max-width: 960px;
+    }
+
+    .border-top { border-top: 1px solid #e5e5e5; }
+    .border-bottom { border-bottom: 1px solid #e5e5e5; }
+    .border-top-gray { border-top-color: #adb5bd; }
+
+    .box-shadow { box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05); }
+
+    .lh-condensed { line-height: 1.25; }
+    </style>
+</head>
+
+<body class="bg-light">
+
+<div class="container">
+    <div class="col-md-8 offset-md-2">
+        <div class="py-5 text-center">
+            <img class="d-block mx-auto mb-4" src="https://i.imgur.com/p8KJVF6.png" alt="" width="150" height="160">
+            <!-- http://scribblenauts.wikia.com/wiki/User:Toastmonster -->
+
+            <h2>SUPeer</h2>
+
+            <p class="lead">
+                <strong><span class="text-info">TrustLess</span> Data Management &amp; Delivery (TDMD)</strong>
+                <br />combined with a <strong><span class="text-info">TrustLess</span> Communications System (TCS)</strong>
+                <br />to empower the builders of the <strong>NEW <span class="text-info">Decentralized</span> Web</strong>
+            </p>
+
+            <hr>
+
+            <p class="lead">
+                Star | Fork this project on <a class="btn btn-outline-info btn-sm" href="https://github.com/d14na/supeer" target="_blank">GitHub</a>
+            </p>
+
+            <div class="card col-md-8 offset-md-2">
+                <div class="card-body">
+                    Come <strong><em>peer</em></strong> with us
+                    <br class="d-sm-none">on port <strong><code>10443</code></strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion" id="accordionExample">
+            <div class="card">
+                <div class="card-header" id="headingOne">
+                    <h5 class="mb-0">
+                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                            Does the world <em>need</em> SUPeers?
+                        </button>
+                    </h5>
+                </div>
+
+                <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
+                    <div class="card-body">
+                        YES! Because we need to care for one another, and there's no better way to show someone how much you care than to seed with all your might (and bandwidth).
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header" id="headingTwo">
+                    <h5 class="mb-0">
+                        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                            Zer0net Proxy Setup
+                        </button>
+                    </h5>
+                </div>
+                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
+                    <div class="card-body">
+                        <pre>
+How to setup a ZeroNet proxy.
+source: https://grez911.github.io/zeroproxy.html
+
+Why do you need it?
+1. You can browse ZeroNet via personal proxy from your smartphone or any other device as a regular site.
+2. It will be online 24/7 which is good for connectivity and peer discovery.
+3. You can share it with your friends (or all Internet users) who can't run ZeroNet on their devices.
+4. You can browse ZeroNet on networks with a censorship/firewall/NAT.
+
+First you need to obtain a domain name and a VPS. There are plenty of free domains on the Internet, VPS prices start from several dollars per month (1 Core, 512 MB RAM and 10 GB disk will be more than enough). Make an A-record of you domain (and www subdomain) pointing to the IP address of your VPS.
+Instructions below have been tested on Debian 9 Stretch but probably will work with other Linux-based distributions with slight alterations.
+
+Connect to the VPS via SSH as root and do the following:
+
+1. Update package list:
+root@server# apt-get update
+
+2. Install necessary packages:
+root@server# apt-get install nginx git python-msgpack python-gevent net-tools dirmngr
+
+3. Open http://YOUR-DOMAIN/ in a browser and you must see a "Welcome to nginx!" page.
+
+4. Clone Let's Encrypt repository:
+root@server# cd /root
+root@server# git clone https://github.com/letsencrypt/letsencrypt
+
+5. Obtain a SSL-sertificate (it will ask your e-mail in order to notify you in case, for example, if your certificate can't be renewed):
+root@server# /root/letsencrypt/letsencrypt-auto certonly --webroot -w /var/www/html/ -d YOUR-DOMAIN -d www.YOUR-DOMAIN
+
+6. Open /etc/nginx/sites-enabled/default, and append this to the end (don't forget to replace YOUR-DOMAIN):
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    ssl_certificate /etc/letsencrypt/live/YOUR-DOMAIN/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/YOUR-DOMAIN/privkey.pem;
+    root /var/www/html;
+    index index.html index.htm index.nginx-debian.html;
+    server_name _;
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
+
+7. Restart nginx:
+root@server# /etc/init.d/nginx restart
+
+8. Open https://YOUR-DOMAIN/ in a browser and you must again see a "Welcome to nginx!" page.
+
+9. Open cron editor:
+root@server# crontab -e
+And append the following line:
+
+0 0 5,15,25 * * /root/letsencrypt/letsencrypt-auto renew && /etc/init.d/nginx restart
+
+Save it. This command will renew certificate when it will be close to expiring.
+
+10. Create non-privileged user without shell for running ZeroNet:
+root@server# useradd -m -d /home/zeronet --shell /usr/sbin/nologin zeronet
+
+11. Clone ZeroNet repository:
+root@server# cd /home/zeronet
+root@server# git clone https://github.com/HelloZeroNet/ZeroNet.git
+root@server# chown -R zeronet: ZeroNet
+
+12. Install supervisor (to run ZeroNet forever):
+root@server# apt-get install supervisor
+
+13. Create a new file /etc/supervisor/conf.d/zeronet.conf with the following content:
+[program:zeronet]
+command=/home/zeronet/ZeroNet/zeronet.py
+autostart=true
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/var/log/supervisor/zeronet.log
+logfile_maxbytes=50MB
+logfile_backups=10
+loglevel=debug
+user=zeronet
+
+14. Restart supervisor:
+root@server# /etc/init.d/supervisor restart
+
+15. Check open ports with command:
+root@server# netstat -tnlp
+
+You must see something like this:
+
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name
+tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      4567/nginx: master
+tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      633/sshd
+tcp        0      0 0.0.0.0:443             0.0.0.0:*               LISTEN      4567/nginx: master
+tcp        0      0 0.0.0.0:18399           0.0.0.0:*               LISTEN      5726/python2.7
+tcp        0      0 127.0.0.1:43110         0.0.0.0:*               LISTEN      5726/python2.7
+tcp6       0      0 :::80                   :::*                    LISTEN      4567/nginx: master
+tcp6       0      0 :::22                   :::*                    LISTEN      633/sshd
+tcp6       0      0 :::443                  :::*                    LISTEN      4567/nginx: master
+
+16. Create strong Diffie-Hellman parameters for nginx:
+root@server# mkdir /etc/nginx/ssl
+root@server# openssl dhparam -out /etc/nginx/ssl/dhparam.pem 2048
+
+17. Remove all content from /etc/nginx/sites-enabled/default and replace it with this (don't forget to substitute YOUR-DOMAIN):
+server {
+    listen         80;
+    listen    [::]:80;
+    server_name    YOUR-DOMAIN www.YOUR-DOMAIN;
+    location /.well-known {
+        alias /var/www/html/.well-known;
+    }
+    location / {
+        return 301 https://YOUR-DOMAIN$request_uri;
+    }
+}
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    ssl_certificate /etc/letsencrypt/live/YOUR-DOMAIN/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/YOUR-DOMAIN/privkey.pem;
+    ssl_dhparam /etc/nginx/ssl/dhparam.pem;
+    add_header Strict-Transport-Security "max-age=63072000; includeSubdomains;" always;
+    server_name www.YOUR-DOMAIN;
+    return 301 https://YOUR-DOMAIN$request_uri;
+}
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    ssl_certificate /etc/letsencrypt/live/YOUR-DOMAIN/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/YOUR-DOMAIN/privkey.pem;
+    ssl_dhparam /etc/nginx/ssl/dhparam.pem;
+    server_name YOUR-DOMAIN;
+    add_header Strict-Transport-Security "max-age=63072000; includeSubdomains;" always;
+    location / {
+        proxy_pass http://127.0.0.1:43110;
+    }
+    location /Websocket {
+        proxy_pass http://127.0.0.1:43110;
+        proxy_http_version 1.1;
+        proxy_read_timeout 1h;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+
+18. Restart nginx:
+root@server# /etc/init.d/nginx restart
+
+19. Open https://YOUR-DOMAIN/ in a browser, you must see a ZeroNet hello page.
+
+20. Now we are going to install Tor (follow this instructions):
+root@server# echo 'deb http://deb.torproject.org/torproject.org stretch main' >> /etc/apt/sources.list.d/tor.list
+root@server# echo 'deb-src https://deb.torproject.org/torproject.org stretch main' >> /etc/apt/sources.list.d/tor.list
+root@server# gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
+root@server# gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
+root@server# apt update
+root@server# apt install tor deb.torproject.org-keyring
+
+21. Append two strings to /etc/tor/torrc:
+root@server# echo 'ControlPort 9051' >> /etc/tor/torrc
+root@server# echo 'CookieAuthentication 1' >> /etc/tor/torrc
+
+22. Restart Tor:
+root@server# /etc/init.d/tor restart
+
+23. Add permission to read the auth cookie by zeronet user:
+root@server# usermod -a -G debian-tor zeronet
+
+24. Restart supervisor:
+root@server# /etc/init.d/supervisor restart
+
+25. Open https://YOUR-DOMAIN/ in a browser, you must see that port is opened and Tor is available.
+
+26. Now you can enable multiuser plugin:
+root@server# mv /home/zeronet/ZeroNet/plugins/disabled-Multiuser /home/zeronet/ZeroNet/plugins/Multiuser
+root@server# /etc/init.d/supervisor restart
+
+27. If you want, you can protect user interface with a password (replace YOUR-PASSWORD):
+root@server# mv /home/zeronet/ZeroNet/plugins/disabled-UiPassword /home/zeronet/ZeroNet/plugins/UiPassword
+root@server# echo '[global]' > /home/zeronet/ZeroNet/zeronet.conf
+root@server# echo 'ui_password = YOUR-PASSWORD' >> /home/zeronet/ZeroNet/zeronet.conf
+root@server# chown zeronet: /home/zeronet/ZeroNet/zeronet.conf
+root@server# /etc/init.d/supervisor restart
+
+28. Try to reboot your VPS, all services must start automatically. Also try to check certificate renewal with the following command:
+root@server# /root/letsencrypt/letsencrypt-auto renew --dry-run
+
+29. If your proxy is public, please, share link on reddit, ZeroTalk, Millchan, ZeroWiki, etc. ^_^
+                        </pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header" id="headingThree">
+                    <h5 class="mb-0">
+                        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                            How can you help?
+                        </button>
+                    </h5>
+                </div>
+                <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionExample">
+                    <div class="card-body">
+                        Get involved today!
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header" id="headingFour">
+                    <h5 class="mb-0">
+                        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                            Helpful (Debian/Ubuntu) VPS Scripts
+                        </button>
+                    </h5>
+                </div>
+                <div id="collapseFour" class="collapse" aria-labelledby="headingFour" data-parent="#accordionExample">
+                    <div class="card-body">
+<strong>Bootstrapping update.sh</strong><br />
+<blockquote><code>
+echo "apt update && apt upgrade -y && apt-get autoremove -y" > update.sh && chmod +x update.sh && ./update.sh && printf "\n    'update.sh' file was created and ran successfully.\n\n"
+</code></blockquote>
+
+<hr />
+
+<strong>Source-code builder scripts</strong><br />
+<blockquote><code>
+apt-get install -y g++ make curl git vim build-essential python python-dev
+</code></blockquote>
+
+<hr />
+
+<strong>Synchronize Date/Time</strong><br />
+<blockquote><code>
+timedatectl set-ntp true
+</code></blockquote>
+
+<hr />
+
+<strong>NodeJS version manager</strong><br />
+<blockquote><code>
+wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
+</code></blockquote>
+
+<hr />
+
+<strong>Self-signed certificate</strong><br />
+<blockquote><code>
+openssl req -new -x509 -nodes -out server.crt -keyout server.key -days 3650
+</code></blockquote>
+
+<hr />
+
+<strong>Nginx default configuration</strong><br />
+<pre><blockquote>
+server {
+    listen  80           default_server;
+    listen  [::]:80      default_server;
+    listen  443 ssl      default_server;
+    listen  [::]:443 ssl default_server;
+
+    ssl_certificate      /etc/nginx/ssl/server.crt;
+    ssl_certificate_key  /etc/nginx/ssl/server.key;
+
+    root /var/www/html;
+
+    # Add index.php to the list if you are using PHP
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name _;
+
+    location / {
+		# First attempt to serve request as file, then
+		# as directory, then fall back to displaying a 404.
+		try_files $uri $uri/ =404;
+    }
+}
+</blockquote></pre>
+
+<hr />
+
+<strong>Nginx proxy configuration</strong><br />
+<pre><blockquote>
+server {
+    listen  80           default_server;
+    listen  [::]:80      default_server;
+    listen  443 ssl      default_server;
+    listen  [::]:443 ssl default_server;
+
+    ssl_certificate      /etc/nginx/ssl/server.crt;
+    ssl_certificate_key  /etc/nginx/ssl/server.key;
+
+    access_log /dev/null;
+    error_log /root/error_log;
+
+    location / {
+        proxy_set_header Access-Control-Allow-Origin *;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-NginX-Proxy true;
+
+        proxy_pass http://127.0.0.1:43110;
+        proxy_redirect off;
+
+        proxy_http_version 1.1;
+        proxy_read_timeout 1h;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+</blockquote></pre>
+
+<hr />
+
+<strong>Docker</strong><br />
+https://www.itzgeek.com/how-tos/linux/debian/how-to-install-docker-on-debian-9.html<br />
+<blockquote><pre>
+    apt-get install \
+         apt-transport-https \
+         ca-certificates \
+         curl \
+         gnupg2 \
+         software-properties-common
+
+    curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
+
+    add-apt-repository \
+        "deb [arch=amd64] https://download.docker.com/linux/debian \
+        $(lsb_release -cs) \
+        stable"
+
+    apt-get update && apt-get install docker-ce
+
+    systemctl enable docker
+
+    docker run hello-world
+</pre></blockquote>
+
+
+<hr />
+
+<strong>CLI speed test</strong><br />
+<blockquote><code>
+curl -s https://raw.githubusercontent.com/sivel/speedtest-cli/master/speedtest.py | python -
+</code></blockquote>
+
+<hr />
+
+<strong>List open ports</strong><br />
+<blockquote><code>
+netstat -lntu
+</code></blockquote>
+
+<hr />
+
+<strong>VeraCrypt</strong><br />
+<pre><blockquote>
+https://www.veracrypt.fr
+https://github.com/veracrypt/VeraCrypt.git
+
+<!-- Prepare Build Environment
+apt install -y build-essential g++ libfuse2 libfuse-dev make pkg-config yasm
+
+cd /usr/src/
+wget https://github.com/wxWidgets/wxWidgets/releases/download/v3.0.4/wxWidgets-3.0.4.tar.bz2
+tar xf wxWidgets-3.0.4.tar.bz2
+
+git clone https://github.com/veracrypt/VeraCrypt.git
+
+cd VeraCrypt/src
+
+make NOGUI=1 WXSTATIC=1 WX_ROOT=/usr/src/wxWidgets-3.0.4 wxbuild
+
+make NOGUI=1 WXSTATIC=1
+
+chmod +x Setup/Linux/veracrypt_install_template.sh
+Setup/Linux/veracrypt_install_template.sh -->
+</blockquote></pre>
+
+<hr />
+
+<strong>Lustre Node (RHEL &amp; CentOS)</strong><br />
+<blockquote><code>
+https://lustre.ornl.gov/lustre101-courses/content/C1/L3/LustreBasicInstall.pdf
+https://downloads.whamcloud.com/public/lustre/lustre-2.7.0/el6.6/server/RPMS/x86_64/
+yum install -y libgssglue libyaml lsof net-snmp openmpi perl rsync sg3_utils vim wget
+</code></blockquote>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="my-3 text-muted text-center text-small">
+            <p class="mb-1">&copy; 2019 <a href="/d14na.bit">D14na</a> MDAO</p>
+
+            <ul class="list-inline">
+                <li class="list-inline-item"><a href="/d14na.bit/privacy.html">Privacy</a></li>
+                &bullet;&nbsp;
+                <li class="list-inline-item"><a href="/d14na.bit/terms.html">Terms</a></li>
+                &bullet;&nbsp;
+                <li class="list-inline-item"><a href="/d14na.bit/support.html">Support</a></li>
+            </ul>
+        </footer>
+    </div>
+</div>
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.min.js"></script>
+
+</body>
+</html>

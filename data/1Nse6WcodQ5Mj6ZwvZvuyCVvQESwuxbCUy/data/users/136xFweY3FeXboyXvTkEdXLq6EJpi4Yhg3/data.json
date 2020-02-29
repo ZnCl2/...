@@ -1,0 +1,46 @@
+{
+	"next_topic_id": 3,
+	"topic": [
+		{
+			"topic_id": 1,
+			"title": "如何在OS X上安裝zeronet軟件",
+			"body": "嚴格意義上來說這是我第一個不是翻譯的教學帖....那廢話不多說開始吧。\n\n1.安裝zeronet的運行環境\n    1.a安裝Xcode command line developer tools(Xcode開發者命令行工具)\n    1.b安裝brew與設置terminal的代理\n    1.c通過brew安裝python\n 2.通過Github下載並安裝zeronet\n\n\n1.a.安裝Xcode command line developer tools(Xcode開發者命令行工具)\n首先我們安裝Xcode command line developer tools(Xcode開發者命令行工具)\n在terminal中輸入以下命令來安裝Xcode開發者命令行工具[1]:\n\nxcode-select --install\n\n有人會問為何安裝Xcode開發者命令行工具，這是因為下文提到的brew需要在命令行工具的環境下才能運行...\n\n1.b 安裝brew與設置terminal的代理\n我們可以通過類似於Linux上面的yum與apt-get安裝包管理器的brew來安裝python。\n你可以在Terminal運行下面的代碼來安裝brew程序。中間會提示你輸入密碼，你輸入你所屬用戶的密碼就是:\n\n/usr/bin/ruby -e \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)\"\n\n安裝完成後使用下面的命令檢查並更新brew(1):\nbrew update\nbrew doctor\n\n在terminal輸入下列命令完成代理設置，我這裡以Tor的socks5端口作為例子(socks5也可以替換成https,http或sock4代理,9150可以替換成你正在所使用代理的端口號):\nexport ALL_PROXY=socks5://127.0.0.1:9150\n\n如果你以後懶得打字的話，你也可以這樣來一勞永逸，還是以Tor的socks5端口作為例子:\n\necho export ALL_PROXY=socks5://127.0.0.1:9150 >> ~/.bash_profile\n\n\n1.c.通過brew安裝python\nbrew安裝與代理設置完畢之後就可以通過brew安裝python，安裝命令如下:\nbrew install python\n\n之後把python連結到lauchpad上並對python本體進行更新:\nbrew linkapps python\npip install --upgrade pip setuptools\n\n2.安裝zeronet\n在 https://github.com/HelloZeroNet/ZeroBundle/releases/download/0.1.1/ZeroBundle-mac-v0.1.1.zip 下載OS X版本的zeronet\n下載之後把你的文件夾從download(下載頁面)轉移出來，並解壓縮，然後雙擊zeronet.app。之後你等待一會他就會使用默認瀏覽器來自動彈出zeronet頁面( http://127.0.0.1:43110 )\n\n參考連結:\n[1]: https://twitter.com/bao3/status/700517529840545796 Skyfire\n写教程的人真是该死，每一条就是错的，使用 brew /brew cast 没必要安装一个 10G大小的 Xcode ，只需要安装 xcode-select 就可以了，这种教程太害人了\n\n[2]: https://www.logcg.com/archives/1617.html https://www.logcg.com/archives/1301.html 落格博客 https://twitter.com/atomhelix/status/704519081941032960 Daniel.Z\n因為brew是託管在Github上，而對於中國大陸的朋友來說Github曾經被GFWed,並且Github的項目託管在美國的亞馬遜的服務器上，這樣的話有可能下載不到或者是下載很慢。所以我們得讓brew安裝程序走代理。雖然也可以換中國大陸內大學託管的鏡像源，然而雖然解決了brew的更新問題，然而brew的軟件項目下載還是可能被GFWed或者是被牆 而且鏡像源也有可能被竄改\n\n[3]:ZeroNet系列——简单扫盲ZeroNet及基本使用(在OS X註冊zeronet的帳號步驟、訪問zeronet網址--以及包括OS X版本的users.json的配置文件的位置與windows完全相同，所以我不再重複說明一遍，如果想知道的同學請在“建立一个ZeroID”與“访问网站”板塊查看。\n\n註釋:\n(1)其實可以直接用下方的組合命令 不過為了各位看得更加方便我就不給予顯示了",
+			"parent_topic_uri": "8_1NV87VmSkezRyz8NbFpdkYJsJUSfXx7LJa",
+			"added": 1459199934
+		},
+		{
+			"topic_id": 2,
+			"title": "OS X手動法搭建zeronet網址",
+			"body": "GFW TALK現在的帖子無法複製圖片是一個硬傷，希望xiaolan多加改進喔orz\n上個帖子教會了大家如何在OS X上面安裝了zeronet軟件，這次是教大家如何在OS X上建立並發布zeronet站點\n\n    安裝msgpack[1](1)與gevent[2](2)功能\n        關閉System Integrity Protection(系統集成保護)rootless功能[3]\n        用pip命令安裝msgpack與gevent功能\n    建立，簽名並分發zeronet站點\n        建立站點\n        對站點進行簽名\n        對網站進行分發操作\n\n\n1.安裝msgpack與gevent功能\n1.a 關閉System Integrity Protection(系統集成保護)rootless功能\n注意:如果你的OS X版本並不是El capitan則可以跳過這一步，直接安裝msgpack與gevent功能\n首先你需要按著Command+R以恢復模式打開電腦\n之後在utilities上打開terminal窗口\n在terminal輸入如下命令:\ncsrutil disable\n之後重啓電腦就可以關閉System Integrity Protection(系統集成保護)(1)否則會遇到這位仁兄安裝gevent的錯誤。\n1.b用pip命令安裝msgpack與gevent功能\n好的現在可以安裝msgpack與gevent功能了。\n你只要輸入下列代碼安裝即可:\nsudo pip install msgpack-python && sudo pip install gevent\n安裝完畢如圖所示:\n接下來就可以正式進入建立、簽發與發布zeronet站點的工作了\n\n2.建立，簽名並分發zeronet站點\n2.a建立站點\n這裡建立，簽名並分發站點都是使用xiaolan的手動法而不是科隆法進行操作的\n首先我們找到zeronet.py腳本的位置，之後才能安裝\n在....../Zeronet/Zeronet/裏找到zeronet.py腳本文件，然後選中Get info(查看文件信息) 如圖所示:\n之後選中文件路徑，然後用command+R粘貼即可，比如說我的文件路徑就是(用戶名已經用username替代):\n/Users/username/Documents/ZeroNet/ZeroNet\n然後打開terminal客戶端，輸入如下命令:\ncd /Users/username/Documents/ZeroNet/ZeroNet\n之後輸入python zeronet.py siteCreate\n\nzeronet.py腳本就會問你你是否複製下來私鑰信息，如圖:\n複製完畢之後你輸入yes即可\n之後完成建立站點後terminal應該是顯示這樣的:\n下一步我們進入對站點進行簽名的步驟\n\n2.b對站點進行簽名\n之後你在終端輸入如下命令:\npython zeronet.py siteSign 網站地址 PrivateKey(密鑰)\n比如說我剛才的網站地址是14VX4bQWUR9MeAvojLzzMgxtz4E5ZQsmiz，PrivateKey(密鑰)是:5JSATxhCnhZGFucKmMFbC8hW2Eg9yxY3XKazVdTfA1wZXWvaAUV那麼輸入下列命令:\n\npython zeronet.py siteSign 14VX4bQWUR9MeAvojLzzMgxtz4E5ZQsmiz 5JSATxhCnhZGFucKmMFbC8hW2Eg9yxY3XKazVdTfA1wZXWvaAUV\n\n2.c對網站進行分發操作\n在正式分發操作之前，請到http://127.0.0.1:43110/1LtvsjbtQ2tY7SCtCZzC4KhErqEK3bXD4n/先輸入\nhttp://127.0.0.1:43110/1LtvsjbtQ2tY7SCtCZzC4KhErqEK3bXD4n\n否則無法上傳你的zeronet網站\n如圖所示:\n成功之後它會顯示:content publish to 5 peers.:\n之後在terminal輸入:\npython zeronet.py sitePublish 網站地址\n比如說我剛才的網站地址是14VX4bQWUR9MeAvojLzzMgxtz4E5ZQsmiz，那麼輸入下列命令，一旦顯示Done.就表示你發布zeronet網站成功了:\n代码: 全选\npython zeronet.py sitePublish 14VX4bQWUR9MeAvojLzzMgxtz4E5ZQsmiz\n接下來你就可以為zeronet做種了，在http://127.0.0.1:43110/1LtvsjbtQ2tY7SCtCZzC4KhErqEK3bXD4n/輸入你發布的網址，比如說我的網址是http://127.0.0.1:43110/14VX4bQWUR9MeAvojLzzMgxtz4E5ZQsmiz，那麼就把網站輸入一遍即可。\n之後就可以瀏覽你的網站了\n\n參考連結:\nxiaolan博客的ZeroNet系列——如何在ZeroNet搭建站点？的[手动法]部分: https://xiaolan.me/zeronet-1.html\nbigboy在Zeronet站點GFW TALK的回覆: http://127.0.0.1:43110/1Nse6WcodQ5Mj6ZwvZvuyCVvQESwuxbCUy/?Topic:1_136xFweY3FeXboyXvTkEdXLq6EJpi4Yhg3/+OS+X+zeronet\n[1]:msgpack的python軟件地址: https://pypi.python.org/pypi/msgpack-python\n[2]:gevent的軟件地址: https://pypi.python.org/pypi/gevent/1.1.0\n[3]:(1): tadaland OS X 10.11中Rootless的实现与解释以及关闭方法 http://tadaland.com/os-x-rootless.html\n[3]:(2): quora Can someone elaborate on the OS X 10.11 feature called 'Rootless'? Eldad Eilam的回答: https://www.quora.com/Can-someone-elabo ... d-Rootless\n[3]:(3): quora How do I turn off the rootless in OS X El Capitan 10.11? Amir Salah的回答: https://www.quora.com/How-do-I-turn-off ... itan-10-11\n\n註釋:\n(1)如果沒有安裝gevent則會在python siteCreate出現(no module named gevent)這樣的錯誤\n同樣這樣的錯誤也在Github的zeronet項目的提問區討論過: https://github.com/HelloZeroNet/ZeroNet/issues/286\n(2)同樣如果不安裝msgpack-python的話那麼在python zeronet.py sitePublish的時候則會出現這樣的錯誤no module named gevent:",
+			"parent_topic_uri": "8_1NV87VmSkezRyz8NbFpdkYJsJUSfXx7LJa",
+			"added": 1459569801
+		}
+	],
+	"topic_vote": {
+		"1_136xFweY3FeXboyXvTkEdXLq6EJpi4Yhg3": 1,
+		"2_136xFweY3FeXboyXvTkEdXLq6EJpi4Yhg3": 1
+	},
+	"next_comment_id": 4,
+	"comment": {
+		"1_136xFweY3FeXboyXvTkEdXLq6EJpi4Yhg3": [
+			{
+				"comment_id": 1,
+				"body": "在Tor命令行那裡我的確長姿勢了，多謝!orz",
+				"added": 1459567827
+			},
+			{
+				"comment_id": 2,
+				"body": "> [bigboy](#comment_6_1648MEdSw43PgqQ5PcdrtKv5HVK3Bj2qCX): 总结一下，Mac下安装有如下几个步骤：（都是命令行下面操作的，推荐iTerm2）\n> \n> 安装Xcode command line developer tools\n> 安装brew\n> 安装python, git工具brew install git python\n> brew install tor 安装tor命令行版\n> git clone  https://github.com/HelloZeroNet/ZeroNet\n> 进入zeronet文件夹，参照官方给的文档virtualenv envsource env/bin/activatepip install msgpack-python geventpython zeronet.py运行成功\n> 修改/usr/local/etc/tor/torrc文件，取消ControlPort 9051这行的注释\n> 全程Tor加密运行启动：python zeronet.py --tor always --tor_proxy 127.0.0.1:9050注：有时候运行brew安装软件会遇到不能下载的情况，可以考虑安装一下proxychains4这个软件，用于给命令行代理\n在Tor命令行那裡我的確長姿勢了，多謝!or",
+				"added": 1459567842
+			},
+			{
+				"comment_id": 3,
+				"body": "> [bigboy](#comment_6_1648MEdSw43PgqQ5PcdrtKv5HVK3Bj2qCX): 总结一下，Mac下安装有如下几个步骤：（都是命令行下面操作的，推荐iTerm2）\n> \n> 安装Xcode command line developer tools\n> 安装brew\n> 安装python, git工具brew install git python\n> brew install tor 安装tor命令行版\n> git clone  https://github.com/HelloZeroNet/ZeroNet\n> 进入zeronet文件夹，参照官方给的文档virtualenv envsource env/bin/activatepip install msgpack-python geventpython zeronet.py运行成功\n> 修改/usr/local/etc/tor/torrc文件，取消ControlPort 9051这行的注释\n> 全程Tor加密运行启动：python zeronet.py --tor always --tor_proxy 127.0.0.1:9050注：有时候运行brew安装软件会遇到不能下载的情况，可以考虑安装一下proxychains4这个软件，用于给命令行代理\n\n非常感謝bigboy的提醒 順便提醒一下最好還是排除Tor的China，Russia等獨聯體，北韓，利比亞節點....",
+				"added": 1459568170
+			}
+		]
+	},
+	"comment_vote": {
+		"1_136xFweY3FeXboyXvTkEdXLq6EJpi4Yhg3": 1
+	}
+}

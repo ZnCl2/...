@@ -1,0 +1,255 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="MnNStory: 我和一个女同学15年的故事">
+<meta name="keywords" content="MnNStory,校园爱情,15年,女同学,女生">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<title>概率</title>
+<script src="jquery.js"></script>
+<script src="qrcode.js"></script>
+<script>
+function loadCSS(href) {
+	var cssLink = $("<link rel='stylesheet' type='text/css' href='"+href+"'>");
+	$("head").append(cssLink);
+	return cssLink;
+};
+
+var relocate;
+
+$(function(){
+            var device="computer";
+        var fontSize=($(window).width()/25).toFixed(0);
+        relocate=relocateC;
+    
+	loadCSS("main_"+device.substring(0, 1)+".css").load(function(){
+		relocate();
+		setTimeout(relocate, 1000);
+		setTimeout(function(){
+			var fontSize=$('body').css('fontSize');
+			var qrcode = new QRCode(document.getElementById("QRCode"), {
+				width : parseInt(fontSize)*7,
+				height : parseInt(fontSize)*7
+			});
+
+			qrcode.makeCode(window.location.href);
+		}, 1000);
+	});
+
+	$(window).resize(relocate);
+
+    
+	function relocateC(){
+		function bottom($el){
+			return $el.position().top + $el.outerHeight(true);
+		}
+
+		var $footer=$('#footer');
+		$footer.css({
+			top: 0,
+			display: 'none'
+		});
+		var top=Math.max(
+			bottom($('#textWrapper')),
+			bottom($('#contents')),
+			$(document).height() - $footer.outerHeight()
+		);
+		$footer.css({
+			top: top,
+			display: 'block'
+		});
+	}
+
+        $('.patch-more').click(function(){
+        var page=$(this).data('page');
+        var paragraph=$(this).data('paragraph');
+
+        location.href='page'+page+'.html#paragraph='+paragraph;
+    });
+
+    setTimeout(function () {
+                    var ret=document.referrer.match(/#paragraph=(\d+)/);
+                if (!ret) {
+            return;
+        }
+        var paragraph=ret[1]-1;
+
+        var objParagraph=$('#text p:eq('+paragraph+')');
+        var flash=function () {
+            objParagraph.css('color', 'red');
+            setTimeout(function() {
+                objParagraph.css('color', 'initial');
+            }, 1000);
+        };
+        $('html, body').animate({
+            scrollTop: objParagraph.offset().top-$('#textWrapper').offset().top,
+        }, 500, flash);
+    }, 100);
+
+    var pIndex=0;
+    $('#text p').each(function () {
+        ++pIndex;
+        if (!$(this).attr('id')) {
+            //$(this).attr('id', 'paragraph_'+pIndex);
+        }
+    });
+});
+
+function showComments(){
+	$.blockUI({
+		message: $('#disqus_thread'),
+	});
+
+	$('body').click($.unblockUI);
+}
+</script>
+</head>
+<body>
+<div id="cover" style="background-color: #F1F1F1; position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 2048;"></div>
+<div id="nav">
+	<div class="Three">
+		<div id="navLeft" class="left c">
+			<a href="page33.html" class="blackText">&lt;&lt;&lt;prev</a>		</div>
+		<div id="navRight" class="right c">
+			<a href="page35.html" class="blackText">next&gt;&gt;&gt;</a>		</div>
+		<div id="navTitle" class="middle">
+			概率		</div>
+	</div>
+	<div class="Three m">
+		<div class="left" style="width: 4em">
+			<a href="page33.html" class="blackText">&lt;&lt;&lt;</a>		</div>
+		<div class="right" style="width: 4em">
+			<a href="page35.html" class="blackText">&gt;&gt;&gt;</a>		</div>
+		<div class="middle">
+			<a href="/index.html" class="blackText">[Home]</a>
+		</div>
+	</div>
+</div>
+<div id="images" class="c">
+	<a href="downloads/mnnstory.zip" target="_blank"> <img src="download.png" style="width: 100%;" title="下载" alt="Download" /> </a>
+	<p id="QRCode"></p>
+</div>
+<div id="contents" class="c">
+	<p class="contents_d0"><a href="index.html">目录</a></p>
+	<ul class="contents_d1"><li><a href='page1.html'>上册</a>
+</li><li><a href='page14.html'>上册配乐</a>
+</li><li><a href='page32.html'>下册</a>
+<ul class="contents_d2"><li><a href='page33.html'>心愿</a>
+</li><li>概率
+</li><li><a href='page35.html'>重逢</a>
+</li><li><a href='page36.html'>街景</a>
+</li><li><a href='page37.html'>追求</a>
+</li><li><a href='page38.html'>梦想</a>
+</li><li><a href='page39.html'>糖果</a>
+</li><li><a href='page40.html'>夕阳无限好</a>
+</li><li><a href='page41.html'>电影</a>
+</li><li><a href='page42.html'>怪谁</a>
+</li><li><a href='page43.html'>寄语</a>
+</li><li><a href='page44.html'>移民</a>
+</li><li><a href='page45.html'>永远</a>
+</li><li><a href='page46.html'>附录：幸福的惊人科学发现</a>
+</ul></li><li><a href='page47.html'>下册配乐</a>
+</li><li><a href='page49.html'>订正簿</a>
+</ul></div>
+<div id="disqus_thread"></div>
+<script>
+	var disqus_config = function () {
+		this.page.url = 'http://mnnstory.onion';
+		this.page.identifier = 34;
+		this.page.title = '概率'
+	};
+
+
+	(function() {
+		var d = document, s = d.createElement('script');
+
+		s.src = '//mnnstory.disqus.com/embed.js';
+
+		s.setAttribute('data-timestamp', +new Date());
+		(d.head || d.body).appendChild(s);
+	})();
+</script>
+<div id="textWrapper">
+	<div id="text">
+		<p>3月10日，星期四，我通过<a href="#comment_1" class="issue">微信</a><sup id="issue_1">1</sup>向她发去了这段话：</p>
+<p>“我下周一就要乘飞机去X国了，你周末有空吗？</p>
+<p>我们都认识15年了，那时候我们都只有高一，<a href="#comment_2" class="issue">那时候我们还很年轻</a><sup id="issue_2">2</sup>。你是否还记得，<a href="#comment_3" class="issue">你曾经想让我去向班主任告某某同学的状</a><sup id="issue_3">3</sup>？</p>
+<p>一眨眼，我们都30了，我说，<a href="#comment_4" class="issue">死丫头，你怎么三年都不来找我？</a><sup id="issue_4">4</sup>现在你都要结婚了，我也要移民了，以后就再都见不到面了，能出来最后叙一次旧吗？一切都已尘埃落定，总不见得我这个时候还对你有什么想法不成？</p>
+<p>你可以考虑一下，但也决不要违背自己心意。</p>
+<p>不管怎么说，请最终给我一个直接的答复，不要害我苦等。”</p>
+<p>这段话我是苦心构思，逐字雕琢过的。</p>
+<p>主要思路是用“老同学叙旧”为借口，提出要见她一面。“以后就再都见不到面了”是想要见她的真正原因，我却故意放在不起眼的中间，淡化处理。</p>
+<p>这样写并非要欺骗她。我无法，也没有隐瞒内心情感，我的真实意图再明显不过，尤其“害我苦等”带有暧昧。如果真是只为叙旧，一般不会有这样的字眼。</p>
+<p>“总不见得我这个时候还对你有什么想法不成”是句承诺，意思是：“我不会来破坏你婚姻，或干扰你生活。我只是想见你。”同样是这句话，如果她读得够认真，我对她有什么想法，只会欲盖弥彰。</p>
+<p>为了提高成功率，我用“考虑”两字设了个陷阱。她犹豫中，只要闪过答应的念头，并说出口，我就有希望能抓住机会。怕只怕她不假思索，直接拒绝。</p>
+<p>“决不要违背自己心意”并非显示姿态，而是真实而友好的建议。我不想让她违心答应，我更希望她能自己找到合适的理由。</p>
+<p>最后一小节，我想防止她用回避或搪塞的办法过关。“如果你要拒绝我，就麻烦你再残忍一次吧！”当然，能约束她遵守这个游戏规则的，只有她的良心而已。</p>
+<p>写完后，我翻阅了《鹿鼎记》三联书店版，第五册第四十五回第1871页中，康熙写给韦小宝的劝降诏书，想参考其中晓之以理，动之以情的策略。对比自己所写，并没作任何修改。</p>
+<p>我调整了段落、语序、关联、排版等后，认真地检查了好几遍，在手机上预览了效果，保证这篇呕心沥血之作即使在小手机上，也能一屏显示完整。长篇大论易遭人厌恶。</p>
+<p>下午2:49，我发了过去。接下来的近一小时，我手机响了好几次，砰砰的心跳、急切的情绪、最后的失望，接连重复着。</p>
+<p>其实，她答应的概率实在不高。</p>
+<p>我因何而约，她会不懂？她并不爱我，再明显不过。既然这样，她完全可以不照顾我感受。况且，她已订婚，无论从她自己的爱情讲，还是从婚姻的道德和责任层面讲，都可以理直气壮地说不。</p>
+<p>4:41，我收到了她的回复。内容如下：</p>
+<p>“好呀！我感觉自己会哭哎。。。。另外‘以后再也见不到面了’这种非常绝对的话就不要说了嘛，从小英语老师就告诉咱们，那种绝对式的否定答案常常是错的。你可以回来玩，我以后也可以去X国玩耍呀，现在出不起国，那争取以后走出亚洲去<a href="#comment_5" class="issue">浪</a><sup id="issue_5">5</sup>呀！对不对！”</p>
+<p>看到这样的回复，我简直在怀疑自己身处梦中。我读了好几遍，才相信没误解她意思。</p>
+<p>从“哭”这个字，引用“以后再也见不到面了”，及篇幅重心猜测，她已理解了我的惜别之情，自己也有同样的感受。</p>
+<p>从引号里措辞与原文的细小差异看，她像是用手机输入这段话的，故而没用复制粘贴。而手机里能发来这些，她这次好像认真了。</p>
+<p>她借用英语老师传授的做题技巧来告诉我，事情并不总那么绝对。然后她切换到现实，说我可以回上海游玩，她能够来X国远足。当然，这些话只是劝慰，不能当真。即使我们以后偶尔在同一个城市，见面也几乎不可能。</p>
+<p>最后几句像是她内心独白，有点偏题。但和她2月5日电话中所言吻合，她当时也讲过喜欢西方国家，不过旅行的开销太大。看到两个感叹号，我仿佛听到了她爽朗的笑声。</p>
+<p>最关键的是：她开头说了 “好呀”——就是答应！</p>
+<p>但仔细想想，她却没指定时间地点。</p>
+<p>我本应对她的善意有所表示，但，对不起，此刻，实现我的愿望最重要。收到这条消息不多久，我就直奔主题。</p>
+<div class="mnn">
+	<span class="mnnName">N: </span><span class="mnnQuote">什么时候？</span><br />
+	<span class="mnnName">N: </span><span class="mnnQuote">你什么时候下班，下班的时候我跟你说</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">我下班啦，我对吃的没所谓的，你选地方就好</span>（6:32pm）<br />
+</div>
+<p>她既肯出来，就都由她。我又不为吃而去。若能随意逛逛更好。</p>
+<div class="mnn">
+	<span class="mnnName">N: </span><span class="mnnQuote">还是你选吧，我外面很少玩的</span>（7:55pm）<br />
+	<span class="mnnName">N: </span><span class="mnnQuote">在吗？</span>（9:27pm）<br />
+	<span class="mnnName">M: </span><span class="mnnQuote">嗯嗯，在</span><br />
+	<span class="mnnName">M: </span><span class="mnnQuote">吃饭的地方我再想想吧，搞的来我好像经常在外面玩一样</span>（10:04pm）<br />
+</div>
+<p>她仍没提时间和地点。莫非她并非真想出来，只是要给我点安慰，故答应而不兑现。难道她又在犹豫？</p>
+<p>果真只是安慰，我也能接受。她的善意我已收到，她的立场我应理解。</p>
+<p>不过，我既希望她能出来，这层道理就不能向她坦白。</p>
+<div class="mnn">
+	<span class="mnnName">N: </span><span class="mnnQuote">你想好了吗？如果没有，你看看这样行吗？我们都对吃什么没什么要求，不如就去城隍庙或者老西门转转，看到哪里好吃就进去吃。到时候实在找不到，城隍庙有小笼（Shanghainese Dumplings），西方人都来吃，老西门有大肠面，号称上海第一块招牌。你选一个或者告诉我你的方案吧！你看明天早上10点能行吗？</span>（8:27pm, Friday, 11 March）<br />	<span class="mnnName">M: </span><span class="mnnQuote">……我刚从常熟出差回来……今天一日游常熟，然后等下10点30有电话会议，打到11点30……双休日我一般都要睡到中午的……&lt;哭&gt;&lt;哭&gt;&lt;哭&gt;</span><br />	<span class="mnnName">M: </span><span class="mnnQuote">而且你选的地方不都是非常拥挤的嘛……</span><br />	<span class="mnnName">M: </span><span class="mnnQuote">你看下午喝下午茶可以不？</span>（8:41pm）<br /></div>
+<p>虽然时间缩短了，但我既已打定主意决不违拗她心意，就只能接受。是的，你很累，但，第一，你没有明确拒绝；第二，此事在我心里分量太重。所以，还是请你出来吧。</p>
+<p>我还察觉，她好像习惯用省略号渲染情绪，尤其是痛苦。</p>
+<div class="mnn">
+	<span class="mnnName">N: </span><span class="mnnQuote">可以</span><br /></div>
+<p>她不讲地点，又否决我的提议。真难。</p><p>老西门离她家近，又挺好玩。</p>
+<div class="mnn">	<span class="mnnName">N: </span><span class="mnnQuote">老西门周围去找找怎样，老西门算蛮静的？</span>（8:49pm）<br />	<span class="mnnName">M: </span><span class="mnnQuote">可以的</span><br />	<span class="mnnName">N: </span><span class="mnnQuote">明天下午2:00</span><br />	<span class="mnnName">M: </span><span class="mnnQuote">嗯，好</span><br />	<span class="mnnName">N: </span><span class="mnnQuote">有点怕不认识你了</span><br /></div>
+<hr class="comment" />
+<p class="comment" id='comment_1'><a href="#issue_1" class="comment">[1]</a>
+中国当时智能手机平台上最流行的即时聊天软件。
+</p>
+<p class="comment" id='comment_2'><a href="#issue_2" class="comment">[2]</a>
+高中数学老师的搞笑口头禅。
+</p>
+<p class="comment" id='comment_3'><a href="#issue_3" class="comment">[3]</a>
+详见上册“别情”小标题下的倒数第二和第三节。
+</p>
+<p class="comment" id='comment_4'><a href="#issue_4" class="comment">[4]</a>
+高一时流行的广告词。这句话其实等同于“好姑娘啊！你真狠心，可以3年不和我说一句话！我想得你好苦！”。“三年”在广告词中是约数，在我的故事里是准数，虽然这点并不明显。
+</p><p class="comment" id='comment_5'><a href="#issue_5" class="comment">[5]</a>网络流行词，来源于东北话。有嚣张、自信、玩耍和浪漫的意思，也表示摆阔和享乐。</p>
+<p>&nbsp;</p>	</div>
+</div>
+<div id="footer">
+	<div id="declaration">
+		本故事为作者亲身经历
+	</div>
+	<div id="bannerLine" class="Three">
+				<div class="middle">
+            			    <a href="about.html">MnNStory, 1 Sep 2001 - 12 Mar 2016</a>
+            		</div>
+	</div>
+	<hr class="m" />
+	<div id="switch2c" class="m">
+		<a href="">电脑版</a>
+	</div>
+</div>
+</body>
+</html>

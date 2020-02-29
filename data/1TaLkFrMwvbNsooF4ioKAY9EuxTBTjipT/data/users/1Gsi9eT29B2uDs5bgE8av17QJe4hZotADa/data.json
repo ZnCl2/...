@@ -1,0 +1,117 @@
+{
+	"next_topic_id": 1,
+	"topic": [],
+	"topic_vote": {},
+	"next_comment_id": 22,
+	"comment": {
+		"1519627708_1M8ZpJwd63Vb8KdVaSb5EbqKxoRTVDmqTf": [
+			{
+				"comment_id": 1,
+				"body": "I have been tinkering with [not relevant anymore] to get the names of each magnet link, but I have yet to actually find a single name using this script.",
+				"added": 1519765284
+			},
+			{
+				"comment_id": 3,
+				"body": "> [rdu](#comment_16_1JdGajsRmeCbZofurLsGcBZaaFg7ao16PQ): edit line 37 to:    line = file.readline().upper()[:-1] [...]\n\nThat was definitely the cause. I am going to fix some more bugs before uploading the working code.",
+				"added": 1519833033
+			},
+			{
+				"comment_id": 4,
+				"body": "Here is the new script: [not relevant anymore] It actually works now. I removed the timeout, since it might be best to just wait.\n\n> [glightstar](#comment_57_14K7EydgyeP84L1NKaAHBZTPQCev8BbqCy): Nice! :DSo that will then provide the ability to make a zite with all the 15 million indexed magnet-links, right?\n\nProbably. It adds the filename as &dn=[encoded string] which can be decoded into a normal string and used to sort and search for magnet links. I believe it might be best to separate the name from the magnet url and put them into a database to optimize the search. This specific script would be able to fetch 15000000 magnet links if they are active, and you have them in a text file (named \"complete_listing.txt\"). The script will get stuck on dead magnet links, so it might need to actually remove the magnet links it has already fetched. That way, it could have a timeout, but try again from the top after everythig has timed out.",
+				"added": 1519839392
+			},
+			{
+				"comment_id": 5,
+				"body": "> [rdu](#comment_17_1JdGajsRmeCbZofurLsGcBZaaFg7ao16PQ): https://web.archive.org/web/20180221222547/http://46.166.187.105:8080/complete_listing.txt.gz [...]\n\n> [glightstar](#comment_59_14K7EydgyeP84L1NKaAHBZTPQCev8BbqCy): I guess just some additions to L#51 are needed (filenew.write(\"magnet:?xt=urn:btih:%s&dn=%s\\n\" % (handle[1], urllib.quote_plus(handle[0].get_torrent_info().name())))), to add size and date stuff.., but I have no idea about the libtorrent-python-module (though it looks really neat!).. [...]\n\nGetting the size is easy enough, but the date is of type boost::optional<long>, which neither Python nor I know how to deal with. Keep in mind, I am no Python programmer. I have never touched libtorrent before, and I can't read its documentation at rasterbar.com, because it redirects endlessly (probably because I block third party cookies or some other tracking software).\n\nThe script is unpredictable when it comes to speed. It just starts looking for metadata on 100 torrents, and replaces a fetched magnet url with a new one. I believe this speed depends on how many current seeders have 100% of the torrent.\n\nI would like to remove fetched magnet urls from the complete_listing.txt and add a timeout starting at 10 minutes. When the timeout is reached for a magnet url, its handle is replaced, but it will still be in complete_listing.txt. When the script has run through the whole list, if there are still magnet urls in complete_listing.txt, it should increase the timeout and loop through again. This way, all the quick magnet urls will be fetched first, and we can continue trying to fetch the slow ones.\n\nI don't know how to efficiently remove a specific file line in python (without reading the whole file, or reading the whole file until a specific line is found), or what would happen if I write while I have my reader open. If someone has any solutions for this, it would be appreciated.\n\nAt least some things work: [not relevant anymore]\nAnd here is a version with size and immediate appended writing to file: [not relevant anymore]\nEdit: Here is a version with timeout handling, but someone needs to fill in the todos: [not relevant anymore]\nEdit2: Here is the magnet list split into 302 chunks of 50000 elements each: [not relevant anymore]",
+				"added": 1519941870
+			},
+			{
+				"comment_id": 6,
+				"body": "I managed to make a version with working timeouts and persistance: http://127.0.0.1:43110/1MgHVPCE1ve6QfKrgsqCURzRj72HrRWioz/?1Gsi9eT29B2uDs5bgE8av17QJe4hZotADa_17\n\nFiles with hashes can be found here: http://127.0.0.1:43110/1J1epG5eMc4bsmh69UctBg4PHEe5B3kYHY/magnetlists.html\n\nThis version will create magnet links like: http://127.0.0.1:43110/1J1epG5eMc4bsmh69UctBg4PHEe5B3kYHY/magnets.html",
+				"added": 1520026055
+			},
+			{
+				"comment_id": 7,
+				"body": "> [rdu](#comment_18_1JdGajsRmeCbZofurLsGcBZaaFg7ao16PQ): We can simply read torrent files in binary form and extract relevant information for our purpose. eg:torrent_file = open(params['save_path'], 'rb') [...]\n\nlibtorrent can fetch data such as creator, creation_date and comment (see full list below) from a fetched magnet URI. Since it is originally a c++ library, creation_date uses a datatype incompatible with python (but name and  size are fetched perfectly (see previous post)). The reason we are going for magnet links, and not torrent files, is simply because I don't have enough storage space for the 444GB dump.\n\nget_torrent_info() object methods: ['add_http_seed', 'add_node', 'add_tracker', 'add_url_seed', 'comment', 'creation_date', 'creator', 'file_at', 'file_at_offset', 'files', 'hash_for_piece', 'info_hash', 'map_block', 'map_file', 'merkle_tree', 'metadata', 'metadata_size', 'name', 'nodes', 'num_files', 'num_pieces', 'orig_files', 'piece_length', 'piece_size', 'priv', 'remap_files', 'rename_file', 'set_merkle_tree', 'total_size', 'trackers', 'web_seeds']",
+				"added": 1520026655
+			},
+			{
+				"comment_id": 8,
+				"body": "> [rdu](#comment_19_1JdGajsRmeCbZofurLsGcBZaaFg7ao16PQ): I read your code and some libtorrent documentation. What the code is doing is downloading entire torrent at temp directory and than reading metadata from it. Which is problematic. [...]\n\nI have been silently patching (uploading a new script, and edit the link) the script a lot, because I found out I didn't even properly remove handles which have timed out. In the latest patch, I added handle.pause() after creating a handle, which seems to prevent this unwanted behavior (the fetch rate has increased greatly).",
+				"added": 1520096710
+			}
+		],
+		"1552676118_1FnQQkQ4AwjwBhbz61RmqPazDrvdBGy79K": [
+			{
+				"comment_id": 9,
+				"body": "Manifesto: http://127.0.0.1:43110/1ADQAHsqsie5PBeQhQgjcKmUu3qdPFg6aA/?:users/1AtvCHH1vmbBNeoaKKzWZGZgBKY8SDHYGx:pol:fe543dd7-412d-4197-99eb-631b0a864891",
+				"added": 1552676777
+			}
+		],
+		"1553138703_12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu": [
+			{
+				"comment_id": 10,
+				"body": "Icons don't work in any of my firefox browsers. Not on Win7, Win10 or Linux. Disabling all extensions does not fix the problem, so they're blocked by some setting in firefox.\nCross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://127.0.0.1:43110/kxovid.bit/fonts/material-icons/MaterialIcons-Regular.woff2. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing).\nCross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://127.0.0.1:43110/kxovid.bit/fonts/material-icons/MaterialIcons-Regular.woff. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing).\nCross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://127.0.0.1:43110/kxovid.bit/fonts/material-icons/MaterialIcons-Regular.ttf. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing).\nEither use images for all icons (svg/png sheet) or at least use image icons as a fallback.\n\nYou probably shouldn't use external svg files if you don't want to be on the [Privacy blocklist](http://127.0.0.1:43110/18zoKfKYPnVBuHtKpK1mhAuVsWXV72obA1/)",
+				"added": 1553169250
+			},
+			{
+				"comment_id": 11,
+				"body": "> [krixano](#comment_625_12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu): Firstly: Did you look at the links - they're not external svg files. They are all loaded from 127.0.0.1:43110 - which is ZeroNet! Secondly: All of the icons work for me in every single browser. That doens't mean I'll look into this, but it should be pointed out that I was unaware of this problem, and I'm still unsure that it's actually my problem. Thridly: They are font files, not svg files. [...]\n\nThe last sentence is distinct from the rest and concerns the attempted loading of the file at https://cdn.plyr.io/3.5.2/plyr.svg",
+				"added": 1553175403
+			},
+			{
+				"comment_id": 12,
+				"body": "> [itsmemario1](#comment_1_1H72g5YeBn4DyLQT9bKeFkt4LnZHzyonvn): So I don't think this happens with standard Firefox (all icons work just fine with mine) but it definitely does happen in Tor Browser (and I wouldn't be surprised if tweaking Firefox's privacy settings produced the same result). [...]\n\nYour little hotfix does seem to have fixed the problem.",
+				"added": 1553178137
+			},
+			{
+				"comment_id": 13,
+				"body": "> [krixano](#comment_626_12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu): Firstly, if you find a bug like this, you need to TELL ME WHAT IT IS. If you didn't notice, I just released Plyr Video Player support/feature today, so I was unaware of this proble. [...]\n\nPrivacy violations are generally not seen as a bug, but a lack of care for the privacy of a site's users. Most modern websites care more about their design than a user's privacy. External requests are especially dangerous on ZeroNet since everything's pseudo-anonymous, so one request mentioning a user's username or public key could potentially bind a real identity to all of that user's posts or owned sites.\n\nIt seems you've removed the privacy-violating request, so I removed the site from the blocklist.",
+				"added": 1553191602
+			},
+			{
+				"comment_id": 14,
+				"body": "> [krixano](#comment_629_12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu): And you should give me more credit on remaining and actively making sure I don't call out to clearnet resources in the majority of my zites, including KxoVid (even previous to today, I wasn't calling out to clearnet resources - this privacy bug was introduced today), especially considering I'm the only Video Sharing Zite that doesn't call out to any clearnet resources by default right now.\n\nYou are forgetting Sick KopyKate BIG OFFICIAL. You've got another site on the blocklist, so I can't say I'm particularly impressed. Not using external resources should be the norm, not an achievement. Making it the norm is the main goal of the blacklist, as a blacklist can never ensure the safety of its users anyway. That's what we've got uMatrix for.",
+				"added": 1553198669
+			},
+			{
+				"comment_id": 15,
+				"body": "> [krixano](#comment_630_12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu): KopyKate Big Official\n\n\"Sick KopyKate Big Official\" not \"KopyKate Big Official\".",
+				"added": 1553238616
+			},
+			{
+				"comment_id": 16,
+				"body": "> [krixano](#comment_638_12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu): Post the link? I've never heard of this \"Sick KopyKate Big Official\" and it's not on ZeroSites. I've also search ZeroTalk and ZeroMe and 0List (via my Important Zites) and haven't found any mention of it. Also, people shouldn't support near-exact clones, imo. [...]\n\nhttp://127.0.0.1:43110/19y5ts5JTjKsHcPqh2V5koAYQ2jHmiegvA/",
+				"added": 1553268764
+			},
+			{
+				"comment_id": 17,
+				"body": "> [krixano](#comment_639_12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu): Btw, you can remove \"Krixano's Zite\" from your blocklist now - I've deleted almost all of the content off that zite.\n\nI already did.",
+				"added": 1553268779
+			},
+			{
+				"comment_id": 18,
+				"body": "> [krixano](#comment_640_12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu): I'm just curious how I'm supposed to \"forget\" about something that I've never known about in the first place and that is literally not posted anywhere - couldn't find any link to it on ZeroSites, ZeroMe, ZeroTalk, ZeroTalk Dev, 0List, or Important Zites (new). I mean... the zite literally has only 26 videos, and only 12 peers for me. [...]\n\nJust because you don't know about it doesn't mean it doesn't exist. I've no idea where I found it, but it was shared somewhere in the past (and it has 184 peers for me). There are hundreds of sites on ZeroNet you may never stumble upon browsing casually (proxies contain tons of sites I can't find using search engines or ZeroSites).\n\nYou can't just proclaim things like, \"I'm the only Video Sharing Zite that doesn't call out to any clearnet resources by default right now.\", without first checking your facts. You may say you think or believe it's true, but you can't state it. Well, it's not like any one person knows about all individual sites on ZeroNet.",
+				"added": 1553273602
+			},
+			{
+				"comment_id": 19,
+				"body": "> [krixano](#comment_642_12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu): Go to Sick KopyKate Big's Airing Now page, click More videos if nothing shows up. Then look at the Network.http://127.0.0.1:43110/19y5ts5JTjKsHcPqh2V5koAYQ2jHmiegvA/?Latest\n\nI don't judge privacy violations based on if they can happen, but on whether they are happening. Any site can add an external resource at any time (like you did the other day). \nThere are at least 5 KopyKate Big clones which currently don't have external files (four of them don't even have any videos). There's also one video uploading site which does not seem to be a clone, but has never finished loading, so I don't know whether it contains external thumbnails or not. One of the YouTube clones does not have any videos, and thus does not violate its users' privacy (yet).",
+				"added": 1553280229
+			},
+			{
+				"comment_id": 20,
+				"body": "> [krixano](#comment_645_12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu): That's not quite true. Only Zite owners can add an external resource, or allow users to add an external resource. KxoVid does not allow it's users (or category/merger zite owners) to add external resources (that are to be loaded from the zite) whatsoever. Actually, none of my zites do. Because I make sure of this - that's hardly not thinking about user privacy. [...]\n\nThe site owner can change the site at any time. One of the changes might be to add external resources, malicious EcmaScript or a request which would allow a web service to correlate ZeroNet usernames to email addresses or real names, using the requesting IP address. Because of this, no blacklist or whitelist can ensure security or privacy.\n\nPreemptive blocking would require more time to get insight into the functionality of the different sites (there are already >3000 sites on ZeroNet). It would also make the blocking criteria looser, potentially causing non-objective censorship. I have one criteria. If uMatrix shows a number, I block the site.\nModern ZeroNet blocklists only warn a user, and can be bypassed by the click of a button, so I'm still hosting some of the sites on my blocklist.",
+				"added": 1553283993
+			},
+			{
+				"comment_id": 21,
+				"body": "> [krixano](#comment_646_12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu): Nobody ever said you can get everything. But you'd protect your users a lot more by blocking the websites that allow users to post a clearnet link that is then loaded by the zite automatically. This is more useful imo, because you aren't just copying the functionality of uMatrix and other plugins (but doing it worse by not having auto-detection on all zites) - you are adding something additional to the protection. [...]\n\nI repeat what I said earlier: \"Not using external resources should be the norm, not an achievement. Making it the norm is the main goal of the blacklist, as a blacklist can never ensure the safety of its users anyway. That's what we've got uMatrix for.\". It's also to create awareness, since a casual user would be unaware any of these violations are happening. Hopefully they'll start using uMatrix after becoming aware. When sites stop working because they rely on clearnet resources (which are blocked by uMatrix using the right settings), users will hopefully demand change, or leave for privacy respecting sites.\n\nIf someone, as an example, made a CP blocklist based on the capability of each site , all sites accepting user-generated content would need to be blocked. Video upload sites can be used to upload illegal videos. Image upload sites can be used to upload illegal images. Sites accepting text could be used to share illegal images in base64.\nIf I were to add all potentially privacy violating sites, that would mean all sites in existence, since any site can change at any point in the future.",
+				"added": 1553286740
+			}
+		]
+	},
+	"comment_vote": {
+		"1_1H72g5YeBn4DyLQT9bKeFkt4LnZHzyonvn": 1
+	}
+}

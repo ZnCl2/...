@@ -1,0 +1,1020 @@
+{
+	"title": "Kaffie's Blog",
+	"description": "I apparently just write about my search engine. But I do more than that, honest!",
+	"links": "*   [My Github](https://github.com/April93)\n\n*   [My Patreon](https://www.patreon.com/aprilc0t)\n\n* * *\n\n*   [ZeroNet Beginner's package](/1N6zp6jCXPBktNMPfe7UJBpQGyfCq7k2M8/?Post:2:ZeroNet+Beginner%E2%80%99s+Package)\n\n*   [Change your ZeroMe Hub](/1N6zp6jCXPBktNMPfe7UJBpQGyfCq7k2M8/?Post:25:How+to+change+your+ZeroMe+Hub)\n\n*   [Set up Tor on Mac](/1N6zp6jCXPBktNMPfe7UJBpQGyfCq7k2M8/?Post:22:How+to+install+and+configure+Tor+to+work+with+ZeroNet+on+Mac+OSX)\n\n*   [Set up CJDNS](/1N6zp6jCXPBktNMPfe7UJBpQGyfCq7k2M8/?Post:51:Using+CJDNS+with+ZeroNet)",
+	"next_post_id": 54,
+	"demo": false,
+	"modified": 1629183735,
+	"post": [
+		{
+			"post_id": 53,
+			"title": "New Beta Version of Kaffiene",
+			"date_published": 1629183444.944,
+			"body": "It's been a while but I've slowly been working on a new version of Kaffiene which many of my followers have likely seen before (on a [little demo site](http://127.0.0.1:43110/1FEH3VjjKoDTXSpUA1G4xpB7WFnfQ48oVC/site.html)). Well I've managed to integrate that code into Kaffiene and combine both results (from the old kaffiene index as well as zerosites index). It's a bit hacky at the moment but please check it out and let me know what you think. It's available [here](http://127.0.0.1:43110/1Mr5rX9TauvaGReB4RjCaE6D37FJQaY5Ba/new.html).\n\n<3 Kaffie"
+		},
+		{
+			"post_id": 52,
+			"title": "Cleaning up ZeroNet spam",
+			"date_published": 1549592559.164,
+			"body": "Yesterday ZeroNet was hit by quite a few chinese spammers, who intended to clutter ZeroNet with junk and attempt to smear/slander it. Naturally there's built in support to mute users, but it can take time for everyone to do that (or to ban them from the sites).\n\nSo instead I went ahead and set up a list you can follow to automatically mute any spammers and clean up your ZeroNet experience. You can find that [here.](http://127.0.0.1:43110/1CufK1ZtvekbFXEpSyKT2gDjf9jnqW8KwG/)\n\nAs always thanks for following and supporting my work!\n\n<3 Kaffie"
+		},
+		{
+			"post_id": 51,
+			"title": "Using CJDNS with ZeroNet",
+			"date_published": 1549429356.16,
+			"body": "Noticed people haven't really been setting up cjdns for use with ZeroNet, despite the fact that it's now supported fully. Perhaps due to lack of awareness, or just general ignorance on how to set it all up. I think some are hesitant because they believe you need ipv6 support (which is untrue). So without further ado, here's a walkthrough on how to do it.\n\n* * *\n\n# 1\\. Install CJDNS\n\nFirst things first is that you actually need cjdns installed. There's no need to worry about whether you have native ipv6 support, as cjdns doesn't use it (unless that's your chosen option for connecting to peers).\n\nFor windows, just download and install [this.](https://www.santacruzmesh.net/installer.html) Following the steps in the guide should make it very easy to set it up.\n\nFor Mac use either `brew install cjdns` or `sudo port install cjdns` depending on whether you use homebrew or macports. If you have neither, you can set up homebrew by running:\n\n```\n/usr/bin/ruby -e \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)\"\n```\n\nGenerate a new config file by running `./cjdroute --genconf >> cjdroute.conf` this will create a configuration file that you can edit. When you finish editing, you can use `sudo ./cjdroute < cjdroute.conf` to launch and run cjdns.\n\nYou'll want to add a peer that's connected to the hyperboria network already, though if you just want private use you can connect to a friend or whoever is on the cjdns network you want to use ZeroNet on. LAN peers are auto-configured.\n\nOne such public peer that you can use is:\n\n```\n\"198.58.100.240:22237\": {\n                       \"login\": \"default-login\",\n                       \"password\":\"pqr5brz16vzzu6vhjuj7tv3n078kr5f\",\n                       \"publicKey\":\"ubbtkp0txwjh44v8kkznvhjqqwr1hd2jzv5ms9zlkfk25svxvtg0.k\",\n                       \"peerName\":\"trnsz\"\n                    }\n```\n\nYou'll want to put this in the section of the config where it says `\"connectTo\":`, inside of the brackets.\n\nFor more details you can see the [cjdns github page.](https://github.com/cjdelisle/cjdns)\n\nBe sure to note down your cjdns ipv6 which is located under the ipv6 field at the top of the config file.\n\n# 2\\. Configure ZeroNet\n\nThis part is pretty straight forward. If you wish to become a tracker/bootstrapped node (very needed as we don't have cjdns trackers), then go into the ZeroNet plugins folder and rename disabled-bootstrapper to bootstrapper.\n\nIn ZeroNet.conf you'll want to add your ipv6 to the `ip_external` section. It might be good to change `fileserver_ip_type` over to ipv6 as well, though that step may be optional. You can also do this on the [config page](http://127.0.0.1:43110/Config) if a gui is more your speed. When all is said and done your config file should look something like this:\n\n```\n[global]\nip_external =\n youripv6here\nfileserver_ip_type = ipv6\ntrackers = \n zero://otherpeoplescjdnszntrackeripshere:port\nfileserver_port = 15441\noptional_limit = 1.83\n```\n\nAnd that's it! Just restart ZeroNet and you should be set up, with your ZeroNet now working with cjdns peers. Be sure to share your cjdns ipv6 if you decided to set up a bootstrapped node so that others may connect to it. It also might be a good idea to look around and find other cjdns peers (and share peering info here on ZN). You can find other cjdns nodes (and try to see if they have a cjdns site hosted) [on this site.](https://www.fc00.org/)\n\nTo test to ensure cjdns is connected properly you can visit [cel's hyperboria site](http://[fc56:8313:1e14:1a50:c01:850:a53e:7127]/) or ping the ip directly using `ping6 fc56:8313:1e14:1a50:c01:850:a53e:7127`\n\nThere's a bootstrapped cjdns node at `zero://fc2a:e8f2:3f9c:52e5:5c2f:da95:9213:7bd7:15441` but it's not on 24/7 and more bootstrappers would be greatly appreciated.\n\n`zero://fc18:e736:105d:d49a:2ab5:14a2:698f:7021:15441` is now up and works.\n\nEnjoy using cjdns!\n\n<3 Kaffie"
+		},
+		{
+			"post_id": 50,
+			"title": "Patreon",
+			"date_published": 1536613141.805,
+			"body": "I figured I should make a Patreon account to hopefully be able to switch my focus away from finding work and towards being able to work on ZeroNet full time. Please help make that a reality!\n\n[Here](https://www.patreon.com/aprilc0t) is the link to my Patreon (clearnet). \n\nAnd [here's a link](https://discord.gg/hx3xXZV) to my discord server for early access/previews/etc.\n\nI plan on working on romhacks/fan translations, possibly more technical and informative blog posts, and videos. Thanks for the support :D\n\n<3 Kaffie"
+		},
+		{
+			"post_id": 49,
+			"title": "Learning the Jouyou Kanji in preparation for AJATT",
+			"date_published": 1536121939.343,
+			"body": "I just wanted to share with everyone the method I'm using to learn the Kanji as part of the first step in the AJATT method of learning Japanese (besides learning the kana of course). Most of what I'm doing stems from the [NihongoShark article \"Hacking the Kanji\"](https://nihongoshark.com/learn-kanji/), but there's a lot of fluff there and some stuff that's really not important (takes forever to read). I'll be reposting the relevant and important sections here. Feel free to ignore this post if you aren't learning Japanese, or already know the kanji. I won't be including the information on his memory techniques, the motivation strategy, etc. So if you're interested in that... sorry just go check the clearnet link. The following is not my writing or work, but merely edited and reposted for convenience.\n\n* * *\n\n# How NOT to Learn the Kanji\n\nBefore we get into my system, I should clarify some ineffective kanji study methods. Your Japanese teacher, Japanese friend, study buddy, etc. may very well encourage you to do one or all of the following. Don’t listen to them.\n\n## 1\\. Stroke by Stroke\n\nThis is how a lot of Japanese classes will encourage you to learn the kanji. That’s because they teach kanji in the same way that Japanese children learn them—stroke by stroke, over the course of 10+ years.\n\nThere’s another word for this method: masochism.\n\nSeriously, this is torture. I’m not saying it’s impossible to learn this way. I’m just saying that it wastes an unbelievable amount of time.\n\n## 2\\. Learning Each Kanji as a Whole\n\nKanji are made up of parts… and those parts have meaning. So you should learn the parts first, then the kanji as a whole.\n\n## 3\\. Using Only 1 Kanji Study Tool\n\nA lot of people will write books and blog posts and just about anything you can think of in which they tell you about “the best, fastest, most awesome way to learn the kanji”…which, as coincidence would have it, is their way. Not only that, but pay us money for it, too.\n\nNo!\n\nThere are a ton of useful kanji study tools and methods out there. But the only way to learn kanji fast and effectively is to combine the best methods into one super-method.\n\n# How You SHOULD Learn the Kanji\n\n## Divide the Kanji into Constituents\n\nSay I want to learn the kanji for gather. My Japanese teacher might have told me to write this 1,000 times while repeating the meaning in my head:\n\n集集集集集集集集集集集集集集集集集集集集集集集集集集集集集集集集集集集集集集集集集集\n\nGather. Gather. Gather. Gather. Gather. Gather. Gather. Gather. Gather. Gather. Gather. Gather. Gather. Gather. Gather. Gather. Gather. Gather. Gather. Gather. Gather. Gather. Gather. Gather. Gather. Gather. Gather. Gather. Gather. Gather. Gather. Forget it. I quit.\n\nInstead, we’re going to take the (now highly evolved) Heisig approach, yeah?\n\n隹 (turkey) + 木 (tree) = 集 (gather)\n\n“I saw a bunch of turkeys gathered in the tree outside my window.”\n\nI’ll see the constituents 隹 (turkey) and 木 (tree) in a lot of kanji. So, I’m pretty much guaranteed to remember what those mean, because they’ll appear in a story for every kanji that includes them. This means that if I create a good mnemonic (memory device) for remembering that those two add up to mean gather, then I will learn the kanji 集 and it will stick.\n\n## Only Worry About Recognizing the Meaning\n\nAs you will learn very early in your Japanese studies, there are many different elements to “learning the kanji,” which, by itself, is quite a vague statement. For example, consider the following. Say we have the kanji 食, which means “eat.” There are many aspects to “knowing” this kanji:\n\n1.  In general, it means “eat,” “eating,” or “food.”\n\n2.  The On’Yomi (Chinese-derived reading) is しょく / shoku or じき / jiki. Yeah, by the way, there are different sounds for each kanji. This is one of the side effects of smashing Japanese into the Chinese writing system. So, for one character, there are many possible readings (ways to pronounce it). We’ll worry about this later. Also, it won’t be stressful at all.\n\n3.  The Kun’Yomi (Japanese reading) is た.べる / taberu or く.う / kuu or く.らう kurau.\n\n4.  The stroke order.\n\nThat’s a lot of info, right? There is a much simpler and more positive solution, however:\n\n**Only learn the meaning of the character (#1 above).**\n\n## Review Them with an SRS Program (Anki)\n\nI’m not going to talk much about this here, as I talk about it every three seconds throughout this whole guide. But, yeah, let’s use Anki so that we can remember these characters long-term. Also, because Anki is set up very nicely to walk us through the kanji one at a time… which I’ll be showing you in just a moment here.\n\n# Ninja Tool Amalgamation\n\nWe can learn kanji by using these three tools:\n\n1.  Anki Flashcards will keep us from forgetting what we learn.\n\n2.  Heisig’s Remembering the Kanji will help us break our kanji into parts so we can learn them via stories and mnemonics.\n\n3.  Reviewing the Kanji ([http://kanji.koohii.com/](http://kanji.koohii.com/)) will save us when we have a hard time coming up with our own kanji stories and mnemonics.\n\n## Set Up Your Anki Deck\n\n*(Kaffie pro-tip: Just go set up Anki u lazy fucks. Do you really need a guide for this? See the clearnet link if you need help as he walks through it in painstaking detail. I personally use Ankidroid on my phone.)*\n\n## Download the NihongoShark.com Kanji Deck\n\n*(Kaffie pro-tip: This section of the guide walks through how to download it and put it into Anki. I've uploaded it on ZeroUP [here.](http://127.0.0.1:43110/1uPLoaDwKzP6MCGoVzw48r4pxawRBdmQc/data/users/1NWh3WAty57FH8at1WtrZigMrdhrDkuPzh/NihongoShark%20Kanji%20Deck.zip))*\n\n## Set Anki Preferences for Efficient Studying\n\n*(Kaffie pro-tip: Just make sure to change \"Mix new cards and reviews\" to \"Show new cards after reviews\". This is to ensure you review everything you need to before you start new kanji. It helps ensure you'll never forget them.)*\n\n## Understanding the Formatting of This Deck\n\nClick the “Study Now” button *(Kaffie: or whatever is the equivalent. Feel free to actually follow along on this part)*, because… That’s right. It’s time to start learning kanji right from the start. So clicking “Study Now” will bring up the kanji 一. If you click “Show Answer,” it will bring up the back of this flashcard.\n\nThere’s a lot of interesting information there, but none of it really helps us to remember this kanji. So what we want to do is click the “Edit” button. Clicking “Edit” will bring up the data for each of this card’s field.\n\nEverything we might need is there, things like stroke order, kanji numbers (in the Heisig system), etc. But the real item of concern is the mnemonic. So, let’s scroll down and look at the mnemonic fields.\n\nHere’s a breakdown of what each of these is referring to:\n\n*   myStory – This field is where we’re going to enter our mnemonics. That is, here is where we write the story or memory device that we want to see for this flashcard when we review it.\n\n*   heisigStory – This field has the story that appears in the Remembering the Kanji Some of you will realize that this means that you probably don’t even need to be buying this book, then. I feel like that’s not totally fair to Heisig himself, though. So if you have the funds, maybe buy it anyways?\n\n*   heisigComment – This field has the comment that appears in the Remembering the Kanji book as a supplement to the kanji’s story.\n\n*   koohiiStory1 – This field has the most popular story on the koohii Reviewing the Kanji site.\n\n*   koohiiStory2 – This field has the most popular story on the koohii Reviewing the Kanji site.\n\n*(Kaffie pro-tip: Basically just read all of these fields from top to bottom. I like to scroll down and see example vocab too, in order to ensure the keyword matches the actual usage. Some need to be changed, so keep an eye out. The koohii stories will usually mention it. Try to come up with your own, or just copy which sticks in your mind the best. Try to go for wacky/crazy stories. Put your copied/created story in \"myStory\". Kinda obvious.)*\n\nAs you can see, now my story [ = my mnemonic] appears right under the list of constituents [ = parts] of this kanji. I click “Good” and that kanji hides away for a few minutes, programmed to pop up at whatever time I might be prone to forgetting it today, next week, a month from now, in a year—whenever.\n\n*(Kaffie pro-tip: Literally always press \"good\" during this learning step, you'll be tested later. I like to remove the times shown on the buttons. And then when tested click \"again\" if you fail. \"Good\" if you got it. Hard/Easy should only rarely be clicked. Do \"hard\" if you struggle with it but eventually get it. \"Easy\" should only be for stuff you already know, like the number kanji. Anki will retest right before you forget, to extend the length of time you remember it.)*\n\nSo now we have learned our first kanji! And because it’s in our Anki deck, we will never forget it. That’s amazing!\n\nGo ahead and repeat that same process for the second and third kanji, which, as you might have guessed, are the kanji for “two” and “three.”\n\n# Learning New Kanji\n\nI’d like to take an in-depth look at the kanji learning process. In doing so, let’s walk through the kanji for “four:.\n\n## Dividing Kanji into Constituents\n\nYou might see this kanji for “four” and think, “Hey, things are starting to get complicated.” You hit “Show Answer,” and you even get some new constituents that you’ve never heard of.\n\n“Pent in?” “Human legs?” Those “constituents” are referring to the parts of the kanji. If you have the Remembering the Kanji book, these are written out for you: The outside “mouth” (strokes #1, 2, 5) is written separately for you, and the inside “human legs” (strokes #3, 4) are written separately for you. This makes it very easy to understand what these “constituents” are referring to.\n\nFor those of us who don’t have the Remembering the Kanji book, however, the next best thing we can do is look at the heisigStory and heisigComment fields. So let’s click “Edit” and take a look at it.\n\nOkay, whatever. That didn’t help me figure out these “constituents” much at all. Sometimes it does, but not this time. Luckily, it’s kind of obvious what is referring to “mouth” and what is referring to “human legs,” so maybe we’ll be okay without the Remembering the Kanji book after all.\n\n*(Kaffie pro-tip: Heisig has a list of \"parts\" that aren't really kanji, but he refers to when writing his stories. They're pretty easy to infer, but if you're having trouble, you can pick up a deck specifically for Kanji radicals or just pirate/buy the damn book (Remembering the Kanji). Alternatively you can ignore them and come up with your own story. But pay attention to how the parts are broken down. It's important!)*\n\n## Using Constituents to Make Mnemonics\n\nOnce I figure out what each “constituent” is, I need to decide what myStory is going to be. As for 四, the story for koohiiStory1 isn’t bad.\n\nThis story is a great example of why I encourage writing your own mnemonics. This story seems great, and it seems easy to remember. But a lot of stories that seem to have great mnemonics just don’t stick, and I think that the reason is a lack of connection to the learner.\n\n**Just because the mnemonic is clever or makes sense does not mean that you will remember it.**\n\n*(Kaffie pro-tip: this is actually true. Make sure to try and directly connect the parts with the meaning, as best as you can. And make sure the story mnemonic is really weird. The weirder it is, the better it'll stick. Likewise the more obvious the connection between the parts and the meaning, the better.)*\n\nHowever, koohiiStory1 has given me an idea for a story that will stick, which I write in myStory:\n\n\"A four-year-old version of myself with four human legs in his mouth (sitting on the floor next to my bedroom door at my apartment in Sapporo).\"\n\nYou might be thinking, “That story sucks, Niko.” Well, perhaps. However, there are some features to it that I’d like to point out, features that make it very easy for me personally to remember:\n\n1.  This is a real place that I am extremely familiar with.\n\n2.  I know exactly what I looked like when I was four, because I have seen a picture of myself at the age of four (a specific picture that I’m recalling).\n\n3.  This story is kind of creepy. And anything that’s creepy, ridiculous, frightening, hilarious, or shocking is much more likely to stick in my mind.\n\n4.  I will never use this exact spot (on the floor next to my bedroom door at my apartment in Sapporo) ever again. The kanji 四 now owns this spot. Every time I see this spot, there should be a four-year-old version of myself with his four legs in his mouth. Every time I imagine this spot, it should have a four-year-old version of myself with his four legs in his mouth. It’s almost like I’m pretending that this actually happened in this place that exists in the real world that I am familiar with.\n\n*(Kaffie pro-tip: I mostly just ignore the 4th one. Spacial memory can be really good, but it's hard to come up with stories for them IMO. But if you can do it along with the other stuff, then great! It'll help. But don't fret about it. Also, a lot of the kanji are literal pictographs. Use that to your advantage. If you can just look at the kanji and see the meaning due to how it's drawn, that'd be great. Even if that wasn't the intended interpretation of the strokes.)*\n\n## Clean Up Mnemonics over Time\n\nThere is a delicate balance between creating mnemonics that work and optimizing the time spent writing them. If you feel like your mnemonic is “just okay,” but you don’t want to waste more time working on it, then just save it and move onto the next kanji.\n\nThe cool thing about Anki is that every card you save will show up in the future (over and over and over again). So, if you find that you’re forgetting the meaning of a kanji multiple times during review, then it’s probably a sign that your mnemonic isn’t so good. At that time, you can just hit “Edit,” clean up the story, and keep on moving forward.\n\nPerfectionism will be your doom. Small, consistent improvements over a long period of time are the key to huge successes, especially when talking about the acquisition and mastery of skills.\n\n* * *\n\nThat's the end of the copy+pasted article. Just be **ABSOLUTELY SURE** to do your reviews every day. No need to learn new Kanji if you aren't up for it, but at least do the reviews. The standard pace is about 20-25 new kanji per day. This will get you done with the jouyou kanji in about 90-100 days or so (about 3 months). I started with 22, rose to 25, and dropped down to 10 for a bit. Feel free to vary it up. It's best not to go above 30 kanji per day, as reviews can stack up and you can start forgetting a lot. Be sure to pace yourself so that your success rate for reviewing is above 90% (mine usually varies from 93-98%).\n\nHope this helps!\n\n<3 Kaffie"
+		},
+		{
+			"post_id": 48,
+			"title": "I'm no longer using namecoin.",
+			"date_published": 1535603338.818,
+			"body": "Looks like I'm no longer using namecoin. I'd recommend everyone do the same. Namecoin no longer has a working mac build for the wallet, meaning I'm unable to access my coins or domains. As a result, my domains expired and were scalped by scammers.\n\n---\n\nI'll be moving all of my zites away from using domain names. Though, the scalpers were nice enough to keep the domains pointed at my zites. So they'll work for the foreseeable future until they're sold/used/expired&renewed/etc.\n\nBesides that, I don't have an income so I wouldn't be able to afford to keep doing it. And Namecoin also puts a sort of centralization on ZN, and requires connection to the current internet in order to function properly. These also contributed to my decision to stop using namecoin entirely.\n\nIt's a cute system to help give domain names to ZN sites, but this isn't the solution. Tor Onion Addresses don't need names, so why should ZN sites? Links and portals seem good enough to get the job done, along with a customizeable display name for your homepage.\n\nReserving a particular word for a particular website seems to be a flawed system in general, and just promotes a need to have a way of providing ownership over tokens. Which isn't something I'd like to support.\n\n* * *\n\n**What does this mean for ZeroNet and my network of sites?** Ideally y'all shouldn't notice a difference unless you're directly typing my site names into your browser. The clickable links on ZeroHello will naturally change to remove the domain name. Things using the domain name are: the cert ID \"create a KaffieID\" link will break if the domain is repointed. Any links using the names will break if the domain is repointed. And.... that's about it.\n\nThank you all for your continued support. Let's try and build a better web together :)\n\n<3 Kaffie"
+		},
+		{
+			"post_id": 47,
+			"title": "A bit on my worldviews",
+			"date_published": 1516693596.589,
+			"body": "Someone on patchwork/ssb asked about my worldviews, since I mentioned possibly starting a religion or something. Here's what I ended up writing. Most of it is about my views, how I arrived at them, what I think of life, some religious/spiritual views, etc. It's all good stuff, and I encourage everyone to give it a read, and hopefully explore the worldviews I mentioned if you don't hold them yourself. Or, if you think I'm wrong, feel free to debate me on any of the views.\n\n---\n\nMy problem isn't *religion*. It's immoral, unethical, etc. views being pushed as being a sort of 'divine' knowledge. Along with a lack of knowledge, and a worldview that actually *discourages* questioning, critical thought, and curiosity.\n\nI've always loved the unity, community, etc. aspects of religion. Things like having a shared worldview, a quick identifier to find people who have similar beliefs, etc. Something I've always kinda envied. And as such, I kept digging for a religion that kinda fit my beliefs. Alas, I found nothing.\n\nNow, I'm not a theist. Of any sense of the word. I usually use the label ignostic or igtheist. But in practice I'm a gnostic atheist for most definitions of 'god'. More recently I had picked up reincarnation, and a sort of \"all is one\" type view, which I find a lot of atheists absolutely disagree on, sometimes in a very hostile manner.\n\nSo to outline some of my beliefs and views...\n\n---\n\nBasically the foundation and underlying views I've always had are: life is precious and something we should pursue and keep alive. And that knowledge and information are good. Curiosity is good. And improving oneself and the world is good. Those tenants have kind of spiraled out into a whole cohesive worldview that I now hold, albeit i haven't really got it on paper yet.\n\nThe most obvious followup was transhumanism. Transhumanism focuses on an improvement of life, increasing longevity, and ultimately making society and humanity as a whole *better*. I can't see any reason why someone would be against transhumanism if they properly understood it.\n\nMinimalism, anti-consumerism, and general anti-capitalism was the next I had found. Capitalism and mindless consumerism as a whole was unsustainable, and just overall made life *worse*. I didn't at the time connect these to my worldviews, I just thought they were good to pursue for myself. They lead into a sort of \"clean habitat, clean mind\" kind of thing. Helps promote clearer thought, clear distinct actions, less clutter and waste, etc. All good stuff. Efficiency is good, as we noted with transhumanism and the basic core tenants.\n\nFrom there I started learning about sustainability, green energy, renewable resources, and recycling. These help protect the planet, reduce waste, improve efficiency, and ultimately allow for the same finite resources on the planet to go *further*. And given entropy and the heat death of the universe, maximizing efficiency and reducing waste is the best way to ensure survival for as long as possible. Absolutely needed to improve the lifespan of humanity.\n\nAt some point I started adopting anarchist views, and became an anarchist. This was some time after I had watched the Zeitgeist films, and realized a technological utopia based on sustainability was indeed possible. Along with that, I saw the flaws in capitalism, the flaws in government, and my growing support of *decentralization*. In the anarchist spaces I learned about a wonderful concept that I now hold as one of my core worldviews: solidarity. I love the entire idea of it. Helping one another, and ultimately having each others backs to help build large strong networks to push forward and thrive. What's not to love? It melds right in with decentralization, helps foster a sort of communal effort, etc. Anarchism helps avoid the violence, coercive hierarchies, etc.\n\nFrom there, as most people who know me could tell you: I got into decentralization, p2p networks, etc. I've always known torrents were effective ways of transferring files. And with growing p2p/decentralized networks, it's sort of solidified the concept in my mind. Decentralization *works*. And anarchism goes right with it, hand in hand.\n\nMost recently, I've been slowly migrating to an \"information is good\" stance. Again, this has sort of been a running theme with me. I'm intensely curious, and *very* interested in understanding, knowing, etc. And to share that knowledge with everyone. I learned of sci-hub and now support it completely. I loved the wikileaks stuff. I had done self-tracking in the past, and am thinking of pursuing it moreso. The film \"the circle\" (2017) helped foster this view a bit.\n\nThough I ran into a roadblock a bit here. Information and tracking is directly at odds with something most of my peers support: privacy. So I set out to ask about privacy, why it should be a thing, what good will it do in an ideal society, etc. I got crickets. It was only ever fears of current society (flawed), or appeals to emotion. What of the benefits of knowledge? What of the amazing nature that is self-tracking? Privacy, IMO, is flawed. There's no way to control information. We've seen that time and time again. *Information wants to be free*. So privacy is a losing battle with no real benefits.\n\nSo that's it. My core views as best as I understand them. I've been looking into veganism, and 'future' food sources like soylent that are nutritionally perfect. I'd like to reduce the amount of life we kill. I'm having a hard time finding the ideal solution here.\n\nReincarnation was accepted, due to my understanding of physics, reality, my own observations, quantum mechanics, etc. Though it's more of a sort of \"all is one\" type view. And that reinforces the \"do no harm\" view, which is why I've been looking into veganism.\n\nAll the while throughout all this, I was really into motivational stuff, discipline, self-help, etc. The core idea I got out of it was \"act now\". Do actions as soon as they come to mind. Initiate things as soon as possible to prevent constant delays.\n\nIn terms of soul/spirit/whatever, looking inward I have only recognized qualia. No subjective 'observer'. Qualia is the only subjective thing that exists. And I'm starting to suspect it might not be something everyone has. However, with qualia we can derive that reincarnation is like the best guess. The many worlds interpretation is true. Among other things.\n\nI had found kopimism, which reiterates my views and beliefs on information. However, it contradicts itself with regard to privacy. But I liked what it had to say about life and reality. That really jived with me. That *life* is just constantly duplicated, improving itself, remixing. Constant duplication, replication, enhancement, survival. And once I started thinking of life this way, the 'spiritual' thing hit me. I finally understood what people were going on about. This sort of \"connected with the world\" type view.\n\nI had thought a lot about the origins of the universe, how things came into being. And I arrived at really only one answer: this 'duplication'. The universe *must* exist because if nothing exists, then the *concept* of nothing exists. You have 0, and 0 is 1, and with 1 and 0 you can derive math, the universe, physics, etc. I had watched a video on the Banach Tarski paradox (here: https://www.youtube.com/watch?v=s86-Z-CbaHA) and that really helped solidify these views. You can duplicate, and multiply just with a single 'thing'. And I've identified this sort of struggle to survive and duplicate as 'life'. Since that's all really life is anyway, right?\n\nAnd with transhumanism we can recognize qualia, subjectiveness, and our 'conscious self' is really just information and patterns/math, not actually any particular physical *thing*. Which is why stuff like mind uploading is possible. I realized that we *are* kinda information. And thus everything kinda clicked. Information is good, it needs to be free, duplicated, improved, remixed. And *life* is like that as well. Keep life alive, improve it, remix it, duplicate it, etc.\n\nEfficiency and minimalism come back as seemingly opposite to this, but it's best to realize we *do* still have finite limits at the moment, and efficiency will allow more life with less resources. A net win.\n\nSo there it is. You have the universe existing from this concept, you have physics, math, logic all with this. You have the multiverse, life within it, consciousness, qualia, etc. And a sort of 'all is one', and a 'support *all* life' worldview. Act quickly as entropy is against us.\n\nSo what is this worldview and 'religion' called? Anything? Hopefully it's clear, as I just kinda wrote down my experiences and how I came to my views. I've been looking through various worldviews and beliefs, but couldn't find anything like it. How could no one else figure out these same basic core views? Looking back, they seem so *obvious*. They're self-evident, they're pro-life, pro-human. They lead to successful systems, successful lives, and longevity.\n\nI'm at a loss. I worked hard to arrive at the truth. Where is everyone else? Did I somehow pass them in my search? I see vegans, but they don't have consistent views. I see atheists, but they stopped questioning and only cared about the theism question. I see anarchists, but they're of all different faiths and often support privacy instead of information. Has no one else actually sought a proper worldview like this?\n\nI keep feeling like it must be *somewhere*. *Someone* must have arrived at these views before me. So I keep looking. Maybe I missed something. Maybe I got lost somewhere. I double check, triple check my views. Nothing. No mistakes, no flaws, no problems. My understanding of neuroscience, philosophy, metaphysics, quantum mechanics, economics, etc. are all spot on. Is it a values thing? I only really started with the idea that life is good and should be improved and protected. Does everyone else have different core ideas?\n\nPerhaps no one actually sought truth like I did? So now I'm thinking, maybe I should start a religion. With these 'common sense' views it could honestly be one of the fastest growing. So that's where I'm at now. Struggling to get on my feet in life so I can pursue my views, and trying to figure out what to call this mess of ideas and ideals. Any help would be appreciated. I feel like I keep running into roadblocks. What is the exact nature of qualia? How do we know what the next 'flow' is after death? I realize time is static and deterministic, but there's clearly a flow and subjective nature to it. Why is \"this\" the thing I'm observing now? Why does it appear that the past is changing. *Is* the past changing? Perhaps I've been lead wrong on my materialism. Perhaps idealism is correct? Maybe we're just sliding between multiple worldlines and my views are right after all. But if so, why is that happening? Can entropy be defeated? How so?\n\nWe have an origin, we have a cause, we have a purpose. Survive, thrive, evolve, improve, enhance. Is it all just for ensuring survival of life? Is that even necessary? Perhaps life is just an endless struggle always ending in failure?\n\nEither way, the goal seems clear to me by this point: overcome the natural universe in an effort to live and survive. Entropy and physics may be against us, but life has always found a way.\n\nThat's my views in a nutshell. All life is precious, so we should protect it. We should improve ourselves, and brace ourselves for what biology, physics, and nature have in store for us; not squabble over petty bullshit like who 'owns' what, or who gets the most of something. You'll be dead soon unless we figure out the most pressing issue of our time: aging."
+		},
+		{
+			"post_id": 46,
+			"title": "I'm not dead, only metaphorically",
+			"date_published": 1514754481.88,
+			"body": "Some people have been wondering where I've been. And the truth is... I pretty much haven't left. I've been running ZeroNet this whole time. I poke my head in from time to time, and mostly just haven't been pushing anything out.\n\nSo this post isn't going to be really any tech updates. Just life stuff. Y'all are probably tired of hearing the same excuse 'life stuff', but it's true. For the past year and a half now I've been seeing an endocrinologist, and for the past month or so I've been seeing both a therapist and psychiatrist. Dealing with some medical problems. My therapist thinks that I've got Conversion Disorder. If any of y'all know anything about it, definitely message me!\n\nThese problems, unfortunately, get in the way of a lot of work. So I've been a bit stressed and worried about finances (donation addresses are on kaffie.bit if y'all wanna help). Got some work through upwork.com, but again medical problems prevail. And that takes priority over ZeroNet for me, unfortunately.\n\nThings have been looking up though. I've resolved a lot of my issues by now, and hopefully I can get working on some cool stuff. New year new me, right? I've been thinking a lot about the net neutrality repeal here in the US, along with some of the mesh projects that are going on. I ended up poking around to see how progress has gone. And... ZeroNet seems to be almost there! Bootstrapping is apparently now a thing (no more reliance on trackers). Which means IPV4 meshes should be able to run ZeroNet. To put it on CJDNS (my dream 😍), however, we still need IPV6 support. I'd love if someone could go check that out and figure out what all needs to be done.\n\nSci-hub (currently [http://sci-hub.tw/](http://sci-hub.tw/)) is a project that needs a lot more love as well. It's unfortunately a centralized service, but it's more or less the only site that provides full free access to scientific studies and research. Something that's _very_ needed. We need a good decentralized solution to this. Perhaps make a ZeroNet sci-hub?\n\nPerhaps 2018 will be the year I finally update Kaffiene's index and get some sort of crawler or auto-indexer done. The alternative search options are... lackluster at best.\n\nAll in all there's some interesting stuff going on. ZN has clearly gotten lots of improvements. [KopyKate Big](http://127.0.0.1:43110/big.kopykate.bit) is the first successful video platform I've seen on here. Using the big file support. [Thunderwave](http://127.0.0.1:43110/thunderwave.bit/) has fixed it's bugs that I saw before and is entirely usable as public, private, and group messaging. [Git Center](http://127.0.0.1:43110/gitcenter.bit/) is a viable replacement for 0git and github, so I plan to put up a Kaffiene repository there soon.\n\nSo yeah. Don't worry about me too much. I'm not leaving any time soon. Hopefully we can keep pushing the decentralized web forward together, and keep information free.\n\nHappy new year, everyone!\n\n<3 Kaffie"
+		},
+		{
+			"post_id": 45,
+			"title": "Fixed ZeroWiki Support in Kaffiene",
+			"date_published": 1500517499.033,
+			"body": "![Screen_Shot_2017-07-19_at_7.24.15_PM.png (819x322)](data/img/post_45_Screen_Shot_2017-07-19_at_7.24.15_PM.png)\n\nWith the latest ZeroNet update, cross-site file requests are now once again supported. This time requiring permissions from the user. So I quickly got to work and Kaffiene has become the first site using this new feature. Simply visit the site like normal, grant it permission to read from ZeroWiki, and the info box should work as normal.\n\nGiven this is a new feature, all the bugs/kinks may not be worked out yet. Please let me know if something goes wrong! Cross-site indexes will be back soon.\n\n<3 Kaffie"
+		},
+		{
+			"post_id": 44,
+			"title": "CORS Kaffiene Bug Fix",
+			"date_published": 1500202285.113,
+			"body": "The latest update to ZeroNet blocks cross-site requests. So a few features of Kaffiene had to be removed. Fetching indexes from other sites (such as CensoredSearch and ZeroName) is no longer possible. ZeroWiki cards no longer can be displayed, due to being unable to fetch the .db file.\n\nThe local indexes have broken as well, but I went ahead and migrated them over to the ZeroNet api so those should be working. I also went ahead and updated the ZeroMe users index.\n\nSad day :(. Some other stuff broke too, like ZeroMovies, and the [http://zero/](http://zero/) link testing on Kaffie.bit. I'll fix those in a bit.\n\n\\- Kaffie\n\nEdit: In the mean time, if you wish to use the ZeroWiki cards feature, you can do so by launching chrome with ` --args --disable-web-security --user-data-dir\n`. That ignores CORS."
+		},
+		{
+			"post_id": 43,
+			"title": "Latest Happenings",
+			"date_published": 1500080998.306,
+			"body": "![Screen_Shot_2017-07-14_at_6.24.45_PM.jpg (873x313)](data/img/post_43_Screen_Shot_2017-07-14_at_6.24.45_PM.jpg)\nThanks to [binchan2@zeroid.bit](/Me.ZeroNetwork.bit/?Post/1oranGeS2xsKZ4jVsu9SVttzgkYXu4k9v/1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3h/1500038671) tags have been re-enabled! I've been a bit busy in the past while. Going to San Francisco, some medical worries, spending time with my BF, looking into [systemspace.link](https://systemspace.link/), etc. I've also been doing a little bit of development! If you don't follow me on ZeroMe, then here's the ZeroNet stuff I've been up to lately:\n\n* * *\n\nI uploaded a ZeroTV mirror [here.](/1HwH4hfRhohJGVtZMBYprYKyHcuJNwL4sZ) I did the best I could to save all of the images/links/pages/etc. However, some are still missing. I don't plan to update this site past recovering what was lost. However, it's entirely usable.\n\n![Screen_Shot_2017-07-14_at_6.27.25_PM.jpg (1123x823)](data/img/post_43_Screen_Shot_2017-07-14_at_6.27.25_PM.jpg)\n\nIf updated movie streaming is more your thing, check out my new [ZeroMovies.](/1HPrKB12wPjtqKkLJtq8ZX8u43coBaDugu) It uses various clearnet sites to provide videos, so do please read the warning on the front page and avoid if you wish to remain within ZeroNet. It works great but does have some bugs. Please go check it out!\n\n![Screen_Shot_2017-07-14_at_6.12.37_PM.jpg (1200x850)](data/img/post_43_Screen_Shot_2017-07-14_at_6.12.37_PM.jpg)\n\nAnd as I mentioned earlier, I've been looking into systemspace.link. So I ended up making a countdown and calculator for it over at [Systemspace.bit](/systemspace.bit). Personally I think it's very useful and cool. Albeit it wasn't intended for the general ZeroNet audience. If you are interested in this type of thing, please take care to read up on everything, and don't disturb the existing community. If you join up on [my discord](https://discord.gg/4kY4yAD), you can feel free to ask me questions. Or DM me directly at April#5490 or any of the other contact info on [Kaffie.bit](/kaffie.bit).\n\nAnd as always, thanks for reading!\n<3 Kaffie"
+		},
+		{
+			"post_id": 41,
+			"title": "Fixing the Banlist",
+			"date_published": 1495185036.508,
+			"body": "In a discussion on ZeroMe the issue of banning by cert\\_user\\_id I realized that I had been using this method and simply banned the name \"doom1@kaffie.bit\". This is _not_ the way to go for bans, as it bans anyone from using the name. Instead, as nofish mentions in [this ZeroTalk post](/Talk.ZeroNetwork.bit/?Topic:13_1NWh3WAty57FH8at1WtrZigMrdhrDkuPzh) you can 'ban' by immediately archiving (deleting) any content of the user. This is done automatically and also cleans up old content/spam they might've posted. In my experiments it appears to the user as a sort of 'shadow ban' in that they can see their new posts, but for everyone else it doesn't show up. So from this point on, until being able to ban by auth\\_address is available, I'll _only_ be banning in this manner. It keeps things neat and prevents any confusion.\n\nWith that said, I've fixed the ban lists for both this blog and KaffieHub.\n\nThat's all for now,\n\n<3 Kaffie"
+		},
+		{
+			"post_id": 40,
+			"title": "Kaffie.bit and Kaffiene Cleanup",
+			"date_published": 1494243993.24,
+			"body": "Simple update this time. Just went ahead and changed up some stuff to make both Kaffie.bit and Kaffiene a little bit nicer. For Kaffiene I clarified which links are Kaffiene related, and which are just a regular part of the Kaffie network navbar. I also added 0Git/Github links, and moved the python script descriptions over to the readme.\n\nFor Kaffie.bit I did a lot of cleanup. There were quite a few test files on the domain that sucked up filesize (such as a tetris attack game that was unlinked, and a video test page). So I removed them. I also replaced the landing page text with some more useful information: my P2P id info so you guys can friend me wherever. I also added a link to my new discord server for P2P web stuff.\n\nHopefully this changeup will also prompt people to go look at my zero:// protocol stuff. There's a nice test page there to see if you can follow zero:// links as well as zero/ links.\n\nI might change it up further later, but that's it for now.\n\n<3 Kaffie"
+		},
+		{
+			"post_id": 39,
+			"title": "Kaffiene ZeroMe Search Update",
+			"date_published": 1493706045.682,
+			"body": "I went ahead and took some suggestions to improve the ZeroMe search. Namely adding a rank based on the number of followers, as well as adding tools for users to see who follows them. For the first, the number isn't quite accurate, as it just uses SQL's built in count functions, with no real filtering. This means numbers *may* be a bit higher than they should be. But more or less the number should be where it is (the most extreme differences I saw were about 50-70 off, in users with 600+ followers). The second function will allow you to see the *exact* amount of followers you have, but only for you. That's the zeromefollow.py script. Run it and pass it whatever auth_address you want to look at, and it will generate a Kaffiene index that is completely searchable and formatted. To use it, just select `custom/other` and just type in 'followers' or 'followers.txt' (and make sure the generated file matches, which by default it should).\n\nEnjoy!\n<3 Kaffie"
+		},
+		{
+			"post_id": 38,
+			"title": "Panel De Pon (Gamecube) Translation Tools",
+			"date_published": 1493355567.203,
+			"body": "It's a non-Kaffiene related update this time. I went ahead and pushed out my code for my [Panel De Pon translation onto github](https://github.com/April93/PDPTools). It can extract/build the particular .bin files, decrypts/encodes the sbf files, and the PDPI tool converts pics from the .bif format to .png. Still buggy as hell, but what better way to get working on them than to push to github?\nEnjoy!\n<3 Kaffie"
+		},
+		{
+			"post_id": 37,
+			"title": "ZeroWiki Info Cards in Kaffiene",
+			"date_published": 1493274584.195,
+			"body": "![Screen_Shot_2017-04-26_at_11.38.00_PM.png (635x136)](data/img/post_37_Screen_Shot_2017-04-26_at_11.38.00_PM.png)\n\nToday's great new feature is _automatic and instant_ (yes you read that right) info cards from [ZeroWiki](/138R53t3ZW7KDfSfxVpWUsMXgwUnsDNXLP). It pulls the best guessed article from ZeroWiki live straight from your own local copy. Unfortunately this means that, like the off-site indexes, _ZeroWiki cards will not be available on proxies._ Yeah so you want those awesome little blips while you search, gotta actually download ZeroNet and help seed Kaffiene you lazy bums. I hope that everyone well help contribute to ZeroWiki to help improve the search results of Kaffiene as well as our local knowledge base here on ZeroNet.\n\nFor the time being there _are_ a few bugs with the ZeroWiki feature, so if you see any problems, please let me know either here in the comments or on Github. I hope you're all as excited as I am for this feature, as it greatly improves the usability of Kaffiene.\n\nThank you all for following along and supporting Kaffiene!\n\n<3 Kaffie"
+		},
+		{
+			"post_id": 36,
+			"title": "New Kaffiene Feature - User Search!",
+			"date_published": 1493184561.46,
+			"body": "I _finally_ got around to developing Kaffiene further, and I'm sure everyone is excited for updates. So without further ado, the new feature. All you have to do is select 'ZeroMe Users' from the index dropdown list and use Kaffiene like usual.\n\n![Screen_Shot_2017-04-25_at_10.31.25_PM.png (951x507)](data/img/post_36_Screen_Shot_2017-04-25_at_10.31.25_PM.png)\nAs you can see there's quite a bit of information displayed. You can see the user's chosen ZeroMe profile name and description, their user cert id, their authentication address, and their ZeroMe hub. Kaffiene doesn't live pull this information, but it's entirely untouched except by the script meaning this index can update much faster than the regular site one. The profile description is _not_ the whole field, but instead what the tools determine to be the best cut-off point. For the best results in Kaffiene, please keep these guidelines in mind:\n\n*   Keep the description to a single line (use a new line when displaying info you don't want shown in Kaffiene)\n*   Avoid using links, colons, brackets, or parentheses in the first line.\n*   Avoid using the default profile text. These are stripped to conserve space.\n*   Try to keep it short.\n\nYou can do reverse lookups as usual, or even click the hub address to search by hub! No tags for profiles, as not everyone formats their description like that. However, if enough people want it, I can look into it.\n\nProxy links are fixed. Enjoy. The three chosen were Bit.surf, arukascloud.io, and fuckcf.cf. There's a couple more in the commented code as well for anyone who wants to take a peek. Hopefully you all enjoy this wonderful new feature and stay tuned for more Kaffiene updates!\n\n<3 Kaffie"
+		},
+		{
+			"post_id": 35,
+			"title": "Gitting Gud",
+			"date_published": 1492935111.622,
+			"body": "I'm _finally_ doing dev work on Kaffiene again. Thank my new boyfriend for kicking me into gear I guess. Anyway, Kaffiene is [now on github.](https://github.com/April93/Kaffiene) That's really it for the moment. I was also playing around with the zipped sites feature which decreases filesize, but I don't think I'm gonna go with that for kaffiene. Simply because it makes it a mess to actually dev. Maybe next on the agenda is to clean up the folder structure a bit? I really wanna get that crawler/tagger working so I can stop being bugged about adding sites to the index.\n\nFeel free to submit issues/pull requests/whatever, but I might not know how to do all that stuff yet haha. I'm still a git/github n00b. Maybe tomorrow or a bit later I'll put my translation project up as well. That's on the to-do.\n\nPushing to github was a bit harder than I imagined, because I still had all my old username/email stuff configured on my machine >_<. I dunno how I ended up fixing it, but I just removed all the stuff I could, signed out on github desktop, etc. Luckily I got it working and it should be smooth sailing from here on out.\n\nThanks to anyone still reading this dumb little blog of mine.\n\n<3 Kaffie"
+		},
+		{
+			"post_id": 34,
+			"title": "Bland Blog Update",
+			"date_published": 1490933511.639,
+			"body": "![tsuruya_rawr.jpg (484x627)](data/img/post_34_tsuruya_rawr.jpg)\n\nI'm trying something new today. Since the tags weren't really working out for me, and I've been kinda eager to update the blog with the newest ZeroBlog code, I went ahead and gave it a shot. Hopefully everything should be updated properly, but there still might be some things I missed. Let me know if there's any issues. The real reason was I wanted to try the fancy image uploader :3\\. Maybe my blog here will get a bit more colorful.\n\nI apologize for the lack of updates on pretty much everything. I've been lazy af, and mostly just chatting with people. My latest interest has been in [ZeroNet Central](/1J1c7eML6uMwDU4uiKbKRxoqxGP6WMFMvb/) which is pretty cool. I think something like that if it used the merger site feature could be a killer app for ZeroNet. Along with that I've been thinking of logins and bans. For logins, I'm still wondering if there's a way to accept _all_ services easily, rather than just having a list. For bans, I'm wondering if there's an easy way to share ban-lists. I think I'll start uploading mine on nullpaste. [Here is my mutes.json](/nullpaste.bit/?1NWh3WAty57FH8at1WtrZigMrdhrDkuPzh_7) which has 2 users on it so far. And [here is my permissions list for my banlist](/nullpaste.bit/?1NWh3WAty57FH8at1WtrZigMrdhrDkuPzh_8), this goes in /data/users/content.json. The users in the banlist are mostly spammers, and other undesirables. People in the mutelist are legit users who are simply awful and that I do not wish to listen to.\n\nThe banlist goes for both this blog and kaffiehub. Along with any future sites I publish that have user interaction.\n\nThat's all for now, thanks for reading! <3 Kaffie"
+		},
+		{
+			"post_id": 33,
+			"title": "Quick Index Update",
+			"date_published": 1482389752.818,
+			"body": "Fetched some the new sites from the seed index and bit.no proxy for the untagged index. I also updated peer counts for the existing sites. I noticed my duplicate checking was being wonky and reporting a whole bunch, but it turns out there wasn't any duplicates, and it was just picking up on the name (which on the untagged index is the same as the address). So I made an update to check for a \":\" before the address. That might break some duplicate checking for indexes that aren't formatted like Kaffiene, so I kept the old method as commented out.\n\nI know this isn't really an amazing index update, but I'm doing what I can."
+		},
+		{
+			"post_id": 32,
+			"title": "Discovery Update",
+			"date_published": 1481887784.232,
+			"body": "Here's a real quick update that probably won't effect most of you. The entire set of Kaffie sites have been updated with meta tags so that new search engines (like bwoi) can easily tag them. I've also removed links to KaffieMe, as I'm obviously very slow at updating it, and it's far behind ZeroMe. I've found that maintaining a practical ZeroMe client site that's somehow *better* (or at least slightly modded) than the original is difficult. So instead I'm simply deprecating it. The address itself might be recycled into some new site, or it may just sit there.  But with this change, I've removed all links in the other Kaffie sites to it. This also cleans up the top-bar a bit.\n\nI also managed to obtain the ZeroSearch.bit domain name. The original owner failed to renew it and it was grabbed by a scalper site [dotbit.me](https://dotbit.me/), who then listed it for sale for 10 namecoin. I had enough, and have been wanting the domain ever since Kaffiene started, so I quickly bought it and transferred it to be safe in my namecoin wallet with the rest of the Kaffie/Kaffiene addresses. What this means is that now *any* ZeroSearch link will refer back to Kaffiene. Apparently links to the direct ZeroSearch address grab the content.json and see the ZeroSearch.bit domain name and redirect to that site, which is Kaffiene. Very handy. I've also updated Kaffiene appropriately to fix the domain name bugs that happen when using a browser addon/mod to resolve pure .bit addresses.\n\nPlease continue to enjoy using Kaffiene. An index update is on the to-do. I promise!\n\n<3 Kaffie"
+		},
+		{
+			"post_id": 31,
+			"title": "I'm still here! +Kaffiene Bug Fix",
+			"date_published": 1481869026.135,
+			"body": "I just wanted to write a quick update letting you all know that I *haven't* just up and left ZeroNet. I'm still here, I'm still a big supporter of this whole thing, and I'm *still* going to work on Kaffiene and other projects. I'm a bit shocked at how time as flown by since my last update. I'm certainly far behind on indexing sites, and quite frankly the workload has now piled up.\n\nWhat this means is that Kaffiene likely won't get any more index updates until I manage to write a crawler to do it automatically. ZeroNet has simply exploded, and there's no way to keep up by hand anymore. I see Bwoi has returned using the Kaffiene index. I'm really glad to see people picking up where I left off (even though I haven't left!). I saw the PSA about meta tags for sites, and I think that's probably a good idea. Though a solid search engine should be able to index sites even without the site owner marking their site with proper tags.\n\nI made a tiny bug fix update to Kaffiene that fixes the Bwoi search (that broke quite a while ago). Hopefully I'll be able to work on Kaffiene a bit more in the near future.\n\nAs for me, I've had a lot going on. I'm still entirely unemployed and out of school. Meaning I've got all the time but no money, and have to worry about life stuff. Medical bills, doctor visits, etc. have all kind of snuck up on me. I've also sunk a lot of time into various Discord communities (which I know is like the exact opposite of ZeroNet, haha). I've been lazing off lately, and I really need to get back into productive habits. And I hope ZeroNet dev will become one of those habits.\n\nI sincerely apologize about Kaffiene's slow decay into irrelevance. This was not my intent at all! I've actually had ZeroNet running in the background on my computer for this whole time, haha. Since my disappearance I've noticed that ZeroNet's quality has kind of declined in general. Let's work together and try to make ZeroNet great again! Build up key services like video streaming, music sharing, search, social networks, and whatever else you might think of.\n\nThat's all for now!\n\n<3 Kaffie"
+		},
+		{
+			"post_id": 30,
+			"title": "Kaffiene Search Sharing Improvements",
+			"date_published": 1472429510.781,
+			"body": "I was just about to share a search I happened to do on ZeroMe before I realized that what everyone else would see is not what I intended! Kaffiene has had it's 'index select' feature for quite a while now, however the share links lacked the index and only ever referred back to the default Kaffiene index!\n\n---\n\nSo I went ahead and updated the share links. They work almost the same as before. Any old links will continue to work as they have: using the default Kaffiene index. However, new links now contain a new parameter `i=[text]` which tells Kaffiene which index to use. For the built in indexes, all you need to do is include the case-insensitive name. `i=Kaffiene`, `i=kaffiene`, and `i=kAffIeNe` will all select the Kaffiene index appropriately. For sites not built in, just include the url and Kaffiene will automatically figure out how to use it.\n\nMost of you likely won't need to worry about that, as Kaffiene's share link it provides will automatically update with the right index and parameter already set. So you can continue sharing like you always have.\n\nHere's an example of a full share link, using the Bwoi index: [http://127.0.0.1:43110/kaffiene.bit/?q=Search|Term&i=Bwoi](http://127.0.0.1:43110/kaffiene.bit/?q=Search|Term&i=Bwoi)\n\nAs always, thanks for using Kaffiene.\n\n<3 Kaffie"
+		},
+		{
+			"post_id": 29,
+			"title": "KaffieID Re-Opened",
+			"date_published": 1472085765.11,
+			"body": "As you might be aware, shortly after it's grand opening, KaffieID had to shut down for a while. Namely this was due to signing and publishing errors. Fortunately, this was just due to a small error on my part. I had been using the ID site's address (public key) as I had assumed that's how it worked, due to ZeroID having a similar entry. However, the address needed was actually the public key that is paired with the private key that was used to sign the cert. So I made the necessary tweaks to show what needs to be added to content.json in order for KaffieIDs to work.\n\nEverything should be good to go now. The rename feature works fine. KaffieIDs should work both here on this blog, and on KaffieHub. However, due to the other hubs only accepting ZeroIDs, you won't be able to comment or like things in different hubs.\n\nThe clone feature of KaffieID has been fixed to provide more clarity on this matter, as well as make an easy template for providing the relevant info to your users. Please enjoy, and let me know if there's any other issues with KaffieID. Thanks!\n\n<3 Kaffie"
+		},
+		{
+			"post_id": 28,
+			"title": "Kaffie.bit Rebranding",
+			"date_published": 1471679498.302,
+			"body": "As you may have already noticed, a lot has changed here on this blog, on Kaffiene, and on Kaffie.bit. As I've hinted in the past, I was preparing an overhaul to my collection of sites, so that everything flows smoothly. And here it is! [Kaffie.bit](/kaffie.bit) is now a splash page that's used currently for redirecting zero:// links, old blog links, etc. It also has a test page so you can see if your protocols are working properly.\n\nThere's a new [KaffieID](/id.kaffie.bit) service. It works like a Nanasi ID in that it's completely locally generated. This also means names are not unique. The cert is also name-agnostic, meaning you can change your name as many times as you want, and your cert will still work with all the sites you've logged in to! It's a pretty simple page. It's also freely cloneable, like Kaffiene. So you can easily make your own ID service with a click of a button. Just be sure to generate your own key before sharing (look in the index.html on how to do this!).\n\nI also pushed out [KaffieMe](/me.kaffie.bit), which is a ZeroMe clone. Nothing special. It just has the navbar, and I've set KaffieHub to be the only default hub.\n\n[KaffieHub](/hub.kaffie.bit) has gotten officially renamed. It's no longer 'Kaffie's Hub' or 'Kaffie's Long Post Hub'. No! It's simply KaffieHub now.\n\n[Kaffiene](/kaffiene.bit) didn't really get much changes. I fixed a bug that occurred when there's a lot of navbar links. And I added the new stuff to the navbar.\n\nEach Kaffie site has also got it's own subdomain: blog, me, search, id, and hub. And each site has it's own color (except for Kaffiene, which retains it's rainbow theme).\n\nThat's all for now. Please enjoy the new Kaffie.bit experience.\n\n<3 Kaffie"
+		},
+		{
+			"post_id": 27,
+			"title": "Tagging My Blog",
+			"date_published": 1471488486.546,
+			"body": "I've been meaning to add tags to my blog for a while, but didn't get around to it for various reasons. I saw a post over on ZeroMe about it and decided to do it real quick. Please let me know if something isn't working. Thanks. The table of contents sorted by both date and tags is available over on the left.\n\nAmusingly, the majority of my posts are about Kaffiene. Haha. Maybe I'll have to change that.\n\nEdit: If it doesn't work, try manually refreshing [this page.](/kaffie.bit/js/all.js)"
+		},
+		{
+			"post_id": 26,
+			"title": "Kaffiene UI Overhaul!",
+			"date_published": 1471054252.541,
+			"body": "I showed a sneak peek of this last night on ZeroMe, but now it’s published and accessible for everyone. I completely overhauled Kaffiene’s design to make it look way nicer, and much closer to ZeroMe’s design. I’ve been toying with the idea of merging the two, to make an all-in-one destination for ZeroNet users (maybe I’d need a KaffieID as well?). There’s been a few other tweaks as well. So without further ado, here’s what’s changed.\n\n---\n\nObviously the most noticeable thing is the CSS overhaul. it looks pretty different. Kaffiene now is a dynamic page! When you start typing in the search box for the first time, the big splash content goes away, and the search box (and index selector) move up to the top header bar to get out of the way to make room for the search. To do this, I finally added jQuery. So the site’s a bit larger due to that (sorry!). The links up in the top left also go away when you’re searching, to clean up the UI a bit.\n\nThe search results now have multiple proxy links. I’m sure you’re all familiar with bit.no, which I had previously used (linked with a blue B now). And the more recent kindlyfire proxy (linked with a red K now). I also added the wrewolf proxy (linked with a yellow W). So now you have plenty of options in case one goes down. I also kept the proxy labeling to ensure people know they’re proxies.\n\nThe links up in the top right, as I mentioned, go away when searching. I wasn’t sure what to do with them. As you may remember, I removed a few links during the past few updates to clean up the UI. I want to ensure users know how to view the index and management tools, as well as know that they can install the search engine to their browser. But I’m unsure of how to make that known without obvious links. Ideas? I also added a link to Kaffie Hub for ZeroMe to start driving attention to it. Hopefully that’ll later change with a Kaffiene/Kaffie Hub ZeroMe viewer.\n\nSpeaking of ZeroMe, I also made and added a new index for ZeroMe hubs. There’s only a couple at the moment though. They also lack tags, so it’s a bit difficult to search through. I kept them out of the main index, since they aren’t normal sites.\n\nBut worry not about searching untagged indexes!  The random search (now changed into a tiny button with just an ‘R’ label) now grabs possible searches from site names. So if the sites are untagged, Kaffiene will just use words from the site name to use as a random query. It’s much more fun to search untagged sites now, using this method.\n\nI hope you all go check it out, and enjoy the new changes. And as always, thanks for using Kaffiene.\n\n<3 Kaffie"
+		},
+		{
+			"post_id": 25,
+			"title": "How to change your ZeroMe Hub",
+			"date_published": 1470974581.974,
+			"body": "So some people want to change hubs. Maybe they're a dirty ~~red~~ ~~blue~~ infinity user and have regretted their decision and want to join Kaffie's Hub. Well here's how to cleanly migrate hubs.\n\n* * *\n\nFirst things first is to seed the new hub you want to switch to. You're likely already seeding Red and Blue, but you'll need to seed the [Kaffie hub](/12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv) or the infinity hub, if you want to switch to those.\n\nDon't bother going to the `create profile` page. That's for suckers. It's nice to check which hubs you're seeding, but the `create profile` button just messes things up. Instead, go to your home hub (you can figure out what this is by hovering over your name and looking at the URL) and go into the `/data/users/[your id]/` folder. You'll want to copy over this whole folder into the new hub's equivalent.\n\nIn the destination hub, open up `content.json` in a text editor (like sublime, so formatting doesn't get messed up). All you want to do is edit `address` to point to the new hub, instead of your old one.\n\nNext, open up `data.json` in the destination hub. You'll see all your original hub data. Here's what we're going to do. Delete all of the entries under `comments`. These are comments relating to the hub they're in, so you don't need them migrated. You should still keep the array though, since that's where all your new hub comments will go.\n\nChange the `hub` to the new hub you're migrating to. Just like you did in the `content.json`. This is a reference to say what your 'home hub' is. We'll eventually edit this in EVERY hub you're seeding or posted in, but one step at a time.\n\nChange `next_comment_id` to 1\\. Since we deleted the comments, we need to reset the counter.\n\nHere's where you get a choice. There's two options for your posts. Either you can migrate the data, which switches the name link on those posts (and hosts it in the new hub) but also unlink everyone's comments, or you can leave the posts in the old hub, and start fresh. If you start fresh, your old posts will still appear, but they'll link back to your old hub profile. So keep that in mind. I personally started fresh.\n\nTo start fresh, do the same thing to your posts as you did your comments. Delete all the entries ~~and change the `next_post_id` to 1.~~ **Changing the next_post_id will cause a duplicate like bug. Leave it at wherever it is to avoid the bug.**\n\nLastly, delete everything under `post_like`. Keep the array though.\n\nThat should set up your new hub account. Now we need to repoint your data on the other hubs. For each hub you've posted in, go into that hub's folder and find your user folder, like we did before.\n\nOn each one, open the `data.json` and simply edit the `hub` variable to point to your home hub. This is probably optional (as it repoints the comment links), but I went ahead and did it to reduce the amount of problems.\n\nOn your original hub, a couple more things need to be tweaked. Delete everything under 'follows'. Remove the variable entirely. Delete `next_follow_id` as well. Change `hub` to your new hub, as usual. And if you opted to migrate your posts, delete the entire `posts` section along with the `next_post_id` variable. If not, leave it. I didn't migrate, so I left the posts there.\n\nChange the intro to something to notify people to switch the profile they follow. This is technically optional, and you can just delete it if you feel like it. Delete the `avatar` if you migrated posts (it's unneeded), but if you kept your posts there, then you'll want to keep it, as otherwise your old posts won't have an avatar (perhaps this is preferred?)\n\nFinally, we save up and go to sign/publish our changes. Visit each hub site (the actual site down at the bottom of zerohello, not zerome). Then drag the sidebar open and select 'i own this site'. Put your user `content.json` in the bottom box (should look something like: `data/users/[yourid]/content.json`) and hit sign. It'll prompt for a privatekey. Use your ZeroID private key (found at the top of your zeronet's `user.json` file) and then click publish. Do this for every hub you've edited.\n\n* * *\n\nSo now all of the changes are made and published. Everyone else should see everything just fine. But you might still be stuck logged into your old hub. So delete every hub but your destination hub. Then go into zerome and ensure you're logged in properly. Finally, redownload each hub and everything should be good to go!\n\n* * *\n\n**Update:** You may also have to edit and sign the content.json located in the `1UDbADib99KE9d3qZ87NqJF2QLTHmMkoV` site in order to change your hub in the 'all users' listing.\n\n* * *\n\nEnjoy!\n\n<3 Kaffie"
+		},
+		{
+			"post_id": 24,
+			"title": "Added .bit domain lookup to Kaffiene",
+			"date_published": 1470961792.657,
+			"body": "Just a quick update this time. I added ZeroName to the list of indexes that are searchable, and fixed some bugs for it. Now you can look up what .bit domains point to, or find the .bit names pointing to a particular zeronet address using only Kaffiene. Yay!"
+		},
+		{
+			"post_id": 23,
+			"title": "More Kaffiene Updates",
+			"date_published": 1470559084.728,
+			"body": "It's time to roll out a new feature for Kaffiene. This time it's loading external indexes. There's a neat new drop-down menu that allows you to load various site indexes, like Bwoi's or ZeroSearch's. There's also two new options for Kaffiene: 'Kaffiene - Untagged' and 'Kaffiene - Full'. Untagged is exactly as it sounds. New sites that will be added to Kaffiene's index, but are still untagged and some are unnamed. That makes it a bit hard to search through, but I figured I should let you guys at it nonetheless. Full simply combines the untagged index with the regular index so that you get the full list of sites Kaffiene has to offer. Lastly for this feature, there's a 'Custom' option, where it'll prompt you for a URL. You can load your own Kaffiene-style index and search through it using Kaffiene! It's a bit flexible on what format it takes in. It'll read in the Kaffiene format perfectly (obviously), and it's backwards compatible with ZeroSearch's format. It's also made to work with Bwoi's format, so you can use that one if you'd like.\n\nI also removed some pages that had old content and weren't really relevant anymore. The 'why' page is now gone, since the misrepresentation/duplication problem is now mostly resolved. I also removed the FAQ, since most of the data was out of date or simply was common knowledge by now. The donate page is now gone as well, since there hasn't been any donations since I've put it up, and it just cluttered the page. The wallet addresses are also in the sidebar on this blog, so it felt redundant.\n\nThe index link is now moved to the slogan. And the slogan itself has changed to 'X sites and growing', removing the 'unique'.\n\nThe Kaffiene codebase also got some cleanup work done on it. I removed the regex and naive search tags, since the regex one was redundant, and the naive search is now sort of useless (and can be replicated with regex).\n\nAnd last but not least, I'm still working on the autotag script. It works, sort of. But it's still very rough and doesn't tag all that well. It's available if you dig in the site folder if you want to go check it out.\n\nThat's all for now. And as always, thanks for using Kaffiene.\n\n<3 Kaffie"
+		},
+		{
+			"post_id": 22,
+			"title": "How to install and configure Tor to work with ZeroNet on Mac OSX",
+			"date_published": 1470436277.11,
+			"body": "I figured I'd make a quick guide, since I just had to explain this, and more mac users seem to be coming onto zeronet with very little instructions on how to do things. So without further ado, here's how to set up ZeroNet with Tor on Mac.\n\n---\n\n1.  Make sure you have [homebrew](http://brew.sh/) installed. Mac Ports apparently works too, but I use brew. For convenience, the terminal command to install homebrew is:\n\n `/usr/bin/ruby -e \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)\"`\n\n2. Run `brew install tor` in the terminal to download/install the tor daemon. \n\n3. After it's done downloading and installing, navigate to the `/usr/local/etc/tor` folder on your computer. The easiest way to do this is to open finder and hit `cmd+shift+g` and paste it in there. You should see a `torrc.sample` file.\n\n4. Copy the `torrc.sample` file and rename the copy to just `torrc` with no extension. Open it up in a plain-text editor. You should probably a plain-text editor or a code editor like [sublime](https://www.sublimetext.com/) to prevent auto-formatting from messing it up. Avoid using mac's built-in one.\n\n5. Look for `#ControlPort 9051` and simply remove the \\#.\n\n6. Two lines down you should see `#CookieAuthentication 1` remove the \\# from this one too.\n\n7. Save the file and exit. Then launch tor using `tor` in the terminal.\n\n8. Restart zeronet and it'll run with tor. If you want to use tor for every connection (rather than just having one for a bridge or to access tor-only peers) then on the zero net homepage, click on the tor button in the top right, and hit 'enable tor for every connection' at the bottom. Then restart zeronet a second time. You can disable it in the same way.\n\nHave fun! This guide doesn't cover how to use the tor browser with zeronet, since I didn't bother to set that up. Perhaps if there's demand, I'll set it up and write a guide.\n\n<3 Kaffie"
+		},
+		{
+			"post_id": 21,
+			"title": "After all this time, I finally set up Tor",
+			"date_published": 1470399279.577,
+			"body": "The 'error 61' or w/e in the corner of the Zeronet homepage always bothered me. I knew I wasn't running it in the most secure way possible, and with it, losing connection to many peers who use Tor mode. So I finally decided to set it up on my mac, and the whole process was surprisingly simple. Just a quick `brew install tor`, followed by modifying the tor config file. After that, just rebooting ZeroNet worked like a charm.\n\nThere's also something I stumbled upon that's like `--tor always`, what's the difference between that and simply launching without? Is it simply the difference between using just one tor connection, and running everything through tor (rather than only some stuff)? Which should I be doing? Either way, it's nice to know I'm finally on the 'full' Zeronet. Haha.\n\nUnfortunately I don't have any update news for Kaffiene yet. However, [Bwoi](/Bwoi.bit) has come back with it's new 2.1 look. Go check it out if you haven't yet.\n\nAs always, thanks for using Kaffiene and following along here on this blog.\n\n<3 Kaffie"
+		},
+		{
+			"post_id": 20,
+			"title": "I'm finally back",
+			"date_published": 1470096920.525,
+			"body": "I'm sure you're all aware that Kaffiene hasn't received any updates (not even an index update) since early April. Part of this was on me. I just didn't ever get around to it. I had ZeroNet running for quite a while, but closed it and went on to do some other stuff. I also have been dealing with some health stuff, which is part of why I haven't been updating. But I'm back now, and have added 400 or so new sites to Kaffiene's index. Albeit, most of them are empty blogs, or chinese websites from that explosion of popularity in china back in may.\n\nUpon running my tools again, there's another 600 or so sites queued up and ready to be tagged. Though, my current method of tagging by hand is getting quite tedious. So I might just go ahead and write some automated tagging tools before going through those 600 sites.\n\nI also made a few other tweaks to the site. I removed some FAQ questions that aren't really relevant anymore. I also switched the proxy links over to proxy1.zn.kindlyfire.me which is a new proxy service I found, since Bit.no isn't up today.\n\nI'm really trying to stick around and stay active in the ZeroNet community, and I really hope that this network flourishes into something great.\n\nSorry for the wait. I hope Kaffiene still remains the search engine of choice for everyone.\n\n<3 Kaffie"
+		},
+		{
+			"post_id": 19,
+			"title": "About the lack of updates",
+			"date_published": 1460173785.028,
+			"body": "So... yea. Kaffiene lacked updates for a while simply due to me being lazy. Sorry about that. I went ahead and added the new sites picked up by grab.py. Hopefully that should cover most of the sites that have popped up recently. There seemed to be about 80 of them, with lots of them being duplicate chinese sites. So I don't think much was missed.\n\nIn related news, there's now two new search engines, each that go ahead and do things differently. There's [ERR0R Search,](http://127.0.0.1:43110/1P126oKU9cQSH2g4EdyE53PJ1hxmV4DfyN/) which is based on ZeroTalk and allows for user submissions and discussion. To me it feels like what 0List should have been. I'll definitely be keeping an eye on it. There's also [OneSearch](http://127.0.0.1:43110/17SyG68UgnCATwbmnmf7pvRmQVej8ZnWUe/) which used queries to a clearnet DB for it's search originally, but has since switched to an optional files search with the index being entirely on ZeroNet. From what I see, it'd take 100mb or so to host the full database. Not a lightweight solution, but it provides much more indepth searching. It also has backlink searching, which is cool. It's a bit like a beefed up and cleaner Zearch. Though, like Zearch, lots of 'duplicate results' pops up and lots of stuff that makes it hard to find a clean list of sites to visit. Err0r has the ZeroSearch/Bwoi problem where it's difficult to search the sites listed properly. I personally still use and recommend Kaffiene, but these new sites are definitely welcomed with open arms."
+		},
+		{
+			"post_id": 18,
+			"title": "Some small changes",
+			"date_published": 1458781697.679,
+			"body": "As you may or may not be aware, Kaffiene recently had an update that makes searches instant. Your results pop up as you type. I wanted to add it sooner, but the engine has only just recently been fast enough to do it.\n\nI also added proxy links, in case you want to visit a site without it being added to your local machine. The proxy links are hardcoded to use http://bit.no.com:43110/. Whereas the regular outgoing links are relative to whatever you're viewing Kaffiene in. Which means if you view Kaffiene in that proxy, the links will be identical.\n\nI also noticed a particular site reporting a surprisingly large number of sites with only a few (4) duplicates. I thought this was particularly shocking. Had they found a bunch of sites I somehow missed? So I went to investigate. It turns out that they simply added a new search mode, which uses a copy of Kaffiene's index without siterank. That's about 600+ sites. Combine that with their ~300, and it's easy to see how it shot up to 1000. I ran it through my check.py and sure enough it showed only 4 duplicates and 1000 sites! Thinking this was strange, I looked at it by hand. There *were* duplicates, they just were not being reported! How can that be? It turns out the check.py script (and that particular site's duplicate checker) didn't consider addresses that have mixed case to be the same as ones with all lowercase. This is appropriate, because bitcoin addresses (and thus zeronet addresses) *are* case-sensitive. I had a similar issue with the homepage listing some sites multiple times due to case sensitivity. So I went ahead and updated check.py to convert everything to lowercase. This may result in false positives (rarely), but I feel it's appropriate, since there's a much higher chance of false reporting due to case-sensitivity problems than there is to have two sites with roughly the same address. Running that 1000+ site index through it now, and the numbers are clear: \n `Number of Duplicates:  357`\n\n`Unique sites:  668`\n\nWhich is more or less what Kaffiene had right before this last update. It's also worth noting the site has a 'Kaffiene search'. I do wish to point out that it fails to reflect how the results are shown on Kaffiene: with siterank and tag descriptors. However, the index *is* in there, so most results should pop up nonetheless. There's also a distinct lack of regex searching (the site uses naive searching).\n\nAs I've mentioned a few times, I don't mind Kaffiene's index being used. I only wish that it's not used in an attempt to one-up Kaffiene in a game of numbers and not used to intentionally misrepresent search results."
+		},
+		{
+			"post_id": 17,
+			"title": "Huge Kaffiene Update",
+			"date_published": 1458521779.811,
+			"body": "So I ended up having a huge dev jam for Kaffiene. I guess that's what happens when family comes over :P. So without further ado, the changes:\n\nSearch Pages! A much needed feature since larger searches ended up taking a while and had a lot of results. So now pages exist and make searches run so much faster. In response, I enabled discover mode by default. The page selection at the bottom dynamically changes to accommodate for the page so that 10 pages are listed, rather than upwards of 40 if it's possible. Clicking 'next' or 'previous' (or any higher/lower page, really) will raise/lower the page numbers listed. Check it out.\n\nFixed Hashtags! As briefly mentioned before, the tags have gotten an overhaul. There were some issues with special characters and spaces that are now fixed. They have a # in front of them to indicate they're clickable. And switching discover mode on/off live updates the tags, rather than requiring a new search.\n\nUpdated siterank UI! Pretty self explanatory. They're moved over and greyed, with a 'peers' underneath to indicate how it's determined. Overall looks a lot nicer.\n\nRegex Searching by default! Naive search ended up bringing up largely irrelevant results a lot of the time, so I switched the default to regex. The `[r]` tag still works (it just keeps it regex and the search ignores it). There's also a new `[n]` tag to access the old naive search.\n\nFAQ was updated to acknowledge the changes.\n\nI also went ahead and added some more sites that popped up in the last few days.\n\nVarious other changes in the code as well. Stuff like having a dedicated display function, fixed some regex results, etc.\n\nKrawler.py is in development! It's a site crawler and will return links found around ZeroNet. It's not quite included, and not finished just yet, but I figured I'd announce that it's being developed finally.\n\nAnd lastly, as usual, thanks for supporting Kaffiene!"
+		},
+		{
+			"post_id": 16,
+			"title": "Tags are now more user-friendly",
+			"date_published": 1458383708.053,
+			"body": "I said I might not update, but I ended up getting people addicted to ZeroNet. So I went ahead and made some changes to Kaffiene. Now tags in discover mode are hashtags, to indicate they're clickable. And the discover mode checkbox now has a tooltip to explain what it does (incase you're lazy and don't read the FAQ).\n\nThere was also a suggestion to move the site rank over to the other side of the site titles, but IMO it didn't look very good. Thoughts on how these should be adjusted? The main complaint was that the site names didn't line up."
+		},
+		{
+			"post_id": 15,
+			"title": "Family coming over this weekend",
+			"date_published": 1458350526.685,
+			"body": "Yeah... So if I don't post anything for the next few days, that's probably why. Just wanted to let you guys know so you're not just sitting there wondering where I am or if I'd forgotten about ZeroNet or something.\n\nThat's all. No updates, sorry :(."
+		},
+		{
+			"post_id": 14,
+			"title": "Updating SiteRank with Proxies and Grab.py",
+			"date_published": 1458219484.049,
+			"body": "I finally got around to writing a tool to automatically grab new sites and update the siterank of Kaffiene's index. Grab.py uses phantomjs to grab that nice list of sites you see on the homepage of the various proxies. It then formats that list in a way that plays nice with the update merge.py tool. I kept the old merge.py since it now does something different (old merge adds site rank, new merge updates it). So the flow goes something like: run grab.py, run merge.py, tag the new sites if there's any, add them into the index, and then replace index with the new updated one.\n\nThat's still quite a bit of work to do by hand (I just had to visit ~30 sites manually). But it's a lot better than before. Next up is a tool to grab sites from that New Sites seeder thing, and maybe 0list.\n\nOh, and to auto-tag new sites. You can find the new scripts and their instructions in the 'script' section, like before."
+		},
+		{
+			"post_id": 13,
+			"title": "Dreams of Decentralization",
+			"date_published": 1458126646.96,
+			"body": "An idea has been brewing in my head these past few weeks. Probably because I just dived in and went 0 to 60 in P2P software. I had no idea this stuff was so far along already. ZeroNet is fantastic. There's Bitcoin and Namecoin managing transactions. There's Bitmessage for a decentralized email type of thing. Then there's stuff like Tox, Ricochet, Ring and the like for instant messaging. IPFS and similar solutions for decentralized file hosting. And then I find out about cjdns and meshnets.\n\n---\n\nWith all this sitting on the forefront of my mind, decentralized computing was on my mind. However, these thoughts started blending with my other views and interests. Things like anti-consumerism, minimalism, independence, libre software, etc. And the thought popped into my head. *Why don't we have an all-in-one cheap PC that makes decentralized computing easy?* At the heart could be something like a custom distro of linux with the above software pre-installed, and configured to jump into a new or existing meshnet. The software would run on a cheap pocket computer, like the Raspberry Pi. Or really *any* computer you could get your hands on. Have the OS/box *lack* traditional internet support. No central DNS. No centralized IP allocation. It'd be physically and digitally incapable of connecting to the existing internet, except through networking with a computer that is able to do so (though ideally this wouldn't be necessary).\n\nUltimately, you'd just get a bunch of these little guys and we'd effectively kickstart a new internet that's inherently secure, P2P, has the capability of viewing things while offline, has no restrictions on where you *can* go online (no need for a wifi), discourages giant corporate websites, lacks ads, has it's own currency, and encourages creativity and independence.\n\nHow does that sound? No slow browsers. No tracking cookies. No ads or adblockers. No data leaks or corporate espionage. No government spying on what you do. No ISP monopolies. No ICANN. Everyone's on an open source operating system using open source software. No fiat government funny money.\n\nThough, we're not quite there yet. ZeroNet still needs various tweaks and developments to allow it to be truly P2P. Bitcoin/Namecoin might have issues when going 'off the grid' and having a bunch of localized versions (perhaps something like uCoin is better here?) And there's still the obvious issue of getting everyone to ditch their current line of crap and to divorce themselves from the consumerism/corporate mindset.\n\nHell. Maybe we can ditch currency altogether. ZeroNet seems to be doing great, and not a single site charges for anything. No one's getting paid here (well, nofish gets donations for his hard work). Though, when merging the P2P digital world with real world work, there's a conflict. I've been trying to think of a way to solve this. What are the core necessities to be self-sufficient? Definitely electricity, so that this P2P magic can run. I did some digging and there's some solar-powered raspberry pi projects. Would that be enough? Can we get pi's to communicate with each other in a mesh, or do we need extra hardware? There's also the issue of needing to keep the lights on. I have no clue if we can manage to self-generate that. Tesla had a home battery thing, would that work?\n\nWater and Food seem to be the two largest problems. Getting everyone to grow their own seems problematic as not everyone would want to, or have the resources, or have the knowhow. And outsourcing this requires funny money, or perhaps bitcoin (which would require connecting to the internet). Both of those are problems. For food, I think getting something like soylent would work well, but I have no idea what the process of producing it is. Or even if we can get that to be sustainable within our P2P society. For water, I have no idea. Rain water? Piggy back off the public drinking fountains? Neither of these sound particularly sustainable or reliable. I'd dehydrate if I had to live off rain water (damn desert, I hate it here). And the public water is nasty, and requires reliance on the state, centralizing something and wrecking the entire idea.\n\nThen there's issues of plumbing (toilets, showers), a place to stay, trash, aaannndd.... I think that's it... If all of those things are taken care of, either through decentralized automated means, or through self-sufficiency, I think we can honestly get rid of currency. At least as a means to live. In terms of actual physical stuff you need, the amount is surprisingly low. Some clothes (you already have those) and some basic toiletries are really it. The only thing that'd be needed and would be an issue, then, is the tech. I don't really know of an easy way to make raspberry pis appear out of thin air. So that might be an issue. Even the most rudimentary tech has a complex pipeline that stretches back to essentially slave labour. Cheap eastern manufacturing, minerals and resources from third world countries. Is there a better way to get tech running? How can you drive this production in a society like this?\n\nAnd unless we solve these problems, we'll always need a bridge from our P2P paradise into the economic internet filled with crap. We'll always be reliant on the very people and structures we're trying to distance ourselves from. And that, to me, is a huge issue. Whether it be for computer parts, food, toiletries, water, or simply land to stand on, there's still that inherent reliance on a collapsing economy desperate to spy on people and censor what they say and do. That collapsing economy that wishes to control what you say, think, do, buy, and make.\n\nThe alternatives are obvious, but not appealing. We can either stay here, on the failing collapsing internet filled with crap. Or we can introduce the crap into our P2P haven. Require some sort of connection to the internet so that bitcoin may work, and in turn allow people to participate in the dying economy just so that we can get the things we need. Neither of these sound that great. One is to give up, and the other is to only carve out a small section for ourselves, rather than simply pack up and leave.\n\nIs it impossible to fully decentralize society? Must there be some sort of central reliance to ensure things work reliably? I really doubt that. But for the time being, there doesn't seem to way to have fully decentralized tech, but also to keep building hardware. You'd need a meshnet the size of the internet, and that won't happen unless all the same crap can appear on it. Though, perhaps that's the end goal for everyone? Simply a more secure and reliable method for doing the same crap they already do?\n\nI can't see how one would be able to splinter off and simply live without involving the exploitation of the participants of the system. Any thoughts on this matter would be appreciated. "
+		},
+		{
+			"post_id": 12,
+			"title": "Siterank for Kaffiene!",
+			"date_published": 1458068782.602,
+			"body": "I went ahead and added a new site rank value for entries in Kaffiene's index. The site now sorts by that when returning results. The site rank is essentially just the amount of peers each site has, as determined by the /Stats page on a particular proxy. It works pretty well, and provides the best/most relevant results at the top, and lesser more crappy sites down at the bottom.\n\nWhile I was doing this, I went ahead and made a new merge.py tool. Which essentially streamlines this process. It takes a 'peerlist' that has addresses and site ranks and applies them to the data.txt. Any site not in the peer list gets a '-' dummy value. And any sites unique to the peer list get added to a 'new sites' file for later processing (by hand at the moment).\n\nThere was also an influx of new sites I went through and added. Kaffiene used to have about 360 something, and now it has over 600! Though, it appears a lot of these sites are blank dummy sites, or empty blogs. However, I've tagged them appropriately and kept them in. Not to boast a high site count, at this point I don't really care for that. My main purpose is to provide a reverse lookup service, so that people know what they're getting into. And I later plan to separate these sites into a 'deadlist' so that various services can reference that list as needed (either to auto-block the sites, remove them from your downloaded files, maybe to have an 'abandoned zeronet sites' site). And for the soon coming 'merger sites'. I think having indexes already separated and into categories ready to go is a good move for the future of decentralized search.\n\nOne last little thing is that I added a scripts/python page. Since that top list of links was getting a bit cluttered. I wrote down descriptions and instructions for the two python tools. And there'll be more there in the future. I also went ahead and updated the FAQ about Kaffiene's sorting.\n\nI think that's all, but I might be forgetting something. Oh, and now blank searches take a long time again :(. This is due to the higher site count (nearly double) along with a new string appending. Both of those make the search take longer, due to the display code and javascript being lame. I'll have to start adding multiple pages for a search soon. Isn't that exciting?\n\nAs always, you guys are awesome, and thanks for supporting me and Kaffiene. <3"
+		},
+		{
+			"post_id": 11,
+			"title": "Twilight Princess HD",
+			"date_published": 1458023039.027,
+			"body": "Just picked up the new Legend of Zelda: Twilight Princess HD for Wii U. Haven't actually played it yet, and I'm not exactly in a rush since I've already played the original. In fact, this is the third version of the game I own. And I bought them all for different reasons, haha.\n\n---\n\nThe original gamecube game I bought and played since it was new. I'm a huge Zelda fan, so it only makes sense. TP was pretty hyped up as well. I bought the Wii one (which actually came out earlier than the gamecube one, despite me picking it up later) so I could hack my Wii. IIRC it was the only way to do it at the time. I never bothered to beat that one, since it's essentially the same game, but has the content flipped, and added gimmicky motion controls. But nonetheless it's sitting on my shelf.\n\nAnd now this new one. I wasn't actually planning on getting it. But it comes with an amiibo figure which will apparently be needed for the new Zelda Wii U game coming out later this year. And I was planning on replaying Twilight Princess soon anyway. The figure is pretty cool, no complaints there. And from what I've seen in screenshots and trailers, the game looks nice. Perhaps they've given it the MM treatment, where they make various improvements. I imagine they probably did something similar to how Wind Waker HD was, but I haven't had the chance to play that one yet.\n\nI'm unsure of whether the game will work on my Wii U, which is partly why I'm hesitating to play it. See, I'm on FW 5.5.0, which isn't quite the latest. I accidentally updated it like a dumbass, and then all the cool hacking stuff came out for the one I had just updated from. And I feel like if I update it again, the same thing will happen! I feel like I'm gonna have to update the Wii U anyway when my brother and his girlfriend come to visit, since they'll probably want to play some other games. So perhaps I should just bite the bullet and update. After all, the IOSU exploit *is* possible on 5.5.1 as well. So maybe it won't be a big deal?\n\n---\n\nIn Kaffiene related news, I've added a few more sites (like to the new [ZeroWiki](http://127.0.0.1:43110/138R53t3ZW7KDfSfxVpWUsMXgwUnsDNXLP)), and I've added a donate page, that lists my namecoin and bitcoin addresses. Namecoin so that I can keep the kaffie.bit domain, and perhaps register kaffiene.bit. Bitcoin, so that I can maybe bring in some money for doing this, since I'm currently unemployed :(.\n\nMy medical expenses aren't going to pay themselves... But on the bright side, I've managed to pull myself together enough to schedule an appointment with a doctor who might actually be decent, rather than just an idiot who wants to take my money for doing nothing.\n\nEither way, this has been a bit of a deviation from the typical Kaffiene updates, since this *is* my personal blog after all. So hopefully that won't scare all you guys away. And I *did* promise gaming related stuff in my first post. So there's a bit for you. Perhaps I'll talk about A9LH and 3DS hacking in my next post.\n\nAs always, thanks for reading <3\n"
+		},
+		{
+			"post_id": 10,
+			"title": "Install Kaffiene?!",
+			"date_published": 1457851760.167,
+			"body": "That's right. I've added an experimental feature to allow visitors to install Kaffiene to their browser. From my tests, only Firefox worked. So it, along with any derivative browsers should work fine. Safari doesn't support the feature unfortunately. ~~And I couldn't get it working on Chrome, despite chrome saying it supports the feature.~~ So if Safari and Chrome users care to chime in and help figure out what the issue is, that'd be great.\n\n*Edit: I've managed to get it installing for both Opera and Chrome. The auto-detect and auto-install scripts have problems within the sandboxed Zeronet iFrame, so I've removed them for the time being. There's now an install page with browser-specific instructions located [here.](http://127.0.0.1:43110/search.kaffie.bit/install.html)*\n\nI also began looking into how to make Kaffiene cloneable. I tried enabling the option, but upon signing it was removed... I'm trying to figure out how to just make it duplicate the whole site, index and all. So that anyone can easily click 'clone' and start modifying the index and site.\n\nIn unrelated news, it was my birthday yesterday, which is why Kaffiene's development has been at a crawl lately. Wasn't feeling too great though. So... happy birthday to me?\n\n*Edit: I've managed to make it cloneable. Editing the content.json directly didn't work. I had to edit it, and then hit 'save site settings' in the sidebar. Then sign and publish. Cloning the site will copy everything over. Just remove the Kaffiene specific parts and edit the index and such as you please.*"
+		},
+		{
+			"post_id": 9,
+			"title": "Number Crunching",
+			"date_published": 1457578330.796,
+			"body": "In a very google-esque move (I guess I'm following a trend here) I went ahead and added a display for how fast the search was conducted. And you know how discover mode lagged a bit (along with blank searches)? Well I managed to optimize it a bit more. Now every search is running under 1 second for me. Whereas before, a blank search with discover mode would take over 5 seconds!\n\nAlong with that, last night I added an FAQ answering some common questions, as well as providing a bit of info I wasn't sure where to put.\n\nI also added links back to the Kaffiene homepage in the various side pages. It's a colorful \"Kaffiene\" link in the top-left corner.\n\nThat's all for now."
+		},
+		{
+			"post_id": 8,
+			"title": "We're finally different!",
+			"date_published": 1457437758.504,
+			"body": "Thanks to 'thatlurker', Kaffiene has finally got a new UI. I made a few tweaks to what I received, but I personally think it looks nice. More google-esque. I also went ahead and added a visual feedback for discover mode. The tags turn pink when you move the cursor over them, to indicate they're clickable.\n\nI added a few sites, even though at this point I'm quickly being outpaced by ZeroSearch. Quality over quantity though, right? Hopefully I'll make a crawler soon, but we'll see.\n\nI reworked the 'why' page and rewrote some stuff. Removed the large images.\n\nI also redid the random search. It now randomly grabs an actual tag and uses that, meaning that on average more results should pop up and the terms shouldn't be as weird. This also clears up a lot of space on the site, since before the random tags were almost a duplicate of the index.\n\nSorry it isn't much, but disaster struck a couple days ago and my 2TB external hard drive had corrupted or something. I've been spending a lot of my time trying to fix it and recover the data. Which is why Kaffiene hasn't really had much development besides these small tweaks and changes.\n\nI also want to give a shoutout to Censored Search, the newest ZeroNet search engine. It was cloned from Kaffiene and is exactly the thing I'm trying to encourage. Instead of ZeroNet sites, however, it searches clearnet sites. Not a direct competitor, but still something the community could see a lot of use from. You can find it [here.](http://127.0.0.1:43110/censoredsearch.bit) I particularly liked how he kept the publicly accessible index. I do think sharing information and making it easy to access important aspects of sites is a key element of ZeroNet, and one I'd like to see expanded upon. The clearnet is typically the opposite; keeping everything secret. I really enjoy the openness here on ZeroNet.\n\nI hope you all enjoy these latest changes. Thanks for reading!"
+		},
+		{
+			"post_id": 7,
+			"title": "A Kaffiene Update",
+			"date_published": 1457336501.928,
+			"body": "Finally got around  to pushing out another Kaffiene update! Just a few quick ones this time. I moved both the index file and the checking script to the front page, so that they're easily accessible. I also went ahead and went through the early sites in the index that ZeroSearch added back in the day and retrofitted them with tags. However, much to my surprise, there were a lot of dead links. So I tagged them as 'old' and 'dead' as appropriate. Not all 'dead' tagged sites are inaccessible, but they're more or less useless. Whereas 'old' just means that I didn't see them updated for a long time, but if it doesn't have a 'dead' tag, it might still be a bit useful.\n\nI'm wondering what I should do with these dead sites. Some are just a basic 'hello world' type of thing (why would someone add that to the search engine?) while others are just a personal blog with 2 posts about \"I'm on zeronet!\". And others still are a customized homepage with nothing really relevant besides a bit of flair/customization. Should I keep these sites? Remove them?\n\nTo see what I'm talking about, I'd like to introduce a new feature: Sharing searches! On every search, next to the results count there'll be a share link. Just 'copy link' or click it and copy the URL in the address bar. Do keep in mind that the url itself is related to how you arrived. Accessing Kaffiene through a proxy will net a proxy url, accessing it with the chrome extension will give a link accordingly.\n\n[Here's the link showing the old sites.](http://127.0.0.1:43110/search.kaffie.bit/?q=%5Br%5D%20%5B%5Ea-zA-Z%5Dold) As you can see, it automatically went with the standard local address and port, along with the domain name.\n\nAlongside this new feature, I have fixed the search results for alternative zeronet users. Users with the chrome extension should now have proper links (rather than just pointing to the local address), proxy users should have links that go to their proxy, and so on. Please let me know if there's any issues.\n\nLastly, the site count issue. There was a lot of drama recently, but it's all mostly sorted out. However, Kaffiene *did* pass 300 sites indexed, which is why the 'low site count' message has moved to be linked from the word 'unique'. However, I noticed that in response to this, ZeroSearch has woken once again and added seemingly spam links to it's search. A quick search for 'ZeroBlog' will show that. To give credit, they *do* appear to be distinct and it seems ZeroSearch has more or less removed the majority of duplicates. However, those search results are entirely useless. Which 'ZeroBlog' should you click? There's no info, and some are actually useful while others are just 'hello world' type stuff! To me, this is the mark of failure in a search engine. A site that *only* cares about index count and completely disregards the quality of results. I've been hesitant to add brand new blogs, because I've seen first hand how frustrating it is to have dead links or empty blogs pop up in results.\n\nI'm still trying to figure out a solution to this problem, but I certainly know that blindly adding 'ZeroBlog demo' as the title and just spamming a bunch of new blogs is *not* the answer.\n\nAnd, in favor of enhancing search results, I've cleaned up the 'random terms' list. In the future I plan to have it automatically grab a tag from the index. But for now it's just a big list.\n\nThank you all for using Kaffiene and supporting quality over quantity. <3"
+		},
+		{
+			"post_id": 6,
+			"title": "New Kaffiene Features!",
+			"date_published": 1457163285.564,
+			"body": "Kaffiene got some improvements today. I added a 'discover' mode. To enable it, just check the checkbox next to the search bar. It allows you to click on tags and search for that tag. This makes it easy to find related content. It's disabled by default, since it can increase the wait time for larger searches.\n\nI also added an option to search via regex. To do this, simply type \"[r]\" without quotes, then a space, and then your regex. When searching this way, terms separated by a space will be treated as separate regex searches. results will adhere to all of the regex queries (meaning it's \"and\" not \"or\"). The default search works in an opposite way: it'll pull up results that include any of the terms, rather than all of them. It's still possible to do an 'or' with regex, just don't have spaces and type something like: \"termA|termB\". This allows you to make powerful search queries. For example, if you want to search for termA or termB, but ensure that you also find termC, you'd search: \"termA|termB termC\". You can do other regex searches as well: \"(forum|discussion|talk) (french|russian)\". Any valid regex should work.\n\nI also overhauled the searching itself, and hopefully cleaned up some of the redundancies that were left in when I cloned ZeroSearch. So that should make the searches a bit faster.\n\nYou can also now do reverse site lookups. Simply enter the address of the site. For example, this blog would be \"1N6zp6jCXPBktNMPfe7UJBpQGyfCq7k2M8\". Just enter that, and the site name/tags will pop up. It's a handy way of ensuring your site is in the index. But this will become even more useful in the future, when merger sites are added, and I create a query for bots/sites to get a plain-text or json version of the results. The possibilities are endless!\n\nI removed the Roboto font that was taking up a whopping 30kb. It was only really used for the title, so I removed it. I'll probably replace the title with an image logo, so it looks nice.\n\nLastly, I fixed some of the links around the page. I noticed I didn't have them linking properly (as ZeroNet expects) and it was causing some weird errors. So that should be fixed now.\n\nAs usual, please continue to enjoy using Kaffiene. Thanks :)"
+		},
+		{
+			"post_id": 5,
+			"title": "On the topic of index counts",
+			"date_published": 1457143548.037,
+			"body": "It has recently come to my attention that several competitors to Kaffiene have been stealing recently indexed sites from the Kaffiene index, and not bothering to check the results or ensure quality. While I don't have any say over what these other sites do, I *can* call them out on their blatant dishonesty in an attempt to get users. In the spirit of competition and honesty, I've provided a write up over on the Kaffiene site about this issue. I've provided accurate site count numbers for both competing sites (ZeroSearch and Bwoi) as well as provided a script to check for duplicate entries and return the actual unique count. I also went ahead and made the Kaffiene site index public, changing the file extension to a '.txt' and provided a direct link to it on the site.\n\nI hope that people can focus more on quality and accurate search results, rather than listen to dishonest reports on how many sites are indexed. And I take this as an opportunity to encourage both ZeroSearch and Bwoi to run the included python script on their own indexes and hopefully remove duplicate sites, improving the experience for users of the various search engines.\n\nYou can find the complete write up over on the Kaffiene search site, [here.](http://127.0.0.1:43110/1Mr5rX9TauvaGReB4RjCaE6D37FJQaY5Ba/why.html)\n\nThanks for reading, and please continue to enjoy Kaffiene."
+		},
+		{
+			"post_id": 4,
+			"title": "Introducing: Kaffiene Search!",
+			"date_published": 1456992106.877,
+			"body": "As you all may be aware, the only search engine for ZeroNet is ZeroSearch. And it's kind of crap (sorry to the dev!). It's capped at how many search results pull up, so you have to keep clicking search. It doesn't have descriptions or provide the tags for sites so you don't know where you're going. And, to be honest, it lacks a lot of newer sites.\n\nFrustrated with these problems, I decided to clone the site and start working on my own. I removed the fancy 'request' system, since it didn't really do much, and I had problems with the ZeroNet functions. I've fixed the result count, added a display for tags, added all of the requested sites from ZeroSearch's queue. And I've added a few more sites that I was aware of. I also took the liberty of changing all of the site tags and names into terms that will pop up when you hit 'random', rather than just have the frustratingly short list of 5 or 6 terms.\n\nI'm planning on having it automatically include sites that users add, and perhaps find some way to grab all the latest additions of 0list, 0name, etc automatically (though that might have to wait until merger sites arrive).\n\nI've never worked on a search engine before, so bear with me while I figure it all out. Hopefully you all enjoy this latest project.\n\nYou can find it over at [search.kaffie.bit](http://127.0.0.1:43110/search.kaffie.bit), or if you want the direct link (in case I fail at namecoin and do something dumb) you can find that here: [1Mr5rX9TauvaGReB4RjCaE6D37FJQaY5Ba](http://127.0.0.1:43110/1Mr5rX9TauvaGReB4RjCaE6D37FJQaY5Ba)\n\nEnjoy!"
+		},
+		{
+			"post_id": 3,
+			"title": "Kaffie.bit!",
+			"date_published": 1456966155.832,
+			"body": "Kaffie.bit is now registered and points to this blog! Yay. I don't know how long I'll be able to support it, since I'm still new to this whole namecoin thing. But for the time being feel free to use the domain to get here. Big thanks to cannonfodder and glock who helped me set it up. If you'd like to help keep Kaffie.bit pointing here, feel free to send some namecoin my way: N4Bee3vzgpQnjC3Kah1BQENLZ6fatsbUkq"
+		},
+		{
+			"post_id": 2,
+			"title": "ZeroNet Beginner’s Package",
+			"date_published": 1456901707.486,
+			"body": "Here's some basic links to get you started on ZeroNet. Everything from creating a ZeroID and mail, to chatting with other users, or even finding new sites and making your own. \n\n---\n\n# Getting Yourself An Identity\n[Register a ZeroID](/zeroid.bit)\n[Set up a ZeroMail](/Mail.ZeroNetwork.bit)\n\n# Finding Your Way Around\n[Kaffiene Search - Search Engine](/kaffiene.bit)\n[Bwoi - Search Engine](/bwoi.bit)\n[OneSearch - Search Engine](/onesearch.bit)\n[ZeroSearch - Search Engine](/zerosearch.bit)\n[0List - Site Directory](/0list.bit)\n[ZeroCentral - Site Directory](/1Dt7FR5aNLkqAjmosWh8cMWzJu633GYN6u)\n[ZeroName - Registered .bit domains](/1Name2NXVi1RDPDgf5617UoW7xA6YrhM9F)\n[Index of Zites - Search Index](/1idx111zukVxTbirqKgekp9A35JiBdCqy)\n[New ZeroNet Sites - Unlabeled new sites](/1LtvsjbtQ2tY7SCtCZzC4KhErqEK3bXD4n)\n\n# Discuss things!\n[ZeroTalk - Reddit-like forum](/Talk.ZeroNetwork.bit)\n[0chan - chan image board](/0chan.bit)\n[0/SciFi - SciFi forum](/1BrgXu4E6jzdtvwec9oEU5Fir7355yeJF3)\n[Programming.net - Discuss all things programming](/17YUF4geTD7gBDPeMtQtnV7uhhNcjrYi9u)\n[Pirate Party Forum](/1CLQ81TNixktJ67YFkZtbtsESy3MwZqLEG)\n[Anarcho-Capitalism Forum](/1EvcfVxqsjYzb3w3hZ4jknhfHJ3oRZB4z5)\n[Capitalism vs Socialism Debate Forum](/19DtdQZymsSBcTw1P6rwKxtEx9fpf93Qug)\n\n\n# Live Chat\n[ZeroMedia.bit - Popular chatroom](/zeromedia.bit)\n[General Chat](http://127.0.0.1:43110/1AvF5TpcaamRNtqvN1cnDEWzNmUtD47Npg)\n[ZeroChatIRC](/1CjR14fofbRJ54oj8A7rAfWpzpLawdP5uc)\n[Anonymous Message Board](/Board.ZeroNetwork.bit)\n\n# Download Torrents\n[ZeroTorrent - User-submitted torrent site](/zerotorrent.bit)\n[PLAY - Movie Torrents](/1PLAYgDQboKojowD3kwdb3CtWmWaokXvfp)\n[TV Torrents](/1MagneTSMMkNmJTMsTGJtfuNsqGjzzXgQv)\n\n# Make Or Clone A Site\n[Clone a blog](/Blog.ZeroNetwork.bit/?Post:3:How+to+have+a+blog+like+this)\n[.bit Domains](/1Ajp75FXAxdTzRiRTpdBgd4exvbo4gMW12/?Post:2:Free+.bit+Domains+for+ZeroNet+Sites)\n[Vanity Address](/13x71nc7fju6afMqpEPfcu3Gx9Z5hNhH48/?Post:5:How+To:+custom+ZeroNet+addresses+using+Vanitygen+)\n\n# Various Cool Sites\n[ZeroWiki](/0wiki.bit)\n[NullFolder - Direct filesharing through webtorrent](/1GrtBsG57kjU2Z3iAQebG9D5c8CRDRLoPj)\n[NullPaste - ZeroNet's pastebin](/0pastebin.bit)\n[QR Generator](/1DrX4tBjLbCCzmFzgASSEEkj4TisnU2JBb)\n[ZeroQuotes](/1NJyPoPpL8At17T6G7A1qHVQdqZDBmXcLT)\n[ZeroTodos](/1B8LmXYHzMGZzcRWoidAQb5SmKSyfjN63f)\n[ZeroPolls](/zeropolls.bit)\n\n# ZeroNet Proxies\n[http://bit.no.com:43110/](http://bit.no.com:43110/)\n[https://proxy1.zn.kindlyfire.me/](https://proxy1.zn.kindlyfire.me/)"
+		},
+		{
+			"post_id": 1,
+			"title": "First Steps",
+			"date_published": 1456883779,
+			"body": "It seems like everyone on ZeroNet has a blog. So I figured I should get one. I dunno what I'm gonna put on here though. Perhaps some game hacking stuff, or updates about projects I'm working on."
+		}
+	],
+	"tag": [
+		{
+			"value": "tor",
+			"post_id": 22
+		},
+		{
+			"value": "guide",
+			"post_id": 22
+		},
+		{
+			"value": "mac",
+			"post_id": 22
+		},
+		{
+			"value": "zeronet",
+			"post_id": 22
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 23
+		},
+		{
+			"value": "update",
+			"post_id": 23
+		},
+		{
+			"value": "development",
+			"post_id": 23
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 24
+		},
+		{
+			"value": ".bit",
+			"post_id": 24
+		},
+		{
+			"value": "domains",
+			"post_id": 24
+		},
+		{
+			"value": "search",
+			"post_id": 24
+		},
+		{
+			"value": "update",
+			"post_id": 24
+		},
+		{
+			"value": "development",
+			"post_id": 24
+		},
+		{
+			"value": "zerome",
+			"post_id": 25
+		},
+		{
+			"value": "hubs",
+			"post_id": 25
+		},
+		{
+			"value": "guide",
+			"post_id": 25
+		},
+		{
+			"value": "tor",
+			"post_id": 21
+		},
+		{
+			"value": "zeronet",
+			"post_id": 21
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 20
+		},
+		{
+			"value": "update",
+			"post_id": 20
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 19
+		},
+		{
+			"value": "update",
+			"post_id": 19
+		},
+		{
+			"value": "search",
+			"post_id": 19
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 18
+		},
+		{
+			"value": "update",
+			"post_id": 18
+		},
+		{
+			"value": "proxy",
+			"post_id": 18
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 26
+		},
+		{
+			"value": "update",
+			"post_id": 26
+		},
+		{
+			"value": "ui",
+			"post_id": 26
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 17
+		},
+		{
+			"value": "update",
+			"post_id": 17
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 16
+		},
+		{
+			"value": "update",
+			"post_id": 16
+		},
+		{
+			"value": "life",
+			"post_id": 15
+		},
+		{
+			"value": "family",
+			"post_id": 15
+		},
+		{
+			"value": "personal",
+			"post_id": 15
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 14
+		},
+		{
+			"value": "update",
+			"post_id": 14
+		},
+		{
+			"value": "python",
+			"post_id": 14
+		},
+		{
+			"value": "decentralization",
+			"post_id": 13
+		},
+		{
+			"value": "discussion",
+			"post_id": 13
+		},
+		{
+			"value": "ideas",
+			"post_id": 13
+		},
+		{
+			"value": "p2p",
+			"post_id": 13
+		},
+		{
+			"value": "thoughts",
+			"post_id": 13
+		},
+		{
+			"value": "zelda",
+			"post_id": 11
+		},
+		{
+			"value": "gaming",
+			"post_id": 11
+		},
+		{
+			"value": "life",
+			"post_id": 11
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 10
+		},
+		{
+			"value": "update",
+			"post_id": 10
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 9
+		},
+		{
+			"value": "update",
+			"post_id": 9
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 8
+		},
+		{
+			"value": "ui",
+			"post_id": 8
+		},
+		{
+			"value": "update",
+			"post_id": 8
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 7
+		},
+		{
+			"value": "update",
+			"post_id": 7
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 6
+		},
+		{
+			"value": "update",
+			"post_id": 6
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 5
+		},
+		{
+			"value": "search",
+			"post_id": 5
+		},
+		{
+			"value": "drama",
+			"post_id": 5
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 4
+		},
+		{
+			"value": "release",
+			"post_id": 4
+		},
+		{
+			"value": "search",
+			"post_id": 4
+		},
+		{
+			"value": "update",
+			"post_id": 4
+		},
+		{
+			"value": ".bit",
+			"post_id": 3
+		},
+		{
+			"value": "domains",
+			"post_id": 3
+		},
+		{
+			"value": "guide",
+			"post_id": 2
+		},
+		{
+			"value": "beginner",
+			"post_id": 2
+		},
+		{
+			"value": "links",
+			"post_id": 2
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 12
+		},
+		{
+			"value": "update",
+			"post_id": 12
+		},
+		{
+			"value": "tags",
+			"post_id": 27
+		},
+		{
+			"value": "blog",
+			"post_id": 27
+		},
+		{
+			"value": "update",
+			"post_id": 27
+		},
+		{
+			"value": "blog",
+			"post_id": 1
+		},
+		{
+			"value": "release",
+			"post_id": 1
+		},
+		{
+			"value": "update",
+			"post_id": 1
+		},
+		{
+			"value": "domains",
+			"post_id": 28
+		},
+		{
+			"value": "update",
+			"post_id": 28
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 28
+		},
+		{
+			"value": "zerome",
+			"post_id": 28
+		},
+		{
+			"value": "hubs",
+			"post_id": 28
+		},
+		{
+			"value": "zerome",
+			"post_id": 29
+		},
+		{
+			"value": "hubs",
+			"post_id": 29
+		},
+		{
+			"value": "id",
+			"post_id": 29
+		},
+		{
+			"value": "update",
+			"post_id": 29
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 30
+		},
+		{
+			"value": "update",
+			"post_id": 30
+		},
+		{
+			"value": "search",
+			"post_id": 30
+		},
+		{
+			"value": "index",
+			"post_id": 30
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 31
+		},
+		{
+			"value": "update",
+			"post_id": 31
+		},
+		{
+			"value": "personal",
+			"post_id": 31
+		},
+		{
+			"value": "update",
+			"post_id": 32
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 32
+		},
+		{
+			"value": "update",
+			"post_id": 33
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 33
+		},
+		{
+			"value": "update",
+			"post_id": 35
+		},
+		{
+			"value": "source",
+			"post_id": 35
+		},
+		{
+			"value": "git",
+			"post_id": 35
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 35
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 36
+		},
+		{
+			"value": "update",
+			"post_id": 36
+		},
+		{
+			"value": "zerome",
+			"post_id": 36
+		},
+		{
+			"value": "search",
+			"post_id": 36
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 39
+		},
+		{
+			"value": "update",
+			"post_id": 39
+		},
+		{
+			"value": "zerome",
+			"post_id": 39
+		},
+		{
+			"value": "search",
+			"post_id": 39
+		},
+		{
+			"value": "banlist",
+			"post_id": 41
+		},
+		{
+			"value": "update",
+			"post_id": 41
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 40
+		},
+		{
+			"value": "update",
+			"post_id": 40
+		},
+		{
+			"value": "git",
+			"post_id": 38
+		},
+		{
+			"value": "gaming",
+			"post_id": 38
+		},
+		{
+			"value": "hacking",
+			"post_id": 38
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 37
+		},
+		{
+			"value": "update",
+			"post_id": 37
+		},
+		{
+			"value": "zerowiki",
+			"post_id": 37
+		},
+		{
+			"value": "blog",
+			"post_id": 34
+		},
+		{
+			"value": "update",
+			"post_id": 34
+		},
+		{
+			"value": "banlist",
+			"post_id": 34
+		},
+		{
+			"value": "personal",
+			"post_id": 34
+		},
+		{
+			"value": "movies",
+			"post_id": 43
+		},
+		{
+			"value": "tv",
+			"post_id": 43
+		},
+		{
+			"value": "zeromovies",
+			"post_id": 43
+		},
+		{
+			"value": "zerotv",
+			"post_id": 43
+		},
+		{
+			"value": "mirrors",
+			"post_id": 43
+		},
+		{
+			"value": "systemspace",
+			"post_id": 43
+		},
+		{
+			"value": "personal",
+			"post_id": 43
+		},
+		{
+			"value": "life",
+			"post_id": 43
+		},
+		{
+			"value": "blog",
+			"post_id": 43
+		},
+		{
+			"value": "update",
+			"post_id": 43
+		},
+		{
+			"value": "tags",
+			"post_id": 43
+		},
+		{
+			"value": "release",
+			"post_id": 43
+		},
+		{
+			"value": "update",
+			"post_id": 44
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 44
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 45
+		},
+		{
+			"value": "update",
+			"post_id": 45
+		},
+		{
+			"value": "zerowiki",
+			"post_id": 45
+		},
+		{
+			"value": "personal",
+			"post_id": 46
+		},
+		{
+			"value": "life",
+			"post_id": 46
+		},
+		{
+			"value": "blog",
+			"post_id": 46
+		},
+		{
+			"value": "personal",
+			"post_id": 47
+		},
+		{
+			"value": "blog",
+			"post_id": 47
+		},
+		{
+			"value": "worldviews",
+			"post_id": 47
+		},
+		{
+			"value": "decentralization",
+			"post_id": 47
+		},
+		{
+			"value": "ideas",
+			"post_id": 47
+		},
+		{
+			"value": "life",
+			"post_id": 47
+		},
+		{
+			"value": "discussion",
+			"post_id": 47
+		},
+		{
+			"value": "p2p",
+			"post_id": 47
+		},
+		{
+			"value": "thoughts",
+			"post_id": 47
+		},
+		{
+			"value": "namecoin",
+			"post_id": 48
+		},
+		{
+			"value": "domains",
+			"post_id": 48
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 48
+		},
+		{
+			"value": "japanese",
+			"post_id": 49
+		},
+		{
+			"value": "learning",
+			"post_id": 49
+		},
+		{
+			"value": "language",
+			"post_id": 49
+		},
+		{
+			"value": "kanji",
+			"post_id": 49
+		},
+		{
+			"value": "life",
+			"post_id": 50
+		},
+		{
+			"value": "zeronet",
+			"post_id": 50
+		},
+		{
+			"value": "patreon",
+			"post_id": 50
+		},
+		{
+			"value": "development",
+			"post_id": 50
+		},
+		{
+			"value": "zeronet",
+			"post_id": 51
+		},
+		{
+			"value": "cjdns",
+			"post_id": 51
+		},
+		{
+			"value": "p2p",
+			"post_id": 51
+		},
+		{
+			"value": "decentralization",
+			"post_id": 51
+		},
+		{
+			"value": "zeronet",
+			"post_id": 52
+		},
+		{
+			"value": "development",
+			"post_id": 52
+		},
+		{
+			"value": "spam",
+			"post_id": 52
+		},
+		{
+			"value": "kaffiene",
+			"post_id": 53
+		},
+		{
+			"value": "development",
+			"post_id": 53
+		},
+		{
+			"value": "search",
+			"post_id": 53
+		}
+	]
+}

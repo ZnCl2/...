@@ -1,0 +1,190 @@
+{
+	"next_topic_id": 10,
+	"topic": [
+		{
+			"topic_id": 1516760270,
+			"title": "Can you access ZeroLSTN on Git Center?",
+			"body": "Can you access [ZeroLSTN on Git Center](http://127.0.0.1:43110/Repo.ZeroLSTN.bit)? I was having some trouble on my phone...\n\nDo let me know if you can't access it.",
+			"added": 1516760269
+		},
+		{
+			"topic_id": 1516961458,
+			"title": "Introducing ZeroLSTN Dev Notes!",
+			"body": "[ZeroLSTN Dev Notes](http://127.0.0.1:43110/Notes.ZeroLSTN.bit) is a new blog for various developer posts related to ZeroLSTN development, as well as general tips and guides for new ZeroNet site developers to start creating their own Zites.\n\nI plan to add more posts about general zite development, in order to make things more accessible to the masses. There will also be tips and tricks for the experienced zite developers, as well as detailed guides for developing with more complex features such as Merger zites.\n\nThe first post is a general overview of how ZeroLSTN works under the hood. I hope it will be useful to others to explain ZeroLSTN's architecture, and I plan to update it as the zite grows and changes fundamentally over time.\n\nI'm excited for any feedback. Let me know what you think!",
+			"added": 1516961456
+		},
+		{
+			"topic_id": 1517875634,
+			"title": "Release: v1.1.0",
+			"body": "## Here comes the Search!\n\n* Search has been added. Access it through \"Search\" at the top of the page, or in the sidebar on mobile.\n* Fixed the tab lengths on Homepage. Didn't notice that til now, whoopsie!\n* Clean up up code indentation. It was horrible, my IDE was lying to me.\n* Added Christian genre to recommended list.\n\n## Why a new minor version?\n\nThe reason I'm bumping the version to v1.1.0 is because I feel Search was the last missing feature to make the site *usable*. Sure there's still a lot of things to add and fix up, but I'm starting to get the feeling I could use ZeroLSTN as my main music player (and just let ZeroNet deal with the hosting ;)\n\n## Future\n\nI'm still buried in work and school, but hopefully I'll be getting more time soon. Implementing Search today took 1hr30m, if you want to get an insight into how much time I really don't have.\n\nThe next major features will be batch uploading (I'm holding back on uploading my own personal library until this is implemented) and wiki-style metadata editing. There will be edit history, and no diffing. While history diffing would be a major space advancement (and implementation headache) for sites like Kiwipedia, song metadata is comparatively light compared to entire Wikipedia pages, therefore I don't think the extra overhead of processing diffs will provide that much benefit over any minor space savings.\n\nAnyways, hope you guys enjoy [ZeroLSTN v1.1.0](http://127.0.0.1:43110/ZeroLSTN.bit/) and let me know of any comments/concerns!",
+			"added": 1517875631
+		},
+		{
+			"topic_id": 1518424138,
+			"title": "ZeroLSTN Planned Database Redesign",
+			"body": "This whole weekend I've been working on trying to figure out how to implement wiki-style song metadata updating, aka **Community Song Management**. Going forward, as more and more music is added to the site, it's going to become a necessary feature in ensuring the the overall library is kept clean and organized.\n\nThis weekend, after going through nearly 10 different iterations of implementations, I've come to the conclusion that we're going to need to recreate the merger database with some slight tweaks, specifically the way songs are stored.\n\nDue to how songs are stored currently, it's not feasible to be able to implement a wiki-style system on top. The current system assigns an ID to each song consisting of the current unix timestamp of when it was uploaded. Initially, I wanted to create a new \"update\" object which would reference a song's ID and provide new information, which the site would then show instead.\n\nUnfortunately, upon spending time implementing this and then trying to query it, the queries quickly got out of hand. For each query for song information, the site had to account for songs that did have updates, and those that didn't, requiring multiple queries for each. This resulted in inefficient table lookups. And, this was of course is all made worse by the fact that the way existing song data is stored cannot be changed *by design*, as it's all signed with each respective user's private key, on merger sites which are controlled by the community that no one entity holds the keys to.\n\nSeveral further implementations were tried around until I finally decided the simplest method would be to store the songs in an array in each user's data.json, give each one an ID, and if two song's IDs match, just show the one with the most recent `date_added` value.\n\nThe idea is that an update is just a new 'song', with the same ID attribute as the original. These can then be grouped together and queried very easily.\n\nAlthough, one attack against this is someone could simply change their `date_added` value as the maximum value allowed for that data type, therefore always being the latest edit. I'm not quite sure how to resolve that one just yet. Am open to thoughts there.\n\nAdditionally, if there are multiple copies of the same song with different IDs, then they'll both show up, and while we can edit one or the other, we can't delete one of them. Perhaps we could have an update which simply marks the song as deleted. Thoughts on how duplicate songs would be worked around are appreciated.\n\nSo that's the songs update, and while we're redesigning things, I've decided to change the way the merger sites are grouped too. Genres was a good initial idea, but in practice it's often difficult to assign a single genre to a song that may be a mix of many different ones, or a song that changes course halfway through.\n\nI originally planned on being able to assign multiple genres to a song, with the \"main\" genre being where the song file is actually stored, but if one is uploading a mix of different songs, thinking about which genre is the \"main\" genre is quite confusing...\n\nInstead, I propose merger sites by grouped by **Year** instead. Years are unambiguous, even for mixes, where their year would be the time at which the mix is produced. We could either have one merger site per year, or one per a range of years, say 5. One per year may be better as we break the data up as much as possible, which will be especially important as more and more songs are uploaded.\n\nAll of the above changes come with a small cost, however, and that is deprecating the old, current databases and starting the entire library from scratch. I'd like to thank everyone who has uploaded music thus far, and assure you that it has been very useful in getting the initial foundation of the site off the ground. For the new databases, I plan to have a native batch uploading tool so that people can simply 'dump' their libraries and get the new databases populated very quickly.\n\nOnce it is implemented, ZeroLSTN will switch over to v2.0.0. I'm very excited to see how it will all look once released, and for the future of the site in general. Thoughts and feedback in the comments on the new design are very welcome, and I look forward to hearing everyone's thoughts. Thanks for following along!\n\n**TL;DR:** ZeroLSTN's merger sites are being redesigned, meaning all music will need to be reuploaded. Should be quick with the ability to batch upload. Songs will no longer be grouped by Genre, but by Year which should be a lot less confusing. We'll also have Community Song Management, allowing anyone to edit any song. I have an initial design for how to do that, but it still has some problems and I'd appreciate any feedback or ideas you might have :)",
+			"added": 1518424134
+		},
+		{
+			"topic_id": 1518474880,
+			"title": "Release: v1.1.1",
+			"body": "# [ZeroLSTN](http://127.0.0.1:43110/ZeroLSTN.bit) v1.1.1 released!\n\nThis version fixes an XSS vuln discovered by @beardog108 where artist names including `<script>` tags could execute arbitrary JS. This was due to them being parsed as HTML, as I added `<i>` tags for the *Blank* artists.\n\nWe now no longer parse them as HTML, instead checking whether the artist name is blank externally and then using Vue directives to wrap artist names in `<i>` tags or not.\n\nThanks to @beardog108 for finding and responsibly reporting!",
+			"added": 1518474875
+		},
+		{
+			"topic_id": 1528064546,
+			"title": "Release: v2.0.0",
+			"body": "Ladies and gentlemen, I present to you the vastly new and improved ZeroLSTN v2!\n\nhttp://127.0.0.1:43110/zerolstn.bit\n\nChanges since the last release:\n\n* Ability to edit any song, and merge songs together!\n* Upload more than one song file at once! (see note below)\n* DARK THEME\n* Playlists\n* Support for Compilation Albums\n* Songs now organized by decade instead of by genre\n* Multiple genre support per song\n* Song deduplication\n* Helpful tooltips\n\nYes, the metadata of any song can now be edited by anyone. This is a Wikipedia-style approach, and allows anybody to help curate broken or misspelled titles, albums, artists etc. Songs can also be merged into one another, so if something got past the deduplication checker, such that there exists two copies of the same song, one can simply be merged back into the other.\n\nMulti-song upload NOTE: Multiple songs or an entire folder can now be selected in the filepicker. This works recursively, so simply selecting your entire 'Music' folder and hitting upload will upload all the song files contained within.\n\nHowever, as a sidenote, do be aware that music purchased from some services such as iTunes etc. can include personally identifiable information in it. For this it is recommended to wipe any music metadata other than what's strictly necessary (like Artist/Album/Title/Year/Genre etc), so that you can be sure your name is not attached to the files (if you care). Also be aware that not all filetypes (.wma for example) can be played natively in the browser.\n\nTo solve both these problems there is a python script in the site files at [scripts/cleantags](http://127.0.0.1:43110/1GitLiXB6t5r8vuU2zC6a8GYj9ME6HMQ4t/repo/?1Code5125iycoEFCMi9a4XVejFwauoyGqj/scripts/cleantags@master) that will convert all songs its given to MP3 and wipe any identifying metadata. The script is still a work in progress, so a backup to your music beforehand is strongly recommended.\n\nThat's it, enjoy ZeroLSTN v2!\n\nSource code available here: http:127.0.0.1:43110/1GitLiXB6t5r8vuU2zC6a8GYj9ME6HMQ4t/repo/?1Code5125iycoEFCMi9a4XVejFwauoyGqj\n\nReport any bugs [here](http://127.0.0.1:43110/1GitLiXB6t5r8vuU2zC6a8GYj9ME6HMQ4t/repo/issues/?1Code5125iycoEFCMi9a4XVejFwauoyGqj) <3",
+			"added": 1528064540
+		},
+		{
+			"topic_id": 1528309200,
+			"title": "Song Request: Al Green and Kungs vs Cookin' On 3 Burners",
+			"body": "Let's Stay Together by Al Green\nThis Girl by Kungs vs Cookin' On 3 Burners",
+			"added": 1528309193
+		},
+		{
+			"topic_id": 1528500839,
+			"title": "Release: v2.0.1",
+			"body": "Some minor fixes after the big [v2.0.0 release](http://127.0.0.1:43110/Talk.ZeroLSTN.bit/?Topic:1528064546_16HcyFK8526ZYJBKPpSDCbpJv6WWBNvENj/Release+v2+0+0). Mostly bug fixes, but a new feature:\n\n**Features:**\n\n* Song timeouts. if a song is taking too long to load (or has zero peers), we now just skip to the next song in the queue and pop up a toast informing the user what happened.\n\n**Bug Fixes:**\n\n* Numerous fixes with song filenames. We now replace any special or accented characters that didn't play to well with ZeroNet. If you uploaded a song and had '? seeds' on it, this was probably why. Upload a new version and merge the old song into the new one to get things working again.\n* Don't show song edits on the uploads page.\n* Fixed song/album download. Artist download still in the works.\n* Fixed a bug where adding songs to a playlist would add many copies on those songs (turns out it was just in the display code, the proper amount got added in the DB).\n* Fixed a bug where the \"+ Upload more songs button\" would actually replace all the songs you were about to upload instead of adding to them. Whoops :)\n\nAs always, thanks to everyone for suggesting new features and reporting bugs on the [Issues page](http://127.0.0.1:43110/1GitLiXB6t5r8vuU2zC6a8GYj9ME6HMQ4t/repo/issues/?1Code5125iycoEFCMi9a4XVejFwauoyGqj).",
+			"added": 1528500831
+		},
+		{
+			"topic_id": 1528573128,
+			"title": "Release: v2.0.2",
+			"body": "Aka the \"I had free time today\" release!\n\n**Features:**\n\n* 你好! Hola! Здравствуйте! Translations are here! If you're able to translate ZeroLSTN into any language other than English, than please do so using [the instructions](http://127.0.0.1:43110/1GitLiXB6t5r8vuU2zC6a8GYj9ME6HMQ4t/repo/file/?1Code5125iycoEFCMi9a4XVejFwauoyGqj/docs/translations.md@master).\n* Your volume setting now remains even after closing and reopening ZeroLSTN.\n* Artist/Album names in song cells are now links to their respective Artist/Album pages.\n* The song title and artist name are now shown in ZeroLSTN's tab when they're playing. \n\n**Changes:**\n\n* Only show a song's year if it actually has one\n* Move the logo.png file into the img/ directory\n* Make the search field auto-focus when you visit the Search page\n\n**Bug Fixes:**\n\n* Trim song tags before uploading. This was causing some duplicate artists and such even though they looked the same. Turns out one had spaces and the other did not.\n* Fixed a bug with the progress slider breaking if you changed the song time before playing your first song.\n* Fixed songs sometimes not looping correctly.\n* Fixed being able to view songs by Blank artists.\n\nAs always, thanks to everyone for suggesting new features and reporting bugs on the [Issues page](http://127.0.0.1:43110/1GitLiXB6t5r8vuU2zC6a8GYj9ME6HMQ4t/repo/issues/?1Code5125iycoEFCMi9a4XVejFwauoyGqj).",
+			"added": 1528573119
+		}
+	],
+	"topic_vote": {
+		"1528776970_1Md6YJNZX5yrdSaL9mmrKZNMAfULoXzMX2": 1,
+		"1529069215_1Md6YJNZX5yrdSaL9mmrKZNMAfULoXzMX2": 1,
+		"1529084834_1Md6YJNZX5yrdSaL9mmrKZNMAfULoXzMX2": 1,
+		"1529061463_1Md6YJNZX5yrdSaL9mmrKZNMAfULoXzMX2": 1
+	},
+	"next_comment_id": 21,
+	"comment": {
+		"1516760270_16HcyFK8526ZYJBKPpSDCbpJv6WWBNvENj": [
+			{
+				"comment_id": 1,
+				"body": "Seems to work now. Enjoy!",
+				"added": 1516761019
+			},
+			{
+				"comment_id": 2,
+				"body": "@Gitcenter Btw, I have [Repo.ZeroLSTN.bit](http://127.0.0.1:43110/Repo.ZeroLSTN.bit) set up but had to change the redirect on the repo's `index.html` manually so that it didn't redirect to `gitcenter.bit/repo/?repo.zerolstn.bit` which wouldn't be found in the Repo Index.\n\nI'd suggest changing the Default Repo JS to pull the site's address from ZeroFrame instead of the URL as it could be a .bit domain instead of a bitcoin public key.",
+				"added": 1516960985
+			}
+		],
+		"1516705443_1EmrB8xSDYobVFSc3Kad1vx1EPaPR2myCW": [
+			{
+				"comment_id": 3,
+				"body": "> [parkour86](#comment_1_1EXv9ZukJjnSeYBijEBwFZZNBdEzEvvs9M): Added a 'Christian' genre as it doesn't exist. Please take a look and see if it qualifies for the recommended list.http://zerolstn.bit/1MZ3JqUHinD9jG1M8cerUXXMi76exMxmt3127.0.0.1:43110/1MZ3JqUHinD9jG1M8cerUXXMi76exMxmt3\n\nSorry for the delay, things have been stalled while work gets cleared up. Maybe I should allow moderators to edit the list as well...\n\n* [x] Proper name. Start each word with a capital letter, i.e. \"Hip Hop\".\n* [x] Is seeded. If I can't download your genre, chances are most other users can't either.\n\nLooks good, Christian has been added to the list!",
+				"added": 1517875000
+			},
+			{
+				"comment_id": 4,
+				"body": "**Genres are being deprecated!**\n\nThank you to everyone who has create a genre thus far. Genres are being deprecated in v2 in favor of splitting songs up by year/decade instead. This reduces confusion and opinion, and should generally make things a lot simpler.\n\nLook forward to v2 coming within the next few weeks!",
+				"added": 1519807946
+			}
+		],
+		"1519396117_1GG6edLnckkDdZi6jkeA8HEqMWgAjjyTGu": [
+			{
+				"comment_id": 5,
+				"body": "This has been added in v2, which will be coming soonish. Thanks again for the suggestion!",
+				"added": 1519808116
+			}
+		],
+		"1528064546_16HcyFK8526ZYJBKPpSDCbpJv6WWBNvENj": [
+			{
+				"comment_id": 6,
+				"body": "> [xinyi](#comment_1_15kHQPHwsB18wZyPVftd49ZBdncgdTmA4f): Can't we have both year and genre?\n\nYear is now used to sort songs into merger sites, but songs have both year and genre associated with them, yes.",
+				"added": 1528100870
+			},
+			{
+				"comment_id": 7,
+				"body": "> [xinyi](#comment_2_15kHQPHwsB18wZyPVftd49ZBdncgdTmA4f): Waiting for sorting by genre!\n\nThis is planned. Going to probably have a simple search ability like year initially, then go ahead and do whole stylized page's for each decade and each genre.",
+				"added": 1528139611
+			},
+			{
+				"comment_id": 8,
+				"body": "> [piloth](#comment_3_1FKuNsExQML7APuNmkCV8uzB5pKupcmnck): I actually tried .jpeg, .jpg, and .png and it won't take any of them\n\nI think album art uploading might be slightly broken at the moment. It can infer it from the song just fine, but uploading after the fact didn't work for me yesterday. Will stick an issue up and investigate.",
+				"added": 1528139664
+			},
+			{
+				"comment_id": 9,
+				"body": "> [piloth](#comment_4_1FKuNsExQML7APuNmkCV8uzB5pKupcmnck): Thanks! Yeah I would have posted it in the issues section of your repo, but I can't for some reason reach it right now.\n\nYou can't reach the repo, or just the [issues](http://127.0.0.1:43110/1GitLiXB6t5r8vuU2zC6a8GYj9ME6HMQ4t/repo/issues/?1Code5125iycoEFCMi9a4XVejFwauoyGqj) page?",
+				"added": 1528150192
+			},
+			{
+				"comment_id": 10,
+				"body": "> [xinyi](#comment_3_15kHQPHwsB18wZyPVftd49ZBdncgdTmA4f): I can't see anything either on repo. The GitCenter page loads fine but doesn't show any issues or code. This link http://127.0.0.1:43110/1Code5125iycoEFCMi9a4XVejFwauoyGqj also doesn't work. content.json download failed but have many peers. Try publishing your repository again.\n\nPublished again. 5/5 peers.",
+				"added": 1528192611
+			},
+			{
+				"comment_id": 14,
+				"body": "@jetten \n\n> Do you think there's a risk that many of the songs will eventually run out of seeders, making them unplayable? And is there in this case a plan to add support for removing abandoned songs that have not been seeded for a long time?\n\nSupport is there, you can simply upload a new version of the song and \"merge\" the old version into the new one. At some point I plan to make this a little more user-friendly, where there will just be a \"Upload New Version\" button in the song details, and you'll be able to choose which one you prefer. For the moment however the merge method works.\n\nIf something is dead or broken, just upload a new version!",
+				"added": 1528573328
+			}
+		],
+		"1528309200_16HcyFK8526ZYJBKPpSDCbpJv6WWBNvENj": [
+			{
+				"comment_id": 11,
+				"body": "Aww yeah. Thanks.",
+				"added": 1528336686
+			}
+		],
+		"1518424138_16HcyFK8526ZYJBKPpSDCbpJv6WWBNvENj": [
+			{
+				"comment_id": 12,
+				"body": "> [htgozn](#comment_2_1J58Rie679DVSuKB1iDyFFTbzmaMaY2bt2): At least I will be able to do better tagging this round.\n\nYes, generic tags and the mass-tagging feature is in the works. Stay tuned!",
+				"added": 1528444896
+			}
+		],
+		"1528776970_1Md6YJNZX5yrdSaL9mmrKZNMAfULoXzMX2": [
+			{
+				"comment_id": 15,
+				"body": "> ZeroLSTN doesn't update the database automatically for some reason.\n\nThis would be a ZeroNet bug, ZeroLSTN isn't in charge of updating the database when new data comes it :)\n\nEdit: I'm seeing this too, but have only experienced these on your albums. Still pretty sure this is a ZeroNet bug. Can you make an issue on https://github.com/hellozeronet/zeronet/issues with a summary of the issue? The dev should give you some questions to test things.\n\nAlso seeing this post makes me think we should add some profile pages, hm?",
+				"added": 1528969839
+			}
+		],
+		"1528948559_1Md6YJNZX5yrdSaL9mmrKZNMAfULoXzMX2": [
+			{
+				"comment_id": 16,
+				"body": "> [mp4](#comment_4_1Md6YJNZX5yrdSaL9mmrKZNMAfULoXzMX2): Reported the issue to ZeroNet @ Git Center.\n\nYes, this bug seems to occur every time I press the \"Sign and Publish\" button on Git Center. Manually signing and publishing the site through zeronet cli seems to work fine, although I have to shutdown ZeroNet to do the publish (which didn't used to be the case), which means I only sign and publish manually on each release. If you could get these fixes in the main release that would be really helpful!",
+				"added": 1529017279
+			}
+		],
+		"1529061463_1Md6YJNZX5yrdSaL9mmrKZNMAfULoXzMX2": [
+			{
+				"comment_id": 17,
+				"body": "Sorry to hear you're still having trouble with the repos. I will apply this patch and sign/publish manually and see if that helps.\n\nThank you for the translation fixes!",
+				"added": 1529188118
+			},
+			{
+				"comment_id": 20,
+				"body": "Patch is applied and repo resigned. Hopefully you can view the issues section now.",
+				"added": 1529193230
+			}
+		],
+		"1529084834_1Md6YJNZX5yrdSaL9mmrKZNMAfULoXzMX2": [
+			{
+				"comment_id": 18,
+				"body": "The best solution I believe is to add disk support, which isn't very hard. I will do so in the next release, and order albums by disk/track number. I'll try to add some nice looking heading for each disk too :)",
+				"added": 1529188194
+			}
+		],
+		"1529069215_1Md6YJNZX5yrdSaL9mmrKZNMAfULoXzMX2": [
+			{
+				"comment_id": 19,
+				"body": "Interesting. I know you can order your json in that fashion and the database will import it if you have the correct setup in your dbschema.json, but from what I can see that isn't the case with the current dbschema.json.\n\nAs we can't change other user's data, it may be better to fix dbschema.json so it will import these entries correctly. Updating the schema number will then tell ZeroLSTN to rebuild the database, so it should try to reimport everything even if it was erroring before.\n\nThanks for the investigating, it's very helpful!",
+				"added": 1529189099
+			}
+		]
+	},
+	"comment_vote": {
+		"1_1EXv9ZukJjnSeYBijEBwFZZNBdEzEvvs9M": 1,
+		"4_15kHQPHwsB18wZyPVftd49ZBdncgdTmA4f": 1,
+		"1_1J58Rie679DVSuKB1iDyFFTbzmaMaY2bt2": 1
+	}
+}

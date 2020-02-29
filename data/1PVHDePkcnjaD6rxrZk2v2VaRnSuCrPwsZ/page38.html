@@ -1,0 +1,342 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="MnNStory: 我和一个女同学15年的故事">
+<meta name="keywords" content="MnNStory,校园爱情,15年,女同学,女生">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<title>梦想</title>
+<script src="jquery.js"></script>
+<script src="qrcode.js"></script>
+<script>
+function loadCSS(href) {
+	var cssLink = $("<link rel='stylesheet' type='text/css' href='"+href+"'>");
+	$("head").append(cssLink);
+	return cssLink;
+};
+
+var relocate;
+
+$(function(){
+            var device="computer";
+        var fontSize=($(window).width()/25).toFixed(0);
+        relocate=relocateC;
+    
+	loadCSS("main_"+device.substring(0, 1)+".css").load(function(){
+		relocate();
+		setTimeout(relocate, 1000);
+		setTimeout(function(){
+			var fontSize=$('body').css('fontSize');
+			var qrcode = new QRCode(document.getElementById("QRCode"), {
+				width : parseInt(fontSize)*7,
+				height : parseInt(fontSize)*7
+			});
+
+			qrcode.makeCode(window.location.href);
+		}, 1000);
+	});
+
+	$(window).resize(relocate);
+
+    
+	function relocateC(){
+		function bottom($el){
+			return $el.position().top + $el.outerHeight(true);
+		}
+
+		var $footer=$('#footer');
+		$footer.css({
+			top: 0,
+			display: 'none'
+		});
+		var top=Math.max(
+			bottom($('#textWrapper')),
+			bottom($('#contents')),
+			$(document).height() - $footer.outerHeight()
+		);
+		$footer.css({
+			top: top,
+			display: 'block'
+		});
+	}
+
+        $('.patch-more').click(function(){
+        var page=$(this).data('page');
+        var paragraph=$(this).data('paragraph');
+
+        location.href='page'+page+'.html#paragraph='+paragraph;
+    });
+
+    setTimeout(function () {
+                    var ret=document.referrer.match(/#paragraph=(\d+)/);
+                if (!ret) {
+            return;
+        }
+        var paragraph=ret[1]-1;
+
+        var objParagraph=$('#text p:eq('+paragraph+')');
+        var flash=function () {
+            objParagraph.css('color', 'red');
+            setTimeout(function() {
+                objParagraph.css('color', 'initial');
+            }, 1000);
+        };
+        $('html, body').animate({
+            scrollTop: objParagraph.offset().top-$('#textWrapper').offset().top,
+        }, 500, flash);
+    }, 100);
+
+    var pIndex=0;
+    $('#text p').each(function () {
+        ++pIndex;
+        if (!$(this).attr('id')) {
+            //$(this).attr('id', 'paragraph_'+pIndex);
+        }
+    });
+});
+$(function(){
+	$(window).off('resize', relocate);
+
+	var music='E9A696E9A1B5/E4B88BE5868C/../E4B88BE5868CE9858DE4B990/A20Comme20Amour.opus';	var $music=null;
+	if (music){
+		$music=$('<audio src="'+music+'"></audio>');
+		$music.get(0).play();
+	}
+
+	var $d=$("<div style='position: fixed; top: 0; left: 0; bottom: 0; right: 0; z-index: 128; background: #F1F1F1;'></div>");
+	$("body").append($d);
+	var $loading=$('<img src="loading.gif" />');
+	$loading.css({
+		position: 'relative',
+		top: $d.height()/2-200,
+		left: $d.width()/2-488
+	});
+	$d.append($loading);
+	var $lastPic=$d;
+	var pics=['E9A696E9A1B5/E4B88BE5868C/her20home.png','E9A696E9A1B5/E4B88BE5868C/her20neighbourhood.png'];
+	var $pics=[];
+
+	function relocatePic(){
+		var $pic=$('.slideVisiblePic');
+		var naturalHeight=$pic[0].naturalHeight;
+		var naturalWidth=$pic[0].naturalWidth;
+		if ($(window).width()/$(window).height() > naturalWidth/naturalHeight){
+			$pic.css({
+				position: 'relative',
+				height: '100%',
+				top: 0,
+				left: $(window).width()/2-naturalWidth/naturalHeight*$(window).height()/2
+			});
+		}else{
+			$pic.css({
+				position: 'relative',
+				width: '100%',
+				top: $(window).height()/2-naturalHeight/naturalWidth*$(window).width()/2,
+				left: 0
+			});
+		}
+	}
+
+	function showPic(index){
+		if (index<pics.length){
+			var $dpic=$("<div style='position:fixed; top:0; left:0; bottom:0; right:0; z-index: "+(129+index)+"; display:none; background: #F1F1F1;'></div>");
+			$("body").append($dpic);
+			$('.slideVisiblePic').removeClass('slideVisiblePic');
+			var $pic=$pics[index];
+			$dpic.append($pic);
+			$pic.addClass('slideVisiblePic');
+			relocatePic();
+
+			$dpic.fadeIn(5000, function (){
+				$lastPic.remove();
+				$lastPic=$dpic;
+				var timerD;
+				function d(){
+					clearTimeout(timerD);
+					showPic(index+1);
+				}
+				$pic.click(d);
+				timerD=setTimeout(d, 5000);
+			});
+		} else {
+			if ($music){
+				$music.animate({volume: 0}, 5000);
+			}
+			$lastPic.fadeOut(1500, function(){
+				$lastPic.remove();
+			});
+			$(window).off('resize', relocatePic);
+			$(window).resize(relocate);
+		}
+	}
+	function loadPic(index){
+		if (index<pics.length){
+			$pics[index]=$("<img src='"+pics[index]+"' />");
+			$pics[index].load(function(){
+				loadPic(index+1);
+			});
+		}
+		else{
+			$d.css('background', 'yellow');
+			$loading.remove();
+			$(window).resize(relocatePic);
+			showPic(0);
+		}
+	}
+	loadPic(0);
+});
+
+function showComments(){
+	$.blockUI({
+		message: $('#disqus_thread'),
+	});
+
+	$('body').click($.unblockUI);
+}
+</script>
+</head>
+<body>
+<div id="cover" style="background-color: #F1F1F1; position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 2048;"></div>
+<div id="nav">
+	<div class="Three">
+		<div id="navLeft" class="left c">
+			<a href="page37.html" class="blackText">&lt;&lt;&lt;prev</a>		</div>
+		<div id="navRight" class="right c">
+			<a href="page39.html" class="blackText">next&gt;&gt;&gt;</a>		</div>
+		<div id="navTitle" class="middle">
+			梦想		</div>
+	</div>
+	<div class="Three m">
+		<div class="left" style="width: 4em">
+			<a href="page37.html" class="blackText">&lt;&lt;&lt;</a>		</div>
+		<div class="right" style="width: 4em">
+			<a href="page39.html" class="blackText">&gt;&gt;&gt;</a>		</div>
+		<div class="middle">
+			<a href="/index.html" class="blackText">[Home]</a>
+		</div>
+	</div>
+</div>
+<div id="images" class="c">
+	<a href="downloads/mnnstory.zip" target="_blank"> <img src="download.png" style="width: 100%;" title="下载" alt="Download" /> </a>
+	<p id="QRCode"></p>
+</div>
+<div id="contents" class="c">
+	<p class="contents_d0"><a href="index.html">目录</a></p>
+	<ul class="contents_d1"><li><a href='page1.html'>上册</a>
+</li><li><a href='page14.html'>上册配乐</a>
+</li><li><a href='page32.html'>下册</a>
+<ul class="contents_d2"><li><a href='page33.html'>心愿</a>
+</li><li><a href='page34.html'>概率</a>
+</li><li><a href='page35.html'>重逢</a>
+</li><li><a href='page36.html'>街景</a>
+</li><li><a href='page37.html'>追求</a>
+</li><li>梦想
+</li><li><a href='page39.html'>糖果</a>
+</li><li><a href='page40.html'>夕阳无限好</a>
+</li><li><a href='page41.html'>电影</a>
+</li><li><a href='page42.html'>怪谁</a>
+</li><li><a href='page43.html'>寄语</a>
+</li><li><a href='page44.html'>移民</a>
+</li><li><a href='page45.html'>永远</a>
+</li><li><a href='page46.html'>附录：幸福的惊人科学发现</a>
+</ul></li><li><a href='page47.html'>下册配乐</a>
+</li><li><a href='page49.html'>订正簿</a>
+</ul></div>
+<div id="disqus_thread"></div>
+<script>
+	var disqus_config = function () {
+		this.page.url = 'http://mnnstory.onion';
+		this.page.identifier = 38;
+		this.page.title = '梦想'
+	};
+
+
+	(function() {
+		var d = document, s = d.createElement('script');
+
+		s.src = '//mnnstory.disqus.com/embed.js';
+
+		s.setAttribute('data-timestamp', +new Date());
+		(d.head || d.body).appendChild(s);
+	})();
+</script>
+<div id="textWrapper">
+	<div id="text">
+		<p>梦境中，我们初中共同的数学老师竟在我的班级里，报出了她的成绩，而她居然考了年级第一。</p>
+<p>这段情节，却并不是梦。</p>
+<p>她曾说今天“怕会哭”，然而，差点落泪的却是我——当我听到她的故事之时，因为她的志气和坚强，更由于她命运的坎坷。</p>
+<p>我始终盯着她的眼睛看，她似也不以为意。之前从没有这样做过，今天却因此发现她左眼眼睑里有点不寻常。是不是她眼睛得了什么病？我就问：“你眼睛怎么了？”</p>
+<p>她用轻而短的声音答道：“那是一颗胎痣，没办法。”</p>
+<p>眼睛有颗痣又怎么了？又不影响健康或视力。那么淡，又小，藏在里面，不仔细看根本不察觉，完全不损害美观。你却为何介意？</p>
+<p>聊了一会儿，她就开始讲她的故事了：</p>
+<p>“你知道吗？某某高中本不属于我。我中考分数***，进某某高中，是因为更好的高中我根本没填。”</p>
+<p>我感到奇怪，问：“这么多年过去了，你中考分数还记到个位数？”</p>
+<p>“怎么会记不得呢？我的分数在初中的年级里不是第一，就是第二。我们高中的班级里与我类似的不少，比如某某同学，他也考了***。”</p>
+<p>我却记不清自己的中考成绩，一点印象都没。那位同学的分数，更是从没注意过。她高三的时候，当我已把所有同学的名字都记得熟透时，她有一次还悄悄问我一位同学叫什么，然后再去找他谈话。</p>
+<p>“其实那份志愿不是我，也不是父母填的，因为他们是典型的劳动阶层，没有文化。帮我填的是我小阿姨。恰巧表哥中考失利，只进了区里第三好的高中。天下父母都以为自己孩子最优秀。她想：‘某某笨得要死，怎么可能比我儿子考得还好？给你报了区里第二好的高中，已经算很对得起你了！’没承想，我却这么出色，分数远高于区里第一好的高中的录取线！”</p>
+<p>她2010年曾向我提起过她表哥。印象中，他家庭条件很好，妻子在某五百强企业工作。</p>
+<p>“还有，你知道吗？某某初中也很有可能不属于我。你听说过吗？当年，有三所初中，分别是某某、某某和某某，联合搞了一次招生考试。如果我提前准备，并报名参加，很有可能就不会随大流，进入对口的某某初中了。”</p>
+<p>我答道：“从没听说过那场考试。”</p>
+<p>“不管我哪里上学，不变的是我的进取心。但我相信，凭我的干劲，若能进更好的学校，一定会发展得更好。正如我之前所言，我父母文化很低，他们没意识培养孩子。我每天做作业，他们都把电视机开得很响。而电视机就在我背后，他们从没想过会不会干扰我。”</p>
+<p>我不禁问道：“为什么你年仅15岁，就会有这样的雄心壮志？”</p>
+<p>“因为我确实对知识充满好奇，当时还没直接的功利目的。我能在这样的环境下专心学习，仅仅是出于天然的兴趣。”</p>
+<p>我说：“嗯。不过我相信绝大多数人和你一样，都是因为爱做一件事，才会投入。”</p>
+<p>她略微提高了嗓音，用短促的语气说：“这我也是懂的。”</p>
+<p>我继续道：“我很认同你的观点。读书的确带来乐趣。你还记得吗？我们高中的数学老师说过：‘数学其实也没什么用。但它是思维的体操，思考数学难题是种享受。’”</p>
+<p>她说：“不会吧，他的话大多很土，什么时候这么文艺了？”</p>
+<p>我说：“是他讲的。他虽不是句句经典，有水平的话也不少。”</p>
+<p>我不是怀疑她的真爱是什么，但兴趣真是样奇怪的东西。高中的物理老师曾对着所有同学夸她是班里智商最高的，之后，数学老师也在上课时引用物理老师的话赞扬她。而语文，她高三，因失误，差点开红灯。大学的她却痴爱文科。工作后又转行。也许，只有高智商和好奇心才能解释，为何她所爱的永远是她最难征服的。</p>
+<p>“我童年的家，给我压抑的感觉，妈妈脾气不好，很难相处，地方又小，避开都难。她是宁波人，你知道的……”</p>
+<p>说着，她看了看我表情。宁波人为什么就脾气不好难相处？我却不理解。什么样的坏脾气会让她避之不及，只感到家是压抑的？难道她还有其他难言之隐？我点了点头，她继续道：</p>
+<p>“父母不但不关心我学习，而且也不太关心我生活。我一直睡沙发，直到有一天，我浑身酸痛难忍，她们才终于想到要为女儿买个小床。那床只有**乘以**大。”</p>
+<p>说着，她比划给我看。为什么她有些数字能记得那么牢，那么准？</p>
+<p>我想起了她高中时的瘦小形象，以及马尾辫中夹杂着的零星灰黄。</p>
+<p>“我提这些，并不是要抱怨谁。而是想说：‘我要用自己的力量，为下一代创造更好的条件，不要让他们跟我一样，输在起跑线上。’许多人问我某某人：‘你为什么能大学里先修工科，再转法律，工作后又搞审计，这么忙，动力都是哪来的？’答案就是我的梦想！</p>
+<p>“然而现实是残酷的，在我读大学时，妈妈查出了癌症，家里的钱很快就用得差不多了……”</p>
+<p>我已忍不住了，低下头假装揉了揉眼睛。突然回忆起一件事，问道：“那时候，你大学几年级？”</p>
+<p>她答道：“大一。”</p>
+<p>我想起了她当时的种种：</p>
+<p>她把马尾辫改成两个牛角辫，那时，我听说过一种讲法，女孩子如果突然改梳牛角辫，是内心渴望得到别人的关怀。</p>
+<p>我想到她要死要活地让我去“教”她数学，以及我对她的态度。我真想回到那个时候，在那次“辅导”她的夜晚，给她一个拥抱，虽然我时至今日，都未必敢真这么做。或者，我应该说两句好话。我又想起她告诉我发低烧的事。</p>
+<p>回忆着，我失声说道：“怪不得，你当时那么奇怪。”</p>
+<p>她马上问道：“我这人很怪吗？”</p>
+<p>我赶忙纠正：“不是。我是说，你有些事做得有点奇怪。我才是个怪人呢。”</p>
+<p>她“嗯”了声，同时认可了这两个命题，表情很诚恳。</p>
+<p>“后来，我直升研究生，可以学法律专业，本来如愿以偿应当开心才对。但因家里经济拮据，父母希望我尽快工作，扭转困境。为了能让他们同意我继续读下去，我坚持了很久。</p>
+<p>“再后来，我毕业进了某某公司，最终有了财力时，马上想到要搬出去住——那种压抑，我实在受不了了。当我租到房子，已28岁了（2014年）。”</p>
+<p>我问道：“你是指和父母搬出去，一起住进了新房子？”</p>
+<p>“对。比我先前的房子大，就在原住处附近。不过，很快业主就决定收回房子，不再出租。我们现在又回去住了。</p>
+<p>“现在快要结婚了，我却又发现，我的父母啊，怎样才能接着照顾好他们呢？”</p>
+<p>我曾问起过她对我移民的看法，她回答：“我也很想移民，但妈妈身体不好。”我当时只道她是敷衍，没料到背后却有这些故事。</p>
+<p>我问道：“那你爸爸呢？他身体怎样？”</p>
+<p>她答道：“比妈妈好点。但他有严重的心脏病。一般这种病要动手术，但因他心脏先天有缺陷，不能开刀，只得吃药。”她于是把其中的医理说得很详细，我却未能全部理解。</p>
+<p>我嘀咕道：“这事我不该说，但是……”</p>
+<p>我只觉得把这话说出来，有干涉别人家事的嫌疑，难道我是在暗示：“你丈夫对你不够，我会做得更好吗？”但我犹豫了一下还是小心翼翼地讲了出来：“这事兴许我不该提，但是，你能不能婚后和父母继续住一起，也好照顾他们？”</p>
+<p>她答道：“嗯。我会经常回来看看他们。”</p>
+<p>我说：“对，多陪陪他们。老人需要的就是这个。”</p>
+<p>她的确错了，老西门一点都不拥挤。虽是周末，整条街却几乎只有我们两个，坐在早春风光中。</p>
+<p>她说：“谢谢你，给我这次机会。我很少有这样的下午，能对着街景，清闲地喝咖啡聊往事。”说到这里，声音就像喝醉了似的。</p>
+<p>事后想起此情此景，我当时可能没真正体会到她的心情。我的回应看似礼貌，却有点自私：“也谢谢你能出来。”她说：“没事。”我说：“总有点不好吧？”她默然。</p>
+<p>这段经历中，她也有些事并不了解。</p>
+<p>某某初中，本也不属于我。我因会弹琴，才以“特长生”身份被录取，否则我若进对口初中，后来和她的故事，可能一个都没有。</p>
+<p>她住了近30年的地方，其实我第一次去的时候，就感觉特别和谐，比我童年的房子好得多。这绝对是闹市区少有的氛围：绿树成荫，街道相对整齐，像公园一样。交通方便，但因不允许汽车驶入，居民很少受噪音困扰。我曾以为，她的气质是从小生长的环境造就的。</p>
+<p>她又问道：“你告诉我，阶层是不是用金钱衡量的？”说着，眼光散开，望着店里空的地方。</p>
+<p>我曾问她对高中同学学会抽烟的看法，她的回答是：“人是分阶层的。他们本应这样发展。”我当时只觉她事故、势利而寡情，却没想到，“阶层”对她而言，是无尽的泪水，又仿佛是紧箍咒。</p>
+<p>这个词很难把握，我真不知应如何回答好。我顺着她的目光，回过头也看了看店里，想了半天。然后缓缓地给出了我的答案……</p>	</div>
+</div>
+<div id="footer">
+	<div id="declaration">
+		本故事为作者亲身经历
+	</div>
+	<div id="bannerLine" class="Three">
+				<div class="middle">
+            			    <a href="about.html">MnNStory, 1 Sep 2001 - 12 Mar 2016</a>
+            		</div>
+	</div>
+	<hr class="m" />
+	<div id="switch2c" class="m">
+		<a href="">电脑版</a>
+	</div>
+</div>
+</body>
+</html>

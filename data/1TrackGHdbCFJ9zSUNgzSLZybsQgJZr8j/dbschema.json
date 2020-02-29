@@ -1,0 +1,146 @@
+{
+    "db_name": "dbzite",
+    "db_file": "dbzite.db",
+    "version": 2,
+    "tables": {
+
+        "json": {
+            "cols": [
+                [
+                    "json_id",
+                    "INTEGER PRIMARY KEY AUTOINCREMENT"
+                ],
+                [
+                    "site",
+                    "TEXT"
+                ],
+                [
+                    "directory",
+                    "TEXT"
+                ],
+                [
+                    "file_name",
+                    "TEXT"
+                ],
+                [
+                    "cert_auth_type",
+                    "TEXT"
+                ],
+                [
+                    "cert_user_id",
+                    "TEXT"
+                ],
+                [
+                    "hub",
+                    "TEXT"
+                ],
+                [
+                    "user_name",
+                    "TEXT"
+                ],
+                [
+                    "intro",
+                    "TEXT"
+                ],
+                [
+                    "avatar",
+                    "TEXT"
+                ]
+            ],
+            "indexes": [
+                "CREATE UNIQUE INDEX path ON json(directory, site, file_name)"
+            ],
+            "schema_changed": 1
+        },
+
+        "messages": {
+            "cols": [
+                [
+                    "id",
+                    "INTEGER"
+                ],
+                [
+                    "uri",
+                    "TEXT"
+                ],
+                [
+                    "body",
+                    "TEXT"
+                ],
+                [
+                    "meta",
+                    "TEXT"
+                ],
+                [
+                    "date_added",
+                    "INTEGER"
+                ],
+                [
+                    "json_id",
+                    "INTEGER REFERENCES json (json_id)"
+                ]
+            ],
+            "indexes": [
+                "CREATE UNIQUE INDEX message_key ON messages(json_id, id)",
+                "CREATE INDEX id ON messages(id)",
+                "CREATE INDEX added ON messages(date_added)"
+            ],
+            "schema_changed": 1
+        },
+
+        "files_optional": {
+            "cols": [
+                [
+                    "id",
+                    "INTEGER"
+                ],
+                [
+                    "section",
+                    "TEXT"
+                ],         
+                [
+                    "group_path",
+                    "TEXT"
+                ], 
+                [
+                    "group_name",
+                    "TEXT"
+                ],                                      
+                [
+                    "file_path",
+                    "TEXT"
+                ], 
+                [
+                    "file_name",
+                    "TEXT"
+                ],                
+                [
+                    "file_extension",
+                    "TEXT"
+                ],
+                [
+                    "json_id",
+                    "INTEGER REFERENCES json (json_id)"
+                ]
+            ], 
+            "indexes": [
+                "CREATE UNIQUE INDEX files_optional_key ON files_optional(json_id, id)",
+                "CREATE INDEX id ON files_optional(id)"
+            ],
+            "schema_changed": 1
+        }
+    },
+    "maps": {
+
+        "assets/art.json|assets/music.json|assets/video.json": { 
+            "to_table": [
+                {
+                    "node": "files_optional",
+                    "table": "files_optional"
+                }
+            ]
+        }
+         
+    },
+    "feeds": {}
+}

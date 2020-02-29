@@ -1,0 +1,110 @@
+{
+  "db_name": "ZNCentral",
+  "db_file": "merged-CDN/ZNCentral.db",
+  "version": 2,
+  "maps": {
+    ".+/data/users/.+/data.json": {
+      "to_table": [
+        {"node":"categories","table":"categories"},
+        {"node":"comments","table":"comments"},
+        {"node":"favorites","table":"favorites"},
+        {"node":"files","table":"files"},
+        {"node":"posts","table":"posts"},
+        {"node":"users", "table":"users"},
+        {"node":"votes", "table":"votes"}
+      ]
+    },
+    "users/.+/content.json": {
+      "to_keyvalue": [ "cert_user_id" ]
+    }
+  },
+  "tables": {
+    "categories":{
+      "cols":[
+        ["category_id", "TEXT"],
+        ["category_title", "TEXT"],
+        ["category_body", "TEXT"],
+        ["json_id", "INTEGER REFERENCES json (json_id)"]       
+      ],
+      "indexes": ["CREATE UNIQUE INDEX category_key ON categories(category_id, json_id)"],
+      "schema_changed": 1426195825
+    },
+    "comments":{
+      "cols":[
+        ["comment_id", "TEXT"],
+        ["comment_body", "TEXT"],
+        ["comment_item_type", "TEXT"],
+        ["comment_item_id", "TEXT"],
+        ["comment_user_id", "TEXT"],
+        ["comment_date_added", "DATETIME"],
+        ["json_id", "INTEGER REFERENCES json (json_id)"]       
+      ],
+      "indexes": ["CREATE UNIQUE INDEX comment_key ON comments(comment_id, json_id)"],
+      "schema_changed": 1426195825
+    },
+    "favorites":{
+      "cols":[
+        ["favorite_id", "TEXT"],
+        ["favorite_item_type", "TEXT"],
+        ["favorite_item_id", "TEXT"],
+        ["favorite_user_id", "TEXT"],
+        ["favorite_date_added", "DATETIME"],
+        ["json_id", "INTEGER REFERENCES json (json_id)"]
+      ],
+      "indexes": ["CREATE UNIQUE INDEX favorite_key ON favorites(favorite_date_added, json_id)"],      
+      "schema_changed": 1426195825
+    },
+    "files":{
+      "cols":[
+        ["file_id", "TEXT"],
+        ["file_name", "TEXT"],
+        ["file_type", "TEXT"],
+        ["file_cluster", "TEXT"],
+        ["item_type", "TEXT"],
+        ["item_id", "TEXT"],
+        ["file_date_added", "DATETIME"],
+        ["file_user_id","TEXT"],
+        ["json_id", "INTEGER REFERENCES json (json_id)"]
+      ],
+      "indexes": ["CREATE UNIQUE INDEX file_key ON files(file_date_added, json_id)"],      
+      "schema_changed": 1426195825
+    },
+    "posts":{
+      "cols":[
+        ["post_id", "TEXT"],
+        ["post_title", "TEXT"],
+        ["post_url", "TEXT"],
+        ["post_description", "TEXT"],
+        ["post_category", "TEXT"],
+        ["post_date_added", "DATETIME"],
+        ["post_user_id","TEXT"],
+        ["json_id", "INTEGER REFERENCES json (json_id)"]
+      ],
+      "indexes": ["CREATE UNIQUE INDEX post_key ON posts(post_date_added, json_id)"],      
+      "schema_changed": 1426195825
+    },
+    "users":{
+      "cols":[
+        ["user_id", "TEXT"],
+        ["user_name", "TEXT"],
+        ["user_date_added", "DATETIME"],
+        ["json_id", "INTEGER REFERENCES json (json_id)"]
+      ],
+      "indexes": ["CREATE UNIQUE INDEX user_key ON users(user_date_added, json_id)"],      
+      "schema_changed": 1426195825
+    },
+    "votes":{
+      "cols":[
+        ["vote_id", "TEXT"],
+        ["vote_type", "TEXT"],
+        ["vote_item_type", "TEXT"],
+        ["vote_item_id", "TEXT"],
+        ["vote_user_id", "TEXT"],
+        ["vote_date_added", "DATETIME"],
+        ["json_id", "INTEGER REFERENCES json (json_id)"]
+      ],
+      "indexes": ["CREATE UNIQUE INDEX vote_key ON votes(vote_date_added, json_id)"],      
+      "schema_changed": 1426195825
+    }
+  }
+}

@@ -1,0 +1,53 @@
+<p>ZeroNet is a new project that aims to deliver a decentralized web. It uses a combination of bittorrent, a custom file server and a web based user interface to do this and manages to provide a pretty useable experience.
+<p>Users run a ZeroNet node and do their web browsing via the local proxy it provides. Website addresses are public keys, generated using the same algorithm as used for bitcoin addresses. A request for a website key results in the node looking in the bittorrent network for peers that are seeding the site. Peers are selected and ZeroNet connects to the peer directly to a custom file server that it implements. This is used to download the files required for the site. Bittorrent is only used for selecting peers, not for the site contents.</p>
+<p>Once a site is retrieved the node then starts acting as a peer serving the sites content to users. The more users browsing your site, the more peers become available to provide the data. If the original site goes down the remaining peers can still serve the content.</p>
+<p>Site updates are done by the owner making changes and then signing these changes with the private key for the site address. It then starts getting distributed to the peers that are seeding it.</p>
+<p>Browsing is done through a standard web browser. The interface uses Websockets to communicate with the local node and receive real time information about site updates. The interface uses a sandboxed iframe to display websites.</p>
+<h2>Running</h2>
+ZeroNet is open source and hosted on github. Everything is done through the one zeronet.py command. To run a node:
+<pre><code>$ python zeronet.py
+...output...</code></pre>
+<p>This will start the node and the file server. A check is made to see if the file server is available for connections externally. If this fails it displays a warning but the system still works. You won't seed sites or get real time notification of site updates however. The fix for this is to open port 15441 in your firewall. ZeroNet can use UPNP to do this automatically but it requires a MiniUPNP binary for this to work. See the --upnpc command line switch for details.</p>
+<p>The node can be accessed from a web browser locally using port 43110. Providing a site address as the path will access a particular ZeroNet site. For example, 1EU1tbG9oC1A8jz2ouVwGZyQ5asrNsE4Vr is the main 'hello' site that is first displayed. To access it you'd use the URL http://127.0.0.1:43110/1EU1tbG9oC1A8jz2ouVwGZyQ5asrNsE4Vr.</p>
+<h2>Creating a site</h2>
+<p>To create a site you first need to shut down your running node (using ctrl+c will do it) then run the siteCreate command:</p>
+<pre><code>$ python zeronet.py siteCreate
+...
+- Site private key: ...private key...
+- Site address: ...site address...
+...
+- Site created!</code></pre>
+<p>You should record the private key and address as you will need them when updating the site. The command results in a data/address directory being created, where 'address' is the site address that siteCreate produced. Inside that is a couple of default files. One of these, content.json, contains JSON data listing the files contained within the site and signing information. This gets updated automatically when you sign your site after doing updates. If you edit the title key in this file you can give your site a title that appears in the user interface instead of the address.</p>
+<p>Another flie that gets modified during this site creation process is the sites.json file in the data directory. It contains the list of all the sites and some metadata about them.</p>
+<p>If you visit http://127.0.0.1:43110/siteaddress in your browser, where siteaddress is the address created with siteCreate, then you'll see the default website that is created. If your node is peering successfully and you access this address from another node it will download the site, display it, and start seeding it. This is how the site data spreads through the network.</p>
+<h2>Updating a site</h2>
+<p>To change a site you must first store your files in the data/siteaddress directory. Any HTML, CSS, JavaScript, etc can be put here. It's like a standard website root directory. Just don't delete the config.json file that's there. Once you've added, modified or removed files you run the siteSign command:</p>
+<pre><code>$ python zeronet.py siteSign siteaddress
+- Signing site: siteaddress...
+Private key (input hidden):</code></pre>
+<p>Now you enter the private key that was displayed (and hopefully you saved) when you ran siteCreate. The site gets signed and information stored in config.json. To publish these changes to peers seeding the site:</p>
+<pre><code>$ python zeronet.py sitePublish siteaddress
+...publishes to peers...</code></pre>
+<p>If your node is running it will serve the files from the running instance. If it is not then the sitePublish command will continue running to serve the files.</p>
+<h2>Deleting a site</h2>
+<p>You can pause seeding a site from the user interface but you can't delete it. To do that you must shutdown the node and delete the sites data/siteaddress directory manually. You will also need to remove its entry from data/sites.json. When you restart the node it will no longer appear.</p>
+<h2>Site tips</h2>
+<p>Because the website is displayed in a sandboxed iframe there are some restrictions in what it can do. The most obvious is that only relative URLs work in anchor elements. If you click on an absolute URL it does nothing. The sandboxed iframe has the allow-top-navigation option which means you can link to external pages or other ZeroNet sites if you use the target attribute of the anchor element and set it to _top. So this will work:</p>
+<pre>&lt;a href="http://bluishcoder.co.nz/" target="_top"&gt;click me&lt;/a&gt;</pre>
+<p>But this will not:</p>
+<pre><code>&lt;a href="http://bluishcoder.co.nz/"&gt;click me&lt;/a&gt;</code></pre>
+<p>Dynamic websites are supported, but requires help using centralized services. The ZeroNet node includes an example of a dynamic website called 'ZeroBoard'. This site allows users to enter a message in a form and it's published to a list of messages which all peering nodes will see. It does this by posting the message to an external web application that the author runs on the standard internet. This web app updates a file inside the sites ZeroNet directory and then signs it. The result is published to all peers and they automatically get the update through the Websocket interface.</p>
+<p>Although this works it's unfortunate the it relies on a centralized web application. The ZeroNet author has posted that they are looking at decentralized ways of doing this, maybe using bitmessage or some other system. Something involving peer to peer WebRTC would be interesting.</p>
+<h2>Conclusion</h2>
+<p>ZeroNet seems to be most similar to tor, i2p or freenet. Compared to these it lacks the anonymity and encryption aspects. But it decentralizes the site content which tor and i2p don't. Freenet provides decentralization too but does not allow JavaScript in sites. ZeroNet does allow JavaScript but this has the usual security and tracking concerns.</p>
+<p>Site addresses are in the same format as bitcoin addresses. It should be possible to import the private key into bitcoin and then bitcoins sent to the public address of a site would be accessed by the site owner. I haven't tested this but I don't see why it couldn't be made to work. Maybe this could be leveraged somehow to enable a web payment method.</p>
+<p>ZeroNet's lack of encyption or obfuscation of the site contents could be a problem. A peer holds the entire site in a local directory. If this contains malicious or illegal content it can be accidentally run or viewed. Or it could be picked up in automated scans and the user held responsible. Even if the site originally had harmless content the site author could push an update out that contains problematic material. That's a bit scary.</p>
+<p>It's early days for the project and hopefully some of these issues can be addressed. As it is though it works well, is very useable, and is an interesting experiement on decentralizing websites. Some links for more information:</p>
+<ul>
+  <li><a href="https://github.com/HelloZeroNet/ZeroNet">ZeroNet on github</a></li>
+  <li><a href="http://www.reddit.com/r/Bitcoin/comments/2s72uy/zeronet_decentralized_websites_using_bitcoin/">Original reddit announcement</a></li>
+  <li><a href="http://www.reddit.com/r/zeronet">ZeroNet subreddit</a></li>
+  <li><a href="http://127.0.0.1:43110/18qigy8XcrxLpK7QaS52FfjwN2gjqHE231">ZeroNet site containing list of other sites</a></li>
+  <li><a href="http://127.0.0.1:43110/13TSUryi4GhHVQYKoRvRNgok9q8KsMLncq">This site, Bluishcoder, hosted on ZeroNet</a></li>
+  <li><a href="http://127.0.0.1:43110/1Jr5bnqSnnp94CfC7xrqPh4yYYDRkpzozD">My Pitcairn Island photos, hosted on ZeroNet</a></li>
+</ul>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+   <title>New ZeroNet site!</title>
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+   <base href="" target="_top" id="base">
+   <script>
+     base.href = document.location.href
+                 .replace("/media", "")
+                 .replace("index.html", "")
+                 .replace(/[&?]wrapper=False/, "")
+                 .replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")
+  </script>
+  <link href="assets/lib/video-js/video-js.css" rel="stylesheet"/>
+  <link href="assets/lib/semantic-ui/semantic.min.css" rel="stylesheet"/>
+  <link href="assets/lib/easyeditor/easyeditor.css" rel="stylesheet"/>
+  <link href="assets/css/style.css" rel="stylesheet"/>
+</head>
+
+<body>
+
+  <div id="app"></div>
+
+  <!-- zeronet -->
+  <script type="text/javascript" src="assets/lib/zeronet/class.js"></script>
+  <script type="text/javascript" src="assets/lib/zeronet/zeroframe.js"></script>
+  <script type="text/javascript" src="assets/lib/zeronet/zerochat.js"></script>
+  <script type="text/javascript">
+
+  </script>
+  <!-- bitcoinjs -->
+  <script type="text/javascript" src="assets/lib/bitcoinjs/bitcoinjs.min.js"></script>
+
+  <!-- react -->
+  <script type="text/javascript" src="assets/lib/react/react.js"></script>
+  <script type="text/javascript" src="assets/lib/react-dom/react-dom.js"></script>
+
+  <!-- redux -->
+  <script type="text/javascript" src="assets/lib/redux/redux.min.js"></script>
+  <script type="text/javascript" src="assets/lib/redux/react-redux.min.js"></script>
+
+  <!-- timeago -->
+  <script type="text/javascript" src="assets/lib/timeago/timeago.min.js"></script>
+
+  <!-- jquery -->
+  <script type="text/javascript" src="assets/lib/jquery/jquery.min.js"></script>
+
+  <!-- video js -->
+  <script type="text/javascript" src="assets/lib/video-js/video.js"></script>
+
+  <!-- semantic js -->
+  <script type="text/javascript" src="assets/lib/semantic-ui/semantic.min.js"></script>
+
+  <!-- easyeditor -->
+  <script type="text/javascript" src="assets/lib/easyeditor/jquery.easyeditor.js"></script>
+
+  <!-- ckeditor -->
+  <script src="assets/lib/ckeditor/ckeditor.js"></script>
+  <script>
+      class MyUploadAdapter {
+      constructor( loader , path, editor ) {
+        console.log('constructor')
+        this.loader = loader;
+        this.path = path;
+        this.editor = editor;
+      }
+    
+      // Starts the upload process.
+      upload() {
+        console.log('upload')
+        return this.loader.file
+          .then( file => new Promise( ( resolve, reject ) => {
+              this._initRequest( file , resolve , reject );
+          } ) );
+      }
+    
+      // Aborts the upload process.
+      abort() {
+        console.log('abort')
+        if ( this.xhr ) {
+            this.xhr.abort();
+        }
+      }
+    
+      // Initializes the XMLHttpRequest object using the URL passed to the constructor.
+      _initRequest(file, resolve , reject) {
+        console.log('initRequest')
+        window.Page.cmd("bigfileUploadInit", [this.path + file.name , file.size ], function(init_res){
+          const xhr = this.xhr = new XMLHttpRequest();
+          xhr.withCredentials = true;
+          xhr.open( 'POST', init_res.url , true );
+          this._initListeners( resolve, reject, file );
+          this._sendRequest( file );      
+        }.bind(this));
+      }
+    
+      // Initializes XMLHttpRequest listeners.
+      _initListeners( resolve, reject, file ) {
+        console.log('init listeners');
+        const xhr = this.xhr;
+        const loader = this.loader;
+        const genericErrorText = `Couldn't upload file: ${ file.name }.`;
+        xhr.addEventListener( 'error', () => reject( genericErrorText ) );
+        xhr.addEventListener( 'abort', () => reject() );
+        xhr.addEventListener( 'load', () => {
+            const response = xhr.response;
+            if ( !response || response.error ) {
+                return reject( response && response.error ? response.error.message : genericErrorText );
+            }
+            resolve( {
+                default: response.url
+            } );
+        } );
+        if ( xhr.upload ) {
+            xhr.upload.addEventListener( 'progress', evt => {
+                if ( evt.lengthComputable ) {
+                    loader.uploadTotal = evt.total;
+                    loader.uploaded = evt.loaded;
+                }
+
+                if (evt.total === evt.loaded){
+                  const data = this.editor.getData();
+                  const preImageSlice = data.split('<figure class="image">')[0];
+                  let postImageSlice = data.split('</figure>')[1];
+    
+                  const newData = preImageSlice + '<figure class="image-ok"><img src="'+this.path + file.name +'"></figure>' + postImageSlice;
+                  this.editor.setData(newData);
+                }
+            } );
+        }
+      }
+    
+      // Prepares the data and sends the request.
+      _sendRequest( file ) {
+        console.log('send request');
+        // Prepare the form data.
+        const data = new FormData();
+        data.append( file.name , file );
+        // Send the request.
+        this.xhr.send( data );
+      }
+    
+    }
+   
+  </script>
+	<!-- app -->
+  <script type="text/javascript" src="js/all.js?v=1.2"></script>
+
+</body>
+</html>

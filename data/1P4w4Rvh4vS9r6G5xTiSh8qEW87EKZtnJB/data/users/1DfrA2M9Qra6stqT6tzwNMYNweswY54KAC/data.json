@@ -1,0 +1,199 @@
+{
+    "issues": [
+        {
+            "title": "Any option given to ZeroNet at it's first start will cause an Error",
+            "body": "As the title says, all options passed in to the very first start of an zeronet instance will result in an error and fail to execute. Trying the option for a second time gives the expected result. Only tested on debian 9, but I'm fairly certain it also happens on windows.\nTo reproduce:\n- Download the Zeronet bundle for linux\n- Unpack and open the dir in a terminal\n- Do `ZeroNet.sh --version`",
+            "date_added": 1542997983300,
+            "open": 1,
+            "reopened": 0,
+            "tags": "Error,linux,first_run,options",
+            "id": 0
+        },
+        {
+            "title": "Make it possible to interact with the api without use of js",
+            "body": "Implement some way for zites to interact with the api. Being forced to have js enabled a big security issue, because zite owners are treated as gods, they can deploy any js they want to without any warning to the user.\nHaving it an iframe sandbox only does so much, there have been cases of iframe escapes, as well as scripts being loaded from the outside web. Add to this, that there are js exploits like there are stars in the sky, being required to use js in order to use/access dynamic content is not good. Imagine what could happen, if an state level entity like China decides to go after Zeronet users. Since Zeronet is made to be home to censored people(those targeted by possible attacks) this is concerning.\nI made a post about this on the [ZeroNet Blog](../Blog.ZeroNetwork.bit/?Post:137:Changelog:+September+21,+2018#comment_1_1DfrA2M9Qra6stqT6tzwNMYNweswY54KAC) outlining an idea on how this could be archived. ",
+            "date_added": 1543001350000,
+            "open": 1,
+            "reopened": 0,
+            "tags": "Zeronet,security,html,js,javascript,feature",
+            "id": 1
+        },
+        {
+            "title": "ZeroHello donation link still refers to readthedocs.io",
+            "body": "The donation button in ZeroHello still refers to `https://zeronet.readthedocs.io/en/latest/help_zeronet/donate/`\nSince the documentation was moved, this should be changed to `https://zeronet.io/docs/help_zeronet/donate/`\nAlso the donate page still has the `ZeroNet: 2018 first half` donation goal, which makes it look abandoned. ",
+            "date_added": 1543610875600,
+            "open": 1,
+            "reopened": 0,
+            "tags": "ZeroHello,outdated,documentation,readthedocs",
+            "id": 2
+        },
+        {
+            "title": "I2P support.",
+            "body": "I have recently seen on the I2P [blog](https://geti2p.net/en/blog/)(clearnet), that l-n-s developed [an python library for the I2P Simple Anonymous Messaging(SAM) API](https://github.com/l-n-s/i2plib)(clearnet), [blog post](https://geti2p.net/en/blog/post/2018/10/23/application-development-basics)(clearnet). This should solve the issue, that there was [no up-to-date python library for I2P](https://github.com/HelloZeroNet/ZeroNet/issues/45)(clearnet).\n\nThe library does require at least Python 3.5 and supports pythons `asyncio`. Both of these are a good sign since you (I think) are gearing up for the rewrite to Python 3.something, that was planned for some time now. I'm not sure whether or not the plan to also make ZeroNet more parallel, while rewriting the code for Python 3, is still there, but it would be beneficial in both cases to be adding I2P support in that rewrite.\n\nIt would also be nice to know what your stands are on i2p and where it is on your priority list, since it is a feature, that has been heavily requested for a long time(and still is). At the moment it feels like it is ignored, whenever brought up and I don't think that is the case, so clarity would be nice.\nRelevant github issues/PRs:\n- https://github.com/HelloZeroNet/ZeroNet/pull/602\n- https://github.com/HelloZeroNet/ZeroNet/issues/45",
+            "date_added": 1543672924900,
+            "open": 1,
+            "reopened": 0,
+            "tags": "i2p,python3,enhancement",
+            "id": 3
+        },
+        {
+            "title": "Regex implementation broken.",
+            "body": "ZeroNet version: Version 0.6.4 (rev3750)\nOperating system: linux, fedora 29\nWeb browser: Tor Browser\nTor status: always\nOpened port: no\nSpecial configuration: udp off, tracker tor, encryption forced\n\nSteps to reproduce:\n1. Create a merger zite and one hub.\n2. In the dbschema.json try to map the title(or any other property) of the hub-content.json to any table.\n3. Let zeronet reload and rebuild the database\n\nObserved Results:\nThe root content.json of the hub(all hubs) is ignored regardless of regex in `\"maps\"`, even `\".+/content.json\"` did not work.\n\nExpected Results:\nThe root content.json of the hub(all hubs) is not ignored.\n\nReason:\n\nThe regex implementation the one in `ZeroBundle/lib/Python2.7/re.py` is broken.\nIn Db.py `re.match(\"^([^/]*)/(.*)$\", \"1SomeHub/content.json\")` in [line 306](/1GitLiXB6t5r8vuU2zC6a8GYj9ME6HMQ4t/repo/file/?1P4w4Rvh4vS9r6G5xTiSh8qEW87EKZtnJB/src/Db/Db.py@master#L306) will return `none` causing the mapping of `1SomeHub/content.json` to fail for every hub.\nIt seems to be only `ZeroBundle/lib/Python2.7/re.py` which is at fault here, since\n```\nimport re\nre.match(\"^([^/]*)/(.*)$\", \"1SomeHub/content.json\")\n\n```\nin a python2.7.11, 2.7.15 and 3.7.2 console give the expected result. Weird enough, when using the python binaries in `ZeroBundle/Python/` the correct results are also produced.  \n\nAs reference see [my post](/Me.ZeroNetwork.bit/?Post/1oranGeS2xsKZ4jVsu9SVttzgkYXu4k9v/1DfrA2M9Qra6stqT6tzwNMYNweswY54KAC/1547494313) on ZeroMe.",
+            "date_added": 1548004642900,
+            "open": 1,
+            "reopened": 0,
+            "tags": "dbschema.json,regex,bug,zerobundle,library,python",
+            "id": 4
+        },
+        {
+            "title": "Allow blocklists to block files.",
+            "body": "Is your feature request related to a problem?\n\nPeople shy away from some zites because they suspect/fear illegal content.\nWhile it is possible for blocklists to block user(-id)s and entire zites, it is not possible to block specific files on zites which can be an issue depending on the architecture of the zite in question.\nAn example for that would be millchan(the non merger version) and avatar images on ZeroMe(because they will be marked as required and thus be downloaded onto everyone computer in the case of CP this can be devastating).\n\nDescribe the solution you'd like\n\nIntroduce the ability to block files from specific websites as an ZeroFrame api command.\nOne way of doing that would be to have `ziteAddress`, `date_added`, `inner_path`, `name`and `reason` in a `filters/files.json`.\nIf the user then tries to download a muted file, a notification will appear, which informs him of the reason why that file is blocked, asks if he wants to get it anyways and an option to not show that notification again.\nSince the user should always be able to tell which files are blocked on his end, blocking files based only on its hash should **not** be the implemented.\n\nDescribe alternatives you've considered\n\nBlocking users and/or zites in the case of millchan (and the theoretical case of ZeroMe). Both don't work satisfactory or at all.",
+            "date_added": 1549913666200,
+            "open": 1,
+            "reopened": 0,
+            "tags": "feature request,ContentFilter,plugin,blocklists,media,file,download",
+            "id": 5
+        },
+        {
+            "title": "Make only one merger database per merged type.",
+            "body": "Making a new database for each merger is introducing a lot of redundant/duplicate data to everyones zeronet /data/ folder, if more than one merger zite is in use. Needless to say, this scales really poorly.\n   \nIn the case of ZeroMe each client and each search engine, that can search it, has to build a copy of the entire database, which in the case of ZeroMe is already ~75 MB for each merger zite of ZeroMe(and also takes a while to build).\n  \nA preferable way of managing merger databases would be, to have only one database for each merged type and then create a virtual directory `merged-MergerType` for each zite and for each `Merger:MergerType` permission. This (for the most part) retains backwards compatibility and will result in way less build times and wasted storage space.",
+            "date_added": 1550260076200,
+            "open": false,
+            "reopened": 0,
+            "tags": "improvement,proposal,merger,merged,scaling,performance,ZeroNet,dublication,storage space",
+            "id": 6
+        },
+        {
+            "title": "Certificates are not checked, before they are added.",
+            "body": "Step 1: Please describe your environment\n\n    ZeroNet version: 0.6.5 (rev3853)\n    Operating system: Fedora 29\n    Web browser: Tor Browser\n    Tor status: always\n    Opened port: no\n    Special configuration: -\n\nStep 2: Describe the problem: \nSteps to reproduce:\n1. Make a new zite.\n2. Call `this.cmd(\"certAdd\",  [\"anon.mysite\", \"web\", \"1QKzd48LZUA8p4s\", \"Totally-a-valid-signature=lol\"])`\n\nObserved Results:\nZeroNet will just accept this obviously wrong certificate.\nThis is the entry in users.json:\n```\n      \"anon.mysite\": {\n        \"auth_address\": \"14BcMpfJzrhieAHcyj3YvkqYkpKGvNwsP8\", \n        \"auth_privatekey\": \"5[redacted]\", \n        \"auth_type\": \"web\", \n        \"auth_user_name\": \"1QKzd48LZUA8p4s\", \n        \"cert_sign\": \"Totally-a-valid-signature=lol\"\n      }\n```\n\nExpected Results:\nZeroNet should not accept certificates with wrong/invalid signatures.",
+            "date_added": 1551983021500,
+            "open": 1,
+            "reopened": 0,
+            "tags": "bug,certificate,signature,ZeroFrame",
+            "id": 7
+        },
+        {
+            "title": "Allow zites to overwrite, overrule or set an custom auth_address.",
+            "body": "**Is your feature request related to a problem?**\nTo the best of my knowledge, for a zite developer it is currently impossible to change the auth_address at all.\nBecause of this, added certificates will in the eyes of ZeroNet **always** be intended to be for the current auth_address(which, per zite, cannot change), and also accepted regardless of the signature contents (see [this](/1GitLiXB6t5r8vuU2zC6a8GYj9ME6HMQ4t/repo/issues/view/?1P4w4Rvh4vS9r6G5xTiSh8qEW87EKZtnJB/7@1DfrA2M9Qra6stqT6tzwNMYNweswY54KAC) issue).\nThis makes not only anonymous posting impossible but also the ability to have multiple accounts on one zite, since `fileWrite` will only write files, if the current auth_address is in the valid signers list. With no way to change auth_address this is only true for one directory path(which ends in that auth_address).\nPossible applications for multiple accounts could be a moderation system(possibly even autonomous ones, through election algorithms), where you would have differently privileged user types, as example:\n- Owner\n- Moderator\n- Volunteer\n- User\nAs things currently are, a moderator, for example, must always post with his moderator account.\n\n**Describe the solution you'd like A clear and concise description of what you want to happen.**\nAn api command to either:\n- overwrite: Replace the generated auth_address with custom one, but always default to generated one, if the zite developer for example tried to add an invalid privatekey (only either of them is readable at every point in time)\n- overrule: Add the custom auth_address as an new field(both are readable at any point in time).\n- set: Replace the generated auth_address permanently with the custom one.\n\nAn alternative way to implement this would be to allow have an commend like `setAuthIndex` where that will change the auth_address to the subkey of the specified index, similar to the way `userPublickey` from `CryptMessage` plugin does it. But this would be way less flexible than the solutions mentioned above.\n\nIn addition to that, in `certAdd` the ability to specify what privatekey the new certificate, actually belongs to and only to assume the current auth_address as default. Something like:\n`@cmd \"certAdd\", [\"zeroid.bit\", auth_type, auth_privkey, user_name, cert_sign], (res) =>{/**Stuff*/}`\nWhere auth_privkey is, if not specified, the private key of the current auth_address.\n\n**Describe alternatives you've considered A clear and concise description of any alternative solutions or features you've considered.**\nUsing current api commands, trying different zite structures and digging through ZeroNet source code to find a way to alter/change the auth_address. None of these I had success with.\n\n**Additional context Add any other context or screenshots about the feature request here.**\n(-) proposal ",
+            "date_added": 1552155690600,
+            "open": 1,
+            "reopened": 0,
+            "tags": "improvement,certificates,ZeroFrame,feature request,proposal,api,zite development",
+            "id": 8
+        },
+        {
+            "title": "Use v3 hidden services for tor.",
+            "body": "Tor 0.3.5.x has been out for quite a while now and since onion services in version 3 are superior in basically every aspect, in comparison with the 'normal' .onion addresses, ZeroNet should probably use the v3 hidden services by default(or at least support them) in Tor enabled/tor always-mode.",
+            "date_added": 1558288437500,
+            "open": 1,
+            "reopened": 0,
+            "tags": "tor,onionV3,security,improvement",
+            "id": 9
+        },
+        {
+            "title": "'file_done' event may be fired before new data is not yet added to the database.",
+            "body": "**Step 1: Please describe your environment  **\nZeroNet version: 0.7.0 (rev4188)  \nOperating system: Fedora 30  \nWeb browser: Tor Browser  \nTor status: always  \nOpened port: no  \nSpecial configuration: -  \n  \n**Step 2: Describe the problem:**  \nThe only way to check for a zite whether or not new content is available to render is to listen to the `file_done` event/channel, however that event will be fired before the sqlite database as added the new data if a large `data.json`(~10MB) update happened. Essentially the database lags behind in adding all of the entries, such that an sql query that would be done in response to updated data(the `file_done` event) happens (and is carried out) before all of the data is in the database, resulting in some data that is not displayed until a new `file_done` event updates the page.    \n**Steps to reproduce:**  \n1. Make a test zite, where data is displayed by an sqlite query.\n2. The zite listens on `file_done` in the `siteChanged` channel for updates to the zite and updates the display with the results of a sql query.\n3. Update the zite with a large data file (10MB ~150 medium sized entries).  \n**Observed Results:**  \nDepending on hardware speed, of 150 entries that should've been displayed only 120 are displayed. After the zite is updated with another (even unrelated) data the number of displayed entries is 150.  \n**Expected Results:**  \n150 displayed entries after the file update  \n**Proposed solutions**, in order of most logical to least logical(in my opinion):  \nAdd a `databaseChanged` channel to listen to, add a `database_done` to `siteChanged` or only fire `file_done` if the database is done adding the new data.",
+            "date_added": 1566237552500,
+            "open": 1,
+            "reopened": 0,
+            "tags": "bug,database,api",
+            "id": 10
+        },
+        {
+            "title": "Nested content.jsons are not in sidebar.",
+            "body": "**Step 1: Please describe your environment ZeroNet version: 0.7.1 (rev4253)**\n\nOperating system: Fedora 30\nWeb browser: Tor Browser\nTor status: always\nOpened port: no\nSpecial configuration: -\n\n**Step 2: Describe the problem:**\n\nNested `content.json`s are not listed in the sidebar. under the `CHOOSE` section.\n**Steps to reproduce: **\n\nA new blank zite, the root `content.json` includes `data/content.json` with `includes_allowed` set to `true`.  \n`data/content.json` includes `L_admin/content.json`. The sidebar will not show `L_admin/content.json` or any other nested `content.json` that is not explicitly in the `includes` entry of the root `content.json`.  \nThe problematic line is in [SidebarPlugin.py line 504](https://github.com/HelloZeroNet/ZeroNet/blob/py3/plugins/Sidebar/SidebarPlugin.py#L504)(clearnet):  \n```\ncontents += list(site.content_manager.contents.get(\"content.json\", {}).get(\"includes\", {}).keys())\n```\nIt does not consider nested includes.",
+            "date_added": 1573926762000,
+            "open": 1,
+            "reopened": 0,
+            "tags": "bug,sidebar,content.json",
+            "id": 11
+        },
+        {
+            "title": "Consider nested includes when checking for valid signers of a file.",
+            "body": "**Is your feature request related to a problem?**  \n\nThe valid signers check does not consider nested includes when looking for signer addresses for a file.\n\n**Describe the solution you'd like**  \n\nIf a file is included by a content.json file and an address is in the signers field of its parent content.json file (or its parent or the parent of the parent and so on), that address should be considered a valid signer of the file, without having to mention it explicitly in the signers field(similar to how the zite address is always a valid signer).  \n__Reasoning:__  \nIf a address is in the signers field on any node(=content.json) in the 'includes tree'(so to speak), it can always just 1) add itself to the next child node, 2) sign it, goto 1 and repeat until a leaf node is reached. This will achieve the same effect.  \nHowever, if things stay as they are now, any second address that is in a signers field along the tree below the first address, can remove the first address from any part of the tree that is below the second address. This is not possible when ZeroNet traces the 'includes tree' upwards and adds the addresses it finds in the signers field to the valid signers automatically, since the second address would have to remove the entry at a node higher up in the ' includes tree', which it can't do, because it is not a valid signer of that upper node.\n\n**Describe alternatives you've considered**  \n\nDifferent data structures. It is (to the best of my knowledge) impossible to have moderation with different permission levels, without the lower level permission level moderators being able to sabotage the higher level ones (excluding the owner, of course). See Additional context for more detail.\n\n**Additional context**  \n\nI was working on a moderation system for hubs, which does not rely on trusting that every privileged user(admin, mod or volunteer) is never malicious, while in power.  \n  \nThese are the proposed moderation levels:\n- Owner: Can change anything(including html/js + root content.json + editing user data), appoints admins, mods, volunteers\n- Admin: Can change anything(including data json + editing user data + hub config), appoints mods, volunteers\n- Mod: Can change user content(editing user data), appoints volunteers\n- Volunteer: Can change nothing, only clientside overwrite and prioritized reporting to mods/admin/owners\n- User: Can change nothing, has ability to report things to volunteers/mods/admins/owners\n\n\nThis is the data layout I used(`-` annotates files `+` folders):  \n```\n-content.json [1]\n+data/\n  -content.json [2]\n  +owner/\n    -content.json [3]\n  +admins/\n    -content.json [4]\n  +L_admin/\n    -content.json [5]\n    +config/\n      -HubConfig.json\n    +mods/\n      -content.json [6]\n    +L_mod/\n      -content.json [7]\n      +users/\n        -content.json [8]\n```\n\n\nWhere:\n- [1]{root content.json} includes [2]\n- [2] includes [3]{includes allowed}, [4]{includes not allowed} and [5]{includes allowed}\n- [3] includes nothing\n- [4] includes nothing and is a user_content content.json, where everyone can't post by default(using permission_rules `\".*\": {files_allowed: \"\", max_size:0}`) and new admins are added by the owner using the permissions field.\n- [5] includes [6]{includes not allowed} and [7]{includes allowed}\n- [6] same as [4] only that mods will be added here, by either the owner or an admin.\n- [7] includes [8]\n- [8] includes nothing and is a user_content content.json, where everyone can post by default but is not allowed to write to a file that the database will recognize as 'moderation action'. The owner, an admin or a mod can grant a user the ability to perform mod actions, by adding them to the permissions field.\n\n\nThe idea was to:\n- Add every admin address to the signers field in the include in [2] for [5] and to the permissions field in [4]\n- Add every mod address to the signers field in the include in [5] for [7] and to the permissions field in [6]\n- Add every volunteer address to the permissions field in [8]\n\n\nThis has a few nice properties embedded into its structure:\n- posts of the owner cannot be altered by anybody.\n- posts of admins (in `data/admins/[address]/`) cannot be altered by mods\n- posts of mods can be altered by admins, but not by volunteers\n- posts by users and volunteers can be altered by admins and mods, but not by either volunteers or users.\n- The owner can alter everything.\n- Owners can't appoint owners(because there only ever is one), admins can't appoint admins, mods can't appoint mods and volunteers can't appoint volunteers.\n- Only users with a higher permission level are able to remove the extra permission of a privileged user. (Owner > admins > mods > volunteers)\n- Very little complexity in JS: Owner, admins, mods, volunteers and users can use the same code for mod actions and posts, the only thing that changes is the path and a few extra checks.\n\nIf permissions were inherited by includes, an admin would be able to sign everything that the content.json, that has the admin in the signers field, signs. For example an admin would be able to sign the data.json file of any user, the content.json file of the mods([7]) and so on, basically everything within the `L_admin` folder.  \n\nBecause this is not the case, each admin needs to be mentioned in every signers field of every content.json separately to be able to sign it, which an admin would be able to do on his own anyways(see reasoning above).  \nThe problem with that is that a malicious mod could just remove an admins address from the signers field of [7], sign and publish [7] and with that, invalidate all user files that that admin edited in the past. They will remain invalid until the admin comes back and adds themselves back into [7]. During that time the data of the edited user(and in fact every user that had their content edited by that admin) is, at best, unavailable to newcomers and at worst deleted from existing peers.",
+            "date_added": 1574272098100,
+            "open": 1,
+            "reopened": 0,
+            "tags": "content.json,nested includes,maybe bug,feature request,merger,zite moderation",
+            "id": 12
+        }
+    ],
+    "next_issue_id": 13,
+    "issue_comments": [
+        {
+            "issue_id": 1,
+            "issue_json": "data/users/1DfrA2M9Qra6stqT6tzwNMYNweswY54KAC",
+            "body": "When I was thinking about how I would do a html only zite, I didn't really flash out the idea of how to display the content, since I realized I cannot communicate with the api at all, if I can't use js. But my idea here was to use `<meta http-equiv=\"refresh\" content=\"10; url=127.0.0.1/1SomeZite\">` for catching the zite updates and a `<frameset> `-`<frame src=\"127.0.0.1/1SomeZite/users/content\">` construct for displaying user content. \nIssues with that are obviously, that I can't really ensure that `127.0.0.1/1SomeZite/users/content` is escaped and that I need to somehow get the content either merged in one file or have a way to create `<frame>`-elements to all `127.0.0.1/1SomeZite/users/1SomeUser/content`.  Since I havn't put much thought into that, yet, I'm not sure how well these tasks can be solved in html only, if at all, but if things come to worst, then they can be fixed by expanding the Zeronet api with commands, that can do exactly that. In that case: Maybe a separate api, intended only for html only zites, would be an elegant solution to most of these issues?",
+            "date_added": 1543091909700,
+            "id": 0
+        },
+        {
+            "issue_id": 1,
+            "issue_json": "data/users/1DfrA2M9Qra6stqT6tzwNMYNweswY54KAC",
+            "body": "I did some more thinking, using `frameset` and `frame` doesn't make much sense, it would be more beneficial to use the `object`-tag, since we get escaped chars for free. It would look something like: ´ <object data=\"data/content.txt\" type=\"text/plain\">Alternative text</object>`.\nStill two issues remain here, due to the current state of the sandbox(both normal and /raw/ 'sandbox') do not allow for `data/content.txt` to be accessed by the object element, this must be adjusted in Zeronet. The other issue is, that to the best of my knowledge it is not possible to loop through an directory in pure html, which means that gathering other posts needs to be performed by the api. All and all an php-ish api endpoint would probably the best for that.\n\nAlso thinking about it, it would make more sense to create the api at `127.0.0.1:43110/1SomeZite/api`, since that way we can still use wrapper keys.\n\n\nIn general these things need to be done in order to have 'working' html-only zites:\n1. Some way of submitting arbitrary data(url or plain text).\n2. Some way of querying/displaying data\n\nHere is how this could be implemented:\n1. Pretty much as described above have an php-ish endpoint at `127.0.0.1:43110/1SomeZite/api` the html `<form>` elements can be used to select the certificate and then sign and publish some posted text.\n2. To achieve that, we have an `index.html` and then somewhere a `SomeName.html-Template`, which is a normal html file, except somewhere in there there will be a `<ZeroNetHTMLTemplate>` tag. If one wants to query and display data, he just needs to call a command in the api using the `<form>`-tags, that we call 'useTemplateOnData'. It takes the arguments:\n- 'templateFilePath': The path to the `SomeName.html-template`\n- 'htmlOutPath': The path where output html file will be generated.\n- 'query': An sql or regEx-ish query that tells the api what to collect and where to collect it from.\nThat command will now take the file at templateFilePath, find the first occurrence of an `<ZeroNetHTMLTemplate>`-tag, select the data according to `query` and replace the tag with an div structure(or maybe a table) containing that collected data. The resulting html document is then saved at the specified `htmlOutPath` and the zite will redirect to it(using the <form> element).\nIdeas to extend this approach (the template html files): having a similar json file as the database system or refining the parsing process(adding <ZeroNetToken> which gets replaced by the identity address or allowing attributes, that define classes/styles for the div structure and so on)",
+            "date_added": 1543178819300,
+            "id": 1
+        },
+        {
+            "issue_id": 4,
+            "issue_json": "data/users/1DfrA2M9Qra6stqT6tzwNMYNweswY54KAC",
+            "body": "Could you also reproduce the mapping issue or does it work fine for you?",
+            "date_added": 1548089797400,
+            "id": 2
+        },
+        {
+            "issue_id": 4,
+            "issue_json": "data/users/1DfrA2M9Qra6stqT6tzwNMYNweswY54KAC",
+            "body": "Strange...\nIf I change my dbschema.json to:\n```\n{\n\t\"db_name\": \"merger\",\n\t\"db_file\": \"merged-Something/merger.db\",\n\t\"version\": 3,\n\t\"maps\": {\n\t\t\".*content.json\": {\n\t\t\t\"to_json_table\": [\"title\"]\n\t\t}\n\t},\n\t\"tables\": {\n\t\t\"json\": {\n\t\t\t\"cols\": [\n\t\t\t\t[\"json_id\", \"INTEGER PRIMARY KEY AUTOINCREMENT\"],\n\t\t\t\t[\"site\", \"TEXT\"],\n\t\t\t\t[\"directory\", \"TEXT\"],\n\t\t\t\t[\"file_name\", \"TEXT\"],\n\t\t\t\t[\"title\", \"TEXT\"]\n\t\t\t],\n\t\t\t\"indexes\": [\"CREATE UNIQUE INDEX path ON json(directory, site, file_name)\"],\n\t\t\t\"schema_changed\": 1\n\t\t}\n\t}\n}\n```\nI still get:\n```\n[--:--:--] Site:1SomeS..itee Error importing merged-Something/SomeHub/content.json: AttributeError: 'NoneType' object has no attribute 'groups' in SiteStorage.py line 151 > ContentFilterPlugin.py line 167 > SiteStorage.py line 90 > Db.py line 307 > DbCursor.py line 162\n```\nWhat else should I try, that could help you?",
+            "date_added": 1548445754100,
+            "id": 3
+        },
+        {
+            "issue_id": 5,
+            "issue_json": "data/users/1DfrA2M9Qra6stqT6tzwNMYNweswY54KAC",
+            "body": "So would (for example) `ZeroFrame.cmd(\"fileGet\", [\"data/users/SomeBadFile.jpg\", false])` return `{\"error\": \"File on blocklist\"}` or would there be an additional way to tell the zite dev that the file is blocked?",
+            "date_added": 1549995778000,
+            "id": 4
+        },
+        {
+            "issue_id": 8,
+            "issue_json": "data/users/1DfrA2M9Qra6stqT6tzwNMYNweswY54KAC",
+            "body": ">make it possible to recover it from the master seed\n\nIf one can remember the index, at least.\n\nAnyway, both are good options in my book, although something to have in mind is that `setAuthIndex` will lock you into, at most, 2,147,483,647(signed integer max value) unique addresses, compared to basically infinite unique addresses you get with the other option. But 2.1 Billion addresses are more then enough anyways.\n\nAlso there is a security consideration to be made here, as the option to recover the addresses from the master seed will cause all generated addresses to be compromised should the master seed ever be stolen. Maybe an api command to create a temporary throwaway address would solve that, in case that becomes necessary for a zite developer?\n\nDo you have a rough estimate when you are able to implement this?",
+            "date_added": 1552243896500,
+            "id": 5
+        },
+        {
+            "issue_id": 6,
+            "issue_json": "data/users/1DfrA2M9Qra6stqT6tzwNMYNweswY54KAC",
+            "body": "I thought I already answered this issue.  \nYou're right, I didn't think about that. Nevertheless some kind of deduplication/redundancy reduction mechanism would be nice for scalability reasons.  \nAnyways, consider this issue closed.",
+            "date_added": 1553193856000,
+            "id": 6
+        },
+        {
+            "issue_id": 11,
+            "issue_json": "data/users/1DfrA2M9Qra6stqT6tzwNMYNweswY54KAC",
+            "body": "I wish there was a way to edit issues here on GitCenter...",
+            "date_added": 1573926863300,
+            "id": 7
+        },
+        {
+            "issue_id": 12,
+            "issue_json": "data/users/1DfrA2M9Qra6stqT6tzwNMYNweswY54KAC",
+            "body": "Changed `[...](...)` to `[...]{...}` to avoid markdown recognizing them as links.",
+            "date_added": 1574272364000,
+            "id": 8
+        }
+    ],
+    "next_issue_comment_id": 9,
+    "issue_actions": [
+        {
+            "issue_id": 6,
+            "issue_json": "data/users/1DfrA2M9Qra6stqT6tzwNMYNweswY54KAC",
+            "action": "changeStatus",
+            "param": "close",
+            "date_added": 1553193856100,
+            "id": 0
+        }
+    ],
+    "next_issue_action_id": 1
+}

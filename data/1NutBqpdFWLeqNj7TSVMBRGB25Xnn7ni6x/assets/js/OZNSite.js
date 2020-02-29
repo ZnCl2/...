@@ -1,0 +1,5 @@
+/**
+ * ojraskatzeronet v0.1.0
+ * @author Otto J. Rask
+ */
+function OZNSite(){this.initialize=function(){"use strict";return this.log("Initializing site."),"undefined"==typeof _?void this.die("Missing components."):"undefined"==typeof Backbone?void this.die("Missing components"):void 0}}var $=jQuery,OZN=OZN||{};OZNSite.prototype=new ZeroFrame,OZNSite.prototype.init=function(){"use strict";this.initialize()},OZNSite.prototype.die=function(t){"use strict";document.querySelector("#main").innerHTML="<p>"+t+"</p>"},OZNSite.prototype.startApplication=function(){"use strict";window.OZN.Application=new app.Application({site:this})},OZNSite.prototype.route=function(t,i){"use strict"},OZNSite.prototype.onOpenWebsocket=function(){"use strict";this.log("Websocket open."),this.startApplication()},document.addEventListener("DOMContentLoaded",function(){"use strict";OZN.Site=new OZNSite});

@@ -1,0 +1,40 @@
+{
+	"title": "秘境",
+	"description": "You never find it...",
+	"links": "[ErrNoUser](http://127.0.0.1:43110/18zF2ymdm4kxgEQEC2os6vThAxSgLkgemL)\n[半日偷闲](http://127.0.0.1:43110/zeee.bit/)",
+	"next_post_id": 10,
+	"demo": false,
+	"modified": 1502957393,
+	"post": [
+		{
+			"post_id": 9,
+			"title": "新域名启用 - nohup.bit",
+			"date_published": 1502862888.127,
+			"body": "申请了免费的.bit域名，在此要感谢 [domains4free.bit](http://127.0.0.1:43110/domains4free.bit)\n\n既然叫秘境，还是nohup一直后台运行吧……\n\n新域名：[nohup.bit](http://127.0.0.1:43110/nohup.bit/)\n\n欢迎交换友情链接！"
+		},
+		{
+			"post_id": 8,
+			"title": "教你如何一分钟内快速搭建SS服务端",
+			"date_published": 1501480140.126,
+			"body": "如今SS已经成为流行的出墙方式，纵观各种语言实现的SS服务端，感觉还是Go的SS服务端最为便捷，因为Go的SS服务端就一个可执行文件，不需要任何环境的依赖。\n\n本文为你分享如何用Go的SS服务端，配合当今最为流行的Docker容器化技术，分分钟搭建一个可以运行的SS容器化服务端。\n\n服务器的准备：\n\n*   一台墙外的Linux服务器\n*   安装好docker环境（[参考这里的一键安装脚本](http://get.daocloud.io/#install-docker)）\n\n接下来，我们撸起袖子开干吧！\n\n1.  登录墙外的Linux服务器，假设该服务器已经装好docker环境，直接在任意目录下建立Dockerfile，拷贝过去如下内容：\n\n    ```bash\n\n    FROM alpine:latest\n    MAINTAINER NoOne\n\n    RUN apk --no-cache add wget gzip && cd /\n    RUN wget https://github.com/shadowsocks/shadowsocks-go/releases/download/1.2.1/shadowsocks-server.tar.gz --no-check-certificate\n\n    RUN tar -zxvf shadowsocks-server.tar.gz\n    RUN mv shadowsocks-server server\n    RUN chmod +x server\n    RUN apk del wget gzip\n    RUN rm -rf /var/cache/apk/*\n\n    EXPOSE 3389\n    ENTRYPOINT [\"/server\", \"-p\", \"3389\", \"-k\", \"YourPasswordHere\"]\n    ```\n\n2.  需要注意的是，替换最后一行的3389为你需要的端口号，这个端口号就是SS服务端容器需要对外暴露的端口号。第二个端口号，需要与Dockerfile中那个端口号一致。YourPasswordHere，替换为你需要的SS服务端密码。\n\n3.  Dockerfile准备完毕，接下来就可以构建镜像了，在Dockerfile所在目录下，输入命令：\n\n    ```bash\n    docker build -t ss .\n    ```\n\n4.  构建完成，中途如果没有输出错误，可以直接启动容器，这样SS服务端就完成了：\n\n    ```bash\n    docker run -d --name=ss --restart=always -p 3389:3389 ss\n    ```\n\n    注意：第一个3389，为映射到的Linux服务器的端口地址，修改为你喜欢的即可。默认加密方式为 aes-256-cfb，若要用其他加密方式，可以在Dockerfile中修改。\n\n最后大功告成，用客户端连接你的SS服务端试试：\n\n```\n\n主机地址：你的Linux服务端公网IP\n\n端口：3389\n\n密码：你修改过后的密码\n\n加密方式：aes-256-cfb\n```"
+		},
+		{
+			"post_id": 7,
+			"title": "Mac中命令行设置SOCKS5代理",
+			"date_published": 1501230463.616,
+			"body": "接上篇，除了用Polipo将SOCKS5代理转为HTTP代理之外，Mac中还有一直方便的方法，用来直接将SOCKS5代理设置为命令行代理，方便出墙。\n\n前提条件：本机已经运行SS客户端，并且已经成功连上服务端，假设本地SS客户端监听端口为：1080\n\n以用Zsh为例，\n\n```\n// 设置代理 \nexport ALL_PROXY=socks5://127.0.0.1:1080\n// 清除代理 \nunset ALL_PROXY\n// 查看ip测试是否生效 \n​​​​​​​curl -i http://ip.cn\n```\n\n1080端口指向SS客户端的本地代理端口，修改完后，需要 source ~/.zshrc 来生效。\n\n对于懒人来说，还有一种简便的办法：\n\n```\nalias setproxy=\"export ALL_PROXY=socks5://127.0.0.1:1080\"\nalias unsetproxy=\"unset ALL_PROXY\"\naliaa ip=\"curl -i http://ip.cn\"\n```\n\n这样，需要命令行翻墙的时候，输入 setproxy，再用命令ip可以查看到，IP已经是国外的IP。\n\n取消命令行代理，可以直接使用unsetproxy命令即可。"
+		},
+		{
+			"post_id": 6,
+			"title": "为终端设置Shadowsocks代理",
+			"date_published": 1501132250.197,
+			"body": "[Polipo](http://www.pps.univ-paris-diderot.fr/~jch/software/polipo/) 是一个很小以及快速的有缓存的 HTTP Proxy，关键是它可以和 Socks5 协议通讯。MacOS下，主要就是用homebrew来安装 _polipo_ 工具。\n\n```\nbrew install polipo\n```\n\n配置：\n\n```\nlogSyslog = true  \nlogFile = /var/log/polipo/polipo.log  # 指定日志  \nproxyAddress = \"0.0.0.0\"              # 监听地址  \nproxyPort = 10001                     # 监听端口  \nallowedClients = 127.0.0.1, 192.168.0.0/24 #允许的IP，注释掉则允许任何ip连接  \n#authCredentials = \"username:password\" # 需要认证，注释掉则不需要\nsocksParentProxy = \"localhost:8888\"   # 指定上级代理为本地的8888  \nsocksProxyType = socks5               # 代理类型为socks5  \ndnsNameServer = 8.8.8.8, 114.114.114.114 # 指定dns,不用系统的/etc/resolv.conf  \ndnsQueryIPv6 = no # 禁掉IPv6\n```\n\n启动即可：\n\n```\nservice polipo start\n```\n\n最后，修改shell的代理设置：\n\n```\nexport ALL_PROXY=http://127.0.0.1:10001\n```\n\n即可实现在终端使用代理了，Let's Go!"
+		},
+		{
+			"post_id": 1,
+			"title": "成功搭建ZeroNet Blog!",
+			"date_published": 1433033779.604,
+			"body": "密境之旅开始了!"
+		}
+	]
+}

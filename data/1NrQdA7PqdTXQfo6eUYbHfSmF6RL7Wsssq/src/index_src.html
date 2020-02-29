@@ -1,0 +1,1233 @@
+    <!doctype html>
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    <title>Paper OTP</title>
+
+    <script>
+    /*
+    	Notice of Copyrights and Licenses:
+	***********************************
+	The paper-otp project, software and embedded resources are copyright rareventure.com.
+	Portions of the all-in-one HTML document contain JavaScript codes that are the copyrights of others. 
+	The individual copyrights are included throughout the document along with their licenses.
+	Included JavaScript libraries are separated with HTML script tags.
+
+	Summary of JavaScript functions with a redistributable license:
+	JavaScript function		License
+	*******************		***************
+	Snap                            BSD License
+	sjcl                            BSD and gnu license
+
+	The paper-otp software is available under The MIT License (MIT)
+	Copyright (c) 2016 rareventure.com
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy of this software and 
+	associated documentation files (the "Software"), to deal in the Software without restriction, including 
+	without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or 
+	sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject 
+	to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all copies or substantial 
+	portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT 
+	LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+	IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+	WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+	SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+	GitHub Repository: https://github.com/redfish64/paper_otp
+
+
+* Snap BSD License:
+
+* Copyright (c) 2007-2012, Jure Leskovec
+* All rights reserved.
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+*     * Redistributions of source code must retain the above copyright
+*       notice, this list of conditions and the following disclaimer.
+*     * Redistributions in binary form must reproduce the above copyright
+*       notice, this list of conditions and the following disclaimer in the
+*       documentation and/or other materials provided with the distribution.
+*     * Neither the name of Stanford University nor the names of its contributors
+*       may be used to endorse or promote products derived from this software
+*       without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ``AS IS'' AND ANY
+* EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+sjcl license:
+
+Copyright 2009-2010 Emily Stark, Mike Hamburg, Dan Boneh, Stanford University.
+
+This is for liability reasons.  (Speaking of which, SJCL comes with NO
+WARRANTY WHATSOEVER, express or implied, to the limit of applicable
+law.)
+
+SJCL is dual-licensed under the GNU GPL version 2.0 or higher, and a
+2-clause BSD license.  You may use SJCL under the terms of either of
+these licenses.  For your convenience, the GPL versions 2.0 and 3.0
+and the 2-clause BSD license are included here.  Additionally, you may
+serve "crunched" copies of sjcl (i.e. those with comments removed,
+and other transformations to reduce code size) without any copyright
+notice.
+
+SJCL includes JsDoc toolkit, YUI compressor, Closure compressor,
+JSLint and the CodeView template in its build system.  These programs'
+copyrights are owned by other people.  They are distributed here under
+the MPL, MIT, BSD, Apache and JSLint licenses.  Codeview is "free for
+download" but has no license attached; it is Copyright 2010 Wouter Bos.
+
+The BSD license is (almost?) strictly more permissive, but the
+additionally licensing under the GPL allows us to use OCB 2.0 code
+royalty-free (at least, if OCB 2.0's creator Phil Rogaway has anything
+to say about it).  Note that if you redistribute SJCL under a license
+other than the GPL, you or your users may need to pay patent licensing
+fees for OCB 2.0.
+
+There may be patents which apply to SJCL other than Phil Rogaway's OCB
+patents.  We suggest that you consult legal counsel before using SJCL
+in a commercial project.
+
+*/
+</script>
+
+    <!-- replace_in_file:js:snap.svg-min.js --> <script src="snap.svg-min.js"></script>
+    <!-- replace_in_file:js:sjcl.js --> <script src="sjcl.js"></script>
+    <!-- replace_in_file:js:5x8.js --> <script src="5x8.js"></script>
+    <!-- replace_in_file:js:sixteenSeg.js --> <script src="sixteenSeg.js"></script>
+    <!-- replace_in_file:js:align.js --> <script src="align.js"></script>
+    <!-- replace_in_file:js:rng.js --> <script src="rng.js"></script>
+    <script>
+
+var s1;
+var s2;
+var g1,g2;
+
+var segchar = segchar16;
+
+var rows = 10;
+var cols = 30;
+var charh = 8;
+var charw = 5;
+
+var otp_bits = [];
+
+var font = console_font_5x8;
+
+var min_force_wrap = 5;
+var max_force_wrap = 100;
+
+// WARNING: this is taken from the svg width and height below:
+//	  <svg id="p" width="..." height="...">
+// Keep them in sync.
+var data_pane_ratio = 6.5568669528 / 7.41323;
+
+// WARNING: this is taken from the svg width and height below:
+//	  <svg id="pg" width="..." height="...">
+// Keep them in sync.
+var grid_data_pane_ratio=7/9.5;
+
+//pattern color for code in first page
+var g1_pat_color = "#404040";
+
+//pattern color for code in second page
+var g2_pat_color = "#000000";
+
+var pat_scales = [
+    1,
+];
+
+//draw_ascii_table_for_seg
+var ascii =
+    {
+	char_height: 10,
+	line_height: 12,
+	col_gap: 8,
+	inner_gap: 3,
+	max_rows: 47,
+	//94 chars
+	char_start: 33, // "!";
+	char_end: 126, // "~";
+	left_margin: 10
+    };
+
+
+function path_rect(x,y,w,h)
+{
+    return "M "+x+" "+y+
+	"L "+(x+w)+" "+y+
+	"L "+(x+w)+" "+(y+h)+
+	"L "+x+" "+(y+h)+
+	"L "+x+" "+y;
+}
+
+function draw_grid(g,bits,width)
+{
+    if(bits.length == 0 || width == 0)
+	return;
+    
+    //we use a dyanamically generated path to mark pixels. I was thinking about using a 
+    //bitmap and scaling it in the SVG but this seems flaky cross browsers. At least one example of doing
+    //so didn't work right in my browser (google chrome 49 on linux).
+
+    var height = bits.length/width;
+
+    //console.log("w %d h %d",width, height);
+    //console.log(bits.length);
+
+    g.attr({viewBox:[0,0,width,height].join(' '),
+    	     });
+
+    var path="";
+
+    var filled_cells_in_line=0;
+    var filled_lines=0;
+
+    var create_rects_for_bits_fn =
+	function(filled_lines, filled_cells_in_line) {
+	    //draw last rectangle
+	    if(filled_lines > 0)
+	    {
+		path += (path_rect(0,y-filled_lines,width,filled_lines));
+	    }
+	    //draw the current set of filled cells
+	    if(filled_cells_in_line != 0)
+	    {
+		path += (path_rect(x-filled_cells_in_line,y,filled_cells_in_line,1));
+	    }
+	};
+
+    for(y=0;y<height;y++)
+    {
+	for(x=0;x<width;x++)
+	{
+	    if(!bits[y*width+x])
+	    {
+		//console.log("true value %d %d",x,y)
+		create_rects_for_bits_fn(filled_lines, filled_cells_in_line);
+		filled_lines = 0;
+		filled_cells_in_line = 0;
+	    }
+	    else
+	    {
+		filled_cells_in_line ++;
+	    }
+	}
+
+	//at the end of the line, check if all were filled
+	if(filled_cells_in_line == width)
+	{
+	    filled_lines ++;
+	    filled_cells_in_line = 0;
+	}
+	else
+	{
+	    //draw the bits for the previous filled lines
+	    create_rects_for_bits_fn(filled_lines, filled_cells_in_line);
+	    filled_lines = 0;
+	    filled_cells_in_line = 0;
+	}
+    }
+
+    //create_rects_for_bits_fn(filled_lines,filled_cells_in_line);
+
+    return g.path(path);
+}
+
+function create_seg_path(x,y,coords)
+{
+    var path = "M ";
+    for(var i = 0; i < coords.length; i+=2)
+    {
+	path += (x+coords[i])+" "+(y+coords[i+1])+" ";
+    }
+    path += (x+coords[0])+" "+(y+coords[1])+" ";
+
+    return path;
+}
+
+function create_seg_bit_char(x,y,seg,bitval)
+{
+    var path = "";
+    for(var bit = 0; bit < seg.bit_count; bit++)
+    {
+	var on = (1&(bitval >> bit)) == 1;
+	if(on) path += create_seg_path(x,y,seg.coords[bit]);
+    }
+
+    return path;
+}
+
+function create_seg_ascii_char(x,y,seg,ascii_index)
+{
+    return create_seg_bit_char(x,y,seg,seg.ascii_map[ascii_index]);
+}
+
+function draw_segchar(g,bits,chars_per_line,patterns, off_patterns, segchar)
+{
+    if(bits.length == 0 || chars_per_line == 0)
+	return;
+
+    var width = chars_per_line * segchar.width + (chars_per_line - 1) * segchar.hgap;
+    var chars_per_col = bits.length / (chars_per_line*segchar.bit_count);
+    var height = chars_per_col * segchar.height+ (chars_per_col - 1) * segchar.vgap;
+
+    //console.log("w %d chars_per_col %f chars_per_line %d height %d",width,chars_per_col,chars_per_line, height);
+    
+    var group = g.g();
+    
+    for(var r=0;r<chars_per_col;r++)
+    {
+	var path="";
+	var off_path=""; //the bits that aren't highlighted
+
+    	for(var c=0;c<chars_per_line;c++)
+    	{
+    	    var x = c*(segchar.width+segchar.hgap);
+    	    var y = r*(segchar.height+segchar.vgap);
+
+    	    for(var i=0; i < segchar.bit_count; i++)
+    	    {
+		//console.log("bl: %d v: %d",bits.length,(r*chars_per_line+c)*segchar.bit_count + i);
+    		if(bits[(r*chars_per_line+c)*segchar.bit_count + i])
+    		{
+    		    path += create_seg_path(x,y,segchar.coords[i]);
+    		}
+		else
+		    off_path += create_seg_path(x,y,segchar.coords[i]);
+    	    }
+    	}
+	
+	var pi = r % patterns.length;
+	var pattern = patterns[pi];
+
+	var sc = g.path(path);
+	sc.attr({ fill: pattern });
+
+	g.add(sc);
+
+	var off_pattern = off_patterns[pi];
+
+	var off_sc = g.path(off_path);
+	off_sc.attr({ fill: off_pattern });
+
+	g.add(off_sc);
+    }
+
+    //console.log(path);
+
+    //we return the width and height explicitly (rather than letting the user run getBBox() on
+    //sc, because getBBox() is kind of slow.
+    return { elem: g,
+	     w: width,
+	     h: height
+	   };
+    
+}
+
+function test5x8()
+{
+    console.log("Testing 5x8!");
+    for(var i=0; i < console_font_5x8.length; i += 8)
+    {
+	for(var j=i+8; j < console_font_5x8.length; j += 8)
+	{
+	    var diff = 0;
+	    for(var k=0;k<8; k++)
+	    {
+		if(console_font_5x8[i+k] != console_font_5x8[j+k])
+		{
+		    diff = 1;
+		    break;
+		}
+	    }
+	    if(diff == 0)
+	    {
+		console.log("Chars the same! "+(i/8)+","+(j/8));
+	    }
+	}
+    }
+}
+
+			     
+window.onload = function()
+{
+    sjcl.random.setDefaultParanoia(10);
+    show_page("mainarea");
+    
+    g1 = Snap("#s1");
+
+    g2 = Snap("#s2");
+
+    input_changed();
+    test5x8();
+    //console.log("whatisready?",(new sjcl.prng(10)).getProgress(10));
+}
+
+function calc_rows(t, force_wrap)
+{
+    var rows = 1;
+    var col = 0;
+    for(var i = 0; i < t.length; i++)
+    {
+	var c = t.charAt(i);
+	if(c == '\n')
+	{
+	    rows++;
+	    col = 0;
+	}
+	else
+	{
+	    if(col >= force_wrap)
+	    {
+		rows++;
+		col=0;
+	    }
+	    col++;
+	}
+    }
+
+    return rows-(col == 0 ? 1 : 0);
+}
+
+function choose_force_wrap(t, font_width_over_height, page_ratio)
+{
+    var i;
+    
+    //We want to maximize the dpi considering a standard size page (8.5 x 11), the
+    //font width and height, and assuming square pixels
+    var last_rows = 0;
+    for(i = max_force_wrap;i>=min_force_wrap; i--)
+    {
+	var rows = calc_rows(t,i);
+
+	//if we haven't gained any more rows by reducing the force wrap, then
+	//we keep going. Otherwise, if we go below the page_ratio, we stop
+	if(rows != last_rows && i * font_width_over_height / rows < page_ratio)
+	    break;
+
+	last_rows = rows;
+    }
+
+    //console.log("force wrap %s %d %d %d", t, i+1, calc_rows(t,i), calc_rows(t,i+1));
+    
+    return i+1;
+}
+
+function create_message_for_grid(t)
+{
+    var message = { text: "",
+		    bits: [],
+		    force_wrap: null,
+		    rows: null,
+		    width: null
+		  };
+    
+    message.force_wrap = choose_force_wrap(t, charw/charh, grid_data_pane_ratio);
+    message.width = message.force_wrap * charw; //width always is force_wrap * charw
+    //it's just for convenience
+    
+    //assumes 5x8 and writes t into bits
+    message.text=t;
+    message.bits = [];
+
+    //console.log(message);
+
+    var row = 0;
+    var col = 0;
+    for(var i = 0; i < t.length; i++)
+    {
+	//go through each line of character, horizontally
+	
+	// ex:
+	// /* code=65, hex=0x41, ascii="A"
+	//  */
+	// 0x00,  /* 00000 */
+	// 0x00,  /* 00000 */
+	// 0x60,  /* 01100 */
+	// 0x90,  /* 10010 */
+	// 0xF0,  /* 11110 */
+	// 0x90,  /* 10010 */
+	// 0x90,  /* 10010 */
+	// 0x00,  /* 00000 */
+
+	var c = t.charCodeAt(i);
+	if(c == 10) //newline
+	{
+	    col = 0;
+	    row++;
+	    continue;
+	}
+
+	if(col >= message.force_wrap)
+	{
+	    col = 0;
+	    row++;
+	}
+	
+	var cr = c*charh;
+
+	var bitx = col * charw;
+	var bity = row * charh;
+
+	//we expand the buffer so it's always rectangular
+	message.bits[(bity+charh)*message.width-1] = false;
+	
+	//console.log("bitx "+bitx+" bity "+bity)
+	for(var bitline = 0; bitline < charh; bitline++)
+	{
+	    for(var bit = 0; bit < charw; bit++)
+	    {
+		var on = (1&(font[cr+bitline] >> (7 - bit))) == 1;
+		//console.log("bitline "+bitline+" font "+font[cr+bitline]+" bit "+bit+" on "+on)
+		var bit_index = bitx + bit + (bity + bitline) * message.width;
+		message.bits[bit_index] = on;
+	    }
+	}
+
+	col++;
+    }
+
+    message.rows = row+1-(col == 0 ? 1 : 0);
+
+    //console.log("rows %d cr %d fw %d text %s ", message.rows,calc_rows(t,message.force_wrap),message.force_wrap,t);
+
+    return message;
+}
+
+function create_message_for_seg(t,seg)
+{
+    var message = { text: "",
+		    bits: [],
+		    force_wrap: null,
+		    rows: null
+		  };
+    
+    message.force_wrap = choose_force_wrap(t,(seg.width+seg.hgap)/(seg.height+seg.vgap), data_pane_ratio);
+    
+    message.text=t;
+    message.bits = [];
+
+    var row = 0;
+    var col = 0;
+    for(var i = 0; i < t.length; i++)
+    {
+	var c = t.charCodeAt(i);
+	if(c == 10) //newline
+	{
+	    if(col != 0)
+	    {
+		col = 0;
+		row++;
+	    }
+	    continue;
+	}
+	if(col >= message.force_wrap)
+	{
+	    col = 0;
+	    row++;
+	}
+
+	//console.log("col %d row %d", col, row);
+	//we expand the buffer so it's always rectangular
+	message.bits[(row+1)* seg.bit_count * message.force_wrap - 1] = false;
+	
+	var bitval = seg.ascii_map[c];
+	var bitindex = (row * message.force_wrap + col) * seg.bit_count;
+	
+	for(var bit = 0; bit < seg.bit_count; bit++)
+	{
+	    var on = (1&(bitval >> bit)) == 1;
+	    message.bits[bitindex+bit] = on;
+	}
+
+	col++;
+    }
+
+    message.rows = row+1-(col == 0 ? 1 : 0);
+
+    return message;
+}
+
+function xor_bits(b1,b2)
+{
+    var o = [];
+    o[(b1.length < b2.length ? b2.length : b1.length) - 1] = false;
+    //console.log("b1 "+b1.length)
+    //console.log("b2 "+b2[0])
+    
+    for(i = 0; i < o.length; i++)
+    {
+	o[i] = (b1[i] && !b2[i] || !b1[i] && b2[i]);
+	// !(b1[i] == b2[i]); doesn't work???
+    }
+
+    return o;
+}
+
+function not_bits(b)
+{
+    var o = [];
+    o[b.length - 1] = false;
+    
+    for(i = 0; i < o.length; i++)
+    {
+	o[i] = !b[i];
+    }
+
+    return o;
+}
+
+function decimalToHexString(number)
+{
+    if (number < 0)
+    {
+    	number = 0xFFFFFFFF + number + 1;
+    }
+
+    return number.toString(16).toUpperCase();
+}
+
+function hex2bin(hex,length)
+{
+    var bits = [], str;
+
+    //HACK to make sure we got 8 random bits per byte
+    // var bits1 = [], bits0 = [];
+
+    for(var i=0; i<hex.length-1; i+=2)
+    {
+	var v = parseInt(hex.substr(i, 2), 16);
+
+	for(var j=0;j<8;j++)
+	{
+	    bits[bits.length] = ((v&(1<<j)) != 0);
+	    // if(bits[bits.length-1])
+	    // {
+	    // 	bits1[j] = true;
+	    // }
+	    // else
+	    // 	bits0[j] = true;
+
+	    if(bits.length >= length)
+	    {
+		i = hex.length;
+		break;
+	    }
+	}
+    }
+
+    // for(var j = 0; j < 8; j++)
+    // {
+    // 	if(!bits1[j])
+    // 	{
+    // 	    console.log("%d NEVER 1!!!",j);
+    // 	}
+    // 	if(!bits0[j])
+    // 	    console.log("%d NEVER 0!!!",j);
+    // }
+
+    return bits;
+}
+
+function finish_generate_seed()
+{
+    sjcl.random.stopCollectors();
+
+    var input = document.getElementById('msg').value;
+
+    //add extra OTP incase they increase the message size
+    var bits = Math.max((input.length * segchar.bit_count) * 4, 40*segchar.bit_count);
+
+    //get the random data into our wasteful but convienent boolean array format
+    var random_data = sjcl.random.randomWords(Math.ceil(bits/32));
+    
+    var otp = "";
+    for(var bytei = 0; bytei < random_data.length; bytei++)
+    {
+	otp += decimalToHexString(random_data[bytei]);
+    }
+
+    document.getElementById('otp').value = otp;
+    
+
+    show_page("mainarea");
+    
+    input_changed();
+}
+
+function update_paranoia_percent()
+{
+    //console.log("update_paranoia_percent",sjcl.random.getProgress(), sjcl.random.isReady());
+    document.getElementById('paranoia_perc').innerHTML =
+	"Move mouse around to generate random data... Paranoia "+
+	(sjcl.random.getProgress()*100)+"%";
+
+    //I know that a value of 2 corresponds to sjcl.random._NOT_READY, but according to:
+    //https://github.com/bitwiseshiftleft/sjcl/wiki/Symmetric-Crypto
+    //it still means it is ready.
+    if(!sjcl.random.isReady()) 
+	setTimeout(update_paranoia_percent,500);
+}
+
+
+function clear_fields()
+{
+    var input = document.getElementById('msg').value = "";
+    var otp = document.getElementById('otp').value = "";
+    
+    input_changed();
+}
+
+function generate_seed()
+{
+    if(!sjcl.random.isReady())
+    {
+	show_page("generatearea")
+	
+	redfish64.seeder.onfinish(finish_generate_seed);
+	redfish64.seeder.start();
+	
+	setTimeout(update_paranoia_percent,500);
+    }
+    else
+	finish_generate_seed();
+}
+
+function create_otp_bits(length)
+{
+    var bits = hex2bin(document.getElementById('otp').value,length);
+
+    return bits;
+}
+
+function get_mode()
+{
+    var radios = document.getElementsByName('mode');
+    for (var i = 0, length = radios.length; i < length; i++) {
+	if (radios[i].checked) {
+            return radios[i].value;
+	}
+    }
+}
+
+function is_grid_mode()
+{
+    var mode = get_mode();
+    return mode != "sixteenseg";
+}
+
+function update_print_buttons(message)
+{
+    var input = document.getElementById('msg').value;
+    var otp = document.getElementById('otp').value;
+
+    var otp_bits = otp.length * 4;
+
+    var input_bits_needed = message ? message.force_wrap * message.rows *
+	(is_grid_mode() ?  charw * charh : segchar.bit_count) : 0;
+
+    var error = "";
+    if(input.length == 0 && otp.length==0)
+    {
+	error = "Please enter a message and create otp (one time pad) random data";
+    }
+    else if(input.length == 0)
+    {
+	error = "Please enter a message.";
+    }
+    else if(otp.length == 0)
+	error = "Please enter OTP (one time pad) data or click 'Generate OTP'.";
+    else if (otp_bits < input_bits_needed)
+    {
+	//console.log(otp_bits, input_bits_needed);
+	error = "Need at least "+Math.ceil((input_bits_needed-otp_bits)/8)+" more OTP bytes. Please enter more OTP (one time pad) data or click 'Generate OTP'.";
+    }
+    
+
+    if(error != "")
+    {
+	document.getElementById('print_s1').disabled=true;
+	document.getElementById('print_s2').disabled=true;
+    }
+    else
+    {
+	error = "Press \"Print!\" to print each page. For extra security, print each page to separate printer.";
+	document.getElementById('print_s1').disabled=false;
+	document.getElementById('print_s2').disabled=false;
+    }
+
+    document.getElementById('error').innerHTML = error;
+}
+
+var otp_regex=/[^0-9A-Fa-f]+/g;
+
+function otp_changed()
+{
+    var otp = document.getElementById('otp');
+
+    otp.value = otp.value.replace(otp_regex,'');
+
+    input_changed();
+}
+
+function input_changed()
+{
+    var input = document.getElementById('msg').value;
+
+    var is_grid = is_grid_mode();
+    
+    if(g1 && g2)
+    {
+	g1.clear();
+	g2.clear();
+	if(input.length == 0)
+	{
+	    update_print_buttons(null);
+	    return;
+	}
+	
+	var g1_patterns = get_patterns(g1, is_grid, g1_pat_color, 1);
+	var g1_off_patterns = get_patterns(g1, is_grid, g1_pat_color, 2);
+	var g2_patterns = get_patterns(g2, is_grid, g2_pat_color, 2);
+	var g2_off_patterns = get_patterns(g2, is_grid, g2_pat_color, 1);
+
+	var message;
+	if(is_grid)
+	{
+	    message = create_message_for_grid(input);
+	    var otp_bits = create_otp_bits(message.bits.length);
+	    var g1_bits = xor_bits(message.bits, otp_bits);
+	    var g2_bits = not_bits(otp_bits);
+	    
+	    draw_grid(g1,g1_bits, message.width).
+		attr({ fill: g1_patterns[0] });
+	    draw_grid(g1,not_bits(g1_bits), message.width).
+	    	attr({ fill: g1_off_patterns[0] });
+
+	    if(g2_bits.length != 0)
+	    {
+		draw_grid(g2,g2_bits, message.width).
+		    attr({ fill: g2_patterns[0] });
+		draw_grid(g2,not_bits(g2_bits), message.width).
+		    attr({ fill: g2_off_patterns[0] });
+	    }
+	}
+	else //if(mode == "sixteenseg")
+	{
+	    message = create_message_for_seg(input, segchar);
+	    var otp_bits = create_otp_bits(message.bits.length);
+	    var g1_bits = xor_bits(message.bits, otp_bits);
+	    // message.bits;
+	    var g2_bits = not_bits(otp_bits);
+	    //console.log(message);
+	    
+	    var sc1 = draw_segchar(g1,g1_bits, message.force_wrap,
+				   g1_patterns, g1_off_patterns, segchar
+				  );
+
+	    if(sc1)
+		g1.attr({viewBox:[0,0,sc1.w,sc1.h].join(' '),
+    		 	   //preserveAspectRatio: "none"
+    			  });
+		
+		
+	    var sc2 = draw_segchar(g2,g2_bits, message.force_wrap,
+				   g2_patterns, g2_off_patterns, segchar);
+	    if(sc2)
+		g2.attr({viewBox:[0,0,sc2.w,sc2.h].join(' '),
+    		 	   //preserveAspectRatio: "none"
+    			  });
+		
+	}
+	update_print_buttons(message);
+    }
+}
+
+
+function draw_ascii_table_for_seg(g,seg,pattern)
+{
+    var max_char_width = 1;
+    var group = g.g();
+    var col = -1;
+
+    var hgap_box = Align.create_box( g, { w: ascii.inner_gap, h: 0} );
+
+    var col_width = 0;
+
+    for(var i = ascii.char_start;
+	i <= ascii.char_end;
+	i++)
+    {
+	if((i-ascii.char_start) % ascii.max_rows == 0)
+	    col++;
+	    
+	var char_path = create_seg_ascii_char(0,0, seg, i);
+
+	var path = g.path(char_path);
+	path.attr({ fill:
+		 g1_pat_color})
+
+	var path_box = Align.create_box(g, { o: path, w: seg.width, h: seg.height }).
+	    transform_to_box( { h: ascii.char_height });
+	
+	var text = g.text(0, ascii.char_height,
+			  String.fromCharCode(i));
+	text.attr("font-size",ascii.char_height);
+
+	var text_box = Align.create_box(g, { o: text
+					     //h: ascii.char_h
+					   });
+
+	// var rect_box1 = Align.create_box(g, { o: g.rect(0,0,text_box.w,text_box.h).
+	// 				      attr({fill: "#FF0000"}) });
+	// var rect_box2 = Align.create_box(g, { o: g.rect(0,0,text_box.w,text_box.h).
+	// 				     attr({fill: "#00FF00"})});
+
+	//note for the zeroth column, first row, text_width is zero, but this
+	//doesn't matter cause col is zero, too
+	var x = ascii.left_margin + col * (col_width + ascii.col_gap);
+	var y = ((i-ascii.char_start)%ascii.max_rows) * ascii.line_height;
+
+	//console.log("pt");
+	//console.log(path_box,text_box);
+
+	var composite_box = Align.halign(g, path_box, hgap_box, text_box).
+	    transform_to_box({ x: x, y: y });
+
+	col_width = Math.max(col_width, composite_box.w);
+
+	group.add(composite_box.o);
+    }
+
+    return Align.create_box(g,{ o: group,
+				x: 0,
+				y: 0,
+				w: ascii.left_margin + (col+1)*(col_width+ascii.col_gap),
+				h: ascii.max_rows * ascii.line_height
+			      });
+}
+
+function reverse_pattern(g, p)
+{
+    var group = g.g(g.rect(0,0,1,1),p.clone().attr("fill","#FFFFFF"));
+
+    return group;
+}
+
+function get_patterns(g,is_grid, color, pn)
+{
+    var pat1,pat2,pat_scales;
+
+    if(is_grid)
+    {
+	pat1 = [
+	    g.path("M 0 0 L 1 1 L 0 1 L 0 0"),
+	];
+	
+	pat2 = [
+	    null,
+	];
+	
+	pat_scales = [
+	    .5,
+	];
+    }
+    else
+    {
+	pat1 = [
+	    g.path("M 0 0 L 1 1 L 0 1 L 0 0"),
+	];
+	
+	pat2 = [
+	    null,
+	];
+	
+	pat_scales = [
+	    1,
+	];
+    }
+
+    var patterns = [];
+
+    for(var i = 0; i < pat1.length; i++)
+    {	
+	var p1 = pat1[i];
+	var p2 = pat2[i];
+	
+	if(p1 == null)
+	{
+	    p1 = reverse_pattern(g,p2);
+	}
+	else if(p2 == null)
+	{
+	    p2 = reverse_pattern(g,p1);
+	}
+	
+	p1.toDefs();
+	p2.toDefs();
+
+	var raw_pat = pn == 1 ? p1 : p2;
+    
+	var patbasis = raw_pat.attr({ fill: color }).transform("scale("+pat_scales[i]+")");
+	patterns[i] = patbasis.toPattern(0,0,pat_scales[i],pat_scales[i]);
+    }
+
+    return patterns;
+}
+
+
+function show_page(name)
+{
+    var pages = ["mainarea","printarea","generatearea","printareagrid"];
+
+    for(var i = 0; i < pages.length; i++)
+    {
+	document.getElementById(pages[i]).style.display = (pages[i] == name) ? "block" : "none";
+    }
+}
+
+function print_page(pn)
+{
+    var input = document.getElementById('msg').value;
+    var is_grid = is_grid_mode();
+    
+    var message = is_grid ?
+	create_message_for_grid(input) :
+	create_message_for_seg(input, segchar);
+
+    var bits;
+    if(pn == 1)
+    {
+	var otp_bits = create_otp_bits(message.bits.length);
+	bits = xor_bits(message.bits, otp_bits);
+    }
+    else
+	bits = not_bits(create_otp_bits(message.bits.length));
+
+    if(is_grid)
+    {
+	show_page("printareagrid");
+	var g = Snap("#pg");
+
+	g.clear();
+	
+	var patterns,off_patterns;
+	var patterns = get_patterns(g, is_grid, pn == 1 ? g1_pat_color : g2_pat_color, 1);
+	var off_patterns = get_patterns(g, is_grid, pn == 1 ? g1_pat_color : g2_pat_color, 2);
+
+	draw_grid(g, bits, message.width).
+	    attr({ fill: patterns[0] });
+	draw_grid(g, not_bits(bits), message.width).
+	    attr({ fill: off_patterns[0] });
+
+	window.print();
+	show_page("mainarea");
+
+    }
+    else// if(mode == "sixteenseg")
+    {
+	show_page("printarea");
+	var g = Snap("#p");
+
+	g.clear();
+	
+	var patterns,off_patterns;
+	patterns = get_patterns(g, false, pn == 1 ? g1_pat_color : g2_pat_color, 1);
+	off_patterns = get_patterns(g, false, pn == 1 ? g1_pat_color : g2_pat_color, 2);
+	
+	if(pn == 2)
+	{
+	    var t = off_patterns;
+	    off_patterns = patterns;
+	    patterns = t;
+	}
+
+	var sc = draw_segchar(g,bits, message.force_wrap,
+			      patterns, off_patterns, segchar
+			     );
+	g.attr({viewBox:[0,0,sc.w,sc.h].join(' '),
+    		//preserveAspectRatio: "none"
+    	       });
+
+	
+	if(pn == 1)
+	{
+	    var ag = Snap("#ascii_table");
+	    
+	    var at = draw_ascii_table_for_seg(ag,segchar, patterns[0]);
+	    //console.log(at);
+
+	    ag.attr({viewBox:[0,0,at.w,at.h].join(' '),
+    		      preserveAspectRatio: "none"
+    		   });
+	}
+
+	window.print();
+	show_page("mainarea");
+
+	//sc.elem.clear();
+    }
+
+}
+
+
+
+
+</script>
+
+    <style>
+      textarea {
+      width: 90%;
+      }
+      .print_button {
+      float: right
+      }
+      .encoded_page {
+      padding: 40px
+      }
+      .seedpoint { width: 6px; height: 6px; display: block; border-radius: 3px; background-color: #009900; position: absolute; z-index: 10; }
+      .error { color: #FF0000; }
+
+      .paranoia_perc {
+      display: inline;
+      white-space: nowrap;
+      }
+      .paranoia_label {
+      display: inline;
+      white-space: nowrap;
+      }
+      .copyright { font-size: 80%; clear: both; padding: 5px 0; }
+
+      html *
+      {
+      font-family: sans-serif;
+      }
+    </style>
+
+</head>
+
+    <body>
+    <div id="mainarea">
+    <h1>Paper OTP</h1>
+    <p>A paper based <a href="https://en.wikipedia.org/wiki/One-time_pad">one time pad</a> encoded message creator. Messages can decoded using only paper and a light source.</p>
+    <p>This can be used as a way to reveal important passwords, etc. for friends/family, in case something happens to you, by giving each of the two pages to two people you trust. Both pages are needed to decode the message.</p>
+    <p>Messages are created locally on your machine and not transmitted anywhere. MIT licensed. Source can be found <a href="https://github.com/redfish64/paper_otp">here</a>.</p>
+    <br><br>
+    <table>
+    <!-- <tr><td colspan="4"> -->
+    <!-- <input type="radio" name="mode" value="sixteenseg" checked="true" onclick="input_changed()">16 segment -->
+    <!-- <input type="radio" name="mode" value="grid" onclick="input_changed()">Grid -->
+    <!-- </td></tr> -->
+    <tr>
+    <td>Message
+    <td width="50%"><textarea rows="5" placeholder="Enter message" autofocus="true" id="msg" onkeyup="input_changed()" onchange="input_changed()"></textarea>
+    <td>OTP
+    <td width="50%"><textarea rows="5" placeholder="Enter hexidecimal data or click 'Generate OTP'" id="otp"onkeyup="otp_changed()" onchange="otp_changed()"></textarea>
+    </td>
+    </tr>
+    <tr>
+      <td></td>
+      <td>
+      	<input type="button" value="Clear" onclick="clear_fields();">
+      </td>
+      <td></td>
+      <td>    
+	<input type="button" value="Generate OTP" onclick="generate_seed();">
+      </td>
+    </tr>
+    </table>
+    <p id="error" class="error">Have a nice day</p>
+    <table>
+    <tr>
+    <td class="encoded_page">
+    Encoded Page 1 <input class="print_button" type="button" disabled="true" onclick="print_page(1)" id="print_s2" value="Print!" />
+    <br>
+    <svg width="400" height="500" id="s1" />
+    <br>
+    </td>
+    <td class="encoded_page">
+    Encoded Page 2 <input class="print_button" type="button" disabled="true" onclick="print_page(2)" id="print_s1" value="Print!" />
+    <br>
+    <svg width="400" height="500" id="s2" />
+    <br>
+    </td></tr></table>
+    <div class="copyright">
+    <p>Written by Tim Engler with collaboration with Hib Engler.</p>
+    <p>
+      <span>Copyright rareventure.com.</span>
+      <span>JavaScript copyrights are included in the source.</span>
+      <span>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT 
+	LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. </span></p>
+    </div>
+    </div>
+    <div id="printarea">
+    <table>
+      <tr>
+	<td>
+	  <!-- WARNING, these values are copied above at
+var data_pane_ratio = ....; 
+
+Keep them in sync.
+-->
+	  <svg id="p" width="6.5568669528in" height="7.41323in">
+	  </svg>
+	</td>
+	<td rowspan="2">
+	  <svg id="ascii_table" width="0.6931330472in" height="9.5in">
+	    <!-- <ellipse cx="0.3556866953in" cy="4.875in" rx="0.3556866953in" ry="4.875in" -->
+	    <!-- 	     style="fill:green;stroke:red;stroke-width:2" /> -->
+	    </svg>
+	<td>
+      </tr>
+      <tr>
+    <td>
+    <!-- replace_in_file:block:start:howto.svg -->
+	  <svg id="legend_box" width="6.5568669528in" height="2.08677in">
+	  <ellipse cx="3.2784334764in" cy="1.043385in" rx="3.2784334764in" ry="1.043385in"
+	  	   style="fill:none;stroke:orange;stroke-width:2" />
+	  </svg>
+    <!-- replace_in_file:block:end -->
+	</td>
+      </tr>
+    </table>
+</div>
+
+    <div id="printareagrid">
+    <table>
+    <tr><td>
+	  <!-- WARNING, these values are copied above at
+var grid_data_pane_ratio = ....; 
+
+Keep them in sync.
+-->
+    <svg id="pg" width="7.00in" height="9.5in">
+    </td>
+    </tr>
+    <tr><td>Please put second page underneath first page, and view in front of light</td></tr>
+    </table>
+      </svg>
+    </div>
+    
+    <div id="generatearea">
+    <h3><div id="paranoia_perc"></div></h3>
+    </div>
+    </body>
+    
+</html>
+    
+
+
+

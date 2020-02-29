@@ -1,0 +1,253 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="MnNStory: 我和一个女同学15年的故事">
+<meta name="keywords" content="MnNStory,校园爱情,15年,女同学,女生">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<title>寄语</title>
+<script src="jquery.js"></script>
+<script src="qrcode.js"></script>
+<script>
+function loadCSS(href) {
+	var cssLink = $("<link rel='stylesheet' type='text/css' href='"+href+"'>");
+	$("head").append(cssLink);
+	return cssLink;
+};
+
+var relocate;
+
+$(function(){
+            var device="computer";
+        var fontSize=($(window).width()/25).toFixed(0);
+        relocate=relocateC;
+    
+	loadCSS("main_"+device.substring(0, 1)+".css").load(function(){
+		relocate();
+		setTimeout(relocate, 1000);
+		setTimeout(function(){
+			var fontSize=$('body').css('fontSize');
+			var qrcode = new QRCode(document.getElementById("QRCode"), {
+				width : parseInt(fontSize)*7,
+				height : parseInt(fontSize)*7
+			});
+
+			qrcode.makeCode(window.location.href);
+		}, 1000);
+	});
+
+	$(window).resize(relocate);
+
+    
+	function relocateC(){
+		function bottom($el){
+			return $el.position().top + $el.outerHeight(true);
+		}
+
+		var $footer=$('#footer');
+		$footer.css({
+			top: 0,
+			display: 'none'
+		});
+		var top=Math.max(
+			bottom($('#textWrapper')),
+			bottom($('#contents')),
+			$(document).height() - $footer.outerHeight()
+		);
+		$footer.css({
+			top: top,
+			display: 'block'
+		});
+	}
+
+        $('.patch-more').click(function(){
+        var page=$(this).data('page');
+        var paragraph=$(this).data('paragraph');
+
+        location.href='page'+page+'.html#paragraph='+paragraph;
+    });
+
+    setTimeout(function () {
+                    var ret=document.referrer.match(/#paragraph=(\d+)/);
+                if (!ret) {
+            return;
+        }
+        var paragraph=ret[1]-1;
+
+        var objParagraph=$('#text p:eq('+paragraph+')');
+        var flash=function () {
+            objParagraph.css('color', 'red');
+            setTimeout(function() {
+                objParagraph.css('color', 'initial');
+            }, 1000);
+        };
+        $('html, body').animate({
+            scrollTop: objParagraph.offset().top-$('#textWrapper').offset().top,
+        }, 500, flash);
+    }, 100);
+
+    var pIndex=0;
+    $('#text p').each(function () {
+        ++pIndex;
+        if (!$(this).attr('id')) {
+            //$(this).attr('id', 'paragraph_'+pIndex);
+        }
+    });
+});
+
+function showComments(){
+	$.blockUI({
+		message: $('#disqus_thread'),
+	});
+
+	$('body').click($.unblockUI);
+}
+</script>
+</head>
+<body>
+<div id="cover" style="background-color: #F1F1F1; position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 2048;"></div>
+<div id="nav">
+	<div class="Three">
+		<div id="navLeft" class="left c">
+			<a href="page42.html" class="blackText">&lt;&lt;&lt;prev</a>		</div>
+		<div id="navRight" class="right c">
+			<a href="page44.html" class="blackText">next&gt;&gt;&gt;</a>		</div>
+		<div id="navTitle" class="middle">
+			寄语		</div>
+	</div>
+	<div class="Three m">
+		<div class="left" style="width: 4em">
+			<a href="page42.html" class="blackText">&lt;&lt;&lt;</a>		</div>
+		<div class="right" style="width: 4em">
+			<a href="page44.html" class="blackText">&gt;&gt;&gt;</a>		</div>
+		<div class="middle">
+			<a href="/index.html" class="blackText">[Home]</a>
+		</div>
+	</div>
+</div>
+<div id="images" class="c">
+	<a href="downloads/mnnstory.zip" target="_blank"> <img src="download.png" style="width: 100%;" title="下载" alt="Download" /> </a>
+	<p id="QRCode"></p>
+</div>
+<div id="contents" class="c">
+	<p class="contents_d0"><a href="index.html">目录</a></p>
+	<ul class="contents_d1"><li><a href='page1.html'>上册</a>
+</li><li><a href='page14.html'>上册配乐</a>
+</li><li><a href='page32.html'>下册</a>
+<ul class="contents_d2"><li><a href='page33.html'>心愿</a>
+</li><li><a href='page34.html'>概率</a>
+</li><li><a href='page35.html'>重逢</a>
+</li><li><a href='page36.html'>街景</a>
+</li><li><a href='page37.html'>追求</a>
+</li><li><a href='page38.html'>梦想</a>
+</li><li><a href='page39.html'>糖果</a>
+</li><li><a href='page40.html'>夕阳无限好</a>
+</li><li><a href='page41.html'>电影</a>
+</li><li><a href='page42.html'>怪谁</a>
+</li><li>寄语
+</li><li><a href='page44.html'>移民</a>
+</li><li><a href='page45.html'>永远</a>
+</li><li><a href='page46.html'>附录：幸福的惊人科学发现</a>
+</ul></li><li><a href='page47.html'>下册配乐</a>
+</li><li><a href='page49.html'>订正簿</a>
+</ul></div>
+<div id="disqus_thread"></div>
+<script>
+	var disqus_config = function () {
+		this.page.url = 'http://mnnstory.onion';
+		this.page.identifier = 43;
+		this.page.title = '寄语'
+	};
+
+
+	(function() {
+		var d = document, s = d.createElement('script');
+
+		s.src = '//mnnstory.disqus.com/embed.js';
+
+		s.setAttribute('data-timestamp', +new Date());
+		(d.head || d.body).appendChild(s);
+	})();
+</script>
+<div id="textWrapper">
+	<div id="text">
+		<p>她喝着咖啡，伤感地说着自己的故事，问我：“阶层是不是用金钱衡量的？”</p>
+<img src="E9A696E9A1B5/E4B88BE5868C/happiness.png" style="float: left; max-height: 37ex; max-width: 100%;" alt="Happiness" />
+<p>这个词很难把握，我想了半天。才小心地给出了答案：</p>
+<p>“假如要用金钱去定义，你已经改变了阶层。你现在的条件，比你小时候父母给你的好很多。”</p>
+<p>说着，我看了看她表情，她点了点头，轻轻“嗯”了一声。</p>
+<p>“有个教授专门探讨过什么是幸福，并在YouTube上有公开讲座。</p>
+<p>“有人做了个实验。有一组瘫痪的人，还有一组中巨额奖金的人，事情发生后的一年，分别接受了幸福感调查。结果显示，这两类人主观上的幸福感是相差无几的。你知道这是为什么吗？”</p>
+<p>她立刻说出了标准答案：“因为幸福根本就是人自己想出来的。”</p>
+<p>“对的。幸福与否跟外在条件没有必然联系。我认为，人只要在生活中，努力进取，并时常获得新的满足，就会有持续的幸福感。此外，及时行乐也不错。</p>
+<p>“比如，我某某人虽然大事做不到，但今天能约某某出来，就很开心。”</p>
+<p>当时有一个错误，我需要纠正一下。这个讲座并不是某个教授开的，而是Dan Gilbert为TED做的，标题是<a href="index.php?p=46">The Surprising Science of Happiness</a>。</p>
+<p>假如有一天本书的女主角读到了这里，下面是我想对她说的话。</p>
+<p>我不知道你是不是已经理解了我这句话：</p>
+<p>“比如，我某某人虽然大事做不到，但今天能约某某出来，就很开心。”</p>
+<p>这段话的前半段的意思是：“我某某人娶不到你某某”。</p>
+<p>为什么我会这样讲？听我慢慢说来。</p>
+<p>你童年的家让你感到了压抑，好，现在你也来听听我童年的家是怎样的。</p>
+<p>这是一栋民国时有钱人的三层私家别墅，建于20世纪二三十年代。曾经的私家别墅，当我出生时，已经被十几家人家分租了，变得一片狼藉。我们住在其中一间二楼的西厢房，啊拉儕是上海人，晓得个，西厢房不是好口采。但我们不是最惨的，更差的人家住储物室、花房，甚至黄包车亭。本来的围墙被拆掉了，取而代之的是乱糟糟的后起房。原本直通二楼客堂间的楼梯被拆除了——在那段动荡的历史中，为了防强盗不得已而为之。从此以后，房东自己都要从一楼原来的储物处，通过新搭的木质临时楼梯上二楼。这段储物处的路常年照不到阳光，黑漆漆，阴森森，横七竖八地停着许多自行车，我们叫它暗洞。记得小时候每次走暗洞，心里都怕怕的。“别墅”周围，还有更滚地龙的石库门。</p>
+<p>我们的西厢房只有20平米大，生活的全部都在这间“多功能厅”完成。没有抽水马桶，这两年弄堂里是有计划给居民加装抽水马桶，但对很多人家来说，房间就这点面积，装了马桶，直接变马桶间了。很多人家的“有机肥料”，都是用痰盂运输到公共“收集处”的。</p>
+<p>灶具和水源在我家门外的过道里，所以我们家一直习惯把这片公共空间叫“灶间”。所谓的“灶间”，直通临时楼梯，本身也是临时木质结构。烧饭洗东西都需要小心，不然木头可经受不起“冰火两重天”。我们家有两扇窗。朝北的那扇，直接面向对过人家的阳台，不到10米。朝南的那扇，和东面的窗蓬紧挨，永远开不到90度以外，又无缝连接着后起矮房的屋顶，说是屋顶，却比我们的窗还低。</p>
+<p>小时候，你家那种房子，弄堂里都叫“新工房”，很多人眼红的。</p>
+<p>因为绝大多数人家里都很挤，弄堂里经常有奔跑嬉戏的小孩，各色美味小吃也随即热闹了起来。我们的弄堂一度是远近闻名的小吃弄。</p>
+<p>我也睡的是小床，勉强可以翻身的那种，这个小床一直睡到大一，随后搬进了新房子，还是睡小床。童年的小床，白天藏在大床下面，晚上才拖出来，铺上被子。睡在床上，左面是父母的大床，偶尔可以爬上去撒娇，右面是电视机、录像机、游戏机等各种我心爱的东西。天热了，父母经常舍不得电费不开空调，说自然风最凉快。于是，我躺在床上，回忆着当年学校里新学的东西，偶尔做做思维体操。南窗外“凉快”的自然风带来了“肥料收集处”的“暗香”，以及猫儿们的“夜之歌”交响乐，不时还有棋牌室里的“呐喊助兴”。风儿带来这些的同时，也送我去了苏州。天实在热的时候，我就直接睡地板，特别凉快惬意。</p>
+<p>初中时，家里养了只猫，不知道为什么，我就整天打喷嚏，眼睛痒，后来才明白，我对猫过敏，但我还是忘不了猫咪带给我的快乐。在暗洞、木头楼梯和“灶间”，我常常和它玩名副其实的躲猫猫。天热了，就在南窗俯视着屋顶上它与其他“小伙伴”嬉戏。有一次，一只凶恶的大猫，把我家猫咪欺负得一塌糊涂，害它在家里躺了好几天，还上门来逞凶，太坏了。等我家小猫伤养好了，我看着它又出去，那只大猫便在外面拦着道，候着它，被我一顿连骂带吓。当夜，我家小猫就报了仇，成为了新一代的大王，威风不可一世。</p>
+<p>后来，我们搬进了新家，客观地说，条件要比原先好得多。但我却时常怀念过去。我常常梦见迷路，然后想着怎么回老家，有时候迷迷糊糊时，仍然错误地以为，我仍然睡在那张小床上。现在，我一个人睡在X国的双人大床时，还是时常有这样的错觉，向左翻身，叫爸爸妈妈，向右翻身，找儿时的电视机、录像机和游戏机。</p>
+<p>或许，要让你感觉你童年的家境还不错，这不太容易。是的，你并没有埋怨父母，好样的！但你还可以做得更好！问题不在于你要原谅谁，实现怎样的理想，而是如何更积极地看待生活。</p>
+<p>你中考分数，对不起，我已经忘了，但你记得很牢。</p>
+<p>我再来问你，我的生日是哪天？你忘了也不要紧，你自己的阴历生日是哪天？美元兑人民币，近十年来最高位和最低位分别是多少，在什么时候出现？你不是要抄底吗？</p>
+<p>如果我没猜错，以上数字你一个都不记得了。这并不奇怪，你的记忆力并没有什么不正常，因为它们不重要。</p>
+<p>对于一个30岁的人来说，她15岁的一场考试成绩很重要吗？</p>
+<p>答案显而易见。</p>
+<p>记忆是很奇怪的东西，要记住一件事情，往往要费很大的力气才行。不幸的是，如果你有一段不好的记忆，无论如何努力，你都不可能主动将它忘却。但记忆本身是中性的，好与不好，看你愿意去记住哪方面而已。</p>
+<p>就我自己而言，这段15年的记忆里，我更愿意多去回忆其中美好的故事，尤其是那两个小时，我感谢里面的女主角。</p>
+<p>你童年有哪些好的记忆，对不起，我了解得很少。如果我了解了，我们的故事就不会是这样的。但我还是找到了一样东西，肯定给你带来了欢乐。</p>
+<p>你还记得那袋香蕉巧克力吗？</p>
+<p>有人说：“生活不只是苟且，还有诗和远方。”</p>
+<p>我说：“生活不只是诗和远方，还有香蕉巧克力和橱窗里的娃娃。”</p>
+<p>诗和远方，虚幻缥缈；香蕉巧克力，却是实实在在的甜蜜。</p>
+<p>我看到那袋巧克力时，第一反应是，某某今天特地为我准备了份礼物，代表童趣，给回忆童年增加点气氛。我多么希望这是真的。但你却说：“随你怎么想吧。”我只能这样理解了：巧克力不是为我准备的，而是你平时包里放着的。</p>
+<p>你告诉我，你放弃了马尾辫，因为怕同事觉得你像小孩。</p>
+<p>看，你的巧克力不就是你的马尾辫吗？</p>
+<p>看，香蕉！可爱的形状还一样呢。</p>
+<p>如果我告诉你同事你包里有这袋东西，他们会怎么想呢？“哦，原来我们的经理还吃这么可爱的巧克力啊……”放心吧，我会帮你保守秘密的。</p>
+<p>爱吃这样的巧克力，证明“孩子气而居家”你室友一点没说错，因为你就像小孩子那样容易满足，不会给家庭造成高负担。“居家”带给别人幸福，容易满足的本性却让你自己的人生注定是快乐的。</p>
+<p>我眼里的某某，拥有阳光的笑容，辐射出美丽的心情。那两个小时里，我看到你脸上，90%以上的时间都在笑，和你少女时的开朗、活泼，哪有两样。校园里的你，很少有想做而做不好的事情。</p>
+<p>这样的人，如果还需要为过去感伤，还有天理吗！</p>
+<p>也许你会觉得，我说这些是为了麻醉你。但这不是我的意图。</p>
+<p>要做成一件事情，不仅仅需要努力，还需要懂这个公式：</p>
+<p>成功 = 信心 + 用对肌肉</p>
+<p>对于成功我并没有太大的发言权。但以我中学的经验来说，我初中的班级里，人人都是特长生，就我这个“特长生”只能算爱好者。人家有些同学电子琴、书法、朗诵和英语样样都行。可我仍然代表班级出去参加竞赛，如果我整天考虑的是为什么我就没他们厉害，我又怎么能够读好书呢？事实上，我初中音乐也算是学得好的，虽然很多同学起点都比我高。至于高中，你是某某初中的状元榜眼，你高三的同桌，是直升高中的，像她的水平，如果去参加中考，恐怕也是佼佼者，就我是分数确实只够某某高中而已。如果我去考虑过去谁比我强，岂不是要伤心死的？</p>
+<p>要读好书，就只需要认真听课，用心做作业而已。至于我以前有哪些失败的教训，千万不能变成某种情绪。前者是正确的肌肉，后者是不应该使用的错误肌肉。</p>
+<p>你很喜欢将你的情绪与人分享，你知道吗，你这样做很傻很残忍？</p>
+<p>有些人对你的情绪感到无所谓，虚情假意的同情，背后是冷漠的笑。</p>
+<p>但对于真正把你的不愉快当回事的人来说，他们在为你默默流着眼泪。你怎么可以这么过分呢？我不允许你这么做！</p>
+<p>If you shed tears when you only miss the twilight, <br />You WILL miss the stars as well.</p>
+<p>至于你照顾父母的困难，其实我当然什么也做不了啦。对你来说，首先，你应该权衡一下，婚后和他们住一起的利弊和难处。有些追求有如天上的月亮一样，可望不可及。也有些追求，给人一筹莫展的初步印象，但也不一定就真那么难。如果实在不行，你还是多回去看看吧。许多问题，人力毕竟有限。但你可以做到你可以做到的事情。回去看看，让他们感到女儿在的温暖。尽量让他们觉得，你也是需要他们的。人的心理就是这样的，如果他们知道你是在照顾他们，他们会怕给你造成负担，但如果他们认为你需要他们，他们会特别满足。</p>
+<p>还有，我劝你最好不要跳过早饭不吃。我大三的时候就发现你有这个习惯。</p>
+<p>美国人曾经有一项社会调查，他们想搞清楚为什么富人的孩子往往成年后要比穷人的孩子成功——你知道的，相对来说，西方国家机会更公平点——他们经过几十年跟踪调查，发现原因是富人的孩子受言传身教，有各种良好的生活习惯。他们遵循规律的作息时间，不暴饮暴食，也不乱节食——还有他们睡觉前会给手机充电。你可以去读读这两年刚解密的《蒋介石日记》，他就是一个学习榜样。不良饮食习惯，不但对你的健康不利，也影响到你的美丽，和充沛的精力。我知道，你跳过早饭很大程度上是由于你的工作造成的，但最好能够兼顾。</p>
+<p>最后，我想对你说：</p>
+<p>不必和过去告别，因为这不是寂寞的季节，而是新的似水年华。</p>
+<p>生活给你的爱一直很安静，这样的爱需要你的回应。</p>
+<p>春意三月草青青，锦瑟何须无端鸣。</p>
+	</div>
+</div>
+<div id="footer">
+	<div id="declaration">
+		本故事为作者亲身经历
+	</div>
+	<div id="bannerLine" class="Three">
+				<div class="middle">
+            			    <a href="about.html">MnNStory, 1 Sep 2001 - 12 Mar 2016</a>
+            		</div>
+	</div>
+	<hr class="m" />
+	<div id="switch2c" class="m">
+		<a href="">电脑版</a>
+	</div>
+</div>
+</body>
+</html>

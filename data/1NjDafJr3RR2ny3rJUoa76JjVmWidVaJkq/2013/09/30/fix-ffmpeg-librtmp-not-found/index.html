@@ -1,0 +1,274 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>
+      
+        Fix: librtmp not found in ffmpeg - 
+      
+      早起
+    </title>
+    <meta name="description" content="解决编译ffmpeg过程中出现的librtmp not found错误">
+    <meta name="author" content="Been Woo">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/css-social-buttons/css/zocial.stripped.css">
+    <link href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/css/pygments.css" rel="stylesheet" type="text/css" media="all">
+    <link href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/css/darkstrap.css" rel="stylesheet" type="text/css" media="all">
+    <link href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- fav and touch icons -->
+    <!-- Update these with your own images
+      <link rel="shortcut icon" href="images/favicon.ico">
+      <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+      <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+      <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+    -->
+  </head>
+
+  <body>
+    <div id="page-wrap">
+      <div class="navbar">
+        <div class="navbar-inner">
+          <div class="container">
+            <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </a>
+
+            <a class="brand" href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq">早起</a>
+
+            <div class="nav-collapse">
+              <ul class="nav">
+                
+                
+                
+
+
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/archive.html">归档</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/tags.html">标签</a></li>
+      	
+      
+    
+  
+
+
+
+              </ul>
+              <ul class="nav pull-right social visible-desktop">
+                <li class="divider-vertical"></li>
+                
+                <li>
+                  <a href="https://github.com/sqbing" class="zocial github icon" target="_blank">
+                    <span class="hidden-desktop">Github</span>
+                  </a>
+                </li>
+                
+                
+                
+                <li>
+                  <a href="https://twitter.com/sqbing" class="zocial twitter icon" target="_blank">
+                    <span class="hidden-desktop">Twitter</span>
+                  </a>
+                </li>
+                
+                
+                
+                <li>
+                  <a href="http://www.linkedin.com/in/beenwoo" class="zocial linkedin icon" target="_blank">
+                    <span class="hidden-desktop">LinkedIn</span>
+                  </a>
+                </li>
+                
+                
+                <li>
+                  <a href="http://feeds.feedburner.com/feedname" class="zocial rss icon" target="_blank">
+                    <span class="hidden-desktop">FeedBurner</span>
+                  </a>
+                </li>
+                
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="container">
+        <div class="content">
+          
+<div class="page-header">
+  <h1>
+    Fix: librtmp not found in ffmpeg 
+    
+  </h1>
+</div>
+
+<div class="row">
+  <div class="span8">
+    <p>服务器的yum坏了，运维的同事说“无解”，好吧，好吧……</p>
+
+<p>手动编译ffmpeg，配置参数为</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">./configure --enable-libfaac --enable-libx264 --enable-nonfree --enable-gpl --enable-librtmp
+</code></pre></div>
+<p>然后就一直停在</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">“librtmp not found”
+</code></pre></div>
+<p>下载编译了librtmp，搞定了头文件和库的链接还是报这个错，检查config.log发现check<em>pkg</em>config这个调用出错了，再看configure，这个调用貌似是检查librtmp这个包的安装情况，也许是手动安装没有更新包信息导致的。</p>
+
+<p>找到configure中对应librtmp检查的那行，可能长这样</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">enabled librtmp    &amp;&amp; require_pkg_config librtmp librtmp/rtmp.h RTMP_Socket
+</code></pre></div>
+<p>注释该行，再配置一次，通过了。</p>
+
+<p>经过这样的修改，编译时可能会报错，librtmp中的一些函数未定义，可以修改config.mak，找到EXTRALIBS这个宏，在后面追加“-lrtmp”即可。</p>
+
+    <hr>
+    <div class="pagination btn-group">
+      
+        <a class="btn prev" href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/2013/09/29/fix-nexus-7-2013-otg-storage/index.html" title="Fix: Nexus 7(2013) Wifi OTG Storage Issue">&larr; Previous</a>
+      
+        <a class="btn" href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/archive.html">Archive</a>
+      
+        <a class="btn next" href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/2013/10/10/ffmpeg-mosaic/index.html" title="使用ffmpeg为视频打码">Next &rarr;</a>
+      
+    </div>
+    <hr>
+    
+
+
+  <div id="disqus_thread"></div>
+<script type="text/javascript">
+    
+    var disqus_shortname = 'sqbingongithub'; // required: replace example with your forum shortname
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+
+  </div>
+  
+  <div class="span4">
+    <section>
+      <h4>Published</h4>
+      <div class="date"><span>30 September 2013</span></div>
+           
+    </section>
+    
+      <section>
+        <h4>Categories</h4>
+        
+      </section>
+         
+    
+      <section>
+        <h4>Tags</h4>
+        <ul class="tag_box">
+          
+          
+
+
+  
+     
+    	<li><a href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/tags.html#ffmpeg-ref">ffmpeg <span>2</span></a></li>
+     
+    	<li><a href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/tags.html#librtmp-ref">librtmp <span>1</span></a></li>
+    
+  
+
+
+
+        </ul>
+      </section>
+             
+  </div>
+</div>
+
+
+        </div>
+      </div> <!-- /container -->
+
+      <div class="footer-push"></div>
+    </div><!--/.page-wrap -->
+
+    <footer>
+      <div class="container">
+        <p>&copy; 2016 Been Woo
+          with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
+          and <a href="http://github.com/dhulihan/hooligan" target="_blank">The Hooligan Theme</a>
+        </p>
+      </div>
+    </footer>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/js/jquery.min.js"><\/script>')</script>
+    <script src="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/bootstrap/js/bootstrap.min.js"></script>
+
+    
+
+
+  <script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-44682525-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+
+  </body>
+</html>
+

@@ -1,0 +1,214 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="MnNStory: 我和一个女同学15年的故事">
+<meta name="keywords" content="MnNStory,校园爱情,15年,女同学,女生">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<title>心愿</title>
+<script src="jquery.js"></script>
+<script src="qrcode.js"></script>
+<script>
+function loadCSS(href) {
+	var cssLink = $("<link rel='stylesheet' type='text/css' href='"+href+"'>");
+	$("head").append(cssLink);
+	return cssLink;
+};
+
+var relocate;
+
+$(function(){
+            var device="computer";
+        var fontSize=($(window).width()/25).toFixed(0);
+        relocate=relocateC;
+    
+	loadCSS("main_"+device.substring(0, 1)+".css").load(function(){
+		relocate();
+		setTimeout(relocate, 1000);
+		setTimeout(function(){
+			var fontSize=$('body').css('fontSize');
+			var qrcode = new QRCode(document.getElementById("QRCode"), {
+				width : parseInt(fontSize)*7,
+				height : parseInt(fontSize)*7
+			});
+
+			qrcode.makeCode(window.location.href);
+		}, 1000);
+	});
+
+	$(window).resize(relocate);
+
+    
+	function relocateC(){
+		function bottom($el){
+			return $el.position().top + $el.outerHeight(true);
+		}
+
+		var $footer=$('#footer');
+		$footer.css({
+			top: 0,
+			display: 'none'
+		});
+		var top=Math.max(
+			bottom($('#textWrapper')),
+			bottom($('#contents')),
+			$(document).height() - $footer.outerHeight()
+		);
+		$footer.css({
+			top: top,
+			display: 'block'
+		});
+	}
+
+        $('.patch-more').click(function(){
+        var page=$(this).data('page');
+        var paragraph=$(this).data('paragraph');
+
+        location.href='page'+page+'.html#paragraph='+paragraph;
+    });
+
+    setTimeout(function () {
+                    var ret=document.referrer.match(/#paragraph=(\d+)/);
+                if (!ret) {
+            return;
+        }
+        var paragraph=ret[1]-1;
+
+        var objParagraph=$('#text p:eq('+paragraph+')');
+        var flash=function () {
+            objParagraph.css('color', 'red');
+            setTimeout(function() {
+                objParagraph.css('color', 'initial');
+            }, 1000);
+        };
+        $('html, body').animate({
+            scrollTop: objParagraph.offset().top-$('#textWrapper').offset().top,
+        }, 500, flash);
+    }, 100);
+
+    var pIndex=0;
+    $('#text p').each(function () {
+        ++pIndex;
+        if (!$(this).attr('id')) {
+            //$(this).attr('id', 'paragraph_'+pIndex);
+        }
+    });
+});
+
+function showComments(){
+	$.blockUI({
+		message: $('#disqus_thread'),
+	});
+
+	$('body').click($.unblockUI);
+}
+</script>
+</head>
+<body>
+<div id="cover" style="background-color: #F1F1F1; position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 2048;"></div>
+<div id="nav">
+	<div class="Three">
+		<div id="navLeft" class="left c">
+			<a href="page9.html" class="blackText">&lt;&lt;&lt;prev</a>		</div>
+		<div id="navRight" class="right c">
+			<a href="page11.html" class="blackText">next&gt;&gt;&gt;</a>		</div>
+		<div id="navTitle" class="middle">
+			心愿		</div>
+	</div>
+	<div class="Three m">
+		<div class="left" style="width: 4em">
+			<a href="page9.html" class="blackText">&lt;&lt;&lt;</a>		</div>
+		<div class="right" style="width: 4em">
+			<a href="page11.html" class="blackText">&gt;&gt;&gt;</a>		</div>
+		<div class="middle">
+			<a href="/index.html" class="blackText">[Home]</a>
+		</div>
+	</div>
+</div>
+<div id="images" class="c">
+	<a href="downloads/mnnstory.zip" target="_blank"> <img src="download.png" style="width: 100%;" title="下载" alt="Download" /> </a>
+	<p id="QRCode"></p>
+</div>
+<div id="contents" class="c">
+	<p class="contents_d0"><a href="index.html">目录</a></p>
+	<ul class="contents_d1"><li><a href='page1.html'>上册</a>
+<ul class="contents_d2"><li><a href='page2.html'>引子</a>
+</li><li><a href='page3.html'>初识</a>
+</li><li><a href='page4.html'>别情</a>
+</li><li><a href='page5.html'>追求</a>
+</li><li><a href='page6.html'>梦想</a>
+</li><li><a href='page7.html'>重逢</a>
+</li><li><a href='page8.html'>憧憬</a>
+</li><li><a href='page9.html'>移民</a>
+</li><li>心愿
+</li><li><a href='page11.html'>数学中最难的是概率</a>
+</li><li><a href='page12.html'>祝福</a>
+</li><li><a href='page13.html'>附录：秦始皇妈妈的故事</a>
+</ul></li><li><a href='page14.html'>上册配乐</a>
+</li><li><a href='page32.html'>下册</a>
+</li><li><a href='page47.html'>下册配乐</a>
+</li><li><a href='page49.html'>订正簿</a>
+</ul></div>
+<div id="disqus_thread"></div>
+<script>
+	var disqus_config = function () {
+		this.page.url = 'http://mnnstory.onion';
+		this.page.identifier = 10;
+		this.page.title = '心愿'
+	};
+
+
+	(function() {
+		var d = document, s = d.createElement('script');
+
+		s.src = '//mnnstory.disqus.com/embed.js';
+
+		s.setAttribute('data-timestamp', +new Date());
+		(d.head || d.body).appendChild(s);
+	})();
+</script>
+<div id="textWrapper">
+	<div id="text">
+		<p>我打算离开中国，以后再也不回来长住了。这一别，也许是5年10年，也许一生都见不到她了。经过一番思想斗争后，2016年2月5日，农历腊月二十八，离除夕只有两天，距我离开中国只有一个月，我决定最后试一试联系她。她被我写上了bucket list（英语中bucket list指，得了绝症的人最后的心愿清单）。</p>
+<p>我对于她的思念仍然存在，而缓解这种痛苦最好的办法莫过于见她一面。或许好几年没有联系了，加上我就要离开中国不回来了，两个理由加在一起，这个小小的心愿，可以一试。</p>
+<p>这么久没有联系，我真不知道这几年在她身上发生了些什么。也许她已经嫁人了——她都30了，按上海人的观念，如果还没嫁人那就太晚了。我打定主意，先打电话问明她婚姻状况。如果她已嫁人，那也很正常，应当坦然接受。电话中就对她礼貌几句，表示一下老同学的友谊即作罢。如果她没有结婚，就算她有男朋友了，也不妨试一下把她约出来。我更怕的是她已经换手机号了，那样我就根本联系不上她了。</p>
+<p>当我发去短信的时候，只有晚上7:49，而她回复的时候却已21:32了。等待中，我心乱如麻地尝试微信上找她，加她，也没有任何回应。最后，我看到她短信回复我了，还用了我高中时的昵称，我忍不住痴痴地笑了。笑的是什么，却连自己都说不清楚。我没有放下做到一半的蛋糕，但心里却急得乱七八糟，差点把蛋糕烤焦。在确认她此时方便接电话后，我便拨了过去，已经是22:18了。</p>
+<p>电话那一边传来的声音，仿佛又让我眼前出现了她的身影。但是听了几句后，我还是发现她的声音也已经历了岁月。她问我多久没联系了，我说想不起来了。她又问上一次交流时，她是否已经工作了，我说是。她得出了结论：“那应该是5年前，2011年。”</p>
+<p>我首先问她，春节什么时候放假，然后告诉她我要离开上海去海外定居了。急切的我，关于移民的事还没说完整，话锋陡转，问道：“最近过得如何？”她便回答我，去年七月刚从四大辞职。我说：“四大做了那么久，一定很辛苦吧。”她便对工作发表了一系列评论，主要是说工作的辛苦培养了她的能力。她仍是那样健谈，说起话来一套一套的，出口成章。我听着她说得津津有味，就“嗯嗯”“哈哈”地鼓励她多多发挥。问她可曾出过中国国境吗？她才回答，去过香港、澳门和韩国，最近还去过臺灣。</p>
+<p>然而这些都不是我的重点。我问她：“你还住在某某路吗？”她回答“是”。我虚晃一枪后随即切入主题：“你结婚了吗？”</p>
+<p>她犹豫了一下，回答却既不是“是”，也不是“不是”：“今年五月举办婚礼。”</p>
+<p>我已经有了思想准备，这个消息并没有让我受不了，但同时我也在挣扎还要不要约她出来。一边犹豫，一边就和她聊了起来。想到了我的心愿，我告诉她，我虽然准备好了移民，但觉得上海还有很多东西割舍不了。</p>
+<p>她首先恭喜我得偿所愿，恭维我的成就。然后说：“其实我也很想移民的（明显假的）。你不用依依难舍的，世事难料，也许你将来会回中国发展事业呢？”我告诉她：“第一，我移民是为了改善生活环境而不是出于事业上的考虑；第二，我此去是不准备回来的。”她则说道：“那也不要紧啊。以后找份可以两边住的工作，那就不需要舍不得了呀。很多能够移民的强人，工作都是不需要一直坐在办公室的，可以远程打电话督导啊。”</p>
+<p>对于这样的回答，我笑了笑，说：“我去的X国，很少有这种工作模式。”她说：“啊呀，我搞错了，原来你是去X国啊。我还以为是美国，因为我心目中，美国是事业发展最理想的国度。你去的那个国家也好得不得了……”</p>
+<p>然后她继续捧我，大致的意思是说我事业很成功云云。我才想起来，忙乱中我连去哪里，什么时候走都没说明白，就急着要打听她的婚姻状况了。而她刚刚那些恭喜和恭维，大多只是出于礼貌。</p>
+<p>我说：“这次打电话是为了让你知道，我下个月3月14日乘飞机，去往X国定居，以后不准备回来了。我想知道，你这5年都生活得怎样？”</p>
+<p>她答道：“我去年2015年7月从四大辞职了。”然后就不说了。</p>
+<p>我故意用凶巴巴的口气，像老师批评学生答题没答完整那样，问她：“没了吗？”</p>
+<p>她“啊”了一声，说：“我现在工作在某处（离她家有三小时的车程）。每天清晨很早要赶班车。但我还在利用闲暇时间学习新知识，想要考出更多的证书。”</p>
+<p>我觉得奇怪，问道：“你都30了，还在考证？”</p>
+<p>她答道：“是啊，也许我是一个工作狂。我是去年9月份，认识……应该叫男朋友吧。是我父母见我一直不想结婚，帮我找的对象。今年5月份就要结婚了，我却没什么心思。连刚贷款买下的新房，我都始终没有花时间去管管装修的事。”</p>
+<p>我已经不笑了。我当然不能笑着面对她已经在准备出嫁的现实，但这是次要的；也或许是我听得很认真，无暇去敷衍性地笑；更主要的是，我觉得好像哪里不对。</p>
+<p>她高中一门心思读书，是好孩子的表现（我那时比她更书痴）；她大学认真读书，是为了理想，更是由于高考失利的缺憾；初入职场，大多数人也会很自然地把心思都放在工作上：这些都合情合理。但现在呢？你都快结婚了，却在想些什么？别人到了这个时候都已经口口声声老公老婆了，你却还犹犹豫豫地说“应该叫男朋友吧”。</p>
+<p>我继续问她，新房在哪里？她说在某某处。她终于也问了我有没有结婚，但听到我说“没有”，也没继续问下去。然后想要就房贷问题发表些观点。我先是让她别展开。转念一想，她或许真的特别喜欢谈奋斗吧，最后满足她一次吧。于是我开始继续强笑着鼓励她多说，心里却很难受。</p>
+<p>我想不如换一种方式了解她，便问道：“你这样热爱事业，所追求的是什么？”她答道：“我是个好奇型的人，想要接触更多不同的东西，开阔视野。”</p>
+<p>她陶醉在梦想中，电话里的声音仿佛渐渐在我耳朵里轻了下来。那一刻，我却觉得是刚刚酒醒过来一样。</p>
+<p>电话里传来了一个男人的声音，这是我第一次听到她爸爸的声音。“洗澡了！”她只“哦”了一声。她爸爸又说了句什么，声音很小，我辨不明意思，猜想是问她“和谁打电话呢？”。她只应了两个字：“同学。”然后还想要继续发挥。我问她：“你都什么时候睡觉的？”此时已近11点了。她说：“为了一早赶班车，11点一般都会睡。”我马上说：“那快去睡吧。”她笑道：“我不是说睡就能睡下去的，还要先洗澡。你知道的，我洗澡……”我觉得洗澡的话题好像有点不雅，而且我并不知道我应该知道什么。但她似乎还是意犹未尽，我却打断了她的话：“那你快睡吧，今天到此为止了。”</p>
+<p>我并没有说以后常联系，因为她既然已经订婚了，这么说就不合适了。挂断电话，我发现这通电话持续了32分钟。同时我的微信也响了，她刚刚加了我。头像并不是她本人的相片，我虽有失望，但不强烈。</p>
+<p>深夜，灯已经关了，我坐在床边，回味着刚刚那半小时，百感交集。我仍在考虑要不要再试试把她约出来。内心有一个声音回答“要”，但是我选择了不要。原因是：1我不希望跟她出去玩，还听她陶醉在人生理想中。对于我来说，这简直是折磨。 2她并没有理解我打这个电话的目的，甚至没有一点告别之意。此时回头去告诉她，然后硬是把她约出来，即使她同意也是违背她心意的。这样对双方都不会有好处。</p>	</div>
+</div>
+<div id="footer">
+	<div id="declaration">
+		本故事为作者亲身经历
+	</div>
+	<div id="bannerLine" class="Three">
+				<div class="middle">
+            			    <a href="about.html">MnNStory, 1 Sep 2001 - 12 Mar 2016</a>
+            		</div>
+	</div>
+	<hr class="m" />
+	<div id="switch2c" class="m">
+		<a href="">电脑版</a>
+	</div>
+</div>
+</body>
+</html>

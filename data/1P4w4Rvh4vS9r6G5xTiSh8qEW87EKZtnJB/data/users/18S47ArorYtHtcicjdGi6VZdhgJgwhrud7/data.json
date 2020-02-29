@@ -1,0 +1,90 @@
+{
+    "issues": [
+        {
+            "title": "Uncaught exception in localStorage wrappers",
+            "body": "If the localStorage is not available in the user's browser, calling the `getItem` and `setItem` methods will raise an uncaught exception in the localStorage wrappers (i.e.,  `actionGetLocalStorage` and `actionSetLocalStorage`).\n\nIn Firefox this can be reproduced by setting `dom.storage.enabled` to false  in about:config.",
+            "date_added": 1521934467900,
+            "open": 1,
+            "reopened": 0,
+            "tags": "bug",
+            "id": 0
+        },
+        {
+            "title": "optionalFilePin internal error on many files ",
+            "body": "`optionalFilePin` raises the following error if given more than 999 (SQLITE_MAX_VARIABLE_NUMBER) files as argument:\n\n>Internal error: OperationalError: too many SQL variables\n>UiWebsocket.py line 81 > UiWebsocket.py line 258 > UiWebsocketPlugin.py line 203 > UiWebsocketPlugin.py line 198 > Db.py line 81 > DbCursor.py line 71",
+            "date_added": 1524094763800,
+            "open": 1,
+            "reopened": 0,
+            "tags": "bug",
+            "id": 1
+        },
+        {
+            "title": "Substitution in NewsfeedPlugin results in invalid query",
+            "body": "### Step 1: Please describe your environment\n\n  * ZeroNet version: 0.6.4 (rev3673)\n\n### Step 2: Describe the problem:\n\nSubstitution in NewsfeedPlugin results in invalid query.\n\n#### Steps to reproduce:\n\n```js\nupdateFollowFeed(watched_threads, update_message) {\n\tlet threads = watched_threads.join(\"','\");\n\tconst query = `\n\tSELECT p.id As event_uri,\n\t'comment' AS type,\n\tp.time AS date_added,\n\tt.subject AS title,\n\t(\n\tWITH parse(parsed, txt) AS (\n\t\tVALUES('', p.body) UNION\n\t\tSELECT SUBSTR(txt, 1, 1),\n\t\tCASE WHEN\n\t\tSUBSTR(txt,1, 1) = '>'\n\t\tAND SUBSTR(txt,10,1) = '-'\n\t\tAND SUBSTR(txt,15,1) = '-'\n\t\tAND SUBSTR(txt,20,1) = '-'\n\t\tAND SUBSTR(txt,25,1) = '-'\n\t\tTHEN SUBSTR(txt, 32)\n\t\tELSE SUBSTR(txt, 2)\n\t\tEND FROM parse\n\t\tWHERE LENGTH(txt) > 0\n\t) SELECT GROUP_CONCAT(parsed,'') FROM parse) AS body,\n\t'?:' || p.directory || ':' || p.uri || ':' || p.thread || ':50#' || p.id AS url\n\tFROM posts p\n\tINNER JOIN posts t\n\tON p.thread = t.id\n\tWHERE p.thread IN ('${threads}')\n\t`;\n\tthis.cmd(\"feedFollow\", [{\"Replies\" : [query, [\"\"]]}])\n}\n```\n\n#### Observed Results:\n\n>feed query Replies error: OperationalError: near \"WHERE\": syntax error in NewsfeedPlugin.py line 72 > SiteStorage.py line 187\n\n\nBecause of the UNION an incorrect WHERE was added to the query.\n```js\nSELECT p.id As event_uri,\n'comment' AS type,\np.time AS date_added,\nt.subject AS title,\n(\nWITH parse(parsed, txt) AS (\nVALUES('', p.body)  WHERE p.time > strftime('%s', 'now', '-8 day') UNION \nSELECT SUBSTR(txt, 1, 1),\nCASE WHEN\nSUBSTR(txt,1, 1) = '>'\nAND SUBSTR(txt,10,1) = '-'\nAND SUBSTR(txt,15,1) = '-'\nAND SUBSTR(txt,20,1) = '-'\nAND SUBSTR(txt,25,1) = '-'\nTHEN SUBSTR(txt, 32)\nELSE SUBSTR(txt, 2)\nEND FROM parse\nWHERE LENGTH(txt) > 0\n) SELECT GROUP_CONCAT(parsed,'') FROM parse) AS body,\n'?:' || p.directory || ':' || p.uri || ':' || p.thread || '#' || p.id AS url\nFROM posts p\nINNER JOIN posts t\nON p.thread = t.id\nWHERE p.thread IN ('')\n```\n\n#### Expected Results:\n\n  * What did you expect to happen?\n\nThe query to be executed without error.\n\nPS: If the `UNION` is replaced with `union` the query is executed successfully since, apparently, the conditions here are being case-sensitive.\n\nhttps://github.com/HelloZeroNet/ZeroNet/blob/master/plugins/Newsfeed/NewsfeedPlugin.py#L56",
+            "date_added": 1541204809000,
+            "open": 1,
+            "reopened": 0,
+            "tags": "bug",
+            "id": 2
+        }
+    ],
+    "next_issue_id": 3,
+    "issue_reactions": [],
+    "pull_requests": [
+        {
+            "title": "Handle denied access to LocalStorage",
+            "body": "Fixes http://127.0.0.1:43110/1GitLiXB6t5r8vuU2zC6a8GYj9ME6HMQ4t/repo/issues/view/?1P4w4Rvh4vS9r6G5xTiSh8qEW87EKZtnJB/0@18S47ArorYtHtcicjdGi6VZdhgJgwhrud7",
+            "date_added": 1522294844000,
+            "merged": 0,
+            "fork_address": "18c29AKwqVVhsHajmPJeSdaTMmmbsVstTU",
+            "fork_branch": "localstorage",
+            "tags": "Ui,media",
+            "id": 0
+        }
+    ],
+    "next_pull_request_id": 1,
+    "pull_request_actions": [
+        {
+            "pull_request_id": 0,
+            "pull_request_json": "data/users/18S47ArorYtHtcicjdGi6VZdhgJgwhrud7",
+            "action": "addTags",
+            "param": "Ui,media",
+            "date_added": 1522295045100,
+            "id": 0
+        }
+    ],
+    "next_pull_request_action_id": 1,
+    "pull_request_comments": [
+        {
+            "pull_request_id": 0,
+            "pull_request_json": "data/users/18S47ArorYtHtcicjdGi6VZdhgJgwhrud7",
+            "body": "```\n$ git diff HEAD^\ndiff --git a/src/Ui/media/all.js b/src/Ui/media/all.js\nindex ade5821..9e4caa8 100644\n--- a/src/Ui/media/all.js\n+++ b/src/Ui/media/all.js\n@@ -1371,7 +1371,16 @@ jQuery.extend( jQuery.easing,\n       return $.when(this.event_site_info).done((function(_this) {\n         return function() {\n           var data;\n-          data = localStorage.getItem(\"site.\" + _this.site_info.address + \".\" + _this.site_info.auth_address);\n+          try {\n+            data = localStorage.getItem(\"site.\" + _this.site_info.address + \".\" + _this.site_info.auth_address);\n+          } catch(err) {\n+            _this.log(\"GetLocalStorage error:\", err);\n+            return _this.sendInner({\n+              \"cmd\": \"response\",\n+              \"to\": message.id,\n+              \"result\": {}\n+            });\n+          }\n           if (!data) {\n             data = localStorage.getItem(\"site.\" + _this.site_info.address);\n             if (data) {\n@@ -1394,7 +1403,12 @@ jQuery.extend( jQuery.easing,\n \n     Wrapper.prototype.actionSetLocalStorage = function(message) {\n       var back;\n-      back = localStorage.setItem(\"site.\" + this.site_info.address + \".\" + this.site_info.auth_address, JSON.stringify(message.params));\n+      try {\n+        back = localStorage.setItem(\"site.\" + this.site_info.address + \".\" + this.site_info.auth_address, JSON.stringify(message.params));\n+      } catch(err) {\n+        this.log(\"SetLocalStorage error:\", err);\n+        back = {};\n+      }\n       return this.sendInner({\n         \"cmd\": \"response\",\n         \"to\": message.id,\n@@ -1694,4 +1708,4 @@ jQuery.extend( jQuery.easing,\n```",
+            "date_added": 1522295442600,
+            "id": 0
+        },
+        {
+            "pull_request_id": 0,
+            "pull_request_json": "data/users/18S47ArorYtHtcicjdGi6VZdhgJgwhrud7",
+            "body": "Thanks for the suggestion @gitcenter.\nI've amended the commit to return a `null` value in those cases.\n\nI've also modified the log to avoid flooding the console with stack trace info.\n\n```\ndiff --git a/src/Ui/media/all.js b/src/Ui/media/all.js\nindex ade5821..cc0c2ee 100644\n--- a/src/Ui/media/all.js\n+++ b/src/Ui/media/all.js\n@@ -1371,7 +1371,16 @@ jQuery.extend( jQuery.easing,\n       return $.when(this.event_site_info).done((function(_this) {\n         return function() {\n           var data;\n-          data = localStorage.getItem(\"site.\" + _this.site_info.address + \".\" + _this.site_info.auth_address);\n+          try {\n+            data = localStorage.getItem(\"site.\" + _this.site_info.address + \".\" + _this.site_info.auth_address);\n+          } catch(err) {\n+            _this.log(\"GetLocalStorage error:\", err.message);\n+            return _this.sendInner({\n+              \"cmd\": \"response\",\n+              \"to\": message.id,\n+              \"result\": null\n+            });\n+          }\n           if (!data) {\n             data = localStorage.getItem(\"site.\" + _this.site_info.address);\n             if (data) {\n@@ -1394,7 +1403,12 @@ jQuery.extend( jQuery.easing,\n \n     Wrapper.prototype.actionSetLocalStorage = function(message) {\n       var back;\n-      back = localStorage.setItem(\"site.\" + this.site_info.address + \".\" + this.site_info.auth_address, JSON.stringify(message.params));\n+      try {\n+        back = localStorage.setItem(\"site.\" + this.site_info.address + \".\" + this.site_info.auth_address, JSON.stringify(message.params));\n+      } catch(err) {\n+        this.log(\"SetLocalStorage error:\", err.message);\n+        back = null;\n+      }\n       return this.sendInner({\n         \"cmd\": \"response\",\n         \"to\": message.id,\n@@ -1694,4 +1708,4 @@ jQuery.extend( jQuery.easing,\n \n   window.zeroframe = new WrapperZeroFrame(window.wrapper);\n```",
+            "date_added": 1522428969800,
+            "id": 1
+        }
+    ],
+    "next_pull_request_comment_id": 2,
+    "pull_request_reactions": [
+        {
+            "comment_id": 5,
+            "comment_json": "data/users/1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di",
+            "pull_request_id": 0,
+            "pull_request_json": "data/users/18S47ArorYtHtcicjdGi6VZdhgJgwhrud7",
+            "reaction": "heart"
+        },
+        {
+            "comment_id": 5,
+            "comment_json": "data/users/1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di",
+            "pull_request_id": 0,
+            "pull_request_json": "data/users/18S47ArorYtHtcicjdGi6VZdhgJgwhrud7",
+            "reaction": "thumbs-up"
+        }
+    ]
+}

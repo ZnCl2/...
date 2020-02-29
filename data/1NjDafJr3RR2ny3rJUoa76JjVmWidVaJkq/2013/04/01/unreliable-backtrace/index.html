@@ -1,0 +1,283 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>
+      
+        不靠谱的backtrace - 
+      
+      早起
+    </title>
+    <meta name="description" content="不靠谱的backtrace，增加日志后调试发现确实如此，backtrace报告的代码不是真正出问题的代码。">
+    <meta name="author" content="Been Woo">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/css-social-buttons/css/zocial.stripped.css">
+    <link href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/css/pygments.css" rel="stylesheet" type="text/css" media="all">
+    <link href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/css/darkstrap.css" rel="stylesheet" type="text/css" media="all">
+    <link href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- fav and touch icons -->
+    <!-- Update these with your own images
+      <link rel="shortcut icon" href="images/favicon.ico">
+      <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+      <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+      <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+    -->
+  </head>
+
+  <body>
+    <div id="page-wrap">
+      <div class="navbar">
+        <div class="navbar-inner">
+          <div class="container">
+            <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </a>
+
+            <a class="brand" href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq">早起</a>
+
+            <div class="nav-collapse">
+              <ul class="nav">
+                
+                
+                
+
+
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/archive.html">归档</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/tags.html">标签</a></li>
+      	
+      
+    
+  
+
+
+
+              </ul>
+              <ul class="nav pull-right social visible-desktop">
+                <li class="divider-vertical"></li>
+                
+                <li>
+                  <a href="https://github.com/sqbing" class="zocial github icon" target="_blank">
+                    <span class="hidden-desktop">Github</span>
+                  </a>
+                </li>
+                
+                
+                
+                <li>
+                  <a href="https://twitter.com/sqbing" class="zocial twitter icon" target="_blank">
+                    <span class="hidden-desktop">Twitter</span>
+                  </a>
+                </li>
+                
+                
+                
+                <li>
+                  <a href="http://www.linkedin.com/in/beenwoo" class="zocial linkedin icon" target="_blank">
+                    <span class="hidden-desktop">LinkedIn</span>
+                  </a>
+                </li>
+                
+                
+                <li>
+                  <a href="http://feeds.feedburner.com/feedname" class="zocial rss icon" target="_blank">
+                    <span class="hidden-desktop">FeedBurner</span>
+                  </a>
+                </li>
+                
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="container">
+        <div class="content">
+          
+<div class="page-header">
+  <h1>
+    不靠谱的backtrace 
+    
+  </h1>
+</div>
+
+<div class="row">
+  <div class="span8">
+    <h1>起因</h1>
+
+<p>今天遇到一个问题，程序收到abort信号后退出，打开core文件后很快定位到目标代码，但是很奇怪的是目标代码似乎没有问题，反而是目标代码附近的代码看起来比较可疑。
+增加日志后调试发现确实如此，backtrace报告的代码不是真正出问题的代码。</p>
+
+<h1>重现</h1>
+<div class="highlight"><pre><code class="language-text" data-lang="text">#include &quot;base.h&quot;
+#include &quot;stdio.h&quot;
+boost::shared_ptr&lt;std::string&gt; err_str;
+boost::shared_ptr&lt;std::string&gt; normal_str2;
+int main(int argc, char **argv)
+{
+    err_str.reset();
+    normal_str2 = boost::shared_ptr&lt;std::string&gt;(new std::string);
+    *normal_str2 = &quot;test&quot;;
+    printf(&quot;before\n&quot;);
+    std::string l_test_str = *(err_str); // !!!
+    printf(&quot;after\n&quot;);
+    printf(&quot;%c\n&quot;, normal_str2-&gt;at(0));
+    return 0;
+}
+</code></pre></div>
+<p>上面代码的错误很明显，使用＊获取一个空指针的值，会导致BOOST_ASSERT失败，程序会因abort信号而退出。在我的机器上，gdb告诉我，是reset的那行代码出了问题，真让人摸不着头脑。当然before还是会打印出来的。</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">#include &quot;base.h&quot;
+#include &quot;stdio.h&quot;
+boost::shared_ptr&lt;std::string&gt; err_str;
+boost::shared_ptr&lt;std::string&gt; normal_str2;
+int main(int argc, char **argv)
+{
+    err_str.reset();
+    normal_str2 = boost::shared_ptr&lt;std::string&gt;(new std::string);
+    *normal_str2 = &quot;test&quot;;
+    printf(&quot;before\n&quot;);
+    assert(err_str.get()); // !!!
+    printf(&quot;after\n&quot;);
+    printf(&quot;%c\n&quot;, normal_str2-&gt;at(0));
+    return 0;
+}
+</code></pre></div>
+<p>上面的代码会在错误行abort，并且backtrace给出的行号是正确的。</p>
+
+<h1>结论</h1>
+
+<p>相信日志吧！backtrace仅供参考。
+本人能力有限，目前只能怀疑是＊操作破坏了栈，导致backtrace报告了错误的代码位置。有心的朋友可以用objdump看看汇编代码，若找到真正原因，希望也能和我分享。谢谢！</p>
+
+    <hr>
+    <div class="pagination btn-group">
+      
+        <a class="btn prev" href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/2013/03/26/new-post/index.html" title="new post">&larr; Previous</a>
+      
+        <a class="btn" href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/archive.html">Archive</a>
+      
+        <a class="btn next" href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/2013/04/03/deps/index.html" title="一些.deps文件未更新导致的问题">Next &rarr;</a>
+      
+    </div>
+    <hr>
+    
+
+
+  <div id="disqus_thread"></div>
+<script type="text/javascript">
+    
+    var disqus_shortname = 'sqbingongithub'; // required: replace example with your forum shortname
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+
+  </div>
+  
+  <div class="span4">
+    <section>
+      <h4>Published</h4>
+      <div class="date"><span>01 April 2013</span></div>
+           
+    </section>
+    
+      <section>
+        <h4>Categories</h4>
+        
+      </section>
+         
+             
+  </div>
+</div>
+
+
+        </div>
+      </div> <!-- /container -->
+
+      <div class="footer-push"></div>
+    </div><!--/.page-wrap -->
+
+    <footer>
+      <div class="container">
+        <p>&copy; 2016 Been Woo
+          with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
+          and <a href="http://github.com/dhulihan/hooligan" target="_blank">The Hooligan Theme</a>
+        </p>
+      </div>
+    </footer>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/js/jquery.min.js"><\/script>')</script>
+    <script src="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/bootstrap/js/bootstrap.min.js"></script>
+
+    
+
+
+  <script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-44682525-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+
+  </body>
+</html>
+

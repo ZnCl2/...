@@ -1,0 +1,219 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="MnNStory: 我和一个女同学15年的故事">
+<meta name="keywords" content="MnNStory,校园爱情,15年,女同学,女生">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<title>追求</title>
+<script src="jquery.js"></script>
+<script src="qrcode.js"></script>
+<script>
+function loadCSS(href) {
+	var cssLink = $("<link rel='stylesheet' type='text/css' href='"+href+"'>");
+	$("head").append(cssLink);
+	return cssLink;
+};
+
+var relocate;
+
+$(function(){
+            var device="computer";
+        var fontSize=($(window).width()/25).toFixed(0);
+        relocate=relocateC;
+    
+	loadCSS("main_"+device.substring(0, 1)+".css").load(function(){
+		relocate();
+		setTimeout(relocate, 1000);
+		setTimeout(function(){
+			var fontSize=$('body').css('fontSize');
+			var qrcode = new QRCode(document.getElementById("QRCode"), {
+				width : parseInt(fontSize)*7,
+				height : parseInt(fontSize)*7
+			});
+
+			qrcode.makeCode(window.location.href);
+		}, 1000);
+	});
+
+	$(window).resize(relocate);
+
+    
+	function relocateC(){
+		function bottom($el){
+			return $el.position().top + $el.outerHeight(true);
+		}
+
+		var $footer=$('#footer');
+		$footer.css({
+			top: 0,
+			display: 'none'
+		});
+		var top=Math.max(
+			bottom($('#textWrapper')),
+			bottom($('#contents')),
+			$(document).height() - $footer.outerHeight()
+		);
+		$footer.css({
+			top: top,
+			display: 'block'
+		});
+	}
+
+        $('.patch-more').click(function(){
+        var page=$(this).data('page');
+        var paragraph=$(this).data('paragraph');
+
+        location.href='page'+page+'.html#paragraph='+paragraph;
+    });
+
+    setTimeout(function () {
+                    var ret=document.referrer.match(/#paragraph=(\d+)/);
+                if (!ret) {
+            return;
+        }
+        var paragraph=ret[1]-1;
+
+        var objParagraph=$('#text p:eq('+paragraph+')');
+        var flash=function () {
+            objParagraph.css('color', 'red');
+            setTimeout(function() {
+                objParagraph.css('color', 'initial');
+            }, 1000);
+        };
+        $('html, body').animate({
+            scrollTop: objParagraph.offset().top-$('#textWrapper').offset().top,
+        }, 500, flash);
+    }, 100);
+
+    var pIndex=0;
+    $('#text p').each(function () {
+        ++pIndex;
+        if (!$(this).attr('id')) {
+            //$(this).attr('id', 'paragraph_'+pIndex);
+        }
+    });
+});
+
+function showComments(){
+	$.blockUI({
+		message: $('#disqus_thread'),
+	});
+
+	$('body').click($.unblockUI);
+}
+</script>
+</head>
+<body>
+<div id="cover" style="background-color: #F1F1F1; position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 2048;"></div>
+<div id="nav">
+	<div class="Three">
+		<div id="navLeft" class="left c">
+			<a href="page36.html" class="blackText">&lt;&lt;&lt;prev</a>		</div>
+		<div id="navRight" class="right c">
+			<a href="page38.html" class="blackText">next&gt;&gt;&gt;</a>		</div>
+		<div id="navTitle" class="middle">
+			追求		</div>
+	</div>
+	<div class="Three m">
+		<div class="left" style="width: 4em">
+			<a href="page36.html" class="blackText">&lt;&lt;&lt;</a>		</div>
+		<div class="right" style="width: 4em">
+			<a href="page38.html" class="blackText">&gt;&gt;&gt;</a>		</div>
+		<div class="middle">
+			<a href="/index.html" class="blackText">[Home]</a>
+		</div>
+	</div>
+</div>
+<div id="images" class="c">
+	<a href="downloads/mnnstory.zip" target="_blank"> <img src="download.png" style="width: 100%;" title="下载" alt="Download" /> </a>
+	<p id="QRCode"></p>
+</div>
+<div id="contents" class="c">
+	<p class="contents_d0"><a href="index.html">目录</a></p>
+	<ul class="contents_d1"><li><a href='page1.html'>上册</a>
+</li><li><a href='page14.html'>上册配乐</a>
+</li><li><a href='page32.html'>下册</a>
+<ul class="contents_d2"><li><a href='page33.html'>心愿</a>
+</li><li><a href='page34.html'>概率</a>
+</li><li><a href='page35.html'>重逢</a>
+</li><li><a href='page36.html'>街景</a>
+</li><li>追求
+</li><li><a href='page38.html'>梦想</a>
+</li><li><a href='page39.html'>糖果</a>
+</li><li><a href='page40.html'>夕阳无限好</a>
+</li><li><a href='page41.html'>电影</a>
+</li><li><a href='page42.html'>怪谁</a>
+</li><li><a href='page43.html'>寄语</a>
+</li><li><a href='page44.html'>移民</a>
+</li><li><a href='page45.html'>永远</a>
+</li><li><a href='page46.html'>附录：幸福的惊人科学发现</a>
+</ul></li><li><a href='page47.html'>下册配乐</a>
+</li><li><a href='page49.html'>订正簿</a>
+</ul></div>
+<div id="disqus_thread"></div>
+<script>
+	var disqus_config = function () {
+		this.page.url = 'http://mnnstory.onion';
+		this.page.identifier = 37;
+		this.page.title = '追求'
+	};
+
+
+	(function() {
+		var d = document, s = d.createElement('script');
+
+		s.src = '//mnnstory.disqus.com/embed.js';
+
+		s.setAttribute('data-timestamp', +new Date());
+		(d.head || d.body).appendChild(s);
+	})();
+</script>
+<div id="textWrapper">
+	<div id="text">
+		<p>从见面开始，我们就边走边谈。</p>
+<p>我问她：“你的奶奶……以及其他老人还在吗？”她答道：“都已过世。”我说：“我爷爷过年前刚走。现在那一辈人都离开了。”她安慰道：“你爷爷也希望你不带任何思想包袱移民啊。”</p>
+<p>她说：“你知道吗，现在上海的<a href="#comment_1" class="issue">学区房</a><sup id="issue_1">1</sup>价格，有些地段已涨到了每平米建筑面积9万人民币。真是疯狂。”我评论道：“这个时代确实有许多家长令人费解。我以前有个同事说要给女儿报班学英语。问他女儿多大？才三岁。这么小，母语都不熟，学什么英语，又不是X国小孩。X国小孩这么小要学汉语，我都觉得不合适。”</p>
+<p>她说：“有些早教机构的话，很难反驳的。比方他们教小孩玩各种积木，宣称可以开发早期智力，例如想象力、创造力等。”我忍不住讲：“大人最重要的是让小孩感受到爱。用心去陪就有效果。也不一定要教什么，关键是要认真，肯花时间。孩子是能体会到的。”</p>
+<p>她讲了些经济方面的东西。她说：“过去的人，只要肯钻研，很多都能翻身。这个时代却不同，谁都受过高等教育。一有新机会，大家都有敏锐的嗅觉，然后挤破头地争。要在当今创造奇迹，可不容易。真羡慕以前的人，看准时机，来个抄底，立马身价百倍。”</p>
+<p>我说：“你经济方面真懂，我几乎一窍不通，看来也要好好学学了。”关于“抄底”，我评论道：“那是碰运气的吧。”</p>
+<p>她又说：“不过，个人的力量实在微弱。你说，阶层可以改变吗？”我感到“阶层”这个词，似很熟悉，她仿佛以前说过，我却想不起来。这问题很难答，只能硬着头皮说实话：“我觉得，中国现在的情况好像不太稳定。社会或许正处于某种巨大的变革中，我们有生之年何时会有一次洗牌也说不定。”</p>
+<p>她说：“低阶层的人，一直生活在压力中，却难以改变。世世代代挣扎于怪圈中。还是你好，通过移民跳了出去。”</p>
+<p>她问：“你移民真是为了环境和空气？”我答道：“是。”她评论道：“哦。那你的追求比我高。”</p>
+<p>她说：“现在你要移民，瞅准了，有机会别忘了利用人民币在低位的时候抄底哦，若换成美元。以后可以赚很多。”我忍不住讲：“美元不是X国的法币，应该是某币。”她说：“某币也可以。”她见我没反应，又重复了一遍：“我是认真的哦，去试试抄底哦！”</p>
+<p>我说：“我手里没有什么巨款，玩不起这种游戏。虽说我现在有X国绿卡，中国的外币管制政策对我仍适用。不能随心所欲地把人民币都换成外币。”她继续给我出主意：“也许你真手握大笔资金。一般可以让亲戚一起帮忙，再不行，分几年转。”</p>
+<p>她说：“你不知道这个世道人心有多浮躁。听朋友讲，某村有个小官的儿子，来到上海全额买下一套500万人民币的房子。你要知道，是全额。那是什么概念！你懂的，那个老爸一定是小官巨贪。”</p>
+<p>我心想，不对啊，为什么此事说明了人心浮躁呢？如果她的逻辑是：“芝麻官的儿子都有500万，有那么多人行贿，真是人心浮躁之极。”那好像还有点道理。能拿出500万人民币确实厉害，但也不一定就是贪官。我也听说过某工程师，挣了500万血汗人民币，移民去X国全额买下了一套房子。</p>
+<p>她指着一家咖啡店说：“到了，就是这里，进去吧。”我知道，今天见面的一个章节已结束。在走这段路的时候，她也问起过X国的情况。我回答都很简短。因为：1我今天是来享受见她的，应该把说话的机会和时间尽量让给她；2我不是来谈朋友，不必自吹自擂。</p>
+<p>进了店里，我让她先挑饮料，旁边等着。她选定一种咖啡后，问我：“大杯还是小杯？”我答道：“随便。”心里却在呼喊：“大杯小杯怎么行？小二，来大缸！要永远喝不完的那种！”</p>
+<p>她询问了两种杯子的尺寸。店员比划了一下，她认真地也跟着做了遍。最后得出结论：“哦，那么还是大杯合算。就大杯吧。”</p>
+<p>我并不是诚心来喝咖啡的，就算是白开水，也不会计较多贵。价目表我看都不看，直接说：“跟她一样。”</p>
+<p>出门前，我曾打算要让她买单。我觉得这样，会让她得到满足感。不过作为礼貌，我还须“假惺惺”地客气下。于是我掏出了钱包，准备等她和我抢着买。</p>
+<p>她立刻说：“谢谢。”只见她笑得多么灿烂。我想，可以付了款后，过一会儿再对她用开玩笑的口气讲：“我说过今天请客吗？刚刚是给你垫一下钱。你不是说过要给我买饮料的嘛？现在钞票拿来。”</p>
+<p>买好咖啡后，看着她的笑，话到喉咙口又吞了下去。也许我来买单，她会更满足。</p>
+<p>她问：“你是想呆里面，还是出去看着街景喝？”我答道：“无所谓。如果你不怕冷，外面也行。”她或许会错了意，就拿着咖啡走出了小店。</p>
+<p>一般我和朋友见面，尤其是女性，习惯面对面坐。但我很想和她靠得近一点，于是等她坐下后，与她斜向并排坐。这样略微侧转，可以看到她的眼睛，同时，距离也适当地近。她可能感到迎面的风太大，换了个位置再次坐下，仍与我保持斜向并排，距离不变。</p>
+<p>我把糖包撕开，洒在咖啡里，搅拌了一下。怕包装纸被风吹走，用东西压在桌上。在X国，很少有人乱扔垃圾。她喝了口咖啡，见到我这个动作，也依样画葫芦。</p>
+<p>喝着咖啡，我们聊开了。</p>
+<hr class="comment" />
+<p class="comment" id='comment_1'><a href="#issue_1" class="comment">[1]</a>
+为了限制人口自由流动，中国政府强制实行户口制度。在中国的许多地方，政府机关参照户口，按区域划分生源，由公立学校招收。不少家长为了让独生子女进重点学校，不惜高价购买特定区域的房子，以修改户口本。这类房子称“学区房”。
+</p>
+<p>&nbsp;</p>	</div>
+</div>
+<div id="footer">
+	<div id="declaration">
+		本故事为作者亲身经历
+	</div>
+	<div id="bannerLine" class="Three">
+				<div class="middle">
+            			    <a href="about.html">MnNStory, 1 Sep 2001 - 12 Mar 2016</a>
+            		</div>
+	</div>
+	<hr class="m" />
+	<div id="switch2c" class="m">
+		<a href="">电脑版</a>
+	</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="MnNStory: 我和一个女同学15年的故事">
+<meta name="keywords" content="MnNStory,校园爱情,15年,女同学,女生">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<title>移民</title>
+<script src="jquery.js"></script>
+<script src="qrcode.js"></script>
+<script>
+function loadCSS(href) {
+	var cssLink = $("<link rel='stylesheet' type='text/css' href='"+href+"'>");
+	$("head").append(cssLink);
+	return cssLink;
+};
+
+var relocate;
+
+$(function(){
+            var device="computer";
+        var fontSize=($(window).width()/25).toFixed(0);
+        relocate=relocateC;
+    
+	loadCSS("main_"+device.substring(0, 1)+".css").load(function(){
+		relocate();
+		setTimeout(relocate, 1000);
+		setTimeout(function(){
+			var fontSize=$('body').css('fontSize');
+			var qrcode = new QRCode(document.getElementById("QRCode"), {
+				width : parseInt(fontSize)*7,
+				height : parseInt(fontSize)*7
+			});
+
+			qrcode.makeCode(window.location.href);
+		}, 1000);
+	});
+
+	$(window).resize(relocate);
+
+    
+	function relocateC(){
+		function bottom($el){
+			return $el.position().top + $el.outerHeight(true);
+		}
+
+		var $footer=$('#footer');
+		$footer.css({
+			top: 0,
+			display: 'none'
+		});
+		var top=Math.max(
+			bottom($('#textWrapper')),
+			bottom($('#contents')),
+			$(document).height() - $footer.outerHeight()
+		);
+		$footer.css({
+			top: top,
+			display: 'block'
+		});
+	}
+
+        $('.patch-more').click(function(){
+        var page=$(this).data('page');
+        var paragraph=$(this).data('paragraph');
+
+        location.href='page'+page+'.html#paragraph='+paragraph;
+    });
+
+    setTimeout(function () {
+                    var ret=document.referrer.match(/#paragraph=(\d+)/);
+                if (!ret) {
+            return;
+        }
+        var paragraph=ret[1]-1;
+
+        var objParagraph=$('#text p:eq('+paragraph+')');
+        var flash=function () {
+            objParagraph.css('color', 'red');
+            setTimeout(function() {
+                objParagraph.css('color', 'initial');
+            }, 1000);
+        };
+        $('html, body').animate({
+            scrollTop: objParagraph.offset().top-$('#textWrapper').offset().top,
+        }, 500, flash);
+    }, 100);
+
+    var pIndex=0;
+    $('#text p').each(function () {
+        ++pIndex;
+        if (!$(this).attr('id')) {
+            //$(this).attr('id', 'paragraph_'+pIndex);
+        }
+    });
+});
+
+function showComments(){
+	$.blockUI({
+		message: $('#disqus_thread'),
+	});
+
+	$('body').click($.unblockUI);
+}
+</script>
+</head>
+<body>
+<div id="cover" style="background-color: #F1F1F1; position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 2048;"></div>
+<div id="nav">
+	<div class="Three">
+		<div id="navLeft" class="left c">
+			<a href="page43.html" class="blackText">&lt;&lt;&lt;prev</a>		</div>
+		<div id="navRight" class="right c">
+			<a href="page45.html" class="blackText">next&gt;&gt;&gt;</a>		</div>
+		<div id="navTitle" class="middle">
+			移民		</div>
+	</div>
+	<div class="Three m">
+		<div class="left" style="width: 4em">
+			<a href="page43.html" class="blackText">&lt;&lt;&lt;</a>		</div>
+		<div class="right" style="width: 4em">
+			<a href="page45.html" class="blackText">&gt;&gt;&gt;</a>		</div>
+		<div class="middle">
+			<a href="/index.html" class="blackText">[Home]</a>
+		</div>
+	</div>
+</div>
+<div id="images" class="c">
+	<a href="downloads/mnnstory.zip" target="_blank"> <img src="download.png" style="width: 100%;" title="下载" alt="Download" /> </a>
+	<p id="QRCode"></p>
+</div>
+<div id="contents" class="c">
+	<p class="contents_d0"><a href="index.html">目录</a></p>
+	<ul class="contents_d1"><li><a href='page1.html'>上册</a>
+</li><li><a href='page14.html'>上册配乐</a>
+</li><li><a href='page32.html'>下册</a>
+<ul class="contents_d2"><li><a href='page33.html'>心愿</a>
+</li><li><a href='page34.html'>概率</a>
+</li><li><a href='page35.html'>重逢</a>
+</li><li><a href='page36.html'>街景</a>
+</li><li><a href='page37.html'>追求</a>
+</li><li><a href='page38.html'>梦想</a>
+</li><li><a href='page39.html'>糖果</a>
+</li><li><a href='page40.html'>夕阳无限好</a>
+</li><li><a href='page41.html'>电影</a>
+</li><li><a href='page42.html'>怪谁</a>
+</li><li><a href='page43.html'>寄语</a>
+</li><li>移民
+</li><li><a href='page45.html'>永远</a>
+</li><li><a href='page46.html'>附录：幸福的惊人科学发现</a>
+</ul></li><li><a href='page47.html'>下册配乐</a>
+</li><li><a href='page49.html'>订正簿</a>
+</ul></div>
+<div id="disqus_thread"></div>
+<script>
+	var disqus_config = function () {
+		this.page.url = 'http://mnnstory.onion';
+		this.page.identifier = 44;
+		this.page.title = '移民'
+	};
+
+
+	(function() {
+		var d = document, s = d.createElement('script');
+
+		s.src = '//mnnstory.disqus.com/embed.js';
+
+		s.setAttribute('data-timestamp', +new Date());
+		(d.head || d.body).appendChild(s);
+	})();
+</script>
+<div id="textWrapper">
+	<div id="text">
+		<p>When I was on my flight to X, I couldn&rsquo;t help but thinking of her and our story. During the approximately 12 hours aboard, I didn&rsquo;t sleep.</p>
+<p>Upon arrival, I took a cab home. The driver had an obvious local accent. When he had figured out the right direction and was driving at ease, I asked and was told that the journey would take about 15 minutes.</p>
+<p>&lsquo;Fifteen minutes may be long enough to tell my story in brief.&rsquo; I began, and then narrated to him from 15 years ago. Soon, I was in my college years when for the second time she rejected me. He promptly stopped me, and commented, &lsquo;Oh, she&rsquo;s so cold.&rsquo;</p>
+<p>Is she? To be honest, I have no idea. I wasn&rsquo;t there to argue with him. I was supposed to seek help and take advice instead. So I gave no comment to his accusation.</p>
+<p>He added, &lsquo;Maybe, she had another boyfriend.&rsquo;</p>
+<p>That was a fair guess. The time I was hurt at college, my roommates also suggested this, though there was no evidence. One of my roommates even had a remark about her similar to the driver&rsquo;s: &lsquo;She&rsquo;s unfeeling and fickle.&rsquo; However, from my observation in the subsequent years, she didn&rsquo;t appear to be dating anybody in quite a long period. </p>
+<p>I said to the driver, &lsquo;No, she didn&rsquo;t. It was more likely she wanted to improve her academic performance for the sake of her pursuit.&rsquo;</p>
+<p>He said, &lsquo;You mentioned you asked her to a course together. I wouldn&rsquo;t have done that. I would have taken her to a movie or something.&rsquo;</p>
+<p>I replied, &lsquo;No. She was concentrating on her studies. She would have probably turned me down if I had done otherwise.&rsquo;</p>
+<p>He said, &lsquo;She&rsquo;s focusing on something else. Forget about her. There&rsquo;re plenty of women in this country. No need to worry at all.&rsquo;</p>
+<p>回到家，疲倦的我在大白天睡了很久。醒来时，看到她微信朋友圈里的发言：</p>
+<p>“座位旁的玻璃爆了……大难不死……cei cei&lt;哭&gt;&lt;哭&gt;&lt;哭&gt;”</p>
+<p>从她附上的三张照片看，并没有真实的危险，玻璃只是裂开下落，并没“爆”炸，不像会伤到人。</p>
+<p>“其实去X国又怎样呢？微信上，不一样可以联系吗？”这句话似又在我耳边回响着。有意无意间，类似的言语，她重复了三遍。</p>
+<p>2016年2月5日，在电话中，当我谈到对故乡无法割舍的情结时，她第一次安慰我：“也许你将来会回中国发展事业呢？”虽然，她当时应该并不知道，真正让我无法割舍的其实是她。</p>
+<p>第二次，2016年3月10日，她应该已经知道我的心事了，在微信里，她又安慰我：“……你可以回来玩，我以后也可以去X国玩耍呀……”</p>
+<p>第三次，2016年3月12日，分别时，她还留下了这句话：“其实去X国又怎样呢？微信上，不一样可以联系吗？”</p>
+<p>我没对她“执著”的劝慰，给出哪怕一次正面的回应。为什么？</p>
+<p>因为我很怕。我感到这好像是历史的重演：高三时，她也针对我的难舍，给我类似的安慰。后来，她的话竟全部应验了，但代价实在太高。我唯恐，万一再次应验，这回可不是闹着玩的。</p>
+<p>但是，她第三次的劝慰，像是发自内心的，如果当真从此不再和她联系了，我将多么空虚。</p>
+<p>在犹豫一番以后，我决定对她的劝慰，做个迟到的表态。于是，我在她的发言下面，给了个玩笑性的评论：</p>
+<p>“谁叫你咒我马航出事，幸好你呸了。睡醒了果然看到了现世报。”</p>
+<p>她因何安慰我三次，是我下册的未解之谜。很有可能，这也是她答应和我出来的原因。也许随着我阅历的增加，以后会有新的看法。我现在想得到的可能性如下：</p>
+<p>1) 她是为了照顾我的感情。<br />2) 她真心希望能见到我，和我聊天。<br />
+3) 她自己都说不清为何会这么做。</p>
+<p>假设1不符合常理，因为不爱你的人一般不会来照顾你的爱。即使偶尔破例，也很少会再三重复。通常的做法是，回了家立即把我的联系方式（比如微信好友）删除，从而明确地传递出她的态度。</p>
+<p>假设2表面上是最合理的。友情也可以是这样的。</p>
+<p>假设3看似荒诞，我却认为最像她。她答应出来后的消极态度和拖泥带水，似显示了她内心的矛盾。3月12日以后，我微信上和她交流，她几乎全部不回，但偶尔又来主动搭讪。</p>
+<p>不论她怎么想，在写此篇时，我理解，或者说希望，假设2成立。因为如果是这样，我就不会感到空虚。</p>
+<p>I still occasionally dreamed of her. Here&rsquo;s one of the dreams.</p>
+<p>It was almost total darkness. There was no clue as to where this happened. It could be anywhere on earth. Her chubby and babyish face appeared in soft illumination with a healthy glow in her cheeks. I had the luxury of admiring her face so closely and looking fondly in her eyes again. I told her about every bit of my heart with the eloquence I never possessed. My voice got deeper  as I spoke, and gradually, it turned to whispers. That moment was like eternity…</p>	</div>
+</div>
+<div id="footer">
+	<div id="declaration">
+		本故事为作者亲身经历
+	</div>
+	<div id="bannerLine" class="Three">
+				<div class="middle">
+            			    <a href="about.html">MnNStory, 1 Sep 2001 - 12 Mar 2016</a>
+            		</div>
+	</div>
+	<hr class="m" />
+	<div id="switch2c" class="m">
+		<a href="">电脑版</a>
+	</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="MnNStory: 我和一个女同学15年的故事">
+<meta name="keywords" content="MnNStory,校园爱情,15年,女同学,女生">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<title>梦想</title>
+<script src="jquery.js"></script>
+<script src="qrcode.js"></script>
+<script>
+function loadCSS(href) {
+	var cssLink = $("<link rel='stylesheet' type='text/css' href='"+href+"'>");
+	$("head").append(cssLink);
+	return cssLink;
+};
+
+var relocate;
+
+$(function(){
+            var device="computer";
+        var fontSize=($(window).width()/25).toFixed(0);
+        relocate=relocateC;
+    
+	loadCSS("main_"+device.substring(0, 1)+".css").load(function(){
+		relocate();
+		setTimeout(relocate, 1000);
+		setTimeout(function(){
+			var fontSize=$('body').css('fontSize');
+			var qrcode = new QRCode(document.getElementById("QRCode"), {
+				width : parseInt(fontSize)*7,
+				height : parseInt(fontSize)*7
+			});
+
+			qrcode.makeCode(window.location.href);
+		}, 1000);
+	});
+
+	$(window).resize(relocate);
+
+    
+	function relocateC(){
+		function bottom($el){
+			return $el.position().top + $el.outerHeight(true);
+		}
+
+		var $footer=$('#footer');
+		$footer.css({
+			top: 0,
+			display: 'none'
+		});
+		var top=Math.max(
+			bottom($('#textWrapper')),
+			bottom($('#contents')),
+			$(document).height() - $footer.outerHeight()
+		);
+		$footer.css({
+			top: top,
+			display: 'block'
+		});
+	}
+
+        $('.patch-more').click(function(){
+        var page=$(this).data('page');
+        var paragraph=$(this).data('paragraph');
+
+        location.href='page'+page+'.html#paragraph='+paragraph;
+    });
+
+    setTimeout(function () {
+                    var ret=document.referrer.match(/#paragraph=(\d+)/);
+                if (!ret) {
+            return;
+        }
+        var paragraph=ret[1]-1;
+
+        var objParagraph=$('#text p:eq('+paragraph+')');
+        var flash=function () {
+            objParagraph.css('color', 'red');
+            setTimeout(function() {
+                objParagraph.css('color', 'initial');
+            }, 1000);
+        };
+        $('html, body').animate({
+            scrollTop: objParagraph.offset().top-$('#textWrapper').offset().top,
+        }, 500, flash);
+    }, 100);
+
+    var pIndex=0;
+    $('#text p').each(function () {
+        ++pIndex;
+        if (!$(this).attr('id')) {
+            //$(this).attr('id', 'paragraph_'+pIndex);
+        }
+    });
+});
+
+function showComments(){
+	$.blockUI({
+		message: $('#disqus_thread'),
+	});
+
+	$('body').click($.unblockUI);
+}
+</script>
+</head>
+<body>
+<div id="cover" style="background-color: #F1F1F1; position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 2048;"></div>
+<div id="nav">
+	<div class="Three">
+		<div id="navLeft" class="left c">
+			<a href="page5.html" class="blackText">&lt;&lt;&lt;prev</a>		</div>
+		<div id="navRight" class="right c">
+			<a href="page7.html" class="blackText">next&gt;&gt;&gt;</a>		</div>
+		<div id="navTitle" class="middle">
+			梦想		</div>
+	</div>
+	<div class="Three m">
+		<div class="left" style="width: 4em">
+			<a href="page5.html" class="blackText">&lt;&lt;&lt;</a>		</div>
+		<div class="right" style="width: 4em">
+			<a href="page7.html" class="blackText">&gt;&gt;&gt;</a>		</div>
+		<div class="middle">
+			<a href="/index.html" class="blackText">[Home]</a>
+		</div>
+	</div>
+</div>
+<div id="images" class="c">
+	<a href="downloads/mnnstory.zip" target="_blank"> <img src="download.png" style="width: 100%;" title="下载" alt="Download" /> </a>
+	<p id="QRCode"></p>
+</div>
+<div id="contents" class="c">
+	<p class="contents_d0"><a href="index.html">目录</a></p>
+	<ul class="contents_d1"><li><a href='page1.html'>上册</a>
+<ul class="contents_d2"><li><a href='page2.html'>引子</a>
+</li><li><a href='page3.html'>初识</a>
+</li><li><a href='page4.html'>别情</a>
+</li><li><a href='page5.html'>追求</a>
+</li><li>梦想
+</li><li><a href='page7.html'>重逢</a>
+</li><li><a href='page8.html'>憧憬</a>
+</li><li><a href='page9.html'>移民</a>
+</li><li><a href='page10.html'>心愿</a>
+</li><li><a href='page11.html'>数学中最难的是概率</a>
+</li><li><a href='page12.html'>祝福</a>
+</li><li><a href='page13.html'>附录：秦始皇妈妈的故事</a>
+</ul></li><li><a href='page14.html'>上册配乐</a>
+</li><li><a href='page32.html'>下册</a>
+</li><li><a href='page47.html'>下册配乐</a>
+</li><li><a href='page49.html'>订正簿</a>
+</ul></div>
+<div id="disqus_thread"></div>
+<script>
+	var disqus_config = function () {
+		this.page.url = 'http://mnnstory.onion';
+		this.page.identifier = 6;
+		this.page.title = '梦想'
+	};
+
+
+	(function() {
+		var d = document, s = d.createElement('script');
+
+		s.src = '//mnnstory.disqus.com/embed.js';
+
+		s.setAttribute('data-timestamp', +new Date());
+		(d.head || d.body).appendChild(s);
+	})();
+</script>
+<div id="textWrapper">
+	<div id="text">
+		<p>我感到这个学期的结束就是我们故事的终结，事实却并非如此。</p>
+<p>由于在同一个校园里，我时常能见到她的身影。那一年的春天，也是唯一的一次，校园里飞舞着无数白色的蝴蝶，无比地凄美。正是在这样的背景氛围下，我见到了她骑着车的背影。鲜艳的上衣，马尾辫改成了两个小辫子，甚是可爱。</p>
+<p>也不知过了多久，在一间教室里自修时，我没看到她，她却瞧见了我。她叫了我一声，甜甜地一笑。我突然发现她就在眼前，整个人一下子震惊了，眼睛睁得圆圆的，脸上毫无掩饰的狂喜。这个表情被她看见了，她就像一面镜子，笑着，调皮地模仿了我的表情。</p>
+<p>有时候，我路过她的课堂，见到她和其他同学说笑。她的笑仍很舒心。但旁观者看来，却似有点不自然的做作。每次笑过后，一离开别人的目光，立刻恢复微微的忧郁。</p>
+<p>她QQ上的名字改成了“追忆似水年华”。这种恋旧情怀，我当时是没有体会的；在这段时间以后，她也再没有显露出来过，后来她读研的时候，甚至给我厌旧的印象。</p>
+<p>我对于她的恨，也就这样被时间一点一点地冲淡了。时间来到了大二，冬天，回到寝室后，我收到了她的短信。上面写“我发烧了，38度。”在我当时的记忆中，她对我说过的自己的感受，就一次是要死要活地让我教她数学，再就是这次发烧。发烧有什么可以告诉我的？我产生了许多猜测，这些猜测，在我今天看来，已经不重要了。然而那时的我，是多么地困惑和矛盾啊。这种感觉困扰了我好几年，也就是因此，我染上了单相思的毛病。</p>
+<p>我回了一条短信，问她：“为什么要告诉我发烧了？”我怎么会这么笨！她过了会儿告诉我已经退烧了。我发短信表示了一下关心，但那条短信被她直接忽略了。</p>
+<p>第二天，我终于带着试一试的心态，鼓足勇气，又表白了一次。这次，她也学会了婉拒。我感到，真是女儿心，海底针。这位同学究竟在想什么呢？她为什么会做这些事情呢？带着恼怒，我编出些难听的话发过去，却又很矛盾地也发短信关心她。但每次想要伤害她，却都只是在伤害自己。每次“关心”她，其实只是在发泄心中说不出的复杂情绪。</p>
+<p>我开始做和她有关的梦。说是和她有关，却偏偏见不到她。真的是我做梦也想见到她，但做梦也见不到她。那个阶段关于她的梦，反反复复出现的场景是这样的：</p>
+<p>我独自地走在一条颠簸不平的路上，那条路通往我预备班和初一的分校。（那时候我还不认识她，后来才知道她在我隔壁班读书）此时，我路过了嘈杂的小菜场，喧嚣中，一切都是如此凌乱。所有的人和物都是黑白的，而只有一个人的背影是鲜艳的黄色。那就是她。我走近她，整个世界突然只剩下静谧。她梳着马尾辫，在一个小摊前，正低头挑选着什么。用英语去形容这一幕，She appears like an angel. Out of the filthy mess, she is alone. 如果用中国古典诗歌，“自是芳姿不婉尘”。我想叫她，却又怕惊到她。过了良久，她仍没注意到背后的我，我只能拖着无限孤独，默默地走向远处。</p>
+<p>这个梦反复出现了两年以后，我才在电影《辛德勒的名单》和《剧院魅影》中看到类似的视觉效果，用黑白背景承托鲜艳的人或物。但我可以肯定，这一幕我首先在梦境中见过。</p>
+<p>我开始喜欢上一首新古典乐曲，<a href="index.php?p=25">Sanctuary</a>（Secret Garden于1997年发行的CD，叫White Stones，第11首。官方翻译是“圣域”，我翻译成“港湾”。）每次听到这首曲子，我都会情不自禁地想起她。室友说：“是音乐中的忧伤和孤独，让你有了这种联想。”</p>
+<p>我通过网络漏洞和其他途径，仍在偷偷关注她。我发现她成绩越来越高，还当上了学生会主席。我经常在孤独的夜晚，心里在想，此时此刻，她究竟在何方？在为什么而忙？你是开心还是沮丧？你是在用功，还是在放松？</p>	</div>
+</div>
+<div id="footer">
+	<div id="declaration">
+		本故事为作者亲身经历
+	</div>
+	<div id="bannerLine" class="Three">
+				<div class="middle">
+            			    <a href="about.html">MnNStory, 1 Sep 2001 - 12 Mar 2016</a>
+            		</div>
+	</div>
+	<hr class="m" />
+	<div id="switch2c" class="m">
+		<a href="">电脑版</a>
+	</div>
+</div>
+</body>
+</html>

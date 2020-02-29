@@ -1,0 +1,198 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="MnNStory: 我和一个女同学15年的故事">
+<meta name="keywords" content="MnNStory,校园爱情,15年,女同学,女生">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<title>移民</title>
+<script src="jquery.js"></script>
+<script src="qrcode.js"></script>
+<script>
+function loadCSS(href) {
+	var cssLink = $("<link rel='stylesheet' type='text/css' href='"+href+"'>");
+	$("head").append(cssLink);
+	return cssLink;
+};
+
+var relocate;
+
+$(function(){
+            var device="computer";
+        var fontSize=($(window).width()/25).toFixed(0);
+        relocate=relocateC;
+    
+	loadCSS("main_"+device.substring(0, 1)+".css").load(function(){
+		relocate();
+		setTimeout(relocate, 1000);
+		setTimeout(function(){
+			var fontSize=$('body').css('fontSize');
+			var qrcode = new QRCode(document.getElementById("QRCode"), {
+				width : parseInt(fontSize)*7,
+				height : parseInt(fontSize)*7
+			});
+
+			qrcode.makeCode(window.location.href);
+		}, 1000);
+	});
+
+	$(window).resize(relocate);
+
+    
+	function relocateC(){
+		function bottom($el){
+			return $el.position().top + $el.outerHeight(true);
+		}
+
+		var $footer=$('#footer');
+		$footer.css({
+			top: 0,
+			display: 'none'
+		});
+		var top=Math.max(
+			bottom($('#textWrapper')),
+			bottom($('#contents')),
+			$(document).height() - $footer.outerHeight()
+		);
+		$footer.css({
+			top: top,
+			display: 'block'
+		});
+	}
+
+        $('.patch-more').click(function(){
+        var page=$(this).data('page');
+        var paragraph=$(this).data('paragraph');
+
+        location.href='page'+page+'.html#paragraph='+paragraph;
+    });
+
+    setTimeout(function () {
+                    var ret=document.referrer.match(/#paragraph=(\d+)/);
+                if (!ret) {
+            return;
+        }
+        var paragraph=ret[1]-1;
+
+        var objParagraph=$('#text p:eq('+paragraph+')');
+        var flash=function () {
+            objParagraph.css('color', 'red');
+            setTimeout(function() {
+                objParagraph.css('color', 'initial');
+            }, 1000);
+        };
+        $('html, body').animate({
+            scrollTop: objParagraph.offset().top-$('#textWrapper').offset().top,
+        }, 500, flash);
+    }, 100);
+
+    var pIndex=0;
+    $('#text p').each(function () {
+        ++pIndex;
+        if (!$(this).attr('id')) {
+            //$(this).attr('id', 'paragraph_'+pIndex);
+        }
+    });
+});
+
+function showComments(){
+	$.blockUI({
+		message: $('#disqus_thread'),
+	});
+
+	$('body').click($.unblockUI);
+}
+</script>
+</head>
+<body>
+<div id="cover" style="background-color: #F1F1F1; position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 2048;"></div>
+<div id="nav">
+	<div class="Three">
+		<div id="navLeft" class="left c">
+			<a href="page8.html" class="blackText">&lt;&lt;&lt;prev</a>		</div>
+		<div id="navRight" class="right c">
+			<a href="page10.html" class="blackText">next&gt;&gt;&gt;</a>		</div>
+		<div id="navTitle" class="middle">
+			移民		</div>
+	</div>
+	<div class="Three m">
+		<div class="left" style="width: 4em">
+			<a href="page8.html" class="blackText">&lt;&lt;&lt;</a>		</div>
+		<div class="right" style="width: 4em">
+			<a href="page10.html" class="blackText">&gt;&gt;&gt;</a>		</div>
+		<div class="middle">
+			<a href="/index.html" class="blackText">[Home]</a>
+		</div>
+	</div>
+</div>
+<div id="images" class="c">
+	<a href="downloads/mnnstory.zip" target="_blank"> <img src="download.png" style="width: 100%;" title="下载" alt="Download" /> </a>
+	<p id="QRCode"></p>
+</div>
+<div id="contents" class="c">
+	<p class="contents_d0"><a href="index.html">目录</a></p>
+	<ul class="contents_d1"><li><a href='page1.html'>上册</a>
+<ul class="contents_d2"><li><a href='page2.html'>引子</a>
+</li><li><a href='page3.html'>初识</a>
+</li><li><a href='page4.html'>别情</a>
+</li><li><a href='page5.html'>追求</a>
+</li><li><a href='page6.html'>梦想</a>
+</li><li><a href='page7.html'>重逢</a>
+</li><li><a href='page8.html'>憧憬</a>
+</li><li>移民
+</li><li><a href='page10.html'>心愿</a>
+</li><li><a href='page11.html'>数学中最难的是概率</a>
+</li><li><a href='page12.html'>祝福</a>
+</li><li><a href='page13.html'>附录：秦始皇妈妈的故事</a>
+</ul></li><li><a href='page14.html'>上册配乐</a>
+</li><li><a href='page32.html'>下册</a>
+</li><li><a href='page47.html'>下册配乐</a>
+</li><li><a href='page49.html'>订正簿</a>
+</ul></div>
+<div id="disqus_thread"></div>
+<script>
+	var disqus_config = function () {
+		this.page.url = 'http://mnnstory.onion';
+		this.page.identifier = 9;
+		this.page.title = '移民'
+	};
+
+
+	(function() {
+		var d = document, s = d.createElement('script');
+
+		s.src = '//mnnstory.disqus.com/embed.js';
+
+		s.setAttribute('data-timestamp', +new Date());
+		(d.head || d.body).appendChild(s);
+	})();
+</script>
+<div id="textWrapper">
+	<div id="text">
+		<p>和她聊着聊着，已经是2011年了，她也已工作了。她第一份工作就去了四大会计事务所之一，一个很幸苦的地方。民间有种说法，“此地女人当男人用，男人当牲畜用”。但那家公司也是她的行业中人人抢着要去的。</p>
+<p>她偶尔还是来问我些工作上的问题，很多问题我一点头绪都没有；对她，则自己解决起来要比问我更方便。有一次她就通过短信这样来问我问题，我不想回答，就推说忙着，晚上再说。她半个小时后就告诉我已经解决了。此后，就再也不来问我了。</p>
+<p>我想要移民X国，却下不了决心，便告诉了她。她并不对此表现出很多兴趣，只是礼貌性地敷衍了几句。我想打电话和她深入讨论，她却拒绝接听，也没有发短信来解释为什么会这么做。</p>
+<p>于是我就独自犹犹豫豫地走上了移民的奋斗之路。我对自己说，要移民先要学好英语，就开始了自学，一学就是三年。其实这三年我是在踌躇，因为我不愿意离开父母。</p>
+<p>母亲在劝我，别走，早早地找个好姑娘，生个大胖儿子，人生就算完整了。父母为我创造了很多条件给我相亲。我虽没有不诚心相亲，却很少有看得上的姑娘。对此，我对父母很过意不去。我推说，要学英语移民，没有心思相亲。</p>
+<p>有一个姑娘，被我甩了一次，还愿意回头来找我。我从不逗她开心，也没有像对老同学那样的关心，她还是很耐心地对我。客观地说，她给人以放心的感觉。和她相交大半年，却连手都没有牵过一次，终于她还是决定离开我了。父母告诉我，他们后来看到她一个月后就和一个新的男友牵着手，甚是亲热，两人很快就结婚了。</p>
+<p>之后我和老同学几个月说两句话，最后一次QQ上联系是2013年4月5日睡觉前。她的目的是想要知道我移民X国计划实施得如何，她当时还清楚地提及了国名。</p>
+<p>2014年7月，我雅思已经8.0了，那张8.0的答题纸上，有着老同学的影子，也是字迹工整，整张答卷找不出几个修改过的地方。听力和阅读都是满血通关。我已经没有理由再继续学习英语了。于是我开始真正地准备移民材料。</p>
+<p>凭借自己的研究，我连中介也没请，只用了两个月都不到的时间就备齐了厚厚的申请材料。在焦急地等待了小半年以后，2015年的农历正月初一，我拿到了异国的绿卡，允许我在那里定居，并享受等同于公民的几乎所有待遇。</p>
+<p>2015年，我仍在挣扎。10月，我第一次登陆了那个国家，这也是我人生中第二次离开中国。11月中旬回到上海，我下定决心要去开创一片新的天地了。此时此刻，我却又想起了她。 </p>	</div>
+</div>
+<div id="footer">
+	<div id="declaration">
+		本故事为作者亲身经历
+	</div>
+	<div id="bannerLine" class="Three">
+				<div class="middle">
+            			    <a href="about.html">MnNStory, 1 Sep 2001 - 12 Mar 2016</a>
+            		</div>
+	</div>
+	<hr class="m" />
+	<div id="switch2c" class="m">
+		<a href="">电脑版</a>
+	</div>
+</div>
+</body>
+</html>

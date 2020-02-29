@@ -1,0 +1,5 @@
+/**
+ * ojraskatzeronet v0.1.0
+ * @author Otto J. Rask
+ */
+var app=app||{};app.Post=app.OZNModel.extend({defaults:{created_at:"0000-00-00 00:00:00"},initialize:function(t){"use strict";if(_.bindAll(this,"parseMarkdown","parseDate"),this.parseDate(),void 0!=this.get("markdown")&&this.get("markdown").length)this.parseMarkdown(this.get("markdown"));else if(1==this.get("content").endsWith(".md")){var e=this.get("appinst").site.cmd("fileGet","/content/"+this.get("content"),this.parseMarkdown);this.set({markdown:e})}else this.get("content").length>1&&(this.set({markdown:this.get("content")}),this.parseMarkdown(this.get("markdown")))},parseMarkdown:function(t){"use strict";this.set({html:markdown.toHTML(t)}),this.trigger("markdown_parsed")},parseDate:function(){"use strict";var t="",e=new Date(this.get("created_at")),s=function(t){return 10>t?"0"+t:""+t};t+=s(e.getDate()),t+="/",t+=s(e.getMonth()+1),t+="/",t+=e.getFullYear(),t+=" at ",t+=s(e.getHours()),t+=":",t+=s(e.getMinutes()),this.set({publish_date:t})}});

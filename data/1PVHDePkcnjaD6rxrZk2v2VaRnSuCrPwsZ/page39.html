@@ -1,0 +1,233 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="MnNStory: 我和一个女同学15年的故事">
+<meta name="keywords" content="MnNStory,校园爱情,15年,女同学,女生">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<title>糖果</title>
+<script src="jquery.js"></script>
+<script src="qrcode.js"></script>
+<script>
+function loadCSS(href) {
+	var cssLink = $("<link rel='stylesheet' type='text/css' href='"+href+"'>");
+	$("head").append(cssLink);
+	return cssLink;
+};
+
+var relocate;
+
+$(function(){
+            var device="computer";
+        var fontSize=($(window).width()/25).toFixed(0);
+        relocate=relocateC;
+    
+	loadCSS("main_"+device.substring(0, 1)+".css").load(function(){
+		relocate();
+		setTimeout(relocate, 1000);
+		setTimeout(function(){
+			var fontSize=$('body').css('fontSize');
+			var qrcode = new QRCode(document.getElementById("QRCode"), {
+				width : parseInt(fontSize)*7,
+				height : parseInt(fontSize)*7
+			});
+
+			qrcode.makeCode(window.location.href);
+		}, 1000);
+	});
+
+	$(window).resize(relocate);
+
+    
+	function relocateC(){
+		function bottom($el){
+			return $el.position().top + $el.outerHeight(true);
+		}
+
+		var $footer=$('#footer');
+		$footer.css({
+			top: 0,
+			display: 'none'
+		});
+		var top=Math.max(
+			bottom($('#textWrapper')),
+			bottom($('#contents')),
+			$(document).height() - $footer.outerHeight()
+		);
+		$footer.css({
+			top: top,
+			display: 'block'
+		});
+	}
+
+        $('.patch-more').click(function(){
+        var page=$(this).data('page');
+        var paragraph=$(this).data('paragraph');
+
+        location.href='page'+page+'.html#paragraph='+paragraph;
+    });
+
+    setTimeout(function () {
+                    var ret=document.referrer.match(/#paragraph=(\d+)/);
+                if (!ret) {
+            return;
+        }
+        var paragraph=ret[1]-1;
+
+        var objParagraph=$('#text p:eq('+paragraph+')');
+        var flash=function () {
+            objParagraph.css('color', 'red');
+            setTimeout(function() {
+                objParagraph.css('color', 'initial');
+            }, 1000);
+        };
+        $('html, body').animate({
+            scrollTop: objParagraph.offset().top-$('#textWrapper').offset().top,
+        }, 500, flash);
+    }, 100);
+
+    var pIndex=0;
+    $('#text p').each(function () {
+        ++pIndex;
+        if (!$(this).attr('id')) {
+            //$(this).attr('id', 'paragraph_'+pIndex);
+        }
+    });
+});
+
+function showComments(){
+	$.blockUI({
+		message: $('#disqus_thread'),
+	});
+
+	$('body').click($.unblockUI);
+}
+</script>
+</head>
+<body>
+<div id="cover" style="background-color: #F1F1F1; position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 2048;"></div>
+<div id="nav">
+	<div class="Three">
+		<div id="navLeft" class="left c">
+			<a href="page38.html" class="blackText">&lt;&lt;&lt;prev</a>		</div>
+		<div id="navRight" class="right c">
+			<a href="page40.html" class="blackText">next&gt;&gt;&gt;</a>		</div>
+		<div id="navTitle" class="middle">
+			糖果		</div>
+	</div>
+	<div class="Three m">
+		<div class="left" style="width: 4em">
+			<a href="page38.html" class="blackText">&lt;&lt;&lt;</a>		</div>
+		<div class="right" style="width: 4em">
+			<a href="page40.html" class="blackText">&gt;&gt;&gt;</a>		</div>
+		<div class="middle">
+			<a href="/index.html" class="blackText">[Home]</a>
+		</div>
+	</div>
+</div>
+<div id="images" class="c">
+	<a href="downloads/mnnstory.zip" target="_blank"> <img src="download.png" style="width: 100%;" title="下载" alt="Download" /> </a>
+	<p id="QRCode"></p>
+</div>
+<div id="contents" class="c">
+	<p class="contents_d0"><a href="index.html">目录</a></p>
+	<ul class="contents_d1"><li><a href='page1.html'>上册</a>
+</li><li><a href='page14.html'>上册配乐</a>
+</li><li><a href='page32.html'>下册</a>
+<ul class="contents_d2"><li><a href='page33.html'>心愿</a>
+</li><li><a href='page34.html'>概率</a>
+</li><li><a href='page35.html'>重逢</a>
+</li><li><a href='page36.html'>街景</a>
+</li><li><a href='page37.html'>追求</a>
+</li><li><a href='page38.html'>梦想</a>
+</li><li>糖果
+</li><li><a href='page40.html'>夕阳无限好</a>
+</li><li><a href='page41.html'>电影</a>
+</li><li><a href='page42.html'>怪谁</a>
+</li><li><a href='page43.html'>寄语</a>
+</li><li><a href='page44.html'>移民</a>
+</li><li><a href='page45.html'>永远</a>
+</li><li><a href='page46.html'>附录：幸福的惊人科学发现</a>
+</ul></li><li><a href='page47.html'>下册配乐</a>
+</li><li><a href='page49.html'>订正簿</a>
+</ul></div>
+<div id="disqus_thread"></div>
+<script>
+	var disqus_config = function () {
+		this.page.url = 'http://mnnstory.onion';
+		this.page.identifier = 39;
+		this.page.title = '糖果'
+	};
+
+
+	(function() {
+		var d = document, s = d.createElement('script');
+
+		s.src = '//mnnstory.disqus.com/embed.js';
+
+		s.setAttribute('data-timestamp', +new Date());
+		(d.head || d.body).appendChild(s);
+	})();
+</script>
+<div id="textWrapper">
+	<div id="text">
+		<p>这个故事并非喝茶的全部内容。</p>
+<img src="E9A696E9A1B5/E4B88BE5868C/chocs.png" style="float: right; max-height: 12ex;" alt="Chocs" />
+<p>她从经理款式的包里掏出一小袋零食，问：“香蕉巧克力，吃吗？”说着，放在了桌上。</p>
+<p>我拿起巧克力，看了看包装，感到很特别，撕开，小心地倒了三粒出来吃，道了声“谢谢”。</p>
+<p>“不过就是一小包巧克力，没什么的。”她说，语气好像怪怪的。难道我谢得太过深情？不知何故，我说：“我是谢谢你为我特地准备了巧克力。”她像自言自语地讲：“随你怎么想吧。”我心里咯噔了下。</p>
+<p>那是黄豆大小的巧克力，可爱的黄色香蕉造型，与包装的底色和设计相得益彰。入口脆脆的，并不怎么苦，也不十分甜，淡淡的水果香。迷你的包装，可以放进衬衫的胸前口袋。成人都懂，这完全就是一堆化学品。</p>
+<p>我说：“那你也吃啊。”她把手伸进袋里拿了一粒出来放入口中，此后就再也没见她吃过。我喝了两口咖啡，感觉还没仔细品尝出巧克力的味道，又嚼了几粒。</p>
+<p>她又拿出手机，说：“终于有电了。”对着小店拍了张照。我问：“这你也拍？”她指着橱窗里的娃娃道：“我觉得这些很好玩。”</p>
+<p>“好可爱的孩子。”说着，只见她微笑的圆脸上，两腮淡红，一双妙目正看着街边玩耍的小男孩。“清新可人”，谁又道得明，应该用来形容这个小孩，还是看着他的那副眼睛？若她此时仍梳着马尾辫，谁又说得清，此女究竟是15岁还是30岁？</p>
+<p>我用起哄的语气道：“哦呦呦，某某的母性都出来了。”母性表现在这张娃娃脸上，多么自然，毫不矛盾。</p>
+<p>她说：“我很喜欢小孩，尤其是好看的。而且，我对小孩特有感觉。我侄子在我家很闹时，我就对他们讲：‘一二三，现在开始，比赛看谁不说话时间长。’于是他们就一本正经地乖乖安静了下来。”</p>
+<p>我说：“我记得小时候电台里经常听到<a href="#comment_1" class="issue">某某姐姐</a><sup id="issue_1">1</sup>讲故事，原来是你啊？”她说：“那不就是我嘛！”笑得虽不夸张，却让我有点惊讶。</p>
+<p>历史是会重复的，因为故事里的主人公没换。14年前，当我问：“幼儿园里的那个小女孩是你吗？”她也有类似的反应。</p>
+<p>我说：“你明明比我小，听人家‘姐姐’长‘姐姐’短地叫，也好意思应？”她一句一顿地问：“你生日是哪天？你是处女座的吧？你知道吗，处女座很憨哎……”</p>
+<p>我的生日至少和她提过两次，第一次是15年前，当时旁边的同学还说了句：“原来你这么大，可能是全班最大的。”第二次是6年前，她说：“你的意思是，你记住我生日，要我也记住你生日？”此时，我已不再想和她提起我生日了。至于我是什么星座，自己也不清楚。</p>
+<p>我不动声色，不回答对或不对，很假地装出惊恐状，说：“哦呦呦，你别告诉别人啊……一定要帮我保密啊……”她像是信了，因为她若不信，通常会当面拆穿。</p>
+<p>她接着道：“处女座有点很认真……” </p>
+<p>哈哈，我说你比我小，哪是和你较真？我是觉得，这么低幼的笑话，你都会随便附和，所以想故意给你制造点难题。</p>
+<p>她继续讲了些占星术，最后说：“你猜我怎么知道的？刚才喝咖啡前，我见你把糖包纸压起来的动作，就看出你一定是处女座。其实这种性格，我也有点哦。”说完，眼光移开了会儿，像是在回顾刚才的对话。</p>
+<p>我只感到，小孩有时候也可以很机灵，此时，若她侄子突然出现，定能把我们两个全哄成婴儿。</p>
+<p>她又一次说：“没想到你减肥成功，效果这么明显。”</p>
+<p>我说：“我瘦了，其实是因为生了一场病——就是幽门螺杆菌。”她讲：“哦呦，我还以为是什么大不了的病呢，不就是幽门螺杆菌嘛。我的某某亲戚和某某亲戚等都有啊。” 我说：“不过我好不容易看好了，以后就不须再担心了。”她讲：“这病很普遍的，说不定你又染上了呢？”我说：“我最近才治好的，又不在外面乱吃，怎会又感染呢？除非被你传染的差不多。”</p>
+<p>我说：“我写了本回忆录……”她抢着问：“你才30就写回忆录了？”我顺着她话讲：“嗯，因为我订了<a href="#comment_2" class="issue">马航</a><sup id="issue_2">2</sup>的票。”她说：“你怎么马航都敢乘？要出人命的。啊……快跟着我念‘呸呸呸’。”</p>
+<p>我只觉得“呸呸呸”一般都是长辈才讲的，儿时和小伙伴嬉戏时，偶也学着大人口吻这么说。而真的大人是绝对不会自己刚说一句，马上又“呸呸呸”的。</p>
+<p>我说：“没关系，我是无神论者。选马航，因为机票便宜，才2700……”她抢着补充道：“美元。”</p>
+<p>当时1美元约可兑换6人民币。通常为了省钱，很多人会提前半年，甚至一年订票。倘若提前一月订，2700美元差不多可以坐头等舱。</p>
+<p>我纠正道：“2700人民币。因为其他航空公司的票价都几乎翻倍。”她问：“你都移民了，这点都要节约？”我答道：“是啊，新移民是很缺钱的。”</p>
+<p>我继续说：“那本回忆录有1.4万字整。”她问：“哇，你要出书？”我说：“不是啦。”她又追问：“能让我看看吗？”我说：“就你不能看。”她立刻会意：“哦，是关于我的回忆录。”</p>
+<p>她说：“你知道吗？我们的化学老师当教导主任了。我上次高中校庆时，回去看了看。除了她，还见到了物理老师，留下了他的手机号码，过年时一直向他发去问候。可惜，前两年手机坏了，通讯录全丢了，就没能继续，不知他会不会有想法。”</p>
+<p>我们的物理老师少说也有一千个学生，这点小事，他又怎会在意呢？</p>
+<p>我说：“他的手机号，如果你以后问到，要告诉我哦。”她很认真地承诺道：“一定会告诉你的。”见到她的态度，我有点惭愧。</p>
+<p>她说：“你以后若有什么项目，记得叫我哦。”我讲：“我哪有这实力？你真当我是什么老板？”她说：“任何机会都可以，小打小闹也行。”我想了想，道：“小餐馆，也许会考虑。”她马上会意：“你妈妈很会烧菜吧？”我暗道：“你真聪明。”同时说了声：“是。”</p>
+<p>我当然没投资的财力和打算。即使有，却也很难下定决心和她合伙。这并不是因为她的要求过分，或怕被她利用。只是，我某某人真不想到了几岁还让她某某吃苦头。然而，投资又哪会有十足把握？若有损失，我又何忍让她分担？到时候，吃苦头的，定是我一个人。作这样的牺牲，只为了让她高兴一下，实在不值。假如已然身在其中，我或许会难以自拔；既不在其中，我却不愿自找苦吃。</p>
+<p class="ending">（注：以上4章内容并不严格按时间顺序编排，有跨章时间交叉的情况。）</p>
+<hr class="comment" />
+<p class="comment" id='comment_1'><a href="#issue_1" class="comment">[1]</a>
+一档儿童节目，主播以做作的声音和低幼的语言讲述童话。老同学的名字与主播相似。
+</p>
+<p class="comment" id='comment_2'><a href="#issue_2" class="comment">[2]</a>
+即马来西亚航空公司。该公司的两架客机曾在2014年，三个月内连续遭遇两次空难，皆无人生还。其中MH370失事原因至今不明，只找到部分残骸；MH17在乌克兰上空被军队击落。
+</p>
+<p>&nbsp;</p>
+	</div>
+</div>
+<div id="footer">
+	<div id="declaration">
+		本故事为作者亲身经历
+	</div>
+	<div id="bannerLine" class="Three">
+				<div class="middle">
+            			    <a href="about.html">MnNStory, 1 Sep 2001 - 12 Mar 2016</a>
+            		</div>
+	</div>
+	<hr class="m" />
+	<div id="switch2c" class="m">
+		<a href="">电脑版</a>
+	</div>
+</div>
+</body>
+</html>

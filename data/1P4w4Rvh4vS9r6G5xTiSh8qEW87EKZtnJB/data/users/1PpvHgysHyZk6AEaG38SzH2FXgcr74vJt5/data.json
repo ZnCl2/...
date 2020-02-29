@@ -1,0 +1,53 @@
+{
+    "issues": [
+        {
+            "title": "Json table isn't preserved. Is something wrong with dbschema or is it bug?",
+            "body": "Here is my dbschema.json:\n```\n{\n  \"db_name\": \"db\",\n  \"db_file\": \"data/users/db.db\",\n  \"version\": 2,\n  \"maps\": {\n    \".+/data.json\": {\n      \"to_table\": [\n        {\"node\": \"topics\", \"table\": \"topics\"}\n      ],\n      \"to_keyvalue\": [\"next_topic_id\"]\n    },\n    \".+/content.json\": {\n      \"file_name\": \"data.json\",\n      \"to_json_table\": [\"cert_user_id\", \"cert_auth_type\"]\n    }\n  },\n\n  \"tables\": {\n    \"topics\": {\n      \"cols\": [\n        [\"topic_id\", \"INTEGER\"],\n        [\"title\", \"TEXT\"],\n        [\"json_id\", \"INTEGER REFERENCES json (json_id)\"]\n      ],\n      \"indexes\": [\n        \"CREATE UNIQUE INDEX topic_key ON topics(topic_id, json_id)\"\n      ],\n      \"schema_changed\": 1\n    },\n    \"json\": {\n      \"cols\": [\n        [\"json_id\", \"INTEGER PRIMARY KEY AUTOINCREMENT\"],\n        [\"directory\", \"TEXT\"],\n        [\"file_name\", \"TEXT\"],\n        [\"cert_auth_type\", \"TEXT\"],\n        [\"cert_user_id\", \"TEXT\"]\n      ],\n      \"indexes\": [\"CREATE UNIQUE INDEX path ON json(directory, file_name)\"],\n      \"schema_changed\": 1\n    }\n  }\n}\n```\n\nSo I click buttons related DB in sidebar:\n\nDatabase REBUILD button works ok, I see `cert_auth_type` & `cert_user_id` in `json` table:\n```\n[14:54:50] Site:XXXX Deleting ./data/<SITEADDRESS>/data/users/db.db\n[14:54:50] Site:XXXX Creating tables...\n[14:54:50] Db:db Table keyvalue outdated...version: False need: 2, rebuilding...\n[14:54:50] Db:db Table json outdated...version: 0 need: 2, rebuilding...\n[14:54:50] Db:db Table topics outdated...version: 0 need: 1, rebuilding...\n[14:54:50] Db:db Table json outdated...version: 0 need: 1, rebuilding...\n[14:54:50] Db:db Table comments outdated...version: 0 need: 1, rebuilding...\n[14:54:50] Db:db Table categories outdated...version: 0 need: 1, rebuilding...\n[14:54:50] Site:XXXX Getting db files...\n[14:54:50] Site:XXXX Importing data...\n[14:54:50] Site:XXXX Closing Db: <Db#140106308371024:./data/<SITEADDRESS>/data/users/db.db close_idle:False>\n[14:54:50] Site:XXXX Imported 1 data file in 0.0552639961243s\n```\n\nDatabase RELOAD button *fails*, now there are no `cert_auth_type` & `cert_user_id` columns in `json` table:\n```\n[14:54:53] Db:db Table json outdated...version: 1 need: 2, rebuilding...\n[14:54:53] Site:XXXX Creating tables...\n[14:54:53] Site:XXXX Getting db files...\n[14:54:53] Site:XXXX Importing data...\n[14:54:53] Site:XXXX Error importing data/users/<USERADDRESS>/content.json: OperationalError: table json has no column named cert_auth_type in SiteStorage.py line 151 > ContentFilterPlugin.py line 165 > SiteStorage.py line 90 > Db.py line 314 > DbCursor.py line 70\n[14:54:53] Site:XXXX Closing Db: <Db#140106313794256:./data/<SITEADDRESS>/data/users/db.db close_idle:False>\n[14:54:53] Site:XXXX Imported 1 data file in 0.0695490837097s\n```\n\nSo question is: what wrong with RELOAD action? Why JSON table structure isn't preserved?",
+            "date_added": 1541775896595,
+            "open": false,
+            "reopened": 0,
+            "tags": "dbschema.json,database,sql",
+            "id": 0
+        },
+        {
+            "title": "Error with paths when singing content.json",
+            "body": "Error via singing content.json file in \n`/Users/user/ZeroNet-mac-dist/ZeroNet.app/Contents/Resources/core/src/Content/ContentManager.py(237)loadContent()`\n\n```\n(Pdb) os.listdir(content_dir)\n*** OSError: [Errno 2] No such file or directory: 'Users/user/ZeroNet-mac-dist/data/<SITEHASH>/data/users/'\n(Pdb) self.site.storage.getPath(content_inner_path)\nu'/Users/user/ZeroNet-mac-dist/data/<SITEHASH>/data/users/content.json'\n(Pdb) helper.getDirname(self.site.storage.getPath(content_inner_path))\nu'Users/user/ZeroNet-mac-dist/data/<SITEHASH>/data/users/'\n```\nhelper.getDirname strips first slash. Don't know, but seems it's not ok behavior.\n\nAlso one more question. Trying to setup optional files in <root>/content.json, but it doesn't work.  Do I need to setup that option in data/users/content.json if regex for optional files is `data/users/.+/.+/.+\"`?\n",
+            "date_added": 1546449420461,
+            "open": 1,
+            "reopened": 0,
+            "tags": "singing,content.json,optional,optional files",
+            "id": 1
+        }
+    ],
+    "next_issue_id": 2,
+    "issue_reactions": [
+        {
+            "comment_id": 4,
+            "comment_json": "data/users/1J3rJ8ecnwH2EPYa6MrgZttBNc61ACFiCj",
+            "issue_id": 0,
+            "issue_json": "data/users/1PpvHgysHyZk6AEaG38SzH2FXgcr74vJt5",
+            "reaction": "thumbs-up"
+        }
+    ],
+    "issue_comments": [
+        {
+            "issue_id": 0,
+            "issue_json": "data/users/1PpvHgysHyZk6AEaG38SzH2FXgcr74vJt5",
+            "body": "Yes, thanks! I already was playing with file just after I posted issue and changed `schema_changed` to `2` and it's enough to work too!",
+            "date_added": 1541792454726,
+            "id": 0
+        }
+    ],
+    "next_issue_comment_id": 1,
+    "issue_actions": [
+        {
+            "issue_id": 0,
+            "issue_json": "data/users/1PpvHgysHyZk6AEaG38SzH2FXgcr74vJt5",
+            "action": "changeStatus",
+            "param": "close",
+            "date_added": 1541792455177,
+            "id": 0
+        }
+    ],
+    "next_issue_action_id": 1
+}

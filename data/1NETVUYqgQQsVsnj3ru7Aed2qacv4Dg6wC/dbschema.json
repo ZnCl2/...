@@ -1,0 +1,108 @@
+{
+    "db_name": "KxoVid",
+    "db_file": "merged-KxoVid/KxoVid.db",
+    "version": 3,
+    "maps": {
+        "1HmJfQqTsfpdRinx3m8Kf1ZdoTzKcHfy2F/data/users/.+/data.json": {
+            "to_table": ["category_hubs", "channels", "channel_playlists"],
+            "to_keyvalue": ["subscriptions"]
+        },
+        ".+/data/users/.+/content.json": {
+            "to_json_table": ["cert_user_id"],
+            "file_name": "data.json"
+        },
+        ".+/data/users/.+/data.json": {
+            "to_table": ["videos", "comments", "moderated_comments"]
+        }
+    },
+    "tables": {
+        "json": {
+		    "cols": [
+		        ["json_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+		        ["site", "TEXT"],
+		        ["directory", "TEXT"],
+		        ["file_name", "TEXT"],
+		        ["cert_user_id", "TEXT"]
+		    ],
+		    "indexes": ["CREATE UNIQUE INDEX path ON json(directory, site, file_name)"],
+		    "schema_changed": 4
+        },
+        "videos": {
+            "cols": [
+                ["video_id", "INTEGER"],
+                ["ref_channel_id", "INTEGER"],
+                ["title", "TEXT"],
+                ["description", "TEXT"],
+                ["tags", "TEXT"],
+                ["original", "BOOLEAN"],
+                ["video_file", "TEXT"],
+                ["channel_playlists", "TEXT"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX video_index ON videos(json_id, video_id)", "CREATE INDEX video_id_ref_title ON videos(video_id, ref_channel_id, title)"],
+            "schema_changed": 12
+        },
+        "comments": {
+            "cols": [
+                ["comment_id", "INTEGER"],
+                ["ref_video_auth_address", "TEXT"],
+                ["ref_channel_id", "INTEGER"],
+                ["ref_video_id", "INTEGER"],
+                ["body", "TEXT"],
+                ["date_updated", "INTEGER"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json(json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX comment_index ON comments(json_id, comment_id)", "CREATE INDEX comment_id_ref ON comments(comment_id, ref_channel_id, ref_video_id, ref_video_auth_address)"],
+            "schema_changed": 7
+        },
+        "category_hubs": {
+            "cols": [
+                ["hub_id", "INTEGER"],
+                ["name", "TEXT"],
+                ["address", "TEXT"],
+                ["description", "TEXT"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json(json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX category_hub_index ON category_hubs(json_id, hub_id)", "CREATE INDEX category_hub_id_name ON category_hubs(hub_id, name)"],
+            "schema_changed": 9
+        },
+        "channels": {
+            "cols": [
+                ["channel_id", "INTEGER"],
+                ["name", "TEXT"],
+                ["about", "TEXT"],
+                ["toolbar_color", "TEXT"],
+                ["background_color", "TEXT"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json(json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX channel_index ON channels(json_id, channel_id)", "CREATE INDEX channel_id_name ON channels(channel_id, name)"],
+            "schema_changed": 8
+        },
+        "channel_playlists": {
+            "cols": [
+                ["playlist_id", "INTEGER"],
+                ["ref_channel_id", "INTEGER"],
+                ["name", "TEXT"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json(json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX channel_playlists_index ON channel_playlists(json_id, playlist_id)"],
+            "schema_changed": 3
+        },
+        "moderated_comments": {
+            "cols": [
+                ["id", "INTEGER"],
+                ["ref_comment_auth_address", "INTEGER"],
+                ["ref_comment_id", "INTEGER"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json(json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX moderated_comments_index ON moderated_comments(json_id, id)"],
+            "schema_changed": 4
+        }
+    }
+}

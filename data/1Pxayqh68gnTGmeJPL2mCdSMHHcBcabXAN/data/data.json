@@ -1,0 +1,62 @@
+{
+	"title": "debian初学者",
+	"description": "捣鼓debian和ZeroNet。\n0debian.bit",
+	"links": "友情链接:\n\n* [捐助 ZeroNet](http://zeronet.readthedocs.io/en/latest/help_zeronet/donate/)\n*   [0123.bit 零网中文导航](http://127.0.0.1:43110/0123.bit/)\n*[明网浏览本站](https://zero.acelewis.com/#1Pxayqh68gnTGmeJPL2mCdSMHHcBcabXAN)",
+	"next_post_id": 6,
+	"demo": false,
+	"modified": 1523425322,
+	"post": [
+		{
+			"post_id": 5,
+			"title": "第3章 debian下ZeroNet的安装及开机启动",
+			"date_published": 1494840021,
+			"body": "经过前面两章的介绍，debian已经能够使用。为防止使用过程中出现问题，我们先“备份”（系统快照）一下已安装的系统。\n![图01](img/post5/01.jpg)\n下面开始debian下应用软件的介绍，当然最先介绍的肯定是ZeroNet的安装、使用方法啦。\n\n---\n\n## 1 解决ZeroNet安装依赖\n```\nsudo apt-get update\nsudo apt-get install python-msgpack python-gevent\n```\n## 2 下载并解压ZeroNet程序包\n```\nwget https://github.com/HelloZeroNet/ZeroNet/archive/master.tar.gz\ntar xvpfz master.tar.gz\n```\n### 3 运行ZeroNet\n```\ncd ZeroNet-master\npython zeronet.py\n```\n好了，在浏览器中打开 [ZeroNet](http://127.0.0.1:43110/) 吧。\n## 4 设置ZeroNet开机启动\n### 4.1 新建服务：\n```\nsudo nano /lib/systemd/system/zeronet.service\n```\n写入如下内容：\n```\n[Unit]\nDescription=ZeroNet Service\nAfter=multi-user.target\n\n[Service]\nType=idle\nUser=virtual\nGroup=virtual\nExecStart=/usr/bin/python /home/virtual/ZeroNet-master/zeronet.py\n\n[Install]\nWantedBy=multi-user.target\n```\n### 4.2 开机自启动:\n```\nsudo systemctl enable zeronet.service\n```\n### 4.3 重启电脑，查看服务状态：\n```\nsudo systemctl status zeronet.service\n```\n如下图，说明启动成功。\n![图02](img/post5/02.jpg)"
+		},
+		{
+			"post_id": 4,
+			"title": "第2章 debian安装后的配置",
+			"date_published": 1493528566,
+			"body": "## 1 配置软件源\n本节操作在root权限下进行。打开`终端`，输入：\n```\nsu\n密码：\n```\n（`密码`处输入root密码）\n### 1.1 更改软件源：\n`终端`输入：\n```\ncp /etc/apt/sources.list /etc/apt/sources.list.bak\nnano /etc/apt/sources.list\n```\n\n---\n\n将`sources.list`中的内容全部删除替换为：\n```\ndeb http://mirrors.163.com/debian/ testing main non-free contrib\ndeb-src http://mirrors.163.com/debian/ testing main non-free contrib\n\ndeb http://mirrors.163.com/debian/ testing-updates main non-free contrib\ndeb-src http://mirrors.163.com/debian/ testing-updates main non-free contrib\n\ndeb http://mirrors.163.com/debian-security/ testing/updates main non-free contrib\ndeb-src http://mirrors.163.com/debian-security/ testing/updates main non-free contrib\n```\n### 1.2 更新系统\n`终端`输入：\n```\napt-get update\napt-get dist-upgrade && apt-get upgrade\n```\n## 2 sudo\n> Sudo（substitute user [或 superuser] do），是一种程序，用于类Unix操作系统如BSD，Mac OS X，以及GNU/Linux以允许用户通过安全的方式使用特殊的权限运行程序（通常为系统的超级用户）。\n\n### 2.1 安装sudo\n```\napt-get install sudo\n```\n### 2.2 赋予普通用户sudo权限\n```\ngpasswd -a username sudo\nreboot\n```\n`username`替换成你的用户名\n\n## 3 中文化\n### 3.1 系统中文支持\n如果debian安装时选择的是非中文，那么：\n```\nsudo dpkg-reconfigure locales\n```\n选择`zh_CN.UTF-8 UTF-8`\n安装中文字体：\n```\nsudo apt-get install ttf-wqy-zenhei \n```\n`注销`并重新登陆，debian就变成中文系统了。\n### 3.2 中文输入法\n安装fcitx:\n```\nsudo apt-get install fcitx fcitx-googlepinyin\n```\n`注销`并重新登陆，就可以输入中文啦。\n### 3.3 firefox中文化\n默认安装的网络浏览器firefix是英文版。安装中文包：\n```\nsudo apt-get install firefox-esr-l10n-zh-cn\n```\n重启firefox即为中文版。"
+		},
+		{
+			"post_id": 3,
+			"title": "第1章 部署虚拟环境安装debian系统",
+			"date_published": 1492593554,
+			"body": "> 对于一款新的操作系统，我习惯先把它安装到虚拟机中去测试，确有需要再在实体机上安装。虚拟安装系统不会对电脑造成损害，而且虚拟测试有什么问题可以快速、方便的还原，并不需要再装一遍系统。\n\n## 1 所需工具\n- windows操作系统\n- VirtualBox虚拟机软件 [下载](https://www.virtualbox.org/wiki/Downloads)\n- Debian安装镜像 [下载](https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso)\n\n## 2 安装配置虚拟机\n关于virtualbox的介绍请查看 [wiki](https://zh.wikipedia.org/wiki/VirtualBox)\n\n---\n\n### 2.1 下载并安装VirtualBox软件\n安装过程与其他exe软件一样，此处略过。\n\n### 2.2 VirtualBox软件设置\n打开`Oracle VM VirtualBox`，点击`管理`-`全局设定`，更改默认虚拟电脑位置到一个剩余容量较大的盘。（非必须步骤）\n![图01](img/post3/01.jpg)\n\n### 2.3 新建虚拟电脑\n点击`新建`，在`名称`中输入`debian`，接下来一直默认`下一步`即可。\n![图02](img/post3/02.jpg)\n\n点击`设置`-`存储`-`没有盘片`，点击右边的光盘图标，选择已下载的`debian-testing-amd64-netinst.iso`文件。\n![图03](img/post3/03.jpg)\n\n点击`网络`，在`网卡1`-`连接方式`中选择`桥接网卡`。这样虚拟机和主机属于同一个局域网，方便后期远程管理。记得点击`ok`保存设置。\n![图04](img/post3/04.jpg)\n\n## 3 安装debian系统\n3.1 在VirtualBox管理界面中点击`启动`进入debian系统安装界面，通过键盘的上下方向键选择`Install`选项来直接安装系统。\n![图05](img/post3/05.jpg)\n\n3.2 语言选择`中文（简体）`。\n![图06](img/post3/06.jpg)\n\n3.3 `请选择您的区域`、`配置键盘`、`配置网络`这几步直接按`Enter`键默认选择。\n\n3.4 设置root密码及验证。（两次输入密码要一样）\n![图07](img/post3/07.jpg)\n\n3.5 新建普通用户`virtual`（virtual可以替换成你喜欢的名字），并设置密码（输两遍，密码不要和root密码一样）。\n![图08](img/post3/08.jpg)\n\n3.6 `磁盘分区`默认选择。\n![图09](img/post3/09.jpg)\n\n3.7 安装基本系统。\n![图10](img/post3/10.jpg)\n\n3.8 `配置软件包管理器`、`软件包流行度调查`默认选择。\n![图11](img/post3/11.jpg)\n![图12](img/post3/12.jpg)\n\n3.9 `软件选择`中通过按`Space`(空格键)选择`Xfce`、`SSH server`和`标准系统工具`。\n![图13](img/post3/13.jpg)\n\n按下`Enter`键开始下载所需软件并安装。网络条件不同下载安装时间可能花费10-30分钟，你可以倒上一杯咖啡慢慢等待。\n![图14](img/post3/14.jpg)\n\n3.10 安装GRUB引导，选择/dev/sda。\n![图15](img/post3/15.jpg)\n\n3.11 `结束安装进程`，按下`Enter`键，系统自动重启。\n![图16](img/post3/16.jpg)\n\n3.12 系统安装工作完成，现在你可以用新建的用户名及密码登录，领略Debian的风采了。\n![图17](img/post3/17.jpg)"
+		},
+		{
+			"post_id": 2,
+			"title": "如何让你的ZeroNet网站显示个性.bit域名？",
+			"date_published": 1491358462,
+			"body": "> ZreoNet网站新建后，网址是一长串字符，根本记不住，而且没有特点。感谢 [@domains4free](http://127.0.0.1:43110/domains4free.bit/) ，我成功申请了.bit域名，将本站域名显示为[0debian.bit](http://127.0.0.1:43110/0debian.bit/) 。那么如何申请、绑定.bit域名呢？跟着我一步一步做吧！ \n\n## 1 所需工具\n- Namecoin：.bit域名管理、更新与修改工具 [下载](https://www.namecoin.org/download/)\n- Bitmessage：去中心化通信软件 [下载](https://bitmessage.org/wiki/Main_Page)\n- 参考[domains4free](http://127.0.0.1:43110/domains4free.bit/?Post:2:Free+.bit+Domains+for+ZeroNet+Sites)\n\n## 2 新建namecion接收地址\n.bit域名的管理、更新与修改是需要coins(虚拟币)的。打开namecion软件，点`文件`-`正在接收地址`-`新建`-`ok`，生成namecion接收地址。\n\n---\n\n![图1](img/post2/01.jpg)\n\n## 3 创建Bitmessage新地址\n在Bitmessage`信息`界面左下角点`新身份标识`生成个人收发件地址。\n![图2](img/post2/02.jpg)\n\n## 4 .bit域名查询\n到 [这里](https://namecha.in/name/d/example) 或 [这里](https://dotbit.me/) 查询你想注册的域名是否可用。（显示如下信息表示已被注册）\n![图3](img/post2/03.jpg)\n\n## 5 请domains4free代申请.bit域名\n发送比特信到 `BM-2cVddUzqe4DWCGorpXUXAUh2SwyD5S9ByU` ,注明域名和绑定的地址，最好加上你的namecoin钱包的收款地址，会收到 @domains4free 通过namecoin发来的域名和一些_coins_，方便后期域名的管理、更新与修改。\n```\nwant a .bit domain\n\ndomain : 0debian.bit\nZeroNet site : 1Pxayqh68gnTGmeJPL2mCdSMHHcBcabXAN\nNamecoin receive address : NHThAfmaqzsVpG7LU2BX8GzNY5QfWjyMQC\nCan you also send me some namecoins? Thank you!\n```\n![图4](img/post2/04.jpg)\n\n大概一天后就会收到 @domains4free 的回复了，记得查看比特信。祝你好运。\n![图5](img/post2/05.jpg)\n\n## 6 修改网站配置\n至此，你的.bit域名可用了。但在浏览网站时显示的仍是一长串字符。打开`zeronet/data/1Pxayqh68gnTGmeJPL2mCdSMHHcBcabXAN/content.json`（1Pxayqh68gnTGmeJPL2mCdSMHHcBcabXAN是我的网站所在文件夹，你的自己找吧），增加一行`\"domain\": \"0debian.bit\",`（第9行）：\n```\n{\n \"address\": \"1Pxayqh68gnTGmeJPL2mCdSMHHcBcabXAN\",\n \"address_index\": 79075484,\n \"background-color\": \"white\",\n \"clone_root\": \"\",\n \"cloneable\": true,\n \"cloned_from\": \"19k2nhubaYsDJNPHL6iNs3D2K9Mgj66P4R\",\n \"description\": \"\\u4ece\\u3007\\u5f00\\u59cb\\uff0c\\u5b66\\u4e60debian\\u3002\",\n \"domain\": \"0debian.bit\",\n \"files\": {\n```\n现在你可以使用你的个性.bit域名浏览自己的网站啦。"
+		},
+		{
+			"post_id": 1,
+			"title": "我为什么开这个博客？",
+			"date_published": 1489651477,
+			"body": "![图0](img/post1/00.jpg)\n一次偶然的机会，知道了ZeroNet，并开始使用它。ZeroNet是开放、自由、去中心化的网络，使用 Bitcoin 加密和 BitTorrent 网络。使用ZeroNet，你可以匿名上网，你可以在自己电脑搭建网站，但即使你关机，你的网站依然在全球存在，别人无法关闭你的网站。\n\n---\n\n我喜欢ZeroNet，我可以自由地浏览互联网。在GFW内，作为文科生的我学会了使用Goagent、Tor、VPN、SSR，还有替换Hosts。当我进入ZeroNet，看世界变得简单了。\n\n但我对于网上那些敏感的政治信息并不感冒，我只是不喜欢被束缚的感觉。这似乎就是我喜欢Debian的原因。简单、开放、自由，一切都刚刚好。\n\n刚开始接触Linux是在2007年。那时想着要有一个专属自己的U盘系统，随身携带，插上电脑就能用。通过搜索找到了CDLinux——一个小巧但功能齐全、便于携带的Linux系统。一个新世界的大门从此打开，除了Windows原来还有如此多的选择。红旗、珠穆朗玛、中标普华，然后转用国际发行的Ubuntu、Fedora、Opensuse，中间还安装试用过YlmfOS、DeepinLinux、Arch，但最终我还是选择了Debian。\n\n因为接触Debian也是最近一段时间开始（认识Linux十年了，我都干嘛去了，怎么才使用Debian），我将会把自己学习Debian的过程记录在这里。\n\n说了这么多，这就是我开这个博客的原因。\n\n切，就这，你在哪不能记录？咳咳，说不定，我还会记录一些不可描述的内容呢！^_^"
+		}
+	],
+	"tag": [
+		{
+			"value": "debian学习",
+			"post_id": 3
+		},
+		{
+			"value": "ZeroNet学习",
+			"post_id": 2
+		},
+		{
+			"value": "debian学习",
+			"post_id": 4
+		},
+		{
+			"value": "debian学习",
+			"post_id": 5
+		},
+		{
+			"value": "ZeroNet学习",
+			"post_id": 5
+		}
+	]
+}

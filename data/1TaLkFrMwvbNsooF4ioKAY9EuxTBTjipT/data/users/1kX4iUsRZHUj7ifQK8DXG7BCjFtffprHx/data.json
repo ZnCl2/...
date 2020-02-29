@@ -1,0 +1,86 @@
+{
+	"next_topic_id": 3,
+	"topic": [
+		{
+			"topic_id": 1556443125,
+			"title": "ZeroChat tutorial empty db tables",
+			"body": "I'm currently trying to follow the ZeroChat tutorial (http://127.0.0.1:43110/Blog.ZeroNetwork.bit/?Post:99:ZeroChat+tutorial+new). FileWrite works so far, that means the messages are written to the users' data.json.\n\nUnfortunately, it seems that something is wrong with my database. In inspected the db with a sqlite tool and my tables are empty. I'm using the same db scheme that is used in the tutorial. \n\nI would appreciate your help :)",
+			"added": 1556443124
+		},
+		{
+			"topic_id": 1557993360,
+			"title": "Russia Is Targeting Europe’s Elections. So Are Far-Right Copycats.",
+			"body": "\"In 2016, an Italian website called I’m With Putin appeared, promoting pro-Russian news and criticism of the West. That now-defunct site shared a Google tracking account with the official campaign website of Matteo Salvini, the far-right deputy prime minister and Italy’s most powerful politician.\"\n\n“The Kremlin has empowered and amplified other venal and anti-democratic actors to grow their influence in Europe, creating a snowball effect for its anti-Western agenda,” a European Union task force said in one of its recent summaries of Russian disinformation.\n\nOne example: Websites promoting what appear to be two local German anti-fascist groups, Antifa West Berlin and Antifa Nord Ost, share a server used by Russian government hackers who attacked the Democratic National Committee during the 2016 election. The registration information for one of the German sites includes an anonymized email address that was also used to set up a pair of Russian spearphishing sites.\"\n\n\"This month, these two websites prodded thousands of Twitter followers to attend an anti-AfD rally in Berlin. The murky combination of anonymous online content and in-the-street action is reminiscent of 2016, when Russian groups pushed people in the United States to attend rallies claiming to support both Black Lives Matter and the police.\"\n\n\"A definitive attribution would require the kind of tools that the American government used to reveal the 2016 interference. Twitter said the accounts do not currently violate its policies. Neither of the anti-fascist groups responded to questions about their sites.\"\n\nSource: https://www.nytimes.com/2019/05/12/world/europe/russian-propaganda-influence-campaign-european-elections-far-right.html",
+			"added": 1557993358
+		}
+	],
+	"topic_vote": {
+		"1556443125_1kX4iUsRZHUj7ifQK8DXG7BCjFtffprHx": 1,
+		"1557993360_1kX4iUsRZHUj7ifQK8DXG7BCjFtffprHx": 1,
+		"1545519505_13CFz29UuNbUx54HmLqQBfxPQNN2FmfdAq": 1,
+		"1586074982_1CcmrTeqtuoQtUpuxBZ9wFZz1tPaBcKb1g": 1
+	},
+	"next_comment_id": 10,
+	"comment": {
+		"1556443125_1kX4iUsRZHUj7ifQK8DXG7BCjFtffprHx": [
+			{
+				"comment_id": 1,
+				"body": "> [gitcenter](#comment_447_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di): Hello. [...]\n\nThanks for your reply. I think I'm using the siteSign command, but maybe not properly.\nHere is my sendMessage() code:\n\n\n\t\t\tsendMessage() {\n\t\t\t\tif (!this.site_info.cert_user_id) {\n\t\t\t\t\tthis.cmd(\"wrapperNotification\", [\"info\", \"Please, select your account.\"]);\n\t\t\t\t\treturn false;\n\t\t\t\t}\n\n\t\t\t\t// data file path\n\t\t\t\tvar data_inner_path = \"data/users\" + this.site_info.auth_address + \"/data.json\";\n\t\t\t\tvar content_inner_path = \"data/users\" + this.site_info.auth_address + \"/content.json\";\n\n\t\t\t\t// load messages\n\t\t\t\tthis.cmd(\"fileGet\", {\"inner_path\": data_inner_path, \"required\": false}, (data) => {\n\t\t\t\t\t// parse current data file or use default data\n\t\t\t\t\tvar data = data ? JSON.parse(data) : { \"message\": [] };\n\n\t\t\t\t\tdata.message.push({\n\t\t\t\t\t\t\"body\": document.getElementById(\"message\").value,\n\t\t\t\t\t\t\"date_added\": Date.now()\n\t\t\t\t\t});\n\t\t\t\t\n\n\t\t\t\t\t// encode data to utf8 json\n\t\t\t\t\tvar json_raw = unescape(encodeURIComponent(JSON.stringify(data, undefined, '\\t')));\n\n\t\t\t\t\t// write file to disk\n\t\t\t\t\tthis.cmd(\"fileWrite\", [data_inner_path, btoa(json_raw)], (res) => {\n\t\t\t\t\t\tif (res == \"ok\") {\n\t\t\t\t\t\t\t// reset message input\n\t\t\t\t\t\t\tdocument.getElementById(\"message\").value = \"\";\n\t\t\t\t\t\t\t// sign changed file in user's directory\n\t\t\t\t\t\t\tthis.cmd(\"siteSign\", {\"inner_path\": content_inner_path}, (res) => {\n\t\t\t\t\t\t\t\tthis.loadMessages();\n\t\t\t\t\t\t\t\tthis.cmd(\"sitePublish\", {\"inner_path\": content_inner_path, \"sign\": false});\n\t\t\t\t\t\t\t});\n\t\t\t\t\t\t} else {\n\t\t\t\t\t\t\tthis.cmd(\"wrapperNotification\", [\"error\", \"File write error: #{res}\"]);\n\t\t\t\t\t\t}\n\n\t\t\t\t\t});\n\t\t\t\t});\n\n\t\t\t\treturn false;\n\t\t\t}",
+				"added": 1556443973
+			},
+			{
+				"comment_id": 2,
+				"body": "> [gitcenter](#comment_449_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di): You can send me the link to your zite so I can check it if you want.\n\nYep, did that. The funny thing is i get a new error now: Private key invalid! Valid signers: ['######'], Private key address: ######",
+				"added": 1556444378
+			},
+			{
+				"comment_id": 3,
+				"body": "> [gitcenter](#comment_452_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di): Did you send me the link to ZeroMail or did you just reply to the wrong comment?\nOmg. I'm sorry, I meant to reply to the other comment ^^",
+				"added": 1556445013
+			},
+			{
+				"comment_id": 4,
+				"body": "> [gitcenter](#comment_451_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di): BTW, those #####s are addresses and you can show them. The only thing you shouldn't give others is private keys -- they looks like 5K..... or 5J.....\nOk, thanks. Error: Private key invalid! Valid signers: ['1JSs16ZZ9pqAgicEwd8ksNx2WvtkmEXdGN'], Private key address: 1kX4iUsRZHUj7ifQK8DXG7BCjFtffprHx",
+				"added": 1556445719
+			},
+			{
+				"comment_id": 5,
+				"body": "> [gitcenter](#comment_450_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di): This means that data/users/content.json isn't correct. Check that: a) it is included from root content.json, b) it contains zeroid.bit with the correct address, c) you're logged in with ZeroID on your site.\n\na) The data/users/content.json is included in root content.json.\n\n\t...\n \t\"ignore\": \"data/.*\",\n \t\"includes\": {\n  \t\t\"data/users/content.json\": {\n   \t\t\t\"signers\": [],\n  \t\t\t \"signers_required\": 1\n \t \t}\n \t},\n\t...\n\n\nb) & c) data/users/content.json:\n\n{\n    \t\"files\": {},\n    \t\"ignore\": \".*\",\n    \t\"modified\": 1556446254,\n    \t\"signs\": {},\n   \t \"user_contents\": {\n      \t\t\"cert_signers\": {\n        \t\t\"zeroid.bit\": [ \"1iD5ZQJMNXu43w1qLB8sfdHVKppVMduGz\" ]\n      \t\t},\n      \t\t\"permission_rules\": {\n       \t\t \".*\": {\n          \t\t\t\"files_allowed\": \"data.json\",\n          \t\t\t\"max_size\": 10000\n      \t\t\t  },\n       \t\t \"bitmsg/.*@zeroid.bit\": { \"max_size\": 15000 }\n     \t \t},\n     \t \t\"permissions\": {\n       \t \t\"bad@zeroid.bit\": false,\n        \t\t\"nofish@zeroid.bit\": { \"max_size\": 100000 }\n     \t\t }\n   \t }\n  }",
+				"added": 1556445940
+			},
+			{
+				"comment_id": 6,
+				"body": "> [gitcenter](#comment_454_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di): Why is modified zero? Did you replace it?\n\nI replaced it, because i copied the code from the tutorial to check everything correct. Updated the previous comment with the correct modified integer.",
+				"added": 1556446360
+			},
+			{
+				"comment_id": 7,
+				"body": "> [gitcenter](#comment_455_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di): Okaay... Does the message about wrong signing address still show up?\n\nUnfortunately, yes^^",
+				"added": 1556446504
+			},
+			{
+				"comment_id": 8,
+				"body": "> [gitcenter](#comment_457_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di): You forgot / after users.\n\nHoly... Thank you so much! Stupid me ^^\n",
+				"added": 1556446700
+			},
+			{
+				"comment_id": 9,
+				"body": "> [gitcenter](#comment_458_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di): No problem 😀\n\nnow everything works<3",
+				"added": 1556446827
+			}
+		]
+	},
+	"comment_vote": {
+		"450_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di": 1,
+		"453_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di": 1,
+		"451_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di": 1,
+		"457_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di": 1,
+		"456_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di": 1,
+		"458_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di": 1,
+		"10_16KZw5gzYyBdfuW9HSUZiGHmayCEXunYZU": 1,
+		"46_1JXekkVYJNdozXPFXZEA1AJXKjkWyFciTD": 1,
+		"64_1LybGoL99LBuYE8ZtwgJC8dxkii3UmYKpo": 1,
+		"133_1CKTRBy9N4RvE3FgeZJpQqFYtLHc37yo11": 1,
+		"36_1DnpB2yFpVwyhA29h2rRsifGVEC1sXLzgJ": 1
+	}
+}

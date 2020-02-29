@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <!-- _includes/base.html -->
+
+
+
+
+
+<head>
+    <link href="http://gmpg.org/xfn/11" rel="profile">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+    <!-- Enable responsiveness on mobile devices-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+    <title>
+        
+        Lexing I: the off-side rule &middot; Lyc
+        
+    </title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../../../css/poole.css">
+    <link rel="stylesheet" href="../../../css/syntax.css">
+    <link rel="stylesheet" href="../../../css/blackdoc.css">
+    <!--<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">-->
+    <!--<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=EB+Garamond">-->
+    <!-- Icons -->
+    <!--<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../../public/apple-touch-icon-144-precomposed.png">-->
+    <!--<link rel="shortcut icon" href="../../../public/favicon.ico">-->
+
+    <!-- Load jQuery -->
+    <script src="../../../js/jquery-2.1.4.min.js"></script>
+    <!-- Load KaTeX -->
+    <link rel="stylesheet" href="../../../js/katex/katex.min.css">
+    <script src="../../../js/katex/katex.min.js"></script>
+
+    <style>
+        @font-face {
+            font-family: 'lyc source code';
+            font-weight: normal;
+            src: url("../../../fonts/LycSourceCode.ttf.woff") format('woff');
+        }
+
+        @font-face {
+            font-family: 'Source Sans Pro';
+            font-weight: normal;
+            src: url("../../../fonts/SourceSansPro-Regular.ttf.woff") format('woff');
+        }
+
+        @font-face {
+            font-family: 'Source Sans Pro';
+            font-weight: normal;
+            font-style: italic;
+            src: url("../../../fonts/SourceSansPro-It.ttf.woff") format('woff');
+        }
+
+        @font-face {
+            font-family: 'Source Sans Pro';
+            font-weight: 100;
+            src: url("../../../fonts/SourceSansPro-Light.ttf.woff") format('woff');
+        }
+
+        @font-face {
+            font-family: 'Source Sans Pro';
+            font-weight: 100;
+            font-style: italic;
+            src: url("../../../fonts/SourceSansPro-LightIt.ttf.woff") format('woff');
+        }
+
+        @font-face {
+            font-family: 'Source Sans Pro';
+            font-weight: bold;
+            src: url("../../../fonts/SourceSansPro-Bold.ttf.woff") format('woff');
+        }
+
+        @font-face {
+            font-family: 'Source Sans Pro';
+            font-weight: bold;
+            font-style: italic;
+            src: url("../../../fonts/SourceSansPro-BoldIt.ttf.woff") format('woff');
+        }
+
+        @font-face {
+            font-family: 'Source Serif Pro';
+            font-weight: bold;
+            src: url("../../../fonts/SourceSerifPro-Bold.ttf.woff") format('woff');
+        }
+
+        @font-face {
+            font-family: 'Source Serif Pro';
+            font-weight: normal;
+            src: url("../../../fonts/SourceSerifPro-Regular.ttf.woff") format('woff');
+        }
+
+    </style>
+
+    <!-- RSS -->
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="/atom.xml">
+</head>
+
+
+  <body>
+
+    <div class="sidebar">
+    <div class="container sidebar-sticky">
+        <div class="sidebar-about">
+            <h1>
+                <a href="http://127.0.0.1:43110/1PkTiSpMwpTt9masqRWaufFHu8DFMmamcM/">
+                    Lyc
+                </a>
+            </h1>
+
+            <p class="sidebar-subtitle">A programming language work-in-progress.
+</p>
+
+        </div>
+
+        <nav class="sidebar-nav">
+            <a class="sidebar-nav-item" href="http://127.0.0.1:43110/1PkTiSpMwpTt9masqRWaufFHu8DFMmamcM/">About</a>
+
+            <!---->
+            <!--/2015/08/02/lexer.html-->
+
+            
+
+            
+            
+            
+            
+            <a class="sidebar-nav-item"
+               href="http://127.0.0.1:43110/1PkTiSpMwpTt9masqRWaufFHu8DFMmamcM/blog/index.html">Blog</a>
+            
+            
+            
+            
+            
+            <a class="sidebar-nav-item"
+               href="http://127.0.0.1:43110/1PkTiSpMwpTt9masqRWaufFHu8DFMmamcM/blog/drafts.html">Next</a>
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+
+            <!--<a class="sidebar-nav-item" href="/archive/master.zip">Download</a>-->
+            <!--<hr>-->
+            <!--<a class="sidebar-nav-item" href="">GitHub project</a>-->
+            <!--<span class="sidebar-nav-item">Currently v</span>-->
+        </nav>
+
+        <!--<p>&copy; 2015. All rights reserved.</p>-->
+    </div>
+</div>
+
+
+    <div class="content container">
+      <div class="post">
+    <h1 class="post-title">Lexing I: the off-side rule</h1>
+    <span class="post-date">02 Aug 2015</span>
+    <p>The idea of grouping blocks of instructions by using indentation is attributed to Peter J. Landin. It first appeared in his 1966 paper ‘<em>The next 700 programming languages</em>’, where it was named ‘<a href="https://en.wikipedia.org/wiki/Off-side_rule"><em>off-side rule</em></a>’. Guido van Rossum’s <a href="https://www.python.org/"><em>Python</em></a> — one of my favourite programming languages — would later popularize the use of the off-side rule.</p>
+
+<p>Indentation is usually implemented during lexical analysis. Properly parsing indentation requires the lexical analyser to maintain a stack of indentation levels as part of its state. This makes an indentation-aware lexer more memory expensive than your typical lexical analyser, which for most languages is just a finite-state machine.</p>
+
+<!---
+We expect the number of blocks to be proportional to the number of lines in the program, and hence so will be the memory used by an indentation-aware lexical analyser.
+-->
+
+<p>I personally find great advantage in having such a visually-immediate way of denoting program structure. I have at some point wondered why the off-side rule hasn’t been extended to other language constructs, such as strings and comments<sup id="fnref:coffeescript"><a href="#fn:coffeescript" class="footnote">1</a></sup>.</p>
+
+<h2 id="lexing-indentation">Lexing indentation</h2>
+
+<p>Lexical analysis is usually tasked with distinguishing keywords, identifiers, literals and punctuation, and discarding whitespace. Such a task can be very easily specified by defining the regular expressions which recognize the different kinds of tokens. These regular expressions are then compiled (into finite-state automata) and then fed the input characters one-by-one. Straightforward.</p>
+
+<p>In order to process indentation, a simple change to this scheme is needed: the characters at the beginning of a new line are preprocessed, the number of leading whitespace characters are used in order to know how the indentation level changed. More precisely, a stack <code>S</code> is maintained, recording the indentation levels (i.e. the number of whitespace characters) of all the blocks under which the current block is nested. Here is some pseudo-code:</p>
+
+<div class="highlight"><pre><code><span class="">S</span> <span class="">:=</span> <span class="kt">Int</span><span class="p">[</span><span class="p">]</span>
+<span class="">S</span><span class="">.</span><span class="">push</span><span class="p">(</span><span class="">0</span><span class="p">)</span>
+
+<span class="k">while</span> <span class="k">not</span> <span class="">EOF</span><span class="p">(</span><span class="p">)</span>:
+    <span class="">N</span> <span class="">:=</span> <span class="">count-number-of-whitespaces</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="c">#</span><span class="c"> Emit INDENT/DEDENT tokens as appropriate
+    </span><span class="k">if</span> <span class="">N</span> <span class="">&gt;</span> <span class="">top</span><span class="p">(</span><span class="">S</span><span class="p">)</span>:
+        <span class="">S</span><span class="">.</span><span class="">append</span><span class="p">(</span><span class="">N</span><span class="p">)</span>
+        <span class="nb">emit</span> <span class="">INDENT</span>
+    <span class="k">elif</span> <span class="">N</span> <span class="">&lt;</span> <span class="">top</span><span class="p">(</span><span class="">S</span><span class="p">)</span>:
+        <span class="k">while</span> <span class="">N</span> <span class="">&lt;</span> <span class="">top</span><span class="p">(</span><span class="">S</span><span class="p">)</span>:
+            <span class="">pop</span><span class="p">(</span><span class="">S</span><span class="p">)</span>
+            <span class="nb">emit</span> <span class="">DEDENT</span>
+        <span class="k">if</span> <span class="">N</span> <span class="">≠</span> <span class="">top</span><span class="p">(</span><span class="">S</span><span class="p">)</span>:
+            <span class="k">raise</span> <span class="">«Indentation Error»</span>
+    <span class="k">assert</span> <span class="">N</span> <span class="">=</span> <span class="">top</span><span class="p">(</span><span class="">S</span><span class="p">)</span>
+
+    <span class="c">#</span><span class="c"> Feed the remaining characters to the compiled regexps,
+      which may in turn emit various tokens; we capture
+      these tokens and emit them
+    </span><span class="k">while</span> <span class="p">(</span><span class="">char</span> <span class="">:=</span> <span class="nb">read</span><span class="p">(</span><span class="p">)</span><span class="p">)</span> <span class="">≠</span> <span class="">'</span><span class="">\</span><span class="">n</span><span class="">'</span>:
+        <span class="nb">yield</span> <span class="">char</span>
+
+
+    <span class="nb">yield</span> <span class="">'</span><span class="">\</span><span class="">n</span><span class="">'</span>
+
+</code></pre></div>
+
+<p>The <code>count-number-of-whitespaces</code> function should return the number of whitespace characters at the beginning of the current line. We may think of several ways of implementing this function; for instance, the leading whitespace may be discarded, or fed into the regexps. Python discards all whitespace, but ignores indentation between delimiters. By the way, do you notice something off-side-ruleish about the multiline comments? All the code show is parsed with the same parsing techniques that we will describe in this blog.</p>
+
+<h2 id="generalizing-the-off-side-rule">Generalizing the off-side rule</h2>
+
+<!---  -->
+
+<p>We can think of the algorithm above as a kind of multi-party protocol: Alice is able to produce a sequence of characters, and she wants to obtain a sequence of tokens; Bob knows how to produce indentation tokens, but nothing else, and Charlie knows how to produce the remaining tokens, but is completely blind to indentation. Bob asks Alice for one character at a time, by invoking <code>read</code>, and produces indentation tokens by invoking <code>emit</code>. We can imagine that Charlie also asks Bob for one character at a time by invoking <code>read</code>, and Bob sends Charlie a character by invoking <code>yield</code>.</p>
+
+<p>There is nothing preventing us from generalizing this setting to an arbitrary number of players. Since we are using a stack, we may also gain from looking at a recursive variant of the algorithm, i.e., trying to use the call-stack instead. Putting these two ideas together suggests that we create a chain of coroutines, one for each indentation level; the routine at level <script type="math/tex">i</script> will invoke a level <script type="math/tex">i+1</script> routine when the indentation level increases; level <script type="math/tex">i</script> <code>read</code>s characters from level <script type="math/tex">i-1</script>, and <code>yield</code>s characters to level <script type="math/tex">i + 1</script>; it also <code>capture</code>s tokens from level <script type="math/tex">i + 1</script> and <code>emit</code>s tokens to level <script type="math/tex">i - 1</script>.</p>
+
+<p>Then, whenever the indentation level has increased — or when a new opening-delimiter is seen, say — a new call is made to the coroutine that handles such an event. The new coroutine <script type="math/tex">C</script>, when <code>read</code>ing characters from the previous level, will fail to see any characters that appear previous to its own indentation level. so, in some sense, it <em>doesn’t have to worry about them</em>. If the previous-level coroutine, say <script type="math/tex">P</script>, finds that the indentation has decreased below the minimum required for the coroutine <script type="math/tex">C</script>, <script type="math/tex">P</script> will <code>yield EOF</code> — an end-of-file status — to <script type="math/tex">C</script>.</p>
+
+<p>In case you are wondering, the precise and only difference between chain-of-couroutines and the usual recursive-descent parsing is that the caller controls what is seen by the callee, rather than just completely delegating the processing of the characters.</p>
+
+<p><img src="/blog/images/lexing_chain.svg" width="100%" alt="Illustration of lexing via a chain of coroutines." title="Illustration of lexing via a chain of coroutines." /></p>
+
+<h2 id="an-example">An example</h2>
+
+<p>We now show some pseudo-code that uses this idea to parse indented blocks of identifiers (sequences of alphanumeric characters). The algorithm will serve as the foundation for a very powerful method of lexical analysis, which we will describe in our next post. It is a bit harder to grasp what is going on, and the algorithm is potentially slower<sup id="fnref:slower"><a href="#fn:slower" class="footnote">2</a></sup>. But I personally find the end result to be conceptually quite elegant, and I think this will shine through when we later extend it.</p>
+
+<div class="highlight"><pre><code><span class="c">#</span><span class="c"> This coroutine parses a 'block-seq', which is a sequence
+  of blocks of identifiers
+
+  Each block in the sequence is of the form:
+      sequence of identifiers
+         (indented, possibly empty) block-seq
+
+</span><span class="k">coroutine</span> <span class="">parse-block-seq</span><span class="p">(</span><span class="p">)</span>:
+    <span class="k">loop</span>:
+        <span class="c">#</span><span class="c"> Each cycle through this loop parses a single block
+        </span><span class="">skip-empty-lines</span><span class="p">(</span><span class="p">)</span>
+        <span class="k">if</span> <span class="">first-non-empty-line-is-indented</span><span class="p">(</span><span class="p">)</span>:
+            <span class="k">raise</span> <span class="">«Unexpected Indentation»</span>
+        <span class="k">elif</span> <span class="">EOF</span><span class="p">(</span><span class="p">)</span>: <span class="k">return</span>
+
+
+        <span class="c">#</span><span class="c"> Stage I: Parse the first sequence of identifiers
+        </span><span class="k">loop</span>:
+            <span class="k">if</span> <span class="">EOF</span><span class="p">(</span><span class="p">)</span>: <span class="k">return</span>
+            <span class="">char</span> <span class="">:=</span> <span class="nb">read</span><span class="p">(</span><span class="p">)</span>
+            <span class="k">if</span> <span class="">char</span><span class="">.</span><span class="">is-whitespace</span><span class="p">(</span><span class="p">)</span>:
+                <span class="">pass</span> <span class="c">#</span><span class="c"> ignore non-beginning of line whitespace
+            </span><span class="k">elif</span> <span class="">char</span><span class="">.</span><span class="">is-newline</span><span class="p">(</span><span class="p">)</span>:
+                <span class="">break</span> <span class="c">#</span><span class="c"> move on Stage II
+            </span><span class="k">else</span>:
+                <span class="k">assert</span> <span class="">char</span><span class="">.</span><span class="">is-alphanumeric</span><span class="p">(</span><span class="p">)</span>
+                <span class="">char-seq</span> <span class="">=</span> <span class="">char</span> <span class="">+</span> <span class="">read-and-concatenate-alphanums</span><span class="p">(</span><span class="p">)</span>
+                <span class="nb">emit</span> <span class="">IDENTIFIER</span><span class="p">(</span><span class="">char-seq</span><span class="p">)</span>
+
+        <span class="c">#</span><span class="c"> Stage II: Parse the indented block-seq
+        </span><span class="k">loop</span>:
+            <span class="">N</span> <span class="">:=</span> <span class="">count-number-of-whitespaces</span><span class="p">(</span><span class="p">)</span>
+            <span class="k">if</span> <span class="">N</span> <span class="">=</span> <span class="">0</span>:
+                <span class="nb">emit</span><span class="p">(</span><span class="">END</span><span class="p">)</span> <span class="k">and</span> <span class="">break</span> <span class="c">#</span><span class="c"> parse the next block
+            </span><span class="k">else</span>:
+                <span class="nb">emit</span> <span class="">INDENT</span>
+                <span class="c">#</span><span class="c"> invoke new instance of this subroutine;
+                  the 'char-generator' block defines the generator
+                  which feeds characters to this new instance,
+                  and the 'capture' block defines what to do when
+                  the new instance emits a token
+                </span><span class="">parse-block-seq</span><span class="p">(</span><span class="p">)</span>:
+                    <span class="nb">char-generator</span>:
+                        <span class="">for-each-line</span>:
+                            <span class="">W</span> <span class="">:=</span> <span class="">count-leading-whitespace-up-to</span><span class="p">(</span><span class="">N</span><span class="p">)</span>
+                            <span class="c">#</span><span class="c"> If this level received an EOF or the
+                              indentation level decreased below N:
+                            </span><span class="k">if</span> <span class="">W</span> <span class="">=</span> <span class="">EOF</span> <span class="k">or</span> <span class="">W</span> <span class="">&lt;</span> <span class="">N</span>:
+                                <span class="nb">yield</span> <span class="">EOF</span>
+                            <span class="k">else</span>:
+                                <span class="nb">yield</span> <span class="">all</span> <span class="">chars</span> <span class="">after</span> <span class="">the</span> <span class="">Nth</span>
+                    <span class="nb">capture</span> <span class="">token</span>:
+                        <span class="nb">emit</span> <span class="">token</span>
+                <span class="k">if</span> <span class="">W</span> <span class="">&gt;</span> <span class="">1</span>: <span class="k">raise</span> <span class="">«Indentation Error»</span>
+                <span class="nb">emit</span> <span class="">DEDENT</span>
+                <span class="nb">emit</span> <span class="">END</span>
+
+</code></pre></div>
+
+<p>Should we tokenize the following “code”:</p>
+<pre><code>test lexing
+   of block-seq
+   tokenizer
+      yeah
+</code></pre>
+
+<p>We would get the following token sequence:</p>
+
+<pre><code>BEGIN
+   IDENTIFIER(test)
+   IDENTIFIER(lexing)
+   INDENT
+   BEGIN
+      IDENTIFIER(of)
+      IDENTIFIER(block-seq)
+   END
+   BEGIN
+      IDENTIFIER(parser)
+      INDENT
+      BEGIN
+         IDENTIFIER(yeah)
+      END
+   END
+END
+</code></pre>
+
+<h3 id="footnotes">Footnotes</h3>
+<div class="footnotes">
+  <ol>
+    <li id="fn:coffeescript">
+      <p>Recently, I discovered that <a href="http://coffeescript.org/#strings">coffeescript’s block strings</a> allow for this. <a href="#fnref:coffeescript" class="reversefootnote">&#8617;</a></p>
+    </li>
+    <li id="fn:slower">
+      <p>Because the routines at each level must <code>read</code> every character before it can be <code>read</code> by the routine at the next level. However, since we will only be using the call-stack to parse indentation levels, an ad-hoc modification can ensure that such multiple reading is unnecessary. <a href="#fnref:slower" class="reversefootnote">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+
+</div>
+
+<!--<div class="related">-->
+<!--<h2>Related Posts</h2>-->
+<!--<ul class="related-posts">-->
+<!---->
+<!--<li>-->
+<!--<h3>-->
+<!--<a href="/2015/10/04/lexer-3.html">-->
+<!--Lexing III: Nested power!-->
+<!--<small>04 Oct 2015</small>-->
+<!--</a>-->
+<!--</h3>-->
+<!--</li>-->
+<!---->
+<!--<li>-->
+<!--<h3>-->
+<!--<a href="/lexing,/syntax/2015/08/30/lexer-2.html">-->
+<!--Lexing II: readtable–macro parsing-->
+<!--<small>30 Aug 2015</small>-->
+<!--</a>-->
+<!--</h3>-->
+<!--</li>-->
+<!---->
+<!--</ul>-->
+<!--</div>-->
+
+
+    </div>
+
+  </body>
+  <script language="JavaScript">
+    $("script[type='math/tex']").replaceWith(
+            function(){
+              var tex = $(this).text();
+              return "<span class=\"inline-equation\">" +
+                      katex.renderToString(tex) +
+                      "</span>";
+            });
+
+    $("script[type='math/tex; mode=display']").replaceWith(
+            function(){
+              var tex = $(this).text();
+              return "<div class=\"equation\">" +
+                      katex.renderToString("\\displaystyle "+tex) +
+                      "</div>";
+            });
+
+  </script>
+</html>

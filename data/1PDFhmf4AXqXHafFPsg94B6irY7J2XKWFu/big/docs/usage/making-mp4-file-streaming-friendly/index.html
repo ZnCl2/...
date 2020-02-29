@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="referrer" content="no-referrer">
+        
+        
+        
+        <link rel="shortcut icon" href="../../img/favicon.ico">
+
+	<title>Making an MP4 File Streaming Friendly - ZeroMux</title>
+
+        <link href="../../css/bootstrap-custom.min.css" rel="stylesheet" crossorigin="anonymous">
+        <link href="../../css/font-awesome-4.0.3.css" rel="stylesheet" crossorigin="anonymous">
+        <link rel="stylesheet" href="../../css/highlight.css" crossorigin="anonymous">
+        <link href="../../css/base.css" rel="stylesheet" crossorigin="anonymous">
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+
+        
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <!-- Main title -->
+            <a class="navbar-brand" href="../..">ZeroMux</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+            
+            
+                <li >
+                    <a href="../..">Home</a>
+                </li>
+            
+            
+            
+                <li class="dropdown active">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Usage <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                    
+                        
+<li >
+    <a href="../">File Dependencies</a>
+</li>
+
+                    
+                        
+<li >
+    <a href="../making-file-downloader/">Making a File Downloader</a>
+</li>
+
+                    
+                        
+<li class="active">
+    <a href="./">Making an MP4 File Streaming Friendly</a>
+</li>
+
+                    
+                    </ul>
+                </li>
+            
+            
+            </ul>
+
+            <!-- Search, Navigation and Repo links -->
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                        <i class="fa fa-search"></i> Search
+                    </a>
+                </li>
+                <li >
+                    <a rel="next" href="../making-file-downloader/">
+                        <i class="fa fa-arrow-left"></i> Previous
+                    </a>
+                </li>
+                <li class="disabled">
+                    <a rel="prev" >
+                        Next <i class="fa fa-arrow-right"></i>
+                    </a>
+                </li>
+                
+            </ul>
+        </div>
+    </div>
+</div>
+
+        <div class="container">
+            <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+    
+        <li class="main active"><a href="#including-files">Including Files</a></li>
+        
+    
+        <li class="main "><a href="#communicating-with-multiplexer">Communicating with Multiplexer</a></li>
+        
+    
+        <li class="main "><a href="#receiving-messages">Receiving messages</a></li>
+        
+    
+        <li class="main "><a href="#sending-messages">Sending messages</a></li>
+        
+            <li><a href="#initializing-multiplexer">Initializing Multiplexer</a></li>
+        
+            <li><a href="#loading-moov-box">Loading moov Box</a></li>
+        
+            <li><a href="#loading-raw-mp4-data">Loading Raw MP4 Data</a></li>
+        
+    
+    </ul>
+</div></div>
+            <div class="col-md-9" role="main">
+
+<h2> Making an MP4 File Streaming Friendly </h2>
+
+<p>ZeroMux can convert "non-fragmented" MP4 files into streaming friendly files in real time. Data produced by ZeroMux's multiplexer can be put directly into a Source Buffer.</p>
+<h3 id="including-files">Including Files</h3>
+<p>To use the multiplexer, you need to put these <strong>4 files</strong> together:</p>
+<pre><code>mp4parser.js
+mp4alg.js
+mp4builder.js
+mp4worker.js
+</code></pre>
+
+<h3 id="communicating-with-multiplexer">Communicating with Multiplexer</h3>
+<p>This MP4 multiplexer, written in JavaScript, makes use of the Web Worker API, so it handles input and output by receiving and sending messages passed through the <code>postMessage</code> function.</p>
+<p>Each message is an array defined as:</p>
+<pre><code class="js">[cmd, args]
+</code></pre>
+
+<h3 id="receiving-messages">Receiving messages</h3>
+<p>To receive messages <strong>from the worker</strong>, you need to register an <code>onmessage</code> event listener after spawning the worker.</p>
+<pre><code class="js">var mp4Worker = new Worker(&quot;mp4worker.js&quot;);
+mp4Worker.onmessage = function(e)
+{
+    console.log(e.data);
+    // e.data == [cmd, args]
+
+    e.data[0] == &quot;signal&quot;
+    e.data[1] == &quot;imported&quot;
+
+    e.data[0] == &quot;mp4&quot;
+    e.data[1] == anUint8Array
+}
+</code></pre>
+
+<h3 id="sending-messages">Sending messages</h3>
+<p>To send messages <strong>to the worker</strong>, you need to use the <code>postMessage</code> function of the worker instance. When a message is received and proceeded, the worker will send back a ready signal, indicating that the worker is ready for the next step. <strong>Do not send</strong> any other signals or messages when the worker is <strong>not ready</strong>.</p>
+<h4 id="initializing-multiplexer">Initializing Multiplexer</h4>
+<p>The multiplexer can be initialized using the <code>import</code> command. This command is defined as:</p>
+<pre><code class="js">mp4Worker.postMessage([&quot;import&quot;, [&quot;http://site/a.js&quot;, &quot;http://site/b.js&quot;, ...]]);
+</code></pre>
+
+<p>The parameter should be a list containing <strong>absolute</strong> URLs. Absolute URLs can be generated with <code>&lt;a&gt;</code> elements.</p>
+<pre><code class="js">// initialize worker
+var jsUrls = [&quot;js/mp4parser.js&quot;, &quot;js/mp4alg.js&quot;, &quot;js/mp4builder.js&quot;];
+
+var absJsUrls = jsUrls.map(function(item)
+{
+    var a = document.createElement(&quot;a&quot;);
+    a.href = item;
+
+    var result = a.href;
+    return result;
+});
+
+mp4Worker.postMessage([&quot;import&quot;, absJsUrls]);
+</code></pre>
+
+<p>Once the worker finishes loading its dependencies, it will send back an <code>imported</code> signal:</p>
+<pre><code class="js">&lt;&lt;&lt; [&quot;signal&quot;, &quot;imported&quot;]
+</code></pre>
+
+<p><strong>Do not</strong> send any other messages before the worker sends back an <code>imported</code> signal.</p>
+<h4 id="loading-moov-box">Loading <code>moov</code> Box</h4>
+<p>Before loading raw MP4 file data, you need to load the <code>moov</code> box onto the program first. Loading <code>moov</code> box can be done by using the following command:</p>
+<pre><code class="js">mp4Worker.postMessage([&quot;moov&quot;, moovArrayBuffer]);
+</code></pre>
+
+<p>The parameter of the <code>moov</code> command must be the <code>moov</code> box of the <strong>unprocessed</strong> MP4 file. It is in Array Buffer format, and it <strong>must include</strong> the 4-byte <strong>"box size"</strong> field.</p>
+<p>A valid <code>moov</code> box Array Buffer is partially shown below:</p>
+<pre><code class="md">Offset      0  1  2  3  4  5  6  7   8  9 10 11 12 13 14 15
+
+00000000   00 01 2C EF 6D 6F 6F 76  00 00 00 6C 6D 76 68 64       moov   lmvhd
+00000016   00 00 00 00 00 00 00 00  00 00 00 00 00 00 03 E8                  ?
+00000032   00 01 6F D5 00 01 00 00  01 00 00 00 00 00 00 00     o?           
+00000048   00 00 00 00 00 01 00 00  00 00 00 00 00 00 00 00                   
+00000064   00 00 00 00 00 01 00 00  00 00 00 00 00 00 00 00                   
+00000080   00 00 00 00 40 00 00 00  00 00 00 00 00 00 00 00       @           
+00000096   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00                   
+00000112   00 00 00 03 00 00 B8 7A  74 72 61 6B 00 00 00 5C           trak   \
+00000128   74 6B 68 64 00 00 00 03  00 00 00 00 00 00 00 00   tkhd            
+00000144   00 00 00 01 00 00 00 00  00 01 6F 64 00 00 00 00             od    
+</code></pre>
+
+<p>The meanings of some bytes are listed below:</p>
+<p><code>00 01 2C EF</code> Box size, including these four bytes</p>
+<p><code>6D 6F 6F 76</code> Box type: "moov"</p>
+<p><code>00 00 .. ..</code> Box content</p>
+<p>When the <code>moov</code> box is loaded, the worker will send back a <code>samplesLoaded</code> signal:</p>
+<pre><code class="js">&lt;&lt;&lt; [&quot;signal&quot;, &quot;samplesLoaded&quot;]
+</code></pre>
+
+<p><strong>Do not</strong> proceed to the next step before this signal is received.</p>
+<h4 id="loading-raw-mp4-data">Loading Raw MP4 Data</h4>
+<p>After the multiplexer has loaded the sample reference from the <code>moov</code> box, you can start converting MP4 files.</p></div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            
+            <center>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</center>
+        </footer>
+
+        <script src="../../js/jquery-1.10.2.min.js"></script>
+        <script src="../../js/bootstrap-3.0.3.min.js"></script>
+        <script src="../../js/highlight.pack.js"></script>
+        <script>var base_url = '../..';</script>
+        <script data-main="../../mkdocs/js/search.js" src="../../mkdocs/js/require.js"></script>
+        <script src="../../js/base.js"></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                        <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            From here you can search these documents. Enter
+                            your search terms below.
+                        </p>
+                        <form role="form">
+                            <div class="form-group">
+                                <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query">
+                            </div>
+                        </form>
+                        <div id="mkdocs-search-results"></div>
+                    </div>
+                    <div class="modal-footer">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

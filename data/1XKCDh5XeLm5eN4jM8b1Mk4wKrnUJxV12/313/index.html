@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>XKCD</title>
+		<link rel="stylesheet" type="text/css" href="../css/comic.css">
+	</head>
+	<body>
+		<header>
+			<img src="../imgs/logo.png">
+			<i>
+				A webcomic of romance,<br>
+				sarcasm, math, and language.
+			</i>
+			<p>
+				This is a mirror of Randall Munroe's <a href="https://xkcd.com">xkcd.com</a>.
+			</p>
+		</header>
+
+		<main>
+			<h2>Insomnia</h2>
+			<img src="../imgs/comics/insomnia.png" title="Crap, I have levitation class at 25:131.  Better set the alarm to &#39;cinnamon&#39;.">
+			<nav>
+				<a target="_top" href="../1/">|&lt;</a>
+				<a target="_top" id="prev">&lt; Prev</a>
+				<a target="_top" id="random">Random</a>
+				<a target="_top" id="next">Next &gt;</a>
+				<a target="_top" id="last">&gt;|</a>
+			</nav>
+			<p>
+				Permanent link to this comic:<br>
+				http://127.0.0.1:43110/1XKCDh5XeLm5eN4jM8b1Mk4wKrnUJxV12/313/<br>
+				<br>
+				Image URL (for hotlinking/embedding):<br>
+				http://127.0.0.1:43110/1XKCDh5XeLm5eN4jM8b1Mk4wKrnUJxV12/imgs/comics/insomnia.png
+			</p>
+		</main>
+
+		<footer>
+			<i>
+				xkcd.com is best viewed with Netscape Navigator 4.0 or below on a Pentium 3±1 emulated in Javascript on an Apple IIGS<br>
+				at a screen resolution of 1024x1. Please enable your ad blockers, disable high-heat drying, and remove your device<br>
+				from Airplane Mode and set it to Boat Mode. For security reasons, please leave caps lock on while browsing.
+			</i>
+
+			<p>
+				This work is licensed under a <a href="https://creativecommons.org/licenses/by-nc/2.5/">Creative Commons<br>
+				Attribution-NonCommercial 2.5 License</a>.
+			</p>
+
+			<p>
+				If you like this mirror, please open sidebar,<br>
+				check "Download and help distribute all files",<br>
+				and set the limit to 150 MB.
+			</p>
+		</footer>
+
+		<script type="text/javascript" src="../js/ZeroFrame.js"></script>
+		<script>
+			const zf = new ZeroFrame();
+			zf.onOpenWebsocket = () => {
+				setTimeout(() => {
+					zf.cmd("wrapperSetTitle", ["xkcd: " + "Insomnia"]);
+				}, 100);
+			};
+			zf.onRequest = () => {
+				setTimeout(() => {
+					zf.cmd("wrapperSetTitle", ["xkcd: " + "Insomnia"]);
+				}, 100);
+			};
+			zf.cmd("fileGet", ["content.json"], content => {
+				const lastComic = Object.keys(JSON.parse(content).files)
+					.map(file => file.match(/^(\d+)\/index\.html$/))
+					.filter(match => match)
+					.map(match => parseInt(match[1]))
+					.reduce((a, b) => Math.max(a, b), 0);
+				const currentComic = parseInt(location.href.match(/\/(\d+)\//)[1]);
+				const randomComic = 1 + Math.floor(Math.random() * lastComic);
+
+				if(currentComic > 1) {
+					const prevComic = currentComic == 405 ? 403 : currentComic - 1;
+					document.querySelector("#prev").href = `../${prevComic}/`;
+				}
+				if(currentComic < lastComic) {
+					const nextComic = currentComic == 403 ? 405 : currentComic + 1;
+					document.querySelector("#next").href = `../${nextComic}/`;
+				}
+				document.querySelector("#random").href = `../${randomComic}/`;
+				document.querySelector("#last").href = `../${lastComic}/`;
+			});
+		</script>
+	</body>
+</html>

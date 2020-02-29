@@ -1,0 +1,233 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="MnNStory: 我和一个女同学15年的故事">
+<meta name="keywords" content="MnNStory,校园爱情,15年,女同学,女生">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<title>夕阳无限好</title>
+<script src="jquery.js"></script>
+<script src="qrcode.js"></script>
+<script>
+function loadCSS(href) {
+	var cssLink = $("<link rel='stylesheet' type='text/css' href='"+href+"'>");
+	$("head").append(cssLink);
+	return cssLink;
+};
+
+var relocate;
+
+$(function(){
+            var device="computer";
+        var fontSize=($(window).width()/25).toFixed(0);
+        relocate=relocateC;
+    
+	loadCSS("main_"+device.substring(0, 1)+".css").load(function(){
+		relocate();
+		setTimeout(relocate, 1000);
+		setTimeout(function(){
+			var fontSize=$('body').css('fontSize');
+			var qrcode = new QRCode(document.getElementById("QRCode"), {
+				width : parseInt(fontSize)*7,
+				height : parseInt(fontSize)*7
+			});
+
+			qrcode.makeCode(window.location.href);
+		}, 1000);
+	});
+
+	$(window).resize(relocate);
+
+    
+	function relocateC(){
+		function bottom($el){
+			return $el.position().top + $el.outerHeight(true);
+		}
+
+		var $footer=$('#footer');
+		$footer.css({
+			top: 0,
+			display: 'none'
+		});
+		var top=Math.max(
+			bottom($('#textWrapper')),
+			bottom($('#contents')),
+			$(document).height() - $footer.outerHeight()
+		);
+		$footer.css({
+			top: top,
+			display: 'block'
+		});
+	}
+
+        $('.patch-more').click(function(){
+        var page=$(this).data('page');
+        var paragraph=$(this).data('paragraph');
+
+        location.href='page'+page+'.html#paragraph='+paragraph;
+    });
+
+    setTimeout(function () {
+                    var ret=document.referrer.match(/#paragraph=(\d+)/);
+                if (!ret) {
+            return;
+        }
+        var paragraph=ret[1]-1;
+
+        var objParagraph=$('#text p:eq('+paragraph+')');
+        var flash=function () {
+            objParagraph.css('color', 'red');
+            setTimeout(function() {
+                objParagraph.css('color', 'initial');
+            }, 1000);
+        };
+        $('html, body').animate({
+            scrollTop: objParagraph.offset().top-$('#textWrapper').offset().top,
+        }, 500, flash);
+    }, 100);
+
+    var pIndex=0;
+    $('#text p').each(function () {
+        ++pIndex;
+        if (!$(this).attr('id')) {
+            //$(this).attr('id', 'paragraph_'+pIndex);
+        }
+    });
+});
+
+function showComments(){
+	$.blockUI({
+		message: $('#disqus_thread'),
+	});
+
+	$('body').click($.unblockUI);
+}
+</script>
+</head>
+<body>
+<div id="cover" style="background-color: #F1F1F1; position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 2048;"></div>
+<div id="nav">
+	<div class="Three">
+		<div id="navLeft" class="left c">
+			<a href="page39.html" class="blackText">&lt;&lt;&lt;prev</a>		</div>
+		<div id="navRight" class="right c">
+			<a href="page41.html" class="blackText">next&gt;&gt;&gt;</a>		</div>
+		<div id="navTitle" class="middle">
+			夕阳无限好		</div>
+	</div>
+	<div class="Three m">
+		<div class="left" style="width: 4em">
+			<a href="page39.html" class="blackText">&lt;&lt;&lt;</a>		</div>
+		<div class="right" style="width: 4em">
+			<a href="page41.html" class="blackText">&gt;&gt;&gt;</a>		</div>
+		<div class="middle">
+			<a href="/index.html" class="blackText">[Home]</a>
+		</div>
+	</div>
+</div>
+<div id="images" class="c">
+	<a href="downloads/mnnstory.zip" target="_blank"> <img src="download.png" style="width: 100%;" title="下载" alt="Download" /> </a>
+	<p id="QRCode"></p>
+</div>
+<div id="contents" class="c">
+	<p class="contents_d0"><a href="index.html">目录</a></p>
+	<ul class="contents_d1"><li><a href='page1.html'>上册</a>
+</li><li><a href='page14.html'>上册配乐</a>
+</li><li><a href='page32.html'>下册</a>
+<ul class="contents_d2"><li><a href='page33.html'>心愿</a>
+</li><li><a href='page34.html'>概率</a>
+</li><li><a href='page35.html'>重逢</a>
+</li><li><a href='page36.html'>街景</a>
+</li><li><a href='page37.html'>追求</a>
+</li><li><a href='page38.html'>梦想</a>
+</li><li><a href='page39.html'>糖果</a>
+</li><li>夕阳无限好
+</li><li><a href='page41.html'>电影</a>
+</li><li><a href='page42.html'>怪谁</a>
+</li><li><a href='page43.html'>寄语</a>
+</li><li><a href='page44.html'>移民</a>
+</li><li><a href='page45.html'>永远</a>
+</li><li><a href='page46.html'>附录：幸福的惊人科学发现</a>
+</ul></li><li><a href='page47.html'>下册配乐</a>
+</li><li><a href='page49.html'>订正簿</a>
+</ul></div>
+<div id="disqus_thread"></div>
+<script>
+	var disqus_config = function () {
+		this.page.url = 'http://mnnstory.onion';
+		this.page.identifier = 40;
+		this.page.title = '夕阳无限好'
+	};
+
+
+	(function() {
+		var d = document, s = d.createElement('script');
+
+		s.src = '//mnnstory.disqus.com/embed.js';
+
+		s.setAttribute('data-timestamp', +new Date());
+		(d.head || d.body).appendChild(s);
+	})();
+</script>
+<div id="textWrapper">
+	<div id="text">
+		<p>咖啡虽是大杯，却毕竟不是大缸，偏偏，我喝饮料又一向那么快。我早就喝到只剩最后一口，却一直没饮完，怕她看到，就说要散。风很大，早就凉了的咖啡，不是滋味。上海的三月，虽是早春，却很寒，久坐风头，还喝凉咖啡，真不舒服。本来走两步马上会好，我却宁愿享受这种不舒服。</p>
+<p>可是，她终于还是喝完了自己那杯，说：“那我们走吧。”我象征性地也喝干了残留的咖啡，冷得像冰。</p>
+<p>我问：“那你直接回家吗？”</p>
+<p>我心里已准备好了下句：“正好，我想去和表妹告别。你知道的，她是你邻居，我们就一起走吧。”然后走到她家门口的那个十字路口和她散了。毕竟我不能干扰她婚姻。</p>
+<p>她却说：“不。我要等‘某个人’，待会儿他来了，一起去老西门国美买电器。你怎么回去？”我答道：“坐轨交。”她说：“国美和大世界附近都有站，就不知道你乘几号线？”</p>
+<p>我又生一计：“我已把手机里的中国应用都删了，地图都没了。我是路盲，还是借助你的手机，到国美附近的那个站去吧。”</p>
+<p>于是，最后一段路开始了。我佯装轻松，但恐怕此时的表情不会好看。</p>
+<p>她指着一栋高层，评论道：“多好的房子啊。”我却不明白她意思，问：“哪里好？”她解释道：“这是公寓，而我新房子是矮平房。”</p>
+<p>她指着一户的阳台问：“那是什么？好像听说是用来偷<a href="#comment_1" class="issue">国家的电</a><sup id="issue_1">1</sup>的？”我答道：“卫星接收器，可以直接收到海外的电视节目。说他们‘偷’也可以，因为他们‘偷看敌台’。”</p>
+<p>她又说：“你很好，移民了，以后就开始新生活了。”我回应道：“你也不错，结婚也是新的开端。”</p>
+<p>她叹了口气，道：“哎，没有，一样要继续还房贷。”</p>
+<p>“我以后会买学区房。虽然我现在还没这实力，但将来一定行。”说着，她得意地笑了，像是已然梦想成真。</p>
+<p>她2016年2月5日曾向我提起过，新房子在轨交某线路的终点站。</p>
+<p>15年前，我经常去一个老师那玩。他本科刚毕业，实验室里有很多好玩的智能机器人，还有电脑游戏和影片。他除了教学生机器人外，有时还与我们讨论美女学生和美女老师。有次，他对着实验室里一堆新机器人，如数家珍，道：“以后等我孩子长大了，我要先教他玩这个机器人，再玩那个。”我傻傻地问：“老师，你的孩子在哪儿呢？”他说：“没见我正给他找亲娘吗？”哈哈，老师还在和某女老师谈恋爱，却已想好了怎么同未来的孩子玩耍了。</p>
+<p>6年前，老同学也读完本科不久，一边在网上发帖，独自感伤光棍节，一边在电话中向我谈起要让将来的孩子上重点学校。我听着感到莫名，又觉得像过家家。</p>
+<p>在我初来X国时，有一次认识新朋友，见她8岁的女儿活泼可爱，一口普通话与大人打招呼。我问她妈妈：“你对本市的重点学校和学区房怎么看？”她答道：“移民本就是要让小孩轻松点，不必整天操劳读书，况且这边重点、一般学校的质量差异我们还不清楚，以后慢慢考虑吧。至于X国学区房，价格并不总比普通房子贵。”</p>
+<p>花花世界就像一座果园，里面有各种水果：草莓、葡萄、苹果……不同的人有不同的追求，走不同的路，最终尝到不同的味道。</p>
+<p>仔细想想，又觉得老同学也真不容易。这年头，在上海，普遍地，女子出嫁一定要男方有车有房有存款；而男子则用父母省吃俭用一辈子的存款，为心上人提供这一切。老同学不同，作为女方，自己挑这副重担不算，上要照顾父母，下要给未出世的孩子准备好将来。</p>
+<p>当我看到她期待的笑容时，还欠她一句话没说：</p>
+<p>“祝你成功！”</p>
+<p>上海的人行道就是这么窄，又不能并排走了，我等着让她先行，她却要我开路。我的人生，又少掉了那珍贵的几秒。</p>
+<p>很快，散去的地方就到了。</p>
+<p>她停住脚步，说：“祝你一路顺利。”</p>
+<p>我不禁提高了嗓音，几乎在呼喊，却又差点哽咽地道：“祝你也人生顺利！”</p>
+<p>她又一次像是自言自语地讲：“其实去X国又怎样呢？微信上，不一样可以联系吗？”</p>
+<p>你知道吗？这句话我听了心情有多复杂吗？</p>
+<p>可我却还是没有回应。</p>
+<p>我走了几步，对，我现在还有权利偷偷回头望望她，即使只是背影。</p>
+<p>只见她清秀的脸上，满是春天般的友善，早已举起的手，在向我告别。</p>
+<p>我正侧着身子，尴尬地举起了左手，歪着脑袋，也作告别状。</p>
+<p>又走出几步，我再一次回头，虽然已经感到有点不好意思了。笑容和举在半空中的手依旧，就像这个神态、这个动作，她一直未曾改变过。我再一次也做出告别状。</p>
+<p>很久很久以前，高中快毕业时，一个男生向一个女生许愿：“你为什么要去另一所大学呢？以后就再也见不到你了啊。”女生说：“虽然我自己喜欢工科，但父母觉得女孩应该学文科更好。见不到，可以给你张照片啊。”过了半晌，女生又说：“好，某某，我决定了，我修改志愿，我和你去同一所大学。我决定了，我填某某大学了。”男生竟脱口而出：“真的？”但看着她的表情，却明白了。</p>
+<p>女生这么说，也许有戏虐成分，但更多的是想安慰男生。概率没有忘记她的话，概率用“恶作剧”的手法，让这些善意的谎言，全部变成了不计代价的诺言。</p>
+<p>后来，当女生快要结婚时，男生再次向她许愿：“你可以出来一次吗？就当叙旧或告别，因为以后再也见不到你了。”男生又如愿了。这回，女生流露出了惜别之情，针对“以后见不到”，仍给予了同样的安慰，并“固执”地重复了三遍。</p>
+<p>此时大约是4:30，常言道，夕阳无限好，我应该开心才对。于是我挺起了胸膛。</p>
+<p>我第三次回过了头。有什么不好意思？管你怎么想？我就是要看你！</p>
+<p>这次却没能找到她的身影，但我并不十分失望。</p>
+<p>我转弯进入轨交站，只觉得今天某某人能和我出来，世上再没我某某人做不到的事了！豪迈的我，不由地喊了一声：“好！”然后沉吟道：“我已经没有遗憾了！”</p>
+<hr class="comment" />
+<p class="comment" id='comment_1'><a href="#issue_1" class="comment">[1]</a>
+指公共电网。
+</p>
+<p></p>	</div>
+</div>
+<div id="footer">
+	<div id="declaration">
+		本故事为作者亲身经历
+	</div>
+	<div id="bannerLine" class="Three">
+				<div class="middle">
+            			    <a href="about.html">MnNStory, 1 Sep 2001 - 12 Mar 2016</a>
+            		</div>
+	</div>
+	<hr class="m" />
+	<div id="switch2c" class="m">
+		<a href="">电脑版</a>
+	</div>
+</div>
+</body>
+</html>

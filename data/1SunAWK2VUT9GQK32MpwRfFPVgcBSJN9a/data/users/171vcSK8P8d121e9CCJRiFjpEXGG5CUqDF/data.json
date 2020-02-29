@@ -1,0 +1,209 @@
+{
+	"next_post_id": 8,
+	"next_comment_id": 18,
+	"next_follow_id": 9,
+	"avatar": "png",
+	"user_name": "Loopback",
+	"hub": "1SunAWK2VUT9GQK32MpwRfFPVgcBSJN9a",
+	"intro": "60% TIL, 40% shitposting\nGreeting from Hong Kong\n* English (4)\n* Chinese (N)\n* Japanese (1)",
+	"post": [
+		{
+			"post_id": 1,
+			"date_added": 1520941511,
+			"body": "Hello ZeroMe!"
+		},
+		{
+			"post_id": 1520942815,
+			"body": "Biography of this account.\n\nTL;DR: posting 30% I.T. knowledge or privacy, 30% politics, 40% shit posting of my life.\n\n>\"Loopback\"?\n>>A technical term usually refers to \"the routing of electronic signals, digital data streams\", or more generally \"flows of items back to their source without intentional processing or modification\".\n\n> So what, why you choose \"Loopback\" as username?\n>>In real life, most of the things you tried to change go back to its original state, regardless effort you put into it. It may seems pointless, yet depressing. Depressing maybe, \"Loopback\" is the perfect word to describe many things.\n\n>Another random user sharing his feeling in ZeroMe.\n>>I cannot deny it, I may post some of my feeling from time to time. However, I want to *contribute* something, instead of posting random stuffs. Most of the posts will be related to I.T. and politics or such, the rest is shit posting of my life. If this account posts too much negative feelings, please send help. :)",
+			"date_added": 1520942813
+		},
+		{
+			"post_id": 1521204268,
+			"body": "ZeroMe markdown\n#\\#This is H1 heading\n##\\##H2 heading\n\n> \\> Quote\n>> \\>> Even more quote\n\n\\*\\***Achtung!**\\*\\*\n\\**Italic only useful in harvard referencing*\\*\n`` `Please, put code in code block` ``\n\n* \\* Bullet one\n* \\* two\n\n[\\[URL to ZeroNet default homepage\\]\\(/1HeLLo4uzjaLetFx6NH3PMwFP3qbRbTf3D/\\)](/1HeLLo4uzjaLetFx6NH3PMwFP3qbRbTf3D/)",
+			"date_added": 1521204265
+		},
+		{
+			"post_id": 1521208523,
+			"body": "To secure ZeroNet installation, this post provides some additional security layers.\n\nObjectives:\n* (optional) prevent data leakage to clearnet (make sure Tor only) \n* further limit accessible files outside ZeroNet directory\n* limits system call\n* drop all Linux capabilites and privilege escalation\n\n## Credit\nThis is my own work.\nRespect other work, give credit/referencing/citation if you have respect.\n\n# Warning !\nThis is a work of process, *no warranty of any kind* !\n\nEnvironment:\nDebian \\ Ubuntu \nAs long as it is not EOL\n\nRequirement:\n`iptables` and `firejail`\n(optional) `tor`\n\nSteps:\n\n1. We first create a user account `zeronet`.\n\n\t```\n\tuseradd -m zeronet\n\t```\n\n2. Put your `ZeroNet` directory to the `zeronet` home directory, e.g. `/home/zeronet`.\n\n3. Install `firejail`, which \"is a SUID program that reduces the risk of security breaches by restricting the running environment of untrusted applications using Linux namespaces and seccomp-bpf\" according to its [offical webpage(firejail.wordpress.com)](https://firejail.wordpress.com/).\n\n\t```\n\t\n\tapt-get install firejail\n\t```\n\n4. Add firejail profile for zeronet, i.e. create and copy the following content to `/etc/firejail/zeronet.profile` with your text editor.\n\n\t```\n\tinclude /etc/firejail/globals.local\n\t\n\tcaps.drop all\n\tipc-namespace\n\tnetfilter\n\tno3d\n\tnodvd\n\tnonewprivs\n\tnoroot\n\tnosound\n\tnotv\n\tnovideo\n\tprotocol unix,inet,inet6\n\tseccomp\n\tx11 none\n\t\n\tdisable-mnt\n\tprivate\n\tprivate-dev\n\tprivate-tmp\n\twhitelist /home/zeronet\n\t```\n\n5. (optional) Configure ZeroNet to use tor\n\n\tRefers to the [ZeroNet official docs (readthedocs.io)](http://zeronet.readthedocs.io/en/latest/faq/#how-to-make-zeronet-work-with-tor-under-linux) \n\n6. (optional) Prevent data leak outside tor\n\n\t```\n\tiptables -A OUTPUT -o lo -m owner --uid-owner zeronet -j ACCEPT\n\tiptables -A OUTPUT -m owner --uid-owner zeronet -j REJECT\n\t```\n\n7. (optional) Configure systemd to control zeronet, by creating and copying the following content to file `/etc/systemd/system/zeronet.service`\n\n\tRemember to change `ExecStart` to appropriate ZeroNet location and change according to the comment **if you don't need tor always mode**.\n\t\n\t```\n\t[Unit]\n\tDescription=ZeroNet\n\tAfter=network-online.target tor.service\n\t# Remove \"tor.service\" in the above line if you don't need tor always mode\n\tRequires=tor.service \n\t# Remove the above line if you don't need tor always mode\n\tBindsTo=tor.service\n\t# Remove the above line if you don't need tor always mode\n\t[Service]\n\tType=simple\n\tUser=zeronet\n\tGroup=zeronet\n\tExecStart=/usr/bin/firejail --profile=/etc/firejail/zeronet.local python /home/zeronet/ZeroNet-master/zeronet.py\n\t# Change above line to your location of zeronet directory if needed\n\tRestart=on-failure\n\t\n\t[Install]\n\tWantedBy=multi-user.target tor.service\n\t# Remove \"tor.service\" in the above line if you don't need tor always mode\n\t```\n\n8. Start your sandboxed ZeroNet\ne.g. `systemctl start zeronet`\n\n9. Profit\n\n# Limitations, help needed\n* (help needed) ~~ZeroNet~~ Any program inside the sandbox (including ZeroNet) still able to access localhost service intentionally or not , due to bug/mis-configuration, e.g. 80/443 port if running nginx, or even socks proxy that allow escape of outgoing firewall\n* (can't fix) Any exploit that breaks sandbox(firejail)/kernel security layer",
+			"date_added": 1521208519
+		},
+		{
+			"post_id": 1521448102,
+			"body": "Found some off-topics yet uplifting in Freenet.\n\n\n>\"what if I have no friends?\"\n>\n>>    “I have no friend. How do you help people without friend?”\n>\n>Use opennet; and find friends, or at least comrades. People you meet to play scrabble, chess or skat — or my favorite pasttime: fantasy roleplaying games. Or just watch the sunday football game. Seriously. You’ll need them if the shit hits the fan, and be it only that you have someone who calls you if you don’t turn up some day.\n>\n>Given that you already worry enough that you’re using Freenet, the shit might just hit the fan some day, without relation to Freenet, so go and try to make some friends.\n>\n>As a side effect that will increase your life expectancy and improve your health. Humans are terribly social creatures, even down to their immune system.\n\nSource: [random babcom from Freenet](http://127.0.0.1:8888/USK@sUm3oJISSEU4pl2Is9qa1eRoCLyz6r2LPkEqlXc3~oc,yBEbf-IJrcB8Pe~gAd53DEEHgbugUkFSHtzzLqnYlbs,AQACAAE/random_babcom/357/#whatifIhavenofriends)",
+			"date_added": 1521448097
+		},
+		{
+			"post_id": 1522072030,
+			"body": "I have upload `APA Manual 6th Edition` to [ZeroUp](/1uPLoaDwKzP6MCGoVzw48r4pxawRBdmQc/data/users/171vcSK8P8d121e9CCJRiFjpEXGG5CUqDF/APA%20Manual%206th%20Edition.tar.gz).\n\nI hope this is useful.\n\nP.S. ZeroUp has **minimum** upload size of 10MiB, which I found very annoying, so I have put some redundant files into the archive, i.e. `introduction` and `tabe-of-contents`.",
+			"date_added": 1522072024
+		},
+		{
+			"post_id": 1522426359,
+			"body": "I have so much things wanted to write, but time IRL doesn't allow.\n\nLet me make a wish list to write in near furture.\n\n- Don't trust Telegram (brief)\n- Privacy, surveillance, social engineering (will be very comprehensive)\n- VPN **protocol** review / avoiding censorship (comprehensive)\n- My thoughts of Apple (brief)\n- My worldview (will not be finished in foreseeable future)",
+			"date_added": 1522426352
+		}
+	],
+	"post_like": {
+		"128dbVaHobAMsFW25rUVyFxwdCvvfkidzT_1521214464": 1521214511,
+		"128dbVaHobAMsFW25rUVyFxwdCvvfkidzT_1521214258": 1521217384,
+		"1FoZVTASnHkV92osVfT8LphsBze3TJb8UG_1521128494": 1521296044,
+		"1LAitKPQa2dNhNPTt2NKT2F4DuHWVqAexc_1521315934": 1521345503,
+		"1Brcp1XzPZcpYLF1A9v84wnKzk6FHFXUFk_1521729852": 1521736003,
+		"195oGGXB8AhwWSoXFHpbVT4TL4wLi1Af5e_1522495880": 1522500961
+	},
+	"comment": [
+		{
+			"comment_id": 1,
+			"body": "I didn't expect that ZeroMe supports markdown.\nEDIT: typo",
+			"post_uri": "171vcSK8P8d121e9CCJRiFjpEXGG5CUqDF_1520942815",
+			"date_added": 1520942857
+		},
+		{
+			"comment_id": 2,
+			"body": "Linux for working, Windows for gaming only",
+			"post_uri": "128dbVaHobAMsFW25rUVyFxwdCvvfkidzT_1521214258",
+			"date_added": 1521214509
+		},
+		{
+			"comment_id": 3,
+			"body": "@Binchan: I understand that ZeroNet only listen on port 15441 for fileserver. I mean in this sandbox setup, it is possible that *any* program (including ZeroNet.py) *can* access other local service. Sorry for the confusion I made.",
+			"post_uri": "171vcSK8P8d121e9CCJRiFjpEXGG5CUqDF_1521208523",
+			"date_added": 1521216684
+		},
+		{
+			"comment_id": 4,
+			"body": "@Binchan: I'm not an expert either, just a linux user with extensive Googling. :)",
+			"post_uri": "171vcSK8P8d121e9CCJRiFjpEXGG5CUqDF_1521208523",
+			"date_added": 1521217334
+		},
+		{
+			"comment_id": 5,
+			"body": "@ulrichard: FYR, Arch Linux have zeronet package in their [AUR](https://aur.archlinux.org/packages/zeronet/).",
+			"post_uri": "171vcSK8P8d121e9CCJRiFjpEXGG5CUqDF_1521208523",
+			"date_added": 1521256719
+		},
+		{
+			"comment_id": 6,
+			"body": "@Binchan: I mean that we can setup a ppa for ubuntu/debian, like AUR.",
+			"post_uri": "171vcSK8P8d121e9CCJRiFjpEXGG5CUqDF_1521208523",
+			"date_added": 1521266249
+		},
+		{
+			"comment_id": 7,
+			"body": "@Atheist: 沒錯，我們這輩根本沒有前途",
+			"post_uri": "1Brcp1XzPZcpYLF1A9v84wnKzk6FHFXUFk_1521271019",
+			"date_added": 1521295994
+		},
+		{
+			"comment_id": 8,
+			"body": "Because they're so lazy, like mines.\n>they're more than happy to sit still for photos, most of the day.",
+			"post_uri": "1LAitKPQa2dNhNPTt2NKT2F4DuHWVqAexc_1521315934",
+			"date_added": 1521345544
+		},
+		{
+			"comment_id": 9,
+			"body": "Is it fake? It looks somehow unreal to me.",
+			"post_uri": "1LAitKPQa2dNhNPTt2NKT2F4DuHWVqAexc_1521599311",
+			"date_added": 1521736234
+		},
+		{
+			"comment_id": 10,
+			"body": "Add oil❤️",
+			"post_uri": "1iS6W5SfRRkh5aCQTBfZ13okp3WkHttdH_1521564429",
+			"date_added": 1521737039
+		},
+		{
+			"comment_id": 11,
+			"body": "You can share video by [ZeroUp](/1uPLoaDwKzP6MCGoVzw48r4pxawRBdmQc/). It is not possible to delete comment for now, but you can edit to empty it, which effectively delete it.",
+			"post_uri": "1PVPtEitcYJnXXZdeavzv9UZxtggqi5JGz_1522370674",
+			"date_added": 1522425419
+		},
+		{
+			"comment_id": 12,
+			"body": "香港人在此，我表示從未聽過有關新聞，連蘋果也沒報道，可信性0。",
+			"post_uri": "1LEo1CFhTV7q8LWGu7KKNEsC5CagQc636H_1522469496",
+			"date_added": 1522500830
+		},
+		{
+			"comment_id": 13,
+			"body": "@Fengyun666: 一個人在網上發言，沒有任何證據，何來有可信性。一張相沒有任何意義的照片能證明了甚麼？",
+			"post_uri": "1LEo1CFhTV7q8LWGu7KKNEsC5CagQc636H_1522469496",
+			"date_added": 1522501578
+		},
+		{
+			"comment_id": 14,
+			"body": "\"百亿现金\" 23333 連港珠澳大橋也可以建造了",
+			"post_uri": "1LEo1CFhTV7q8LWGu7KKNEsC5CagQc636H_1522469496",
+			"date_added": 1522501682
+		},
+		{
+			"comment_id": 15,
+			"body": "你喜歡就可",
+			"post_uri": "1LEo1CFhTV7q8LWGu7KKNEsC5CagQc636H_1522469496",
+			"date_added": 1522501744
+		},
+		{
+			"comment_id": 16,
+			"body": "@Fengyun666: 好的，但是關香港警察什麼事?何時給逮捕了?",
+			"post_uri": "1LEo1CFhTV7q8LWGu7KKNEsC5CagQc636H_1522469496",
+			"date_added": 1522502435
+		},
+		{
+			"comment_id": 17,
+			"body": "@Fengyun666: 你指的是合夥人被捕，還是本人？\n我看來是有點誤解了，抱歉，我任何事也要求真。",
+			"post_uri": "1LEo1CFhTV7q8LWGu7KKNEsC5CagQc636H_1522469496",
+			"date_added": 1522502959
+		}
+	],
+	"follow": [
+		{
+			"follow_id": 2,
+			"hub": "1RedkCkVaXuVXrqCMpoXQS29bwaqsuFdL",
+			"auth_address": "1J3rJ8ecnwH2EPYa6MrgZttBNc61ACFiCj",
+			"user_name": "Nofish",
+			"date_added": 1520951254
+		},
+		{
+			"follow_id": 3,
+			"hub": "1SunAWK2VUT9GQK32MpwRfFPVgcBSJN9a",
+			"auth_address": "18WAgYv5L8raYwvt6KQ9zNqFqn9WU4Uab1",
+			"user_name": "Zx1",
+			"date_added": 1521004076
+		},
+		{
+			"follow_id": 4,
+			"hub": "1GrEenUGRWnzaNZjR3XsQa6dQgdPDTyt7i",
+			"auth_address": "1FHN4oukAG7zFUpiC9L2iz7QpQVTuT3xkz",
+			"user_name": "猫叉酱",
+			"date_added": 1521210915
+		},
+		{
+			"follow_id": 5,
+			"hub": "1RedkCkVaXuVXrqCMpoXQS29bwaqsuFdL",
+			"auth_address": "13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ",
+			"user_name": "P2P",
+			"date_added": 1521215162
+		},
+		{
+			"follow_id": 6,
+			"hub": "1oranGeS2xsKZ4jVsu9SVttzgkYXu4k9v",
+			"auth_address": "14K7EydgyeP84L1NKaAHBZTPQCev8BbqCy",
+			"user_name": "Glightstar",
+			"date_added": 1521215446
+		},
+		{
+			"follow_id": 7,
+			"hub": "1SunAWK2VUT9GQK32MpwRfFPVgcBSJN9a",
+			"auth_address": "16dEowtNbV89NxPcDrAKkmnuXtiJVoVcDm",
+			"user_name": "leftside",
+			"date_added": 1521281633
+		},
+		{
+			"follow_id": 8,
+			"hub": "12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv",
+			"auth_address": "1GnJD7CXskmG8GywMbTvbP12wneCFW9XzR",
+			"user_name": "weakish",
+			"date_added": 1521282005
+		}
+	]
+}

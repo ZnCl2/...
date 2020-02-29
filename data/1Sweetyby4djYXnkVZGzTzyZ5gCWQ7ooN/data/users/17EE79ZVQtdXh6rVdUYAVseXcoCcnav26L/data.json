@@ -1,0 +1,42 @@
+{
+	"posts": [
+		{
+			"id": "7fc93959-aaf8-48d8-8dba-5e4f89e48c13",
+			"body": "This is not perfect way to run ZeroNet on Tails yet, but this is better than what old posts on clearnet say:\n\n==DEPRECATED! Updated version at:== [ZeroNet on Tails](/1NDp4MzD5U52SjCnPAHgxo7qYJsa7ozmrT/)\n\n1. Have a USB with Tails.\n2. Set up admin password at start!\n3. Download ZeroNet and verify sig.\n4. Create and edit /etc/onion-grater.d/zeronet.yml as root and write/paste:\n\n(those dots should be -)\n[code]\n---\n- exe-paths:\n    - '*'\n  users:\n    - 'amnesia'\n  hosts:\n    - '*'\n  commands:\n    SIGNAL:\n      - 'NEWNYM'\n    ADD_ONION:\n      - pattern:     'NEW:(\\S+) port=15441'\n        replacement: 'NEW:{} port=15441'\n    DEL_ONION:\n      - '.+'\n    GETCONF:\n      - 'hiddenservicesinglehopmode'\n    GETINFO:\n      - 'version'\n[/code]\n\n5. Run `sudo service onion-grater restart` in terminal to load the new config file\n6. Check local ip with `ip addr` (one of the `inet x.x.x.x` lines) you need this for next step.\n7. Edit zeronet.conf in ZeroNet folder:\n[code]\n[global]\nui_ip = {local ip}\nfileserver_ip = {local ip}\ntor = always\n[/code]\n8. Start Tor Browser and add local ip to not use proxy (Network Settings)\n9. Now run ./ZeroNet.sh as you normally would.\n\nLet me know if you had problems, or if this helped!",
+			"time": 1552866262700,
+			"files": "[]",
+			"last_edited": 1552998872600,
+			"subject": null,
+			"capcode": null
+		},
+		{
+			"id": "5828be69-9aff-4dbe-9a89-4ff8e1556318",
+			"thread": "7fc93959-aaf8-48d8-8dba-5e4f89e48c13",
+			"body": ">>4057d1d3-3a39-4e70-9713-989b3811dc4a\nThat depends how you use Whonix. The security is only as good as the host os you run the vm on, if that is infected whonix can't save you. So you should either not run anything remotley untrusted on the host, or you could use Qubes as host to secure this, but that's even more hassle to set up. Tails is just less work than installing whonix and so more friendly to tech illiterate people.\n\nhttps://www.whonix.org/wiki/Host_Security\n\nI updated my guide with GETINFO whitelisted, then the ZeroNet sourcecode no longer needs be altered. I will to see if I can limit the yml whitelisted commands even farther without breaking Zeronet (GETINFO to  just version, exe-paths to just zn, hosts maybe)",
+			"time": 1552915030100,
+			"files": "[]",
+			"last_edited": 1552916154600,
+			"subject": null,
+			"capcode": null
+		},
+		{
+			"id": "630fa5b0-bfd5-4381-82d7-10b35fcba274",
+			"thread": "7fc93959-aaf8-48d8-8dba-5e4f89e48c13",
+			"body": ">>4ecd7a62-4a10-485d-8b68-72ffb4ef1e06\n> accordin to ... the default control port of 9051 is not open on tails\nThe control port is always open by default on Tails. Onion-grater limits the functionality so you need a whitelist to allow ZeroNet to use the necessary functions for operation.\n\n> localhost 127.0.0.1\nno, LAN. Don't worry, people on LAN can't actually access it. localhost didn't work for me, but try if you want\n\n>fileserver_ip = {local ip} not necessary since with `tor always` zeronet will replace it with an onion.\nI did not know that, that was from when I used tor as proxy instead of zeronet tor.\n\n> As far as I understand the yml file, every running process can now access the control port.\nMore or less, this is how Whonix does it as well. But I'm sure it can be done better, maybe your link will help.",
+			"time": 1552935167400,
+			"files": "[]",
+			"last_edited": 1552936388200,
+			"subject": null,
+			"capcode": null
+		},
+		{
+			"id": "8b4d207b-4dae-457e-a6ed-da0a947e4e9d",
+			"thread": "7fc93959-aaf8-48d8-8dba-5e4f89e48c13",
+			"body": ">>a7165c64-33d7-4a81-951c-0f71c3fe13d2\nI should rephrase that. From what I understand the control port is on `9052` and always open but not accessible to any program except onion-grater which makes it available on `9051` to other programs. Onion-grater filters commands before sending them to tor, and sanitizes the responses before giving them back.",
+			"time": 1552942500000,
+			"files": "[]"
+		}
+	],
+	"boards": [],
+	"modlogs": []
+}

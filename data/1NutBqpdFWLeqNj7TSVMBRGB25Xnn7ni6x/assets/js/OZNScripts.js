@@ -1,0 +1,5 @@
+/**
+ * ojraskatzeronet v0.1.0
+ * @author Otto J. Rask
+ */
+var OZN=OZN||{};OZN.elFromString=function(e){"use strict";var t=document.createElement("div");return t.innerHTML=e,t.firstChild},OZN.sanitizeTitle=function(e){"use strict";var t="";return e=e.trim().toLowerCase(),e=e.replace(/[ \&\,\:]/g,"-"),e=e.replace(/[^a-z0-9\-]/g,"-"),e=e.replace(/\-{2,}/g,"-"),t=e.replace(/^\-/,"").replace(/\-$/,"")},OZN.stripHTML=function(e){"use strict";var t=document.createElement("DIV");return t.innerHTML=e,t.textContent||t.innerText||""},OZN.padDateNumber=function(e){"use strict";var t=10>e?"0"+e:""+e;return t},OZN.generatePostDateString=function(e){"use strict";var t="";return t+=e.getFullYear(),t+="-",t+=OZN.padDateNumber(e.getMonth()+1),t+="-",t+=OZN.padDateNumber(e.getDate()),t+=" ",t+=e.getHours(),t+=":",t+=OZN.padDateNumber(e.getMinutes()),t+=":",t+=OZN.padDateNumber(e.getSeconds())};

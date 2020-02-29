@@ -1,0 +1,199 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="MnNStory: 我和一个女同学15年的故事">
+<meta name="keywords" content="MnNStory,校园爱情,15年,女同学,女生">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<title>初识</title>
+<script src="jquery.js"></script>
+<script src="qrcode.js"></script>
+<script>
+function loadCSS(href) {
+	var cssLink = $("<link rel='stylesheet' type='text/css' href='"+href+"'>");
+	$("head").append(cssLink);
+	return cssLink;
+};
+
+var relocate;
+
+$(function(){
+            var device="computer";
+        var fontSize=($(window).width()/25).toFixed(0);
+        relocate=relocateC;
+    
+	loadCSS("main_"+device.substring(0, 1)+".css").load(function(){
+		relocate();
+		setTimeout(relocate, 1000);
+		setTimeout(function(){
+			var fontSize=$('body').css('fontSize');
+			var qrcode = new QRCode(document.getElementById("QRCode"), {
+				width : parseInt(fontSize)*7,
+				height : parseInt(fontSize)*7
+			});
+
+			qrcode.makeCode(window.location.href);
+		}, 1000);
+	});
+
+	$(window).resize(relocate);
+
+    
+	function relocateC(){
+		function bottom($el){
+			return $el.position().top + $el.outerHeight(true);
+		}
+
+		var $footer=$('#footer');
+		$footer.css({
+			top: 0,
+			display: 'none'
+		});
+		var top=Math.max(
+			bottom($('#textWrapper')),
+			bottom($('#contents')),
+			$(document).height() - $footer.outerHeight()
+		);
+		$footer.css({
+			top: top,
+			display: 'block'
+		});
+	}
+
+        $('.patch-more').click(function(){
+        var page=$(this).data('page');
+        var paragraph=$(this).data('paragraph');
+
+        location.href='page'+page+'.html#paragraph='+paragraph;
+    });
+
+    setTimeout(function () {
+                    var ret=document.referrer.match(/#paragraph=(\d+)/);
+                if (!ret) {
+            return;
+        }
+        var paragraph=ret[1]-1;
+
+        var objParagraph=$('#text p:eq('+paragraph+')');
+        var flash=function () {
+            objParagraph.css('color', 'red');
+            setTimeout(function() {
+                objParagraph.css('color', 'initial');
+            }, 1000);
+        };
+        $('html, body').animate({
+            scrollTop: objParagraph.offset().top-$('#textWrapper').offset().top,
+        }, 500, flash);
+    }, 100);
+
+    var pIndex=0;
+    $('#text p').each(function () {
+        ++pIndex;
+        if (!$(this).attr('id')) {
+            //$(this).attr('id', 'paragraph_'+pIndex);
+        }
+    });
+});
+
+function showComments(){
+	$.blockUI({
+		message: $('#disqus_thread'),
+	});
+
+	$('body').click($.unblockUI);
+}
+</script>
+</head>
+<body>
+<div id="cover" style="background-color: #F1F1F1; position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 2048;"></div>
+<div id="nav">
+	<div class="Three">
+		<div id="navLeft" class="left c">
+			<a href="page2.html" class="blackText">&lt;&lt;&lt;prev</a>		</div>
+		<div id="navRight" class="right c">
+			<a href="page4.html" class="blackText">next&gt;&gt;&gt;</a>		</div>
+		<div id="navTitle" class="middle">
+			初识		</div>
+	</div>
+	<div class="Three m">
+		<div class="left" style="width: 4em">
+			<a href="page2.html" class="blackText">&lt;&lt;&lt;</a>		</div>
+		<div class="right" style="width: 4em">
+			<a href="page4.html" class="blackText">&gt;&gt;&gt;</a>		</div>
+		<div class="middle">
+			<a href="/index.html" class="blackText">[Home]</a>
+		</div>
+	</div>
+</div>
+<div id="images" class="c">
+	<a href="downloads/mnnstory.zip" target="_blank"> <img src="download.png" style="width: 100%;" title="下载" alt="Download" /> </a>
+	<p id="QRCode"></p>
+</div>
+<div id="contents" class="c">
+	<p class="contents_d0"><a href="index.html">目录</a></p>
+	<ul class="contents_d1"><li><a href='page1.html'>上册</a>
+<ul class="contents_d2"><li><a href='page2.html'>引子</a>
+</li><li>初识
+</li><li><a href='page4.html'>别情</a>
+</li><li><a href='page5.html'>追求</a>
+</li><li><a href='page6.html'>梦想</a>
+</li><li><a href='page7.html'>重逢</a>
+</li><li><a href='page8.html'>憧憬</a>
+</li><li><a href='page9.html'>移民</a>
+</li><li><a href='page10.html'>心愿</a>
+</li><li><a href='page11.html'>数学中最难的是概率</a>
+</li><li><a href='page12.html'>祝福</a>
+</li><li><a href='page13.html'>附录：秦始皇妈妈的故事</a>
+</ul></li><li><a href='page14.html'>上册配乐</a>
+</li><li><a href='page32.html'>下册</a>
+</li><li><a href='page47.html'>下册配乐</a>
+</li><li><a href='page49.html'>订正簿</a>
+</ul></div>
+<div id="disqus_thread"></div>
+<script>
+	var disqus_config = function () {
+		this.page.url = 'http://mnnstory.onion';
+		this.page.identifier = 3;
+		this.page.title = '初识'
+	};
+
+
+	(function() {
+		var d = document, s = d.createElement('script');
+
+		s.src = '//mnnstory.disqus.com/embed.js';
+
+		s.setAttribute('data-timestamp', +new Date());
+		(d.head || d.body).appendChild(s);
+	})();
+</script>
+<div id="textWrapper">
+	<div id="text">
+		<p>记忆中，那时的她，圆滚滚、红扑扑的脸，眼睛洋溢着青春的朝气。说话时，嘴巴略有点噘，她每一次的笑都是多么地舒心，还可以见到小酒窝。梳着马尾辫，穿着素雅的校服，娇小身材，显得有点柔弱，与性感搭不上边。她有一个漂亮的名字，恬静而孤傲、轻盈而奔放，富有诗意，又与“美艳”谐音。但从没有人用这个谐音词称呼她，大概是因为她的外表既不值得恭维，也不招来嘲讽。公认的，对她外表的评价，就是“大众脸”。她的字方方正正，整整齐齐，考卷上很少可以看到修改。都说字如其人，我认为她总体上端庄典雅。</p>
+<p>  我们两人中考都是有缺憾的，因为少了区区几分，去了区里第二好的高中。因为高分，我们被编入了重点班，这个班级里，绝大多数同学都是初中直升上来的，一个比一个强。她正好坐在我前面，课间讨论了数学题后，我们就算认识了。</p>
+<p>我们交流了初中的经历，发现曾在一所初中念书，两个班级紧挨着，只有一墙之隔，却并不曾相识。我们共同的初中数学老师，就成为了我们的话题。我甚至出了一副对联让她猜，下联正是那位老师的名字。她读书用功，很乖。</p>
+<p>我想起初一时听到的一个黄段子，就问她，“小荷才露尖尖角”是什么意思？她说不懂，我有点意外。解释说，就是比喻女生成熟的征兆。我看到了她异样的笑，感到怪怪的，离开座位避开了她。后来我才明白，这个段子，许多女生是从没听说过的。</p>
+<p>我提到，初中的时候，一些男生会去拉女生的胸罩带子，很不好。她说：“猛地一放的时候，女生是很痛的。”她又笑着继续发挥道：“听说，有一次一位男生手重，居然拉断了。女生又疼，又羞，又恼，加上不知道该怎么办，哭了。老师不了解情况，去责备另一位男生YY（有名有姓）。那个无辜的男生知道实情，但说不出口，只得连连‘认错’。”我当时听到略感兴奋，但又似觉得有点不妥，究竟什么不妥，却又说不清楚。</p>
+<p>很快，我对她的好感已经累积到了一定程度，加上对于恋爱的好奇，我就尝试了。但由于我缺乏经验和常识，当她听到了我的“表白”，低头看了看地上空白的地方，愣了一下，严厉地斥责道：“请停止胡思乱想！”</p>
+<p> 这之后，我们有一段紧张，但很快就缓和了。还是经常讨论问题。有一次，她讲给我听一个关于秦始皇妈妈的故事，说她是个慈祥的老人。然而我却读过《史记》里关于这个女人淫乱的那段，就告诉她：“秦始皇的妈妈其实偷偷和坏男人做那种……那种不好的事情。”她很认真地说：“一般这样做都不是女的自愿的。”听到这里，我就不敢说下去了，因为她实在太纯洁了。</p>
+<p>她坐在我前面，我有时候会去摸摸她的马尾辫。她正告我：“你一定要学会尊重我。”有一次课上讲到如何处理好和异性同学的关系，录像里讲一个男生每一次教女生作业都要求女生给她一个吻作为酬谢，这很不好。听到这里，她回过头用责备的眼光逼视着我。我觉得非常遗憾，她居然认为我吃她豆腐。</p>
+<p>高二时，我们没有坐一起。</p>
+<p>  有一次吃午饭时，我看到她嘴被塞得鼓鼓的，脸比往常更圆了，笑着，还有红晕。那一刻，记忆中幼儿园里一个女孩子的朦胧形象，与她重合了。我忍不住问：“我记得幼儿园里，那个人是你吗？”她很夸张地惊讶和笑，道：“原来是你啊！”旁边同学起哄道：“原来某某和某某青梅竹马啊。”我看到她的表情，回过神，意识到绝不可能是她。她恢复了正常的神态，也说：“不是的吧。我是某某幼儿园。你哪个幼儿园？”我却想不起来。我开始记事好像比她晚很多。她又问了一遍，我还是答不出。 </p>
+<p>  事后，我很用力才回忆起关于幼儿园里那个小女孩的一个瞬间，通过详细询问父母，我认为此事最有可能发生在我5岁的时候。那时，我经常吃不下饭，别的小朋友都吃完了，只剩我一个，一口没动。因此，我无数次被迫一个人在没人的地方吃。也不知经历了几次孤独后，有一回，一个女孩子和我说话，一起在那里吃。她吃完后，没马上走，看着我的痛苦，问：“儂爲啥會嘔啊？箇个***（某个生词）弗是蠻好喫个嘛？有眼甜味味个。”当我对老同学产生这种幻觉时，此事留给我的伤痛早已消失殆尽，但对神秘小女孩的记忆却被意外唤醒了，她的声音似重新在我头脑中回响起来。很可惜，她的模样，我一点都不记得了。但合理的猜想，也就是小女孩普遍的特征，应该是圆圆的娃娃脸。</p>	</div>
+</div>
+<div id="footer">
+	<div id="declaration">
+		本故事为作者亲身经历
+	</div>
+	<div id="bannerLine" class="Three">
+				<div class="middle">
+            			    <a href="about.html">MnNStory, 1 Sep 2001 - 12 Mar 2016</a>
+            		</div>
+	</div>
+	<hr class="m" />
+	<div id="switch2c" class="m">
+		<a href="">电脑版</a>
+	</div>
+</div>
+</body>
+</html>

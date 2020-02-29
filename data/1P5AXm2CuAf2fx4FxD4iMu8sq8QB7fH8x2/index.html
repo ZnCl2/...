@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+ <title>Millchan</title>
+ <meta charset="utf-8">
+ <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+ <base href="" target="_top" id="base">
+ <script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+ <link rel="stylesheet" type="text/css" href="css/style.css">
+ <link rel="stylesheet" type="text/css" href="css/nullchan.css">
+ <link rel="stylesheet" type="text/css" href="css/yotsubab.css">
+ <link rel="stylesheet" type="text/css" href="css/highlight.css">
+</head>
+<body>
+<div id="root">
+  <br>
+  <br>
+	<logo style="margin:0 auto;"></logo>
+	<button type="button" id="user-menu" class="action" @click="show_user_menu = true">[Options]</button>
+	<!--<button type="button" id="faq" class="action" @click="show_faq = true">[FAQ]</button>-->
+	<user-menu v-if="show_user_menu"></user-menu>
+	<faq v-if="show_faq"></faq>
+	<template v-if="active_page === 'home'">
+		<div align="center">
+		<div class="home-container" id ="home-create">
+		<!--<button class="create" @click="show_create_board = !show_create_board">{{show_create_board ? 'Hide' : 'New board'}}</button>-->
+		<create-form v-if="show_create_board" :userid="userid"></create-form>
+		<disclaimer></disclaimer>
+		<popular-boards v-if="popular_boards.length" id="popular-boards" :boards="popular_boards"></popular-boards>
+  </div>
+		<div v-if="posts.length" class="home-container" id="home-recent-posts" v-if="posts">
+			<recent-posts :posts="posts" :post_no="post_no"></recent-posts>
+		</div>
+	<!--	<div v-if="user_boards.length" class="home-container" id="home-userboards" v-if="user_boards">
+			<span class="home-info">User boards</span>
+			<div v-for="board in user_boards">
+			<a :href="board|boardLink">{{ boardTarget(board)}}</a>
+			<a :href="editBoardLink(board)" title="Manage board">[Edit]</a>
+    </div>-->
+      <br>
+      <button style="float:left;color:#181818;background-color:#181818;border: 1px solid white; border :#222;" @click="show_create_board = !show_create_board">{{show_create_board ? 'Hide' : 'Donate'}}</button>
+      <div style="border-top:2px solid #222;width:100%;"></div>
+		</div>
+		</div>
+	</template>
+	<template v-else-if="active_page === 'page'">
+		<div align="center">
+		<h1 class="boardinfo" v-if="boardinfo">/{{boardinfo.uri}}/ - {{boardinfo.title}}</h1>
+		<button class="create" @click="show_create_reply = !show_create_reply">{{show_create_reply ? 'Hide' : 'Create thread'}}</button>
+		<reply-form id='create-form' v-if="show_create_reply" :uri="uri" :userid="userid" :directory="dir" :post_no="post_no" submit='Create thread'></reply-form>
+		</div>
+		<div id="top-links">
+		<a :href="catalogURL">[Catalog]</a>
+		<a href="#bottom-links">[Bottom]</a>
+		</div>
+		<div-thread v-for="thread in getThreads()" :thread='thread' :post_no='post_no' :is_user_board='is_user_board' :blacklist_active='blacklist_active' :key='thread.id' ref='thread'></div-thread>
+		<div class="nav-page" v-for="nav_page in nav">
+		<button v-if="nav_page-1 == page" class="active" :value="nav_page" @click="moveToPage(nav_page)">{{nav_page}}</button>
+		<button v-else :value="nav_page" @click="moveToPage(nav_page)">{{nav_page}}</button>
+		</div>
+		<post-preview v-if='preview_post' :preview_post='preview_post' :post_no='post_no[preview_post.id]'></post-preview>
+		<div id="bottom-links">
+		<a :href="location.pathname">[Home]</a>
+		<a :href="catalogURL">[Catalog]</a>
+		<a href="#top-links">[Top]</a>
+		<options :dir='dir' :uri='uri' :blacklist_active='blacklist_active'></options>
+		<styles></styles>
+		</div>
+	</template>
+	<template v-else-if="active_page === 'thread'">
+		<div align="center">
+		<a style="text-decoration:none" :href="boardURI"><h1 class="boardinfo" v-if="boardinfo">/{{boardinfo.uri}}/ - {{boardinfo.title}}</h1></a>
+		<button v-if="!show_quick_reply" class="create" @click="show_create_reply = !show_create_reply">{{show_create_reply ? 'Hide' : 'Reply to thread'}}</button>
+		<reply-form id='create-form' v-if="show_create_reply && !show_quick_reply" :uri="uri" :userid="userid" :thread="thread" :directory="dir" :post_no="post_no" submit='Reply'></reply-form>
+		</div>
+		<div id="top-links">
+		<a :href="catalogURL">[Catalog]</a>
+		<a href="#bottom-links">[Bottom]</a>
+		</div>
+		<posts-wrapper ref='replies' :blacklist_active='blacklist_active' :bl_users='bl_users' :bl_posts='bl_posts' :is_user_board="is_user_board" :post_no="post_no" :posts="posts"></posts-wrapper>
+		<reply-form id='quick-reply' ref="quickreply" v-if="show_quick_reply" :uri="uri" :userid="userid" :thread="thread" :directory="dir" :post_no="post_no" :addclose='true' submit='Reply'></reply-form>
+		<post-preview v-if='preview_post' :preview_post='preview_post' :post_no='post_no[preview_post.id]'></post-preview>
+		<div id="bottom-links">
+		<a :href="boardURI">[Return]</a>
+		<a :href="location.pathname">[Home]</a>
+		<a :href="catalogURL">[Catalog]</a>
+		<a href="#top-links">[Top]</a>
+		<a v-if="!show_quick_reply" href="javascript:void(0)" @click="show_quick_reply=true">[Reply]</a>
+		<options :dir='dir' :uri='uri' :blacklist_active='blacklist_active'></options>
+		<styles></styles>
+		</div>
+	</template>
+	<template v-else-if="active_page === 'catalog'">
+		<div align="center">
+		<h1 class="boardinfo" v-if="boardinfo">/{{boardinfo.uri}}/ - {{boardinfo.title}}</h1>
+		<button class="create" @click="show_create_reply = !show_create_reply">{{show_create_reply ? 'Hide' : 'Create thread'}}</button>
+		<reply-form id='create-form' v-if="show_create_reply" :uri="uri" :userid="userid" :directory="dir" :post_no="post_no" submit='Create thread'></reply-form>
+		</div>
+		<div id="catalog-threads" v-for="thread in getAllThreads()">
+		<catalog-thread :blacklist_active='blacklist_active' :bl_users='bl_users' :bl_posts='bl_posts' :thread="thread" :key="thread.id"></catalog-thread>
+		</div>
+		<div id="bottom-links">
+		<a :href="boardURI">[Return]</a>
+		<a :href="location.pathname">[Home]</a>
+		<options :dir='dir' :uri='uri' :blacklist_active='blacklist_active'></options>
+		<styles></styles>
+		</div>
+	</template>
+	<template v-else-if="active_page === 'edit'">
+		<div align="center">
+		<a style="text-decoration:none" :href="boardURI"><h1 class="boardinfo" v-if="boardinfo">/{{boardinfo.uri}}/ - {{boardinfo.title}}</h1></a>
+		<board-edit v-if='boardinfo' :board="boardinfo"></board-edit>
+		<div v-if="bl_users.length" class="blacklist_container">
+			<h2>Blacklisted users</h2>
+			<bl-users id="blacklist_users" :bl_users="bl_users"></bl-users>
+		</div>
+		<div v-if="bl_posts.length" class="blacklist_container">
+			<h2>Blacklisted posts</h2>
+			<bl-posts id="blacklist_posts" :bl_posts="bl_posts"></bl-posts>
+		</div>
+		</div>
+		<div id="bottom-links">
+		<a :href="location.pathname">[Home]</a>
+		<styles></styles>
+		</div>
+	</template>
+	<mclink></mclink>
+	<overlay v-if='posting'></overlay>
+</div>
+</div>
+<script type="text/javascript" src="js/all.js" async></script>
+</body>
+</html>

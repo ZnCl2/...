@@ -1,0 +1,243 @@
+{
+	"next_topic_id": 6,
+	"topic": [
+		{
+			"topic_id": 1537397559,
+			"title": "Client-side file deduplication [updated]",
+			"body": "###Client-side file deduplication\n\n- Detect duplicates, and move them to a dedicated folder, with files addressed by their hash\n  - So duplicate files would not be accessed by their site-specified path but by their hash\n- Before requesting a new file from peers, check if the client already has the file by comparing hashes\n  - Possibly checking first if the data on disk isn't corrupted (by hash or file size)\n\n\n\n####How much data or how many files are duplicate?\n\nChecking the  `content.json` file of 3014 sites (not the user data) gave this result:\n\n#####Required files\n\n**1635 MiB (21.0%)** of 7773 MiB was duplicate data\n38692 (24.8%) of 155575 were duplicate files\n\n#####Optional files\n\n**20537 MiB (~3%)** of 685679 MiB was duplicate data\n46619 (21.9%) of 212718 were duplicate files\n\n---\n\n[Also on ZeroDev Talk](http://127.0.0.1:43110/142jqssVAj2iRxMACJg2dzipB5oicZYz5w/?Topic:1537907056_1b9urVTLtAAZAidg6hchWqhrVtYXUaoj7/)",
+			"added": 1537397558
+		},
+		{
+			"topic_id": 1537640561,
+			"title": "[Bug (with patch)] Blacklisting does not work, filters.json file never created",
+			"body": "Zeronet sites added to the blacklist are not kept upon restart.  A `filters.json-tmpnew` is created though it isn't properly saved to `filters.json`, and that causes it to not be used upon restart.\n\nThis error might be helpful:\n\n```\n[20:18:31] - File ./data/filters.json write failed: OSError: [Errno 2] No such file or directory in helper.py line 23, reverting...\n```\n##Patch\n\n```\ndiff --git a/src/util/helper.py b/src/util/helper.py\nindex 8f8b29f..0578a1a 100644\n--- a/src/util/helper.py\n+++ b/src/util/helper.py\n@@ -20,6 +20,8 @@ def atomicWrite(dest, content, mode=\"w\"):\n             os.fsync(f.fileno())\n         if os.path.isfile(dest + \"-tmpold\"):  # Previous incomplete write\n             os.rename(dest + \"-tmpold\", dest + \"-tmpold-%s\" % time.time())\n+        if not os.path.isfile(dest):\n+            open(dest, 'w')\n         os.rename(dest, dest + \"-tmpold\")\n         os.rename(dest + \"-tmpnew\", dest)\n         os.unlink(dest + \"-tmpold\")\n```",
+			"added": 1537640559
+		},
+		{
+			"topic_id": 1537647789,
+			"title": "[Security] Man-In-The-Middle (MITM) attacks on SSL connections will go unnoticed",
+			"body": "A client wouldn't notice when the SSL connection of a peer would be under a MITM attack since there is no way of verifying if the certificate belongs to a certain peer.\n\nA solution would be more persistent certificates (not discarded upon restart) and TOFU (Trust On First Use). Or possibly some kind of peer consensus on certificates.\n\n####A privacy problem, or does SSL encryption even matter?\n\nData integrity is not affected by this, though privacy is. Then again, when it is known what user certificate is to tied to which IP or real identity SSL encryption would be futile anyway (because everyone can see what everyone else posts on ZeroNet).",
+			"added": 1537647786
+		},
+		{
+			"topic_id": 1537649547,
+			"title": "[Question] Have on-topic posts / users been deleted on ZeroTalk?",
+			"body": "I'm unable to find my earlier on-topic posts I made under a different username.",
+			"added": 1537649543
+		},
+		{
+			"topic_id": 1537822393,
+			"title": "[Privacy] ZeroBoard requires the clearnet to send messages",
+			"body": "Apparently ZeroBoard needs to send a request to `https://zeroid.qc.to/ZeroBoard/add.php` in order to add your message.",
+			"added": 1537822388
+		}
+	],
+	"topic_vote": {
+		"1539131791_1KuwwnkAtVrfnyhv8pyGRxLqzNZbEkJt2u": 1,
+		"1539215102_1KsFe6vgVpNFCNTQDQryrcQYySkAbFLXCV": 1
+	},
+	"next_comment_id": 40,
+	"comment": {
+		"1537397559_1b9urVTLtAAZAidg6hchWqhrVtYXUaoj7": [
+			{
+				"comment_id": 3,
+				"body": "[Updated post with results]",
+				"added": 1537406672
+			},
+			{
+				"comment_id": 5,
+				"body": "@robione Yeah just compress user `content.json` and `data.json` files and put it in one big SQlite database.\nEdit: This will probably cause problems since user JSON files are constantly updated. Will require a lot of VACUUMing.",
+				"added": 1537433406
+			},
+			{
+				"comment_id": 6,
+				"body": ">[@thunder33345] sites need to opt in\n\nWell not necessarily, if the above client-side feature is implemented then it's possible for the client to fetch a file based on its hash. Though it has to fetch the file by its varying name and site, which is sub-optimal.\n\n>[@thunder33345] might be hard to delete/unlink a file\n\nDeduplication will make that harder. Yes.\n\n>[@thunder33345]  not everything need to be cross-seeded\n\nStuff like a user's `content.json` and `data.json` do not need to (or can not) be de-duplicated/ cross-seeded",
+				"added": 1537459083
+			},
+			{
+				"comment_id": 7,
+				"body": ">[@styromaniac] It doesn't have to be harder. Deletion can be one and done with ZeroNet handling the task.\n\nSure, but it's harder (not hard) than to simply deleting a site's folder\n\nAlso, are you upvoting yourself, or do you have some kind of cult following?",
+				"added": 1537462285
+			},
+			{
+				"comment_id": 23,
+				"body": "Updated results with >3000 sites. I don't have a GitHub account, so if someone else wants to create an issue for this that'd be nice.",
+				"added": 1537902120
+			}
+		],
+		"1536324263_14WGRwSbM55c5DuiSCME94BTj6GozZ48op": [
+			{
+				"comment_id": 4,
+				"body": "You can add a peer manually to a site, like this:\n\n- `http://127.0.0.1:43110/1anysite/?zeronet_peer=1.2.3.4:15441,2.3.4.5:13300`\n- `http://127.0.0.1:43110/1anysite/?zeronet_peer=1.2.3.4:15441`\n\nEdit, guess that isn't even necessary:\n\nhttp://127.0.0.1:43110/Blog.ZeroNetwork.bit/?Post:126:New+version:+0.6.2",
+				"added": 1537411728
+			}
+		],
+		"1537461292_1L4dZcDF2maSKHDy788yhxpYnBWnXadUtS": [
+			{
+				"comment_id": 8,
+				"body": "You already are an active peer when using Tor, since you're creating Hidden Services for other people using Tor to access.",
+				"added": 1537462602
+			}
+		],
+		"1537562855_1DoVPxFrQCDb3grC8Nsn6aACed9o2oiumX": [
+			{
+				"comment_id": 10,
+				"body": ">The best way to control the opposition is to lead it ourselves.\n\n― Lenin\n\nFYI [Cloudflare is using Google Cloud Platform](https://www.cloudflare.com/integrations/google-cloud/)",
+				"added": 1537578118
+			}
+		],
+		"1537635371_15hL2gR4oCSgKBbndn3MxY8Hc5xoy1vqCe": [
+			{
+				"comment_id": 11,
+				"body": "What's KopyKate?",
+				"added": 1537636740
+			},
+			{
+				"comment_id": 12,
+				"body": "Thanks",
+				"added": 1537637385
+			}
+		],
+		"1537652215_1BwLxLCsQ2D6WCnjtawEvPnTYNzH3CBaYg": [],
+		"1537649547_1b9urVTLtAAZAidg6hchWqhrVtYXUaoj7": [
+			{
+				"comment_id": 14,
+				"body": "@pexo On-topic in relation to ZeroNet, I made lots of suggestions, pointed out flaws et cetera. Not sure why that was removed, I'll try to dig them up again (probably have them in a old ZeroNet install still).",
+				"added": 1537656067
+			},
+			{
+				"comment_id": 16,
+				"body": ">What year did you make these posts\nAround July 2017 I think. Anyway, I know that my user data was purged by @nofish (user size limit was set to `false`) but I'm not sure as to why, that's why I made this thread, I mostly made suggestions, point out flaws etc.",
+				"added": 1537821185
+			},
+			{
+				"comment_id": 17,
+				"body": "@krixano Possibly ... anyway, this site is meant to be a demo anyway. I'll move my suggestions somewhere else next time ;)\n\n>Are you saying you saw an old version of the content.json that set your user limit to false?\n\nI saw my username(s) in one of the config files of this site, which where set to `false`",
+				"added": 1537821474
+			},
+			{
+				"comment_id": 18,
+				"body": "@krixano Yep.",
+				"added": 1537821549
+			}
+		],
+		"1537647789_1b9urVTLtAAZAidg6hchWqhrVtYXUaoj7": [
+			{
+				"comment_id": 15,
+				"body": "@stretchedpup Thanks for the info. I'm not sure what's the best solution for this, or that it is worth solving.",
+				"added": 1537656167
+			}
+		],
+		"1537822393_1b9urVTLtAAZAidg6hchWqhrVtYXUaoj7": [
+			{
+				"comment_id": 19,
+				"body": "@xianc78 That explains it, though people are still using it thinking it uses the ZeroNet network... it would probably be a good idea to archive it and shut it down.",
+				"added": 1537823298
+			}
+		],
+		"1537844772_1EAD2zXkzgJf6M7xQ4jG5FHCxUTez9NJJ4": [
+			{
+				"comment_id": 20,
+				"body": "Everything that can become corrupt will become corrupt, if it isn't already corrupt. I'm not talking only about technology here, everything. All that is due to the incredible amount of power concentration whether it's in corporations, governments, media, entertainment, technology, education, etc.",
+				"added": 1537847940
+			},
+			{
+				"comment_id": 21,
+				"body": "> [sub01](#comment_5_1MC71KUzeWiA7NK7SogCzd4SivZdLYRYaj): If you go to your grocers and pick a jar of corruption off the shelf and look at the ingredients list you will find the first ingredient to be secrecy.  Anything that's secret is corrupt.  If you don't air it out it rots.\n\nThat's right, Secret Societies (e.g, Freemasonry) should be abolished. Nothing good can come from it. Or to quote **John F. Kennedy**\n\n>The very word \"secrecy\" is repugnant in a free and open society; and we are as a people inherently and historically opposed to secret societies, to secret oaths and to secret proceedings. We decided long ago that the dangers of excessive and unwarranted concealment of pertinent facts far outweighed the dangers which are cited to justify it. Even today, there is little value in opposing the threat of a closed society by imitating its arbitrary restrictions. Even today, there is little value in insuring the survival of our nation if our traditions do not survive with it. And there is very grave danger that an announced need for increased security will be seized upon by those anxious to expand its meaning to the very limits of official censorship and concealment. That I do not intend to permit to the extent that it is in my control. And no official of my Administration, whether his rank is high or low, civilian or military, should interpret my words here tonight as an excuse to censor the news, to stifle dissent, to cover up our mistakes or to withhold from the press and the public the facts they deserve to know.",
+				"added": 1537891803
+			}
+		],
+		"1537816041_1NgGmtujKtMKxc3VprPMUneYYjgJqJFbhX": [
+			{
+				"comment_id": 22,
+				"body": "Here's a nice quote from the founder of the Pan-European Union, Richard von Coudenhove-Kalergi:\n\n>The man of the future will be of mixed race. Today's races and classes will gradually disappear owing to the vanishing of space, time, and prejudice. The Eurasian-Negroid race of the future, similar in its appearance to the Ancient Egyptians, will replace the diversity of peoples with a diversity of individuals. [...]",
+				"added": 1537893363
+			}
+		],
+		"1537916011_15hL2gR4oCSgKBbndn3MxY8Hc5xoy1vqCe": [],
+		"1538004633_1Ny31DdkRx1wcA8bv2Uiybbex8YCXcYQTN": [
+			{
+				"comment_id": 25,
+				"body": "Everything will be illegal soon, simply don't give a flying fuck about Copyright.",
+				"added": 1538013261
+			}
+		],
+		"1538407463_14ytAKDfNjArMTqGecTi7ginG3aZTsRAum": [
+			{
+				"comment_id": 26,
+				"body": "Hash-addressed file access would be interesting for ZeroNet (IPFS isn't required for that)",
+				"added": 1538460035
+			}
+		],
+		"1538923063_19s3iztHV7i3fBN9wyiMhiXECoZvyNjLhr": [
+			{
+				"comment_id": 27,
+				"body": "@korfa Open `data/users/content.json` and add this to either increase someone's limit or ban a user:\n```\n  \"permissions\": {\n   \"individual@zeroid.bit\": {\"max_size\": 200000}, # Set limit to 200KB\n   \"person@zeroid.bit\": false, # Ban user\n  }\n```\n\nIf added, sign the site and publish it.",
+				"added": 1538941806
+			},
+			{
+				"comment_id": 28,
+				"body": "@korfa If you do not want to delete everything from a certain user, you can only hide posts and threads. Maybe with CSS:\n```\n#comment_9_19s3iztHV7i3fBN9wyiMhiXECoZvyNjLhr {\n  display: none;\n}\n```\nOr a thread:\n```\n#topic_1538923063_19s3iztHV7i3fBN9wyiMhiXECoZvyNjLhr {\n  display: none;\n}\n```\n\nI think the @nofish has a better idea or method for this.\n\nYou cannot delete a single post from a user because every comment and thread a user makes is within one file that is signed by the user, you can only delete that file, not edit it.",
+				"added": 1538945293
+			},
+			{
+				"comment_id": 29,
+				"body": "@nofish Wait, the site owner can edit an user's data.json without having the private key of that user?",
+				"added": 1538951705
+			}
+		],
+		"1535427494_16dEowtNbV89NxPcDrAKkmnuXtiJVoVcDm": [],
+		"1537743699_1EDX41ER6ThoA7kvhbHrMzo3HNXDyNT47T": [
+			{
+				"comment_id": 31,
+				"body": "@nofish First of all, why `tar.gz` instead of a Zip file, since a Zip file allows random access to files in the archive without having to decompress the whole archive. Second of all, I'd rather see a solution without requiring the site owner to actively maintain the site, that the user is incentivized to archive their posts or something else more sustainable, or that peers/client archive the site data, and not the site owner.\n\n@killwhitey Are you advocating genocide?",
+				"added": 1539101243
+			},
+			{
+				"comment_id": 32,
+				"body": "@nofish So the .tar.gz will only be used for the files that are loaded into the SQLite database?\n\n>I have not found any good way to do that without running into scalability issue in the future.\n\nUnderstood. It isn't the easiest thing to do with the current ZeroNet API.",
+				"added": 1539102522
+			}
+		],
+		"1539131791_1KuwwnkAtVrfnyhv8pyGRxLqzNZbEkJt2u": [],
+		"1539215102_1KsFe6vgVpNFCNTQDQryrcQYySkAbFLXCV": [
+			{
+				"comment_id": 34,
+				"body": "A ZeroNet download queue of sites that isn't lost when restarting is quite useful to have, I've thought of this as well.",
+				"added": 1539215840
+			}
+		],
+		"1539201056_1ME6XkXNnT8wCQzMjpxNDDCB4uWkNUJ4Vq": [
+			{
+				"comment_id": 36,
+				"body": "@alci Great first post, interesting and accurate ideas. Welcome to ZeroNet, you have just made ZeroNet a bit more interesting ... ;)",
+				"added": 1539223841
+			}
+		],
+		"1530451214_12rREqqdMUPsAPuMR1p87Zj8TS4YocoUCX": [
+			{
+				"comment_id": 37,
+				"body": "@achylles Unpopular opinion is unpopular on ZeroNet as well, most people here have only heard of the Mass Media and controlled opposition. \"Homosexuality\" was popularized since 1900, and would simply die off since people cannot reproduce with same-sex relationships.",
+				"added": 1539383141
+			},
+			{
+				"comment_id": 38,
+				"body": "@y1ff That's a myth. Read \"Homosexuality In Ancient Greece - The Myth Is Collapsing\" by Adonis Georgiades:\nhttps://my.mixtape.moe/ahbngf.pdf (41.10 MiB)",
+				"added": 1539571961
+			}
+		],
+		"1542317704_17AMQVbBa12XB3xFWKDnP2dCEx92TaiY7X": [
+			{
+				"comment_id": 39,
+				"body": ">But the problem is the copyright\n\nStop caring about Copyright, it has done way more harm than good and is often used to censor information (I don't give a shit about entertainment/infotainment being Copyrighted though)",
+				"added": 1544209097
+			}
+		]
+	},
+	"comment_vote": {
+		"9_12H7vawHrBcyhkGXZYTJKPiboSKaAXyKw6": 1,
+		"257_1FzZsDQdh8wk71bDLxURPzmAt2FXehoNAB": 1,
+		"5_1MC71KUzeWiA7NK7SogCzd4SivZdLYRYaj": 1,
+		"1_1Jb9DbvpDn7xsoKLpYvRCD3MtnJRgSoMif": 1
+	}
+}

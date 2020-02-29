@@ -1,0 +1,54 @@
+{
+  "db_name": "HydeView posts & comments",
+  "db_file": "data/hydeview.db",
+  "version": 2,
+  "maps": {
+    "posts.json": {
+      "to_table": [
+        {
+          "node": "posts",
+          "table": "posts"
+        }
+      ]
+    },
+    "hvcomment/.+/data.json": {
+      "to_table": [ "hv_comment" ]
+    },
+    "hvcomment/.+/content.json": {
+      "to_json_table": [ "cert_user_id" ],
+      "file_name": "data.json"
+    }
+  },
+  "tables": {
+    "posts": {
+      "cols": [
+        ["title", "TINYTEXT"],
+        ["timestamp", "INTEGER"],
+        ["path", "TEXT"],
+        ["content", "TEXT"],
+        ["json_id", "INTEGER REFERENCES json (json_id)"]
+      ],
+      "schema_changed": 6
+    },
+    "json": {
+      "cols": [
+        ["json_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+        ["directory", "TEXT"],
+        ["file_name", "TEXT"],
+        ["cert_user_id", "TEXT"]
+      ],
+      "indexes": ["CREATE UNIQUE INDEX path ON json(directory, file_name)"],
+      "schema_changed": 13
+    },
+    "hv_comment": {
+      "cols": [
+	["path", "TEXT"],
+        ["body", "TEXT"],
+        ["timestamp", "INTEGER"],
+        ["json_id", "INTEGER REFERENCES json (json_id)"]
+      ],
+      "indexes": ["CREATE UNIQUE INDEX hv_comment_key ON hv_comment(json_id, timestamp)"],
+      "schema_changed": 13
+    }
+  }
+}

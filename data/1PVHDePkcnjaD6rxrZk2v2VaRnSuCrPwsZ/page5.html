@@ -1,0 +1,200 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="MnNStory: 我和一个女同学15年的故事">
+<meta name="keywords" content="MnNStory,校园爱情,15年,女同学,女生">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<title>追求</title>
+<script src="jquery.js"></script>
+<script src="qrcode.js"></script>
+<script>
+function loadCSS(href) {
+	var cssLink = $("<link rel='stylesheet' type='text/css' href='"+href+"'>");
+	$("head").append(cssLink);
+	return cssLink;
+};
+
+var relocate;
+
+$(function(){
+            var device="computer";
+        var fontSize=($(window).width()/25).toFixed(0);
+        relocate=relocateC;
+    
+	loadCSS("main_"+device.substring(0, 1)+".css").load(function(){
+		relocate();
+		setTimeout(relocate, 1000);
+		setTimeout(function(){
+			var fontSize=$('body').css('fontSize');
+			var qrcode = new QRCode(document.getElementById("QRCode"), {
+				width : parseInt(fontSize)*7,
+				height : parseInt(fontSize)*7
+			});
+
+			qrcode.makeCode(window.location.href);
+		}, 1000);
+	});
+
+	$(window).resize(relocate);
+
+    
+	function relocateC(){
+		function bottom($el){
+			return $el.position().top + $el.outerHeight(true);
+		}
+
+		var $footer=$('#footer');
+		$footer.css({
+			top: 0,
+			display: 'none'
+		});
+		var top=Math.max(
+			bottom($('#textWrapper')),
+			bottom($('#contents')),
+			$(document).height() - $footer.outerHeight()
+		);
+		$footer.css({
+			top: top,
+			display: 'block'
+		});
+	}
+
+        $('.patch-more').click(function(){
+        var page=$(this).data('page');
+        var paragraph=$(this).data('paragraph');
+
+        location.href='page'+page+'.html#paragraph='+paragraph;
+    });
+
+    setTimeout(function () {
+                    var ret=document.referrer.match(/#paragraph=(\d+)/);
+                if (!ret) {
+            return;
+        }
+        var paragraph=ret[1]-1;
+
+        var objParagraph=$('#text p:eq('+paragraph+')');
+        var flash=function () {
+            objParagraph.css('color', 'red');
+            setTimeout(function() {
+                objParagraph.css('color', 'initial');
+            }, 1000);
+        };
+        $('html, body').animate({
+            scrollTop: objParagraph.offset().top-$('#textWrapper').offset().top,
+        }, 500, flash);
+    }, 100);
+
+    var pIndex=0;
+    $('#text p').each(function () {
+        ++pIndex;
+        if (!$(this).attr('id')) {
+            //$(this).attr('id', 'paragraph_'+pIndex);
+        }
+    });
+});
+
+function showComments(){
+	$.blockUI({
+		message: $('#disqus_thread'),
+	});
+
+	$('body').click($.unblockUI);
+}
+</script>
+</head>
+<body>
+<div id="cover" style="background-color: #F1F1F1; position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 2048;"></div>
+<div id="nav">
+	<div class="Three">
+		<div id="navLeft" class="left c">
+			<a href="page4.html" class="blackText">&lt;&lt;&lt;prev</a>		</div>
+		<div id="navRight" class="right c">
+			<a href="page6.html" class="blackText">next&gt;&gt;&gt;</a>		</div>
+		<div id="navTitle" class="middle">
+			追求		</div>
+	</div>
+	<div class="Three m">
+		<div class="left" style="width: 4em">
+			<a href="page4.html" class="blackText">&lt;&lt;&lt;</a>		</div>
+		<div class="right" style="width: 4em">
+			<a href="page6.html" class="blackText">&gt;&gt;&gt;</a>		</div>
+		<div class="middle">
+			<a href="/index.html" class="blackText">[Home]</a>
+		</div>
+	</div>
+</div>
+<div id="images" class="c">
+	<a href="downloads/mnnstory.zip" target="_blank"> <img src="download.png" style="width: 100%;" title="下载" alt="Download" /> </a>
+	<p id="QRCode"></p>
+</div>
+<div id="contents" class="c">
+	<p class="contents_d0"><a href="index.html">目录</a></p>
+	<ul class="contents_d1"><li><a href='page1.html'>上册</a>
+<ul class="contents_d2"><li><a href='page2.html'>引子</a>
+</li><li><a href='page3.html'>初识</a>
+</li><li><a href='page4.html'>别情</a>
+</li><li>追求
+</li><li><a href='page6.html'>梦想</a>
+</li><li><a href='page7.html'>重逢</a>
+</li><li><a href='page8.html'>憧憬</a>
+</li><li><a href='page9.html'>移民</a>
+</li><li><a href='page10.html'>心愿</a>
+</li><li><a href='page11.html'>数学中最难的是概率</a>
+</li><li><a href='page12.html'>祝福</a>
+</li><li><a href='page13.html'>附录：秦始皇妈妈的故事</a>
+</ul></li><li><a href='page14.html'>上册配乐</a>
+</li><li><a href='page32.html'>下册</a>
+</li><li><a href='page47.html'>下册配乐</a>
+</li><li><a href='page49.html'>订正簿</a>
+</ul></div>
+<div id="disqus_thread"></div>
+<script>
+	var disqus_config = function () {
+		this.page.url = 'http://mnnstory.onion';
+		this.page.identifier = 5;
+		this.page.title = '追求'
+	};
+
+
+	(function() {
+		var d = document, s = d.createElement('script');
+
+		s.src = '//mnnstory.disqus.com/embed.js';
+
+		s.setAttribute('data-timestamp', +new Date());
+		(d.head || d.body).appendChild(s);
+	})();
+</script>
+<div id="textWrapper">
+	<div id="text">
+		<p>我们的大学采取走班制。学生有一张大课表，是整个大学阶段必须完成的课程清单。但具体时间怎么安排，由哪个老师教，则是自主选择。</p>
+<p>大一时，我发现我们数学课可以排在一起，于是向她提出了一起去学这门课。她用冷冰冰的表情审视了我一遍，然后用严肃的语气答应了。</p>
+<p>我很高兴，但却很小心。不想再被她看作是性骚扰，回避一切这类问题。我并没仔细考虑如何追她，只希望能一直看到她。起初，我感觉还不错。坐在她旁边时，我居然会莫名地紧张，心跳加速，头脑空白。</p>
+<p>我从她那里得知她想要转系，这需要在大一结束时完成，成绩要特别优异才有希望。后来才知道，其实她真正的追求是文科，而本科却偏偏读工科，所以会有大一时的拼搏。她告诉我真正喜欢的是文科时，已经是大二了，好像也忘却了高中时那个善意的谎言。她后来转系没有成功，于是，能读上心爱的文科研究生专业，就成了她整个本科四年的追求。经过不懈努力，她最终得偿所愿了，但那已经是四年后的事情了。</p>
+<p>不知为什么，她数学课上总是面无表情，经常显得很悲观，跟我说她的担忧，却都是些看不见摸不着的问题。下了课，她永远是说很忙，除了谈数学，其他话甚少。我感到了不快，开始对她的人品和动机产生了怀疑。可是种种迹象表明，她大学各门课都学得比我好，这门数学课也不例外。她似也应当明白此节，而且其他共同课程很少向我提起。我当时觉得，如果总是这样的态度，那就不是在希望我帮她，而是在存心利用我了。</p>
+<p>我非常痛苦，一个人的时候，想起此事，气得像发疯。并不是因为被人利用，而是由于我痛恨，或者说更是怕，怕她竟也会利用我。渐渐地，我主动地和她不多说话，也面无表情地相处。我想，如果她真是想利用我，那我就用这样的方式赶走她吧。</p>
+<p>那一年寒假回到家，我第一次感到了孤独，却又不甘心主动与她联系，为的只是争口气。最后，还是她先联系了我。在我独自乘车返回大学校园的那个晚上，收到了她的短信。虽然还是在问我数学课的问题，但我却顿感轻松。我长叹了一口气，觉得自己还是这么不争气。</p>
+<p>寒假以后，我还是对她既思恋，又痛恨。我提出了，要借她英语真题复习资料。其实，写过字的真题，谁稀罕？我只是想试试她，看她是不是真在利用我。她虽觉察出了我的不友好，自己也有不高兴，却不与我吵。有时，看看她的脸上，尽是委屈。</p>
+<p>快要考试的时候，我收到她短信，说：“我不活了，数学还有那么多不懂。” 后半句她没明说，但谁都理解，是希望我去“辅导”她。我心中雪亮，她不会要死要活，而且她学得比我更好，但我还是答应了。很多人说我第一次约会了，但我自己却很明白，根本不是这么回事。当夜，我回答了一些问题后，冷冷地说了几句客套话，也没提及她要死要活的言论。</p>
+<p>关于她当时是不是想利用我的疑惑，一直困扰我到现在。但当我写完此篇，再连起来读一遍时，却逐渐明白了些什么，虽然我不很确定。</p>
+<p>学期结束后，我逼着她，最后拿到了“梦寐以求”的英语复习资料。这之后，我就不去主动找她了，甚至没有问她数学成绩。但我却用黑客技术悄悄攻破了学校的成绩网站，偷看她成绩。果不出所料，她数学成绩比我高太多。之后，我经常利用这个漏洞了解她的近况。</p>
+	</div>
+</div>
+<div id="footer">
+	<div id="declaration">
+		本故事为作者亲身经历
+	</div>
+	<div id="bannerLine" class="Three">
+				<div class="middle">
+            			    <a href="about.html">MnNStory, 1 Sep 2001 - 12 Mar 2016</a>
+            		</div>
+	</div>
+	<hr class="m" />
+	<div id="switch2c" class="m">
+		<a href="">电脑版</a>
+	</div>
+</div>
+</body>
+</html>

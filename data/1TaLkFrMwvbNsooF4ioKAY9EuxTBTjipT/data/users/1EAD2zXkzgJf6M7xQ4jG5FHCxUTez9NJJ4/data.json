@@ -1,0 +1,781 @@
+{
+	"next_topic_id": 6,
+	"topic": [
+		{
+			"topic_id": 1534891163,
+			"title": "ZeroNet Open Proxy",
+			"body": "Am I the only one frustrated when I try to load a zite from this forum only to see NO PEERS? lol\n\nHopefully this helps.\nhttps://0net.io/\n\nOur team has been running this open proxy for a couple months now as we develop our own services. Its far from ready for any heavy usage, but we're committed to keeping it open and available to host ANY zite of ANY size. So, if you're looking for a stable host for your zite, simply load it using https://0net.io/<your-zite-address>.\n\nFYI - This is a single server, running off-shore, but we're currently working on a migration to a new host with advanced DDoS protection (which will replace Cloudflare). We'll then begin scaling the resources (ie load-balancing multiple servers, data caching, etc), which should improve performance dramatically.\n\nFeedback is always welcome\nCheers!",
+			"added": 1534891162
+		},
+		{
+			"topic_id": 1536120595,
+			"title": "0net.io Peer Exchange (PEX)",
+			"body": "A few people have recently asked to make 0net.io a Bootstrapper as its a **super peer server.** IMO its just not stable enough to be a permanent server for peer exchange *(not yet anyway).* However, I don't see why not **POINT** a DNS entry to one of our **TEST** servers *(as of today, we are no longer testing on it)* and we can always redirect later as we scale up our network.\n\n> Sooo, `pex.0net.io:10443` is now available for **permanent** peer exchange.\n\n---\n\nThis was rather inspired by a recent [post from Kaffie](http://127.0.0.1:43110/Me.ZeroNetwork.bit/?Post/12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv/1NWh3WAty57FH8at1WtrZigMrdhrDkuPzh/1535778046). I really don't see any need to have to bootstrap from the Clearnet, when `zero://`'s seem to do a better job anyway. \n\nI also went ahead and enabled the `Bootstrapper` plugin. But I really don't know what this does, as PEX works just fine without it. Could someone please enlighten me as to the added value?\n\nAs always, I warmly welcome any feedback and/or suggestions as to how we can help utilize our resources to grow this wonderful community.\n\nCheers!\nd14na",
+			"added": 1536120593
+		},
+		{
+			"topic_id": 1536308470,
+			"title": "DEVS: Is SQLite an Anti-pattern for Zite Data???",
+			"body": "**TL;DR If you're a zite developer, do you think SQLite needs to be retired in favor of a NoSQL solution?**\n\n---\n\nI'd like to take just a moment to thank the community for ALL the incredible support I've received, especially from @krixano *(for his unbelievable knowledge & patience),* @ivanq *(for his [The Truth About the Zeronet](http://127.0.0.1:43110/zerocoding.bit/the-truth-about-zeronet/))* and @daniell *(for being \"pure\" awesome).*\n\nEveryday, I'm relentlessly digging deeper and deeper into the technical details that makeup the Zeronet internals *(irl people think I've died, smh). *The last big piece to this puzzle are the **\"Dynamic Zites\"** powered by SQLite. **I GET IT! and it WORKS!** but its an anti-pattern that really shouldn't be encouraged moving forward.\n\n**Simplified, it goes like this:**\n\n1. Take `/data/users/<public-key>/data.json`\n2. Inject it into a SQLite database\n3. Run your queries, make your updates, etc\n4. Extract the \"modified\" information from SQLite\n5. Update `/data/users/<public-key>/data.json`\n6. Share it!\n\n**The overhead on steps #2 & 4 is non-trivial; and as the Zeronet scales \"exponentially\" in popularity, will very likely become a serious problem.**\n\nSooo, why not just run the queries and make the updates directly on the JSON data files themselves? \n\nThere are plenty of well-developed, well-supported libraries out there today that can do that extremely efficiently. The one that I'm stuck on now is [Realm.](https://realm.io/) It suits my needs perfectly with regards to [0Explorer](http://127.0.0.1:43110/zeronetexplorer.bit), but I'm really not sure how well it would import into the Python codebase *(if at all, cause I think its Node-based).*\n\nAnyway, the question to the devs is, **\"What's the best NoSQL solution that can be used for ZeroNet today?\"** If we can come to an agreement, perhaps we can start working towards a migration. SQLite is in NO WAY designed for P2P networks *(or networks at all);* and I'm hoping to get some consensus that will provide me and others with guidance in our own efforts at developing new decentralized services.\n\nMore than happy to provide technical specs, but perhaps ZeroTalk isn't the best place for that discussion.\n\nCheers!\nd14na\n\n---\n\n**Just for completeness, here's the code I first used for testing:**\n\n```\nconst Realm = require('realm');\n\n// Define your models and their properties\nconst CarSchema = {\n    name: 'Car',\n    properties: {\n        make:  'string',\n        model: 'string',\n        miles: {type: 'int', default: 0},\n    }\n};\n\nconst PersonSchema = {\n    name: 'Person',\n    properties: {\n        name:     'string',\n        birthday: 'date',\n        cars:     'Car[]',\n        picture:  'data?' // optional property\n    }\n};\n\nRealm.open({schema: [CarSchema, PersonSchema]})\n    .then(realm => {\n        // Create Realm objects and write to local storage\n        realm.write(() => {\n            const myCar = realm.create('Car', {\n                make: 'Honda',\n                model: 'Civic',\n                miles: 1000,\n            });\n            myCar.miles += 20; // Update a property value\n        });\n\n    // Query Realm for all cars with a high mileage\n    const cars = realm.objects('Car').filtered('miles > 1000');\n\n    // Will return a Results object with our 1 car\n    console.log('# of cars', cars.length);\n\n    // Add another car\n    realm.write(() => {\n        const myCar = realm.create('Car', {\n            make: 'Ford',\n            model: 'Focus',\n            miles: 2000,\n        });\n    });\n\n    // Query results are updated in realtime\n    console.log('# of cars', cars.length);\n})\n.catch(error => {\n    console.log(error);\n});\n```",
+			"added": 1536308467
+		},
+		{
+			"topic_id": 1537844772,
+			"title": "Do you use Chrome + Gmail? You might want to check this out",
+			"body": "https://blog.cryptographyengineering.com/2018/09/23/why-im-leaving-chrome/",
+			"added": 1537844768
+		},
+		{
+			"topic_id": 1570383030,
+			"title": "Static Public Key Across Zites",
+			"body": "I’d like to propose a question to the Zeronet dev community. From a technical standpoint, what is the purpose of making a user's `public key` UNIQUE on every zite, but the `auth_address` _(aka Bitcoin address)_ the SAME on every zite??\n\nAlso curious as to WHY `auth_key` was deprecated; as it would solve the issue with a static \"secret\" across zites??\n\n---\n\nOpened an issue on Github, but there are  currently `570 open issues`. Oh my!!\nhttps://github.com/HelloZeroNet/ZeroNet/issues/2217",
+			"added": 1570383025
+		}
+	],
+	"topic_vote": {
+		"1535817841_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di": 1,
+		"1535613688_12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu": 1,
+		"1535881177_147dKWfEsmiinRTaUvoY3gXWXyk1gmZdtL": 1,
+		"1536060054_1KuwwnkAtVrfnyhv8pyGRxLqzNZbEkJt2u": 1,
+		"1534205182_15hL2gR4oCSgKBbndn3MxY8Hc5xoy1vqCe": 1,
+		"1536108085_1PQsn3szA7oEsuHo8soafCHFRZnEKskUDi": 1,
+		"1536369608_15hL2gR4oCSgKBbndn3MxY8Hc5xoy1vqCe": 1,
+		"1536332522_14RCTJp4ozmDH2c49CxmC98Mfp1fsgXz3F": 1,
+		"1536519739_17mM4YqSx7nMkYcePZB2GWcJBzkogWpqA1": 1,
+		"1536631315_16NS3rBdW9zpLmLSQoD8nLTtNVsRFtVBhd": 1,
+		"1536758231_1JjeqG6SnAvwAMynd7suwbAVyY4gn5kdti": 1,
+		"1536955600_14mSHL2TBcqcLNcfpmg5jyGVS9RZia3FiX": 1,
+		"1537231091_12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu": 1,
+		"1537239676_15hL2gR4oCSgKBbndn3MxY8Hc5xoy1vqCe": 1,
+		"1537397559_1b9urVTLtAAZAidg6hchWqhrVtYXUaoj7": 1,
+		"1537562855_1DoVPxFrQCDb3grC8Nsn6aACed9o2oiumX": 1,
+		"1537416113_1LiBAqfmPSAEhoFj2fM3iMEZe5uzZnSUse": 1,
+		"1537746280_15hL2gR4oCSgKBbndn3MxY8Hc5xoy1vqCe": 1,
+		"1537635371_15hL2gR4oCSgKBbndn3MxY8Hc5xoy1vqCe": 1,
+		"1537592624_1CthCNo2eADyWkShCTBTVKGHy3WNXcj6Fh": 1,
+		"1537805203_18CYChXXbhpzpNMTtoDLD5ARMEdddhkSsR": 1,
+		"1537880768_1AHEQxyRG9s6owyJHShB4U4rg9GL5FMX5K": 1,
+		"1537880954_1PBLyfpS2m3DFJpz4p4An3ko99oF5BQrgt": 1,
+		"1537887891_1NgGmtujKtMKxc3VprPMUneYYjgJqJFbhX": 1,
+		"1537956104_1HrQ48VceWqeGu9qmC2Y8VxUsGNSJwbNiV": 1,
+		"1538004633_1Ny31DdkRx1wcA8bv2Uiybbex8YCXcYQTN": 1,
+		"1538087340_1HrQ48VceWqeGu9qmC2Y8VxUsGNSJwbNiV": 1,
+		"1535211568_1P4KkC3wa5xtGD8m2MoBTf5p69G3Xr4aCU": 1,
+		"1538135386_18dhkzcDYd4zCD8Vtb47ULAciCuoyUFzet": 1,
+		"1537594142_1CthCNo2eADyWkShCTBTVKGHy3WNXcj6Fh": 1,
+		"1538009272_1HrQ48VceWqeGu9qmC2Y8VxUsGNSJwbNiV": 1,
+		"1538256010_168qV1Xxp2EyszrzdECLUwXrn9wGYjDdar": 1,
+		"1538339081_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di": 1,
+		"1538246886_1MHdmQEW2HS6sZNgfi3VmtegHc6fUEyVkW": 1,
+		"1538549536_1HuxEpnWQBMk2HkD7DobuwQnqHjqHy4psJ": 1,
+		"1538586760_16NS3rBdW9zpLmLSQoD8nLTtNVsRFtVBhd": 1,
+		"1538551983_1NWh3WAty57FH8at1WtrZigMrdhrDkuPzh": 1,
+		"1538505571_15hL2gR4oCSgKBbndn3MxY8Hc5xoy1vqCe": 1,
+		"1539201056_1ME6XkXNnT8wCQzMjpxNDDCB4uWkNUJ4Vq": 1,
+		"1539131791_1KuwwnkAtVrfnyhv8pyGRxLqzNZbEkJt2u": 1,
+		"1538835755_129GZPA7VpPa3YaRRW2ani34CaowY5hYB8": 1,
+		"1539101626_1KuwwnkAtVrfnyhv8pyGRxLqzNZbEkJt2u": 1,
+		"1536069895_1KuwwnkAtVrfnyhv8pyGRxLqzNZbEkJt2u": 1,
+		"1539808632_16HcyFK8526ZYJBKPpSDCbpJv6WWBNvENj": 1,
+		"1539921274_161j9Vh5TpPeic4bzZYMd5Spgnf4qbiFFZ": 1,
+		"1539951211_139zVkd4AsZqs9qSYk6ypPDAqDcjPCmRm4": 1,
+		"1540200032_1AHEQxyRG9s6owyJHShB4U4rg9GL5FMX5K": 1,
+		"1540133695_1DfrA2M9Qra6stqT6tzwNMYNweswY54KAC": 1,
+		"1521392984_19s3iztHV7i3fBN9wyiMhiXECoZvyNjLhr": 1,
+		"1541289967_1NcVwrBpf91ownXuSgYnHBZCWjoiNjw9FP": 1,
+		"1540796902_148DXj745fSuMtCnbh3uJnb3Tm4ZbdabJY": 1,
+		"1541734454_19HaBBc1M3usmLxayEasbaTkeZ3Ttr25gD": 1,
+		"1542021379_139zVkd4AsZqs9qSYk6ypPDAqDcjPCmRm4": 1,
+		"1541833193_19HaBBc1M3usmLxayEasbaTkeZ3Ttr25gD": 1,
+		"1542174163_1Hw7w7Swdeexw86XmyfMHLbsSpzzH4yk5z": 1,
+		"1542278485_1ELQXPkiUPmfR2ZCJLyhEucP5vqkLWaJdv": 1,
+		"1542515456_16NS3rBdW9zpLmLSQoD8nLTtNVsRFtVBhd": 1,
+		"1543348094_16VrCKQQiVZpJ6S5xJASR8LCFLv24M5bfn": 1,
+		"1543791956_1AdWXZdPUimpXoGNXUBde2CHR7gLf4onxE": 1,
+		"1543955963_1L4dZcDF2maSKHDy788yhxpYnBWnXadUtS": 1,
+		"1543855769_14ytAKDfNjArMTqGecTi7ginG3aZTsRAum": 1,
+		"1543909269_16dEowtNbV89NxPcDrAKkmnuXtiJVoVcDm": 1,
+		"1547014808_1JGp4gaBwTZ6rjuLytHJ1o9C93kfk7UQiD": 1,
+		"1552858206_1NZftAz9VSawGF5JgMYGFv4ByoKEaQbNZu": 1,
+		"1553079752_1Ekf2tGQLhG3iifFsuUk9RcBPx26cQmCD1": 1,
+		"1553213813_1FJrRrqodaWfW7TGGKbnT5mmdB7DnGMbt8": 1,
+		"1553530288_12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu": 1,
+		"1553463903_1AdWXZdPUimpXoGNXUBde2CHR7gLf4onxE": 1,
+		"1556161291_1DN24iDBCa558BcYjSz17fdXpFnJ694kKA": 1,
+		"1562000931_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di": 1,
+		"1565037100_1L4dZcDF2maSKHDy788yhxpYnBWnXadUtS": 1,
+		"1569094102_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di": 1,
+		"1577574820_1NZftAz9VSawGF5JgMYGFv4ByoKEaQbNZu": 1,
+		"1577569682_1NZftAz9VSawGF5JgMYGFv4ByoKEaQbNZu": 1,
+		"1578969458_1NZftAz9VSawGF5JgMYGFv4ByoKEaQbNZu": 1,
+		"1578781307_1NZftAz9VSawGF5JgMYGFv4ByoKEaQbNZu": 1
+	},
+	"next_comment_id": 104,
+	"comment": {
+		"1534878028_18e4U5WvC4d8Megkv2Sqek9HzrG6TFwRC7": [
+			{
+				"comment_id": 1,
+				"body": "> [ssdifnskdjfnsdjk](#comment_457_1L4dZcDF2maSKHDy788yhxpYnBWnXadUtS): http://127.0.0.1:43110/zerosearch.bit/data.txt\n\nI've never used sed or awk, but I just took a look at an awk tutorial and I don't know where to begin. Not particularly interested in learning a new language at this moment. Could you help?\n\nBEFORE\n`ZeroBlog[changelog, development, zeronet, zero, blog, nofish, github, source:1BLogC9LN4oPDcruNz3qo1ysa133E9AGg8 1599`\n\nAFTER\nhttps://0net.io/1BLogC9LN4oPDcruNz3qo1ysa133E9AGg8\n\nEither the actual file or the linux command to generate would be fantastic",
+				"added": 1534903884
+			}
+		],
+		"1534889280_19XhqfSemghmQf4m6SZVkw78qW6WKT4Gpx": [
+			{
+				"comment_id": 2,
+				"body": "Thanks for hitting me up on Reddit.\n\nOur team is currently working on a new mobile client for ZeroNet called Zeronet Explorer (https://github.com/d14na/zeronet-explorer). We're about to release our 3rd POC (later this week) before the first MVP (end of Aug, early Sept). \n\nCompatibility with the current zites is a top priority for us and we've done that with ZeroBlog by adding ZeroFrame (its buggy but mostly working). Finally, we need CDN support and that's were I'm lost. I don't want us to re-invent the wheel, but I don't understand how Merged Sites work. I've seen:\n\nMERGED: CDN\n- IFS Cluster\n- IFS Cluster\n- ZV Cluster\n\nCan you explain how Merged sites function?\n---\n\nWe created http://127.0.0.1:43110/0cdn.bit\nand ideally, what I was looking for was the ability to take:\nhttps://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js\n\nand make it:\nzero://0cdn.bit/ajax/libs/jquery/3.3.1/jquery.min.js\n- OR -\nhttp://127.0.0.1:43110/0cdn.bit/ajax/libs/jquery/3.3.1/jquery.min.js\n\nSo my last question is, is there any standard for ZeroNet resource linking?\n\nthanks,\nd14na",
+				"added": 1534952887
+			}
+		],
+		"1534891163_1EAD2zXkzgJf6M7xQ4jG5FHCxUTez9NJJ4": [
+			{
+				"comment_id": 3,
+				"body": "@styromaniac yes, we're very much aware of some of the illegal content and have \"temporarily\" hard-coded redirects for the content obviously no \"civilized\" person wants to see. we have a project setup to handle this http://127.0.0.1:43110/zerofilters.bit. and it will be integrated with Zeronet Explorer.\n\nMy problem with the blocklists that I've seen is that they list the address in plaintext, which basically makes them a directory for that kind of content. Our solution will use an sha hash instead, which can be then be easily queried against before loading any zite.",
+				"added": 1534968638
+			},
+			{
+				"comment_id": 4,
+				"body": "> When i create zeroid thru your proxy, other users will be able to use it too?\n\n@ssdifnskdjfnsdjk that's an excellent question, and honestly, I have no idea, but \"hopefully\" NOT. still learning about how zeroid works.",
+				"added": 1534968760
+			}
+		],
+		"1535451536_1EoqbSwvxRuRKj7vpeK79wuGXdpq2wbqfM": [
+			{
+				"comment_id": 5,
+				"body": "HAHA!! I've finally managed to hack my users.json back to `d14na`. I couldn't figure out WHERE to put my 32-byte private seed. Apparently it goes into `master_seed`. OKAY, next move it to integrate ZeroID into Zeronet Explorer, so we can ALL be more engaged with the community while on the road. \n\nALSO, working to setup a ZeroMe profile today...",
+				"added": 1535655330
+			},
+			{
+				"comment_id": 6,
+				"body": "> Btw, here are detalils about ZeroNet NewsFeed plugin.\n\n@ssdifnskdjfnsdjk thanks I'll check this out today.",
+				"added": 1535655364
+			},
+			{
+				"comment_id": 7,
+				"body": "@krixano Okay, that makes complete sense, thanks for the detailed explanation. I'll start experimenting with NewsFeed today.\n\nArgh! So much to learn about ZeroNet before I can actually start implementing. Patience, I guess, is a virtue.",
+				"added": 1535655518
+			},
+			{
+				"comment_id": 8,
+				"body": "@daniell yeah, I don't know what's up with `index.html` not downloading. I sent you a tar.gz on github, but that too was missing `index.html`. I back in the office today, so I have direct access to the proxy server. I'll post the complete files to github in a just a bit.",
+				"added": 1535655621
+			},
+			{
+				"comment_id": 9,
+				"body": "@daniell\nin case, all you needed was the `index.html`, here's a pastebin https://pastebin.com/gfCzCf2y",
+				"added": 1535656038
+			},
+			{
+				"comment_id": 10,
+				"body": ">I think it is a serious bug on ZeroNet.\n\n@daniell Yeah, I run into \"issues\" all the time, but its mostly due to my lack of complete understanding about the inner workings of this platform. I'm digging deeper each day, working my way further down the rabbit hole. Hopefully, when I return to the surface, I'll bring along some added stability :)",
+				"added": 1535670652
+			}
+		],
+		"1535211258_1P4KkC3wa5xtGD8m2MoBTf5p69G3Xr4aCU": [
+			{
+				"comment_id": 11,
+				"body": "@bart101 yeah, just recently I struggled for days to figure out how to sign-out and then sign-back-in to a different account using ZeroID. most users take basic things like that for granted. in the end, I literally had to go in and copy-paste private keys in the `users.json` file to get it working as I wanted. ugh, ugh, ugh..\n\n> 4. The decentralization community manages to create clearly superior applications as convenient and reliable as centralized providers.\n\nI believe this is possible. As an experienced DApp developer on both Bitcoin's and Ethereum's blockchains, I can tell you that security on the Internet/Clearnet is completely broken (and it CANNOT be fixed -- https is a joke). I believe that each and every one of those DApps could be a killer-app for the Zeronet; but just as you said, first things first, the tools MUST be in place before the developers (not even considering non-coders yet) will even consider this a viable platform.",
+				"added": 1535708704
+			},
+			{
+				"comment_id": 23,
+				"body": "> You and I are guilty of saying why people should switch without giving them every reason to switch.\n\n@styromaniac Zeronet needs a \"killer app\". I remember when I first started developing on Android back in '09, everyone talked about the \"killer app\" that would take out iPhone. ummm, it never happened. imo, what allowed Android to compete so successfully with Apple was its ability to iterate quickly and build things faster that Apple devs ever could (because it was an open platform). and users appreciated the bleeding edge apps. imo, Zeronet is currently missing the tools to allow developers to \"HAVE AT IT!\" and if we don't built it, THEY will never come.\n\n---\n\nI have an idea to build an [Atom plugin](https://atom.io/) that will allow building zites to be as easy as [Dreamweaver](https://www.adobe.com/products/dreamweaver.html) (you know, from way back in the day). Services like Wordpress and Wix are great for allowing ANYONE to produce content, but that's not enough for \"real\" devs to build APPS (or better yet DApps). IDEs, SDKs and something like NPM are needed to BRING THE DEVS. then I think the Zeronet has a REAL shot at competing with the Clearnet.",
+				"added": 1536220750
+			}
+		],
+		"1535817841_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di": [
+			{
+				"comment_id": 12,
+				"body": "this is very cool. i'm not big on chess (i guess, cause i'm not very good lol), but it would be great to watch the games being played by others. \n\nsimilar to this zite that connects to the clearnet lichess http://127.0.0.1:43110/1CHESSgbNoLEvQzdSW1yreen7VxvRDk3uA",
+				"added": 1535845144
+			}
+		],
+		"1535633348_1LYAhznicuncP8P6qiJFv6E1cw9ccCoqbX": [
+			{
+				"comment_id": 13,
+				"body": "> that way they couldn't match my searches with what I searched for yesterday and raise my prices\n\n+1\n\nDelta Airlines and Expedia do this to me all the time. Please explain why the prices go UP after I signin??",
+				"added": 1536094866
+			}
+		],
+		"1535809392_13hSQgvTK6DKhaibEh2nRAposTN4wGQckW": [
+			{
+				"comment_id": 14,
+				"body": "> This function is disabled on this proxy!\n\nMost proxies, including ours https://0net.io DO NOT allow this, as it could be easily abused by malicious actors. I regularly check the proxy to see if anything needs to be increased and almost always double the recommended increase.",
+				"added": 1536094979
+			},
+			{
+				"comment_id": 55,
+				"body": ">  i am direct within ZN\n\n@garlic i honestly don't know why you would get the message, \"This function is disabled on this proxy!\", if you're NOT using a proxy. Also, why is your port `7660` and not the standard `43110`? that might be a clue as to the issue you're having.",
+				"added": 1537531568
+			}
+		],
+		"1535613688_12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu": [
+			{
+				"comment_id": 15,
+				"body": "what's the best way to manually install PeerMessage from the github repo https://github.com/HelloZeroNet/Plugin-PeerMessage?\n\nI cloned the repo into `/plugins/PeerMessage` and restarted the client, but I'm still not able to create a new id, the progress circle continues to spin indefinitely.",
+				"added": 1536095869
+			}
+		],
+		"1535881177_147dKWfEsmiinRTaUvoY3gXWXyk1gmZdtL": [
+			{
+				"comment_id": 16,
+				"body": "+1",
+				"added": 1536095933
+			}
+		],
+		"1535470352_1JcHMiQxXHX9q3ZK2LF9rZjvg3MUtTpcK": [
+			{
+				"comment_id": 17,
+				"body": "> Time doesn't exist in decentralized systems\n\ni'm starting to realize this",
+				"added": 1536096432
+			}
+		],
+		"1536060054_1KuwwnkAtVrfnyhv8pyGRxLqzNZbEkJt2u": [
+			{
+				"comment_id": 18,
+				"body": "@lola hey, just a quick hello. I read your [Write a Plugin Tutorial](http://127.0.0.1:43110/DevCenter.bit/?/tutorials/write_a_plugin) on DevCenter. it allowed me to quickly and easily create 2 plugins that I really NEEDED to manage things better on ZeroNet. They're not quite complete yet, but I'll post to git once they're a little more polished. Thanks!\n\nbtw, if you have a ctf for n00bs link, I'd check it out :)",
+				"added": 1536097165
+			},
+			{
+				"comment_id": 30,
+				"body": "@robione thanks for that link, just registered.. plus, I found some light reading for this weekend https://trailofbits.github.io/ctf/\n\n> looking into packaging and distributing plugins\n\n@krixano is working on that now, should be available soon at the new hub http://127.0.0.1:43110/1GTVetvjTEriCMzKzWSP9FahYoMPy6BG1P/?/\n\n> My team was RainbowRockerz\n\n@lola love the name, better luck next year!",
+				"added": 1536378604
+			}
+		],
+		"1536069895_1KuwwnkAtVrfnyhv8pyGRxLqzNZbEkJt2u": [
+			{
+				"comment_id": 19,
+				"body": "@lola @nofish pointed me to this a little while back, not sure if it will help you https://github.com/kustomzone/Fuzium\n\nstyromaniac i hope you don't mind if I add a few from your list to the roadmap for https://github.com/d14na/zeronet-explorer. `Option to cut off clearnet access` is my fav",
+				"added": 1536097518
+			},
+			{
+				"comment_id": 24,
+				"body": "> If you create an Android app that has notifications, you have to read this.\n\n@styromaniac i mean F*** YEAH! but it sounds too good to be true\n\n---\n\n**tl;dr how do you solve the battery drain issue?**\n\n---\n\n> SSE fits our needs better than WebSocket\n\ni think WS is a wonderful idea, but it truly SUCKS in reality due to all the \"artificial\" restrictions placed on communications networks (to \"protect\" users, as they say), so I get why they would want to stick with long-polling\n\n> We mitigate this problem by asking users to make an exemption from battery optimisations for our app\n\nand that brings us to the BIG problem, aka \"the unreasonable compromise that **MOST** users will hardcore flame and leave downright tear-jerking comments about how your app drains their battery\"\n\n> Final thought: Every user should be able to choose a “Notification Provider” for every app\n\n**THIS I 100% AGREE WITH...** but, the folks at Mountain View will NEVER (more like 99.99%) support this. and forget about Cupertino. why would they give up all that WONDERFULLY PERSONAL notification data? its quite possibly the greatest \"privacy data\" treasure trove imaginable, imo 2nd only to SMS. You now have companies like [OneSignal](https://onesignal.com/) building FREE services on top of this, for one reason and one reason alone .. TO SELL YOU TO THE HIGHEST BIDDER (or more like ANYONE who is willing to pay).\n\n*sadly, I don't think anyone has solved the battery drain issue yet...*\n\n**EDIT:** 0Explorer will have something very similar to SSE (p2p NOT client/server), however, I don't think I would turn it on (at least not by default) until the value of the app outweighs the negative battery drain.",
+				"added": 1536226338
+			},
+			{
+				"comment_id": 42,
+				"body": "> Writting a C++ implementation of Zeronet would make it possible though\n\nthis seems inevitable, but I don't know c/c++, so I can only be with you in spirit :p\ngood luck!",
+				"added": 1536821996
+			},
+			{
+				"comment_id": 73,
+				"body": "@lola `ImportError: No module named PyQt5`\n\nTried `apt install python-pyqt5` and `apt install python3-pyqt5`\n\nThen `pip install python-qt5`, but received `The binaries distributed with this version are Windows only,`\n\nAny help getting the \"correct\" dependencies for Debian/Ubuntu would be appreciated :)",
+				"added": 1539696051
+			},
+			{
+				"comment_id": 74,
+				"body": "@lola I just tried it again, but still no luck. Even booted up a fresh Ubuntu install to see if that made a difference. I opened an issue on your repo, if that might make it easier to debug.\n\nhttps://github.com/rllola/ZeronetBrowser/issues/5",
+				"added": 1539839401
+			},
+			{
+				"comment_id": 75,
+				"body": "> You said that you have pyton 2.7 installed right ?\n\nyes.\n\n---\n\nI have a few jobs running that are taking all of my VM cpu, but once they're done, I'll try again with CentOS (might not make a difference, but what the hell). \n\nAlso, I tried to `locate` PyQt5 and all I see are docs, so I'm really not sure what `apt` is installing (or where its installing it). So I figure I can also try building Qt from source, so that I can properly link the environment `PATH` and hopefully that does it.\n\nI should have more time over the weekend.",
+				"added": 1539946605
+			},
+			{
+				"comment_id": 77,
+				"body": "So no PyQt5 libraries on CentOS. Next try will be to compile from source on Ubuntu. I'll let you know.",
+				"added": 1539954782
+			},
+			{
+				"comment_id": 78,
+				"body": "@lola SUCCESS!! Wow, I'm really happy to see this working. I'll try to check it out more later today.\n\n---\n\nMy number #1 question is, \"Are the files 100% self-contained?\" Meaning, can I port the `ZeronetBrowser` folder to another system and run it as-is? If not, that would be a nice option. Perhaps its an edge case, but as a dev, I would find that very convenient. I'll get you detailed feedback soon. Great work!",
+				"added": 1540292221
+			},
+			{
+				"comment_id": 79,
+				"body": "> Yes they are self-contained and you can still update ZeroNet code and audit it !\n\nokay, that's really fantastic! I haven't had time this week _(juggling a bunch of projects),_ but I'm looking forward to using the browser for some upcoming testing, where I want a clean environment _(from a Fist-time User perspective)._ I'll definitely post detailed feedback at that time.\n\n---\n\nI'm not very familiar with Travis _(or test platforms for that matter),_ but I'll do some digging and see what I can recommend.",
+				"added": 1540537386
+			},
+			{
+				"comment_id": 80,
+				"body": "> Site on Zeronet with description of the project, donation qrcode and downloading latest version of it.\n\ni can handle that",
+				"added": 1540717912
+			}
+		],
+		"1536120595_1EAD2zXkzgJf6M7xQ4jG5FHCxUTez9NJJ4": [
+			{
+				"comment_id": 21,
+				"body": "> Using a specific domain name (pex.0net.io) would entirely defeat the purpose of my idea.\n\n@kaffie i see, understood. `zero://zero.booth.moe#f36ca555bee6ba216b14d10f38c16f7769ff064e0e37d887603548cc2e64191d:443` was the only tracker from my client list that I got working with pex. *(btw, I love the music there lol).* perhaps a hybrid solution would work best, as IP addresses can of course be censored very easily by ISPs; but DNS entries are easier to redirect *(at least until the domain gets confiscated by govt).* once I have a permanent IP address that's reasonably protected against censorship, I'll happily include it in a list of \"official\" trackers. *of course anyone who really wants that IP can just ping the domain.*\n\n---\n\nthanks for explaining the bootstrapper plugin. for convenience, `tracker.0net.io` is also currently pointing to the same server.",
+				"added": 1536122092
+			},
+			{
+				"comment_id": 26,
+				"body": "> It's working great\n\n@kaffie nice!\n\n---\n\nI spent the whole day working/studying/analyzing Peer Exchange and the result ... it sucks, BAADDD lol This is NOT news to anyone who's worked with P2P networks I'm sure, but there HAS to be a better way to rate and report the quality of peers. \n\nits NOT ideal, but I'm seriously considering running nodes (likely via the [SUPeer project](http://127.0.0.1:43110/supeer.bit)) to continuously analyze the network (maybe for the TOP100 zites) and report on its peer quality ; similar to the trackers list shown on `1HeLLo4uzjaLetFx6NH3PMwFP3qbRbTf3D`. an \"open-source\" smart contract (yeah, i love to build on Ethereum) would then be publicly accessible to query a zite for \"quality\" peers. ANYONE running one of these \"analysis\" nodes could provide a similar list (NOT necessarily via blockchain) and eventually these lists would be rated themselves by the community. aside for the addition of \"quality\" ratings, i guess it would be identical to the centralized trackers used today, but on top of a blockchain that cannot ever go off-line.\n\ni like @krixano's plan for trusted peers as a reasonable compromise to the certificate authority decentralization problem. perhaps that pure p2p solution could apply here as well.",
+				"added": 1536229079
+			}
+		],
+		"1536035206_1LiBAqfmPSAEhoFj2fM3iMEZe5uzZnSUse": [
+			{
+				"comment_id": 22,
+				"body": "> Botnets can seed zites and say they don't have the files, then recommend another peer from the same botnet.\n\n@daniell interesting theory. are there now, or have there ever been any attempts at creating a \"centralized list\" of malicious peers? in the blockchain community, malicious actors do harm just because they can. sometimes the worst harm can be done [unintentionally](https://mashable.com/2017/11/08/ethereum-parity-bug). eventually it WILL come here. best to be prepared",
+				"added": 1536219516
+			},
+			{
+				"comment_id": 28,
+				"body": "> Problem is, a centralized list ruins decentralization, which is the primary goal. \n\n@shitchell I agree! My *issue* is **specifically** regarding the use of trackers. Aren't they centralized servers? \n\n> But if you maintain a more decentralized list to combat a flaw in some decentralized network\n\nI'm not so much trying to solve the problem (cause I really don't know how), as much as move one step further in the right direction. I don't think anyone really KNOWS who's running those trackers; some of them could potentially be honeypots just idling collecting data for some future nefarious purpose, i dunno. I do believe that blockchains DO improve on the overall transparency of the \"connected\" services we deal with day-to-day. So although they ARE centrally controlled/managed; they are mostly open-source (so easily auditable) and heavily protected from censorship, which is NOT something we have today.",
+				"added": 1536298501
+			}
+		],
+		"1536131965_12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu": [
+			{
+				"comment_id": 25,
+				"body": "@krixano so I'm at the KxoNetwork (beta) [registration page](http://127.0.0.1:43110/1GTVetvjTEriCMzKzWSP9FahYoMPy6BG1P/?/create-id) but when I click `CREATE ID` the progress just keeps spinning.\n\nI'm not even sure if PeerMessage is installed correctly. It could very easily be a local issue, as I'm behind a router and running a VPN. Is there a simple/quick test zite for PM?",
+				"added": 1536227721
+			},
+			{
+				"comment_id": 27,
+				"body": "@robione restarted ZeroNet again and this time it worked flawlessly. thanks!",
+				"added": 1536297347
+			}
+		],
+		"1536308470_1EAD2zXkzgJf6M7xQ4jG5FHCxUTez9NJJ4": [
+			{
+				"comment_id": 29,
+				"body": "> What you looking for is ORM\n\n@nofish I'm aware of ORM (have never used it personally), but that still seems to be an abstraction layer for the SQLite database. What I'm suggesting is making the json files (or just a single json file) the actual database and removing the need for SQLite entirely. *(I have a theory that in the long run there will be \"significant\" advantages when it comes to p2p data exchange).* The closest thing I can relate it to (from personal experience) is MongoDb. If there was an embeddable version of Mongo, I'd probably be leaning towards that.\n\n> They never use an update sql query to change the database.\n\n@krixano ok, thanks for the clarification. I'm still a ways from fully understanding HOW zites work with the json files and SQLite. I'll definitely be working on this over the weekend. Hopefully the added exposure to the internals of ZeroTalk and ZeroMe will not only give me a greater understanding, but allow me to communicate my ideas better.\n\nThanks for the feedback!",
+				"added": 1536377768
+			},
+			{
+				"comment_id": 34,
+				"body": "> Why Diaspora moved from MongoDB to MySQL\n\n@nofish that was a great read! hadn't heard of Diaspora. its always good to have a reference before exploring ideas as to not duplicate \"failed\" efforts.\n\n> a lot of investigation to figure out that we were using MongoDB the wrong way.\n\nthat is really my key takeaway from the article. but as this was written 5-years ago, I'm fairly certain MongoDb couldn't properly serve their needs at the time. I remember a time when I couldn't use MySQL in production, because it didn't have **stored procedures** lol. things are very, VERY different today; and NoSQL is much more mature.\n\nsooo, I'm not a DBA and have far from the expertise to really KNOW what I'm talking about here. but I just get a bad feeling as I try to understand and rationalize the place SQLite plays in the **BIG picture (particularly scalability)** of the Zeronet and what I think ***COULD*** be possible in terms of near **REAL-TIME** communication. \n\nThank you for the insight *(I'll have to dig a bit deeper to fully understand the disadvantages you mention)* and I'll definitely keep all of it under consideration as I continue to explore and develop. With all of the great developers in this community, everyday on the Zeronet seems to be more exciting than the last...\n\n---\n\n**EDIT:** Playing a bit with [Diaspora](https://diasporafoundation.org/) .. meh .. each Pod uses the [Federation](https://bit.ly/2MWEspj) to inter-link the network and they call it decentralized?? shame on them, more like distributed. Once you're within a Pod (eg https://diasp.org/), there is very little decentralization (if ANY). Zeronet has them beat on decentralized network; hands down (nothing to see there)...",
+				"added": 1536406257
+			}
+		],
+		"1536337537_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di": [
+			{
+				"comment_id": 31,
+				"body": "@gitcenter keep getting \"NO PEERS FOUND\". its working from 0net.io, but then I can't sign in from there. any way to just VIEW the zite, without having to \"Login\"? Or can that be added? thanks!",
+				"added": 1536378949
+			},
+			{
+				"comment_id": 36,
+				"body": "i don't know about /r/place, but this place is very cool. nice job!\n\n> This can be added, but only if 0net.io supports the plugin.\n\n@gitcenter 0net.io has the plugin, but it still requires a login. any way to allow just a `view-only` mode?\n\nalso, what's the license on the [plugin,](https://github.com/HelloZeroNet/Plugin-PeerMessage)? I'd like to review the source for integration into 0Explorer and another client. MIT? GPL? thanks!",
+				"added": 1536814147
+			}
+		],
+		"1536108085_1PQsn3szA7oEsuHo8soafCHFRZnEKskUDi": [
+			{
+				"comment_id": 32,
+				"body": "@confidantmail where do you store the \"unlimited\" size attachments? are you seeding torrents, or using something like AWS?\n\n> why Confidant Mail is better than encrypted webmail\n\ni would suggest you list the specific points that differentiate from say https://protonmail.com/. from what I hear, that's a very popular encrypted webmail system",
+				"added": 1536380017
+			}
+		],
+		"1536369608_15hL2gR4oCSgKBbndn3MxY8Hc5xoy1vqCe": [
+			{
+				"comment_id": 33,
+				"body": "nice!",
+				"added": 1536380172
+			}
+		],
+		"1536332522_14RCTJp4ozmDH2c49CxmC98Mfp1fsgXz3F": [
+			{
+				"comment_id": 35,
+				"body": "@gardenparty in case you haven't already found this (http://127.0.0.1:43110/DevCenter.bit). It's a great resource to understand some of the finer details",
+				"added": 1536813172
+			}
+		],
+		"1536467661_15hL2gR4oCSgKBbndn3MxY8Hc5xoy1vqCe": [
+			{
+				"comment_id": 37,
+				"body": "@daniell are you affiliated with this project, other than as a participant/user? close to launching a new premium service with [ZeroGold](http://127.0.0.1:43110/zerogold.bit). looking for 0netizans with experience with blockchain tech.",
+				"added": 1536814514
+			}
+		],
+		"1536519739_17mM4YqSx7nMkYcePZB2GWcJBzkogWpqA1": [
+			{
+				"comment_id": 38,
+				"body": "> E.g. the operator of this proxy could help distribute all files by clicking on the right switch on this IFS hub:\n\n@toyata how is this done by directly editing `sites.json`? *(as you see the \"0\" button has been removed from this proxy)*\n\n---\n\ndon't want to, but probably gonna be moving this proxy very soon. I like the ISP (been with them for a long time) because they're one of the best in Panama, which I consider the MOST anti-censorship jurisdiction, but they're really NOT cooperating with our current needs very well and we have much more \"reasonable\" alternatives now. regardless, once we upgrade (one way or another), 0net.io will be able to seed more than a few TiBs without a problem.",
+				"added": 1536815049
+			}
+		],
+		"1534470841_1Kh3qLdTH2QKewUb6cWZa2dMveMT5EcVer": [
+			{
+				"comment_id": 39,
+				"body": "> I could easily become too broke to feed myself if my financial information is found by a malicious actor.\n\n@styromaniac diversify, say a modest 10% into cryptos, i think it will help you sleep better at night, i know it did for me",
+				"added": 1536817063
+			}
+		],
+		"1536480860_1DoVPxFrQCDb3grC8Nsn6aACed9o2oiumX": [
+			{
+				"comment_id": 40,
+				"body": "> ZN now has BiGFileSupport, which uses merkle trees in a very effecient way.\n\n@toyata what is `BiGFileSupport`? I haven't really seen/used [KopyKate](http://127.0.0.1:43110/big.kopykate.bit/) or [IFS](http://127.0.0.1:43110/12MVkvYGcRW6u2NYbpfwVad1oQeyG4s9Er/) before. Specifically, how is it different from the BitTorrent protocol?\n\nthanks!",
+				"added": 1536820637
+			},
+			{
+				"comment_id": 41,
+				"body": "> tuned and made for ZeroNet\n\n@kaffie ohhh, i didn't know that existed. is it using **merged** zites or something? i'm actively working on something very similar now and I'd rather not re-duplicate work. could you point me towards some source code/repo that I could take a look at? thanks!",
+				"added": 1536821669
+			},
+			{
+				"comment_id": 43,
+				"body": "> Here is the source for ZeroUP\n\n@kaffie ok thanks! unfortunately, its GPL, which doesn't help me if I want to use in any of my MIT projects. I'll check out some of the HTML source and perhaps gain some insight there.",
+				"added": 1536822376
+			},
+			{
+				"comment_id": 45,
+				"body": "@kaffie ahhh yes, the [docs!](https://zeronet.readthedocs.io/en/latest/help_zeronet/network_protocol/#bigfile-plugin) i'll do that",
+				"added": 1536823565
+			}
+		],
+		"1536806132_15Yab63fdrkKWDkvGdeK4DD4UjUBcNirTC": [
+			{
+				"comment_id": 44,
+				"body": "> Advertising on clearnet by posting as 0net.io link creates awareness for ZN and let's anyone try it out easily\n\n@toyata AFAIK, its NOT safe to use 0net.io with individual accounts (which makes all of these dynamic zites VIEW ONLY), as I believe the info (private key) is stored on the 0net.io server. but I haven't actually had time to confirm this yet, so just a warning.\n\nFortunately, now working on a solution that should be available for testing, soonish (hopefully this week!)",
+				"added": 1536823318
+			},
+			{
+				"comment_id": 50,
+				"body": "> Look at data/users.json to see if privatekeys are stored.\n\n@daniell Multiuser plugin IS enabled, so that everyone CAN'T update the proxy (eg increasing zite limits). with that plugin, i thought every user shared the same private key. no? I really don't understand how it can work, unless pks are stored in localstorage (the browser).",
+				"added": 1537255907
+			}
+		],
+		"1536836748_1JcHMiQxXHX9q3ZK2LF9rZjvg3MUtTpcK": [
+			{
+				"comment_id": 46,
+				"body": "> Search engines aren't used for discovery but rather research.\n\n@futuretoast I agree 100%. After you discover, what then? How do you go about digging deeper into a topic? \n\n@blurhy @krixano\nNot sure how your current search engines work, but it seems like a plugin could help make this more doable. I'm happy to install one on 0net.io, if that would help make **queryable data** more accessible.",
+				"added": 1537252450
+			},
+			{
+				"comment_id": 54,
+				"body": "> The version that 0net.io uses is too low.So the data won't be imported\n\n@blurhy ok, I'll update it today. \n\ncan you tell me what would cause it not to work with versions lower than 3582?",
+				"added": 1537531400
+			},
+			{
+				"comment_id": 58,
+				"body": "> Nofish raised the limit of gzip file at rev3582\n\noh, I see.\n\n---\n\nokay, so 0net.io has been updated to `rev3612` from `rev3550`. it was NOT a smooth upgrade as I guess some database had to get rebuilt for each and every zite, but it kept hanging the bootstrapping process. eg\n\n```\n[16:32:02] Site:1MaiL5..Ju27 ContentDb init: 0.002s, found files: 0, sites: 1064\n[16:32:02] Site:1MaiL5..Ju27 ContentDb not initialized, load files from filesystem\n```\n\nSo, had to load in a few dozens zites at a time until they were all re-synced. I really should have done this during off-hours, but I guess on a decentralized system there's no such thing. Anyway, it should be good now. coordinated with the ISP this week and it looks like they'll have our upgrades completed over the next few days. should improve performance, but most of all, **we'll start FULL SEEDING the ~1,000 zites registered here now.**\n\n@blurhy can you verify https://0net.io/1CjMsvhJ2JsV4B5qo3FDHnF3mvRCcHuxBn/ is working as it should? thanks!",
+				"added": 1537565364
+			},
+			{
+				"comment_id": 60,
+				"body": "> Uh,the db is still empty.I saw the json.gz files in the result of fileList.That means the Horizon is up to date.Maybe the zeronet is still building database.\n\n@blurhy we migrated to a new VPS over the weekend, files are still syncing, but I just tested https://0net.io/1HoRiznsHbJAqs2bmrVcSd79NTGVFp4Ju2, and *seems* to be working okay. can you please verify?",
+				"added": 1537845504
+			}
+		],
+		"1536996722_1J2sR4SBGqowvrAGW2gmfyd1BsjQLh1kme": [
+			{
+				"comment_id": 47,
+				"body": "> Kiwipedia is an attempt to bring Wikipedia onto ZeroNet.\n\n@kaffie how does this work? I don't see any articles. can you link one as an example? thanks!",
+				"added": 1537252839
+			}
+		],
+		"1536955600_14mSHL2TBcqcLNcfpmg5jyGVS9RZia3FiX": [
+			{
+				"comment_id": 48,
+				"body": "One of the features we're building into [Zeronet Explorer,](http://127.0.0.1:43110/zeronetexplorer.bit) is to alert/notify the user anytime they visit a NEW zite (including clicking on links). So, before visiting a place that appears to be familiar but actually isn't, you would get an alert. The alert would have `content.json` data, eg title and description of the zite, at which point you can choose to continue or not.",
+				"added": 1537253156
+			}
+		],
+		"1536996506_1J2sR4SBGqowvrAGW2gmfyd1BsjQLh1kme": [
+			{
+				"comment_id": 49,
+				"body": "> There are 3 types of \"Search Engines\" in ZeroNet... 3. Centralized Search Engine\n\n@krixano Ahh, so there ARE engines that crawl ALL zites to index. Can these centralized servers be \"decentralized\"? Basically, a cluster of nodes that help in contributing to the indexing and reporting? Just a thought.",
+				"added": 1537253811
+			}
+		],
+		"1537204255_1DoVPxFrQCDb3grC8Nsn6aACed9o2oiumX": [
+			{
+				"comment_id": 51,
+				"body": "> We're fortunate to have them.\n\n@robione i use Cloudflare for (i think) every one of my clearnet sites. and I'm very fortunate to have them providing the service they do. but @freeperson is 100% right, they ARE the MITM, the largest that I'm aware of on the Internet. so why wouldn't the 3-letter agencies just make their lives sooo much easier and squeeze the hell-out-of-em (how long can you resist the DOJ or the NSA??) for any info they need. personally, I'd rather a world where we didn't need CF (fyi, their DDoS services start at US$200/mo) and everyone could reliably depend on the security and scalability of the Zeronet.",
+				"added": 1537256400
+			},
+			{
+				"comment_id": 56,
+				"body": "> Now how about we get back to the IPFS discussion that was hijacked by nonsense FUD.\n\n@robione had no intentions of hijacking anything. however, from my experience, 90%+ of people (that I personally know, NOT representative of their userbase) that use Cloudflare DO NOT realize that this company has unencrypted access to ALL their communication. and they're very surprise by that! they still use and love the service, because it avoids them having to deal with SSL certs, Apache configs, etc. just want to help keep people educated about the facts, which I see nothing wrong with. i think Cloudflare's crypto services are a wonderful addition to an already wonderful service.",
+				"added": 1537549453
+			}
+		],
+		"1537231091_12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu": [
+			{
+				"comment_id": 52,
+				"body": "@krixano maybe enough for a craft beer? lol\nhttps://www.blockchain.com/btc/tx/627b2a1dc4049b7b11a22c76bff8988dc4473e9548d00d8ab0501aeb34c92fc3",
+				"added": 1537263090
+			},
+			{
+				"comment_id": 53,
+				"body": "@krixano I'd love to see something like https://bounties.network/ on Zeronet. That way devs (individual or teams)  could be compensated for specific contributions",
+				"added": 1537531186
+			}
+		],
+		"1536913855_1JcHMiQxXHX9q3ZK2LF9rZjvg3MUtTpcK": [
+			{
+				"comment_id": 57,
+				"body": "Just want to mention another WOT reference. [#bitcoin-otc](https://www.bitcoin-otc.com/trust.php) worked very well in the early days of Bitcoin (before exchanges existed) online trading.\n\n> Each user can either trust or distrust any other (i.e. rating +1, 0 or -1).\n\niirc, this system was `+10, 0, -10`, although `+1, 0 or -1` would work just fine, if we're talking about real numbers and not integer values.",
+				"added": 1537564521
+			}
+		],
+		"1536786377_1EEiSF637om9uuRRfCLuALtbXpXvYcKMuU": [
+			{
+				"comment_id": 59,
+				"body": "> Here's the pic on the official radcliffe foundation website. So some background details: the logo you see on the far left is a recognized symbol pedophiles use to communicate with one another.\n\nWTF?!?\n\n> Straight from wikileaks. These symbols are used in general, not just for the elite. I'm sure the wealthy/elite probably have other symbols we aren't aware of.\n\n@kaffie Working to wrap-up coding and start testing [ZeroFilters](http://127.0.0.1:43110/zerofilters.bit) by next week. True, not true, maybe true, thank you for sharing this information. Hoping to become part of the solution.",
+				"added": 1537843807
+			}
+		],
+		"1537592624_1CthCNo2eADyWkShCTBTVKGHy3WNXcj6Fh": [
+			{
+				"comment_id": 61,
+				"body": "> There are two ways to save Linux: ... 2. Fork Linux.\n\nso *IS* there a plan to fork Linux? I mean WTF is going on here?!?\n\n> Perhaps this will demonstrate that GPL is a complete failure and deserves no respect?\n\nApache 2.0 or MIT are fine by me :)",
+				"added": 1537848062
+			}
+		],
+		"1537397559_1b9urVTLtAAZAidg6hchWqhrVtYXUaoj7": [
+			{
+				"comment_id": 62,
+				"body": "> Updated results with >3000 sites.\n\n@swastika great research! i've been looking into this, but didn't have any actually data to rely on my assumptions.\n\n---\n\nworking on http://127.0.0.1:43110/zerocdn.bit now. testing it on a new zite now *(proof-of-concept works),* but still not sure about the final implementation. u can ignore the data on the homepage (its just a stub), but I've already added about 25 libs that are accessible via `.cmd('fileGet', ...)`. expect to have the **TOP100 from cdnjs.com** very soon.",
+				"added": 1538354269
+			}
+		],
+		"1537887891_1NgGmtujKtMKxc3VprPMUneYYjgJqJFbhX": [
+			{
+				"comment_id": 63,
+				"body": "@homegrown unfortunately, http://127.0.0.1:43110/zeronetexplorer.bit is on-hold for a bit while we resolve some React Native issues with the Facebook team. its MOST unfortunate, because these issues DID NOT affect the iOS version at all, but it created a rather shitty experience on Android. We have every intention of releasing to the Apple Store *(currently testing on their Test Flight system)* once our next version is ready.\n\n---\n\nPS If you would be interested in being an Alpha tester on Test Flight, message me on ZeroMail (@d14na) with your Clearnet email and I'll add you to the program.",
+				"added": 1538355413
+			}
+		],
+		"1538004633_1Ny31DdkRx1wcA8bv2Uiybbex8YCXcYQTN": [
+			{
+				"comment_id": 64,
+				"body": "@djinn So just a quick note on this. One of the features I added with http://127.0.0.1:43110/zeronetexplorer.bit was the ability to download the `content.json` file and view the title and description **BEFORE** downloading all of the content. \n\nAs you know, many zites are simply public keys (Bitcoin) addresses, which make them very hard to discern what content you're about to view. Perhaps this could be added to the Core Client as a Splash Page feature for NEW zites.",
+				"added": 1538356504
+			}
+		],
+		"1538087340_1HrQ48VceWqeGu9qmC2Y8VxUsGNSJwbNiV": [
+			{
+				"comment_id": 65,
+				"body": "@lordnet nice work :)",
+				"added": 1538356916
+			}
+		],
+		"1538092400_16NS3rBdW9zpLmLSQoD8nLTtNVsRFtVBhd": [
+			{
+				"comment_id": 66,
+				"body": "@styromaniac bookmarked! thanks",
+				"added": 1538357059
+			}
+		],
+		"1535211568_1P4KkC3wa5xtGD8m2MoBTf5p69G3Xr4aCU": [
+			{
+				"comment_id": 67,
+				"body": "ZeroNet is 100% DECENTRALIZED!\n\nIf 1 node goes down or 100 go down, no one gives a fcuk! Can't say that for Distributed.\n\n---\n\nIMO, individual zites would be considered distributed though.",
+				"added": 1538357193
+			}
+		],
+		"1538135386_18dhkzcDYd4zCD8Vtb47ULAciCuoyUFzet": [
+			{
+				"comment_id": 68,
+				"body": "> That'd solve the centralization issue that zeromail is currently facing.\n\nummm, that would too fantastic!",
+				"added": 1538357601
+			}
+		],
+		"1538009272_1HrQ48VceWqeGu9qmC2Y8VxUsGNSJwbNiV": [
+			{
+				"comment_id": 69,
+				"body": "> hash-based identification mechanism, zn bigfiles would have surpassed ipfs\n\n@toyata in researching PEX, Trackers and DHTs I've noticed that DHT usage is practically non-existant with Zeronet. It seems like it would be perfect to advertise the `content.json` hashes ***(especially of bigfiles)*** to the DHTs. Not a fan of trackers **AT ALL** and I'm just wondering why Zeronet doesn't take advantage of the DHT network.",
+				"added": 1538358082
+			}
+		],
+		"1538339081_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di": [
+			{
+				"comment_id": 70,
+				"body": "> Full details are being held back while we give clients a change to update.\n\n@gitcenter It would be nice to know the ramifications of this security flaw though. `Type: Browser iframe sandbox escape` is extremely lacking in details. Even in **\"general\"** terms, what's the worst that could happen if a zite is allowed to escape the Sandbox? I'm asking cause I honestly don't know. Do they then have **ADMIN** permissions? Or can it then start reading/executing files from my system? Makes a big difference.\n\n---\n\nAlso, I'm not sure why, but I can't view the [comments](http://127.0.0.1:43110/Blog.ZeroNetwork.bit/?Post:138:%22The+Vacation%22+Sandbox+escape+bug+[Reported+by+GitCenter+/+Krixano+/+ZeroLSTN]#Comments) of the blog post. Any idea what may be causing this?\n\n---\n\nAlso, also, I'm apparently up to 47.3K/50K. @nofish would you mind upping my limit. thanks! not sure what **\"The Vacation\"** is, but if you're unavailable atm, no worries...",
+				"added": 1538360202
+			}
+		],
+		"1538549536_1HuxEpnWQBMk2HkD7DobuwQnqHjqHy4psJ": [
+			{
+				"comment_id": 71,
+				"body": "> just use nginx\n\n@lchh. Here is an example nginx config for Zeronet over SSL:\n\n```\nserver {\n    listen  80           default_server;\n    listen  [::]:80      default_server;\n    listen  443 ssl      default_server;\n    listen  [::]:443 ssl default_server;\n\n    ssl_certificate      /etc/nginx/ssl/server.crt;\n    ssl_certificate_key  /etc/nginx/ssl/server.key;\n\n    access_log /dev/null;\n    error_log /root/error_log;\n\n    location / {\n        proxy_set_header Access-Control-Allow-Origin *;\n        proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header Host $http_host;\n        proxy_set_header X-NginX-Proxy true;\n\n        proxy_pass http://127.0.0.1:43110;\n        proxy_redirect off;\n\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header Connection \"upgrade\";\n    }\n}\n```",
+				"added": 1538774956
+			}
+		],
+		"1538505571_15hL2gR4oCSgKBbndn3MxY8Hc5xoy1vqCe": [
+			{
+				"comment_id": 72,
+				"body": "Trying to get back in the Zeronet mix this weekend, and I see everyone talking about CJDNS. I remember @kaffie talking about how great it is a while back too.  \n\nI read this from the repo. `Cjdns implements an encrypted IPv6 network using public-key cryptography for address allocation and a distributed hash table for routing. This provides near-zero-configuration networking, and prevents many of the security and scalability issues that plague existing networks.` Okkayyy...\n\nWatched this [video,](https://www.youtube.com/watch?v=NRhMY-gdXDw) which confused me even more.\n\n---\n\n> prevents many of the security and scalability issues that plague existing networks.\n\nWhat are security and scalability issues currently **plaguing** existing networks? Specifically, how is this better than IPv6, which already seems pretty great to me. Thanks!",
+				"added": 1538778297
+			}
+		],
+		"1539921274_161j9Vh5TpPeic4bzZYMd5Spgnf4qbiFFZ": [
+			{
+				"comment_id": 76,
+				"body": "> almost any server-side design can be reworked to remove the server component.\n\nas long as there's no proprietary business logic that needs to remain guarded, I agree that it can be done. \n\nI would also not rule-out a hybrid approach that could utilize the scalability and fault-tolerance of the Zeronet while maintaining a private API to protect certain features. Shouldn't have to be all or nothing.",
+				"added": 1539947111
+			}
+		],
+		"1543855769_14ytAKDfNjArMTqGecTi7ginG3aZTsRAum": [
+			{
+				"comment_id": 81,
+				"body": "also \"Wondering how it works\"...\n\n> Read the source code.\n\n@polar Would this bypass the proxy's iframe (sandbox) and allow a zite's source code to be directly displayed in `View Page Source`? Thereby making it indexable by search engines?\n\nI could then provide `https://seo.0net.io/<address>` OR `https://source.0net.io/<address>`\n\nPlease confirm its use and I'll gladly move this forward.",
+				"added": 1544000189
+			}
+		],
+		"1543909269_16dEowtNbV89NxPcDrAKkmnuXtiJVoVcDm": [
+			{
+				"comment_id": 82,
+				"body": "> the first zite is owned on 0net.io and it links on zer0net; I don't understand their relation, in particular what it's zer0net\n\n@schiz0 Your confusion is more than understandable. Here is a quick breakdown, which we are working to make clearer on our official portals.\n\n- ZeroNet (Core) is the \"official\" Zeronet client\n- Zer0net is a brand created by D14na (Decentralization Authority) to house all of our products and services\n- 0net.io is a public proxy under the Zer0net brand\n\n---\n\n> some page template not complete.\n\n@polar https://zer0net.com was our original promotional (clearnet) site for Zer0net, but we have since shifted our focus to utilizing the proxy (0net.io) to host our promo/landing pages.\n\n---\n\n> is 0net.io official?\n\n@ornataweaver Our proxy is NOT \"official\", however, we are currently hosting the \"official\" client using the Multi-user Plugin, which I DON'T recommend you use for anything private or sensitive (our proxy runs on a VPS, so our ISP's admins also have access to the proxy and its contents). \n\nWe are working on a new \"mobile-optimized\" client (with built-in VPN) to replace the current proxy. The core client/proxy will continue to be available at https://core.0net.io/<zite-address> and supported by our team.",
+				"added": 1544309758
+			}
+		],
+		"1547014808_1JGp4gaBwTZ6rjuLytHJ1o9C93kfk7UQiD": [
+			{
+				"comment_id": 83,
+				"body": "tl;dr perhaps [Infura](https://infura.io/) could server as an ideal \"meek bridge\" for the Zeronet.\n\n---\n\n@lowg Zeronet clients will need to support the ability to \"obfuscate\" data requests, similar to [\"meek bridges\"](https://blog.torproject.org/how-use-meek-pluggable-transport) on Tor. Are there any popular decentralized services currently unfiltered by the GFW? I'd recommend creating a short list of candidates then looking into integrations with Zeronet's peer discovery system.\n\n---\n\nThose following crypto may have heard that [Rinkeby just forked to Constantinople](https://www.reddit.com/r/ethereum/comments/ae6nbv/rinkeby_just_switched_over_to_constantinople/), a proof-of-stake consensus network for Ethereum. I'm more than ready to contribute to building a __blockchain-based tracker__, ideally, but not necessarily using the new Rinkeby POS for peer discovery. \n\nOf course, individual peers can/will continue to be censored, however, this becomes exponentially more difficult as the network grows.",
+				"added": 1547103560
+			},
+			{
+				"comment_id": 84,
+				"body": "> it'd be quite counterproductive to ban access to the entire Ethereum network\n\nHere is the latest distribution of Ethereum nodes:\nhttps://ethernodes.org/network/1\n\nWith Mainland China currently at #2, running close to 16% of ALL nodes, it seems very promising to consider this a permanent anti-censorship solution (really for ANY country NOT censoring Ethereum).",
+				"added": 1547172548
+			}
+		],
+		"1550686723_1EpY11syeaKbwRSNqv9tU1ZxoU1moJA9Bp": [
+			{
+				"comment_id": 85,
+				"body": "We've been using our own http://127.0.0.1:43110/zitetags.bit for about 6-months now. It obviously relies on some Clearnet resources, but there's really no way around that yet. \n\n---\n\nIts not yet available to the public, but like @loligod, we've registered and maintained a few registrations for community members (and happy to do so for anyone else). We're still finishing our new certid system; then anyone will be able to register, manage, update, transfer, etc. \n\n---\n\nFYI, its looking more and more likely that it will be 100% free (as in beer); but there are obvious challenges with that, to prevent abuse. Plus, we're still sorting the custodial security issues with namecoin private keys.\n\nAs always, feedback is welcome!",
+				"added": 1550841301
+			}
+		],
+		"1551860529_1PfMSesJyDFWRTGAGqmbru27m44GkqjXfj": [
+			{
+				"comment_id": 86,
+				"body": "@styromaniac lately, i've taken a new interest in personal health and I find this rather interesting:\n\nhttp://www.nutrisimo.com/difference-between-msm-and-organic-sulfur/\n\n__Benefits of Organic Sulfur__\n- Repairs & detoxifies the cells\n- Increases tissue flexibility & blood circulation\n- Promotes healing, reduces inflammation, and prevents soreness in muscles\n- Eliminates “free-radicals” in the body\n- Reduces allergies to pollen & certain foods\n- Promotes healthy growth of hair & nails\n- Reduces wrinkles & maintains healthy skin\n- Reverses osteoporosis, Alzheimer’s disease, and Parkinson’s\n- Alleviates chronic headaches, hypoglycemia, PMS, and eye problems\n- Helps alleviate emphysema",
+				"added": 1551927053
+			}
+		],
+		"1551837029_1LiBAqfmPSAEhoFj2fM3iMEZe5uzZnSUse": [
+			{
+				"comment_id": 87,
+				"body": "> Why is it bad if corporations make a blockchain network?\n\n@viridian i'm always humored when corps create \"private\" networks and call it blockchain. the main point of blockchain is decentralization. I could understand even a delegated blockchain, eg, [Ripple Network](https://ripple.com/); but something like [Quorum](https://www.jpmorgan.com/country/US/en/Quorum) (JP Morgan's baby) is so utterly ridiculous to call it a blockchain, when its completely owned, run and managed by a single entity.\n\n> having some infrastructure at least semi-centralized\n\nI believe this is the ideal, as you can then marry the best of both worlds, and make a \"beautiful\" baby",
+				"added": 1551927475
+			}
+		],
+		"1553483525_1EZTWytasXcKdiUFnN4KHqAfvg1nwkTkKv": [
+			{
+				"comment_id": 88,
+				"body": "> these two sites are on two servers and servers both in US but data no synchronized.\n\n@kai0 https://0net.io is actually located in Panama\n\n> 502 is happening on https://0net.io now.\n\n@60 server was blowing up, not sure why, had to completely rebuid it, so we'll see what happens; but might be time for another upgrade if its a resource issue with our host. fyi, we have a devops (code staging) server at https://0net.xyz if you ever experience a problem at the main proxy.\n\n> The proxy owner could increase the limit by changing the connection limit with the --global_connected_limit setting (by default its 512)\n\nThe problem we often have with https://0net.io is RAM spikes (i believe from serving content, not necessarily the number of zites). We are planning an upgrade in about a month or so, but might need to move up that timetable if the downtime becomes a bigger issue (see here https://status.0net.io/). Our alternative is a new custom client that is optimized for serving thousands of zites (still in dev http://127.0.0.1:43110/supeer.bit).",
+				"added": 1553579738
+			},
+			{
+				"comment_id": 89,
+				"body": "> I still think the best way is we visit server our client can synchronize data with the client which is running on the server.\n\n@kai0 are you familiar with [DHT](https://en.wikipedia.org/wiki/Distributed_hash_table)? in ethereum, its very easy for clients to stay in sync, because everyone queries the same state of the \"ethereum virtual machine (evm)\". dht offers something [\"similar\"](https://libtorrent.org/dht_store.html), but unlike blockchain, its FREE! this problem could potentially be solved once [DHT is implemented](https://zeronet.io/docs/help_zeronet/donate/#dht-support) into the zeronet client.\n\n---\n\n> i'm also considering upgrade my server these days because zeronet eats up too much ram and always crashes and causes a 502\n\n@60 we aren't very confident in the stability of the current proxy, since the client seems to be optimized for \"normal\" users and not for large-scale hosting (based on what I've seen from the debug logs). we're working on a node/js-based client & server that WILL be optimized for such use (taking advantage of v8's event loop and other enhancments). should be ready soonish'",
+				"added": 1554172626
+			}
+		],
+		"1554091689_12J9C7UzPWdvcmGtYGDRqnLsjpUByVPtwk": [
+			{
+				"comment_id": 90,
+				"body": "> A dist+decen+crypto network like this is the holy grail of privacy/anonymity and creating interoperable services would be a massive plus for obvious reasons.\n\n@snax email seems so \"legacy\"; why not use [matrix](https://matrix.org/blog/home/)? offers integrations ([video link](https://www.youtube.com/watch?v=ZNEzgYRLj8g)) to irc, telegram, slack, and so many others.",
+				"added": 1554174438
+			}
+		],
+		"1554128617_1BMRs7eu9rH13ZmjhkXfdQpfNturyNDkYs": [
+			{
+				"comment_id": 91,
+				"body": "https://gitcoin.co/\nhttps://bounties.network/",
+				"added": 1554174736
+			}
+		],
+		"1565037100_1L4dZcDF2maSKHDy788yhxpYnBWnXadUtS": [
+			{
+				"comment_id": 92,
+				"body": "tl;dr how can zeronet run with cpu multi-threading?\n\n---\n\nthis may be slightly off-topic, but what can be done to __improve the CPU usage?__ its currently single-threaded, creating a horrible bottleneck for all the background processes that are constantly running. this becomes a problem as number of seeds increases/user load increases. looking at `top` on the vps hosting __0net.io [https://status.0net.io/]__, its just constantly pegged at 100% for ONLY ONE CPU, there are 7 doing basically nothing @ 1% (also the RAM hasn't made much difference past 4GB). this obviously has nothing to do with your (very valid) RAM usage question, but it would be a huge performance boost (for ALL public proxies) if zeronet were able to run on multiple cpus. \n\nany suggestions as to libraries that could offer such support would be greatly appreciated. or if @nofish thinks this is high enough a priority to create an official [bounty](https://zeronet.io/docs/help_zeronet/donate/), I would certainly offer my full support",
+				"added": 1565040238
+			}
+		],
+		"1569094102_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di": [
+			{
+				"comment_id": 93,
+				"body": "An excellent zite.\nCheers!",
+				"added": 1569143228
+			}
+		],
+		"1569200371_16PfVSZrUZuwTgs7wBt1t3ZK9rsvdskoe5": [
+			{
+				"comment_id": 94,
+				"body": "> A person should be able to set an expiration time for older comments so that space is reclaimed after a set time.\n\nyes, you can do just that, \"manually\". deleting old posts (or perhaps just some data pruning) will free up storage space for new posts.",
+				"added": 1569205598
+			}
+		],
+		"1569204638_1LJMKSLPgM8fqQSMRrLzWB2DhVm1zoEVfZ": [
+			{
+				"comment_id": 95,
+				"body": "https://www.namecoin.org/download/\n\nif you're ok with binaries, then its super simple, otherwise, get your compiler ready and maybe some redbull",
+				"added": 1569205773
+			},
+			{
+				"comment_id": 96,
+				"body": "Here are the build instructions\nhttps://github.com/namecoin/namecoin-core/blob/master/doc/build-unix.md\n\nIf you're ONLY looking to \"help out\" by running a node, then I'd do away with the __wallet__ `--disable-wallet` and __GUI;__ you can then avoid dealing with __Berkeley DB__ and __Qt__ respectively, which imo is where the bulk of compiler problems come in.\n\nGood luck!",
+				"added": 1569213232
+			},
+			{
+				"comment_id": 97,
+				"body": "> You can also use the Name.Yo service instead\n\nI'm not familiar with this service. DDG wasn't very helpful. How can I get more info?",
+				"added": 1569243941
+			},
+			{
+				"comment_id": 98,
+				"body": "after `~/namecoind -daemon`, you can test using the CLI `namecoin-cli getblockchaininfo`",
+				"added": 1569334203
+			},
+			{
+				"comment_id": 99,
+				"body": "> Name.YO (with capital O) is a domain name service for ZeroNet\n\noh, i see. i'll check it out later. can you provide a link to the plugin's source?",
+				"added": 1569334524
+			},
+			{
+				"comment_id": 100,
+				"body": "> \"blocks\": 472246\n\nyep, you're good!",
+				"added": 1569334555
+			}
+		],
+		"1569510413_17EbpUZgWWK4fHVsp4fPuTphiBkSZ16cZu": [
+			{
+				"comment_id": 101,
+				"body": "> One of the most popular (and nicest) public portal for zeronet that I have seen is 0net.io\n\nOMFG, @randomshits, that's the BEST compliment yet. The past year has been challenging, but we've finally managed to stabilize the proxy (https://status.0net.io). Almost gave up back in May. Several more mirrors are now planned for redundancy.\n\n---\n\nP0rtal is a work-in-progress (ugh, with no real eta). All efforts have been and remain on getting [Zeronet Explorer (mobile)](http://127.0.0.1:43110/zeronetexplorer.bit) ([view source](https://github.com/d14na/zeronet-explorer)) finished and in both app stores.",
+				"added": 1569534868
+			}
+		],
+		"1570208803_137P7ceKGpm24X9C5mxNmp1bCkQpY8vWAh": [
+			{
+				"comment_id": 102,
+				"body": "> SoftEther VPN is based on HTTPS\n\nthis is quite interesting, seems like a really great replacement for the troublesome OpenVPN, and I hate using PIA so much, but sometimes, you just need shit to work\n\n> It's a project where volunteers mount their own VPN server for the world to use\n\n@felipedrc1971 is there a directory of community servers?",
+				"added": 1570371803
+			}
+		],
+		"1569353016_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di": [
+			{
+				"comment_id": 103,
+				"body": "@gitcenter when \"installing\" the plugin, that is when using the new `UiPluginManager` from @nofish, where does the plugin's source code get stored? please see this issue https://github.com/HelloZeroNet/Plugin-PeerMessage/issues/8",
+				"added": 1571755629
+			}
+		]
+	},
+	"comment_vote": {
+		"10_129GZPA7VpPa3YaRRW2ani34CaowY5hYB8": 1,
+		"324_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di": 1,
+		"192_1AHEQxyRG9s6owyJHShB4U4rg9GL5FMX5K": 1,
+		"66_16NS3rBdW9zpLmLSQoD8nLTtNVsRFtVBhd": 1,
+		"634_1NWh3WAty57FH8at1WtrZigMrdhrDkuPzh": 1,
+		"69_16NS3rBdW9zpLmLSQoD8nLTtNVsRFtVBhd": 1,
+		"1193_1J3rJ8ecnwH2EPYa6MrgZttBNc61ACFiCj": 1,
+		"662_1NWh3WAty57FH8at1WtrZigMrdhrDkuPzh": 1,
+		"104_16NS3rBdW9zpLmLSQoD8nLTtNVsRFtVBhd": 1,
+		"105_16NS3rBdW9zpLmLSQoD8nLTtNVsRFtVBhd": 1,
+		"364_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di": 1,
+		"83_1KuwwnkAtVrfnyhv8pyGRxLqzNZbEkJt2u": 1,
+		"91_15hL2gR4oCSgKBbndn3MxY8Hc5xoy1vqCe": 1,
+		"59_1P1baCe1LLjror4CZjChWFy7D7cVWyPL83": 1,
+		"29_14mSHL2TBcqcLNcfpmg5jyGVS9RZia3FiX": 1,
+		"556_12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu": 1,
+		"703_1NWh3WAty57FH8at1WtrZigMrdhrDkuPzh": 1,
+		"701_1NWh3WAty57FH8at1WtrZigMrdhrDkuPzh": 1,
+		"265_1FzZsDQdh8wk71bDLxURPzmAt2FXehoNAB": 1,
+		"84_1KuwwnkAtVrfnyhv8pyGRxLqzNZbEkJt2u": 1,
+		"1_1Jb9DbvpDn7xsoKLpYvRCD3MtnJRgSoMif": 1,
+		"11_129GZPA7VpPa3YaRRW2ani34CaowY5hYB8": 1,
+		"86_1KuwwnkAtVrfnyhv8pyGRxLqzNZbEkJt2u": 1,
+		"96_1KuwwnkAtVrfnyhv8pyGRxLqzNZbEkJt2u": 1,
+		"71_16HcyFK8526ZYJBKPpSDCbpJv6WWBNvENj": 1,
+		"11_19s3iztHV7i3fBN9wyiMhiXECoZvyNjLhr": 1,
+		"99_13oRBYqNeUr6Tvgt4KkAT9FT4XRiKFBjnE": 1
+	}
+}

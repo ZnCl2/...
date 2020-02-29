@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Name.YO</title>
+		<meta charset="utf-8">
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<base href="" target="_top" id="base">
+		<script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+
+		<link rel="stylesheet" type="text/css" href="css/main.css">
+	</head>
+	<body>
+		<div class="part part-header">
+			<h1><b>Name</b>.YO</h1>
+			<p>
+				Name.YO is a centralized name provider, aimed at easy
+				single-click and free domain name reserving. Name.YO supports
+				the following TLDs:
+			</p>
+			<table class="tlds">
+				<tr>
+					<td>.yo</td>
+					<td>.yu</td>
+					<td>.of</td>
+				</tr>
+				<tr>
+					<td>.inf</td>
+					<td>.zn</td>
+					<td>.list</td>
+				</tr>
+			</table>
+			<p>
+				Subdomains (both wild-card and not) are supported.
+
+				Example domains: name.yo, devtalk.yo, test.yu, best.of,
+				gitcenter.inf, talk.retroshare.zn, shorten.yo, sites.list,
+				nope.list.
+			</p>
+		</div>
+
+		<div class="part part-install" id="part_install">
+			<p>
+				Install Name.YO plugin do bring Name.YO address support to
+				ZeroNet:
+			</p>
+
+			<button onclick="install()">Install</button>
+		</div>
+
+		<div class="part part-register">
+			<h2>Register domain</h2>
+
+			<button onclick="login()">Login</button>
+
+			<p>
+				You can register high-level domains (e.g. name.yo), subdomains
+				(e.g. talk.name.yo), or wildcard domains (e.g. *.name.yo). You
+				can only register a subdomain (or a wildcard domain) if you own
+				the parent domain (e.g. you can register talk.name.yo only if
+				you own name.yo).
+			</p>
+
+			<p>
+				In case you accidentally use a wrong address, just re-register
+				the same domain again.
+			</p>
+
+			<div class="domain-input">
+				<input type="text" placeholder="Domain" id="domain">
+				<select id="tld">
+					<option>.yo</option>
+					<option>.yu</option>
+					<option>.of</option>
+					<option>.inf</option>
+					<option>.zn</option>
+					<option>.list</option>
+				</select>
+			</div>
+
+			<div class="domain-input">
+				<input type="text" placeholder="Address" id="address">
+				<button onclick="register()" id="register">Register</button>
+			</div>
+
+			<p id="status"></p>
+		</div>
+
+		<div class="part part-support">
+			<h2>Support Name.YO</h2>
+
+			<p>
+				Want to support Name.YO? Add such a shield to your site:
+			</p>
+
+			<center>
+				<a href="/1NAMEz7stUPZErkV1d3yLkVWQFa4PTqDNv/install/">
+					<img src="img/shield.png">
+				</a>
+			</center>
+
+			<p>
+				Copy <a href="img/shield.png">this image</a> to your site as
+				"nameyo.png" and add the following code to any page:
+			</p>
+
+			<pre>
+&lt;a href="/1NAMEz7stUPZErkV1d3yLkVWQFa4PTqDNv/install/">&lt;img src="nameyo.png">&lt;/a>
+			</pre>
+
+			<p>
+				If you're using ZeroBlog, do the following:
+			</p>
+
+			<ul>
+				<li>
+					Start editing sidebar by pressing the pencil next to it;
+				</li>
+				<li>
+					Press the "&lt;/&gt;" icon;
+				</li>
+				<li>
+					Paste the code above somewhere;
+				</li>
+				<li>
+					Press "Save";
+				</li>
+				<li>
+					Press "Sign & Publish new content".
+				</li>
+			</ul>
+		</div>
+
+		<div class="part part-owned">
+			<h2>Your domains</h2>
+
+			<div id="owned"></div>
+		</div>
+
+		<div class="part part-registered">
+			<h2>Registered domains</h2>
+
+			<select id="filter" onchange="updateDomains()">
+				<option value="-1">
+					Show all domains
+				</option>
+				<option value="0">
+					Show verified and unrated domains
+				</option>
+				<option value="1">
+					Show verified domains only
+				</option>
+			</select>
+
+			<div id="domains"></div>
+		</div>
+
+		<script type="text/javascript" src="js/ZeroFrame.js"></script>
+		<script type="text/javascript">
+			window.zf = new ZeroFrame();
+
+			function isAddress(address) {
+				return (
+					(address.startsWith("1") || address.startsWith("A")) &&
+					address.split("").every(c => "abcdefghijklmnopqrstuvwxyz0123456789".indexOf(c.toLowerCase()) > -1)
+				);
+			}
+		</script>
+		<script type="text/javascript" src="js/install.js"></script>
+		<script type="text/javascript" src="js/register.js"></script>
+		<script type="text/javascript" src="js/domains.js"></script>
+		<script type="text/javascript" src="js/owned.js"></script>
+		<script type="text/javascript">
+			zf.onRequest = () => {
+				updateDomains();
+				updateOwnedDomains();
+				checkDomainRegistered();
+			};
+		</script>
+	</body>
+</html>

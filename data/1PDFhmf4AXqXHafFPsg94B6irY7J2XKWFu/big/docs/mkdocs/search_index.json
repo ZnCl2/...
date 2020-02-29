@@ -1,0 +1,194 @@
+{
+    "docs": [
+        {
+            "location": "/", 
+            "text": "ZeroMux\n \n\n\n\nStream video files directly in browser.\n\n\nOverview\n\n\nZeroMux is a \nfile downloading\n and \nvideo streaming\n tool designed for the ZeroNet. It is capable of \nreassembling\n chunked files and \nmuxing\n MP4 files in real time. It is designed to work both in ZeroNet and in Localhost.\n\n\nZeroMux is still an Alpha software, but I think it is working well enough. Since the time I can spend on it is barely enough, some APIs are not well-wrapped. Free free to change the code according to your needs.\n\n\nInstallation\n\n\nIf you are reading this documentation in ZeroNet, you have already downloaded all necessary files.\n\nTo see them, simply go to\n\n\nZeroNet/data/1CiDoBP...nw2V/big/js/\n             (site address)\n\n\n\n\nand copy all JS files to a folder you like.\n\n\nasmcrypto.js    async-hash.js\ndaemon.js       download.js\nmp4alg.js       mp4builder.js\nmp4parser.js    mp4worker.js\nreader.js       sandblaster.min.js\nui.js           utils.js\n\n\n\n\nPreparation\n\n\nHowever, before you start to use ZeroMux, you need to do some preprocessing on your big file.\n\n\nA big file is expected to be sliced into small pieces. In addition, necessary information of each file chunk has to be written in a JSON file list.\n\n\nSlicing Big File\n\n\nThe recommended size of each chunk is \n250 ~ 450 KB\n. It is also recommended that each chunk be named after a numeric name with a \n.dat\n extension.\n\n\nExample directory structure:\n\n\nbig_file/\n    0.dat       400 KB\n    1.dat       400 KB\n    2.dat       400 KB\n    ......\n    file.json     9 KB\n\n\n\n\nWriting \nfile.json\n\n\nThe file list is represented as a JSON file, placed in the same folder as the file chunks.\n\n\nThe \nfile.json\n contains important information on how the file chunks should be reassembled. It contains the order, path, name, size and integrity digest of each chunk. It also contains the name, size and integrity digest of the original big file. Here is an example \nfile.json\n:\n\n\n{\n    \nbigFile\n:\n    {\n        \nfileName\n: \nBig file.mp4\n,\n        \nsize\n: 5415151,\n        \nhashingAlgorithm\n: \nsha256\n,\n        \nhash\n: \ndaeb232f55cf2e4820553d517a8f73cb5b621f2d39fab42605354f272ead532d\n\n    },\n\n    \nfileParts\n:\n    [\n        {\n            \npath\n: \nfiles/big_file/0.dat\n,\n            \norder\n: 0,\n            \nsize\n: 5415000,\n            \nhashingAlgorithm\n: \nsha256\n,\n            \nhash\n: \n2ba1019d8a58e80fef9f7441a523107d6d5a45fed5564ee15749fa2c5418437f\n\n        },\n\n        {\n            \npath\n: \nfiles/big_file/1.dat\n,\n            \norder\n: 1,\n            \nsize\n: 151,\n            \nhashingAlgorithm\n: \nsha256\n,\n            \nhash\n: \nc57006d96b2ece6feb14b67ef0b97ca1d80e22278d2365c334323c4599df2035\n\n        }\n    ]\n}\n\n\n\n\nAutomating This Process\n\n\nYou don't need to preprocess your files by hand. I have a working Python script that helps automate this process.\n\n\nimport os\nimport json\nimport hashlib\nimport codecs\n\n\nfilePath = \nD:\\\\My Documents\\\\movie.mp4\n\n# File to be sliced\n\nsavePath = \nD:\\\\My Site\\\\files\\\\very_big\\\\\n\n# Path where all produced files will be saved to\n\nrelativePath = \nfiles/very_big\n\n# Relative path with respect to the page\n\ngivenFileName = \nBig file.mp4\n\n# File name to be displayed\n\nidealChunkSize = 400*1024\n\nfileSize = os.path.getsize(filePath)\n\nfilePartList = []\n\nfileSha256 = hashlib.sha256()\nfileInfo = open(filePath, 'rb')\n\n\nchunkOrder = 0\nchunkBytes = fileInfo.read(idealChunkSize)\nactualChunkSize = len(chunkBytes)\n\nwhile actualChunkSize \n 0:\n    fileSha256.update(chunkBytes)\n\n    chunkSha256 = hashlib.sha256(chunkBytes).hexdigest()\n\n    chunkFileName = \n%s.dat\n % str(chunkOrder)\n    chunkRelativePath = relativePath + \n/\n + chunkFileName\n\n    info = {\n        \npath\n: chunkRelativePath,\n        \norder\n: chunkOrder,\n        \nsize\n: actualChunkSize,\n        \nhashingAlgorithm\n: \nsha256\n,\n        \nhash\n: chunkSha256\n    }\n    filePartList.append(info)\n\n    chunkFilePath = savePath + \n/\n + chunkFileName\n    chunkFileInfo = open(chunkFilePath, 'wb')\n    chunkFileInfo.write(chunkBytes)\n    chunkFileInfo.flush()\n    chunkFileInfo.close()\n\n    chunkOrder += 1\n    chunkBytes = fileInfo.read(idealChunkSize)\n    actualChunkSize = len(chunkBytes)\n\n\nwholeFileSha256 = fileSha256.hexdigest()\n\nbigFileDict = {\n    \nfileName\n: givenFileName,\n    \nsize\n: fileSize,\n    \nhashingAlgorithm\n: \nsha256\n,\n    \nhash\n: wholeFileSha256\n}\n\njsonContent = {\n    \nbigFile\n: bigFileDict,\n    \nfileParts\n: filePartList\n}\n\njsonFileInfo = codecs.open(savePath + \n/file.json\n, 'w', 'utf-8')\njsonFileInfo.write( unicode(json.dumps(jsonContent)) )\njsonFileInfo.flush()\njsonFileInfo.close()\n\n\n\n\nNext Steps\n\n\nPlease learn about the \nusage\n by reading the \nnext page\n.", 
+            "title": "Home"
+        }, 
+        {
+            "location": "/#overview", 
+            "text": "ZeroMux is a  file downloading  and  video streaming  tool designed for the ZeroNet. It is capable of  reassembling  chunked files and  muxing  MP4 files in real time. It is designed to work both in ZeroNet and in Localhost.  ZeroMux is still an Alpha software, but I think it is working well enough. Since the time I can spend on it is barely enough, some APIs are not well-wrapped. Free free to change the code according to your needs.", 
+            "title": "Overview"
+        }, 
+        {
+            "location": "/#installation", 
+            "text": "If you are reading this documentation in ZeroNet, you have already downloaded all necessary files. \nTo see them, simply go to  ZeroNet/data/1CiDoBP...nw2V/big/js/\n             (site address)  and copy all JS files to a folder you like.  asmcrypto.js    async-hash.js\ndaemon.js       download.js\nmp4alg.js       mp4builder.js\nmp4parser.js    mp4worker.js\nreader.js       sandblaster.min.js\nui.js           utils.js", 
+            "title": "Installation"
+        }, 
+        {
+            "location": "/#preparation", 
+            "text": "However, before you start to use ZeroMux, you need to do some preprocessing on your big file.  A big file is expected to be sliced into small pieces. In addition, necessary information of each file chunk has to be written in a JSON file list.", 
+            "title": "Preparation"
+        }, 
+        {
+            "location": "/#slicing-big-file", 
+            "text": "The recommended size of each chunk is  250 ~ 450 KB . It is also recommended that each chunk be named after a numeric name with a  .dat  extension.  Example directory structure:  big_file/\n    0.dat       400 KB\n    1.dat       400 KB\n    2.dat       400 KB\n    ......\n    file.json     9 KB", 
+            "title": "Slicing Big File"
+        }, 
+        {
+            "location": "/#writing-filejson", 
+            "text": "The file list is represented as a JSON file, placed in the same folder as the file chunks.  The  file.json  contains important information on how the file chunks should be reassembled. It contains the order, path, name, size and integrity digest of each chunk. It also contains the name, size and integrity digest of the original big file. Here is an example  file.json :  {\n     bigFile :\n    {\n         fileName :  Big file.mp4 ,\n         size : 5415151,\n         hashingAlgorithm :  sha256 ,\n         hash :  daeb232f55cf2e4820553d517a8f73cb5b621f2d39fab42605354f272ead532d \n    },\n\n     fileParts :\n    [\n        {\n             path :  files/big_file/0.dat ,\n             order : 0,\n             size : 5415000,\n             hashingAlgorithm :  sha256 ,\n             hash :  2ba1019d8a58e80fef9f7441a523107d6d5a45fed5564ee15749fa2c5418437f \n        },\n\n        {\n             path :  files/big_file/1.dat ,\n             order : 1,\n             size : 151,\n             hashingAlgorithm :  sha256 ,\n             hash :  c57006d96b2ece6feb14b67ef0b97ca1d80e22278d2365c334323c4599df2035 \n        }\n    ]\n}", 
+            "title": "Writing file.json"
+        }, 
+        {
+            "location": "/#automating-this-process", 
+            "text": "You don't need to preprocess your files by hand. I have a working Python script that helps automate this process.  import os\nimport json\nimport hashlib\nimport codecs\n\n\nfilePath =  D:\\\\My Documents\\\\movie.mp4 \n# File to be sliced\n\nsavePath =  D:\\\\My Site\\\\files\\\\very_big\\\\ \n# Path where all produced files will be saved to\n\nrelativePath =  files/very_big \n# Relative path with respect to the page\n\ngivenFileName =  Big file.mp4 \n# File name to be displayed\n\nidealChunkSize = 400*1024\n\nfileSize = os.path.getsize(filePath)\n\nfilePartList = []\n\nfileSha256 = hashlib.sha256()\nfileInfo = open(filePath, 'rb')\n\n\nchunkOrder = 0\nchunkBytes = fileInfo.read(idealChunkSize)\nactualChunkSize = len(chunkBytes)\n\nwhile actualChunkSize   0:\n    fileSha256.update(chunkBytes)\n\n    chunkSha256 = hashlib.sha256(chunkBytes).hexdigest()\n\n    chunkFileName =  %s.dat  % str(chunkOrder)\n    chunkRelativePath = relativePath +  /  + chunkFileName\n\n    info = {\n         path : chunkRelativePath,\n         order : chunkOrder,\n         size : actualChunkSize,\n         hashingAlgorithm :  sha256 ,\n         hash : chunkSha256\n    }\n    filePartList.append(info)\n\n    chunkFilePath = savePath +  /  + chunkFileName\n    chunkFileInfo = open(chunkFilePath, 'wb')\n    chunkFileInfo.write(chunkBytes)\n    chunkFileInfo.flush()\n    chunkFileInfo.close()\n\n    chunkOrder += 1\n    chunkBytes = fileInfo.read(idealChunkSize)\n    actualChunkSize = len(chunkBytes)\n\n\nwholeFileSha256 = fileSha256.hexdigest()\n\nbigFileDict = {\n     fileName : givenFileName,\n     size : fileSize,\n     hashingAlgorithm :  sha256 ,\n     hash : wholeFileSha256\n}\n\njsonContent = {\n     bigFile : bigFileDict,\n     fileParts : filePartList\n}\n\njsonFileInfo = codecs.open(savePath +  /file.json , 'w', 'utf-8')\njsonFileInfo.write( unicode(json.dumps(jsonContent)) )\njsonFileInfo.flush()\njsonFileInfo.close()", 
+            "title": "Automating This Process"
+        }, 
+        {
+            "location": "/#next-steps", 
+            "text": "Please learn about the  usage  by reading the  next page .", 
+            "title": "Next Steps"
+        }, 
+        {
+            "location": "/usage/", 
+            "text": "Usage\n \n\n\n\nFile Dependencies\n\n\nYou don't need all JS files to make a simple file downloader! Before you begin, it is very useful to learn about the structure of ZeroMux. Feel free to remove the parts you don't need.\n\n\n\n\n\n\nutils.js\n\n\nThis file contains beautiful stateless functions that might be useful in a file downloader. It does not depend on any other files.\n\n\n\n\n\n\nreader.js\n\n\nThis file is the JSON reader for the \nfile.json\n, a file list that important information on how the file chunks should be reassembled. This JS file has no states or dependencies.\n\n\n\n\n\n\ndownload.js\n\n\nThis file is responsible for downloading, verifying and reassembling the big file. It has no states. To use it, you will need \nall 5 files\n listed below:\n\n\nasmcrypto.js\nutils.js\nreader.js\nasync-hash.js\ndownload.js\n\n\n\n\n\n\n\nmp4worker.js\n\n\nThis is part of the MP4 fragmenting tool. To use it, you will need \nall 4 files\n listed below:\n\n\nmp4parser.js\nmp4alg.js\nmp4builder.js\nmp4worker.js\n\n\n\n\n\n\n\nNext Steps\n\n\nLearn how to \nmake\n a simple \nfile downloader\n by reading the \nnext page\n.", 
+            "title": "File Dependencies"
+        }, 
+        {
+            "location": "/usage/#file-dependencies", 
+            "text": "You don't need all JS files to make a simple file downloader! Before you begin, it is very useful to learn about the structure of ZeroMux. Feel free to remove the parts you don't need.", 
+            "title": "File Dependencies"
+        }, 
+        {
+            "location": "/usage/#utilsjs", 
+            "text": "This file contains beautiful stateless functions that might be useful in a file downloader. It does not depend on any other files.", 
+            "title": "utils.js"
+        }, 
+        {
+            "location": "/usage/#readerjs", 
+            "text": "This file is the JSON reader for the  file.json , a file list that important information on how the file chunks should be reassembled. This JS file has no states or dependencies.", 
+            "title": "reader.js"
+        }, 
+        {
+            "location": "/usage/#downloadjs", 
+            "text": "This file is responsible for downloading, verifying and reassembling the big file. It has no states. To use it, you will need  all 5 files  listed below:  asmcrypto.js\nutils.js\nreader.js\nasync-hash.js\ndownload.js", 
+            "title": "download.js"
+        }, 
+        {
+            "location": "/usage/#mp4workerjs", 
+            "text": "This is part of the MP4 fragmenting tool. To use it, you will need  all 4 files  listed below:  mp4parser.js\nmp4alg.js\nmp4builder.js\nmp4worker.js", 
+            "title": "mp4worker.js"
+        }, 
+        {
+            "location": "/usage/#next-steps", 
+            "text": "Learn how to  make  a simple  file downloader  by reading the  next page .", 
+            "title": "Next Steps"
+        }, 
+        {
+            "location": "/usage/making-file-downloader/", 
+            "text": "Making a File Downloader \n\n\n\nA file downloader in ZeroNet works by downloading, verifying and concatenating file chunks.\n\n\nMaking requests\n\n\nTo make making HTTP requests simpler, there is a \nrequestBinary\n function in \nutils.js\n. It is defined as:\n\n\nfunction requestBinary(url, responseType, callback, failure)\n\n\n\n\nTo use it, first you need to include this line in your page:\n\n\nscript src=\nutils.js\n/script\n\n\n\n\n\nThen you can use it recursively:\n\n\nfunction downloadChunks(pieces, index=0)\n{\n    if(index \n pieces.length - 1)\n    {\n        var blob = new Blob(pieces, {type: \napplication/octet-stream\n});\n        var blobUrl = URL.createObjectURL(blob);\n        console.log(blobUrl);\n\n        return;\n    }\n\n    var chunkUrl = \nfiles/yrc_op_mp4/\n + index + \n.dat\n;\n\n    requestBinary(chunkUrl, \narraybuffer\n, function(xmlHttp)\n    {\n        // callback\n        pieces[index] = xmlHttp.response;\n\n        downloadChunks(pieces, index+1);\n\n    }, function(xmlHttp, error)\n    {\n        // failure callback\n        console.error(error);\n    });\n}\n\ndownloadChunks(Array(54)); // We have altogether 54 pieces of a file.\n\n\n\n\nAll-in-one API\n\n\nIn fact, you don't even need to make HTTP requests by hand. There is a well-wrapped \ndownload.js\n that handles \nall three\n processes.\n\n\nTo use it, you need to include these lines in your page:\n\n\nscript src=\nasmcrypto.js\n/script\n\n\nscript src=\nutils.js\n/script\n\n\nscript src=\nreader.js\n/script\n\n\nscript src=\ndownload.js\n/script\n\n\n\n!-- !!!NOTE THAT You also need \nasync-hash.js\n placed in the same folder. --\n\n\n\n\n\nRegistering Event Handlers\n\n\nThis API reports progress by dispatching \"events,\" but, to make code simpler, it does \nnot\n use \nconventional\n event handling techniques. Instead, it calls back a designated function every time a specific action is taking place. Then \ndownload.js\n blocks and waits until the callback function returns.\n\n\nHere is a sample code on registering these special event handlers.\n\n\n// register event handlers\n\n// initialize the list of events\nvar events = initEventObj();\n\n// triggers when file.json is loaded or failed to load\nevents.onjsonload = jsonload;\nevents.onjsonerror = jsonerror;\n\n// triggers when a file chunk is being added (being downloaded and verified),\n// added, or failed to add to the internal buffer\nevents.onadding = adding;\nevents.onadded = added;\nevents.onpieceerror = pieceerror;\n\n// triggers when the original big file is being build, built or failed to build.\nevents.onblobbuilding = blobbuilding;\nevents.onfinish = finish;\nevents.onbuilderror = builderror;\n\n// You can specify a blob content type.\n// If not set, it will use \napplication/octet-stream\n as default value.\nevents.otherParams = {\nblobType\n: \napplication/force-download\n};\n\n\n\n\nHandling \nonjsonload\n\n\nfunction jsonload(infoArgs)\n{\n    // infoArgs is defined as\n    {\nbigFileInfo\n: bigFileInfo, \nfilePartInfo\n: filePartInfo}\n    // infoArgs has the same structure as file.json\n\n    // For example, the number of file chunks is\n    var nParts = infoArgs.filePartInfo.length;\n\n    // the big file's name is\n    var fileName = infoArgs.bigFileInfo[\nfileName\n];\n}\n\n\n\n\nHandling \nonjsonerror\n\n\nfunction jsonerror(error)\n{\n    // `error` is an error object\n    console.error(error);\n}\n\n\n\n\nHandling \nonadding\n\n\nfunction adding(index)\n{\n    // `index` is the index of the chunk that is being downloaded\n    setBlockColor(progressBar, index, \nyellow\n);\n    // change progress bar color\n}\n\n\n\n\nHandling \nonadded\n\n\nfunction added(eventArgs)\n{\n    // eventArgs is defined as\n    {\nindex\n: index, \npieceBytes\n: pieceBytes}\n\n    var index = eventArgs[\nindex\n];\n    var bytes = eventArgs[\npieceBytes\n];\n    // pieceBytes is an ArrayBuffer that contains\n    // the binary data of the chunk\n}\n\n\n\n\nHandling \nonpieceerror\n\n\nfunction pieceerror(index)\n{\n    // when a \nPieceError\n happens, download.js returns.\n\n    // `index` is the index of the chunk that has an error\n    setBlockColor(progressBar, index, \nred\n);\n}\n\n\n\n\nHandling \nonblobbuilding\n\n\nfunction blobbuilding(e)\n{\n    // `e` is null\n}\n\n\n\n\nHandling \nonfinish\n\n\nfunction finish(blob)\n{\n    // `blob` contains the reassembled big file\n    var url = URL.createObjectURL(blob);\n}\n\n\n\n\nHandling \nonbuilderror\n\n\nfunction builderror(e)\n{\n    // `e` is null\n}\n\n\n\n\nPassing Extra Parameters\n\n\nA hack to pass extra parameters to an event handler is to \ngenerate\n an event handler.\n\n\nvar mediaSource = ...;\nvar sourceBuffer = ...;\n// ...\n\nvar events = initEventObj();\nevents.onjsonload = generateOnJsonLoad(mediaSource, sourceBuffer); // call generator\n// ...\n\nfunction generateOnJsonLoad(mediaSource, sourceBuffer)\n{\n    var f = function(infoArgs)\n    {\n        jsonload(infoArgs, mediaSource, sourceBuffer);\n    }\n    return f;\n}\n\nfunction jsonload(infoArgs, mediaSource, sourceBuffer)\n{\n    // your event handler with extra parameters\n}\n\n\n\n\nStart Downloading\n\n\nAfter registering event handlers, you can start downloading.\n\n\n// start\ndownloadBigFile(\nfiles/yrc_op_mp4/file.json\n, events); // (jsonPath, events)\n\n\n\n\nNext Steps\n\n\nLearn about how to make an MP4 file \nstreaming friendly\n by reading the \nnext page\n.", 
+            "title": "Making a File Downloader"
+        }, 
+        {
+            "location": "/usage/making-file-downloader/#making-requests", 
+            "text": "To make making HTTP requests simpler, there is a  requestBinary  function in  utils.js . It is defined as:  function requestBinary(url, responseType, callback, failure)  To use it, first you need to include this line in your page:  script src= utils.js /script   Then you can use it recursively:  function downloadChunks(pieces, index=0)\n{\n    if(index   pieces.length - 1)\n    {\n        var blob = new Blob(pieces, {type:  application/octet-stream });\n        var blobUrl = URL.createObjectURL(blob);\n        console.log(blobUrl);\n\n        return;\n    }\n\n    var chunkUrl =  files/yrc_op_mp4/  + index +  .dat ;\n\n    requestBinary(chunkUrl,  arraybuffer , function(xmlHttp)\n    {\n        // callback\n        pieces[index] = xmlHttp.response;\n\n        downloadChunks(pieces, index+1);\n\n    }, function(xmlHttp, error)\n    {\n        // failure callback\n        console.error(error);\n    });\n}\n\ndownloadChunks(Array(54)); // We have altogether 54 pieces of a file.", 
+            "title": "Making requests"
+        }, 
+        {
+            "location": "/usage/making-file-downloader/#all-in-one-api", 
+            "text": "In fact, you don't even need to make HTTP requests by hand. There is a well-wrapped  download.js  that handles  all three  processes.  To use it, you need to include these lines in your page:  script src= asmcrypto.js /script  script src= utils.js /script  script src= reader.js /script  script src= download.js /script  !-- !!!NOTE THAT You also need  async-hash.js  placed in the same folder. --", 
+            "title": "All-in-one API"
+        }, 
+        {
+            "location": "/usage/making-file-downloader/#registering-event-handlers", 
+            "text": "This API reports progress by dispatching \"events,\" but, to make code simpler, it does  not  use  conventional  event handling techniques. Instead, it calls back a designated function every time a specific action is taking place. Then  download.js  blocks and waits until the callback function returns.  Here is a sample code on registering these special event handlers.  // register event handlers\n\n// initialize the list of events\nvar events = initEventObj();\n\n// triggers when file.json is loaded or failed to load\nevents.onjsonload = jsonload;\nevents.onjsonerror = jsonerror;\n\n// triggers when a file chunk is being added (being downloaded and verified),\n// added, or failed to add to the internal buffer\nevents.onadding = adding;\nevents.onadded = added;\nevents.onpieceerror = pieceerror;\n\n// triggers when the original big file is being build, built or failed to build.\nevents.onblobbuilding = blobbuilding;\nevents.onfinish = finish;\nevents.onbuilderror = builderror;\n\n// You can specify a blob content type.\n// If not set, it will use  application/octet-stream  as default value.\nevents.otherParams = { blobType :  application/force-download };", 
+            "title": "Registering Event Handlers"
+        }, 
+        {
+            "location": "/usage/making-file-downloader/#handling-onjsonload", 
+            "text": "function jsonload(infoArgs)\n{\n    // infoArgs is defined as\n    { bigFileInfo : bigFileInfo,  filePartInfo : filePartInfo}\n    // infoArgs has the same structure as file.json\n\n    // For example, the number of file chunks is\n    var nParts = infoArgs.filePartInfo.length;\n\n    // the big file's name is\n    var fileName = infoArgs.bigFileInfo[ fileName ];\n}", 
+            "title": "Handling onjsonload"
+        }, 
+        {
+            "location": "/usage/making-file-downloader/#handling-onjsonerror", 
+            "text": "function jsonerror(error)\n{\n    // `error` is an error object\n    console.error(error);\n}", 
+            "title": "Handling onjsonerror"
+        }, 
+        {
+            "location": "/usage/making-file-downloader/#handling-onadding", 
+            "text": "function adding(index)\n{\n    // `index` is the index of the chunk that is being downloaded\n    setBlockColor(progressBar, index,  yellow );\n    // change progress bar color\n}", 
+            "title": "Handling onadding"
+        }, 
+        {
+            "location": "/usage/making-file-downloader/#handling-onadded", 
+            "text": "function added(eventArgs)\n{\n    // eventArgs is defined as\n    { index : index,  pieceBytes : pieceBytes}\n\n    var index = eventArgs[ index ];\n    var bytes = eventArgs[ pieceBytes ];\n    // pieceBytes is an ArrayBuffer that contains\n    // the binary data of the chunk\n}", 
+            "title": "Handling onadded"
+        }, 
+        {
+            "location": "/usage/making-file-downloader/#handling-onpieceerror", 
+            "text": "function pieceerror(index)\n{\n    // when a  PieceError  happens, download.js returns.\n\n    // `index` is the index of the chunk that has an error\n    setBlockColor(progressBar, index,  red );\n}", 
+            "title": "Handling onpieceerror"
+        }, 
+        {
+            "location": "/usage/making-file-downloader/#handling-onblobbuilding", 
+            "text": "function blobbuilding(e)\n{\n    // `e` is null\n}", 
+            "title": "Handling onblobbuilding"
+        }, 
+        {
+            "location": "/usage/making-file-downloader/#handling-onfinish", 
+            "text": "function finish(blob)\n{\n    // `blob` contains the reassembled big file\n    var url = URL.createObjectURL(blob);\n}", 
+            "title": "Handling onfinish"
+        }, 
+        {
+            "location": "/usage/making-file-downloader/#handling-onbuilderror", 
+            "text": "function builderror(e)\n{\n    // `e` is null\n}", 
+            "title": "Handling onbuilderror"
+        }, 
+        {
+            "location": "/usage/making-file-downloader/#passing-extra-parameters", 
+            "text": "A hack to pass extra parameters to an event handler is to  generate  an event handler.  var mediaSource = ...;\nvar sourceBuffer = ...;\n// ...\n\nvar events = initEventObj();\nevents.onjsonload = generateOnJsonLoad(mediaSource, sourceBuffer); // call generator\n// ...\n\nfunction generateOnJsonLoad(mediaSource, sourceBuffer)\n{\n    var f = function(infoArgs)\n    {\n        jsonload(infoArgs, mediaSource, sourceBuffer);\n    }\n    return f;\n}\n\nfunction jsonload(infoArgs, mediaSource, sourceBuffer)\n{\n    // your event handler with extra parameters\n}", 
+            "title": "Passing Extra Parameters"
+        }, 
+        {
+            "location": "/usage/making-file-downloader/#start-downloading", 
+            "text": "After registering event handlers, you can start downloading.  // start\ndownloadBigFile( files/yrc_op_mp4/file.json , events); // (jsonPath, events)", 
+            "title": "Start Downloading"
+        }, 
+        {
+            "location": "/usage/making-file-downloader/#next-steps", 
+            "text": "Learn about how to make an MP4 file  streaming friendly  by reading the  next page .", 
+            "title": "Next Steps"
+        }, 
+        {
+            "location": "/usage/making-mp4-file-streaming-friendly/", 
+            "text": "Making an MP4 File Streaming Friendly \n\n\n\nZeroMux can convert \"non-fragmented\" MP4 files into streaming friendly files in real time. Data produced by ZeroMux's multiplexer can be put directly into a Source Buffer.\n\n\nIncluding Files\n\n\nTo use the multiplexer, you need to put these \n4 files\n together:\n\n\nmp4parser.js\nmp4alg.js\nmp4builder.js\nmp4worker.js\n\n\n\n\nCommunicating with Multiplexer\n\n\nThis MP4 multiplexer, written in JavaScript, makes use of the Web Worker API, so it handles input and output by receiving and sending messages passed through the \npostMessage\n function.\n\n\nEach message is an array defined as:\n\n\n[cmd, args]\n\n\n\n\nReceiving messages\n\n\nTo receive messages \nfrom the worker\n, you need to register an \nonmessage\n event listener after spawning the worker.\n\n\nvar mp4Worker = new Worker(\nmp4worker.js\n);\nmp4Worker.onmessage = function(e)\n{\n    console.log(e.data);\n    // e.data == [cmd, args]\n\n    e.data[0] == \nsignal\n\n    e.data[1] == \nimported\n\n\n    e.data[0] == \nmp4\n\n    e.data[1] == anUint8Array\n}\n\n\n\n\nSending messages\n\n\nTo send messages \nto the worker\n, you need to use the \npostMessage\n function of the worker instance. When a message is received and proceeded, the worker will send back a ready signal, indicating that the worker is ready for the next step. \nDo not send\n any other signals or messages when the worker is \nnot ready\n.\n\n\nInitializing Multiplexer\n\n\nThe multiplexer can be initialized using the \nimport\n command. This command is defined as:\n\n\nmp4Worker.postMessage([\nimport\n, [\nhttp://site/a.js\n, \nhttp://site/b.js\n, ...]]);\n\n\n\n\nThe parameter should be a list containing \nabsolute\n URLs. Absolute URLs can be generated with \na\n elements.\n\n\n// initialize worker\nvar jsUrls = [\njs/mp4parser.js\n, \njs/mp4alg.js\n, \njs/mp4builder.js\n];\n\nvar absJsUrls = jsUrls.map(function(item)\n{\n    var a = document.createElement(\na\n);\n    a.href = item;\n\n    var result = a.href;\n    return result;\n});\n\nmp4Worker.postMessage([\nimport\n, absJsUrls]);\n\n\n\n\nOnce the worker finishes loading its dependencies, it will send back an \nimported\n signal:\n\n\n [\nsignal\n, \nimported\n]\n\n\n\n\nDo not\n send any other messages before the worker sends back an \nimported\n signal.\n\n\nLoading \nmoov\n Box\n\n\nBefore loading raw MP4 file data, you need to load the \nmoov\n box onto the program first. Loading \nmoov\n box can be done by using the following command:\n\n\nmp4Worker.postMessage([\nmoov\n, moovArrayBuffer]);\n\n\n\n\nThe parameter of the \nmoov\n command must be the \nmoov\n box of the \nunprocessed\n MP4 file. It is in Array Buffer format, and it \nmust include\n the 4-byte \n\"box size\"\n field.\n\n\nA valid \nmoov\n box Array Buffer is partially shown below:\n\n\nOffset      0  1  2  3  4  5  6  7   8  9 10 11 12 13 14 15\n\n00000000   00 01 2C EF 6D 6F 6F 76  00 00 00 6C 6D 76 68 64       moov   lmvhd\n00000016   00 00 00 00 00 00 00 00  00 00 00 00 00 00 03 E8                  ?\n00000032   00 01 6F D5 00 01 00 00  01 00 00 00 00 00 00 00     o?           \n00000048   00 00 00 00 00 01 00 00  00 00 00 00 00 00 00 00                   \n00000064   00 00 00 00 00 01 00 00  00 00 00 00 00 00 00 00                   \n00000080   00 00 00 00 40 00 00 00  00 00 00 00 00 00 00 00       @           \n00000096   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00                   \n00000112   00 00 00 03 00 00 B8 7A  74 72 61 6B 00 00 00 5C           trak   \\\n00000128   74 6B 68 64 00 00 00 03  00 00 00 00 00 00 00 00   tkhd            \n00000144   00 00 00 01 00 00 00 00  00 01 6F 64 00 00 00 00             od    \n\n\n\n\nThe meanings of some bytes are listed below:\n\n\n00 01 2C EF\n Box size, including these four bytes\n\n\n6D 6F 6F 76\n Box type: \"moov\"\n\n\n00 00 .. ..\n Box content\n\n\nWhen the \nmoov\n box is loaded, the worker will send back a \nsamplesLoaded\n signal:\n\n\n [\nsignal\n, \nsamplesLoaded\n]\n\n\n\n\nDo not\n proceed to the next step before this signal is received.\n\n\nLoading Raw MP4 Data\n\n\nAfter the multiplexer has loaded the sample reference from the \nmoov\n box, you can start converting MP4 files.", 
+            "title": "Making an MP4 File Streaming Friendly"
+        }, 
+        {
+            "location": "/usage/making-mp4-file-streaming-friendly/#including-files", 
+            "text": "To use the multiplexer, you need to put these  4 files  together:  mp4parser.js\nmp4alg.js\nmp4builder.js\nmp4worker.js", 
+            "title": "Including Files"
+        }, 
+        {
+            "location": "/usage/making-mp4-file-streaming-friendly/#communicating-with-multiplexer", 
+            "text": "This MP4 multiplexer, written in JavaScript, makes use of the Web Worker API, so it handles input and output by receiving and sending messages passed through the  postMessage  function.  Each message is an array defined as:  [cmd, args]", 
+            "title": "Communicating with Multiplexer"
+        }, 
+        {
+            "location": "/usage/making-mp4-file-streaming-friendly/#receiving-messages", 
+            "text": "To receive messages  from the worker , you need to register an  onmessage  event listener after spawning the worker.  var mp4Worker = new Worker( mp4worker.js );\nmp4Worker.onmessage = function(e)\n{\n    console.log(e.data);\n    // e.data == [cmd, args]\n\n    e.data[0] ==  signal \n    e.data[1] ==  imported \n\n    e.data[0] ==  mp4 \n    e.data[1] == anUint8Array\n}", 
+            "title": "Receiving messages"
+        }, 
+        {
+            "location": "/usage/making-mp4-file-streaming-friendly/#sending-messages", 
+            "text": "To send messages  to the worker , you need to use the  postMessage  function of the worker instance. When a message is received and proceeded, the worker will send back a ready signal, indicating that the worker is ready for the next step.  Do not send  any other signals or messages when the worker is  not ready .", 
+            "title": "Sending messages"
+        }, 
+        {
+            "location": "/usage/making-mp4-file-streaming-friendly/#initializing-multiplexer", 
+            "text": "The multiplexer can be initialized using the  import  command. This command is defined as:  mp4Worker.postMessage([ import , [ http://site/a.js ,  http://site/b.js , ...]]);  The parameter should be a list containing  absolute  URLs. Absolute URLs can be generated with  a  elements.  // initialize worker\nvar jsUrls = [ js/mp4parser.js ,  js/mp4alg.js ,  js/mp4builder.js ];\n\nvar absJsUrls = jsUrls.map(function(item)\n{\n    var a = document.createElement( a );\n    a.href = item;\n\n    var result = a.href;\n    return result;\n});\n\nmp4Worker.postMessage([ import , absJsUrls]);  Once the worker finishes loading its dependencies, it will send back an  imported  signal:   [ signal ,  imported ]  Do not  send any other messages before the worker sends back an  imported  signal.", 
+            "title": "Initializing Multiplexer"
+        }, 
+        {
+            "location": "/usage/making-mp4-file-streaming-friendly/#loading-moov-box", 
+            "text": "Before loading raw MP4 file data, you need to load the  moov  box onto the program first. Loading  moov  box can be done by using the following command:  mp4Worker.postMessage([ moov , moovArrayBuffer]);  The parameter of the  moov  command must be the  moov  box of the  unprocessed  MP4 file. It is in Array Buffer format, and it  must include  the 4-byte  \"box size\"  field.  A valid  moov  box Array Buffer is partially shown below:  Offset      0  1  2  3  4  5  6  7   8  9 10 11 12 13 14 15\n\n00000000   00 01 2C EF 6D 6F 6F 76  00 00 00 6C 6D 76 68 64       moov   lmvhd\n00000016   00 00 00 00 00 00 00 00  00 00 00 00 00 00 03 E8                  ?\n00000032   00 01 6F D5 00 01 00 00  01 00 00 00 00 00 00 00     o?           \n00000048   00 00 00 00 00 01 00 00  00 00 00 00 00 00 00 00                   \n00000064   00 00 00 00 00 01 00 00  00 00 00 00 00 00 00 00                   \n00000080   00 00 00 00 40 00 00 00  00 00 00 00 00 00 00 00       @           \n00000096   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00                   \n00000112   00 00 00 03 00 00 B8 7A  74 72 61 6B 00 00 00 5C           trak   \\\n00000128   74 6B 68 64 00 00 00 03  00 00 00 00 00 00 00 00   tkhd            \n00000144   00 00 00 01 00 00 00 00  00 01 6F 64 00 00 00 00             od      The meanings of some bytes are listed below:  00 01 2C EF  Box size, including these four bytes  6D 6F 6F 76  Box type: \"moov\"  00 00 .. ..  Box content  When the  moov  box is loaded, the worker will send back a  samplesLoaded  signal:   [ signal ,  samplesLoaded ]  Do not  proceed to the next step before this signal is received.", 
+            "title": "Loading moov Box"
+        }, 
+        {
+            "location": "/usage/making-mp4-file-streaming-friendly/#loading-raw-mp4-data", 
+            "text": "After the multiplexer has loaded the sample reference from the  moov  box, you can start converting MP4 files.", 
+            "title": "Loading Raw MP4 Data"
+        }
+    ]
+}

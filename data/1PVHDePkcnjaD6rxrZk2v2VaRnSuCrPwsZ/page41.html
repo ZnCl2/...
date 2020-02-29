@@ -1,0 +1,218 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="MnNStory: 我和一个女同学15年的故事">
+<meta name="keywords" content="MnNStory,校园爱情,15年,女同学,女生">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<title>电影</title>
+<script src="jquery.js"></script>
+<script src="qrcode.js"></script>
+<script>
+function loadCSS(href) {
+	var cssLink = $("<link rel='stylesheet' type='text/css' href='"+href+"'>");
+	$("head").append(cssLink);
+	return cssLink;
+};
+
+var relocate;
+
+$(function(){
+            var device="computer";
+        var fontSize=($(window).width()/25).toFixed(0);
+        relocate=relocateC;
+    
+	loadCSS("main_"+device.substring(0, 1)+".css").load(function(){
+		relocate();
+		setTimeout(relocate, 1000);
+		setTimeout(function(){
+			var fontSize=$('body').css('fontSize');
+			var qrcode = new QRCode(document.getElementById("QRCode"), {
+				width : parseInt(fontSize)*7,
+				height : parseInt(fontSize)*7
+			});
+
+			qrcode.makeCode(window.location.href);
+		}, 1000);
+	});
+
+	$(window).resize(relocate);
+
+    
+	function relocateC(){
+		function bottom($el){
+			return $el.position().top + $el.outerHeight(true);
+		}
+
+		var $footer=$('#footer');
+		$footer.css({
+			top: 0,
+			display: 'none'
+		});
+		var top=Math.max(
+			bottom($('#textWrapper')),
+			bottom($('#contents')),
+			$(document).height() - $footer.outerHeight()
+		);
+		$footer.css({
+			top: top,
+			display: 'block'
+		});
+	}
+
+        $('.patch-more').click(function(){
+        var page=$(this).data('page');
+        var paragraph=$(this).data('paragraph');
+
+        location.href='page'+page+'.html#paragraph='+paragraph;
+    });
+
+    setTimeout(function () {
+                    var ret=document.referrer.match(/#paragraph=(\d+)/);
+                if (!ret) {
+            return;
+        }
+        var paragraph=ret[1]-1;
+
+        var objParagraph=$('#text p:eq('+paragraph+')');
+        var flash=function () {
+            objParagraph.css('color', 'red');
+            setTimeout(function() {
+                objParagraph.css('color', 'initial');
+            }, 1000);
+        };
+        $('html, body').animate({
+            scrollTop: objParagraph.offset().top-$('#textWrapper').offset().top,
+        }, 500, flash);
+    }, 100);
+
+    var pIndex=0;
+    $('#text p').each(function () {
+        ++pIndex;
+        if (!$(this).attr('id')) {
+            //$(this).attr('id', 'paragraph_'+pIndex);
+        }
+    });
+});
+
+function showComments(){
+	$.blockUI({
+		message: $('#disqus_thread'),
+	});
+
+	$('body').click($.unblockUI);
+}
+</script>
+</head>
+<body>
+<div id="cover" style="background-color: #F1F1F1; position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 2048;"></div>
+<div id="nav">
+	<div class="Three">
+		<div id="navLeft" class="left c">
+			<a href="page40.html" class="blackText">&lt;&lt;&lt;prev</a>		</div>
+		<div id="navRight" class="right c">
+			<a href="page42.html" class="blackText">next&gt;&gt;&gt;</a>		</div>
+		<div id="navTitle" class="middle">
+			电影		</div>
+	</div>
+	<div class="Three m">
+		<div class="left" style="width: 4em">
+			<a href="page40.html" class="blackText">&lt;&lt;&lt;</a>		</div>
+		<div class="right" style="width: 4em">
+			<a href="page42.html" class="blackText">&gt;&gt;&gt;</a>		</div>
+		<div class="middle">
+			<a href="/index.html" class="blackText">[Home]</a>
+		</div>
+	</div>
+</div>
+<div id="images" class="c">
+	<a href="downloads/mnnstory.zip" target="_blank"> <img src="download.png" style="width: 100%;" title="下载" alt="Download" /> </a>
+	<p id="QRCode"></p>
+</div>
+<div id="contents" class="c">
+	<p class="contents_d0"><a href="index.html">目录</a></p>
+	<ul class="contents_d1"><li><a href='page1.html'>上册</a>
+</li><li><a href='page14.html'>上册配乐</a>
+</li><li><a href='page32.html'>下册</a>
+<ul class="contents_d2"><li><a href='page33.html'>心愿</a>
+</li><li><a href='page34.html'>概率</a>
+</li><li><a href='page35.html'>重逢</a>
+</li><li><a href='page36.html'>街景</a>
+</li><li><a href='page37.html'>追求</a>
+</li><li><a href='page38.html'>梦想</a>
+</li><li><a href='page39.html'>糖果</a>
+</li><li><a href='page40.html'>夕阳无限好</a>
+</li><li>电影
+</li><li><a href='page42.html'>怪谁</a>
+</li><li><a href='page43.html'>寄语</a>
+</li><li><a href='page44.html'>移民</a>
+</li><li><a href='page45.html'>永远</a>
+</li><li><a href='page46.html'>附录：幸福的惊人科学发现</a>
+</ul></li><li><a href='page47.html'>下册配乐</a>
+</li><li><a href='page49.html'>订正簿</a>
+</ul></div>
+<div id="disqus_thread"></div>
+<script>
+	var disqus_config = function () {
+		this.page.url = 'http://mnnstory.onion';
+		this.page.identifier = 41;
+		this.page.title = '电影'
+	};
+
+
+	(function() {
+		var d = document, s = d.createElement('script');
+
+		s.src = '//mnnstory.disqus.com/embed.js';
+
+		s.setAttribute('data-timestamp', +new Date());
+		(d.head || d.body).appendChild(s);
+	})();
+</script>
+<div id="textWrapper">
+	<div id="text">
+		<p>在登机前，我仍然时常读着上册，但2016年3月12日回家后，我已经不再增删或修改内容，只改正错别字和严重的语法错误。</p>
+<p>高中时，她的铅笔盒里有一片折得很整齐的旧餐巾纸。她写字前往往要用这张纸擦笔尖，以防漏油，把字写坏。这么认真，难怪她字迹如此工整。铅笔盒里还有一张她初中时的照片，我曾拿过来仔细看了很久。镜头里的她，脸好像更瘦，眼睛不如高中时神气，嘴巴噘得更明显些，带点傻傻的可爱，没有笑意，其他特征类似。</p>
+<p>高一，和她谈到初中，她竟能说出我那时的一些小故事，比如参加过某某竞赛，形象古怪、滑稽等。</p>
+<p>刚认识不久，她给我出了道选择题。题干是：“你以后谈恋爱，会和女友一起去做以下哪项？”我选的是“看电影”。她马上说：“选此项的男生，遇到爱情的挫折，不易受伤。因为在他看来，爱就如电影般虚幻。”我当时很得意。</p>
+<p>说到挫折，不久，我就直面了：她先扫了一遍我的脸，低头看了看地上空白的地方，愣了片刻。然后她先说了些还过得去的话，但见我没退意，又补了句：“不要胡思乱想！”</p>
+<p>此后不久，也许是同一周，或是同一天，又发生了以下两件事。</p>
+<p>我在享受思维体操，正入神时，她突然回头嗲声嗲气地叫了我一声名字，妩媚地一笑。我当然知道怎么回事，却脸色郑重、语气严肃地问：“什么事？什么事？”她笑意未尽，用力地瞪了我一眼，转过了头。</p>
+<p>事件二：她回头讲了句话，说完转过头。我不知怎么了，竟说出：“某某，你真美啊。”紧接着，我居然听到了她咯咯的娇笑声。我不解地问同学：“她怎么笑了？”回答是：“你花人家美，她当然笑啦。”</p>
+<p>在机器人实验室里，有一回没人时，好朋友给我看一个网站，全是裸女照片，标题是Schoolgirl。我还是第一次这样放肆地看如此挑逗的资料。我说：“这些真是学生吗？我们班的同学可不会去拍这些。”朋友说：“给她们很多钱，也会的。”想起她听到秦始皇妈妈的故事时的反应，我坚持道：“不会的。”</p>
+<p>高二，她要去问物理老师问题。放了学，我跟她一起去办公室，在一旁听着。老师解答完毕后，反问她：“怎么问我问题要课代表陪着的？”她一声不吭，转身就走。我只得尴尬地也问了个问题。</p>
+<p>有一次吃午饭时，我看着她的模样，忍不住问：“我记得幼儿园里，那个人是你吗？”她很夸张地惊讶和笑，道：“原来是你啊！”旁边同学起哄道：“原来某某和某某青梅竹马啊。”片刻后，她说：“<s>不是的吧。</s>我是某某幼儿园。你哪个幼儿园？”我却想不起来。她又问了一遍，我还是答不出。</p>
+<p>有一回，政治老师走进教室，指着我前面一排一个空的座位，对我低声说：“上次看到那位同学很像你。”我问：“杜老师，可那是女生，怎会像我呢？”她说：“对，是女生。”我说：“原来我还有个妹妹啊。”她说：“真可以算你妹妹呢。”由于我们每周都要轮换座位，老师没提上次的具体时间，那个座位上是谁，我无法确定。但有一半的可能，就是那位老同学。</p>
+<p>回想此事，有时我在怀疑，是不是概率真在我们基因中开了个玩笑，放上了什么共同的东西，因而让我总觉得她如此熟悉？</p>
+<p>高三，课间，她对着我神经兮兮地一笑，含糊地说了句话，我没听清，来不及要她重复，她早已消失。只得问其他同学。“小荷才露尖尖角。”同学不耐烦地答道，仿佛就我一人竟没听到。那堂课轮到她讲古诗，我不敢笑，但又忍不住，不知在听她讲什么天书一样。</p>
+<p style="margin-top: 32em;"></p>
+<p>本科阶段……</p>
+<p>此处暂时留白。</p>
+<p>有一次，我在她的脸上，看到了自己的狂喜。</p>
+<p style="margin-top: 32em;"></p>
+<p>以下两小节并不针对老同学的人品。</p>
+<p>她读研究生时，我偷偷和她身边的同学接触。问她对她们的看法，她竟全给差评。老同学责备其中一个室友“不理寝室卫生”，而这位室友则赞扬老同学“表面上孩子气，骨子里很<a href="#comment_1" class="issue">居家</a><sup id="issue_1">1</sup>”。</p>
+<p>我有一次和她聊天时，莫名其妙地“夸”她“敢爱敢恨”。心里其实带有些许不满，当时这么想的原因是：她高三时，为了赶走自己讨厌的同学，会来利用我；室友能对陌生人说她好话，她却诋毁人家。没想到，她却把我这句评语记下了。2016年的2月5日，当我时隔多年再和她通话时，她居然会说：“我现在觉得，江湖险恶，与人打交道，不能总是‘敢爱敢恨’，也需要策略。”我不禁当面说道：“某某原来这么在意别人对她的看法。”</p>
+<p>2010年，她说要买手机。我很热情，但她却对我的意见不感兴趣。仔细回忆，她当时问的都是哪款更好看，我则在专注功能。我买东西多关心实用，她似更在意审美。</p>
+<p>电影的情节总富有戏剧性，主角通常都用执著和浪漫演义悲壮。人生毕竟不是电影，这样的主角生活在现实中会很脆弱。</p>
+<p>她很喜欢心理小测验和占星术。就在我写此篇时，30岁的她仍在微信朋友圈发布自己的小测验结果，还调侃结果不准。</p>
+<p>事实上，她与我分享的第一个小测验，就离实际相差十万八千里。</p>
+<p>对不起，让你丢脸了。</p><hr class="comment" /><p class="comment" id='comment_1'><a href="#issue_1" class="comment">[1]</a>贤妻良母的意思。</p>
+<p>&nbsp;</p>	</div>
+</div>
+<div id="footer">
+	<div id="declaration">
+		本故事为作者亲身经历
+	</div>
+	<div id="bannerLine" class="Three">
+				<div class="middle">
+            			    <a href="about.html">MnNStory, 1 Sep 2001 - 12 Mar 2016</a>
+            		</div>
+	</div>
+	<hr class="m" />
+	<div id="switch2c" class="m">
+		<a href="">电脑版</a>
+	</div>
+</div>
+</body>
+</html>

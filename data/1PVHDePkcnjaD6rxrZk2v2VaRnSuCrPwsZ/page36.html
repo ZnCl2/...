@@ -1,0 +1,221 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="MnNStory: 我和一个女同学15年的故事">
+<meta name="keywords" content="MnNStory,校园爱情,15年,女同学,女生">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<title>街景</title>
+<script src="jquery.js"></script>
+<script src="qrcode.js"></script>
+<script>
+function loadCSS(href) {
+	var cssLink = $("<link rel='stylesheet' type='text/css' href='"+href+"'>");
+	$("head").append(cssLink);
+	return cssLink;
+};
+
+var relocate;
+
+$(function(){
+            var device="computer";
+        var fontSize=($(window).width()/25).toFixed(0);
+        relocate=relocateC;
+    
+	loadCSS("main_"+device.substring(0, 1)+".css").load(function(){
+		relocate();
+		setTimeout(relocate, 1000);
+		setTimeout(function(){
+			var fontSize=$('body').css('fontSize');
+			var qrcode = new QRCode(document.getElementById("QRCode"), {
+				width : parseInt(fontSize)*7,
+				height : parseInt(fontSize)*7
+			});
+
+			qrcode.makeCode(window.location.href);
+		}, 1000);
+	});
+
+	$(window).resize(relocate);
+
+    
+	function relocateC(){
+		function bottom($el){
+			return $el.position().top + $el.outerHeight(true);
+		}
+
+		var $footer=$('#footer');
+		$footer.css({
+			top: 0,
+			display: 'none'
+		});
+		var top=Math.max(
+			bottom($('#textWrapper')),
+			bottom($('#contents')),
+			$(document).height() - $footer.outerHeight()
+		);
+		$footer.css({
+			top: top,
+			display: 'block'
+		});
+	}
+
+        $('.patch-more').click(function(){
+        var page=$(this).data('page');
+        var paragraph=$(this).data('paragraph');
+
+        location.href='page'+page+'.html#paragraph='+paragraph;
+    });
+
+    setTimeout(function () {
+                    var ret=document.referrer.match(/#paragraph=(\d+)/);
+                if (!ret) {
+            return;
+        }
+        var paragraph=ret[1]-1;
+
+        var objParagraph=$('#text p:eq('+paragraph+')');
+        var flash=function () {
+            objParagraph.css('color', 'red');
+            setTimeout(function() {
+                objParagraph.css('color', 'initial');
+            }, 1000);
+        };
+        $('html, body').animate({
+            scrollTop: objParagraph.offset().top-$('#textWrapper').offset().top,
+        }, 500, flash);
+    }, 100);
+
+    var pIndex=0;
+    $('#text p').each(function () {
+        ++pIndex;
+        if (!$(this).attr('id')) {
+            //$(this).attr('id', 'paragraph_'+pIndex);
+        }
+    });
+});
+
+function showComments(){
+	$.blockUI({
+		message: $('#disqus_thread'),
+	});
+
+	$('body').click($.unblockUI);
+}
+</script>
+</head>
+<body>
+<div id="cover" style="background-color: #F1F1F1; position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 2048;"></div>
+<div id="nav">
+	<div class="Three">
+		<div id="navLeft" class="left c">
+			<a href="page35.html" class="blackText">&lt;&lt;&lt;prev</a>		</div>
+		<div id="navRight" class="right c">
+			<a href="page37.html" class="blackText">next&gt;&gt;&gt;</a>		</div>
+		<div id="navTitle" class="middle">
+			街景		</div>
+	</div>
+	<div class="Three m">
+		<div class="left" style="width: 4em">
+			<a href="page35.html" class="blackText">&lt;&lt;&lt;</a>		</div>
+		<div class="right" style="width: 4em">
+			<a href="page37.html" class="blackText">&gt;&gt;&gt;</a>		</div>
+		<div class="middle">
+			<a href="/index.html" class="blackText">[Home]</a>
+		</div>
+	</div>
+</div>
+<div id="images" class="c">
+	<a href="downloads/mnnstory.zip" target="_blank"> <img src="download.png" style="width: 100%;" title="下载" alt="Download" /> </a>
+	<p id="QRCode"></p>
+</div>
+<div id="contents" class="c">
+	<p class="contents_d0"><a href="index.html">目录</a></p>
+	<ul class="contents_d1"><li><a href='page1.html'>上册</a>
+</li><li><a href='page14.html'>上册配乐</a>
+</li><li><a href='page32.html'>下册</a>
+<ul class="contents_d2"><li><a href='page33.html'>心愿</a>
+</li><li><a href='page34.html'>概率</a>
+</li><li><a href='page35.html'>重逢</a>
+</li><li>街景
+</li><li><a href='page37.html'>追求</a>
+</li><li><a href='page38.html'>梦想</a>
+</li><li><a href='page39.html'>糖果</a>
+</li><li><a href='page40.html'>夕阳无限好</a>
+</li><li><a href='page41.html'>电影</a>
+</li><li><a href='page42.html'>怪谁</a>
+</li><li><a href='page43.html'>寄语</a>
+</li><li><a href='page44.html'>移民</a>
+</li><li><a href='page45.html'>永远</a>
+</li><li><a href='page46.html'>附录：幸福的惊人科学发现</a>
+</ul></li><li><a href='page47.html'>下册配乐</a>
+</li><li><a href='page49.html'>订正簿</a>
+</ul></div>
+<div id="disqus_thread"></div>
+<script>
+	var disqus_config = function () {
+		this.page.url = 'http://mnnstory.onion';
+		this.page.identifier = 36;
+		this.page.title = '街景'
+	};
+
+
+	(function() {
+		var d = document, s = d.createElement('script');
+
+		s.src = '//mnnstory.disqus.com/embed.js';
+
+		s.setAttribute('data-timestamp', +new Date());
+		(d.head || d.body).appendChild(s);
+	})();
+</script>
+<div id="textWrapper">
+	<div id="text">
+		<p>她一开口就用普通话问：“你减肥成功了啊？”我从未尝试过减肥，不知该如何回答，但紧张的感觉已荡然无存。她又问：“这么大的风，你穿这点不冷吗？”这声音闭上眼听，和过去的她哪有不同？</p>
+<p>走了一段路后，我问她：“你涂口红了？”她回答：“对啊。是不是化了？”我连忙说：“没。”她讲：“年纪大了，嘴唇有点发紫，不涂口红不行啊。”我用坚决的口气道：“不要紧的！”</p>
+<p>她的双颊微红，更像是擦过什么。原先戴着的眼镜不见了。双耳有耳环，但很小，不明显。对这些，我忍住没作评论。</p>
+<p>我不能总是盯着她看，实在不礼貌。上海的人行道很拥挤，常须两人一前一后走，每次我都让她先行，可以趁机在背后好好欣赏她。</p>
+<p>她说：“你是减肥成功了，我却胖了。”她曾经很瘦，额头可以看到静脉，现在则略感丰满。而且似比记忆中更高，已经不再娇弱了。</p>
+<p>她穿的是暗色调的风衣，好像是深褐色，人却不因衣服的颜色而显老，包是银色的。我则是亮色系，银灰色上衣，米黄色裤子，黑色的包。我不禁说了句：“感觉所有的照片都不如你真人。”</p>
+<p>没看到她的马尾辫，也并不是我曾以为的披头散发，而是垂下的头发被固定住了。作为男人，我是搞不明白她怎么弄的头发。我问：“你的发型变了嘛。”她说：“是啊。不能还梳辫子，会让同事觉得我像小孩。好歹我现在也算是个经理了。”</p>
+<p>我又说：“你皮肤很好。”她答道：“不是啊。我的手还长过冻疮，虽然现在好了。”说着，伸出手给我看，又翻了过来。那双手没有一点瑕疵。我的手算小了，这个时代畅销手机中最小的iPhone 5s，屏幕只有4英寸，我都时常无法单手操作自如。她的手更小。就是用这双袖珍玉手，她曾交出无数漂亮的答卷。</p>
+<p>15年前，我曾摸过这双手，只一次，并讲了句莫名其妙的话掩饰“邪念”。她那时一本正经地对我说：“我的手有冻疮。”</p>
+<p>仔细搜索了她的手，却终究没找到也许会令我伤心的订婚戒指。</p>
+<p>我问：“你方向感似也不太好，还没学过开车吧？”她答道：“对。这时代乘出租车要比自己买车、养车、开车便宜。”我说：“我也经常迷路。以后X国开车是必会技能，要慢慢学，对我挺难的。”</p>
+<p>她说：“这个地方有我的许多记忆。我上学时，常跟父母来此地买书，比如《一课一练》。”我道：“是的。小时候妈妈在这里上班，我就呆在她单位里。我很喜欢在这周围玩。有一次妈妈的同事带我出来，没告诉她，害得她担心得要命。”</p>
+<p>我们走到了文庙前，我准备买票进去。虽然贵了点，但只要这次能让彼此开心，我并不计较钱。她却说：“太贵了，算了，别进去了。”我也不违拗她。</p>
+<p>随着她往老城厢深处走，没发现什么东西感兴趣。她就决定掉头出去。到了老城厢门口的牌楼处，她又问：“那，文庙就不进去了吗？你不是要去拜孔子吗？”我说：“无所谓，也不是必须的。”</p>
+<p>她说：“我们找个店坐下喝茶吧？你过来的时候有留心咖啡店吗？我一路都在关注，你肯定没看吧？”说着，笑容微微收起，看了看我。我只得心里苦笑。</p>
+<p>她拿出手机，找了起来。那是一部最新上市的高端iPhone 6s手机，屏幕4.7英寸。我并不喜欢，因为我手不够大。她问：“你看，这几家，你觉得哪个好？”说着把手机递了过来。</p>
+<p>我小心翼翼地接过，唯恐碰到她手，差点摔了手机。可是，曾经有次参加一个洋妞的订婚派对，走的时候，刚认识的洋妞主人和我拥抱，我什么都没想。这位同学神圣不可侵犯？我哪有这么傻？</p>
+<p>我并不是诚心来喝茶，至于这些店的好坏，我一点主意都没，就随便挑了个，又说：“或者就去最近的？”</p>
+<p>我继续跟在她后面。走着走着，她说：“啊呀，走错路了！你怎么也不看着啊？”我确实没看方向，所有的注意力都在她身上，根本没心思。</p>
+<p>她得意地笑着，说：“走得我累死了，幸好我已经买好了喝的。”那是杯路边小店自己做的饮料，有无数种不明原料。我对于她的饮食习惯感到好奇，就问：“那是什么口味？”</p>
+<p>她说：“我刚刚实在口渴才买的。你也想喝吗……你是不是觉得我小气啊？我不是小气啊，你若是要，我也给你买……”说着说着，语速越来越快，像是很紧张。</p>
+<p>我感到一阵手足无措，慌乱中提高了声音道：“没说要喝，不觉得你小气。这点小事，你为什么要如此敏感？”一出口，立即对自己生硬的态度感到了懊悔。</p>
+<p>继续走了一段路，她见到路边的小吃店，想要过去买。我说：“这种地方很脏的！”虽这么讲，却在准备等她买好继续走。她已到了柜台前，看了看小吃，又转过头望了望我，却没买。</p>
+<p>又走了几步，她说：“啊呀，方向还是不对！你怎么老给我吃苦头啊？”我低声道：“哎，没想到我某某人，竟然30岁还让某某吃苦头。”听到我这么讲，她接下来一句话声音轻了点，此后再不责怪我了。</p>
+<p>她拿出手机，准备自己认真找路，刚查，又说：“啊呀，没电了啊！”连忙从包里拿出移动电源充电。包显得有点老气，和她的形象搭配，有点怪怪的。</p>
+<p>我说：“我今天带了副牌来，待会儿喝茶的时候可以玩。”她笑道：“你知道我不会玩扑克的。”我想起<a href="#comment_1" class="issue">大三某次跨系的活动上</a><sup id="issue_1">1</sup>，我提议要和她打牌，她也是说不会，只会玩吹牛。我就问：“你不是很会吹牛吗？”她立即紧张地注视着我的脸。是在怀疑我一语双关吗？</p>
+<hr class="comment" />
+<p class="comment" id='comment_1'><a href="#issue_1" class="comment">[1]</a>
+详见上册“重逢”小标题下的记录。
+</p>
+<p>&nbsp;</p>	</div>
+</div>
+<div id="footer">
+	<div id="declaration">
+		本故事为作者亲身经历
+	</div>
+	<div id="bannerLine" class="Three">
+				<div class="middle">
+            			    <a href="about.html">MnNStory, 1 Sep 2001 - 12 Mar 2016</a>
+            		</div>
+	</div>
+	<hr class="m" />
+	<div id="switch2c" class="m">
+		<a href="">电脑版</a>
+	</div>
+</div>
+</body>
+</html>

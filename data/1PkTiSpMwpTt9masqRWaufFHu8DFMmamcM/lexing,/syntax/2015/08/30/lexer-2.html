@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <!-- _includes/base.html -->
+
+
+
+
+
+<head>
+    <link href="http://gmpg.org/xfn/11" rel="profile">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+    <!-- Enable responsiveness on mobile devices-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+    <title>
+        
+        Lexing II: readtable–macro parsing &middot; Lyc
+        
+    </title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../../../../../css/poole.css">
+    <link rel="stylesheet" href="../../../../../css/syntax.css">
+    <link rel="stylesheet" href="../../../../../css/blackdoc.css">
+    <!--<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">-->
+    <!--<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=EB+Garamond">-->
+    <!-- Icons -->
+    <!--<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../../../../public/apple-touch-icon-144-precomposed.png">-->
+    <!--<link rel="shortcut icon" href="../../../../../public/favicon.ico">-->
+
+    <!-- Load jQuery -->
+    <script src="../../../../../js/jquery-2.1.4.min.js"></script>
+    <!-- Load KaTeX -->
+    <link rel="stylesheet" href="../../../../../js/katex/katex.min.css">
+    <script src="../../../../../js/katex/katex.min.js"></script>
+
+    <style>
+        @font-face {
+            font-family: 'lyc source code';
+            font-weight: normal;
+            src: url("../../../../../fonts/LycSourceCode.ttf.woff") format('woff');
+        }
+
+        @font-face {
+            font-family: 'Source Sans Pro';
+            font-weight: normal;
+            src: url("../../../../../fonts/SourceSansPro-Regular.ttf.woff") format('woff');
+        }
+
+        @font-face {
+            font-family: 'Source Sans Pro';
+            font-weight: normal;
+            font-style: italic;
+            src: url("../../../../../fonts/SourceSansPro-It.ttf.woff") format('woff');
+        }
+
+        @font-face {
+            font-family: 'Source Sans Pro';
+            font-weight: 100;
+            src: url("../../../../../fonts/SourceSansPro-Light.ttf.woff") format('woff');
+        }
+
+        @font-face {
+            font-family: 'Source Sans Pro';
+            font-weight: 100;
+            font-style: italic;
+            src: url("../../../../../fonts/SourceSansPro-LightIt.ttf.woff") format('woff');
+        }
+
+        @font-face {
+            font-family: 'Source Sans Pro';
+            font-weight: bold;
+            src: url("../../../../../fonts/SourceSansPro-Bold.ttf.woff") format('woff');
+        }
+
+        @font-face {
+            font-family: 'Source Sans Pro';
+            font-weight: bold;
+            font-style: italic;
+            src: url("../../../../../fonts/SourceSansPro-BoldIt.ttf.woff") format('woff');
+        }
+
+        @font-face {
+            font-family: 'Source Serif Pro';
+            font-weight: bold;
+            src: url("../../../../../fonts/SourceSerifPro-Bold.ttf.woff") format('woff');
+        }
+
+        @font-face {
+            font-family: 'Source Serif Pro';
+            font-weight: normal;
+            src: url("../../../../../fonts/SourceSerifPro-Regular.ttf.woff") format('woff');
+        }
+
+    </style>
+
+    <!-- RSS -->
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="/atom.xml">
+</head>
+
+
+  <body>
+
+    <div class="sidebar">
+    <div class="container sidebar-sticky">
+        <div class="sidebar-about">
+            <h1>
+                <a href="http://127.0.0.1:43110/1PkTiSpMwpTt9masqRWaufFHu8DFMmamcM/">
+                    Lyc
+                </a>
+            </h1>
+
+            <p class="sidebar-subtitle">A programming language work-in-progress.
+</p>
+
+        </div>
+
+        <nav class="sidebar-nav">
+            <a class="sidebar-nav-item" href="http://127.0.0.1:43110/1PkTiSpMwpTt9masqRWaufFHu8DFMmamcM/">About</a>
+
+            <!---->
+            <!--/lexing,/syntax/2015/08/30/lexer-2.html-->
+
+            
+
+            
+            
+            
+            
+            <a class="sidebar-nav-item"
+               href="http://127.0.0.1:43110/1PkTiSpMwpTt9masqRWaufFHu8DFMmamcM/blog/index.html">Blog</a>
+            
+            
+            
+            
+            
+            <a class="sidebar-nav-item"
+               href="http://127.0.0.1:43110/1PkTiSpMwpTt9masqRWaufFHu8DFMmamcM/blog/drafts.html">Next</a>
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+
+            <!--<a class="sidebar-nav-item" href="/archive/master.zip">Download</a>-->
+            <!--<hr>-->
+            <!--<a class="sidebar-nav-item" href="">GitHub project</a>-->
+            <!--<span class="sidebar-nav-item">Currently v</span>-->
+        </nav>
+
+        <!--<p>&copy; 2015. All rights reserved.</p>-->
+    </div>
+</div>
+
+
+    <div class="content container">
+      <div class="post">
+    <h1 class="post-title">Lexing II: readtable–macro parsing</h1>
+    <span class="post-date">30 Aug 2015</span>
+    <h2 id="ode-to-lisps-reader">Ode to Lisp’s reader</h2>
+
+<p>Lisp is an exceptionally well-designed language. One of the many ways this shines through is in how the parsing works. Lisp’s parser is simple and extremely flexible, to the point that arbitrarily complex changes can be introduced into the language in a natural way. For instance, <a href="http://weitz.de/cl-ppcre/">cl-ppcre</a> is a regular-expression library which adds perl-like regular-expression syntax to Lisp; <a href="http://www.pps.univ-paris-diderot.fr/~jch/software/cl-yacc/">cl-yacc</a> does the same for LALR grammars (no need for a separate <code>yacc</code> command-line program, the special production-rule syntax is simply added to the language!); or, to give a more drastic example of syntactic flexibility, <a href="http://readable.sourceforge.net/">sweet expressions</a> changes the syntax of Lisp to include infix operations and indentation-based expressions (i.e., use the <em>off-side rule</em> instead of nested parenthesis). In the vast majority of programming languages, making any change to the language’s syntax would require a separate program to recompile the new syntax into the old syntax, but in Lisp we can do away with such an intermediary, and implement such changes directly by writing a Lisp program to change the behavior of the Lisp parser. The reason we can do this is because the parsing mechanism is exposed to the programmer, and easy to extend.</p>
+
+<h2 id="readtable--macro-parsing">Readtable–macro parsing</h2>
+
+<p>Lisp parses its input via a readtable–macro mechanism. A special table called the <a href="http://clhs.lisp.se/Body/02_a.htm">readtable</a> assigns a <em>type</em> to each character, such as <em>whitespace</em>, <em>constituent</em>, <em>macro-character</em>, and so on. Then the <a href="http://www.Lispworks.com/documentation/lw70/CLHS/Body/02_b.htm">default reader algorithm</a> reads one character at a time and decides what to do based on the character’s type. For instance, <a href="http://www.lispworks.com/documentation/lw70/CLHS/Body/02_ad.htm">constituent</a> characters accumulate into <em>tokens</em> — which could mean identifiers or numbers — and <em>macro characters</em> (such as <code>(</code>) will trigger parsing sub-procedures, called <em>reader macros</em>, that handle the characters that follow (presumably recursively calling the default reader algorithm at times, and returning control to it when the corresponding closing character <code>)</code> is found). Lisp allows us to plug into this mechanism by changing the readtable and by defining our own reader macros. The end-result is that we may use Lisp to change the syntax of Lisp to arbitrarily fit our purpose.</p>
+
+<h2 id="lycs-lexical-analyser">Lyc’s lexical analyser</h2>
+
+<p>Lyc should have the best of both Lisp, Python and C. A readtable–macro mechanism is not very good at handling infix notation, implicit operator precedence, and other syntactic niceties of Python and C — the next post in this blog will suggest an approach to deal with those. But I believe that, together with the parsing-via-chain-of-coroutines method outlined in the <a href="/2015/08/02/lexer.html">previous post</a>, it is an ideal mechanism for lexical analysis: powerful, flexible, easily extensible, and sufficiently fast.</p>
+
+<p>A readtable-macro algorithm requires a read-table. This is a table classifying sequences of characters according to their syntax-type, which in lyc is one of <em>whitespace</em>, <em>newline</em>, <em>token</em>, <em>macro</em>, <em>closing</em>, <em>constituent</em>, or <em>invalid</em>. By omission, a single character is a <em>constituent sequence</em>.</p>
+
+<p>Having such a readtable, we can, at each step, read the largest sequence of characters which is part of the readtable, and obtain its syntax type. We assume that some automatic process keeps track of the line number, column number, and visual-column number<sup id="fnref:visual-column"><a href="#fn:visual-column" class="footnote">1</a></sup> of the currently-read sequence.</p>
+
+<p>The algorithm that follows is based on Lisp’s <a href="http://www.Lispworks.com/documentation/lw70/CLHS/Body/02_b.htm">default reader algorithm</a>.</p>
+
+<h3 id="stage-1">Stage 1</h3>
+
+<ol>
+  <li>One sequence is <code>read</code> from the input stream, until either:
+    <ul>
+      <li>A closing sequence has been read (EOF qualifies, but also closing delimiters), and then the procedure exits, or</li>
+      <li>A non-whitespace, non-newline sequence is reached; we signal an error if this sequence does not begin in the first relative-column<sup id="fnref:relative-column"><a href="#fn:relative-column" class="footnote">2</a></sup>, and if it does:
+        <ul>
+          <li>We <code>unread</code> this sequence,</li>
+          <li>We <code>emit</code> a BEGIN token and store it for later use, and</li>
+          <li>We continue onto step 2.</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>One sequence x is repeatedly <code>read</code> from the input stream and dispatched according to it syntax-type to one of the following items.
+    <ol>
+      <li>If x is a closing sequence, then we <code>unread</code> x, we <code>emit</code> an END token — associated with the remembered BEGIN token — and the procedure exits.</li>
+      <li>If x is a whitespace sequence, it is discarded.</li>
+      <li>If x is a newline sequence, we go to Stage 2.</li>
+      <li>If x is a token sequence, then we <code>emit</code> the corresponding CONSTITUENT token.</li>
+      <li>If x is a macro sequence, then let <script type="math/tex">W</script> be the visual-column-number of the next character in the stream; we then delegate the scanning of the stream to the corresponding macro-tokenizer. This happens by making a new call to a coroutine, and feeding to it all the subsequent lines whose first non-whitespace character does not appear before column <script type="math/tex">W</script>, and, in those lines, only the characters that appear from column <script type="math/tex">W</script> onwards. We <code>capture</code> and <code>emit</code> all tokens emitted by the coroutine.</li>
+      <li>If x is a constituent sequence, then new sequences are <code>read</code>, until a non-constituent sequence appears; this last sequence is <code>unread</code>, all the previous constituent sequences are concatenated, and we <code>emit</code> this concatenation as a CONSTITUENT token.</li>
+      <li>If x is an invalid sequence, then an error is signaled.</li>
+    </ol>
+  </li>
+</ol>
+
+<h3 id="stage-2">Stage 2</h3>
+
+<ol>
+  <li>A number <script type="math/tex">W</script> is maintained; intially <script type="math/tex">W = + \infty</script>.</li>
+  <li>One sequence is repeatedly read from the input stream, until either:
+    <ul>
+      <li>An EOF has been reached, and then the procedure exits, or</li>
+      <li>A non-whitespace, non-newline sequence <script type="math/tex">S</script> is reached, and then:
+        <ul>
+          <li>If the relative-column-number of <script type="math/tex">S</script> is greater than <script type="math/tex">W</script>, we signal an <em>unexpected indentation</em> error.</li>
+          <li>If the relative-column-number of <script type="math/tex">S</script> is less than <script type="math/tex">W</script>, we emit and INDENT token, which we associate with the previous remembered BEGIN token (which has a list of associated indent tokens), and set <script type="math/tex">W</script> relative-column-number of <script type="math/tex">S</script>.</li>
+          <li>Otherwise the relative-column-number of <script type="math/tex">S</script> is exactly <script type="math/tex">W</script>.</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>We then recursively delegate the scanning of the stream to the Standard Circe Tokenizer, feeding it this first line of text and subsequent lines, until a line of text is scanned whose first non-whitespace character appears before column <script type="math/tex">W</script>, while hiding from the called tokenizer the <script type="math/tex">W-1</script> whitespace characters that prefix the fed lines.</li>
+  <li>We goto 2.</li>
+</ol>
+
+<h3 id="example">Example</h3>
+
+<p>Suppose we had defined appropriate macros for the macro characters <code>“</code> and <code>#</code>. Then, should we tokenize the following “code”:</p>
+
+<pre><code>test “lexing”
+    of readtable-macro
+    tokenizer
+    # yeah!
+      also-with
+    “off-side rule
+     for strings
+     and comments”
+</code></pre>
+
+<p>We would get the following token sequence:</p>
+
+<pre><code>BEGIN
+   CONSTITUENT(test)
+   BEGIN_MACRO(“)
+     STRING(lexing)
+   END_MACRO(”)
+   INDENT
+   BEGIN
+      CONSTITUENT(of)
+      CONSTITUENT(readtable-macro)
+   END, range=(3:4‥3:4))
+   BEGIN
+      CONSTITUENT(tokenizer)
+   END
+   BEGIN
+      BEGIN_MACRO(#)
+         COMMENT( yeah!\n also-with\n)
+      END_MACRO
+      BEGIN_MACRO(“)
+         STRING(off-side rule\nfor strings\nand comments)
+      END_MACRO(”)
+   END
+END
+</code></pre>
+
+<h2 id="this-is-already-working">This is already working!</h2>
+
+<p>This is the method by which the code in this blog is highlighted<sup id="fnref:colors"><a href="#fn:colors" class="footnote">3</a></sup>.</p>
+
+<div class="highlight"><pre><code><span class="k">test</span> <span class="s">“</span><span class="s">lexing</span><span class="s">”</span>
+    <span class="">of</span> <span class="">readtable-macro</span>
+    <span class="">tokenizer</span>
+    <span class="c">#</span><span class="c"> yeah!
+      also-with
+    </span><span class="s">“</span><span class="s">off-side rule
+     for strings
+     and comments</span><span class="s">”</span>
+</code></pre></div>
+
+<h3 id="footnotes">Footnotes</h3>
+<div class="footnotes">
+  <ol>
+    <li id="fn:visual-column">
+      <p>We will someday blog about characters; suffice to say that the visual column of <code>e</code> is 5 in the string <code>abcde</code>, and 6 in the string <code>abde</code>. By the way, if the right-arrow symbol <code></code> does not appear in your browser (if it appears garbled), try using a later version, the appropriate font should be loaded together with this website. <a href="#fnref:visual-column" class="reversefootnote">&#8617;</a></p>
+    </li>
+    <li id="fn:relative-column">
+      <p>The relative-column number is the column number of the read character, where the number is measured relative to the characters that were <code>read</code>. The column-number of the character, relative to the file where it has originated, may be different. <a href="#fnref:relative-column" class="reversefootnote">&#8617;</a></p>
+    </li>
+    <li id="fn:colors">
+      <p>The coloured identifiers (such as the orange <code>test</code> in the example) are currently hardcoded. But one day the colours will correspond to the type of object that the identifier represents. <a href="#fnref:colors" class="reversefootnote">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+
+</div>
+
+<!--<div class="related">-->
+<!--<h2>Related Posts</h2>-->
+<!--<ul class="related-posts">-->
+<!---->
+<!--<li>-->
+<!--<h3>-->
+<!--<a href="/2015/10/04/lexer-3.html">-->
+<!--Lexing III: Nested power!-->
+<!--<small>04 Oct 2015</small>-->
+<!--</a>-->
+<!--</h3>-->
+<!--</li>-->
+<!---->
+<!--<li>-->
+<!--<h3>-->
+<!--<a href="/2015/08/02/lexer.html">-->
+<!--Lexing I: the off-side rule-->
+<!--<small>02 Aug 2015</small>-->
+<!--</a>-->
+<!--</h3>-->
+<!--</li>-->
+<!---->
+<!--</ul>-->
+<!--</div>-->
+
+
+    </div>
+
+  </body>
+  <script language="JavaScript">
+    $("script[type='math/tex']").replaceWith(
+            function(){
+              var tex = $(this).text();
+              return "<span class=\"inline-equation\">" +
+                      katex.renderToString(tex) +
+                      "</span>";
+            });
+
+    $("script[type='math/tex; mode=display']").replaceWith(
+            function(){
+              var tex = $(this).text();
+              return "<div class=\"equation\">" +
+                      katex.renderToString("\\displaystyle "+tex) +
+                      "</div>";
+            });
+
+  </script>
+</html>

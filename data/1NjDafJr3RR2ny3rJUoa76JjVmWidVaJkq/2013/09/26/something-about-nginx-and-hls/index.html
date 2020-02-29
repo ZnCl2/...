@@ -1,0 +1,324 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>
+      
+        Something About Nginx and HLS - 
+      
+      早起
+    </title>
+    <meta name="description" content="nginx作为hls服务器时需要考虑的问题">
+    <meta name="author" content="Been Woo">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/css-social-buttons/css/zocial.stripped.css">
+    <link href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/css/pygments.css" rel="stylesheet" type="text/css" media="all">
+    <link href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/css/darkstrap.css" rel="stylesheet" type="text/css" media="all">
+    <link href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- fav and touch icons -->
+    <!-- Update these with your own images
+      <link rel="shortcut icon" href="images/favicon.ico">
+      <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+      <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+      <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+    -->
+  </head>
+
+  <body>
+    <div id="page-wrap">
+      <div class="navbar">
+        <div class="navbar-inner">
+          <div class="container">
+            <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </a>
+
+            <a class="brand" href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq">早起</a>
+
+            <div class="nav-collapse">
+              <ul class="nav">
+                
+                
+                
+
+
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/archive.html">归档</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/tags.html">标签</a></li>
+      	
+      
+    
+  
+
+
+
+              </ul>
+              <ul class="nav pull-right social visible-desktop">
+                <li class="divider-vertical"></li>
+                
+                <li>
+                  <a href="https://github.com/sqbing" class="zocial github icon" target="_blank">
+                    <span class="hidden-desktop">Github</span>
+                  </a>
+                </li>
+                
+                
+                
+                <li>
+                  <a href="https://twitter.com/sqbing" class="zocial twitter icon" target="_blank">
+                    <span class="hidden-desktop">Twitter</span>
+                  </a>
+                </li>
+                
+                
+                
+                <li>
+                  <a href="http://www.linkedin.com/in/beenwoo" class="zocial linkedin icon" target="_blank">
+                    <span class="hidden-desktop">LinkedIn</span>
+                  </a>
+                </li>
+                
+                
+                <li>
+                  <a href="http://feeds.feedburner.com/feedname" class="zocial rss icon" target="_blank">
+                    <span class="hidden-desktop">FeedBurner</span>
+                  </a>
+                </li>
+                
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="container">
+        <div class="content">
+          
+<div class="page-header">
+  <h1>
+    Something About Nginx and HLS 
+    
+  </h1>
+</div>
+
+<div class="row">
+  <div class="span8">
+    <p>不涉及具体实现，只是总结一下近半个月来研究nginx和HLS以及综合两者时遇到的一些困难。</p>
+
+<h2>ngx<em>open</em>cached_file()</h2>
+
+<p>完整原型如下：</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">ngx_int_t
+ngx_open_cached_file(ngx_open_file_cache_t *cache, 
+    ngx_str_t *name,
+    ngx_open_file_info_t *of, 
+    ngx_pool_t *pool)
+</code></pre></div>
+<p>其中的name参数比较有意思，在nginx中，ngx<em>str</em>t比u_char*多了一个长度字段。小心！这个函数内部并没有考虑name的长度，而是粗暴的调用了：</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">fd = ngx_open_file(name-&gt;data, mode, create, access);
+</code></pre></div>
+<p>ngx<em>open</em>file()是对open()的简单封装，如下：</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">#ifdef __CYGWIN__
+    #define NGX_HAVE_CASELESS_FILESYSTEM  1
+    #define ngx_open_file(name, mode, create, access)\
+        open((const char *) name, mode|create|O_BINARY, access)
+#else
+    #define ngx_open_file(name, mode, create, access)\
+        open((const char *) name, mode|create, access)
+#endif
+</code></pre></div>
+<p>所以，在调用这个函数打开文件时，除了要用ngx<em>str</em>t封装文件路径，还要注意这个路径一定要用\0结尾。</p>
+
+<h2>tips</h2>
+
+<ol>
+<li><p>SPS和PPS何时发送？</p>
+
+<p>IDR(nalu_type=5)之前发送</p></li>
+<li><p>PMT和PAT如何构造？</p>
+
+<p>PMT和PAT为固定字段，每GOP发送一次即可。</p></li>
+<li><p>加入条带分割NAL头部对现有的H.264数据有何影响？</p>
+
+<p>目前看无影响，每一sample前发送条带分割NAL(nalu_type=9)</p></li>
+<li><p>码流和网络流形式的NAL在转换时需要注意哪些？</p>
+
+<p>一般情况下发送0x00 00 00 01，仅在sample的非首slice时发送0x00 00 01</p></li>
+<li><p>AAC头部是否需要修改？</p>
+
+<p>AAC需要使用ADST封装</p></li>
+<li><p>ADST包含哪些参数？从MP4文件的何box中读取参数？</p>
+
+<p>profile: (object_type - 1)</p>
+
+<p>sampling frequency: sample<em>rate</em>index</p>
+
+<p>channel configuration: channels</p>
+
+<p>通过mp4a-&gt;esds读取上述参数</p></li>
+<li><p>音频数据如何汇总成一个PES包再发送，而不是每一个sample封装一个PES？</p>
+
+<p>音频打包到一个PES再发送，大小为2930</p></li>
+<li><p>生成m3u8时如何分割？</p>
+
+<p>以GOP为分割</p></li>
+<li><p>aac的duration为什么固定是1024？遇到非固定duration的aac应如何处理？</p>
+
+<p>aac规定每个frame包含1024个samples；忽略stts中的delta，固定输出1024</p></li>
+<li><p>MP4中的elst atom应如何处理？</p>
+
+<p>pts -= elst<em>start</em>time</p></li>
+</ol>
+
+    <hr>
+    <div class="pagination btn-group">
+      
+        <a class="btn prev" href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/2013/07/27/boost-property_tree-threadsafe/index.html" title="boost::property_tree threadsafe">&larr; Previous</a>
+      
+        <a class="btn" href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/archive.html">Archive</a>
+      
+        <a class="btn next" href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/2013/09/29/fix-nexus-7-2013-otg-storage/index.html" title="Fix: Nexus 7(2013) Wifi OTG Storage Issue">Next &rarr;</a>
+      
+    </div>
+    <hr>
+    
+
+
+  <div id="disqus_thread"></div>
+<script type="text/javascript">
+    
+    var disqus_shortname = 'sqbingongithub'; // required: replace example with your forum shortname
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+
+  </div>
+  
+  <div class="span4">
+    <section>
+      <h4>Published</h4>
+      <div class="date"><span>26 September 2013</span></div>
+           
+    </section>
+    
+      <section>
+        <h4>Categories</h4>
+        
+      </section>
+         
+    
+      <section>
+        <h4>Tags</h4>
+        <ul class="tag_box">
+          
+          
+
+
+  
+     
+    	<li><a href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/tags.html#nginx-ref">nginx <span>2</span></a></li>
+     
+    	<li><a href="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/tags.html#HLS-ref">HLS <span>1</span></a></li>
+    
+  
+
+
+
+        </ul>
+      </section>
+             
+  </div>
+</div>
+
+
+        </div>
+      </div> <!-- /container -->
+
+      <div class="footer-push"></div>
+    </div><!--/.page-wrap -->
+
+    <footer>
+      <div class="container">
+        <p>&copy; 2016 Been Woo
+          with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
+          and <a href="http://github.com/dhulihan/hooligan" target="_blank">The Hooligan Theme</a>
+        </p>
+      </div>
+    </footer>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/js/jquery.min.js"><\/script>')</script>
+    <script src="/1NjDafJr3RR2ny3rJUoa76JjVmWidVaJkq/assets/themes/hooligan/bootstrap/js/bootstrap.min.js"></script>
+
+    
+
+
+  <script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-44682525-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+
+  </body>
+</html>
+

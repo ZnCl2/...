@@ -1,0 +1,224 @@
+{
+	"next_topic_id": 2,
+	"topic": [
+		{
+			"topic_id": 1570109199,
+			"title": "Lets fix ZeroNet",
+			"body": "I'm tired as fuck of not being able to generate IDs using Tor. We need a truly decentralized system for certificate generation.\nFor this we'll need a web of trust system so peers can verify each other in a trustful way and not rely on a few centralized nodes to do the certificate generation like KXoID does (which btw currently means XKoID does not work most of the time because no trusted peers are online).\nThis is the way I envision the system working:\nUsing the new one click plugin installation functionality, a user installs a plugin that monkey patches ZeroNet to achieve all the required functionality.\nThe plugin includes a few trusted peers and provides the user the ability to include more or remove the existing ones.\nIf the user is a trusted peer (either a root one or further down the chain) it receives requests from other users (maybe through PeerMessage?) to either generate certificates or become trusted (they probably should be different things to have different degrees of trustfulness to generate certs or become a generator of certs).\nNow, the thing is, every peer using the system needs to receive a copy of the web of trust chain from the root to the node that's generating whatever content is being received by said peer.\nI guess this could be implemented on top of PGP, but I'm not sure how easy it would be to implement a key server on ZeroNet. I think this would depend on how easy it'd be to run OpenPGP HTTP Keyserver Protocol (HKP) over PeerMessage or whatever is used. Although I guess we could just use clearnet key servers for simplicity. Care should be taken to only choose servers hardened against key poisoning. So when a peer becomes trusted a public key is uploaded, and when a peer sees content coming from a previously non seen pair a key chain is downloaded.\nThe difference with simpler certificate authorities like KaffieID is this thing would be able to impose restrictions on name generation. If a trusted node becomes rogue and starts generating bogus IDs or trust certificates, it could be blacklisted individually by the users, or more effectively by a distributed node blacklist all users are subscribed to by default. The details on what peers would be able to add nodes to the blacklist are yet to be determined, but presumably this would be based on some kind of computed trustworthiness level.\nThe way a node gets an ID would be by completing a captcha and a light PoW. The way a node becomes trusted would be by completing a captcha, having a high seed value and file availability, and completing a harder PoW challenge. The node ID would probably have to be different from the user ID so people are able to become trusted nodes without having to post using the same ID all the time.",
+			"added": 1570109198
+		}
+	],
+	"topic_vote": {},
+	"next_comment_id": 39,
+	"comment": {
+		"1570109199_1N4DSSHorDvEkDGkQfUhnnryYiTdtUW8hU": [
+			{
+				"comment_id": 1,
+				"body": "> [stardust666](#comment_2_16Fu36vdXG8dynYf9XUqN9F1za5xa19gHK): I don't use TOR. Doesn't ZeroID allow you to generate a certificate through TOR? That's weird.\nIt only works with Tor like 1 out of 5 times. It used to work almost always until nofish made some changes to prevent automatic generation of IDs based on banning certain IPs depending on undisclosed criteria (current version of ZeroID is proprietary).\n>Since certificates are just a mapping of names to public keys, couldn't we just use the Namecoin blockchain?\nIt's a bit more complicated than that. The point of certificates is that only trusted parties (certificate authorities) are allowed to map names to keys. Then the dilemma is who becomes that trusted party, since can easily become a gatekeeper and prevent people from generating certs for one reason or another, like ZeroID does with Tor, or they can just go down and then nobody is able to generate certs (like with KXoID).",
+				"added": 1570115455
+			},
+			{
+				"comment_id": 2,
+				"body": "> [gitcenter](#comment_1122_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di): You can't implement that without rethinking usernames from the beginning. Currently there's no way to revoke a username - once you register it for a user you can't cancel.\n\nI know all of this would require pretty big changes to the ZeroNet code (whether through a plugin or a fork). The only way for people using the current ZeroNet client to see the messages posted by people using this web of trust system would be to at least re-register every user using a conventional CA, assuming the actual protocol for exchanging data stays the same (I don't see a priori any reason why it would have to be changed).",
+				"added": 1570118377
+			},
+			{
+				"comment_id": 3,
+				"body": "> [gitcenter](#comment_1122_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di): You can't implement that without rethinking usernames from the beginning. Currently there's no way to revoke a username - once you register it for a user you can't cancel.\n\nBtw, as the system currently works, can a CA just decide to register a user and that certificate be accepted by sites (even for old posts) with no intervention from the user? You seemed to imply that was the case when explaining what would be done if the private key for KXoID was leaked, but I don't know how that would work. Or were you just saying the key would be changed but the posts made by users certified with the old key would be lost?",
+				"added": 1570118635
+			},
+			{
+				"comment_id": 5,
+				"body": "> [fartknocker](#comment_18_19s8EgXft8KuYsk9tEGgnmLo3Kcmw3ME5E): It's a decent idea, but in practice it could cripple the system. You go one way and just take a look at RetroShare. Ever used it? It's like taking a shot in the dark at random people you may or may not know. It's an even gayer version of Utopia (which is still in Beta). [...]\n\nI haven't used it, but from reading about it I don't see any similarities with what I'm proposing.\n>The flip side is majority rule over what sites are allowed.\nYou could make the blacklist be dictated by a single person (in fact it would be easier to do that way). It's an implementation detail that is yet to be determined.\nIt would be better if it was possible for the blacklist to determine who can generate IDs and not what IDs can be used (after they were generated) but the problem is I don't see an easy way to decouple both things. Maybe you could make it so other trusted peers are required to certify users with a given timestamp, and once you have that temporal variable established you can allow people who created their ID before the node ban was established to continue posting with their ID as long as the timestamp was provided by non banned nodes (or their descendants which are presumably banned by proxy). Or maybe you could make it so users just need to re-certify their user and upload that new signature to the key server, and upon stumbling on users with an ID certified by a banned CA, double check their authenticity by re-downloading the certificate chain from the key server. I don't know how capable PGP is in that regard (having multiple endorsement from other users) but it probably supports it.\nI realize the complexity of this distributed system is very high and it might be hard to make it work in practice, but I think it's worth a try.",
+				"added": 1570212717
+			},
+			{
+				"comment_id": 11,
+				"body": "> [stardust666](#comment_4_16Fu36vdXG8dynYf9XUqN9F1za5xa19gHK): I don't think that's how it works on ZeroNet. The authority is just a zite with a mapping in a certain format. The developer of each zite chooses which authority to trust.\n\nYes, I didn't say it wasn't. I only said it was trusted to prevent spam accounts, which it is (otherwise the whole certification system would be pointless).\n\n> [filips](#comment_241_1LFu1BTScmY82HHtg3TY2jAuSrCYNsQWEY): Part of backend is open-source. And frontend is also open-source.\n\nI think that's an old version that doesn't have the anti spam features.",
+				"added": 1570364364
+			},
+			{
+				"comment_id": 13,
+				"body": "> [filips](#comment_243_1LFu1BTScmY82HHtg3TY2jAuSrCYNsQWEY): I think that it is one of the newest versions. \nWhy do you think it's one of the newest versions? Last commit is from 2017. \n>However, anti spam features are not published on purpose.\nIf by \"anti spam features weren't published\" you mean \"versions of the site after the anti spam features were introduced weren't published\", then sure. Otherwise please prove any anti-spam features were introduced pre-2017.\nIf you can't then please stop spreading misinformation.",
+				"added": 1570376330
+			},
+			{
+				"comment_id": 15,
+				"body": "> [filips](#comment_244_1LFu1BTScmY82HHtg3TY2jAuSrCYNsQWEY): In config.php, line 37, ratelimit.php is included. However, it is not published on GitHub. And here nofish said that \"the ratelimit.php is not published on purpose\" because \"it's easier to trick the system if you know the exact rules\".\n\nFair enough. Thanks for the info.",
+				"added": 1570380299
+			},
+			{
+				"comment_id": 31,
+				"body": "> [gitcenter](#comment_1125_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di): I'll try to make a PoC soon.\n\nHow do you suggest we could begin to hack away at this? I don't even know how you would create and test a fork of ZeroNet. Run your own tracker and use virtual machines? How does nofish do it anyway?",
+				"added": 1571345792
+			},
+			{
+				"comment_id": 32,
+				"body": "Or integrating with the the actual ZeroNet network but only activating the extra features when both peers recognize each other as being capable of doing so?",
+				"added": 1571346070
+			},
+			{
+				"comment_id": 33,
+				"body": "And if so, how could you make the clients seek each other out and not just get randomly connected to other peers? Because then the chance of getting another peer that supports a certain functionality would be like 0.01%",
+				"added": 1571346129
+			},
+			{
+				"comment_id": 34,
+				"body": "> [fucknigggers](#comment_10_112M71AbhUCyq3M7k8PLDRdELuQKGCExYG): You could take some complexity out of the proposal by letting every zite-owner itself  be the root node in your WoT for that zite.You have to trust the owner of a zite anyway, when you visit it, and he is already in control of the content of the zite. [...]\n\nYeah the problem is peer discovery of nodes running the fork. Not sure if the protocol allows us to request the trackers only peers running a certain version of the software.",
+				"added": 1571459324
+			}
+		],
+		"1570044887_1KkYDy7vnYwccFCDugksbCb4izK5HTSDBd": [
+			{
+				"comment_id": 4,
+				"body": "Cue picture of Alex Jones making crazy face wearing a Kippa and shouting \"IT'S THE SAUDIS!!!11\"",
+				"added": 1570128734
+			}
+		],
+		"1570282298_16dEowtNbV89NxPcDrAKkmnuXtiJVoVcDm": [
+			{
+				"comment_id": 6,
+				"body": "It's just an xfce Debian install with two xfce virtual machines running at all times. You work on one of these VMs. So yes it's kinda slow. VMs feel slow.",
+				"added": 1570284171
+			},
+			{
+				"comment_id": 7,
+				"body": "> [pexo](#comment_162_1DfrA2M9Qra6stqT6tzwNMYNweswY54KAC): This is not true. QubesOS is running a Xen hypervisor with an (in some sense) custom made and maintained fedora25 dom0 controller.I terms of recourse consumption it's really demanding. Especially hard disk writes(often random ones, so a SLC(=fast) SSD will do you a lot of favors here) and CPU usage. Depending on how you want to set it up RAM is also a big deal, I'd say to aim for 8GB or above for an acceptable experience. But there's basically zero GPU usage, so you can probably get away with the integrated GPUs some CPUs have.\n\nOh, right, right. I always keep confusing it with Whonix.",
+				"added": 1570294425
+			}
+		],
+		"1570288757_16NS3rBdW9zpLmLSQoD8nLTtNVsRFtVBhd": [
+			{
+				"comment_id": 8,
+				"body": "> [noquat](#comment_16_137P7ceKGpm24X9C5mxNmp1bCkQpY8vWAh): I've burned 1/5th of my limit, but I'll bite. Keep in mind, I ask in good faith, and to find out what your underlying thinking is. I have no dog in the fight on vapes, so I'd like to ask someone who appears to.  [...]\n\nI'm not him, but there's an argument to be made that the government shouldn't exist at all, and especially not to punish or prevent people from doing things for their own good. After all, if you can't trust people to take care of themselves, how can you trust those same people to run a democracy where they choose who will control every aspect of their lives for years at a time?\n>What is the utility of vaping, such that it should be protected and allowed to occur?\nIt gives people a pleasurable feeling. If you are for the government banning vaping, I assume you're for the government banning sex outside marriage too, since it increases the risk of STDs and unwanted pregnancies? How about banning alcoholic beverages too? They cause a fair bit of health problems and have no more tangible utility than vapes do they?",
+				"added": 1570298867
+			},
+			{
+				"comment_id": 9,
+				"body": "> [niggajones](#comment_2_1HHdE1Y1sreeMDp9zmUdVDtGMJhNVn8c3e): Why do you think people would choose vaping over their country?\nBecause they are addicts. Or what, do you doubt white people choose more material possessions, drugs, hollyjew and talmudvision hyperstimulation, slutting it up and other random bullshit over their country and their fellow people for the last 200 years?\n\n>\"hah they banned your drug addiction bet you feel stupid now huh\" You're stupid and I feel like I lost IQ points by reading this non-argument.\nYOU are the stupid one. Of course an addict is going to feel stupid over taking an action that leads to making it harder to access the object of their addiction.\nNot to mention that vaping is a red herring and it gives the government a precedent to ban more things. Oh gee, what you got there little billy? Is that a high caliber weapon? Oh no, you can't have that! Why'd you need a weapon of war made to KILL PEOPLE? You'll hurt yourself with that. Here, let me take it away for your own good. Just like we did last time with those vapes, 'member? The world didn't end after we banned that one now did it?\nWhat needs to be banned is people with a net worth of over a million dollars. Get rid of rich people and you'll get rid of 90% of jews while also getting rid of race traitors who'd chose to suck jewish cock for money over helping their own people.",
+				"added": 1570324604
+			},
+			{
+				"comment_id": 16,
+				"body": "> [anonymouslogin](#comment_37_17AMQVbBa12XB3xFWKDnP2dCEx92TaiY7X): Government governs....anarchy doesn't work for humanity, rule by fear takes over. Support Andrew Yang! His platform makes sense!\n\nDeport anyone who's not able to rule himself.",
+				"added": 1570406714
+			},
+			{
+				"comment_id": 17,
+				"body": "> [anonymouslogin](#comment_38_17AMQVbBa12XB3xFWKDnP2dCEx92TaiY7X): Sounds pretty nice...Completely uninhabited wilderness.> emmet: Deport anyone who's not able to rule himself.\n\nOh, I get it! Every daddy government leftist ideology is based on faggots projecting their own deficiencies onto others. It all makes sense now. Who would've guessed?",
+				"added": 1570419736
+			}
+		],
+		"1568749254_14kTJXu4KZSoWSSNcGtXEijf4NqEGimc9J": [
+			{
+				"comment_id": 10,
+				"body": "> [niggajones](#comment_1_1HHdE1Y1sreeMDp9zmUdVDtGMJhNVn8c3e): Default block lists? Nah, that shit can fuck right off. Literally going against the entire point of zeronet.\n\nThey're not default. You have to click an option on their site to enable them.",
+				"added": 1570325296
+			},
+			{
+				"comment_id": 12,
+				"body": "> [gitcenter](#comment_1131_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di): Right, and the blocklists aren't even hosted on KxoNetwork.\n\nBut they were at the time this thread was created.",
+				"added": 1570364716
+			},
+			{
+				"comment_id": 14,
+				"body": "> [gitcenter](#comment_1135_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di): They were, but niggajones replied well after the thread creation.\n\nNot appending the word \"anymore\" at the end of the sentence makes it seem like they were never there, which is a bit disingenuous.",
+				"added": 1570380154
+			}
+		],
+		"1570391956_1367VTupfj886Uk39iT4RjiSmrakiDYTga": [
+			{
+				"comment_id": 18,
+				"body": "EVERY hollyjew production is nonsense designed to psychologically manipulate you in some way, no matter what fake outrage bullshit the media says about it to get you to buy a ticket. Don't fall for the viral marketing on 4chan.\nIf you must watch it then download it from The Pirate Bay, but then again, better not to because you know there will be some brainwashing going on designed to be especially effective on the target audience the movie was aimed to (you).",
+				"added": 1570420329
+			}
+		],
+		"1570458113_14HL4TtDqn72eNpfEQE5WSYjRsYDr2pZ81": [
+			{
+				"comment_id": 19,
+				"body": "Depends on how much intermodulation products your amp has. If it was just about the amp, it'd probably work. But running them all through a single filter... I don't know, square waves have lots of harmonics. Signals would probably interfere one another.\nYou could use an fl2k dongle, but the output is only about 2 miliwatts so you'd need another amp stage and you would have to write the software to synthesize the RF signal yourself. Somebody else has done it for AM already though.\nAlso consider that if you ran a single FM station, probably nobody would give a shit. But occupying multiple slots in the FM band, I don't know man. Probably nothing would happen, but you never know.",
+				"added": 1570475264
+			}
+		],
+		"1570425422_1PGTHAmvu7K2PM7qqfoKyWv69aJsAaJQp5": [
+			{
+				"comment_id": 20,
+				"body": "> [zenanon](#comment_29_14kTJXu4KZSoWSSNcGtXEijf4NqEGimc9J): Tor was an intelligence project from the inception. This was never secret. \"Our\" glowniggers needed to hide from their glowniggers. So glowniggers had to build a glownigger proof system that was useful enough that lots of non-glowniggers would use it...for deniability.\n\nBecause nobody ever devised a system where only one party is able to break its security...\nIn any case, this is a misconception. The purpose of Tor is doing online intelligence and counter-intelligence work. CIA agents don't use Tor when working in the field, at least I haven't seen any evidence they do. From the released info I've heard about they seem to just use burner phones and in person meetings.",
+				"added": 1570475570
+			},
+			{
+				"comment_id": 21,
+				"body": "And BTW I don't think there's anything incriminating in those files. The most talked about thing that was going around was a mail of the BBG asking when \"SSL normalization\" was going to be completed. SSL normalization means Tor connections look to an observer like a regular HTTPS connection, which is a good thing, but it's not essential.\nAnother thing that was going around was a supposed leak from an Army employee showing a memo saying they broke Tor. But considering the guy who posted the picture left his name visible, I think it's safe to assume it's a psyop and he only left his name visible so other government employees can call him to find out what's going on and don't freak out thinking it was an actual leak.",
+				"added": 1570475976
+			}
+		],
+		"1570379712_1P4KkC3wa5xtGD8m2MoBTf5p69G3Xr4aCU": [
+			{
+				"comment_id": 22,
+				"body": "> [xcape2net](#comment_439_1GJc2vm4vJjAKsFoFJ2D3gGmKiRac2kfnz): You have to be invited to use Scuttlebutt by someone who is already using it.\n\nNot true. That said, it seems to be full of insufferable lefty normalfaggots.",
+				"added": 1570480367
+			},
+			{
+				"comment_id": 24,
+				"body": "Today I just learned about BlockChan\nI left my criticism there comparing it to ZN.\nhttps://ndm-inf.github.io/BlockChan/postViewer/m/A9484F1E295D728C7221AB94913A490A14E00B1B4CB8171EBC1C6C29A73D3C66",
+				"added": 1570515109
+			},
+			{
+				"comment_id": 25,
+				"body": "> [filips](#comment_246_1LFu1BTScmY82HHtg3TY2jAuSrCYNsQWEY): Do you mean \"blockchain\" as term that describes technologies that cryptocurrencies (and many other projects) use or that specific project called \"BlockChain\"? Update: Based on your link I assume that you mean \"BlockChain\" as that project name.\n\nNope. It's BlockChan.",
+				"added": 1570561226
+			},
+			{
+				"comment_id": 26,
+				"body": "> [sheendocks](#comment_64_1P4KkC3wa5xtGD8m2MoBTf5p69G3Xr4aCU): Yeah, I have Manyverse on my phone now but won't be connecting to those public things, they're talking about releasing on iOS and I msgd the dev to ask for persistency so that the DHT connection can work in the background. Definitely has work to do but I find it super interesting and could end up being very good, it reminds me of Zeronet a bit but coming it at a self hosted network from the other end, ZN connects you to everyone right away and manyverse connects you to none.\n\nI don't get it. Can you explain a bit more what's the difference?",
+				"added": 1570582671
+			},
+			{
+				"comment_id": 27,
+				"body": "> [sheendocks](#comment_65_1P4KkC3wa5xtGD8m2MoBTf5p69G3Xr4aCU): Manyverse is list a social network for mobile (it's a mobile implementation of scuttlebutt which works on desktop too). Essentially, you can connect to people via bluetooth, those on the same wifi, via DHT, or via \"pubs\" which pull data from lots of users who decide to join (not really sure on how pubs work). Because Manyverse works via bluetooth and the local network it's resist to internet connections been taken offline. Andre Staltz develops it and has made some FAQ videos https://www.youtube.com/watch?v=RANVVy9oyXE\nOh, so your point is that it's more geared for local comms rather than Internet based peering? Nice.\nHow about wifi ad hoc networking? Is that possible on phones?\n\n> [kusoneko](#comment_92_16PfVSZrUZuwTgs7wBt1t3ZK9rsvdskoe5)\n> [sheendocks](#comment_65_1P4KkC3wa5xtGD8m2MoBTf5p69G3Xr4aCU)\nHow do they fight off spam though?",
+				"added": 1570585834
+			},
+			{
+				"comment_id": 28,
+				"body": "> [kusoneko](#comment_93_16PfVSZrUZuwTgs7wBt1t3ZK9rsvdskoe5): Wifi Ad Hoc Networking is only possible on phones that support it, which very few do, unfortunately. [...]\n\nSo there's nothing preventing it from generating lots of new IDs and spamming with that? I guess I'm asking what's the ZeroID equivalent on there.",
+				"added": 1570588246
+			},
+			{
+				"comment_id": 29,
+				"body": "> [xcape2net](#comment_446_1GJc2vm4vJjAKsFoFJ2D3gGmKiRac2kfnz): Tell me if this makes sense.  There are 900 MHz modems available that are in or near the \"citizen's radio band\"  in the United States.  They cost about 150 USD.  They should have a range of about 10 km or so.  Essentially no one uses them because WiFi has caught on with the general population, so no one is seriously looking for an alternative.  Plus, there would be a problem using this in a city with millions of other people using them.  But they should work just fine for a location where there are 10-20 other people using them within range.  There should be other similar frequencies that are relatively easy to get licenses for in other countries.  It should be relatively easy to connect a computer running ZeroNet to a 900 Mhz modem and have a stand-alone, 900-MHz-radio-linked ZeroNet network.    [...]\n\nThings like LoRa are extremely low bandwidth. They are for a \"send a temperature and voltage reading every 5 minutes\" kind of thing, not general TCP/IP networking. 900MHz isn't citizen's band btw. It's an ISM band.",
+				"added": 1570748058
+			},
+			{
+				"comment_id": 30,
+				"body": "> [xcape2net](#comment_449_1GJc2vm4vJjAKsFoFJ2D3gGmKiRac2kfnz): Makes sense.  So, it would only be good for text-based communication, like email and ZeroTalk.  :)\n\nMaybe. It could be good enough for that depending on how good the signal is. If the signal is bad you'll have to wait half an hour or more to get a full page of text. You cold make small battery powered routers and hide them around in the city.  But still range is not enough to work outside the city. For that you need to go on HF at a frequency lower than about 20Mhz because then it reflects off the ionosphere and you can get out thousands of miles on little power. But then you need a ham radio license and can only run one transmitter at a time. There's a small ISM band at 13Mhz but  the power limits are tiny.",
+				"added": 1570830266
+			}
+		],
+		"1570496389_14kTJXu4KZSoWSSNcGtXEijf4NqEGimc9J": [],
+		"1569353016_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di": [
+			{
+				"comment_id": 35,
+				"body": "So this new version leaks your geolocation data?",
+				"added": 1571810556
+			},
+			{
+				"comment_id": 36,
+				"body": "> [gitcenter](#comment_1152_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di): Huh, nope. I actually meant an IP-based map, not a geographical map. See, you have to reveal your IP to connect to the network; same here -- your IP is shared when you post messages. You can enable Tor to prevent any leaks.\n\nCool.\nDid you see the question I asked you on http://127.0.0.1:43110/Talk.ZeroNetwork.bit/?Topic:1570109199_1N4DSSHorDvEkDGkQfUhnnryYiTdtUW8hU/Lets+fix+ZeroNet?",
+				"added": 1571811686
+			},
+			{
+				"comment_id": 37,
+				"body": "> [gitcenter](#comment_1153_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di): This one? [...]\n\nYeah.\n>When enough people upgrade, we'd allow users use the added features.\nSo there's no way to make it work before enough users have updated that there's a decent chance that any random peer will have the new feature?\nDoes ZeroNet already have any kind of DHT functionality? If that was the case then it would be trivial to make clients prioritize updated nodes when giving peering data to others.",
+				"added": 1571812651
+			},
+			{
+				"comment_id": 38,
+				"body": "> [gitcenter](#comment_1154_1Cy3ntkN2GN9MH6EaW6eHpi4YoRS2nK5Di): Well, tbh I think this can be implemented without breaking backward compatibility\nHow?",
+				"added": 1571813090
+			}
+		]
+	},
+	"comment_vote": {
+		"118_13wJrWgzjwKU1zgXJMDCGhkSjsaUvYjZM2": 1
+	}
+}
