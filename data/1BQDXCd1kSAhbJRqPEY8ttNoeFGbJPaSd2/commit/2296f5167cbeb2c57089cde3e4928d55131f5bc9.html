@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>example.sh: fix: remove error mode, would stop if a dir was invalid - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/2296f5167cbeb2c57089cde3e4928d55131f5bc9.html">2296f5167cbeb2c57089cde3e4928d55131f5bc9</a>
+<b>parent</b> <a href="../commit/8983c802c1ddf205a1a0d38debf51d3c18b7ab4a.html">8983c802c1ddf205a1a0d38debf51d3c18b7ab4a</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Fri Jan  8 22:17:54 +0100
+
+example.sh: fix: remove error mode, would stop if a dir was invalid
+
+mkdir -p makes the directory always, so no need to check.
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">example.sh</a></td><td> | </td><td class="num">14</td><td><span class="i">+++++</span><span class="d">---------</span></td></tr>
+</table>1 file changed, 5 insertions(+), 9 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/example.sh.html">example.sh</a> b/<a href="../file/example.sh.html">example.sh</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -12,8 +12,6 @@
+</a> # - mkdir -p htmldir &amp;&amp; cd htmldir
+ # - sh example.sh
+ 
+<a href="#h0-0-3" id="h0-0-3" class="d">-set -e
+</a><a href="#h0-0-4" id="h0-0-4" class="d">-
+</a> reposdir=&quot;/var/www/domains/git.codemadness.nl/home/src&quot;
+ curdir=$(pwd)
+ 
+<a href="#h0-1" id="h0-1" class="h">@@ -34,23 +32,21 @@ done | sort -n -k 1 | cut -f 2- -d &apos; &apos; | xargs stagit-index | \
+</a> 	sed &apos;s@&lt;td&gt;Last commit&lt;/td&gt;@&lt;td&gt;&lt;a href=&quot;index-time.html&quot;&gt;Last commit&lt;/a&gt;&lt;/td&gt;@g&apos; | \
+ 	sed &apos;s@&lt;td&gt;Name&lt;/td&gt;@&lt;td&gt;&lt;a href=&quot;index.html&quot;&gt;Name&lt;/a&gt;&lt;/td&gt;@g&apos; &gt; &quot;${curdir}/index-time.html&quot;
+ 
+<a href="#h0-1-3" id="h0-1-3" class="d">-cd &quot;${reposdir}&quot;
+</a><a href="#h0-1-4" id="h0-1-4" class="d">-
+</a> # make files per repo.
+<a href="#h0-1-6" id="h0-1-6" class="i">+cd &quot;${reposdir}&quot;
+</a> find . -maxdepth 1 -type d | grep -v &quot;^.$&quot; | sort | while read -r dir; do
+ 	d=$(basename &quot;${dir}&quot;)
+ 	printf &quot;%s...&quot; &quot;${d}&quot;
+<a href="#h0-1-10" id="h0-1-10" class="d">-	cd &quot;${curdir}&quot;
+</a> 
+<a href="#h0-1-12" id="h0-1-12" class="d">-	test -d &quot;${d}&quot; || mkdir -p &quot;${d}&quot;
+</a><a href="#h0-1-13" id="h0-1-13" class="d">-	cd &quot;${d}&quot;
+</a><a href="#h0-1-14" id="h0-1-14" class="i">+	mkdir -p &quot;${curdir}/${d}&quot;
+</a><a href="#h0-1-15" id="h0-1-15" class="i">+	cd &quot;${curdir}/${d}&quot;
+</a> 	stagit &quot;${reposdir}/${d}&quot;
+ 
+<a href="#h0-1-18" id="h0-1-18" class="d">-	printf &quot; done\n&quot;
+</a><a href="#h0-1-19" id="h0-1-19" class="d">-
+</a> 	# symlinks
+ 	ln -sf log.html index.html
+ 	ln -sf ../style.css style.css
+ 	ln -sf ../logo.png logo.png
+ 	ln -sf ../favicon.png favicon.png
+<a href="#h0-1-25" id="h0-1-25" class="i">+
+</a><a href="#h0-1-26" id="h0-1-26" class="i">+	printf &quot; done\n&quot;
+</a> done
+</pre>
+</div>
+</body>
+</html>

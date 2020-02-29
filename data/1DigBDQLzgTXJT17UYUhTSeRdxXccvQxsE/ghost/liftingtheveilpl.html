@@ -1,0 +1,53 @@
+<?xml version="1.0"><!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+
+<link rel="stylesheet" type="text/css" href="../themes/ghost.css" />
+
+<link rel="icon" href = "../favicon.ico"><title>Podnoszenie zasłony - jak testować przeglądarki pod kątem oprogramowania szpiegującego.</title>
+</head>
+
+<body>
+
+<div id="center">
+
+<h2>Podnoszenie zasłony - jak testować przeglądarki pod kątem oprogramowania szpiegującego.</h2>
+
+<p>Wsparcie ochrony prywatności jest jednym z głównych kryteriów, na podstawie których użytkownicy wybierają (bądź też powinni wybierać) przeglądarkę internetową. Często opinia osoby na temat prywatności danej przeglądarki jest wynikiem domysłów, zabiegów marketingowych lub jej polityki prywatności, która może być zbyt rozbudowana i niezrozumiała, <em>pomijać informacje, lub wręcz kłamać</em>. Czyż nie byłoby wspaniale, gdybyśmy znaleźli sposób na <em>udowodnienie</em>, czy dana przeglądarka faktycznie troszczy się o Twoją prywatność, czy też po prostu zasypuje Cię stekiem bzdur? Na szczęście, istnieje potężne narzędzie, które pozwala zobaczyć, co dokładnie robi przeglądarka za naszymi plecami, a ja zamierzam zaprezentować Ci ją w tej chwili. <em>Podnieśmy zasłony!</em></p>
+
+<h3>Uzyskiwanie, uruchamianie i konfigurowanie narzędzia</h3>
+
+<p>Po pierwsze, zainstaluj <a href="https://mitmproxy.org/">mitmproxy</a>. Możesz to łatwo zrobić, wpisując to polecenie w terminalu: <em>pip3 install mitmproxy</em> (będziesz potrzebować zainstalowaną obsługę python3 - powinien być dostępny w większości repozytoriów Linuksa). Czym jest mitmproxy? Jest to po prostu lokalny serwer proxy, który pozwala na wskazanie przeglądarki, co pozwoli Ci zobaczyć połączenia, które wykonuje (ma znacznie więcej funkcji, ale w tym artykule, to jest nasz jedyny cel).</p>
+
+<h4>Podłączenie przeglądarki do mitmproxy</h4>
+
+<p>Najpierw uruchom mitmproxy, wpisując to polecenie w terminalu <em>mitmproxy -p 3128</em>. 3128 jest portem, na którym działa serwer proxy. Teraz przejdź do ustawień serwera proxy przeglądarki i wprowadź następujące dane <em>127.0.0.1</em> dla IP, oraz <em>3128</em> dla portu (upewnij się, że wypełniasz zarówno sekcje HTTP jak i HTTPS). W przeglądarkach opartych na Chrome jest nieco trudniej, ponieważ nie obsługują one graficznego interfejsu ustawień proxy. Musisz uruchomić je z linii poleceń w ten sposób: <em>nazwa przeglądarki --proxy-server="127.0.0.1:3128"</em>. Zastąp "nazwę przeglądarki" nazwą wykonywalną, na przykład <em>iridium-browser --proxy-server="127.0.0.1:3128".</em></p>
+
+<h4>Włączenie deszyfrowania SSL</h4>
+
+<p>Teraz, jeśli Twoja przeglądarka jest jedną z tych, które lubią zbierać informacje o Tobie, to powinieneś już widzieć niektóre żądania w oknie terminala - ale zaczekaj, konfiguracja mitmproxy jeszcze się nie skończyła. Domyślnie pokazuje tylko czyste żądania HTTP, ponieważ przeglądarki nie pozwalają na odszyfrowanie SSL. Na szczęście istnieje łatwy sposób na dodanie certyfikatu root do przeglądarki, co umożliwi nam to (część "mitm" w mitmproxy odnosi się do tego). Przejdź do okna przeglądarki i wpisz <em>mitm.it</em> w pasku adresu. Teraz wybierz swoją platformę i postępuj zgodnie z dalszymi instrukcjami. Jeśli Ci się udało, powinieneś być w stanie przejść do dowolnej strony HTTPS i zobaczyć żądanie w mitmproxy (co rozpocznie się od <em>GET https://</em>). Co teraz?</p>
+
+<h3>Korzystanie z mitmproxy</h3>
+
+<p><em>Zaczekaj!</em> Tak, to wszystko. Chodzi o to, aby poczekać i zobaczyć, jakie żądania wykonuje przeglądarka bez twojego udziału. Żądania można przewijać za pomocą klawiszy strzałek i sprawdzać je szczegółowo, naciskając Enter. Pokaże to WSZYSTKIE dane, które przeglądarka wysyła, jak również odbiera. Oczywiście, zrozumienie tego wymaga dużego doświadczenia, ale przynajmniej teraz masz możliwość <em>Podnieść Zasłonę</em>, jeśli tylko zechcesz! Możesz być zaskoczony, widząc, że popularne przeglądarki internetowe wykonują <em>setki żądań bez Twojej wiedzy</em>, nawet te, które są ogólnie uważane za "szanujące lub chroniące Twoją prywatność". Na przykład, Waterfox wykonuje dokładnie <a href="../images/wfox.png">109 niechcianych żądań</a>, tylko poprzez uruchomienie go! I jest ona reklamowana jako oparta na prywatności - ale dzięki mitmproxy, można podnieść zasłonę, i zdemaskować ich kłamstwo. Czyż nie jest wspaniałe? Nigdy więcej polegania na popularnych opiniach, zwodniczym reklamom, lub niechlujnym politykom prywatności, które powinny być nazywane politykami szpiegowskimi. Teraz posiadasz już wszystko, abyś mógł sam to sprawdzić.</p>
+
+<p>Oczywiście, nie zobaczysz wszystkich programów szpiegujących, po prostu czekając. Niektóre z nich mogą się ukrywać w miejscach takich jak nowe karty lub wymagają odwiedzenia strony internetowej (np. zbiór historii przeglądarki Opery). Ponadto, wiele żądań jest wykonywanych tylko przy pierwszym uruchomieniu przeglądarki, gdzie jej ruch nie przechodzi jeszcze przez mitmproxy, co uniemożliwi Ci ich oglądanie. Jak to obejść?</p>
+
+<h4>Oparte na Chrome</h4>
+
+<p>Zamknij swoją przeglądarkę. Teraz przejdź do katalogu konfiguracji przeglądarki (np. <em>/home/hackerman/.config/vivaldi/</em>) i usuń plik "Pierwsze uruchomienie". To powinno zadziałać. Użyj klawisza Z w mitmproxy, aby usunąć wszystkie poprzednie żądania, tak aby łatwiej było zobaczyć tylko te najnowsze. Uruchom przeglądarkę ponownie.</p>
+
+<h4>Oparte na Firefoksie</h4>
+
+<p>Trochę trudniej. Musisz również przejść do katalogu konfiguracji przeglądarek, ale nie będzie to .config, a <em>.mozilla</em> (dla FF i IceCat), <em>.waterfox</em> (dla Waterfoksa), lub <em>.moonchild productions</em> (dla Pale Moon). Teraz ZAMKNIJ SWOJĄ PRZEGLĄDARKĘ (jeśli masz ją otwartą), znajdź plik <em>prefs.js</em>, i w nim, wiersz <em>user_pref("network.proxy.http", "127.0.0.1");</em>. Teraz skopiuj wszystko odtąd, do <em>user_pref("network.proxy.type", 1);</em>. Usuń wszystkie inne w pliku i zapisz. Twój plik prefs.js powinien wyglądać <a href="../txt/prefs.txt">tak</a> (teraz prawdopodobnie nie wszystko musi być koniecznie usunięte, ale na wszelki wypadek zabezpieczmy się...). Usuń również wszystkie inne pliki z wyjątkiem prefs.js i cert8.db (zawiera informacje o certyfikacie mitmproxy) - to spowoduje pozostawienie przeglądarki Firefox TYLKO z tymi ustawieniami serwera proxy, które zostały zmienione z domyślnej, czystej instalacji.</p>
+
+<h3>Inne zastosowania dla mitmproxy</h3>
+
+<p>Nieskończone. Możesz nawet sprawdzić, czy rozszerzenie nie czyni niepotrzebnych żądań. Niektóre z tak zwanych rozszerzeń prywatności w rzeczywistości <em>naruszają Twoją prywatność</em> poprzez wysyłanie zapytań za Twoimi plecami. Odtwarzanie żądań, wymiana części zawartości na stronie internetowej. Możesz nawet dzięki niemu dokonać <em>prawdziwego hakowania</em>, w tym m.in. wykradania haseł lub wysyłania fałszywych stron dla swojej ofiary - ale są one znacznie trudniejsze niż zwykłe testowanie prywatności przeglądarki, a to już temat na inny artykuł. Możesz również podłączyć dowolny program, który komunikuje się przez HTTP, jak i czytniki RSS. Miłej zabawy...</p>
+
+<h4>Przetłumaczone przez Isulinox.</h4>
+
+<a href="../indexpl.html">Kliknij tutaj, aby przejść do strony głównej</a>
+
+</div>
+
+</body></html>

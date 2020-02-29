@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Wrapper postmessage nonce security, Fix size limit display - 0git - 0git - a list of git repositories on ZeroNet
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="0git.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>0git</h1><span class="desc">0git - a list of git repositories on ZeroNet
+</span></td></tr><tr class="url"><td></td><td>git clone <a href="http://127.0.0.1:43110/0git.bit/0git.git">http://127.0.0.1:43110/0git.bit/0git.git</a></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.md.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/65fc344ae6bfc99d417d55d63a5cf4103ec44b72.html">65fc344ae6bfc99d417d55d63a5cf4103ec44b72</a>
+<b>parent</b> <a href="../commit/817da44b2780fdbfe81ce9b4dec6fb25716abd1b.html">817da44b2780fdbfe81ce9b4dec6fb25716abd1b</a>
+<b>Author:</b> HelloZeroNet &lt;<a href="mailto:hello@noloop.me">hello@noloop.me</a>&gt;
+<b>Date:</b>   Wed Feb 10 02:09:54 +0100
+
+Wrapper postmessage nonce security, Fix size limit display
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">content.json</a></td><td> | </td><td class="num">125</td><td><span class="i">++++++++++++++++++++++++++++++++++++++++</span><span class="d">---------------------------------------</span></td></tr>
+<tr><td><a href="#h1">css/ZeroTalk.css</a></td><td> | </td><td class="num">2</td><td><span class="i">++</span><span class="d"></span></td></tr>
+<tr><td><a href="#h2">css/all.css</a></td><td> | </td><td class="num">2</td><td><span class="i">++</span><span class="d"></span></td></tr>
+<tr><td><a href="#h3">index.html</a></td><td> | </td><td class="num">2</td><td><span class="i">+</span><span class="d">-</span></td></tr>
+<tr><td><a href="#h4">js/User.coffee</a></td><td> | </td><td class="num">20</td><td><span class="i">++++++++++</span><span class="d">----------</span></td></tr>
+<tr><td><a href="#h5">js/all.js</a></td><td> | </td><td class="num">6</td><td><span class="i">++++</span><span class="d">--</span></td></tr>
+<tr><td><a href="#h6">js/utils/ZeroFrame.coffee</a></td><td> | </td><td class="num">6</td><td><span class="i">++++</span><span class="d">--</span></td></tr>
+</table>7 files changed, 86 insertions(+), 77 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/content.json.html">content.json</a> b/<a href="../file/content.json.html">content.json</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -1,64 +1,65 @@
+</a> {
+<a href="#h0-0-1" id="h0-0-1" class="d">-  &quot;address&quot;: &quot;1TaLkFrMwvbNsooF4ioKAY9EuxTBTjipT&quot;, 
+</a><a href="#h0-0-2" id="h0-0-2" class="d">-  &quot;background-color&quot;: &quot;#F5F5F5&quot;, 
+</a><a href="#h0-0-3" id="h0-0-3" class="d">-  &quot;cloneable&quot;: true, 
+</a><a href="#h0-0-4" id="h0-0-4" class="d">-  &quot;description&quot;: &quot;Decentralized forum with ZeroID&quot;, 
+</a><a href="#h0-0-5" id="h0-0-5" class="d">-  &quot;domain&quot;: &quot;Talk.ZeroNetwork.bit&quot;, 
+</a><a href="#h0-0-6" id="h0-0-6" class="d">-  &quot;files&quot;: {
+</a><a href="#h0-0-7" id="h0-0-7" class="d">-    &quot;css/all.css&quot;: {
+</a><a href="#h0-0-8" id="h0-0-8" class="d">-      &quot;sha512&quot;: &quot;8475aee113486366b003366256d685e5d29cbd8794ba5af23b8e95d235ab0248&quot;, 
+</a><a href="#h0-0-9" id="h0-0-9" class="d">-      &quot;size&quot;: 152480
+</a><a href="#h0-0-10" id="h0-0-10" class="d">-    }, 
+</a><a href="#h0-0-11" id="h0-0-11" class="d">-    &quot;data-default/users/content-default.json&quot;: {
+</a><a href="#h0-0-12" id="h0-0-12" class="d">-      &quot;sha512&quot;: &quot;c1642cc2922a74c3e74991f0194e2acc46dc5e003207a0028dad63c75c41a0ec&quot;, 
+</a><a href="#h0-0-13" id="h0-0-13" class="d">-      &quot;size&quot;: 672
+</a><a href="#h0-0-14" id="h0-0-14" class="d">-    }, 
+</a><a href="#h0-0-15" id="h0-0-15" class="d">-    &quot;dbschema.json&quot;: {
+</a><a href="#h0-0-16" id="h0-0-16" class="d">-      &quot;sha512&quot;: &quot;e9a6c08bcba672d4fa74b09a1577c1130886104b15e425f9fa4ca4669e38f542&quot;, 
+</a><a href="#h0-0-17" id="h0-0-17" class="d">-      &quot;size&quot;: 1932
+</a><a href="#h0-0-18" id="h0-0-18" class="d">-    }, 
+</a><a href="#h0-0-19" id="h0-0-19" class="d">-    &quot;img/edit.png&quot;: {
+</a><a href="#h0-0-20" id="h0-0-20" class="d">-      &quot;sha512&quot;: &quot;60ba4297e205b038bf7852ead2b88f9373cd8848408bb258dbcebb086d43f056&quot;, 
+</a><a href="#h0-0-21" id="h0-0-21" class="d">-      &quot;size&quot;: 237
+</a><a href="#h0-0-22" id="h0-0-22" class="d">-    }, 
+</a><a href="#h0-0-23" id="h0-0-23" class="d">-    &quot;img/loading.gif&quot;: {
+</a><a href="#h0-0-24" id="h0-0-24" class="d">-      &quot;sha512&quot;: &quot;8a42b98962faea74618113166886be488c09dad10ca47fe97005edc5fb40cc00&quot;, 
+</a><a href="#h0-0-25" id="h0-0-25" class="d">-      &quot;size&quot;: 723
+</a><a href="#h0-0-26" id="h0-0-26" class="d">-    }, 
+</a><a href="#h0-0-27" id="h0-0-27" class="d">-    &quot;img/topic-chat.png&quot;: {
+</a><a href="#h0-0-28" id="h0-0-28" class="d">-      &quot;sha512&quot;: &quot;f41719987d5f5d797591857648c0d4cf33a11d7f1a42428a2456c28e0957c88e&quot;, 
+</a><a href="#h0-0-29" id="h0-0-29" class="d">-      &quot;size&quot;: 238
+</a><a href="#h0-0-30" id="h0-0-30" class="d">-    }, 
+</a><a href="#h0-0-31" id="h0-0-31" class="d">-    &quot;img/topic-group.png&quot;: {
+</a><a href="#h0-0-32" id="h0-0-32" class="d">-      &quot;sha512&quot;: &quot;1f9305544e3350d62f0c76caf5202e256848206d18485e0451dc050201f86a7b&quot;, 
+</a><a href="#h0-0-33" id="h0-0-33" class="d">-      &quot;size&quot;: 310
+</a><a href="#h0-0-34" id="h0-0-34" class="d">-    }, 
+</a><a href="#h0-0-35" id="h0-0-35" class="d">-    &quot;index.html&quot;: {
+</a><a href="#h0-0-36" id="h0-0-36" class="d">-      &quot;sha512&quot;: &quot;f72c951979b3632d88cbfbd39ff3e8a7eae2a0c7b1c71c0c12e8d193f7432874&quot;, 
+</a><a href="#h0-0-37" id="h0-0-37" class="d">-      &quot;size&quot;: 5774
+</a><a href="#h0-0-38" id="h0-0-38" class="d">-    }, 
+</a><a href="#h0-0-39" id="h0-0-39" class="d">-    &quot;js/all.js&quot;: {
+</a><a href="#h0-0-40" id="h0-0-40" class="d">-      &quot;sha512&quot;: &quot;3f43c2a71ee7935543c5eaf50c2a6050bc300c9af24dfa9b6fda63866f457362&quot;, 
+</a><a href="#h0-0-41" id="h0-0-41" class="d">-      &quot;size&quot;: 210996
+</a><a href="#h0-0-42" id="h0-0-42" class="d">-    }
+</a><a href="#h0-0-43" id="h0-0-43" class="d">-  }, 
+</a><a href="#h0-0-44" id="h0-0-44" class="d">-  &quot;ignore&quot;: &quot;((js|css)/(?!all.(js|css))|data/users/.*db|data/users/.*/.*|.*.py)&quot;, 
+</a><a href="#h0-0-45" id="h0-0-45" class="d">-  &quot;includes&quot;: {
+</a><a href="#h0-0-46" id="h0-0-46" class="d">-    &quot;data/users/content.json&quot;: {
+</a><a href="#h0-0-47" id="h0-0-47" class="d">-      &quot;signers&quot;: [], 
+</a><a href="#h0-0-48" id="h0-0-48" class="d">-      &quot;signers_required&quot;: 1
+</a><a href="#h0-0-49" id="h0-0-49" class="d">-    }
+</a><a href="#h0-0-50" id="h0-0-50" class="d">-  }, 
+</a><a href="#h0-0-51" id="h0-0-51" class="d">-  &quot;modified&quot;: 1438376028.169, 
+</a><a href="#h0-0-52" id="h0-0-52" class="d">-  &quot;sign&quot;: [
+</a><a href="#h0-0-53" id="h0-0-53" class="d">-    30817604096047753686879259049976925218536223360338677809851712663582171805528, 
+</a><a href="#h0-0-54" id="h0-0-54" class="d">-    97126124378091212097832526449191705098185499565428183816890520374362016381998
+</a><a href="#h0-0-55" id="h0-0-55" class="d">-  ], 
+</a><a href="#h0-0-56" id="h0-0-56" class="d">-  &quot;signers_sign&quot;: &quot;HG/6ljsXbej7laqD3JUGsa8IEgSGE+NZs2jg9reQ3vrlo0fTnoFESCNujVxRuY1ORor143LGSyjl8PkaRdU4gx8=&quot;, 
+</a><a href="#h0-0-57" id="h0-0-57" class="d">-  &quot;signs&quot;: {
+</a><a href="#h0-0-58" id="h0-0-58" class="d">-    &quot;1TaLkFrMwvbNsooF4ioKAY9EuxTBTjipT&quot;: &quot;HNDecK8ksEzI6X3ej75TxV2V0TiMHSBCxiD7Ts0JM6pJBXNJZsGinZM2inoSchVKlSB8bG+HLFbTwgt0tcq79YE=&quot;
+</a><a href="#h0-0-59" id="h0-0-59" class="d">-  }, 
+</a><a href="#h0-0-60" id="h0-0-60" class="d">-  &quot;signs_required&quot;: 1, 
+</a><a href="#h0-0-61" id="h0-0-61" class="d">-  &quot;title&quot;: &quot;nuZeroTalk&quot;, 
+</a><a href="#h0-0-62" id="h0-0-62" class="d">-  &quot;zeronet_version&quot;: &quot;0.3.1&quot;
+</a><a href="#h0-0-63" id="h0-0-63" class="i">+ &quot;address&quot;: &quot;1TaLkFrMwvbNsooF4ioKAY9EuxTBTjipT&quot;,
+</a><a href="#h0-0-64" id="h0-0-64" class="i">+ &quot;background-color&quot;: &quot;#F5F5F5&quot;,
+</a><a href="#h0-0-65" id="h0-0-65" class="i">+ &quot;cloneable&quot;: true,
+</a><a href="#h0-0-66" id="h0-0-66" class="i">+ &quot;description&quot;: &quot;Decentralized forum with ZeroID&quot;,
+</a><a href="#h0-0-67" id="h0-0-67" class="i">+ &quot;domain&quot;: &quot;Talk.ZeroNetwork.bit&quot;,
+</a><a href="#h0-0-68" id="h0-0-68" class="i">+ &quot;files&quot;: {
+</a><a href="#h0-0-69" id="h0-0-69" class="i">+  &quot;css/all.css&quot;: {
+</a><a href="#h0-0-70" id="h0-0-70" class="i">+   &quot;sha512&quot;: &quot;c28f162eae761b76063a6f90d5abc0ecdf9d48d9301897989093c14c5d426fa6&quot;,
+</a><a href="#h0-0-71" id="h0-0-71" class="i">+   &quot;size&quot;: 160876
+</a><a href="#h0-0-72" id="h0-0-72" class="i">+  },
+</a><a href="#h0-0-73" id="h0-0-73" class="i">+  &quot;data-default/users/content-default.json&quot;: {
+</a><a href="#h0-0-74" id="h0-0-74" class="i">+   &quot;sha512&quot;: &quot;c1642cc2922a74c3e74991f0194e2acc46dc5e003207a0028dad63c75c41a0ec&quot;,
+</a><a href="#h0-0-75" id="h0-0-75" class="i">+   &quot;size&quot;: 672
+</a><a href="#h0-0-76" id="h0-0-76" class="i">+  },
+</a><a href="#h0-0-77" id="h0-0-77" class="i">+  &quot;dbschema.json&quot;: {
+</a><a href="#h0-0-78" id="h0-0-78" class="i">+   &quot;sha512&quot;: &quot;e9a6c08bcba672d4fa74b09a1577c1130886104b15e425f9fa4ca4669e38f542&quot;,
+</a><a href="#h0-0-79" id="h0-0-79" class="i">+   &quot;size&quot;: 1932
+</a><a href="#h0-0-80" id="h0-0-80" class="i">+  },
+</a><a href="#h0-0-81" id="h0-0-81" class="i">+  &quot;img/edit.png&quot;: {
+</a><a href="#h0-0-82" id="h0-0-82" class="i">+   &quot;sha512&quot;: &quot;60ba4297e205b038bf7852ead2b88f9373cd8848408bb258dbcebb086d43f056&quot;,
+</a><a href="#h0-0-83" id="h0-0-83" class="i">+   &quot;size&quot;: 237
+</a><a href="#h0-0-84" id="h0-0-84" class="i">+  },
+</a><a href="#h0-0-85" id="h0-0-85" class="i">+  &quot;img/loading.gif&quot;: {
+</a><a href="#h0-0-86" id="h0-0-86" class="i">+   &quot;sha512&quot;: &quot;8a42b98962faea74618113166886be488c09dad10ca47fe97005edc5fb40cc00&quot;,
+</a><a href="#h0-0-87" id="h0-0-87" class="i">+   &quot;size&quot;: 723
+</a><a href="#h0-0-88" id="h0-0-88" class="i">+  },
+</a><a href="#h0-0-89" id="h0-0-89" class="i">+  &quot;img/topic-chat.png&quot;: {
+</a><a href="#h0-0-90" id="h0-0-90" class="i">+   &quot;sha512&quot;: &quot;f41719987d5f5d797591857648c0d4cf33a11d7f1a42428a2456c28e0957c88e&quot;,
+</a><a href="#h0-0-91" id="h0-0-91" class="i">+   &quot;size&quot;: 238
+</a><a href="#h0-0-92" id="h0-0-92" class="i">+  },
+</a><a href="#h0-0-93" id="h0-0-93" class="i">+  &quot;img/topic-group.png&quot;: {
+</a><a href="#h0-0-94" id="h0-0-94" class="i">+   &quot;sha512&quot;: &quot;1f9305544e3350d62f0c76caf5202e256848206d18485e0451dc050201f86a7b&quot;,
+</a><a href="#h0-0-95" id="h0-0-95" class="i">+   &quot;size&quot;: 310
+</a><a href="#h0-0-96" id="h0-0-96" class="i">+  },
+</a><a href="#h0-0-97" id="h0-0-97" class="i">+  &quot;index.html&quot;: {
+</a><a href="#h0-0-98" id="h0-0-98" class="i">+   &quot;sha512&quot;: &quot;6e5864282df4c9fefb04e9ef1d162441454b25ca9b9f24abbb8066659dfaab49&quot;,
+</a><a href="#h0-0-99" id="h0-0-99" class="i">+   &quot;size&quot;: 6524
+</a><a href="#h0-0-100" id="h0-0-100" class="i">+  },
+</a><a href="#h0-0-101" id="h0-0-101" class="i">+  &quot;js/all.js&quot;: {
+</a><a href="#h0-0-102" id="h0-0-102" class="i">+   &quot;sha512&quot;: &quot;1ba1ce2ac5e604cebde92c7a31b1aed0182be15e1455c9f63f3fa288c285a065&quot;,
+</a><a href="#h0-0-103" id="h0-0-103" class="i">+   &quot;size&quot;: 224500
+</a><a href="#h0-0-104" id="h0-0-104" class="i">+  }
+</a><a href="#h0-0-105" id="h0-0-105" class="i">+ },
+</a><a href="#h0-0-106" id="h0-0-106" class="i">+ &quot;ignore&quot;: &quot;((js|css)/(?!all.(js|css))|data/users/.*db|data/users/.*/.*|.*.py)&quot;,
+</a><a href="#h0-0-107" id="h0-0-107" class="i">+ &quot;includes&quot;: {
+</a><a href="#h0-0-108" id="h0-0-108" class="i">+  &quot;data/users/content.json&quot;: {
+</a><a href="#h0-0-109" id="h0-0-109" class="i">+   &quot;signers&quot;: [],
+</a><a href="#h0-0-110" id="h0-0-110" class="i">+   &quot;signers_required&quot;: 1
+</a><a href="#h0-0-111" id="h0-0-111" class="i">+  }
+</a><a href="#h0-0-112" id="h0-0-112" class="i">+ },
+</a><a href="#h0-0-113" id="h0-0-113" class="i">+ &quot;modified&quot;: 1455066172.184,
+</a><a href="#h0-0-114" id="h0-0-114" class="i">+ &quot;postmessage_nonce_security&quot;: true,
+</a><a href="#h0-0-115" id="h0-0-115" class="i">+ &quot;sign&quot;: [
+</a><a href="#h0-0-116" id="h0-0-116" class="i">+  94047808675080793403752293282019624115087548196190760029020437826894062335153,
+</a><a href="#h0-0-117" id="h0-0-117" class="i">+  3725575605198862033337433988986397820167538799339831877686219921214428103517
+</a><a href="#h0-0-118" id="h0-0-118" class="i">+ ],
+</a><a href="#h0-0-119" id="h0-0-119" class="i">+ &quot;signers_sign&quot;: &quot;HG/6ljsXbej7laqD3JUGsa8IEgSGE+NZs2jg9reQ3vrlo0fTnoFESCNujVxRuY1ORor143LGSyjl8PkaRdU4gx8=&quot;,
+</a><a href="#h0-0-120" id="h0-0-120" class="i">+ &quot;signs&quot;: {
+</a><a href="#h0-0-121" id="h0-0-121" class="i">+  &quot;1TaLkFrMwvbNsooF4ioKAY9EuxTBTjipT&quot;: &quot;HBcDqZE7LtQeu39K1uUqQkiCxzU72tCNR9UehcJ0JM1ai7bwSZyGP2Lq+5EWh7n9EcWzSqiTFHduWNCOYHOSCGM=&quot;
+</a><a href="#h0-0-122" id="h0-0-122" class="i">+ },
+</a><a href="#h0-0-123" id="h0-0-123" class="i">+ &quot;signs_required&quot;: 1,
+</a><a href="#h0-0-124" id="h0-0-124" class="i">+ &quot;title&quot;: &quot;ZeroTalk&quot;,
+</a><a href="#h0-0-125" id="h0-0-125" class="i">+ &quot;zeronet_version&quot;: &quot;0.3.6&quot;
+</a> } 
+\ No newline at end of file
+<b>diff --git a/<a id="h1" href="../file/css/ZeroTalk.css.html">css/ZeroTalk.css</a> b/<a href="../file/css/ZeroTalk.css.html">css/ZeroTalk.css</a></b>
+<a href="#h1-0" id="h1-0" class="h">@@ -11,6 +11,8 @@ p { margin-top: 0.9em; margin-bottom: 0.9em }
+</a> hr { margin: 20px 0px; border: none; border-bottom: 1px solid #eee; margin-left: auto; margin-right: auto; width: 120px; }
+ small { font-size: 80%; color: #999; }
+ pre { border: solid 1px #e1e4e5; padding: 10px; background-color: #FBFBFB; font-family: Consolas, Monaco, monospace; border-bottom: 2px solid #e1e4e5; line-height: 1em; }
+<a href="#h1-0-3" id="h1-0-3" class="i">+code { background-color: #FBFBFB; padding: 3px 4px; border: solid 1px #e1e4e5; font-family: Consolas, Monaco, monospace; font-size: 13px;  }
+</a><a href="#h1-0-4" id="h1-0-4" class="i">+pre code { border: none; padding: 0px; background-color: transparent; border: none; }
+</a> 
+ a { text-decoration: none; color: #DB3207 }
+ a:hover { border-bottom: 0.1em solid #DDD }
+<b>diff --git a/<a id="h2" href="../file/css/all.css.html">css/all.css</a> b/<a href="../file/css/all.css.html">css/all.css</a></b>
+<a href="#h2-0" id="h2-0" class="h">@@ -121,6 +121,8 @@ p { margin-top: 0.9em; margin-bottom: 0.9em }
+</a> hr { margin: 20px 0px; border: none; border-bottom: 1px solid #eee; margin-left: auto; margin-right: auto; width: 120px; }
+ small { font-size: 80%; color: #999; }
+ pre { border: solid 1px #e1e4e5; padding: 10px; background-color: #FBFBFB; font-family: Consolas, Monaco, monospace; border-bottom: 2px solid #e1e4e5; line-height: 1em; }
+<a href="#h2-0-3" id="h2-0-3" class="i">+code { background-color: #FBFBFB; padding: 3px 4px; border: solid 1px #e1e4e5; font-family: Consolas, Monaco, monospace; font-size: 13px;  }
+</a><a href="#h2-0-4" id="h2-0-4" class="i">+pre code { border: none; padding: 0px; background-color: transparent; border: none; }
+</a> 
+ a { text-decoration: none; color: #DB3207 }
+ a:hover { border-bottom: 0.1em solid #DDD }
+<b>diff --git a/<a id="h3" href="../file/index.html.html">index.html</a> b/<a href="../file/index.html.html">index.html</a></b>
+<a href="#h3-0" id="h3-0" class="h">@@ -122,7 +122,7 @@
+</a>    &lt;a class=&quot;button button-submit button-certselect certselect&quot; href=&quot;#Change+user&quot;&gt;&lt;div class=&apos;icon-profile&apos;&gt;&lt;/div&gt;Sign in as...&lt;/a&gt;
+    &lt;textarea id=&quot;comment_body&quot;&gt;&lt;/textarea&gt;
+    &lt;a href=&quot;#Submit+comment&quot; class=&quot;button button-submit button-submit-form&quot;&gt;Submit comment&lt;/a&gt;
+<a href="#h3-0-3" id="h3-0-3" class="d">-   &lt;div style=&apos;float: right; margin-top: -6px&apos;&gt;
+</a><a href="#h3-0-4" id="h3-0-4" class="i">+   &lt;div style=&apos;float: right; margin-top: -6px; position: relative;&apos;&gt;
+</a>     &lt;div class=&quot;user-size user-size-used&quot;&gt;Used space: 22k/100k&lt;/div&gt;
+     &lt;div class=&quot;user-size&quot;&gt;Used space: 22k/100k&lt;/div&gt;
+    &lt;/div&gt;
+<b>diff --git a/<a id="h4" href="../file/js/User.coffee.html">js/User.coffee</a> b/<a href="../file/js/User.coffee.html">js/User.coffee</a></b>
+<a href="#h4-0" id="h4-0" class="h">@@ -3,7 +3,7 @@ class User extends Class
+</a> 		@my_topic_votes = {}
+ 		@my_comment_votes = {}
+ 		@rules = {}  # Last result for fileRules command
+<a href="#h4-0-3" id="h4-0-3" class="d">-		
+</a><a href="#h4-0-4" id="h4-0-4" class="i">+
+</a> 		@certselectButtons()
+ 
+ 
+<a href="#h4-1" id="h4-1" class="h">@@ -35,8 +35,8 @@ class User extends Class
+</a> 			else
+ 				Page.cmd &quot;certSelect&quot;, [[&quot;zeroid.bit&quot;]]
+ 			return false
+<a href="#h4-1-3" id="h4-1-3" class="d">-			
+</a><a href="#h4-1-4" id="h4-1-4" class="d">-			
+</a><a href="#h4-1-5" id="h4-1-5" class="i">+
+</a><a href="#h4-1-6" id="h4-1-6" class="i">+
+</a> 	checkCert: (type) -&gt;
+ 		last_cert_user_id = $(&quot;.user_name-my&quot;).text()
+ 		if $(&quot;.comment-new .user_name&quot;).text() != Page.site_info.cert_user_id or type == &quot;updaterules&quot; # User changed
+<a href="#h4-2" id="h4-2" class="h">@@ -46,7 +46,7 @@ class User extends Class
+</a> 			else
+ 				$(&quot;.comment-new&quot;).addClass(&quot;comment-nocert&quot;)
+ 				$(&quot;.user_name-my&quot;).text(&quot;Please sign in&quot;)
+<a href="#h4-2-3" id="h4-2-3" class="d">-			
+</a><a href="#h4-2-4" id="h4-2-4" class="i">+
+</a> 			# Update used/allowed space
+ 			if Page.site_info.cert_user_id
+ 				Page.cmd &quot;fileRules&quot;, &quot;data/users/#{Page.site_info.auth_address}/content.json&quot;, (rules) =&gt;
+<a href="#h4-3" id="h4-3" class="h">@@ -62,16 +62,16 @@ class User extends Class
+</a> 	setCurrentSize: (current_size) -&gt;
+ 		if current_size
+ 			current_size_kb = current_size/1000
+<a href="#h4-3-3" id="h4-3-3" class="d">-			$(&quot;.user-size&quot;).text(&quot;used: #{current_size_kb.toFixed(1)}k/#{Math.round(@rules.max_size/1000)}k&quot;).attr(&quot;title&quot;, 
+</a><a href="#h4-3-4" id="h4-3-4" class="i">+			$(&quot;.user-size&quot;).text(&quot;used: #{current_size_kb.toFixed(1)}k/#{Math.round(@rules.max_size/1000)}k&quot;).attr(&quot;title&quot;,
+</a> 				&quot;Every new user has limited space to store comments, topics and votes.\n&quot; +
+ 				&quot;This indicator shows your used/total allowed KBytes.\n&quot;+
+ 				&quot;The site admin can increase it if you about to run out of it.&quot;
+ 			)
+<a href="#h4-3-9" id="h4-3-9" class="d">-			$(&quot;.user-size-used&quot;).css(&quot;width&quot;, Math.round(70*current_size/@rules.max_size))
+</a><a href="#h4-3-10" id="h4-3-10" class="i">+			$(&quot;.user-size-used&quot;).css(&quot;width&quot;, Math.round(100*current_size/@rules.max_size)+&quot;%&quot;)
+</a> 		else
+ 			$(&quot;.user-size&quot;).text(&quot;&quot;)
+<a href="#h4-3-13" id="h4-3-13" class="d">-			
+</a><a href="#h4-3-14" id="h4-3-14" class="d">-			
+</a><a href="#h4-3-15" id="h4-3-15" class="i">+
+</a><a href="#h4-3-16" id="h4-3-16" class="i">+
+</a> 	getData: (cb) -&gt;
+ 		inner_path = &quot;data/users/#{Page.site_info.auth_address}/data.json&quot;
+ 		Page.cmd &quot;fileGet&quot;, {&quot;inner_path&quot;: inner_path, &quot;required&quot;: false}, (data) =&gt;
+<a href="#h4-4" id="h4-4" class="h">@@ -80,8 +80,8 @@ class User extends Class
+</a> 			else # Default data
+ 				data = {&quot;next_topic_id&quot;: 1, &quot;topic&quot;: [], &quot;topic_vote&quot;: {}, &quot;next_comment_id&quot;: 1, &quot;comment&quot;: {}, &quot;comment_vote&quot;: {}}
+ 			cb(data)
+<a href="#h4-4-3" id="h4-4-3" class="d">-			
+</a><a href="#h4-4-4" id="h4-4-4" class="d">-			
+</a><a href="#h4-4-5" id="h4-4-5" class="i">+
+</a><a href="#h4-4-6" id="h4-4-6" class="i">+
+</a> 	publishData: (data, cb) -&gt;
+ 		inner_path = &quot;data/users/#{Page.site_info.auth_address}/data.json&quot;
+ 		Page.writePublish inner_path, Text.jsonEncode(data), (res) =&gt;
+<b>diff --git a/<a id="h5" href="../file/js/all.js.html">js/all.js</a> b/<a href="../file/js/all.js.html">js/all.js</a></b>
+<a href="#h5-0" id="h5-0" class="h">@@ -1128,6 +1128,7 @@ jQuery.extend( jQuery.easing,
+</a>       this.onMessage = __bind(this.onMessage, this);
+       this.url = url;
+       this.waiting_cb = {};
+<a href="#h5-0-3" id="h5-0-3" class="i">+      this.wrapper_nonce = document.location.href.replace(/.*wrapper_nonce=([A-Za-z0-9]+).*/, &quot;$1&quot;);
+</a>       this.connect();
+       this.next_message_id = 1;
+       this.init();
+<a href="#h5-1" id="h5-1" class="h">@@ -1195,6 +1196,7 @@ jQuery.extend( jQuery.easing,
+</a>       if (cb == null) {
+         cb = null;
+       }
+<a href="#h5-1-3" id="h5-1-3" class="i">+      message.wrapper_nonce = this.wrapper_nonce;
+</a>       message.id = this.next_message_id;
+       this.next_message_id += 1;
+       this.target.postMessage(message, &quot;*&quot;);
+<a href="#h5-2" id="h5-2" class="h">@@ -1220,6 +1222,7 @@ jQuery.extend( jQuery.easing,
+</a> }).call(this);
+ 
+ 
+<a href="#h5-2-3" id="h5-2-3" class="i">+
+</a> /* ---- data/1TaLkFrMwvbNsooF4ioKAY9EuxTBTjipT/js/TopicList.coffee ---- */
+ 
+ 
+<a href="#h5-3" id="h5-3" class="h">@@ -1812,7 +1815,6 @@ jQuery.extend( jQuery.easing,
+</a> }).call(this);
+ 
+ 
+<a href="#h5-3-3" id="h5-3-3" class="d">-
+</a> /* ---- data/1TaLkFrMwvbNsooF4ioKAY9EuxTBTjipT/js/User.coffee ---- */
+ 
+ 
+<a href="#h5-4" id="h5-4" class="h">@@ -1913,7 +1915,7 @@ jQuery.extend( jQuery.easing,
+</a>       if (current_size) {
+         current_size_kb = current_size / 1000;
+         $(&quot;.user-size&quot;).text(&quot;used: &quot; + (current_size_kb.toFixed(1)) + &quot;k/&quot; + (Math.round(this.rules.max_size / 1000)) + &quot;k&quot;).attr(&quot;title&quot;, &quot;Every new user has limited space to store comments, topics and votes.\n&quot; + &quot;This indicator shows your used/total allowed KBytes.\n&quot; + &quot;The site admin can increase it if you about to run out of it.&quot;);
+<a href="#h5-4-3" id="h5-4-3" class="d">-        return $(&quot;.user-size-used&quot;).css(&quot;width&quot;, Math.round(70 * current_size / this.rules.max_size));
+</a><a href="#h5-4-4" id="h5-4-4" class="i">+        return $(&quot;.user-size-used&quot;).css(&quot;width&quot;, Math.round(100 * current_size / this.rules.max_size) + &quot;%&quot;);
+</a>       } else {
+         return $(&quot;.user-size&quot;).text(&quot;&quot;);
+       }
+<b>diff --git a/<a id="h6" href="../file/js/utils/ZeroFrame.coffee.html">js/utils/ZeroFrame.coffee</a> b/<a href="../file/js/utils/ZeroFrame.coffee.html">js/utils/ZeroFrame.coffee</a></b>
+<a href="#h6-0" id="h6-0" class="h">@@ -2,6 +2,7 @@ class ZeroFrame extends Class
+</a> 	constructor: (url) -&gt;
+ 		@url = url
+ 		@waiting_cb = {}
+<a href="#h6-0-3" id="h6-0-3" class="i">+		@wrapper_nonce = document.location.href.replace(/.*wrapper_nonce=([A-Za-z0-9]+).*/, &quot;$1&quot;)
+</a> 		@connect()
+ 		@next_message_id = 1
+ 		@init()
+<a href="#h6-1" id="h6-1" class="h">@@ -13,7 +14,7 @@ class ZeroFrame extends Class
+</a> 
+ 	connect: -&gt;
+ 		@target = window.parent
+<a href="#h6-1-3" id="h6-1-3" class="d">-		window.addEventListener(&quot;message&quot;, @onMessage, false) 
+</a><a href="#h6-1-4" id="h6-1-4" class="i">+		window.addEventListener(&quot;message&quot;, @onMessage, false)
+</a> 		@cmd(&quot;innerReady&quot;)
+ 
+ 
+<a href="#h6-2" id="h6-2" class="h">@@ -50,12 +51,13 @@ class ZeroFrame extends Class
+</a> 
+ 
+ 	send: (message, cb=null) -&gt;
+<a href="#h6-2-3" id="h6-2-3" class="i">+		message.wrapper_nonce = @wrapper_nonce
+</a> 		message.id = @next_message_id
+ 		@next_message_id += 1
+ 		@target.postMessage(message, &quot;*&quot;)
+ 		if cb
+ 			@waiting_cb[message.id] = cb
+<a href="#h6-2-9" id="h6-2-9" class="d">-			
+</a><a href="#h6-2-10" id="h6-2-10" class="i">+
+</a> 
+ 	onOpenWebsocket: =&gt;
+ 		@log &quot;Websocket open&quot;
+</pre>
+</div>
+</body>
+</html>

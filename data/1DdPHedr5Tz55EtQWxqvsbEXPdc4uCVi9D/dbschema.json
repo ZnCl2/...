@@ -1,0 +1,70 @@
+{
+    "db_name": "Millchan",
+    "db_file": "data/millchan.db",
+    "version": 2,
+    "maps": {
+        "users/.+/data.json": {
+            "to_table": [ "posts", "boards", "modlogs" ]
+        },
+        "users/.+/content.json": {
+			"to_json_table": [ "cert_user_id" ],
+			"file_name": "data.json"
+		}
+    },
+    "tables": {
+        "posts": {
+            "cols": [
+                ["id", "TEXT"],
+                ["uri", "TEXT"],
+                ["thread", "INTEGER"],
+                ["subject", "TEXT"],
+                ["body", "TEXT"],
+                ["username", "TEXT"],
+                ["time", "INTEGER"],
+                ["files", "TEXT"],
+                ["directory", "TEXT"],
+                ["last_edited","INTEGER"],
+                ["capcode","INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": [
+		"CREATE UNIQUE INDEX uuid ON posts(id)",
+		"CREATE UNIQUE INDEX post_id ON posts(id,json_id)"
+		],
+            "schema_changed": 14
+        },
+	"boards": {
+		"cols": [
+			["uri", "TEXT"],
+			["title", "TEXT"],
+			["config", "TEXT"],
+			["description", "TEXT"],
+			["json_id", "INTEGER REFERENCES json (json_id)"]
+		],
+		"indexes": ["CREATE UNIQUE INDEX board_id ON boards(uri,json_id)"],
+		"schema_changed": 11
+	},
+	"modlogs": {
+		"cols": [
+			["uri", "TEXT"],
+			["time", "INTEGER"],
+			["action", "INTEGER"],
+			["info", "TEXT"],
+			["json_id", "INTEGER REFERENCES json (json_id)"]
+			
+		],
+		"indexes": ["CREATE UNIQUE INDEX log_id ON modlogs(uri,action,info,json_id)"],
+		"schema_changed": 12
+	},
+	"json": {
+		"cols": [
+			["json_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+			["directory", "TEXT"],
+			["file_name", "TEXT"],
+			["cert_user_id", "TEXT"]
+		],
+		"indexes": ["CREATE UNIQUE INDEX path ON json(directory, file_name)"],
+		"schema_changed": 12
+	}
+    }
+}

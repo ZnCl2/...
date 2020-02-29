@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Makefile: separate CPPFLAGS, compile optimized build by default - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/cd6a519813d97f6c28ad80d6bc08ad58e14ee401.html">cd6a519813d97f6c28ad80d6bc08ad58e14ee401</a>
+<b>parent</b> <a href="../commit/761417d254f730739b1572f3a11185e01f28821b.html">761417d254f730739b1572f3a11185e01f28821b</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Sun Mar 20 16:23:33 +0100
+
+Makefile: separate CPPFLAGS, compile optimized build by default
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">Makefile</a></td><td> | </td><td class="num">7</td><td><span class="i">+++++</span><span class="d">--</span></td></tr>
+<tr><td><a href="#h1">config.mk</a></td><td> | </td><td class="num">14</td><td><span class="i">++++++</span><span class="d">--------</span></td></tr>
+</table>2 files changed, 11 insertions(+), 10 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/Makefile.html">Makefile</a> b/<a href="../file/Makefile.html">Makefile</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -1,7 +1,7 @@
+</a> include config.mk
+ 
+ NAME = stagit
+<a href="#h0-0-3" id="h0-0-3" class="d">-VERSION = 0.3
+</a><a href="#h0-0-4" id="h0-0-4" class="i">+VERSION = 0.3.1
+</a> SRC = \
+ 	stagit.c\
+ 	stagit-index.c
+<a href="#h0-1" id="h0-1" class="h">@@ -30,8 +30,11 @@ OBJ = ${SRC:.c=.o} ${COMPATOBJ}
+</a> 
+ all: $(BIN)
+ 
+<a href="#h0-1-3" id="h0-1-3" class="i">+.o:
+</a><a href="#h0-1-4" id="h0-1-4" class="i">+	${CC} ${LDFLAGS} -o $@ ${LIBS}
+</a><a href="#h0-1-5" id="h0-1-5" class="i">+
+</a> .c.o:
+<a href="#h0-1-7" id="h0-1-7" class="d">-	${CC} -c ${CFLAGS} $&lt;
+</a><a href="#h0-1-8" id="h0-1-8" class="i">+	${CC} -c ${CFLAGS} ${CPPFLAGS} -o $@ -c $&lt;
+</a> 
+ dist:
+ 	rm -rf stagit-${VERSION}
+<b>diff --git a/<a id="h1" href="../file/config.mk.html">config.mk</a> b/<a href="../file/config.mk.html">config.mk</a></b>
+<a href="#h1-0" id="h1-0" class="h">@@ -12,19 +12,17 @@ INCS = -I${GITINC}
+</a> LIBS = -L${GITLIB} -lgit2 -lc
+ 
+ # debug
+<a href="#h1-0-3" id="h1-0-3" class="d">-CFLAGS = -fstack-protector-all -O0 -g -std=c99 -Wall -Wextra -pedantic \
+</a><a href="#h1-0-4" id="h1-0-4" class="d">-	-D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -D_BSD_SOURCE ${INCS}
+</a><a href="#h1-0-5" id="h1-0-5" class="d">-LDFLAGS = ${LIBS}
+</a><a href="#h1-0-6" id="h1-0-6" class="i">+#CFLAGS = -fstack-protector-all -O0 -g -std=c99 -Wall -Wextra -pedantic ${INCS}
+</a><a href="#h1-0-7" id="h1-0-7" class="i">+#LDFLAGS = ${LIBS}
+</a> 
+ # optimized
+<a href="#h1-0-10" id="h1-0-10" class="d">-#CFLAGS = -O2 -std=c99 \
+</a><a href="#h1-0-11" id="h1-0-11" class="d">-#	-D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -D_BSD_SOURCE ${INCS}
+</a><a href="#h1-0-12" id="h1-0-12" class="d">-#LDFLAGS = -s ${LIBS}
+</a><a href="#h1-0-13" id="h1-0-13" class="i">+CFLAGS = -O2 -std=c99 ${INCS}
+</a><a href="#h1-0-14" id="h1-0-14" class="i">+LDFLAGS = -s ${LIBS}
+</a> 
+ # optimized static
+<a href="#h1-0-17" id="h1-0-17" class="d">-#CFLAGS = -static -O2 -std=c99 \
+</a><a href="#h1-0-18" id="h1-0-18" class="d">-#	-D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -D_BSD_SOURCE ${INCS}
+</a><a href="#h1-0-19" id="h1-0-19" class="i">+#CFLAGS = -static -O2 -std=c99 ${INCS}
+</a> #LDFLAGS = -static -s ${LIBS}
+ 
+<a href="#h1-0-22" id="h1-0-22" class="i">+CPPFLAGS= -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE -D_BSD_SOURCE ${INCS}
+</a> # compiler and linker
+ #CC = cc
+</pre>
+</div>
+</body>
+</html>

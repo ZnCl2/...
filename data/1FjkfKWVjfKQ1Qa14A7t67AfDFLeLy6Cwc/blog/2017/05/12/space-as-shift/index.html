@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>SpaceShift 在实际使用中的问题 - 科学君的不科学博客</title>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+  <meta name="author" content="Liu233w" />
+  <meta name="description" content="几个月之前，我读到了一篇关于提高键盘上键位利用率的文章（虽然网址现在已经找不到 了）。上面提到可以将空格键和 shift 合体来使用。在单独按下空格的时候是空格键，空格 和其他功能键（比如字母和数字之类的）一起按的时候会起到 shift 键的功能。这样的话可 以用拇指来轻松地输入大写字母，原先的 shift 键也可以改成退格键之类的，来进一步减少 手指在键盘上移动的距离。在昨天，我终于下定决心在自己的电脑上实验这种用法了，然而 我很快发现这种做法看起来不错，但实用性很差。" />
+  <meta name="keywords" content="键位," />
+  <style>
+   #ds-thread #ds-reset .ds-comment-body p {color: #ffffff;}
+   #ds-thread #ds-reset .ds-comment-body p a {color: #ff0;}
+   #ds-thread #ds-reset .ds-comment-body p a:hover {color: #0ff;}
+   #disqus_thread a {color: #00ffff;}
+  </style>
+  <link rel="stylesheet" href="http://liu233w.github.io/media/css/main.css" type="text/css"/>
+  <link rel="stylesheet" href="http://liu233w.github.io/media/css/comment.css" type="text/css"/>
+  <link rel="Shortcut Icon" href="https://raw.githubusercontent.com/Liu233w/liu233w.github.io/source/avatar.jpg" type="image/x-icon">
+</head>
+
+  <body><div class="container">
+<div>
+  <header class="masthead">
+    <h1 class="masthead-title"><a href="http://liu233w.github.io/">科学君的不科学博客</a></h1>
+    <p>by 不科学的科学君</p>
+    <nav class="site-nav">
+      <div class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z" fill="#ffff00"/>
+          <path d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z" fill="#ffff00"/>
+          <path d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z" fill="#ffff00"/>
+        </svg>
+      </div>
+      <ul class="trigger">
+        <li><a href="http://liu233w.github.io/所有文章/">所有文章</a></li>
+        <li><a href="http://liu233w.github.io/tags/">按标签索引</a></li>
+        <li><a href="http://liu233w.github.io/acm/">Acm</a></li>
+        <li><a href="http://liu233w.github.io/blog/">Blog</a></li>
+        <li><a href="http://liu233w.github.io/about/">About</a></li>
+        <li><a href="https://github.com/liu233w/liu233w.github.io">Github</a></li>
+        <li><a href="http://liu233w.github.io/rss.xml">RSS</a></li>
+      </ul>
+    </nav>
+    <form method="get" id="searchform" action="http://www.google.com/search">
+      <input type="text" class="field" name="q" id="s" placeholder="Search">
+      <input type="hidden" name="as_sitesearch" value="liu233w.github.io">
+    </form>
+    <img id="avatarid" class="avatar" src="https://raw.githubusercontent.com/Liu233w/liu233w.github.io/source/avatar.jpg" />
+  </header>
+</div>
+
+<div>
+<div class="post">
+<h1 class="title">SpaceShift 在实际使用中的问题</h1>
+<p>
+几个月之前，我读到了一篇关于提高键盘上键位利用率的文章（虽然网址现在已经找不到了）。上面提到可以将空格键和 shift 合体来使用。在单独按下空格的时候是空格键，空格和其他功能键（比如字母和数字之类的）一起按的时候会起到 shift 键的功能。这样的话可以用拇指来轻松地输入大写字母，原先的 shift 键也可以改成退格键之类的，来进一步减少手指在键盘上移动的距离。在昨天，我终于下定决心在自己的电脑上实验这种用法了，然而我很快发现这种做法看起来不错，但实用性很差。
+</p>
+
+<p>
+使用这种策略的时候，程序必须判断输入者是想要空格键还是 shift 键的功能，其判断算法（简略）如下：
+</p>
+
+<ul class="org-ul">
+<li>空格键被按下时，程序不会实际进行输入，而是等待其他的按键被按下</li>
+<li>如果按下了其他按键，程序向操作系统发出 <code>shift+此按键</code> 的事件</li>
+<li>如果在松开空格之前没有按下其他按键，程序向操作系统发出 <code>按下空格</code> 的事件</li>
+</ul>
+
+<p>
+可见，如果采用这种算法，则只能在“松开”空格键的时候打出空格。假设我们要输入词组
+<code>abc def</code> 并且已经输入了单词 <code>abc</code> ，当打字很快时，我们经常会在松开空格之前便按下 <code>d</code> 键，这样输入的词组就变成了~abcDef~ 。而普通键位的 <code>空格</code> 字符是在刚刚按下空格之后输入的，不会出现此问题。
+</p>
+
+<p>
+因此这种算法必须适当地降低打字速度才能减少错误率，这违背了使用它的初衷。
+SpaceShift 的策略在一开始就是错误的。
+</p>
+
+<p>
+<a href="https://autohotkey.com/board/topic/57344-spacebar-as-space-and-as-shift/">这里</a> 有一些在 windows 上用的 ahk 脚本，提供给想要尝试这种策略的读者。这些脚本都采用了我上文所述的算法。或许也可能有一些别的算法可以解决我之前提到的问题（虽然我觉得比较悬），到那时候我再继续研究吧。
+</p>
+
+</div>
+</div>
+<div>
+        <div class="post-meta">
+            <span title="发布日期" class="post-info">2017-05-12</span>
+            <span title="最后修改日期" class="post-info">2017-05-12</span>
+            <span title="标签" class="post-info">:<a href="http://liu233w.github.io/tags/键位">键位</a>:</span>
+            <span title="作者" class="post-info"><a href="mailto:wwwlsmcom &lt;at&gt; outlook &lt;dot&gt; com">Liu233w</a></span>
+        </div>
+    <script src="http://liu233w.github.io/media/js/jquery-2.1.3.min.js"></script>
+        <section>
+            <h1>Comments</h1>
+            <div id="comment-wrap">
+                    <a class="disqus_label">使用 Disqus 评论</a>
+                    <a class="ds-label">使用多说评论</a>
+    </ul>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+         //var disqus_developer = 1;
+         var preempt_signal=false;
+         var disqus_identifier = "/blog/2017/05/12/space-as-shift/";
+         var disqus_url = "http://liu233w.github.io/blog/2017/05/12/space-as-shift/";
+         var disqus_shortname = 'liu233w';
+         /* * * DON'T EDIT BELOW THIS LINE * * */
+         (function() {
+             var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+             dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+             $('#disqus_thread').css('display','none');
+         })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        <div class="ds-thread"></div>
+        <script type="text/javascript">
+         var duoshuoQuery = {short_name:'liu233w'};
+         (function() {
+             var ds = document.createElement('script');
+             ds.type = 'text/javascript';ds.async = true;
+             ds.src = 'http://static.duoshuo.com/embed.js';
+             ds.charset = 'UTF-8';
+             (document.getElementsByTagName('head')[0]
+           || document.getElementsByTagName('body')[0]).appendChild(ds);
+             $('.ds-thread').css('display','block');
+         })();
+        </script>
+    <script>
+     /* comments */
+     var ego_disqus_thread=$('#disqus_thread');
+     var ego_ds_label=$('.ds-thread');
+     $('.disqus_label').click(function(){
+         ego_disqus_thread.show();
+         ego_ds_label.hide();
+     });
+     $('.ds-label').click(function(){
+         ego_disqus_thread.hide();
+         ego_ds_label.show();
+     });
+    </script>
+        </section>
+    <script src="http://liu233w.github.io/media/js/main.js"></script>
+    <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.x(<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+            Copyright &copy; 2014 - <span id="footerYear"></span> <a href="mailto:wwwlsmcom &lt;at&gt; outlook &lt;dot&gt; com">Liu233w</a>
+            &nbsp;&nbsp;-&nbsp;&nbsp;
+            Powered by <a href="https://github.com/emacs-china/ego" target="_blank">EGO</a><br/>
+            <a href="http://creativecommons.org/licenses/by-sa/3.0/" rel="license"><img src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" style="border-width:0" alt="Creative Commons License" class="center"></a>
+            <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+    </div>
+            </div>
+            <script type="text/javascript"
+                    src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG">
+            </script>
+            <script type="text/x-mathjax-config">
+             MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "AMS"} } });
+            </script>
+</div>
+
+  </div></body>
+</html>

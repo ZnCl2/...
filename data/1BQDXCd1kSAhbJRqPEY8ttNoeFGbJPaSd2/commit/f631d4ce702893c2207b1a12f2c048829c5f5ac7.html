@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>stagit-index: Strip per repo .git suffix from generated index - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/f631d4ce702893c2207b1a12f2c048829c5f5ac7.html">f631d4ce702893c2207b1a12f2c048829c5f5ac7</a>
+<b>parent</b> <a href="../commit/d045340ea048e3aa45af719caadad413efdfda4d.html">d045340ea048e3aa45af719caadad413efdfda4d</a>
+<b>Author:</b> sin &lt;<a href="mailto:sin@2f30.org">sin@2f30.org</a>&gt;
+<b>Date:</b>   Wed Jan  6 14:46:40 +0000
+
+stagit-index: Strip per repo .git suffix from generated index
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">stagit-index.c</a></td><td> | </td><td class="num">10</td><td><span class="i">+++++++++</span><span class="d">-</span></td></tr>
+</table>1 file changed, 9 insertions(+), 1 deletion(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/stagit-index.c.html">stagit-index.c</a> b/<a href="../file/stagit-index.c.html">stagit-index.c</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -124,6 +124,7 @@ writefooter(FILE *fp)
+</a> int
+ writelog(FILE *fp)
+ {
+<a href="#h0-0-3" id="h0-0-3" class="i">+	char *stripped_name, *p;
+</a> 	git_commit *commit = NULL;
+ 	const git_signature *author;
+ 	git_revwalk *w = NULL;
+<a href="#h0-1" id="h0-1" class="h">@@ -146,7 +147,14 @@ writelog(FILE *fp)
+</a> 	fputs(&quot;&lt;tr&gt;&lt;td&gt;&lt;a href=\&quot;&quot;, fp);
+ 	xmlencode(fp, name, strlen(name));
+ 	fputs(&quot;/log.html\&quot;&gt;&quot;, fp);
+<a href="#h0-1-3" id="h0-1-3" class="d">-	xmlencode(fp, name, strlen(name));
+</a><a href="#h0-1-4" id="h0-1-4" class="i">+
+</a><a href="#h0-1-5" id="h0-1-5" class="i">+	/* strip .git suffix */
+</a><a href="#h0-1-6" id="h0-1-6" class="i">+	if (!(stripped_name = strdup(name)))
+</a><a href="#h0-1-7" id="h0-1-7" class="i">+		err(1, &quot;strdup&quot;);
+</a><a href="#h0-1-8" id="h0-1-8" class="i">+	if ((p = strrchr(stripped_name, &apos;.&apos;)))
+</a><a href="#h0-1-9" id="h0-1-9" class="i">+		*p = &apos;\0&apos;;
+</a><a href="#h0-1-10" id="h0-1-10" class="i">+	xmlencode(fp, stripped_name, strlen(stripped_name));
+</a><a href="#h0-1-11" id="h0-1-11" class="i">+
+</a> 	fputs(&quot;&lt;/a&gt;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+ 	xmlencode(fp, description, strlen(description));
+ 	fputs(&quot;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+</pre>
+</div>
+</body>
+</html>

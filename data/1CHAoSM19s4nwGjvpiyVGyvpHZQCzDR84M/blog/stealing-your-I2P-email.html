@@ -1,0 +1,42 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>Kevin Froman's blog - Stealing Your I2P Email</title>
+  <meta name='description' content='Kevin Froman's blog on security, programming, and other musings'>
+  <meta name='author' content='Kevin Froman'>
+  <link rel='icon' type='image/x-icon' href='/favicon.ico'>
+  <link rel='stylesheet' href='theme.css'>
+  <script src="https://widget.battleforthenet.com/widget.js" integrity="sha384-OzmvdVOIBjM9YAUmPdrxpGclC0fg2bTYlwv12prMWoF1y4osMdsZ1UvH1ufTqAQ3" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="wrapper">
+    <h1 id='siteTitle'><a href='index.html'>Kevin Froman's blog</a></h1>
+    
+<div id='myIntro' class='center'>Blog on security, programming, & other musings</div>
+    <div id='mainContent'><h2 id='postTitle'>Stealing Your I2P Email</h2>
+        <div id='postDate' class='center'>2016-10-13</div><h2>Introduction</h2>
+<p><a href="https://geti2p.net/">I2P</a>, is an anonymous network somewhat similar to Tor, but without clear-net access.</p>
+<p><img alt="i2p mascot" src="./images/i2p.png" /></p>
+<p>The official software bundle for accessing the I2P network has several pieces, one being an email client.</p>
+<p>The router for configuring the client is web based, meaning it is a locally run HTTP server.</p>
+<p>This means that it is susceptible to a class of attacks unique to web services, such as <a href="https://en.wikipedia.org/wiki/Cross-site_request_forgery">Cross Site Request Forgeries</a> (CSRF).</p>
+<h2>Exploiting the I2P Email Client</h2>
+<p>I started examining the control forms in I2P, looking for anything that isn’t protected by a special token known as a nonce.</p>
+<p>As far as I could tell, the entire bundle was protected, that is, until I examined the Email client, Susimail.</p>
+<p>Due to an oversight, Susimail had no protection against CSRF attacks.</p>
+<p>This allowed attackers to arbitrarily change a target’s server to an attacker controlled one, potentially allowing them to see who the target was communicating with, and the plaintext of their Emails if they failed to use PGP.</p>
+<p>All the attacker would have to do is setup an Eepsite and encourage any visitors to click something on their site, delivering the payload, or a clearnet site could <a href="/anondetect/">detect if someone is running I2P</a>, and do the same thing.</p>
+<h2>Reporting It</h2>
+<p>I <a href="https://raw.githubusercontent.com/i2p/i2p.i2p/master/history.txt">disclosed this vulnerability</a> to ZZZ, who pushed a fix within a few days. It took several weeks for a release to come out with the fix though, which I find worrying.</p>
+<h2>Lessons Learned</h2>
+<p>When creating software that runs as a web server, even if it is only intended to be locally accessed, one must be cautious to implement standard protections against web based attacks like CSRF.</p>
+<p>I recommend anyone using the standard I2P bundle update ASAP, especially if they use Susimail.</p><div class="center" style="margin-bottom: -25%; margin-top: 2em; border-radius: 5px; padding: 5px;"><span>Written by anonymous</span><br><br></div>
+    </div>
+  </div>
+  <div id="footer">
+    <footer>Powered by TinyGen<div id='socialLinks'><a class="socialLink" href="https://twitter.com/@beardog108"><img src="../images/twitter.png" alt="TWITTER"></a><a class="socialLink" href="https://github.com/beardog108"><img src="../images/github.png" alt="GITHUB"></a><a class="socialLink" href="beardog@firemail.cc"><img src="../images/email.png" alt="EMAIL"></a><a class="socialLink" href="https://keybase.io/beardog"><img src="../images/keybase.png" alt="KEYBASE"></a><a class="socialLink" href="feed.rss"><img src="../images/feed.png" alt="RSS feed"></a></div></footer>
+  </div>
+</body>
+</html>

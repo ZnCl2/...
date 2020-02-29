@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>compat: add strlcpy, strlcat, for glibc - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/55556b66bc57be0d82831b9cb353b79816216316.html">55556b66bc57be0d82831b9cb353b79816216316</a>
+<b>parent</b> <a href="../commit/543e74e64fcffd0181cb94f63a4a4029e44c7e4f.html">543e74e64fcffd0181cb94f63a4a4029e44c7e4f</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Fri Dec 25 17:48:46 +0100
+
+compat: add strlcpy, strlcat, for glibc
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">Makefile</a></td><td> | </td><td class="num">11</td><td><span class="i">+++++++</span><span class="d">----</span></td></tr>
+<tr><td><a href="#h1">config.mk</a></td><td> | </td><td class="num">5</td><td><span class="i">+++++</span><span class="d"></span></td></tr>
+<tr><td><a href="#h2">strlcat.c</a></td><td> | </td><td class="num">55</td><td><span class="i">+++++++++++++++++++++++++++++++++++++++++++++++++++++++</span><span class="d"></span></td></tr>
+<tr><td><a href="#h3">strlcpy.c</a></td><td> | </td><td class="num">50</td><td><span class="i">++++++++++++++++++++++++++++++++++++++++++++++++++</span><span class="d"></span></td></tr>
+<tr><td><a href="#h4">urmoms-index.c</a></td><td> | </td><td class="num">1</td><td><span class="i">+</span><span class="d"></span></td></tr>
+<tr><td><a href="#h5">urmoms.c</a></td><td> | </td><td class="num">1</td><td><span class="i">+</span><span class="d"></span></td></tr>
+</table>6 files changed, 119 insertions(+), 4 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/Makefile.html">Makefile</a> b/<a href="../file/Makefile.html">Makefile</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -5,6 +5,9 @@ VERSION = 0.1
+</a> SRC = \
+ 	urmoms.c\
+ 	urmoms-index.c
+<a href="#h0-0-3" id="h0-0-3" class="i">+COMPATSRC = \
+</a><a href="#h0-0-4" id="h0-0-4" class="i">+	strlcat.c\
+</a><a href="#h0-0-5" id="h0-0-5" class="i">+	strlcpy.c
+</a> BIN = \
+ 	urmoms\
+ 	urmoms-index
+<a href="#h0-1" id="h0-1" class="h">@@ -15,9 +18,9 @@ DOC = \
+</a> 	LICENSE\
+ 	README\
+ 	TODO
+<a href="#h0-1-3" id="h0-1-3" class="d">-HDR = 
+</a><a href="#h0-1-4" id="h0-1-4" class="i">+HDR = compat.h
+</a> 
+<a href="#h0-1-6" id="h0-1-6" class="d">-OBJ = ${SRC:.c=.o}
+</a><a href="#h0-1-7" id="h0-1-7" class="i">+OBJ = ${SRC:.c=.o} ${EXTRAOBJ}
+</a> 
+ all: $(BIN)
+ 
+<a href="#h0-2" id="h0-2" class="h">@@ -42,10 +45,10 @@ config.h:
+</a> 	@echo creating $@ from config.def.h
+ 	@cp config.def.h $@
+ 
+<a href="#h0-2-3" id="h0-2-3" class="d">-urmoms: urmoms.o
+</a><a href="#h0-2-4" id="h0-2-4" class="i">+urmoms: urmoms.o ${EXTRAOBJ}
+</a> 	${CC} -o $@ urmoms.o ${LDFLAGS}
+ 
+<a href="#h0-2-7" id="h0-2-7" class="d">-urmoms-index: urmoms-index.o
+</a><a href="#h0-2-8" id="h0-2-8" class="i">+urmoms-index: urmoms-index.o ${EXTRAOBJ}
+</a> 	${CC} -o $@ urmoms-index.o ${LDFLAGS}
+ 
+ clean:
+<b>diff --git a/<a id="h1" href="../file/config.mk.html">config.mk</a> b/<a href="../file/config.mk.html">config.mk</a></b>
+<a href="#h1-0" id="h1-0" class="h">@@ -26,5 +26,10 @@ LDFLAGS = ${LIBS}
+</a> #	-D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_BSD_SOURCE ${INCS}
+ #LDFLAGS = -static -s ${LIBS}
+ 
+<a href="#h1-0-3" id="h1-0-3" class="i">+# uncomment for compat
+</a><a href="#h1-0-4" id="h1-0-4" class="i">+CFLAGS += -DCOMPAT
+</a><a href="#h1-0-5" id="h1-0-5" class="i">+# uncomment if your libc doesn&apos;t support strlcat, strlcpy.
+</a><a href="#h1-0-6" id="h1-0-6" class="i">+EXTRAOBJ = strlcat.o strlcpy.o
+</a><a href="#h1-0-7" id="h1-0-7" class="i">+
+</a> # compiler and linker
+ #CC = cc
+<b>diff --git a/<a id="h2" href="../file/strlcat.c.html">strlcat.c</a> b/<a href="../file/strlcat.c.html">strlcat.c</a></b>
+<a href="#h2-0" id="h2-0" class="h">@@ -0,0 +1,55 @@
+</a><a href="#h2-0-0" id="h2-0-0" class="i">+/*	$OpenBSD: strlcat.c,v 1.15 2015/03/02 21:41:08 millert Exp $	*/
+</a><a href="#h2-0-1" id="h2-0-1" class="i">+
+</a><a href="#h2-0-2" id="h2-0-2" class="i">+/*
+</a><a href="#h2-0-3" id="h2-0-3" class="i">+ * Copyright (c) 1998, 2015 Todd C. Miller &lt;Todd.Miller@courtesan.com&gt;
+</a><a href="#h2-0-4" id="h2-0-4" class="i">+ *
+</a><a href="#h2-0-5" id="h2-0-5" class="i">+ * Permission to use, copy, modify, and distribute this software for any
+</a><a href="#h2-0-6" id="h2-0-6" class="i">+ * purpose with or without fee is hereby granted, provided that the above
+</a><a href="#h2-0-7" id="h2-0-7" class="i">+ * copyright notice and this permission notice appear in all copies.
+</a><a href="#h2-0-8" id="h2-0-8" class="i">+ *
+</a><a href="#h2-0-9" id="h2-0-9" class="i">+ * THE SOFTWARE IS PROVIDED &quot;AS IS&quot; AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+</a><a href="#h2-0-10" id="h2-0-10" class="i">+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+</a><a href="#h2-0-11" id="h2-0-11" class="i">+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+</a><a href="#h2-0-12" id="h2-0-12" class="i">+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+</a><a href="#h2-0-13" id="h2-0-13" class="i">+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+</a><a href="#h2-0-14" id="h2-0-14" class="i">+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+</a><a href="#h2-0-15" id="h2-0-15" class="i">+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+</a><a href="#h2-0-16" id="h2-0-16" class="i">+ */
+</a><a href="#h2-0-17" id="h2-0-17" class="i">+
+</a><a href="#h2-0-18" id="h2-0-18" class="i">+#include &lt;sys/types.h&gt;
+</a><a href="#h2-0-19" id="h2-0-19" class="i">+#include &lt;string.h&gt;
+</a><a href="#h2-0-20" id="h2-0-20" class="i">+
+</a><a href="#h2-0-21" id="h2-0-21" class="i">+/*
+</a><a href="#h2-0-22" id="h2-0-22" class="i">+ * Appends src to string dst of size dsize (unlike strncat, dsize is the
+</a><a href="#h2-0-23" id="h2-0-23" class="i">+ * full size of dst, not space left).  At most dsize-1 characters
+</a><a href="#h2-0-24" id="h2-0-24" class="i">+ * will be copied.  Always NUL terminates (unless dsize &lt;= strlen(dst)).
+</a><a href="#h2-0-25" id="h2-0-25" class="i">+ * Returns strlen(src) + MIN(dsize, strlen(initial dst)).
+</a><a href="#h2-0-26" id="h2-0-26" class="i">+ * If retval &gt;= dsize, truncation occurred.
+</a><a href="#h2-0-27" id="h2-0-27" class="i">+ */
+</a><a href="#h2-0-28" id="h2-0-28" class="i">+size_t
+</a><a href="#h2-0-29" id="h2-0-29" class="i">+strlcat(char *dst, const char *src, size_t dsize)
+</a><a href="#h2-0-30" id="h2-0-30" class="i">+{
+</a><a href="#h2-0-31" id="h2-0-31" class="i">+	const char *odst = dst;
+</a><a href="#h2-0-32" id="h2-0-32" class="i">+	const char *osrc = src;
+</a><a href="#h2-0-33" id="h2-0-33" class="i">+	size_t n = dsize;
+</a><a href="#h2-0-34" id="h2-0-34" class="i">+	size_t dlen;
+</a><a href="#h2-0-35" id="h2-0-35" class="i">+
+</a><a href="#h2-0-36" id="h2-0-36" class="i">+	/* Find the end of dst and adjust bytes left but don&apos;t go past end. */
+</a><a href="#h2-0-37" id="h2-0-37" class="i">+	while (n-- != 0 &amp;&amp; *dst != &apos;\0&apos;)
+</a><a href="#h2-0-38" id="h2-0-38" class="i">+		dst++;
+</a><a href="#h2-0-39" id="h2-0-39" class="i">+	dlen = dst - odst;
+</a><a href="#h2-0-40" id="h2-0-40" class="i">+	n = dsize - dlen;
+</a><a href="#h2-0-41" id="h2-0-41" class="i">+
+</a><a href="#h2-0-42" id="h2-0-42" class="i">+	if (n-- == 0)
+</a><a href="#h2-0-43" id="h2-0-43" class="i">+		return(dlen + strlen(src));
+</a><a href="#h2-0-44" id="h2-0-44" class="i">+	while (*src != &apos;\0&apos;) {
+</a><a href="#h2-0-45" id="h2-0-45" class="i">+		if (n != 0) {
+</a><a href="#h2-0-46" id="h2-0-46" class="i">+			*dst++ = *src;
+</a><a href="#h2-0-47" id="h2-0-47" class="i">+			n--;
+</a><a href="#h2-0-48" id="h2-0-48" class="i">+		}
+</a><a href="#h2-0-49" id="h2-0-49" class="i">+		src++;
+</a><a href="#h2-0-50" id="h2-0-50" class="i">+	}
+</a><a href="#h2-0-51" id="h2-0-51" class="i">+	*dst = &apos;\0&apos;;
+</a><a href="#h2-0-52" id="h2-0-52" class="i">+
+</a><a href="#h2-0-53" id="h2-0-53" class="i">+	return(dlen + (src - osrc));	/* count does not include NUL */
+</a><a href="#h2-0-54" id="h2-0-54" class="i">+}
+</a><b>diff --git a/<a id="h3" href="../file/strlcpy.c.html">strlcpy.c</a> b/<a href="../file/strlcpy.c.html">strlcpy.c</a></b>
+<a href="#h3-0" id="h3-0" class="h">@@ -0,0 +1,50 @@
+</a><a href="#h3-0-0" id="h3-0-0" class="i">+/*	$OpenBSD: strlcpy.c,v 1.12 2015/01/15 03:54:12 millert Exp $	*/
+</a><a href="#h3-0-1" id="h3-0-1" class="i">+
+</a><a href="#h3-0-2" id="h3-0-2" class="i">+/*
+</a><a href="#h3-0-3" id="h3-0-3" class="i">+ * Copyright (c) 1998, 2015 Todd C. Miller &lt;Todd.Miller@courtesan.com&gt;
+</a><a href="#h3-0-4" id="h3-0-4" class="i">+ *
+</a><a href="#h3-0-5" id="h3-0-5" class="i">+ * Permission to use, copy, modify, and distribute this software for any
+</a><a href="#h3-0-6" id="h3-0-6" class="i">+ * purpose with or without fee is hereby granted, provided that the above
+</a><a href="#h3-0-7" id="h3-0-7" class="i">+ * copyright notice and this permission notice appear in all copies.
+</a><a href="#h3-0-8" id="h3-0-8" class="i">+ *
+</a><a href="#h3-0-9" id="h3-0-9" class="i">+ * THE SOFTWARE IS PROVIDED &quot;AS IS&quot; AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+</a><a href="#h3-0-10" id="h3-0-10" class="i">+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+</a><a href="#h3-0-11" id="h3-0-11" class="i">+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+</a><a href="#h3-0-12" id="h3-0-12" class="i">+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+</a><a href="#h3-0-13" id="h3-0-13" class="i">+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+</a><a href="#h3-0-14" id="h3-0-14" class="i">+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+</a><a href="#h3-0-15" id="h3-0-15" class="i">+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+</a><a href="#h3-0-16" id="h3-0-16" class="i">+ */
+</a><a href="#h3-0-17" id="h3-0-17" class="i">+
+</a><a href="#h3-0-18" id="h3-0-18" class="i">+#include &lt;sys/types.h&gt;
+</a><a href="#h3-0-19" id="h3-0-19" class="i">+#include &lt;string.h&gt;
+</a><a href="#h3-0-20" id="h3-0-20" class="i">+
+</a><a href="#h3-0-21" id="h3-0-21" class="i">+/*
+</a><a href="#h3-0-22" id="h3-0-22" class="i">+ * Copy string src to buffer dst of size dsize.  At most dsize-1
+</a><a href="#h3-0-23" id="h3-0-23" class="i">+ * chars will be copied.  Always NUL terminates (unless dsize == 0).
+</a><a href="#h3-0-24" id="h3-0-24" class="i">+ * Returns strlen(src); if retval &gt;= dsize, truncation occurred.
+</a><a href="#h3-0-25" id="h3-0-25" class="i">+ */
+</a><a href="#h3-0-26" id="h3-0-26" class="i">+size_t
+</a><a href="#h3-0-27" id="h3-0-27" class="i">+strlcpy(char *dst, const char *src, size_t dsize)
+</a><a href="#h3-0-28" id="h3-0-28" class="i">+{
+</a><a href="#h3-0-29" id="h3-0-29" class="i">+	const char *osrc = src;
+</a><a href="#h3-0-30" id="h3-0-30" class="i">+	size_t nleft = dsize;
+</a><a href="#h3-0-31" id="h3-0-31" class="i">+
+</a><a href="#h3-0-32" id="h3-0-32" class="i">+	/* Copy as many bytes as will fit. */
+</a><a href="#h3-0-33" id="h3-0-33" class="i">+	if (nleft != 0) {
+</a><a href="#h3-0-34" id="h3-0-34" class="i">+		while (--nleft != 0) {
+</a><a href="#h3-0-35" id="h3-0-35" class="i">+			if ((*dst++ = *src++) == &apos;\0&apos;)
+</a><a href="#h3-0-36" id="h3-0-36" class="i">+				break;
+</a><a href="#h3-0-37" id="h3-0-37" class="i">+		}
+</a><a href="#h3-0-38" id="h3-0-38" class="i">+	}
+</a><a href="#h3-0-39" id="h3-0-39" class="i">+
+</a><a href="#h3-0-40" id="h3-0-40" class="i">+	/* Not enough room in dst, add NUL and traverse rest of src. */
+</a><a href="#h3-0-41" id="h3-0-41" class="i">+	if (nleft == 0) {
+</a><a href="#h3-0-42" id="h3-0-42" class="i">+		if (dsize != 0)
+</a><a href="#h3-0-43" id="h3-0-43" class="i">+			*dst = &apos;\0&apos;;		/* NUL-terminate dst */
+</a><a href="#h3-0-44" id="h3-0-44" class="i">+		while (*src++)
+</a><a href="#h3-0-45" id="h3-0-45" class="i">+			;
+</a><a href="#h3-0-46" id="h3-0-46" class="i">+	}
+</a><a href="#h3-0-47" id="h3-0-47" class="i">+
+</a><a href="#h3-0-48" id="h3-0-48" class="i">+	return(src - osrc - 1);	/* count does not include NUL */
+</a><a href="#h3-0-49" id="h3-0-49" class="i">+}
+</a><b>diff --git a/<a id="h4" href="../file/urmoms-index.c.html">urmoms-index.c</a> b/<a href="../file/urmoms-index.c.html">urmoms-index.c</a></b>
+<a href="#h4-0" id="h4-0" class="h">@@ -12,6 +12,7 @@
+</a> 
+ #include &lt;git2.h&gt;
+ 
+<a href="#h4-0-3" id="h4-0-3" class="i">+#include &quot;compat.h&quot;
+</a> #include &quot;config.h&quot;
+ 
+ static git_repository *repo;
+<b>diff --git a/<a id="h5" href="../file/urmoms.c.html">urmoms.c</a> b/<a href="../file/urmoms.c.html">urmoms.c</a></b>
+<a href="#h5-0" id="h5-0" class="h">@@ -12,6 +12,7 @@
+</a> 
+ #include &lt;git2.h&gt;
+ 
+<a href="#h5-0-3" id="h5-0-3" class="i">+#include &quot;compat.h&quot;
+</a> #include &quot;config.h&quot;
+ 
+ struct commitinfo {
+</pre>
+</div>
+</body>
+</html>

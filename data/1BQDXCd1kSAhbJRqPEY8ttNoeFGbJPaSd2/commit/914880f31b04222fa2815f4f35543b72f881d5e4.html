@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>optimization: read stats once and remember it - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/914880f31b04222fa2815f4f35543b72f881d5e4.html">914880f31b04222fa2815f4f35543b72f881d5e4</a>
+<b>parent</b> <a href="../commit/0bc47da0f7b66614cdf499755ceca1dc13ff91cd.html">0bc47da0f7b66614cdf499755ceca1dc13ff91cd</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Sat Apr 30 11:54:33 +0200
+
+optimization: read stats once and remember it
+
+for an initial run and new commits this speeds stagit up a bit:
+on an initial run of sbase goes from about 4 seconds to 2.8 on my machine.
+
+now we can&apos;t use statsbuf, so create the stats string ourselves, while at it
+color the + and - using a style (can be disabled for the color-haters out
+there ;)).
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">stagit.c</a></td><td> | </td><td class="num">186</td><td><span class="i">++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++</span><span class="d">-----------------</span></td></tr>
+<tr><td><a href="#h1">style.css</a></td><td> | </td><td class="num">2</td><td><span class="i">++</span><span class="d"></span></td></tr>
+</table>2 files changed, 149 insertions(+), 39 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/stagit.c.html">stagit.c</a> b/<a href="../file/stagit.c.html">stagit.c</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -15,6 +15,13 @@
+</a> #include &quot;compat.h&quot;
+ #include &quot;config.h&quot;
+ 
+<a href="#h0-0-3" id="h0-0-3" class="i">+struct deltainfo {
+</a><a href="#h0-0-4" id="h0-0-4" class="i">+	git_patch *patch;
+</a><a href="#h0-0-5" id="h0-0-5" class="i">+
+</a><a href="#h0-0-6" id="h0-0-6" class="i">+	size_t addcount;
+</a><a href="#h0-0-7" id="h0-0-7" class="i">+	size_t delcount;
+</a><a href="#h0-0-8" id="h0-0-8" class="i">+};
+</a><a href="#h0-0-9" id="h0-0-9" class="i">+
+</a> struct commitinfo {
+ 	const git_oid *id;
+ 
+<a href="#h0-1" id="h0-1" class="h">@@ -25,16 +32,18 @@ struct commitinfo {
+</a> 	const char          *summary;
+ 	const char          *msg;
+ 
+<a href="#h0-1-3" id="h0-1-3" class="d">-	git_diff_stats *stats;
+</a><a href="#h0-1-4" id="h0-1-4" class="d">-	git_diff       *diff;
+</a><a href="#h0-1-5" id="h0-1-5" class="d">-	git_commit     *commit;
+</a><a href="#h0-1-6" id="h0-1-6" class="d">-	git_commit     *parent;
+</a><a href="#h0-1-7" id="h0-1-7" class="d">-	git_tree       *commit_tree;
+</a><a href="#h0-1-8" id="h0-1-8" class="d">-	git_tree       *parent_tree;
+</a><a href="#h0-1-9" id="h0-1-9" class="i">+	git_diff   *diff;
+</a><a href="#h0-1-10" id="h0-1-10" class="i">+	git_commit *commit;
+</a><a href="#h0-1-11" id="h0-1-11" class="i">+	git_commit *parent;
+</a><a href="#h0-1-12" id="h0-1-12" class="i">+	git_tree   *commit_tree;
+</a><a href="#h0-1-13" id="h0-1-13" class="i">+	git_tree   *parent_tree;
+</a> 
+ 	size_t addcount;
+ 	size_t delcount;
+ 	size_t filecount;
+<a href="#h0-1-18" id="h0-1-18" class="i">+
+</a><a href="#h0-1-19" id="h0-1-19" class="i">+	struct deltainfo **deltas;
+</a><a href="#h0-1-20" id="h0-1-20" class="i">+	size_t ndeltas;
+</a> };
+ 
+ static git_repository *repo;
+<a href="#h0-2" id="h0-2" class="h">@@ -49,12 +58,95 @@ static char cloneurl[1024];
+</a> static int haslicense, hasreadme, hassubmodules;
+ 
+ void
+<a href="#h0-2-3" id="h0-2-3" class="i">+deltainfo_free(struct deltainfo *di)
+</a><a href="#h0-2-4" id="h0-2-4" class="i">+{
+</a><a href="#h0-2-5" id="h0-2-5" class="i">+	if (!di)
+</a><a href="#h0-2-6" id="h0-2-6" class="i">+		return;
+</a><a href="#h0-2-7" id="h0-2-7" class="i">+	git_patch_free(di-&gt;patch);
+</a><a href="#h0-2-8" id="h0-2-8" class="i">+	di-&gt;patch = NULL;
+</a><a href="#h0-2-9" id="h0-2-9" class="i">+	free(di);
+</a><a href="#h0-2-10" id="h0-2-10" class="i">+}
+</a><a href="#h0-2-11" id="h0-2-11" class="i">+
+</a><a href="#h0-2-12" id="h0-2-12" class="i">+int
+</a><a href="#h0-2-13" id="h0-2-13" class="i">+commitinfo_getstats(struct commitinfo *ci)
+</a><a href="#h0-2-14" id="h0-2-14" class="i">+{
+</a><a href="#h0-2-15" id="h0-2-15" class="i">+	struct deltainfo *di;
+</a><a href="#h0-2-16" id="h0-2-16" class="i">+	const git_diff_delta *delta;
+</a><a href="#h0-2-17" id="h0-2-17" class="i">+	const git_diff_hunk *hunk;
+</a><a href="#h0-2-18" id="h0-2-18" class="i">+	const git_diff_line *line;
+</a><a href="#h0-2-19" id="h0-2-19" class="i">+	git_patch *patch = NULL;
+</a><a href="#h0-2-20" id="h0-2-20" class="i">+	size_t ndeltas, nhunks, nhunklines;
+</a><a href="#h0-2-21" id="h0-2-21" class="i">+	size_t i, j, k;
+</a><a href="#h0-2-22" id="h0-2-22" class="i">+
+</a><a href="#h0-2-23" id="h0-2-23" class="i">+	ndeltas = git_diff_num_deltas(ci-&gt;diff);
+</a><a href="#h0-2-24" id="h0-2-24" class="i">+	if (ndeltas &amp;&amp; !(ci-&gt;deltas = calloc(ndeltas, sizeof(struct deltainfo *))))
+</a><a href="#h0-2-25" id="h0-2-25" class="i">+		err(1, &quot;calloc&quot;);
+</a><a href="#h0-2-26" id="h0-2-26" class="i">+
+</a><a href="#h0-2-27" id="h0-2-27" class="i">+	for (i = 0; i &lt; ndeltas; i++) {
+</a><a href="#h0-2-28" id="h0-2-28" class="i">+		if (!(di = calloc(1, sizeof(struct deltainfo))))
+</a><a href="#h0-2-29" id="h0-2-29" class="i">+			err(1, &quot;calloc&quot;);
+</a><a href="#h0-2-30" id="h0-2-30" class="i">+		if (git_patch_from_diff(&amp;patch, ci-&gt;diff, i)) {
+</a><a href="#h0-2-31" id="h0-2-31" class="i">+			git_patch_free(patch);
+</a><a href="#h0-2-32" id="h0-2-32" class="i">+			goto err;
+</a><a href="#h0-2-33" id="h0-2-33" class="i">+		}
+</a><a href="#h0-2-34" id="h0-2-34" class="i">+		di-&gt;patch = patch;
+</a><a href="#h0-2-35" id="h0-2-35" class="i">+		ci-&gt;deltas[i] = di;
+</a><a href="#h0-2-36" id="h0-2-36" class="i">+
+</a><a href="#h0-2-37" id="h0-2-37" class="i">+		delta = git_patch_get_delta(patch);
+</a><a href="#h0-2-38" id="h0-2-38" class="i">+
+</a><a href="#h0-2-39" id="h0-2-39" class="i">+		/* check binary data */
+</a><a href="#h0-2-40" id="h0-2-40" class="i">+		if (delta-&gt;flags &amp; GIT_DIFF_FLAG_BINARY)
+</a><a href="#h0-2-41" id="h0-2-41" class="i">+			continue;
+</a><a href="#h0-2-42" id="h0-2-42" class="i">+
+</a><a href="#h0-2-43" id="h0-2-43" class="i">+		nhunks = git_patch_num_hunks(patch);
+</a><a href="#h0-2-44" id="h0-2-44" class="i">+		for (j = 0; j &lt; nhunks; j++) {
+</a><a href="#h0-2-45" id="h0-2-45" class="i">+			if (git_patch_get_hunk(&amp;hunk, &amp;nhunklines, patch, j))
+</a><a href="#h0-2-46" id="h0-2-46" class="i">+				break;
+</a><a href="#h0-2-47" id="h0-2-47" class="i">+			for (k = 0; ; k++) {
+</a><a href="#h0-2-48" id="h0-2-48" class="i">+				if (git_patch_get_line_in_hunk(&amp;line, patch, j, k))
+</a><a href="#h0-2-49" id="h0-2-49" class="i">+					break;
+</a><a href="#h0-2-50" id="h0-2-50" class="i">+				if (line-&gt;old_lineno == -1) {
+</a><a href="#h0-2-51" id="h0-2-51" class="i">+					di-&gt;addcount++;
+</a><a href="#h0-2-52" id="h0-2-52" class="i">+					ci-&gt;addcount++;
+</a><a href="#h0-2-53" id="h0-2-53" class="i">+				} else if (line-&gt;new_lineno == -1) {
+</a><a href="#h0-2-54" id="h0-2-54" class="i">+					di-&gt;delcount++;
+</a><a href="#h0-2-55" id="h0-2-55" class="i">+					ci-&gt;delcount++;
+</a><a href="#h0-2-56" id="h0-2-56" class="i">+				}
+</a><a href="#h0-2-57" id="h0-2-57" class="i">+			}
+</a><a href="#h0-2-58" id="h0-2-58" class="i">+		}
+</a><a href="#h0-2-59" id="h0-2-59" class="i">+	}
+</a><a href="#h0-2-60" id="h0-2-60" class="i">+	ci-&gt;ndeltas = i;
+</a><a href="#h0-2-61" id="h0-2-61" class="i">+	ci-&gt;filecount = i;
+</a><a href="#h0-2-62" id="h0-2-62" class="i">+
+</a><a href="#h0-2-63" id="h0-2-63" class="i">+	return 0;
+</a><a href="#h0-2-64" id="h0-2-64" class="i">+
+</a><a href="#h0-2-65" id="h0-2-65" class="i">+err:
+</a><a href="#h0-2-66" id="h0-2-66" class="i">+	if (ci-&gt;deltas)
+</a><a href="#h0-2-67" id="h0-2-67" class="i">+		for (i = 0; i &lt; ci-&gt;ndeltas; i++)
+</a><a href="#h0-2-68" id="h0-2-68" class="i">+			deltainfo_free(ci-&gt;deltas[i]);
+</a><a href="#h0-2-69" id="h0-2-69" class="i">+	free(ci-&gt;deltas);
+</a><a href="#h0-2-70" id="h0-2-70" class="i">+	ci-&gt;deltas = NULL;
+</a><a href="#h0-2-71" id="h0-2-71" class="i">+	ci-&gt;ndeltas = 0;
+</a><a href="#h0-2-72" id="h0-2-72" class="i">+	ci-&gt;addcount = 0;
+</a><a href="#h0-2-73" id="h0-2-73" class="i">+	ci-&gt;delcount = 0;
+</a><a href="#h0-2-74" id="h0-2-74" class="i">+	ci-&gt;filecount = 0;
+</a><a href="#h0-2-75" id="h0-2-75" class="i">+
+</a><a href="#h0-2-76" id="h0-2-76" class="i">+	return -1;
+</a><a href="#h0-2-77" id="h0-2-77" class="i">+}
+</a><a href="#h0-2-78" id="h0-2-78" class="i">+
+</a><a href="#h0-2-79" id="h0-2-79" class="i">+void
+</a> commitinfo_free(struct commitinfo *ci)
+ {
+<a href="#h0-2-82" id="h0-2-82" class="i">+	size_t i;
+</a><a href="#h0-2-83" id="h0-2-83" class="i">+
+</a> 	if (!ci)
+ 		return;
+ 
+<a href="#h0-2-87" id="h0-2-87" class="d">-	git_diff_stats_free(ci-&gt;stats);
+</a><a href="#h0-2-88" id="h0-2-88" class="i">+	if (ci-&gt;deltas)
+</a><a href="#h0-2-89" id="h0-2-89" class="i">+		for (i = 0; i &lt; ci-&gt;ndeltas; i++)
+</a><a href="#h0-2-90" id="h0-2-90" class="i">+			deltainfo_free(ci-&gt;deltas[i]);
+</a><a href="#h0-2-91" id="h0-2-91" class="i">+	free(ci-&gt;deltas);
+</a><a href="#h0-2-92" id="h0-2-92" class="i">+	ci-&gt;deltas = NULL;
+</a> 	git_diff_free(ci-&gt;diff);
+ 	git_tree_free(ci-&gt;commit_tree);
+ 	git_tree_free(ci-&gt;parent_tree);
+<a href="#h0-3" id="h0-3" class="h">@@ -66,6 +158,7 @@ commitinfo_getbyoid(const git_oid *id)
+</a> {
+ 	struct commitinfo *ci;
+ 	git_diff_options opts;
+<a href="#h0-3-3" id="h0-3-3" class="i">+	const git_oid *oid;
+</a> 	int error;
+ 
+ 	if (!(ci = calloc(1, sizeof(struct commitinfo))))
+<a href="#h0-4" id="h0-4" class="h">@@ -82,26 +175,24 @@ commitinfo_getbyoid(const git_oid *id)
+</a> 	ci-&gt;summary = git_commit_summary(ci-&gt;commit);
+ 	ci-&gt;msg = git_commit_message(ci-&gt;commit);
+ 
+<a href="#h0-4-3" id="h0-4-3" class="d">-	if ((error = git_commit_tree(&amp;(ci-&gt;commit_tree), ci-&gt;commit)))
+</a><a href="#h0-4-4" id="h0-4-4" class="i">+	oid = git_commit_tree_id(ci-&gt;commit);
+</a><a href="#h0-4-5" id="h0-4-5" class="i">+	if ((error = git_tree_lookup(&amp;(ci-&gt;commit_tree), repo, oid)))
+</a> 		goto err;
+ 	if (!(error = git_commit_parent(&amp;(ci-&gt;parent), ci-&gt;commit, 0))) {
+<a href="#h0-4-8" id="h0-4-8" class="d">-		if ((error = git_commit_tree(&amp;(ci-&gt;parent_tree), ci-&gt;parent)))
+</a><a href="#h0-4-9" id="h0-4-9" class="d">-			goto err;
+</a><a href="#h0-4-10" id="h0-4-10" class="d">-	} else {
+</a><a href="#h0-4-11" id="h0-4-11" class="d">-		ci-&gt;parent = NULL;
+</a><a href="#h0-4-12" id="h0-4-12" class="d">-		ci-&gt;parent_tree = NULL;
+</a><a href="#h0-4-13" id="h0-4-13" class="i">+		oid = git_commit_tree_id(ci-&gt;parent);
+</a><a href="#h0-4-14" id="h0-4-14" class="i">+		if ((error = git_tree_lookup(&amp;(ci-&gt;parent_tree), repo, oid))) {
+</a><a href="#h0-4-15" id="h0-4-15" class="i">+			ci-&gt;parent = NULL;
+</a><a href="#h0-4-16" id="h0-4-16" class="i">+			ci-&gt;parent_tree = NULL;
+</a><a href="#h0-4-17" id="h0-4-17" class="i">+		}
+</a> 	}
+ 
+ 	git_diff_init_options(&amp;opts, GIT_DIFF_OPTIONS_VERSION);
+ 	opts.flags |= GIT_DIFF_DISABLE_PATHSPEC_MATCH;
+ 	if ((error = git_diff_tree_to_tree(&amp;(ci-&gt;diff), repo, ci-&gt;parent_tree, ci-&gt;commit_tree, &amp;opts)))
+ 		goto err;
+<a href="#h0-4-24" id="h0-4-24" class="d">-	if (git_diff_get_stats(&amp;(ci-&gt;stats), ci-&gt;diff))
+</a><a href="#h0-4-25" id="h0-4-25" class="d">-		goto err;
+</a> 
+<a href="#h0-4-27" id="h0-4-27" class="d">-	ci-&gt;addcount = git_diff_stats_insertions(ci-&gt;stats);
+</a><a href="#h0-4-28" id="h0-4-28" class="d">-	ci-&gt;delcount = git_diff_stats_deletions(ci-&gt;stats);
+</a><a href="#h0-4-29" id="h0-4-29" class="d">-	ci-&gt;filecount = git_diff_stats_files_changed(ci-&gt;stats);
+</a><a href="#h0-4-30" id="h0-4-30" class="i">+	if (commitinfo_getstats(ci) == -1)
+</a><a href="#h0-4-31" id="h0-4-31" class="i">+		goto err;
+</a> 
+ 	return ci;
+ 
+<a href="#h0-5" id="h0-5" class="h">@@ -332,33 +423,55 @@ printshowfile(FILE *fp, struct commitinfo *ci)
+</a> 	const git_diff_hunk *hunk;
+ 	const git_diff_line *line;
+ 	git_patch *patch;
+<a href="#h0-5-3" id="h0-5-3" class="d">-	git_buf statsbuf;
+</a><a href="#h0-5-4" id="h0-5-4" class="d">-	size_t ndeltas, nhunks, nhunklines;
+</a><a href="#h0-5-5" id="h0-5-5" class="i">+	size_t nhunks, nhunklines, changed, add, del, total;
+</a> 	size_t i, j, k;
+<a href="#h0-5-7" id="h0-5-7" class="i">+	char linestr[80];
+</a> 
+ 	printcommit(fp, ci);
+ 
+<a href="#h0-5-11" id="h0-5-11" class="d">-	memset(&amp;statsbuf, 0, sizeof(statsbuf));
+</a><a href="#h0-5-12" id="h0-5-12" class="i">+	if (!ci-&gt;deltas)
+</a><a href="#h0-5-13" id="h0-5-13" class="i">+		return;
+</a> 
+ 	/* diff stat */
+<a href="#h0-5-16" id="h0-5-16" class="d">-	if (ci-&gt;stats &amp;&amp;
+</a><a href="#h0-5-17" id="h0-5-17" class="d">-	    !git_diff_stats_to_buf(&amp;statsbuf, ci-&gt;stats,
+</a><a href="#h0-5-18" id="h0-5-18" class="d">-                                   GIT_DIFF_STATS_FULL | GIT_DIFF_STATS_SHORT, 80)) {
+</a><a href="#h0-5-19" id="h0-5-19" class="d">-		if (statsbuf.ptr &amp;&amp; statsbuf.ptr[0]) {
+</a><a href="#h0-5-20" id="h0-5-20" class="d">-			fputs(&quot;&lt;b&gt;Diffstat:&lt;/b&gt;\n&quot;, fp);
+</a><a href="#h0-5-21" id="h0-5-21" class="d">-			xmlencode(fp, statsbuf.ptr, strlen(statsbuf.ptr));
+</a><a href="#h0-5-22" id="h0-5-22" class="i">+	fputs(&quot;&lt;b&gt;Diffstat:&lt;/b&gt;\n&lt;table&gt;&quot;, fp);
+</a><a href="#h0-5-23" id="h0-5-23" class="i">+	for (i = 0; i &lt; ci-&gt;ndeltas; i++) {
+</a><a href="#h0-5-24" id="h0-5-24" class="i">+		delta = git_patch_get_delta(ci-&gt;deltas[i]-&gt;patch);
+</a><a href="#h0-5-25" id="h0-5-25" class="i">+		fputs(&quot;&lt;tr&gt;&lt;td&gt;&quot;, fp);
+</a><a href="#h0-5-26" id="h0-5-26" class="i">+		xmlencode(fp, delta-&gt;old_file.path, strlen(delta-&gt;old_file.path));
+</a><a href="#h0-5-27" id="h0-5-27" class="i">+		if (strcmp(delta-&gt;old_file.path, delta-&gt;new_file.path)) {
+</a><a href="#h0-5-28" id="h0-5-28" class="i">+			fputs(&quot; -&amp;gt; &quot;, fp);
+</a><a href="#h0-5-29" id="h0-5-29" class="i">+			xmlencode(fp, delta-&gt;new_file.path, strlen(delta-&gt;new_file.path));
+</a><a href="#h0-5-30" id="h0-5-30" class="i">+		}
+</a><a href="#h0-5-31" id="h0-5-31" class="i">+
+</a><a href="#h0-5-32" id="h0-5-32" class="i">+		add = ci-&gt;deltas[i]-&gt;addcount;
+</a><a href="#h0-5-33" id="h0-5-33" class="i">+		del = ci-&gt;deltas[i]-&gt;delcount;
+</a><a href="#h0-5-34" id="h0-5-34" class="i">+		changed = add + del;
+</a><a href="#h0-5-35" id="h0-5-35" class="i">+		total = sizeof(linestr) - 2;
+</a><a href="#h0-5-36" id="h0-5-36" class="i">+		if (changed &gt; total) {
+</a><a href="#h0-5-37" id="h0-5-37" class="i">+			if (add)
+</a><a href="#h0-5-38" id="h0-5-38" class="i">+				add = ((float)total / changed * add) + 1;
+</a><a href="#h0-5-39" id="h0-5-39" class="i">+			if (del)
+</a><a href="#h0-5-40" id="h0-5-40" class="i">+				del = ((float)total / changed * del) + 1;
+</a> 		}
+<a href="#h0-5-42" id="h0-5-42" class="i">+		memset(&amp;linestr, &apos;+&apos;, add);
+</a><a href="#h0-5-43" id="h0-5-43" class="i">+		memset(&amp;linestr[add], &apos;-&apos;, del);
+</a><a href="#h0-5-44" id="h0-5-44" class="i">+
+</a><a href="#h0-5-45" id="h0-5-45" class="i">+		fprintf(fp, &quot;&lt;/td&gt;&lt;td&gt; | %zu &lt;span class=\&quot;i\&quot;&gt;&quot;,
+</a><a href="#h0-5-46" id="h0-5-46" class="i">+		        ci-&gt;deltas[i]-&gt;addcount + ci-&gt;deltas[i]-&gt;delcount);
+</a><a href="#h0-5-47" id="h0-5-47" class="i">+		fwrite(&amp;linestr, 1, add, fp);
+</a><a href="#h0-5-48" id="h0-5-48" class="i">+		fputs(&quot;&lt;/span&gt;&lt;span class=\&quot;d\&quot;&gt;&quot;, fp);
+</a><a href="#h0-5-49" id="h0-5-49" class="i">+		fwrite(&amp;linestr[add], 1, del, fp);
+</a><a href="#h0-5-50" id="h0-5-50" class="i">+		fputs(&quot;&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;\n&quot;, fp);
+</a> 	}
+<a href="#h0-5-52" id="h0-5-52" class="i">+	fprintf(fp, &quot;&lt;/table&gt;%zu file%s changed, %zu insertion%s(+), %zu deletion%s(-)\n&quot;,
+</a><a href="#h0-5-53" id="h0-5-53" class="i">+		ci-&gt;filecount, ci-&gt;filecount == 1 ? &quot;&quot; : &quot;s&quot;,
+</a><a href="#h0-5-54" id="h0-5-54" class="i">+	        ci-&gt;addcount,  ci-&gt;addcount  == 1 ? &quot;&quot; : &quot;s&quot;,
+</a><a href="#h0-5-55" id="h0-5-55" class="i">+	        ci-&gt;delcount,  ci-&gt;delcount  == 1 ? &quot;&quot; : &quot;s&quot;);
+</a> 
+ 	fputs(&quot;&lt;hr/&gt;&quot;, fp);
+ 
+<a href="#h0-5-59" id="h0-5-59" class="d">-	ndeltas = git_diff_num_deltas(ci-&gt;diff);
+</a><a href="#h0-5-60" id="h0-5-60" class="d">-	for (i = 0; i &lt; ndeltas; i++) {
+</a><a href="#h0-5-61" id="h0-5-61" class="d">-		if (git_patch_from_diff(&amp;patch, ci-&gt;diff, i)) {
+</a><a href="#h0-5-62" id="h0-5-62" class="d">-			git_patch_free(patch);
+</a><a href="#h0-5-63" id="h0-5-63" class="d">-			break;
+</a><a href="#h0-5-64" id="h0-5-64" class="d">-		}
+</a><a href="#h0-5-65" id="h0-5-65" class="d">-
+</a><a href="#h0-5-66" id="h0-5-66" class="i">+	for (i = 0; i &lt; ci-&gt;ndeltas; i++) {
+</a><a href="#h0-5-67" id="h0-5-67" class="i">+		patch = ci-&gt;deltas[i]-&gt;patch;
+</a> 		delta = git_patch_get_delta(patch);
+ 		fprintf(fp, &quot;&lt;b&gt;diff --git a/&lt;a href=\&quot;%sfile/%s.html\&quot;&gt;%s&lt;/a&gt; b/&lt;a href=\&quot;%sfile/%s.html\&quot;&gt;%s&lt;/a&gt;&lt;/b&gt;\n&quot;,
+ 			relpath, delta-&gt;old_file.path, delta-&gt;old_file.path,
+<a href="#h0-6" id="h0-6" class="h">@@ -367,7 +480,6 @@ printshowfile(FILE *fp, struct commitinfo *ci)
+</a> 		/* check binary data */
+ 		if (delta-&gt;flags &amp; GIT_DIFF_FLAG_BINARY) {
+ 			fputs(&quot;Binary files differ\n&quot;, fp);
+<a href="#h0-6-3" id="h0-6-3" class="d">-			git_patch_free(patch);
+</a> 			continue;
+ 		}
+ 
+<a href="#h0-7" id="h0-7" class="h">@@ -396,11 +508,7 @@ printshowfile(FILE *fp, struct commitinfo *ci)
+</a> 					fputs(&quot;&lt;/a&gt;&quot;, fp);
+ 			}
+ 		}
+<a href="#h0-7-3" id="h0-7-3" class="d">-		git_patch_free(patch);
+</a> 	}
+<a href="#h0-7-5" id="h0-7-5" class="d">-	git_buf_free(&amp;statsbuf);
+</a><a href="#h0-7-6" id="h0-7-6" class="d">-
+</a><a href="#h0-7-7" id="h0-7-7" class="d">-	return;
+</a> }
+ 
+ int
+<b>diff --git a/<a id="h1" href="../file/style.css.html">style.css</a> b/<a href="../file/style.css.html">style.css</a></b>
+<a href="#h1-0" id="h1-0" class="h">@@ -79,10 +79,12 @@ pre a.h {
+</a> 	color: #00a;
+ }
+ 
+<a href="#h1-0-3" id="h1-0-3" class="i">+span.i,
+</a> pre a.i {
+ 	color: #070;
+ }
+ 
+<a href="#h1-0-8" id="h1-0-8" class="i">+span.d,
+</a> pre a.d {
+ 	color: #e00;
+ }
+</pre>
+</div>
+</body>
+</html>

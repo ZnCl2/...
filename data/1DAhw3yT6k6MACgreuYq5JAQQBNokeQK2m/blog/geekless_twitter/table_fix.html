@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Быстрый и грязный фикс бага с таблицами</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<link rel="stylesheet" href="../../css/global.css">
+</head>
+
+<body>
+	
+<header>
+  <a href="../../index.html"><img src="../../img/logo.png" width="55"></a><br>ChronCache	
+</header>
+	
+<nav>
+	<hr>
+  <p><a href="../../blog.html">архив</a> <tt>|</tt> <a href="../../help.html">помощь</a> <tt>|</tt> <a href="/1Q9LVNLD1ghusGxpiwjYnVjPsxD5xGTGc7/donate/index.html">донат</a></p>
+	<hr>
+</nav>
+
+<article>
+	
+<acide><p>Это резервная страница от 22.03.2020 / <a href="/1ysjnZzsz5YYXhTNBxELnY4ftz42QupMg/?Post:5">оригинал</a></p></acide>
+
+<section>
+	<h1>Быстрый и грязный фикс бага с таблицами</h1>
+	<p>В общем, не ломая долго голову, я открыл файл <a href="/1ysjnZzsz5YYXhTNBxELnY4ftz42QupMg/alloy-editor/all.js">alloy-editor/all.js</a> и добавил обратное преобразование переводов строк в теги <code>&lt;br></code> внутри таблиц. Да, прямо в прожеванный через все препроцессоры код.</p>
+	<p>Было:</p>
+	<div class="code">
+		<code>function cell (content, node) {
+  var index = Array.prototype.indexOf.call(node.parentNode.childNodes, node)
+  var prefix = ' '
+  if (index === 0) prefix = '| '
+  return prefix + content + ' |'
+}
+</code>
+	</div>
+	<p>Стало:</p>
+	<div class="code">
+		<code>function cell (content, node) {
+  var index = Array.prototype.indexOf.call(node.parentNode.childNodes, node)
+  var prefix = ' '
+  if (index === 0) prefix = '| '
+  return prefix + content.replace(/^\n*/, '').replace(/\n*$/, '').replace(/\n/g, '<br>') + ' |'
+}</code>
+	</div>
+	<p>Костыль, но работает.</p>
+	<p>Проверяю. Таблица, набранная прямо в редакторе постов:</p>
+	<table border="1" class="marcen">
+		<tr>
+			<th>x</th>
+			<th>y</th>
+			<th>z</th>
+		</tr>
+		<tr>
+			<td>1 строка</td>
+			<td>a</td>
+			<td>d</td>
+		</tr>
+		<tr>
+			<td>2 строка</td>
+			<td>b</td>
+			<td>e</td>
+		</tr>
+		<tr>
+			<td>3 строка</td>
+			<td>c</td>
+			<td>f</td>
+		</tr>
+	</table>
+</section>	
+	
+<hr><p>Комментарии:</p>
+	
+<section class="com">
+	<div>
+		<p><b>anotherneko:</b> <tt>(Apr 02, 2018)</tt><br><u>http://127.0.0.1:43110/1A6kYPexXbPRLfDD1DK1oiqsBmWdBwun8f/data/users/15o4nvojFiWaXPWHGBk7WmXDS3p8bVD9AS/5fe7c8ee6999aeb9d1b3b524cdc0af8b.jpg</u></p>
+	</div>
+	<div>
+		<p><b>geekless:</b> <tt>(Apr 03, 2018)</tt><br><em><b>anotherneko:</b> http://127.0.0.1:43110/1A6kYPexXbPRL...</em><br>Сайт не открывается.</p>
+	</div>
+	<div>
+		<p><b>anotherneko:</b> <tt>(Apr 03, 2018)</tt><br><em><b>geekless:</b> Сайт не открывается.</em><br>Похоже что-то пошло не так. Надо будет разобраться.</p>
+	</div>
+	<div>
+		<p><b>geekless:</b> <tt>(Apr 03, 2018)</tt><br><em><b>anotherneko:</b> Похоже что-то пошло не так...</em><br>Возможно, data/users/content.json не подписан. У меня было что-то похожее, когда подпись не поставил.</p>
+	</div>
+	<div>
+		<p><b>anotherneko:</b> <tt>(Apr 03, 2018)</tt><br><em><b>geekless:</b> Возможно, data/users/content.json не подписан...</em><br>Точно, спасибо. Теперь должно работать.</p>
+	</div>
+</section>
+	
+<p class="dr">Apr 02, 2018 / Geekless.Twitter</p>
+	
+</article>		
+		
+</body>
+</html>

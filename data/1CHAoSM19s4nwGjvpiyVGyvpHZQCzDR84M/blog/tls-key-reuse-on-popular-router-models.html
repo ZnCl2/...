@@ -1,0 +1,72 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>Kevin Froman's blog - Tls Key Reuse On Popular Router Models</title>
+  <meta name='description' content='Kevin Froman's blog on security, programming, and other musings'>
+  <meta name='author' content='Kevin Froman'>
+  <link rel='icon' type='image/x-icon' href='/favicon.ico'>
+  <link rel='stylesheet' href='theme.css'>
+  <script src="https://widget.battleforthenet.com/widget.js" integrity="sha384-OzmvdVOIBjM9YAUmPdrxpGclC0fg2bTYlwv12prMWoF1y4osMdsZ1UvH1ufTqAQ3" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="wrapper">
+    <h1 id='siteTitle'><a href='index.html'>Kevin Froman's blog</a></h1>
+    
+<div id='myIntro' class='center'>Blog on security, programming, & other musings</div>
+    <div id='mainContent'><h2 id='postTitle'>Tls Key Reuse On Popular Router Models</h2>
+        <div id='postDate' class='center'>2017-08-07</div><p>Recently I have been researching security of consumer Internet and WiFi routers.</p>
+
+<p>I knew that key reuse was an issue in device firmware, but the issue is more widespread in routers than I would have guessed. Default &amp; current (at time of writing) versions of <strong>firmware for most if not all Netgear, Linksys, and perhaps other router brands reuse TLS keys for their web management interface</strong>.</p>
+
+<p>TLS for remote router management is already 'broken' since certificates are not usually valid, and few users understand how to manually verify certificate fingerprints. Even if users verify fingerprints, they will have a false sense of security since reused TLS keys provide zero protection, while still appearing to be secure.</p>
+
+<p>It would be easy to perform a MITM attack against an administrator accessing their router remotely, which could be a disaster for internal networks.</p>
+
+<h2>Checking if a router is vulnerable</h2>
+
+<h3>Easy &amp; Legal Method</h3>
+
+<p>Check the fingerprint using openssl or your browser, reinstall the firmware, and check again. If they match, your router almost certainly has a baked in key.</p>
+
+<p><img alt="key reuse screenshot" src="./images/tls-key-reuse1.png" /></p>
+
+<h3>Binwalk method</h3>
+
+<p><a href="https://github.com/devttys0/binwalk">Binwalk</a> is a neat CLI program for reverse engineering binary blobs (especially firmware images). I find it works well on most router images.</p>
+
+<p><strong>Note: this method is potentially illegal depending on the software license of the firmware and applicable law</strong></p>
+
+<ul>
+<li>
+<p>Install Binwalk</p>
+</li>
+<li>
+<p>Obtain a firmware image you want to check</p>
+</li>
+<li>
+<p>Open a terminal and enter <code>binwalk -e firmware-image-filename</code></p>
+</li>
+</ul>
+
+<p><img alt="binwalk screenshot" src="./images/binwalk-router.png" /></p>
+
+<p>After a few seconds, Binwalk should have extracted any files it found to a relative directory.</p>
+
+<p>Sift through the files, look for .pem and .key files. If they are present, then the router probably uses them rather than generating new ones at setup/first boot, as it should.</p>
+
+<h2>Conclusion</h2>
+
+<p>There is little incentive for router manufactuers to provide secure firmware, especially for outdated devices. It is in the best interest of users to install trusted open source firmware, such as <a href="https://openwrt.org/">OpenWrt</a>, and keep it up to date.</p>
+
+<p><img alt="OpenWrt logo" src="./images/openwrt-logo.png" /></p>
+
+<div class="center" style="margin-bottom: -25%; margin-top: 2em; border-radius: 5px; padding: 5px;"><div class="center" style="margin-bottom: -25%; margin-top: 2em; border-radius: 5px; padding: 5px;"><span>Written by anonymous</span><br><br></div>
+    </div>
+  </div>
+  <div id="footer">
+    <footer>Powered by TinyGen<div id='socialLinks'><a class="socialLink" href="https://twitter.com/@beardog108"><img src="../images/twitter.png" alt="TWITTER"></a><a class="socialLink" href="https://github.com/beardog108"><img src="../images/github.png" alt="GITHUB"></a><a class="socialLink" href="beardog@firemail.cc"><img src="../images/email.png" alt="EMAIL"></a><a class="socialLink" href="https://keybase.io/beardog"><img src="../images/keybase.png" alt="KEYBASE"></a><a class="socialLink" href="feed.rss"><img src="../images/feed.png" alt="RSS feed"></a></div></footer>
+  </div>
+</body>
+</html>

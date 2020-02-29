@@ -1,0 +1,174 @@
+
+<!DOCTYPE html>
+
+<html>
+<head>
+ <title>New ZeroNet site!</title>
+ <meta charset="utf-8">
+ <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+ <base href="" target="_top" id="base">
+ <script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+</head>
+
+<body>
+
+<center>
+	<table width="85%"> 
+		<tbody>
+			<tr align="center" class="hd" valign="top">
+				<th><a href="./">Home</a></th>
+				<th><a href="./discuss.html">Discuss</a></th>
+				<th><a href="./problem.html">Problem</a></th>
+				<th><a href="./submission.html">Submission</a></th>
+				<th><a href="#Select+user" id="select_user" onclick='return page.selectUser()'>Login</a></th>
+			</tr>
+		</tbody>
+	</table>
+</center>
+<center>
+	Question Public Key
+	<br>
+	<input type="text" id="question"/>
+	
+	<br>
+	Your Answer
+	<br>
+	<input type="text" id="answer" />
+	<br>
+<input type="button" id="send" value="Submit" onclick="return page.submit()"/>
+
+</center>
+<script type="text/javascript" src="js/ZeroFrame.js"></script>
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/sjcl.js"></script>
+<script type="text/javascript" src="js/bn.js"></script>
+<script type="text/javascript" src="js/ecc.js"></script>
+	<script>
+	class ZOJSumbit extends ZeroFrame {
+		loadProblem(){
+			var pub = window.location.search.substr(5);
+			if(!pub)
+				return null
+			var add=""
+			for(var i=0;i<pub.length;i++){
+				if(pub[i]=='&')
+					break;
+				add+=pub[i];
+			}
+			document.getElementById("question").value=add;
+		}
+		submit(){
+			if (!this.site_info.cert_user_id) {  // No account selected, display error
+				this.cmd("wrapperNotification", ["info", "Please, select your account."])
+				return false
+			}
+
+			var ans=sjcl.hash.sha256.hash(document.getElementById("answer").value);
+			var pub=document.getElementById("question").value;
+			var ckey="";
+			var exists=false;
+			this.cmd("dbQuery", ["SELECT * FROM problem"], (problems) => {
+				console.log(problems.length)
+				for (var i=0; i < problems.length; i++) {
+					console.log(problems[i].pub)
+					if(problems[i].pub==pub){
+						ckey=problems[i].ckey;
+						exists=true
+					}
+				}
+				
+				if(!exists)	{
+					this.cmd("wrapperNotification", ["warning", "No such Problem"])
+					return  false
+				}
+				pub = new sjcl.ecc.ecdsa.publicKey(
+					sjcl.ecc.curves.c256, 
+					sjcl.codec.base64.toBits(pub)	
+				)
+				var sec
+				try{
+					sec=sjcl.decrypt(ans,ckey);
+				}catch(err){
+					sec=sjcl.codec.base64.fromBits(ans);
+				}
+				sec = new sjcl.ecc.ecdsa.secretKey(
+					sjcl.ecc.curves.c256,
+					sjcl.ecc.curves.c256.field.fromBits(sjcl.codec.base64.toBits(sec))
+				)
+				
+				var user=sjcl.hash.sha256.hash(document.getElementById("select_user").innerText);
+				var sig = sec.sign(user)
+				var ok = pub.verify(user, sig)
+				sig=sjcl.codec.base64.fromBits(sig)
+				var data_inner_path = "data/users/" + this.site_info.auth_address + "/data.json"
+				var content_inner_path = "data/users/" + this.site_info.auth_address + "/content.json"
+
+				// Load
+				this.cmd("fileGet", {"inner_path": data_inner_path, "required": false}, (data) => {
+					if (data)  // Parse current data file
+						data = JSON.parse(data)
+					else  // Not exists yet, use default data
+						data = { "message": [] ,"problem":[] , "submission":[] }
+
+					if(!data.message || !data.problem || !data.submission){
+						data = { "message": [] ,"problem":[] , "submission":[] }
+					}
+					// Add the new message to data1
+					data.submission.push({
+						"result": ok?"Accepted":"Wrong Answer",
+						"pub" : document.getElementById("question").value,
+						"user" : document.getElementById("select_user").innerText,
+						"sig" : sig,
+						"date_added": Date.now()
+					})
+					// Encode data array to utf8 json text
+					var json_raw = unescape(encodeURIComponent(JSON.stringify(data, undefined, '\t')))
+
+					// Write file to disk
+					this.cmd("fileWrite", [data_inner_path, btoa(json_raw)], (res) => {
+						if (res == "ok") {
+							this.cmd("siteSign", {"inner_path": content_inner_path}, (res) => {
+								this.cmd("sitePublish", {"inner_path": content_inner_path, "sign": false})
+							})
+						} else {
+							this.cmd("wrapperNotification", ["error", "File write error: #{res}"])
+						}
+						window.location="./submission.html"
+					})
+				})
+				return false
+				
+				
+				
+			})
+		}
+		selectUser () {
+			this.cmd("certSelect", {accepted_domains: ["zeroid.bit"]})
+			return false
+		}
+		onRequest (cmd, message) {
+			if (cmd == "setSiteInfo") {
+				if (message.params.cert_user_id)
+					document.getElementById("select_user").innerHTML = message.params.cert_user_id
+				else
+					document.getElementById("select_user").innerHTML = "Login"
+				this.site_info = message.params  // Save site info data to allow access it later
+			}
+		}
+
+		onOpenWebsocket () {
+			this.cmd("siteInfo", {}, (site_info) => {
+				if (site_info.cert_user_id)
+					document.getElementById("select_user").innerText = site_info.cert_user_id
+				this.site_info = site_info
+			})		
+		}
+	}
+
+	page = new ZOJSumbit()
+	page.loadProblem();
+	</script>
+
+</body>
+
+</html>

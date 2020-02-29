@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Sort topics by last comment, Mark new comment and new topics since last visit, loading anim on delete - 0git - 0git - a list of git repositories on ZeroNet
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="0git.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>0git</h1><span class="desc">0git - a list of git repositories on ZeroNet
+</span></td></tr><tr class="url"><td></td><td>git clone <a href="http://127.0.0.1:43110/0git.bit/0git.git">http://127.0.0.1:43110/0git.bit/0git.git</a></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.md.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/191361983aae4b57aea067e2708996b56001f740.html">191361983aae4b57aea067e2708996b56001f740</a>
+<b>parent</b> <a href="../commit/d115c3b81d4a6ec0713d26a2252831854d97ef33.html">d115c3b81d4a6ec0713d26a2252831854d97ef33</a>
+<b>Author:</b> HelloZeroNet &lt;<a href="mailto:hello@noloop.me">hello@noloop.me</a>&gt;
+<b>Date:</b>   Tue Feb 17 01:51:10 +0100
+
+Sort topics by last comment, Mark new comment and new topics since last visit, loading anim on delete
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">css/ZeroTalk.css</a></td><td> | </td><td class="num">9</td><td><span class="i">+++++++</span><span class="d">--</span></td></tr>
+<tr><td><a href="#h1">css/all.css</a></td><td> | </td><td class="num">17</td><td><span class="i">+++++++++++</span><span class="d">------</span></td></tr>
+<tr><td><a href="#h2">index.html</a></td><td> | </td><td class="num">3</td><td><span class="i">++</span><span class="d">-</span></td></tr>
+<tr><td><a href="#h3">js/InlineEditor.coffee</a></td><td> | </td><td class="num">1</td><td><span class="i">+</span><span class="d"></span></td></tr>
+<tr><td><a href="#h4">js/ZeroTalk.coffee</a></td><td> | </td><td class="num">70</td><td><span class="i">+++++++++++++++++++++++++++++++++++++++++++++++</span><span class="d">-----------------------</span></td></tr>
+<tr><td><a href="#h5">js/all.js</a></td><td> | </td><td class="num">95</td><td><span class="i">+++++++++++++++++++++++++++++++++++++++++++++++++++++++</span><span class="d">------------------------</span></td></tr>
+</table>6 files changed, 134 insertions(+), 61 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/css/ZeroTalk.css.html">css/ZeroTalk.css</a> b/<a href="../file/css/ZeroTalk.css.html">css/ZeroTalk.css</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -89,7 +89,7 @@ input.text:focus, textarea:focus { border-color: #5FC0EA; outline: none; backgro
+</a> }
+ .topic-new-link:hover { color: #DB3207; transition: none }
+ 
+<a href="#h0-0-3" id="h0-0-3" class="d">-.topic { background-color: white; padding: 15px 25px; margin: 1px; padding-left: 100px }
+</a><a href="#h0-0-4" id="h0-0-4" class="i">+.topic { background-color: white; padding: 15px 25px; margin: 1px; padding-left: 110px }
+</a> .topic .image { position: absolute; margin-left: -72px; margin-top: 5px; opacity: 0.3 }
+ .topic .title { padding-bottom: 4px }
+ .topic .title input { color: #DB3207; font-weight: bold; font-size: 1em }
+<a href="#h0-1" id="h0-1" class="h">@@ -102,7 +102,11 @@ input.text:focus, textarea:focus { border-color: #5FC0EA; outline: none; backgro
+</a> .topic .comment-num { font-weight: bold; color: #666; border-bottom: 1px solid #AAA }
+ .topic .comment-num:hover { border-bottom: 1px solid #333 }
+ 
+<a href="#h0-1-3" id="h0-1-3" class="d">-.topics { margin-bottom: 60px }
+</a><a href="#h0-1-4" id="h0-1-4" class="i">+.topic .dot { margin-left: -100px; font-size: 40px; line-height: 57px; color: white; position: absolute; }
+</a><a href="#h0-1-5" id="h0-1-5" class="i">+.topic.visit-none .dot { color: #E2E2E2 }
+</a><a href="#h0-1-6" id="h0-1-6" class="i">+.topic.visit-newcomment .dot { color: #74BBFE }
+</a><a href="#h0-1-7" id="h0-1-7" class="i">+
+</a><a href="#h0-1-8" id="h0-1-8" class="i">+.topics { margin-bottom: 60px; opacity: 0; transition: opacity 0.3s }
+</a> .topics .body { max-height: 1.5em; }
+ .topics .body ul { margin: 0px }
+ .topics-loading { 
+<a href="#h0-2" id="h0-2" class="h">@@ -122,6 +126,7 @@ input.text:focus, textarea:focus { border-color: #5FC0EA; outline: none; backgro
+</a> .comment .info { font-size: 12px; color: #AAA; margin-bottom: 7px }
+ .comment .body { line-height: 1.5em }
+ .comment .body p { margin-top: 0.5em; margin-bottom: 0.5em }
+<a href="#h0-2-3" id="h0-2-3" class="i">+.comment .body.editor { margin-top: 0.5em !important; margin-bottom: 0.5em !important }
+</a> .comment .body h1, .comment .body h2, .comment .body h3 { font-size: 110% }
+ 
+ .comment-new { margin-bottom: 5px }
+<b>diff --git a/<a id="h1" href="../file/css/all.css.html">css/all.css</a> b/<a href="../file/css/all.css.html">css/all.css</a></b>
+<a href="#h1-0" id="h1-0" class="h">@@ -1,6 +1,6 @@
+</a> 
+ 
+<a href="#h1-0-2" id="h1-0-2" class="d">-/* ---- data/12Hw8rTgzrNo4DSh2AkqwPRqDyTticwJyH/css/InlineEditor.css ---- */
+</a><a href="#h1-0-3" id="h1-0-3" class="i">+/* ---- data/1TaLk3zM7ZRskJvrh3ZNCDVGXvkJusPKQ/css/InlineEditor.css ---- */
+</a> 
+ 
+ /* Editable */
+<a href="#h1-1" id="h1-1" class="h">@@ -42,7 +42,7 @@
+</a> .icon-help.active { background-color: #EEE } 
+ 
+ 
+<a href="#h1-1-3" id="h1-1-3" class="d">-/* ---- data/12Hw8rTgzrNo4DSh2AkqwPRqDyTticwJyH/css/ZeroTalk.css ---- */
+</a><a href="#h1-1-4" id="h1-1-4" class="i">+/* ---- data/1TaLk3zM7ZRskJvrh3ZNCDVGXvkJusPKQ/css/ZeroTalk.css ---- */
+</a> 
+ 
+ body { background-color: #F5F5F5; color: #333332; margin: 10px; padding: 0px; font-family: &apos;Roboto&apos;, sans-serif; height: 15000px; overflow: hidden }
+<a href="#h1-2" id="h1-2" class="h">@@ -136,7 +136,7 @@ input.text:focus, textarea:focus { border-color: #5FC0EA; outline: none; backgro
+</a> }
+ .topic-new-link:hover { color: #DB3207; -webkit-transition: none ; -moz-transition: none ; -o-transition: none ; -ms-transition: none ; transition: none  }
+ 
+<a href="#h1-2-3" id="h1-2-3" class="d">-.topic { background-color: white; padding: 15px 25px; margin: 1px; padding-left: 100px }
+</a><a href="#h1-2-4" id="h1-2-4" class="i">+.topic { background-color: white; padding: 15px 25px; margin: 1px; padding-left: 110px }
+</a> .topic .image { position: absolute; margin-left: -72px; margin-top: 5px; opacity: 0.3 }
+ .topic .title { padding-bottom: 4px }
+ .topic .title input { color: #DB3207; font-weight: bold; font-size: 1em }
+<a href="#h1-3" id="h1-3" class="h">@@ -149,7 +149,11 @@ input.text:focus, textarea:focus { border-color: #5FC0EA; outline: none; backgro
+</a> .topic .comment-num { font-weight: bold; color: #666; border-bottom: 1px solid #AAA }
+ .topic .comment-num:hover { border-bottom: 1px solid #333 }
+ 
+<a href="#h1-3-3" id="h1-3-3" class="d">-.topics { margin-bottom: 60px }
+</a><a href="#h1-3-4" id="h1-3-4" class="i">+.topic .dot { margin-left: -100px; font-size: 40px; line-height: 57px; color: white; position: absolute; }
+</a><a href="#h1-3-5" id="h1-3-5" class="i">+.topic.visit-none .dot { color: #E2E2E2 }
+</a><a href="#h1-3-6" id="h1-3-6" class="i">+.topic.visit-newcomment .dot { color: #74BBFE }
+</a><a href="#h1-3-7" id="h1-3-7" class="i">+
+</a><a href="#h1-3-8" id="h1-3-8" class="i">+.topics { margin-bottom: 60px; opacity: 0; -webkit-transition: opacity 0.3s ; -moz-transition: opacity 0.3s ; -o-transition: opacity 0.3s ; -ms-transition: opacity 0.3s ; transition: opacity 0.3s  }
+</a> .topics .body { max-height: 1.5em; }
+ .topics .body ul { margin: 0px }
+ .topics-loading { 
+<a href="#h1-4" id="h1-4" class="h">@@ -169,6 +173,7 @@ input.text:focus, textarea:focus { border-color: #5FC0EA; outline: none; backgro
+</a> .comment .info { font-size: 12px; color: #AAA; margin-bottom: 7px }
+ .comment .body { line-height: 1.5em }
+ .comment .body p { margin-top: 0.5em; margin-bottom: 0.5em }
+<a href="#h1-4-3" id="h1-4-3" class="i">+.comment .body.editor { margin-top: 0.5em !important; margin-bottom: 0.5em !important }
+</a> .comment .body h1, .comment .body h2, .comment .body h3 { font-size: 110% }
+ 
+ .comment-new { margin-bottom: 5px }
+<a href="#h1-5" id="h1-5" class="h">@@ -183,7 +188,7 @@ input.text:focus, textarea:focus { border-color: #5FC0EA; outline: none; backgro
+</a> .page-topic .comments-new { display: inherit }
+ 
+ 
+<a href="#h1-5-3" id="h1-5-3" class="d">-/* ---- data/12Hw8rTgzrNo4DSh2AkqwPRqDyTticwJyH/css/fonts.css ---- */
+</a><a href="#h1-5-4" id="h1-5-4" class="i">+/* ---- data/1TaLk3zM7ZRskJvrh3ZNCDVGXvkJusPKQ/css/fonts.css ---- */
+</a> 
+ 
+ /* Base64 encoder: http://www.motobit.com/util/base64-decoder-encoder.asp */
+<a href="#h1-6" id="h1-6" class="h">@@ -228,7 +233,7 @@ input.text:focus, textarea:focus { border-color: #5FC0EA; outline: none; backgro
+</a> 
+ 
+ 
+<a href="#h1-6-3" id="h1-6-3" class="d">-/* ---- data/12Hw8rTgzrNo4DSh2AkqwPRqDyTticwJyH/css/icons.css ---- */
+</a><a href="#h1-6-4" id="h1-6-4" class="i">+/* ---- data/1TaLk3zM7ZRskJvrh3ZNCDVGXvkJusPKQ/css/icons.css ---- */
+</a> 
+ 
+ .icon { display: inline-block; vertical-align: text-bottom; background-repeat: no-repeat; }
+<b>diff --git a/<a id="h2" href="../file/index.html.html">index.html</a> b/<a href="../file/index.html.html">index.html</a></b>
+<a href="#h2-0" id="h2-0" class="h">@@ -79,6 +79,7 @@
+</a> 
+   &lt;!-- Template: Topic --&gt;
+   &lt;div class=&quot;topic template&quot;&gt;
+<a href="#h2-0-3" id="h2-0-3" class="i">+   &lt;div class=&quot;dot&quot;&gt;&amp;bullet;&lt;/div&gt;
+</a>    &lt;a href=&quot;#&quot; class=&quot;image nolink&quot;&gt;&lt;div class=&quot;icon icon-topic-chat&quot;&gt;&lt;/div&gt;&lt;/a&gt;
+    &lt;h2 class=&quot;title&quot;&gt;&lt;a href=&quot;#&quot; class=&quot;title-link&quot;&gt;Title&lt;/a&gt;&lt;/h2&gt;
+    &lt;div class=&quot;body&quot;&gt;Body&lt;/div&gt;
+<a href="#h2-1" id="h2-1" class="h">@@ -86,7 +87,7 @@
+</a>    &lt;div class=&quot;info&quot;&gt;
+     &lt;a href=&quot;#&quot; class=&quot;comment-num&quot;&gt;&lt;/a&gt; 
+     &lt;span class=&quot;added&quot;&gt;added&lt;/span&gt;
+<a href="#h2-1-3" id="h2-1-3" class="d">-     &amp;#9473; by &lt;span class=&quot;username&quot;&gt;username&lt;/span&gt;
+</a><a href="#h2-1-4" id="h2-1-4" class="i">+     &amp;#9473; posted by &lt;span class=&quot;username&quot;&gt;username&lt;/span&gt;
+</a>    &lt;/div&gt;
+   &lt;/div&gt;
+   &lt;!-- EOF Template: Topic main --&gt;
+<b>diff --git a/<a id="h3" href="../file/js/InlineEditor.coffee.html">js/InlineEditor.coffee</a> b/<a href="../file/js/InlineEditor.coffee.html">js/InlineEditor.coffee</a></b>
+<a href="#h3-0" id="h3-0" class="h">@@ -96,6 +96,7 @@ class InlineEditor
+</a> 	deleteObject: =&gt;
+ 		object_type = @getObject(@elem).data(&quot;object&quot;).split(&quot;:&quot;)[0]
+ 		window.zero_talk.cmd &quot;wrapperConfirm&quot;, [&quot;Are you sure you sure to delete this #{object_type}?&quot;, &quot;Delete&quot;], (confirmed) =&gt; 
+<a href="#h3-0-3" id="h3-0-3" class="i">+			$(&quot;.editbar .delete&quot;).addClass(&quot;loading&quot;)
+</a> 			@saveContent @getObject(@elem), null, =&gt;
+ 				@stopEdit()
+ 		return false
+<b>diff --git a/<a id="h4" href="../file/js/ZeroTalk.coffee.html">js/ZeroTalk.coffee</a> b/<a href="../file/js/ZeroTalk.coffee.html">js/ZeroTalk.coffee</a></b>
+<a href="#h4-0" id="h4-0" class="h">@@ -3,6 +3,7 @@ class ZeroTalk extends ZeroFrame
+</a> 		@log &quot;inited!&quot;
+ 		@site_info = null
+ 		@server_info = null
+<a href="#h4-0-3" id="h4-0-3" class="i">+		@local_storage = {}
+</a> 
+ 		@user_id_db = {} # { &quot;address&quot;: 1 }
+ 		@user_address_db = {} # { 1: &quot;address&quot; }
+<a href="#h4-1" id="h4-1" class="h">@@ -27,6 +28,31 @@ class ZeroTalk extends ZeroFrame
+</a> 			return false
+ 
+ 
+<a href="#h4-1-3" id="h4-1-3" class="i">+	# All page content loaded
+</a><a href="#h4-1-4" id="h4-1-4" class="i">+	pageLoaded: -&gt;
+</a><a href="#h4-1-5" id="h4-1-5" class="i">+		$(&quot;body&quot;).addClass(&quot;loaded&quot;) # Back/forward button keep position support
+</a><a href="#h4-1-6" id="h4-1-6" class="i">+
+</a><a href="#h4-1-7" id="h4-1-7" class="i">+
+</a><a href="#h4-1-8" id="h4-1-8" class="i">+	# Wrapper websocket connection ready
+</a><a href="#h4-1-9" id="h4-1-9" class="i">+	onOpenWebsocket: (e) =&gt;
+</a><a href="#h4-1-10" id="h4-1-10" class="i">+		@cmd &quot;wrapperSetViewport&quot;, &quot;width=device-width, initial-scale=1.0&quot;
+</a><a href="#h4-1-11" id="h4-1-11" class="i">+		@cmd &quot;wrapperGetLocalStorage&quot;, [], (res) =&gt;
+</a><a href="#h4-1-12" id="h4-1-12" class="i">+			res ?= {}
+</a><a href="#h4-1-13" id="h4-1-13" class="i">+			@local_storage = res
+</a><a href="#h4-1-14" id="h4-1-14" class="i">+
+</a><a href="#h4-1-15" id="h4-1-15" class="i">+		@cmd &quot;siteInfo&quot;, {}, (site) =&gt;
+</a><a href="#h4-1-16" id="h4-1-16" class="i">+			@setSiteinfo(site)
+</a><a href="#h4-1-17" id="h4-1-17" class="i">+			@loadUserDb =&gt; # Load user DB then route url
+</a><a href="#h4-1-18" id="h4-1-18" class="i">+				@updateUserInfo()
+</a><a href="#h4-1-19" id="h4-1-19" class="i">+				@routeUrl(window.location.search.substring(1))
+</a><a href="#h4-1-20" id="h4-1-20" class="i">+
+</a><a href="#h4-1-21" id="h4-1-21" class="i">+		@cmd &quot;serverInfo&quot;, {}, (ret) =&gt; # Get server info
+</a><a href="#h4-1-22" id="h4-1-22" class="i">+			@server_info = ret
+</a><a href="#h4-1-23" id="h4-1-23" class="i">+			version = parseInt(@server_info.version.replace(/\./g, &quot;&quot;))
+</a><a href="#h4-1-24" id="h4-1-24" class="i">+			if version &lt; 20
+</a><a href="#h4-1-25" id="h4-1-25" class="i">+				@cmd &quot;wrapperNotification&quot;, [&quot;error&quot;, &quot;ZeroTalk requires ZeroNet 0.2.0, please update!&quot;]
+</a><a href="#h4-1-26" id="h4-1-26" class="i">+
+</a><a href="#h4-1-27" id="h4-1-27" class="i">+
+</a> 	routeUrl: (url) -&gt;
+ 		@log &quot;Routing url:&quot;, url
+ 		if match = url.match /Topic:([0-9]+)@([0-9]+)/
+<a href="#h4-2" id="h4-2" class="h">@@ -101,6 +127,7 @@ class ZeroTalk extends ZeroFrame
+</a> 	loadTopicsStat: (type=&quot;normal&quot;) =&gt;
+ 		s = (+ new Date)
+ 		@cmd &quot;fileQuery&quot;, [&quot;data/users/*/data.json&quot;, &quot;&quot;], (users) =&gt;
+<a href="#h4-2-3" id="h4-2-3" class="i">+			$(&quot;.topics&quot;).css(&quot;opacity&quot;, 1)
+</a> 			stats = []
+ 			# Analyze user data files
+ 			for user in users
+<a href="#h4-3" id="h4-3" class="h">@@ -119,8 +146,24 @@ class ZeroTalk extends ZeroFrame
+</a> 				$(&quot;#topic_#{topic_address} .comment-num&quot;).text &quot;#{stat.comments} comment&quot;
+ 				$(&quot;#topic_#{topic_address} .added&quot;).text &quot;last &quot;+@formatSince(stat[&quot;last&quot;][&quot;added&quot;])
+ 
+<a href="#h4-3-3" id="h4-3-3" class="d">-			@log &quot;Topics stats loaded in&quot;, (+ new Date)-s
+</a> 
+<a href="#h4-3-5" id="h4-3-5" class="i">+			# Sort topics
+</a><a href="#h4-3-6" id="h4-3-6" class="i">+			topics = ([topic_address, stat.last.added] for topic_address, stat of stats)
+</a><a href="#h4-3-7" id="h4-3-7" class="i">+			topics.sort (a, b) -&gt; # Sort by date
+</a><a href="#h4-3-8" id="h4-3-8" class="i">+				return a[1] - b[1]
+</a><a href="#h4-3-9" id="h4-3-9" class="i">+
+</a><a href="#h4-3-10" id="h4-3-10" class="i">+			for topic in topics
+</a><a href="#h4-3-11" id="h4-3-11" class="i">+				topic_address = topic[0]
+</a><a href="#h4-3-12" id="h4-3-12" class="i">+				elem = $(&quot;#topic_#{topic_address}&quot;)
+</a><a href="#h4-3-13" id="h4-3-13" class="i">+				elem.prependTo &quot;.topics&quot;
+</a><a href="#h4-3-14" id="h4-3-14" class="i">+				# Visited
+</a><a href="#h4-3-15" id="h4-3-15" class="i">+				visited = @local_storage[&quot;topic.#{topic_address}.visited&quot;]
+</a><a href="#h4-3-16" id="h4-3-16" class="i">+				if not visited
+</a><a href="#h4-3-17" id="h4-3-17" class="i">+					elem.addClass(&quot;visit-none&quot;)
+</a><a href="#h4-3-18" id="h4-3-18" class="i">+				else if visited &lt; topic[1]
+</a><a href="#h4-3-19" id="h4-3-19" class="i">+					elem.addClass(&quot;visit-newcomment&quot;)
+</a><a href="#h4-3-20" id="h4-3-20" class="i">+
+</a><a href="#h4-3-21" id="h4-3-21" class="i">+			@log &quot;Topics stats loaded in&quot;, (+ new Date)-s
+</a> 
+ 
+ 
+<a href="#h4-4" id="h4-4" class="h">@@ -131,6 +174,9 @@ class ZeroTalk extends ZeroFrame
+</a> 		@loadTopic()
+ 		@loadComments(&quot;noanim&quot;)
+ 
+<a href="#h4-4-3" id="h4-4-3" class="i">+		@local_storage[&quot;topic.#{topic_id}_#{topic_user_id}.visited&quot;] = @timestamp()
+</a><a href="#h4-4-4" id="h4-4-4" class="i">+		@cmd &quot;wrapperSetLocalStorage&quot;, @local_storage
+</a><a href="#h4-4-5" id="h4-4-5" class="i">+
+</a> 		$(&quot;.comment-new .button-submit&quot;).on &quot;click&quot;, =&gt;
+ 			if @user_name_db[@site_info.auth_address] # Check if user exits
+ 				@buttonComment()
+<a href="#h4-5" id="h4-5" class="h">@@ -307,28 +353,6 @@ class ZeroTalk extends ZeroFrame
+</a> 					if cb then cb(false)
+ 
+ 
+<a href="#h4-5-3" id="h4-5-3" class="d">-
+</a><a href="#h4-5-4" id="h4-5-4" class="d">-	# All page content loaded
+</a><a href="#h4-5-5" id="h4-5-5" class="d">-	pageLoaded: -&gt;
+</a><a href="#h4-5-6" id="h4-5-6" class="d">-		$(&quot;body&quot;).addClass(&quot;loaded&quot;) # Back/forward button keep position support
+</a><a href="#h4-5-7" id="h4-5-7" class="d">-
+</a><a href="#h4-5-8" id="h4-5-8" class="d">-
+</a><a href="#h4-5-9" id="h4-5-9" class="d">-	# Wrapper websocket connection ready
+</a><a href="#h4-5-10" id="h4-5-10" class="d">-	onOpenWebsocket: (e) =&gt;
+</a><a href="#h4-5-11" id="h4-5-11" class="d">-		@cmd &quot;wrapperSetViewport&quot;, &quot;width=device-width, initial-scale=1.0&quot;
+</a><a href="#h4-5-12" id="h4-5-12" class="d">-		@cmd &quot;siteInfo&quot;, {}, (site) =&gt;
+</a><a href="#h4-5-13" id="h4-5-13" class="d">-			@setSiteinfo(site)
+</a><a href="#h4-5-14" id="h4-5-14" class="d">-			@loadUserDb =&gt; # Load user DB then route url
+</a><a href="#h4-5-15" id="h4-5-15" class="d">-				@updateUserInfo()
+</a><a href="#h4-5-16" id="h4-5-16" class="d">-				@routeUrl(window.location.search.substring(1))
+</a><a href="#h4-5-17" id="h4-5-17" class="d">-
+</a><a href="#h4-5-18" id="h4-5-18" class="d">-		@cmd &quot;serverInfo&quot;, {}, (ret) =&gt; # Get server info
+</a><a href="#h4-5-19" id="h4-5-19" class="d">-			@server_info = ret
+</a><a href="#h4-5-20" id="h4-5-20" class="d">-			version = parseInt(@server_info.version.replace(/\./g, &quot;&quot;))
+</a><a href="#h4-5-21" id="h4-5-21" class="d">-			if version &lt; 20
+</a><a href="#h4-5-22" id="h4-5-22" class="d">-				@cmd &quot;wrapperNotification&quot;, [&quot;error&quot;, &quot;ZeroTalk requires ZeroNet 0.2.0, please update!&quot;]
+</a><a href="#h4-5-23" id="h4-5-23" class="d">-
+</a><a href="#h4-5-24" id="h4-5-24" class="d">-
+</a> 	loadUserDb: (cb = null) -&gt;
+ 		@log &quot;Loading userdb&quot;
+ 		@cmd &quot;fileGet&quot;, [&quot;data/users/content.json&quot;], (data) =&gt;
+<b>diff --git a/<a id="h5" href="../file/js/all.js.html">js/all.js</a> b/<a href="../file/js/all.js.html">js/all.js</a></b>
+<a href="#h5-0" id="h5-0" class="h">@@ -976,6 +976,7 @@ jQuery.extend( jQuery.easing,
+</a>       object_type = this.getObject(this.elem).data(&quot;object&quot;).split(&quot;:&quot;)[0];
+       window.zero_talk.cmd(&quot;wrapperConfirm&quot;, [&quot;Are you sure you sure to delete this &quot; + object_type + &quot;?&quot;, &quot;Delete&quot;], (function(_this) {
+         return function(confirmed) {
+<a href="#h5-0-3" id="h5-0-3" class="i">+          $(&quot;.editbar .delete&quot;).addClass(&quot;loading&quot;);
+</a>           return _this.saveContent(_this.getObject(_this.elem), null, function() {
+             return _this.stopEdit();
+           });
+<a href="#h5-1" id="h5-1" class="h">@@ -1066,11 +1067,11 @@ jQuery.extend( jQuery.easing,
+</a>     function ZeroTalk() {
+       this.setSiteinfo = __bind(this.setSiteinfo, this);
+       this.actionSetSiteInfo = __bind(this.actionSetSiteInfo, this);
+<a href="#h5-1-3" id="h5-1-3" class="d">-      this.onOpenWebsocket = __bind(this.onOpenWebsocket, this);
+</a>       this.saveContent = __bind(this.saveContent, this);
+       this.getObject = __bind(this.getObject, this);
+       this.getContent = __bind(this.getContent, this);
+       this.loadTopicsStat = __bind(this.loadTopicsStat, this);
+<a href="#h5-1-8" id="h5-1-8" class="i">+      this.onOpenWebsocket = __bind(this.onOpenWebsocket, this);
+</a>       return ZeroTalk.__super__.constructor.apply(this, arguments);
+     }
+ 
+<a href="#h5-2" id="h5-2" class="h">@@ -1079,6 +1080,7 @@ jQuery.extend( jQuery.easing,
+</a>       this.log(&quot;inited!&quot;);
+       this.site_info = null;
+       this.server_info = null;
+<a href="#h5-2-3" id="h5-2-3" class="i">+      this.local_storage = {};
+</a>       this.user_id_db = {};
+       this.user_address_db = {};
+       this.user_name_db = {};
+<a href="#h5-3" id="h5-3" class="h">@@ -1104,6 +1106,41 @@ jQuery.extend( jQuery.easing,
+</a>       })(this));
+     };
+ 
+<a href="#h5-3-3" id="h5-3-3" class="i">+    ZeroTalk.prototype.pageLoaded = function() {
+</a><a href="#h5-3-4" id="h5-3-4" class="i">+      return $(&quot;body&quot;).addClass(&quot;loaded&quot;);
+</a><a href="#h5-3-5" id="h5-3-5" class="i">+    };
+</a><a href="#h5-3-6" id="h5-3-6" class="i">+
+</a><a href="#h5-3-7" id="h5-3-7" class="i">+    ZeroTalk.prototype.onOpenWebsocket = function(e) {
+</a><a href="#h5-3-8" id="h5-3-8" class="i">+      this.cmd(&quot;wrapperSetViewport&quot;, &quot;width=device-width, initial-scale=1.0&quot;);
+</a><a href="#h5-3-9" id="h5-3-9" class="i">+      this.cmd(&quot;wrapperGetLocalStorage&quot;, [], (function(_this) {
+</a><a href="#h5-3-10" id="h5-3-10" class="i">+        return function(res) {
+</a><a href="#h5-3-11" id="h5-3-11" class="i">+          if (res == null) {
+</a><a href="#h5-3-12" id="h5-3-12" class="i">+            res = {};
+</a><a href="#h5-3-13" id="h5-3-13" class="i">+          }
+</a><a href="#h5-3-14" id="h5-3-14" class="i">+          return _this.local_storage = res;
+</a><a href="#h5-3-15" id="h5-3-15" class="i">+        };
+</a><a href="#h5-3-16" id="h5-3-16" class="i">+      })(this));
+</a><a href="#h5-3-17" id="h5-3-17" class="i">+      this.cmd(&quot;siteInfo&quot;, {}, (function(_this) {
+</a><a href="#h5-3-18" id="h5-3-18" class="i">+        return function(site) {
+</a><a href="#h5-3-19" id="h5-3-19" class="i">+          _this.setSiteinfo(site);
+</a><a href="#h5-3-20" id="h5-3-20" class="i">+          return _this.loadUserDb(function() {
+</a><a href="#h5-3-21" id="h5-3-21" class="i">+            _this.updateUserInfo();
+</a><a href="#h5-3-22" id="h5-3-22" class="i">+            return _this.routeUrl(window.location.search.substring(1));
+</a><a href="#h5-3-23" id="h5-3-23" class="i">+          });
+</a><a href="#h5-3-24" id="h5-3-24" class="i">+        };
+</a><a href="#h5-3-25" id="h5-3-25" class="i">+      })(this));
+</a><a href="#h5-3-26" id="h5-3-26" class="i">+      return this.cmd(&quot;serverInfo&quot;, {}, (function(_this) {
+</a><a href="#h5-3-27" id="h5-3-27" class="i">+        return function(ret) {
+</a><a href="#h5-3-28" id="h5-3-28" class="i">+          var version;
+</a><a href="#h5-3-29" id="h5-3-29" class="i">+          _this.server_info = ret;
+</a><a href="#h5-3-30" id="h5-3-30" class="i">+          version = parseInt(_this.server_info.version.replace(/\./g, &quot;&quot;));
+</a><a href="#h5-3-31" id="h5-3-31" class="i">+          if (version &lt; 20) {
+</a><a href="#h5-3-32" id="h5-3-32" class="i">+            return _this.cmd(&quot;wrapperNotification&quot;, [&quot;error&quot;, &quot;ZeroTalk requires ZeroNet 0.2.0, please update!&quot;]);
+</a><a href="#h5-3-33" id="h5-3-33" class="i">+          }
+</a><a href="#h5-3-34" id="h5-3-34" class="i">+        };
+</a><a href="#h5-3-35" id="h5-3-35" class="i">+      })(this));
+</a><a href="#h5-3-36" id="h5-3-36" class="i">+    };
+</a><a href="#h5-3-37" id="h5-3-37" class="i">+
+</a>     ZeroTalk.prototype.routeUrl = function(url) {
+       var match;
+       this.log(&quot;Routing url:&quot;, url);
+<a href="#h5-4" id="h5-4" class="h">@@ -1198,7 +1235,8 @@ jQuery.extend( jQuery.easing,
+</a>       s = +(new Date);
+       return this.cmd(&quot;fileQuery&quot;, [&quot;data/users/*/data.json&quot;, &quot;&quot;], (function(_this) {
+         return function(users) {
+<a href="#h5-4-3" id="h5-4-3" class="d">-          var comment, comments, last, stat, stats, topic_address, user, _i, _j, _len, _len1, _ref;
+</a><a href="#h5-4-4" id="h5-4-4" class="i">+          var comment, comments, elem, last, stat, stats, topic, topic_address, topics, user, visited, _i, _j, _k, _len, _len1, _len2, _ref;
+</a><a href="#h5-4-5" id="h5-4-5" class="i">+          $(&quot;.topics&quot;).css(&quot;opacity&quot;, 1);
+</a>           stats = [];
+           for (_i = 0, _len = users.length; _i &lt; _len; _i++) {
+             user = users[_i];
+<a href="#h5-5" id="h5-5" class="h">@@ -1228,6 +1266,30 @@ jQuery.extend( jQuery.easing,
+</a>             $(&quot;#topic_&quot; + topic_address + &quot; .comment-num&quot;).text(stat.comments + &quot; comment&quot;);
+             $(&quot;#topic_&quot; + topic_address + &quot; .added&quot;).text(&quot;last &quot; + _this.formatSince(stat[&quot;last&quot;][&quot;added&quot;]));
+           }
+<a href="#h5-5-3" id="h5-5-3" class="i">+          topics = (function() {
+</a><a href="#h5-5-4" id="h5-5-4" class="i">+            var _results;
+</a><a href="#h5-5-5" id="h5-5-5" class="i">+            _results = [];
+</a><a href="#h5-5-6" id="h5-5-6" class="i">+            for (topic_address in stats) {
+</a><a href="#h5-5-7" id="h5-5-7" class="i">+              stat = stats[topic_address];
+</a><a href="#h5-5-8" id="h5-5-8" class="i">+              _results.push([topic_address, stat.last.added]);
+</a><a href="#h5-5-9" id="h5-5-9" class="i">+            }
+</a><a href="#h5-5-10" id="h5-5-10" class="i">+            return _results;
+</a><a href="#h5-5-11" id="h5-5-11" class="i">+          })();
+</a><a href="#h5-5-12" id="h5-5-12" class="i">+          topics.sort(function(a, b) {
+</a><a href="#h5-5-13" id="h5-5-13" class="i">+            return a[1] - b[1];
+</a><a href="#h5-5-14" id="h5-5-14" class="i">+          });
+</a><a href="#h5-5-15" id="h5-5-15" class="i">+          for (_k = 0, _len2 = topics.length; _k &lt; _len2; _k++) {
+</a><a href="#h5-5-16" id="h5-5-16" class="i">+            topic = topics[_k];
+</a><a href="#h5-5-17" id="h5-5-17" class="i">+            topic_address = topic[0];
+</a><a href="#h5-5-18" id="h5-5-18" class="i">+            elem = $(&quot;#topic_&quot; + topic_address);
+</a><a href="#h5-5-19" id="h5-5-19" class="i">+            elem.prependTo(&quot;.topics&quot;);
+</a><a href="#h5-5-20" id="h5-5-20" class="i">+            visited = _this.local_storage[&quot;topic.&quot; + topic_address + &quot;.visited&quot;];
+</a><a href="#h5-5-21" id="h5-5-21" class="i">+            if (!visited) {
+</a><a href="#h5-5-22" id="h5-5-22" class="i">+              elem.addClass(&quot;visit-none&quot;);
+</a><a href="#h5-5-23" id="h5-5-23" class="i">+            } else if (visited &lt; topic[1]) {
+</a><a href="#h5-5-24" id="h5-5-24" class="i">+              elem.addClass(&quot;visit-newcomment&quot;);
+</a><a href="#h5-5-25" id="h5-5-25" class="i">+            }
+</a><a href="#h5-5-26" id="h5-5-26" class="i">+          }
+</a>           return _this.log(&quot;Topics stats loaded in&quot;, (+(new Date)) - s);
+         };
+       })(this));
+<a href="#h5-6" id="h5-6" class="h">@@ -1238,6 +1300,8 @@ jQuery.extend( jQuery.easing,
+</a>       this.topic_user_id = topic_user_id;
+       this.loadTopic();
+       this.loadComments(&quot;noanim&quot;);
+<a href="#h5-6-3" id="h5-6-3" class="i">+      this.local_storage[&quot;topic.&quot; + topic_id + &quot;_&quot; + topic_user_id + &quot;.visited&quot;] = this.timestamp();
+</a><a href="#h5-6-4" id="h5-6-4" class="i">+      this.cmd(&quot;wrapperSetLocalStorage&quot;, this.local_storage);
+</a>       return $(&quot;.comment-new .button-submit&quot;).on(&quot;click&quot;, (function(_this) {
+         return function() {
+           if (_this.user_name_db[_this.site_info.auth_address]) {
+<a href="#h5-7" id="h5-7" class="h">@@ -1499,33 +1563,6 @@ jQuery.extend( jQuery.easing,
+</a>       })(this));
+     };
+ 
+<a href="#h5-7-3" id="h5-7-3" class="d">-    ZeroTalk.prototype.pageLoaded = function() {
+</a><a href="#h5-7-4" id="h5-7-4" class="d">-      return $(&quot;body&quot;).addClass(&quot;loaded&quot;);
+</a><a href="#h5-7-5" id="h5-7-5" class="d">-    };
+</a><a href="#h5-7-6" id="h5-7-6" class="d">-
+</a><a href="#h5-7-7" id="h5-7-7" class="d">-    ZeroTalk.prototype.onOpenWebsocket = function(e) {
+</a><a href="#h5-7-8" id="h5-7-8" class="d">-      this.cmd(&quot;wrapperSetViewport&quot;, &quot;width=device-width, initial-scale=1.0&quot;);
+</a><a href="#h5-7-9" id="h5-7-9" class="d">-      this.cmd(&quot;siteInfo&quot;, {}, (function(_this) {
+</a><a href="#h5-7-10" id="h5-7-10" class="d">-        return function(site) {
+</a><a href="#h5-7-11" id="h5-7-11" class="d">-          _this.setSiteinfo(site);
+</a><a href="#h5-7-12" id="h5-7-12" class="d">-          return _this.loadUserDb(function() {
+</a><a href="#h5-7-13" id="h5-7-13" class="d">-            _this.updateUserInfo();
+</a><a href="#h5-7-14" id="h5-7-14" class="d">-            return _this.routeUrl(window.location.search.substring(1));
+</a><a href="#h5-7-15" id="h5-7-15" class="d">-          });
+</a><a href="#h5-7-16" id="h5-7-16" class="d">-        };
+</a><a href="#h5-7-17" id="h5-7-17" class="d">-      })(this));
+</a><a href="#h5-7-18" id="h5-7-18" class="d">-      return this.cmd(&quot;serverInfo&quot;, {}, (function(_this) {
+</a><a href="#h5-7-19" id="h5-7-19" class="d">-        return function(ret) {
+</a><a href="#h5-7-20" id="h5-7-20" class="d">-          var version;
+</a><a href="#h5-7-21" id="h5-7-21" class="d">-          _this.server_info = ret;
+</a><a href="#h5-7-22" id="h5-7-22" class="d">-          version = parseInt(_this.server_info.version.replace(/\./g, &quot;&quot;));
+</a><a href="#h5-7-23" id="h5-7-23" class="d">-          if (version &lt; 20) {
+</a><a href="#h5-7-24" id="h5-7-24" class="d">-            return _this.cmd(&quot;wrapperNotification&quot;, [&quot;error&quot;, &quot;ZeroTalk requires ZeroNet 0.2.0, please update!&quot;]);
+</a><a href="#h5-7-25" id="h5-7-25" class="d">-          }
+</a><a href="#h5-7-26" id="h5-7-26" class="d">-        };
+</a><a href="#h5-7-27" id="h5-7-27" class="d">-      })(this));
+</a><a href="#h5-7-28" id="h5-7-28" class="d">-    };
+</a><a href="#h5-7-29" id="h5-7-29" class="d">-
+</a>     ZeroTalk.prototype.loadUserDb = function(cb) {
+       if (cb == null) {
+         cb = null;
+</pre>
+</div>
+</body>
+</html>

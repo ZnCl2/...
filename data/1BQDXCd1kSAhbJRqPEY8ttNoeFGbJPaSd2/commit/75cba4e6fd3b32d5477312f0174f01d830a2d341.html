@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>rewrite writefiles, now works with bare repos - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/75cba4e6fd3b32d5477312f0174f01d830a2d341.html">75cba4e6fd3b32d5477312f0174f01d830a2d341</a>
+<b>parent</b> <a href="../commit/09e1377c68cc2a9930c9a9f9c936120dbd0d7981.html">09e1377c68cc2a9930c9a9f9c936120dbd0d7981</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Sun Dec 20 20:42:53 +0100
+
+rewrite writefiles, now works with bare repos
+
+dont use the index but get the tree by the last commit id (revparse HEAD).
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">urmoms.c</a></td><td> | </td><td class="num">102</td><td><span class="i">+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++</span><span class="d">--------------------</span></td></tr>
+</table>1 file changed, 76 insertions(+), 26 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/urmoms.c.html">urmoms.c</a> b/<a href="../file/urmoms.c.html">urmoms.c</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -561,21 +561,14 @@ writeatom(FILE *fp)
+</a> }
+ 
+ int
+<a href="#h0-0-3" id="h0-0-3" class="d">-writeblob(const git_index_entry *entry)
+</a><a href="#h0-0-4" id="h0-0-4" class="i">+writeblob(git_object *obj, const char *filename, git_off_t filesize)
+</a> {
+ 	char fpath[PATH_MAX];
+<a href="#h0-0-7" id="h0-0-7" class="d">-	char ref[PATH_MAX];
+</a> 	char tmp[PATH_MAX] = &quot;&quot;;
+ 	char *p;
+<a href="#h0-0-10" id="h0-0-10" class="d">-	git_object *obj = NULL;
+</a> 	FILE *fp;
+ 
+<a href="#h0-0-13" id="h0-0-13" class="d">-	snprintf(fpath, sizeof(fpath), &quot;file/%s.html&quot;, entry-&gt;path);
+</a><a href="#h0-0-14" id="h0-0-14" class="d">-	snprintf(ref, sizeof(ref), &quot;HEAD:%s&quot;, entry-&gt;path);
+</a><a href="#h0-0-15" id="h0-0-15" class="d">-
+</a><a href="#h0-0-16" id="h0-0-16" class="d">-	if (git_revparse_single(&amp;obj, repo, ref))
+</a><a href="#h0-0-17" id="h0-0-17" class="d">-		return 1;
+</a><a href="#h0-0-18" id="h0-0-18" class="d">-
+</a><a href="#h0-0-19" id="h0-0-19" class="i">+	snprintf(fpath, sizeof(fpath), &quot;file/%s.html&quot;, filename);
+</a> 	if (mkdirp(dirname(fpath)))
+ 		return 1;
+ 
+<a href="#h0-1" id="h0-1" class="h">@@ -589,7 +582,11 @@ writeblob(const git_index_entry *entry)
+</a> 
+ 	fp = efopen(fpath, &quot;w&quot;);
+ 	writeheader(fp);
+<a href="#h0-1-3" id="h0-1-3" class="d">-	fprintf(fp, &quot;&lt;p&gt;%s (%&quot; PRIu32 &quot;b)&lt;/p&gt;&lt;hr/&gt;&quot;, entry-&gt;path, entry-&gt;file_size);
+</a><a href="#h0-1-4" id="h0-1-4" class="i">+	fputs(&quot;&lt;p&gt; &quot;, fp);
+</a><a href="#h0-1-5" id="h0-1-5" class="i">+	xmlencode(fp, filename, strlen(filename));
+</a><a href="#h0-1-6" id="h0-1-6" class="i">+	fprintf(fp, &quot; (%&quot; PRIu32 &quot;b)&quot;, filesize);
+</a><a href="#h0-1-7" id="h0-1-7" class="i">+	fputs(&quot;&lt;/p&gt;&lt;hr/&gt;&quot;, fp);
+</a><a href="#h0-1-8" id="h0-1-8" class="i">+
+</a> 	if (git_blob_is_binary((git_blob *)obj)) {
+ 		fprintf(fp, &quot;&lt;p&gt;Binary file&lt;/p&gt;\n&quot;);
+ 	} else {
+<a href="#h0-2" id="h0-2" class="h">@@ -597,7 +594,6 @@ writeblob(const git_index_entry *entry)
+</a> 		if (ferror(fp))
+ 			err(1, &quot;fwrite&quot;);
+ 	}
+<a href="#h0-2-3" id="h0-2-3" class="d">-	git_object_free(obj);
+</a> 	writefooter(fp);
+ 	fclose(fp);
+ 
+<a href="#h0-3" id="h0-3" class="h">@@ -607,35 +603,89 @@ writeblob(const git_index_entry *entry)
+</a> }
+ 
+ int
+<a href="#h0-3-3" id="h0-3-3" class="d">-writefiles(FILE *fp)
+</a><a href="#h0-3-4" id="h0-3-4" class="i">+writefilestree(FILE *fp, git_tree *tree, const char *path)
+</a> {
+<a href="#h0-3-6" id="h0-3-6" class="d">-	const git_index_entry *entry;
+</a><a href="#h0-3-7" id="h0-3-7" class="d">-	git_index *index;
+</a><a href="#h0-3-8" id="h0-3-8" class="i">+	const git_tree_entry *entry = NULL;
+</a><a href="#h0-3-9" id="h0-3-9" class="i">+	const char *filename;
+</a><a href="#h0-3-10" id="h0-3-10" class="i">+	char filepath[PATH_MAX];
+</a><a href="#h0-3-11" id="h0-3-11" class="i">+	git_object *obj = NULL;
+</a><a href="#h0-3-12" id="h0-3-12" class="i">+	git_off_t filesize;
+</a> 	size_t count, i;
+<a href="#h0-3-14" id="h0-3-14" class="i">+	int ret;
+</a> 
+<a href="#h0-3-16" id="h0-3-16" class="d">-	fputs(&quot;&lt;table id=\&quot;files\&quot;&gt;&lt;thead&gt;\n&quot;
+</a><a href="#h0-3-17" id="h0-3-17" class="d">-	      &quot;&lt;tr&gt;&lt;td&gt;Mode&lt;/td&gt;&lt;td&gt;Name&lt;/td&gt;&lt;td&gt;Size&lt;/td&gt;&lt;/tr&gt;\n&quot;
+</a><a href="#h0-3-18" id="h0-3-18" class="d">-	      &quot;&lt;/thead&gt;&lt;tbody&gt;\n&quot;, fp);
+</a><a href="#h0-3-19" id="h0-3-19" class="i">+	count = git_tree_entrycount(tree);
+</a><a href="#h0-3-20" id="h0-3-20" class="i">+	for (i = 0; i &lt; count; i++) {
+</a><a href="#h0-3-21" id="h0-3-21" class="i">+		if (!(entry = git_tree_entry_byindex(tree, i)))
+</a><a href="#h0-3-22" id="h0-3-22" class="i">+			return -1;
+</a> 
+<a href="#h0-3-24" id="h0-3-24" class="d">-	git_repository_index(&amp;index, repo);
+</a><a href="#h0-3-25" id="h0-3-25" class="d">-	count = git_index_entrycount(index);
+</a><a href="#h0-3-26" id="h0-3-26" class="i">+		filename = git_tree_entry_name(entry);
+</a><a href="#h0-3-27" id="h0-3-27" class="i">+		if (git_tree_entry_to_object(&amp;obj, repo, entry))
+</a><a href="#h0-3-28" id="h0-3-28" class="i">+			return -1;
+</a><a href="#h0-3-29" id="h0-3-29" class="i">+		switch (git_object_type(obj)) {
+</a><a href="#h0-3-30" id="h0-3-30" class="i">+		case GIT_OBJ_BLOB:
+</a><a href="#h0-3-31" id="h0-3-31" class="i">+			break;
+</a><a href="#h0-3-32" id="h0-3-32" class="i">+		case GIT_OBJ_TREE:
+</a><a href="#h0-3-33" id="h0-3-33" class="i">+			ret = writefilestree(fp, (git_tree *)obj, filename);
+</a><a href="#h0-3-34" id="h0-3-34" class="i">+			git_object_free(obj);
+</a><a href="#h0-3-35" id="h0-3-35" class="i">+			if (ret)
+</a><a href="#h0-3-36" id="h0-3-36" class="i">+				return ret;
+</a><a href="#h0-3-37" id="h0-3-37" class="i">+			continue;
+</a><a href="#h0-3-38" id="h0-3-38" class="i">+		default:
+</a><a href="#h0-3-39" id="h0-3-39" class="i">+			git_object_free(obj);
+</a><a href="#h0-3-40" id="h0-3-40" class="i">+			continue;
+</a><a href="#h0-3-41" id="h0-3-41" class="i">+		}
+</a><a href="#h0-3-42" id="h0-3-42" class="i">+		if (path[0]) {
+</a><a href="#h0-3-43" id="h0-3-43" class="i">+			snprintf(filepath, sizeof(filepath), &quot;%s/%s&quot;, path, filename);
+</a><a href="#h0-3-44" id="h0-3-44" class="i">+			filename = filepath;
+</a><a href="#h0-3-45" id="h0-3-45" class="i">+		}
+</a> 
+<a href="#h0-3-47" id="h0-3-47" class="d">-	for (i = 0; i &lt; count; i++) {
+</a><a href="#h0-3-48" id="h0-3-48" class="d">-		entry = git_index_get_byindex(index, i);
+</a><a href="#h0-3-49" id="h0-3-49" class="i">+		filesize = git_blob_rawsize((git_blob *)obj);
+</a> 
+ 		fputs(&quot;&lt;tr&gt;&lt;td&gt;&quot;, fp);
+<a href="#h0-3-52" id="h0-3-52" class="d">-		fprintf(fp, &quot;%u&quot;, entry-&gt;mode); /* TODO: fancy print, like: &quot;-rw-r--r--&quot; */
+</a><a href="#h0-3-53" id="h0-3-53" class="i">+		/* TODO: fancy print, like: &quot;-rw-r--r--&quot; */
+</a><a href="#h0-3-54" id="h0-3-54" class="i">+		fprintf(fp, &quot;%u&quot;, git_tree_entry_filemode_raw(entry));
+</a> 		fprintf(fp, &quot;&lt;/td&gt;&lt;td&gt;&lt;a href=\&quot;%sfile/&quot;, relpath);
+<a href="#h0-3-56" id="h0-3-56" class="d">-		xmlencode(fp, entry-&gt;path, strlen(entry-&gt;path));
+</a><a href="#h0-3-57" id="h0-3-57" class="i">+		xmlencode(fp, filename, strlen(filename));
+</a> 		fputs(&quot;.html\&quot;&gt;&quot;, fp);
+<a href="#h0-3-59" id="h0-3-59" class="d">-		xmlencode(fp, entry-&gt;path, strlen(entry-&gt;path));
+</a><a href="#h0-3-60" id="h0-3-60" class="i">+		xmlencode(fp, filename, strlen(filename));
+</a> 		fputs(&quot;&lt;/a&gt;&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;&quot;, fp);
+<a href="#h0-3-62" id="h0-3-62" class="d">-		fprintf(fp, &quot;%&quot; PRIu32, entry-&gt;file_size);
+</a><a href="#h0-3-63" id="h0-3-63" class="i">+		fprintf(fp, &quot;%&quot; PRIu32, filesize);
+</a> 		fputs(&quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;, fp);
+ 
+<a href="#h0-3-66" id="h0-3-66" class="d">-		writeblob(entry);
+</a><a href="#h0-3-67" id="h0-3-67" class="i">+		writeblob(obj, filename, filesize);
+</a> 	}
+ 
+<a href="#h0-3-70" id="h0-3-70" class="i">+	return 0;
+</a><a href="#h0-3-71" id="h0-3-71" class="i">+}
+</a><a href="#h0-3-72" id="h0-3-72" class="i">+
+</a><a href="#h0-3-73" id="h0-3-73" class="i">+int
+</a><a href="#h0-3-74" id="h0-3-74" class="i">+writefiles(FILE *fp)
+</a><a href="#h0-3-75" id="h0-3-75" class="i">+{
+</a><a href="#h0-3-76" id="h0-3-76" class="i">+	const git_oid *id;
+</a><a href="#h0-3-77" id="h0-3-77" class="i">+	git_tree *tree = NULL;
+</a><a href="#h0-3-78" id="h0-3-78" class="i">+	git_object *obj = NULL;
+</a><a href="#h0-3-79" id="h0-3-79" class="i">+	git_commit *commit = NULL;
+</a><a href="#h0-3-80" id="h0-3-80" class="i">+
+</a><a href="#h0-3-81" id="h0-3-81" class="i">+	fputs(&quot;&lt;table id=\&quot;files\&quot;&gt;&lt;thead&gt;\n&quot;
+</a><a href="#h0-3-82" id="h0-3-82" class="i">+	      &quot;&lt;tr&gt;&lt;td&gt;Mode&lt;/td&gt;&lt;td&gt;Name&lt;/td&gt;&lt;td&gt;Size&lt;/td&gt;&lt;/tr&gt;\n&quot;
+</a><a href="#h0-3-83" id="h0-3-83" class="i">+	      &quot;&lt;/thead&gt;&lt;tbody&gt;\n&quot;, fp);
+</a><a href="#h0-3-84" id="h0-3-84" class="i">+
+</a><a href="#h0-3-85" id="h0-3-85" class="i">+	if (git_revparse_single(&amp;obj, repo, &quot;HEAD&quot;))
+</a><a href="#h0-3-86" id="h0-3-86" class="i">+		return -1;
+</a><a href="#h0-3-87" id="h0-3-87" class="i">+	id = git_object_id(obj);
+</a><a href="#h0-3-88" id="h0-3-88" class="i">+	if (git_commit_lookup(&amp;commit, repo, id))
+</a><a href="#h0-3-89" id="h0-3-89" class="i">+		return -1;
+</a><a href="#h0-3-90" id="h0-3-90" class="i">+	if (git_commit_tree(&amp;tree, commit)) {
+</a><a href="#h0-3-91" id="h0-3-91" class="i">+		git_commit_free(commit);
+</a><a href="#h0-3-92" id="h0-3-92" class="i">+		return -1;
+</a><a href="#h0-3-93" id="h0-3-93" class="i">+	}
+</a><a href="#h0-3-94" id="h0-3-94" class="i">+	git_commit_free(commit);
+</a><a href="#h0-3-95" id="h0-3-95" class="i">+
+</a><a href="#h0-3-96" id="h0-3-96" class="i">+	writefilestree(fp, tree, &quot;&quot;);
+</a><a href="#h0-3-97" id="h0-3-97" class="i">+
+</a><a href="#h0-3-98" id="h0-3-98" class="i">+	git_commit_free(commit);
+</a><a href="#h0-3-99" id="h0-3-99" class="i">+	git_tree_free(tree);
+</a><a href="#h0-3-100" id="h0-3-100" class="i">+
+</a> 	fputs(&quot;&lt;/tbody&gt;&lt;/table&gt;&quot;, fp);
+ 
+ 	return 0;
+</pre>
+</div>
+</body>
+</html>

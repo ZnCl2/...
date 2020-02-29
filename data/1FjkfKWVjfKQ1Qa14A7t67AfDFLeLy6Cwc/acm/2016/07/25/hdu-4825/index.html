@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>HDU-4825 Xor Sum（OJ 优化实验） - 科学君的不科学博客</title>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+  <meta name="author" content="Liu233w" />
+  <meta name="keywords" content="acm" />
+  <style>
+   #ds-thread #ds-reset .ds-comment-body p {color: #ffffff;}
+   #ds-thread #ds-reset .ds-comment-body p a {color: #ff0;}
+   #ds-thread #ds-reset .ds-comment-body p a:hover {color: #0ff;}
+   #disqus_thread a {color: #00ffff;}
+  </style>
+  <link rel="stylesheet" href="http://liu233w.github.io/media/css/main.css" type="text/css"/>
+  <link rel="stylesheet" href="http://liu233w.github.io/media/css/comment.css" type="text/css"/>
+  <link rel="Shortcut Icon" href="https://raw.githubusercontent.com/Liu233w/liu233w.github.io/source/avatar.jpg" type="image/x-icon">
+</head>
+
+  <body><div class="container">
+<div>
+  <header class="masthead">
+    <h1 class="masthead-title"><a href="http://liu233w.github.io/">科学君的不科学博客</a></h1>
+    <p>by 不科学的科学君</p>
+    <nav class="site-nav">
+      <div class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z" fill="#ffff00"/>
+          <path d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z" fill="#ffff00"/>
+          <path d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z" fill="#ffff00"/>
+        </svg>
+      </div>
+      <ul class="trigger">
+        <li><a href="http://liu233w.github.io/所有文章/">所有文章</a></li>
+        <li><a href="http://liu233w.github.io/tags/">按标签索引</a></li>
+        <li><a href="http://liu233w.github.io/acm/">Acm</a></li>
+        <li><a href="http://liu233w.github.io/blog/">Blog</a></li>
+        <li><a href="http://liu233w.github.io/about/">About</a></li>
+        <li><a href="https://github.com/liu233w/liu233w.github.io">Github</a></li>
+        <li><a href="http://liu233w.github.io/rss.xml">RSS</a></li>
+      </ul>
+    </nav>
+    <form method="get" id="searchform" action="http://www.google.com/search">
+      <input type="text" class="field" name="q" id="s" placeholder="Search">
+      <input type="hidden" name="as_sitesearch" value="liu233w.github.io">
+    </form>
+    <img id="avatarid" class="avatar" src="https://raw.githubusercontent.com/Liu233w/liu233w.github.io/source/avatar.jpg" />
+  </header>
+</div>
+
+<div>
+<div class="post">
+<h1 class="title">HDU-4825 Xor Sum（OJ 优化实验）</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org358f52c">题目：</a></li>
+<li><a href="#org118f1d5">解析&amp;吐槽：</a>
+<ul>
+<li><a href="#orgda07ce0">提交语言：c++ vs g++</a></li>
+<li><a href="#org84804d7">堆分配 vs 栈分配</a></li>
+<li><a href="#org9aba406">递归 vs 非递归</a></li>
+<li><a href="#org869fa34">cin&amp;cout vs scanf&amp;printf</a></li>
+</ul>
+</li>
+<li><a href="#org1b6563a">总结</a></li>
+<li><a href="#org3000a7e">16 年 8 月 20 日更新</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org358f52c" class="outline-2">
+<h2 id="org358f52c">题目：</h2>
+<div class="outline-text-2" id="text-org358f52c">
+<p class="verse">
+Xor Sum
+Time Limit: 2000/1000 MS (Java/Others)    Memory Limit: 132768/132768 K (Java/Others)
+Total Submission(s): 1330    Accepted Submission(s): 561
+
+
+Problem Description
+Zeus 和 Prometheus 做了一个游戏，Prometheus 给 Zeus 一个集合，集合中包含了 N 个正整数，随后 Prometheus 将向 Zeus 发起 M 次询问，每次询问中包含一个正整数 S，之后 Zeus 需要在集合当中找出一个正整数 K，使得 K 与 S 的异或结果最大。Prometheus 为了让 Zeus 看到人类的伟大，随即同意 Zeus 可以向人类求助。你能证明人类的智慧么？
+
+
+Input
+输入包含若干组测试数据，每组测试数据包含若干行。
+输入的第一行是一个整数 T（T &lt; 10），表示共有 T 组数据。
+每组数据的第一行输入两个正整数 N，M（&lt;1=N,M&lt;=100000），接下来一行，包含 N 个正整数，代表 Zeus 的获得的集合，之后 M 行，每行一个正整数 S，代表 Prometheus 询问的正整数。所有正整数均不超过 2^32。
+
+
+Output
+对于每组数据，首先需要输出单独一行”Case #?:”，其中问号处应填入当前的数据组数，组数从 1 开始计算。
+对于每个询问，输出一个正整数 K，使得 K 与 S 异或值最大。
+
+
+Sample Input
+
+2
+3 2
+3 4 5
+1
+5
+4 1
+4 6 5 6
+3
+
+
+
+Sample Output
+
+Case #1:
+4
+3
+Case #2:
+4
+</p>
+</div>
+</div>
+
+<div id="outline-container-org118f1d5" class="outline-2">
+<h2 id="org118f1d5">解析&amp;吐槽：</h2>
+<div class="outline-text-2" id="text-org118f1d5">
+<p>
+这次的主题是优化实验，就把代码放在下面了。
+</p>
+
+<p>
+这道题用字典树就可以做，就是道水题，但是我在这道题上面试验了很多优化代码的方法，把运行时间从
+951ms 降到了 280ms。
+</p>
+</div>
+
+<div id="outline-container-orgda07ce0" class="outline-3">
+<h3 id="orgda07ce0">提交语言：c++ vs g++</h3>
+<div class="outline-text-3" id="text-orgda07ce0">
+<p>
+这两个是用不同编译器编译的。顾名思义，g++指的是 GNU G++；而 c++则是 VC++，微软的编译器。大部分的时候，用哪个编译器都是一样的，但是会在运行时间和内存占用上有不少的区别，很多时候这个区别就是你是否能 AC 的关键。在我们学校的 acm 群中，不止一次有同学提到有些题用 c++交可以过，但是 g++就会爆内存。我在这道题中遇到的问题则是 c++超时，g++勉强能过。贴上第一次
+ac 的代码，耗时：951ms，内存占用：56840KB。为节约空间起见我就不写 include 和 namespace 了。
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #859900; font-weight: bold;">struct</span> <span style="color: #b58900;">ct</span>
+<span style="color: #2aa198;">{</span>
+    <span style="color: #b58900;">ct</span> *<span style="color: #268bd2;">L</span><span style="color: #b58900;">[</span><span style="color: #6c71c4;">2</span><span style="color: #b58900;">]</span>;
+    <span style="color: #268bd2;">ct</span><span style="color: #b58900;">()</span> <span style="color: #b58900;">{</span>
+        L<span style="color: #268bd2;">[</span><span style="color: #6c71c4;">0</span><span style="color: #268bd2;">]</span> = L<span style="color: #268bd2;">[</span><span style="color: #6c71c4;">1</span><span style="color: #268bd2;">]</span> = <span style="color: #268bd2; font-weight: bold;">nullptr</span>;
+    <span style="color: #b58900;">}</span>
+    <span style="color: #268bd2;">ct</span><span style="color: #b58900;">(</span><span style="color: #859900; font-weight: bold;">const</span> <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span> &amp;<span style="color: #268bd2;">s</span>,<span style="color: #b58900;">int</span> <span style="color: #268bd2;">i</span><span style="color: #b58900;">)</span> <span style="color: #b58900;">{</span>
+        L<span style="color: #268bd2;">[</span><span style="color: #6c71c4;">0</span><span style="color: #268bd2;">]</span> = L<span style="color: #268bd2;">[</span><span style="color: #6c71c4;">1</span><span style="color: #268bd2;">]</span> = <span style="color: #268bd2; font-weight: bold;">nullptr</span>;
+        <span style="color: #859900; font-weight: bold;">if</span> <span style="color: #268bd2;">(</span>i&gt;=<span style="color: #6c71c4;">32</span><span style="color: #268bd2;">)</span>
+            <span style="color: #859900; font-weight: bold;">return</span>;
+
+        <span style="color: #859900; font-weight: bold;">this</span>-&gt;ins<span style="color: #268bd2;">(</span>s,i<span style="color: #268bd2;">)</span>;
+    <span style="color: #b58900;">}</span>
+    <span style="color: #586e75;">//</span><span style="color: #586e75;">~ct() {</span>
+    <span style="color: #586e75;">//  </span><span style="color: #586e75;">for (int i = 0;i &lt; 2;++i)</span>
+    <span style="color: #586e75;">//      </span><span style="color: #586e75;">if (L[i])</span>
+    <span style="color: #586e75;">//          </span><span style="color: #586e75;">delete L[i];</span>
+    <span style="color: #586e75;">//</span><span style="color: #586e75;">}</span>
+    <span style="color: #b58900;">void</span> <span style="color: #268bd2;">ins</span><span style="color: #b58900;">(</span><span style="color: #859900; font-weight: bold;">const</span> <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span>&amp; <span style="color: #268bd2;">s</span>,<span style="color: #b58900;">int</span> <span style="color: #268bd2;">i</span><span style="color: #b58900;">)</span> <span style="color: #b58900;">{</span>
+        <span style="color: #859900; font-weight: bold;">if</span> <span style="color: #268bd2;">(</span>i &lt; <span style="color: #6c71c4;">32</span><span style="color: #268bd2;">)</span> <span style="color: #268bd2;">{</span>
+            <span style="color: #b58900;">ct</span>*&amp; <span style="color: #268bd2;">nw</span> = L<span style="color: #6c71c4;">[</span><span style="color: #859900;">(</span>s &gt;&gt; <span style="color: #b58900;">(</span><span style="color: #6c71c4;">31</span> - i<span style="color: #b58900;">)</span><span style="color: #859900;">)</span> &amp; <span style="color: #6c71c4;">1</span><span style="color: #6c71c4;">]</span>;
+            <span style="color: #859900; font-weight: bold;">if</span> <span style="color: #6c71c4;">(</span>nw<span style="color: #6c71c4;">)</span>
+                nw-&gt;ins<span style="color: #6c71c4;">(</span>s,i+<span style="color: #6c71c4;">1</span><span style="color: #6c71c4;">)</span>;
+            <span style="color: #859900; font-weight: bold;">else</span>
+                nw = <span style="color: #859900; font-weight: bold;">new</span> <span style="color: #b58900;">ct</span><span style="color: #6c71c4;">(</span>s,i+<span style="color: #6c71c4;">1</span><span style="color: #6c71c4;">)</span>;
+        <span style="color: #268bd2;">}</span>
+    <span style="color: #b58900;">}</span>
+<span style="color: #2aa198;">}</span>;
+
+<span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span> <span style="color: #268bd2;">query</span><span style="color: #2aa198;">(</span><span style="color: #b58900;">ct</span>* <span style="color: #268bd2;">c</span>, <span style="color: #859900; font-weight: bold;">const</span> <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span>&amp; <span style="color: #268bd2;">s</span>, <span style="color: #b58900;">int</span> <span style="color: #268bd2;">i</span>, <span style="color: #859900; font-weight: bold;">const</span> <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span>&amp; <span style="color: #268bd2;">have</span><span style="color: #2aa198;">)</span> <span style="color: #2aa198;">{</span>
+    <span style="color: #859900; font-weight: bold;">if</span> <span style="color: #b58900;">(</span>i &gt;= <span style="color: #6c71c4;">32</span><span style="color: #b58900;">)</span>
+        <span style="color: #859900; font-weight: bold;">return</span> have;
+
+    <span style="color: #b58900;">ct</span>* <span style="color: #268bd2;">nw</span> = c-&gt;L<span style="color: #b58900;">[</span><span style="color: #268bd2;">(</span>s &gt;&gt; <span style="color: #6c71c4;">(</span><span style="color: #6c71c4;">31</span> - i<span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span> &amp; <span style="color: #6c71c4;">1</span><span style="color: #b58900;">]</span>;
+    <span style="color: #859900; font-weight: bold;">if</span> <span style="color: #b58900;">(</span>nw<span style="color: #b58900;">)</span>
+        <span style="color: #859900; font-weight: bold;">return</span> query<span style="color: #b58900;">(</span>nw, s, i + <span style="color: #6c71c4;">1</span>, <span style="color: #268bd2;">(</span>have &lt;&lt; <span style="color: #6c71c4;">1</span><span style="color: #268bd2;">)</span> + <span style="color: #268bd2;">(</span><span style="color: #6c71c4;">(</span>s &gt;&gt; <span style="color: #859900;">(</span><span style="color: #6c71c4;">31</span> - i<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span> &amp; <span style="color: #6c71c4;">1</span><span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span>;
+    <span style="color: #859900; font-weight: bold;">else</span>
+        <span style="color: #859900; font-weight: bold;">return</span> query<span style="color: #b58900;">(</span>c-&gt;L<span style="color: #268bd2;">[</span><span style="color: #6c71c4;">1</span> - <span style="color: #6c71c4;">(</span><span style="color: #859900;">(</span>s &gt;&gt; <span style="color: #b58900;">(</span><span style="color: #6c71c4;">31</span> - i<span style="color: #b58900;">)</span><span style="color: #859900;">)</span> &amp; <span style="color: #6c71c4;">1</span><span style="color: #6c71c4;">)</span><span style="color: #268bd2;">]</span>,
+            s, i + <span style="color: #6c71c4;">1</span>, <span style="color: #268bd2;">(</span>have &lt;&lt; <span style="color: #6c71c4;">1</span><span style="color: #268bd2;">)</span> + <span style="color: #6c71c4;">1</span> - <span style="color: #268bd2;">(</span><span style="color: #6c71c4;">(</span>s &gt;&gt; <span style="color: #859900;">(</span><span style="color: #6c71c4;">31</span> - i<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span> &amp; <span style="color: #6c71c4;">1</span><span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span>;
+<span style="color: #2aa198;">}</span>
+
+<span style="color: #b58900;">int</span> <span style="color: #268bd2;">main</span><span style="color: #2aa198;">()</span> <span style="color: #2aa198;">{</span>
+    <span style="color: #268bd2; font-weight: bold;">ios</span>::sync_with_stdio<span style="color: #b58900;">(</span><span style="color: #268bd2; font-weight: bold;">false</span><span style="color: #b58900;">)</span>;
+    cin.tie<span style="color: #b58900;">(</span><span style="color: #268bd2; font-weight: bold;">NULL</span><span style="color: #b58900;">)</span>;
+
+    <span style="color: #b58900;">int</span> <span style="color: #268bd2;">T</span>;
+    cin &gt;&gt; T;
+
+    <span style="color: #859900; font-weight: bold;">for</span> <span style="color: #b58900;">(</span><span style="color: #b58900;">int</span> <span style="color: #268bd2;">k</span> = <span style="color: #6c71c4;">1</span>;k &lt;= T;++k<span style="color: #b58900;">)</span>
+    <span style="color: #b58900;">{</span>
+        cout &lt;&lt; <span style="color: #2aa198;">"Case #"</span> &lt;&lt; k &lt;&lt; <span style="color: #2aa198;">":"</span> &lt;&lt; endl;
+        <span style="color: #b58900;">int</span> <span style="color: #268bd2;">n</span>, <span style="color: #268bd2;">m</span>;
+        cin &gt;&gt; n &gt;&gt; m;
+
+        <span style="color: #b58900;">ct</span> <span style="color: #268bd2;">t</span>;
+
+        <span style="color: #859900; font-weight: bold;">while</span> <span style="color: #268bd2;">(</span>n--<span style="color: #268bd2;">)</span>
+        <span style="color: #268bd2;">{</span>
+            <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span> <span style="color: #268bd2;">a</span>;
+            cin &gt;&gt; a;
+
+            t.ins<span style="color: #6c71c4;">(</span>a, <span style="color: #6c71c4;">0</span><span style="color: #6c71c4;">)</span>;
+        <span style="color: #268bd2;">}</span>
+
+        <span style="color: #859900; font-weight: bold;">while</span> <span style="color: #268bd2;">(</span>m--<span style="color: #268bd2;">)</span>
+        <span style="color: #268bd2;">{</span>
+            <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span> <span style="color: #268bd2;">a</span>;
+            cin &gt;&gt; a;
+
+            <span style="color: #586e75;">//</span><span style="color: #586e75;">bitset&lt;32&gt; b(~a);</span>
+            <span style="color: #586e75;">//</span><span style="color: #586e75;">string bstr = b.to_string();</span>
+            <span style="color: #586e75;">//</span><span style="color: #586e75;">cout &lt;&lt; "debug: " &lt;&lt; query(&amp;t, string(32 - bstr.size(), '0') + bstr, "") &lt;&lt; endl; //debug</span>
+            <span style="color: #586e75;">//</span><span style="color: #586e75;">b = bitset&lt;32&gt;(query(&amp;t, string(32 - bstr.size(), '0') + bstr, 0, ""));</span>
+
+            cout &lt;&lt; query<span style="color: #6c71c4;">(</span>&amp;t, ~a, <span style="color: #6c71c4;">0</span>, <span style="color: #6c71c4;">0</span><span style="color: #6c71c4;">)</span> &lt;&lt; endl;
+        <span style="color: #268bd2;">}</span>
+    <span style="color: #b58900;">}</span>
+<span style="color: #2aa198;">}</span>
+</pre>
+</div>
+<p>
+在这里我本来是用 bitset 把数字转换成 2 进制的字符串然后让函数处理的，结果频繁地创建字符串严重降低了代码的运行效率，最后还是改用位运算了。
+</p>
+</div>
+</div>
+<div id="outline-container-org84804d7" class="outline-3">
+<h3 id="org84804d7">堆分配 vs 栈分配</h3>
+<div class="outline-text-3" id="text-org84804d7">
+<p>
+在前面的代码中，我通过 new 在堆上分配内存，而这种行为本来就很慢，因为堆中的内存不是连续的，如果程序想要分配一段内存，就不得不在堆上寻找可以容纳这个对象的空间。上面的代码中我注释掉了释放内存的代码，节省了释放时间，但是仍然差点超时。不过和后面相比内存倒是没超过多少，真是神奇。
+</p>
+
+<p>
+然后我把代码改成了在栈上分配空间，一开始开一个数组来存储所有的对象，用 idx 表示数组的尾部，每次将新产生的对象插入到 idx 的位置，分配空间的时间复杂度降为了 O(1)。改动的内容比较少，只要把指针改成索引，new 改成++idx 即可。
+</p>
+
+<p>
+此外还必须注意一些语法的问题，数组的声明必须放在 struct 的完整声明之后，否则编译器无法推断出数组的大小，会报错，因此我们只好把用到数组的 ins 函数的声明放进 struct 里面，定义放在数组声明后面。还有我们不知道最多需要多少节点，所以只好把数组尽量往大了开了。尽管这道题只需要二叉树，但是我们没法用二叉树组的方法（就是子节点索引等于父节点索引*2 加 1 或者 0 的那个），因为存储的是 32 位的无符号整数，二叉树至少需要 33 层，就需要 2^33 个节点，我们开不到这么大的数组。
+</p>
+
+<p>
+此代码 c++仍然超时，但 g++耗时为 577ms，内存占用：32960KB，效率有了巨大的提高。
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #859900; font-weight: bold;">struct</span> <span style="color: #b58900;">ct</span>
+<span style="color: #2aa198;">{</span>
+    <span style="color: #b58900;">int</span> <span style="color: #268bd2;">L</span><span style="color: #b58900;">[</span><span style="color: #6c71c4;">2</span><span style="color: #b58900;">]</span>;
+    <span style="color: #268bd2;">ct</span><span style="color: #b58900;">()</span> <span style="color: #b58900;">{</span>
+        L<span style="color: #268bd2;">[</span><span style="color: #6c71c4;">0</span><span style="color: #268bd2;">]</span> = L<span style="color: #268bd2;">[</span><span style="color: #6c71c4;">1</span><span style="color: #268bd2;">]</span> = <span style="color: #6c71c4;">0</span>;
+    <span style="color: #b58900;">}</span>
+    <span style="color: #268bd2;">ct</span><span style="color: #b58900;">(</span><span style="color: #859900; font-weight: bold;">const</span> <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span> &amp;<span style="color: #268bd2;">s</span>, <span style="color: #b58900;">int</span> <span style="color: #268bd2;">i</span><span style="color: #b58900;">)</span> <span style="color: #b58900;">{</span>
+        L<span style="color: #268bd2;">[</span><span style="color: #6c71c4;">0</span><span style="color: #268bd2;">]</span> = L<span style="color: #268bd2;">[</span><span style="color: #6c71c4;">1</span><span style="color: #268bd2;">]</span> = <span style="color: #6c71c4;">0</span>;
+        <span style="color: #859900; font-weight: bold;">if</span> <span style="color: #268bd2;">(</span>i &gt;= <span style="color: #6c71c4;">32</span><span style="color: #268bd2;">)</span>
+            <span style="color: #859900; font-weight: bold;">return</span>;
+
+        <span style="color: #859900; font-weight: bold;">this</span>-&gt;ins<span style="color: #268bd2;">(</span>s, i<span style="color: #268bd2;">)</span>;
+    <span style="color: #b58900;">}</span>
+    <span style="color: #b58900;">void</span> <span style="color: #268bd2;">ins</span><span style="color: #b58900;">(</span><span style="color: #859900; font-weight: bold;">const</span> <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span>&amp; <span style="color: #268bd2;">s</span>, <span style="color: #b58900;">int</span> <span style="color: #268bd2;">i</span><span style="color: #b58900;">)</span>;
+<span style="color: #2aa198;">}</span>;
+
+<span style="color: #b58900;">ct</span> <span style="color: #268bd2;">heap</span><span style="color: #2aa198;">[</span><span style="color: #6c71c4;">1000000</span> &lt;&lt; <span style="color: #6c71c4;">2</span><span style="color: #2aa198;">]</span>;
+<span style="color: #b58900;">int</span> <span style="color: #268bd2;">idx</span> = <span style="color: #6c71c4;">1</span>;
+
+<span style="color: #859900; font-weight: bold;">inline</span> <span style="color: #b58900;">void</span> <span style="color: #268bd2; font-weight: bold;">ct</span>::<span style="color: #268bd2;">ins</span><span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">const</span> <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span>&amp; <span style="color: #268bd2;">s</span>, <span style="color: #b58900;">int</span> <span style="color: #268bd2;">i</span><span style="color: #2aa198;">)</span> <span style="color: #2aa198;">{</span>
+    <span style="color: #859900; font-weight: bold;">if</span> <span style="color: #b58900;">(</span>i &lt; <span style="color: #6c71c4;">32</span><span style="color: #b58900;">)</span> <span style="color: #b58900;">{</span>
+        <span style="color: #b58900;">int</span>&amp; <span style="color: #268bd2;">nw</span> = L<span style="color: #268bd2;">[</span><span style="color: #6c71c4;">(</span>s &gt;&gt; <span style="color: #859900;">(</span><span style="color: #6c71c4;">31</span> - i<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span> &amp; <span style="color: #6c71c4;">1</span><span style="color: #268bd2;">]</span>;
+        <span style="color: #859900; font-weight: bold;">if</span> <span style="color: #268bd2;">(</span>nw<span style="color: #268bd2;">)</span> <span style="color: #268bd2;">{</span>
+            heap<span style="color: #6c71c4;">[</span>nw<span style="color: #6c71c4;">]</span>.ins<span style="color: #6c71c4;">(</span>s, i + <span style="color: #6c71c4;">1</span><span style="color: #6c71c4;">)</span>;
+        <span style="color: #268bd2;">}</span>
+        <span style="color: #859900; font-weight: bold;">else</span> <span style="color: #268bd2;">{</span>
+            nw = idx;
+            ++idx;
+            heap<span style="color: #6c71c4;">[</span>nw<span style="color: #6c71c4;">]</span> = ct<span style="color: #6c71c4;">(</span>s, i + <span style="color: #6c71c4;">1</span><span style="color: #6c71c4;">)</span>;
+        <span style="color: #268bd2;">}</span>
+    <span style="color: #b58900;">}</span>
+<span style="color: #2aa198;">}</span>
+
+<span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span> <span style="color: #268bd2;">query</span><span style="color: #2aa198;">(</span><span style="color: #b58900;">ct</span>* <span style="color: #268bd2;">c</span>, <span style="color: #859900; font-weight: bold;">const</span> <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span>&amp; <span style="color: #268bd2;">s</span>, <span style="color: #b58900;">int</span> <span style="color: #268bd2;">i</span>, <span style="color: #859900; font-weight: bold;">const</span> <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span>&amp; <span style="color: #268bd2;">have</span><span style="color: #2aa198;">)</span> <span style="color: #2aa198;">{</span>
+    <span style="color: #859900; font-weight: bold;">if</span> <span style="color: #b58900;">(</span>i &gt;= <span style="color: #6c71c4;">32</span><span style="color: #b58900;">)</span>
+        <span style="color: #859900; font-weight: bold;">return</span> have;
+
+    <span style="color: #b58900;">int</span> <span style="color: #268bd2;">nw</span> = c-&gt;L<span style="color: #b58900;">[</span><span style="color: #268bd2;">(</span>s &gt;&gt; <span style="color: #6c71c4;">(</span><span style="color: #6c71c4;">31</span> - i<span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span> &amp; <span style="color: #6c71c4;">1</span><span style="color: #b58900;">]</span>;
+    <span style="color: #859900; font-weight: bold;">if</span> <span style="color: #b58900;">(</span>nw<span style="color: #b58900;">)</span>
+        <span style="color: #859900; font-weight: bold;">return</span> query<span style="color: #b58900;">(</span>&amp;heap<span style="color: #268bd2;">[</span>nw<span style="color: #268bd2;">]</span>, s, i + <span style="color: #6c71c4;">1</span>, <span style="color: #268bd2;">(</span>have &lt;&lt; <span style="color: #6c71c4;">1</span><span style="color: #268bd2;">)</span> + <span style="color: #268bd2;">(</span><span style="color: #6c71c4;">(</span>s &gt;&gt; <span style="color: #859900;">(</span><span style="color: #6c71c4;">31</span> - i<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span> &amp; <span style="color: #6c71c4;">1</span><span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span>;
+    <span style="color: #859900; font-weight: bold;">else</span>
+        <span style="color: #859900; font-weight: bold;">return</span> query<span style="color: #b58900;">(</span>&amp;heap<span style="color: #268bd2;">[</span>c-&gt;L<span style="color: #6c71c4;">[</span><span style="color: #6c71c4;">1</span> - <span style="color: #859900;">(</span><span style="color: #b58900;">(</span>s &gt;&gt; <span style="color: #268bd2;">(</span><span style="color: #6c71c4;">31</span> - i<span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span> &amp; <span style="color: #6c71c4;">1</span><span style="color: #859900;">)</span><span style="color: #6c71c4;">]</span><span style="color: #268bd2;">]</span>,
+            s, i + <span style="color: #6c71c4;">1</span>, <span style="color: #268bd2;">(</span>have &lt;&lt; <span style="color: #6c71c4;">1</span><span style="color: #268bd2;">)</span> + <span style="color: #6c71c4;">1</span> - <span style="color: #268bd2;">(</span><span style="color: #6c71c4;">(</span>s &gt;&gt; <span style="color: #859900;">(</span><span style="color: #6c71c4;">31</span> - i<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span> &amp; <span style="color: #6c71c4;">1</span><span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span>;
+<span style="color: #2aa198;">}</span>
+
+<span style="color: #b58900;">int</span> <span style="color: #268bd2;">main</span><span style="color: #2aa198;">()</span> <span style="color: #2aa198;">{</span>
+    <span style="color: #268bd2; font-weight: bold;">ios</span>::sync_with_stdio<span style="color: #b58900;">(</span><span style="color: #268bd2; font-weight: bold;">false</span><span style="color: #b58900;">)</span>;
+    cin.tie<span style="color: #b58900;">(</span><span style="color: #268bd2; font-weight: bold;">NULL</span><span style="color: #b58900;">)</span>;
+
+    <span style="color: #b58900;">int</span> <span style="color: #268bd2;">T</span>;
+    cin &gt;&gt; T;
+
+    <span style="color: #859900; font-weight: bold;">for</span> <span style="color: #b58900;">(</span><span style="color: #b58900;">int</span> <span style="color: #268bd2;">k</span> = <span style="color: #6c71c4;">1</span>;k &lt;= T;++k<span style="color: #b58900;">)</span>
+    <span style="color: #b58900;">{</span>
+        cout &lt;&lt; <span style="color: #2aa198;">"Case #"</span> &lt;&lt; k &lt;&lt; <span style="color: #2aa198;">":"</span> &lt;&lt; endl;
+        <span style="color: #b58900;">int</span> <span style="color: #268bd2;">n</span>, <span style="color: #268bd2;">m</span>;
+        cin &gt;&gt; n &gt;&gt; m;
+        idx = <span style="color: #6c71c4;">1</span>;
+        heap<span style="color: #268bd2;">[</span><span style="color: #6c71c4;">0</span><span style="color: #268bd2;">]</span> = ct<span style="color: #268bd2;">()</span>;
+
+        <span style="color: #859900; font-weight: bold;">while</span> <span style="color: #268bd2;">(</span>n--<span style="color: #268bd2;">)</span>
+        <span style="color: #268bd2;">{</span>
+            <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span> <span style="color: #268bd2;">a</span>;
+            cin &gt;&gt; a;
+
+            heap<span style="color: #6c71c4;">[</span><span style="color: #6c71c4;">0</span><span style="color: #6c71c4;">]</span>.ins<span style="color: #6c71c4;">(</span>a, <span style="color: #6c71c4;">0</span><span style="color: #6c71c4;">)</span>;
+        <span style="color: #268bd2;">}</span>
+
+        <span style="color: #859900; font-weight: bold;">while</span> <span style="color: #268bd2;">(</span>m--<span style="color: #268bd2;">)</span>
+        <span style="color: #268bd2;">{</span>
+            <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span> <span style="color: #268bd2;">a</span>;
+            cin &gt;&gt; a;
+
+            cout &lt;&lt; query<span style="color: #6c71c4;">(</span>heap, ~a, <span style="color: #6c71c4;">0</span>, <span style="color: #6c71c4;">0</span><span style="color: #6c71c4;">)</span> &lt;&lt; endl;
+        <span style="color: #268bd2;">}</span>
+    <span style="color: #b58900;">}</span>
+<span style="color: #2aa198;">}</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org9aba406" class="outline-3">
+<h3 id="org9aba406">递归 vs 非递归</h3>
+<div class="outline-text-3" id="text-org9aba406">
+<p>
+可以看到，前面的代码是使用递归来处理数据的，如果改成循环会怎么样呢？我们做一下实验。
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #859900; font-weight: bold;">struct</span> <span style="color: #b58900;">ct</span>
+<span style="color: #2aa198;">{</span>
+    <span style="color: #b58900;">int</span> <span style="color: #268bd2;">L</span><span style="color: #b58900;">[</span><span style="color: #6c71c4;">2</span><span style="color: #b58900;">]</span>;
+    <span style="color: #268bd2;">ct</span><span style="color: #b58900;">()</span> <span style="color: #b58900;">{</span>
+        L<span style="color: #268bd2;">[</span><span style="color: #6c71c4;">0</span><span style="color: #268bd2;">]</span> = L<span style="color: #268bd2;">[</span><span style="color: #6c71c4;">1</span><span style="color: #268bd2;">]</span> = <span style="color: #6c71c4;">0</span>;
+    <span style="color: #b58900;">}</span>
+<span style="color: #2aa198;">}</span>;
+
+<span style="color: #b58900;">ct</span> <span style="color: #268bd2;">heap</span><span style="color: #2aa198;">[</span><span style="color: #6c71c4;">1000000</span> &lt;&lt; <span style="color: #6c71c4;">2</span><span style="color: #2aa198;">]</span>;
+<span style="color: #b58900;">int</span> <span style="color: #268bd2;">idx</span> = <span style="color: #6c71c4;">1</span>;
+
+<span style="color: #859900; font-weight: bold;">inline</span> <span style="color: #b58900;">void</span> <span style="color: #268bd2;">insert</span><span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">const</span> <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span>&amp; <span style="color: #268bd2;">s</span><span style="color: #2aa198;">)</span> <span style="color: #2aa198;">{</span>
+    <span style="color: #b58900;">ct</span> *<span style="color: #268bd2;">c</span> = heap;
+    <span style="color: #859900; font-weight: bold;">for</span> <span style="color: #b58900;">(</span><span style="color: #b58900;">int</span> <span style="color: #268bd2;">i</span> = <span style="color: #6c71c4;">0</span>;i &lt; <span style="color: #6c71c4;">32</span>;++i<span style="color: #b58900;">)</span> <span style="color: #b58900;">{</span>
+        <span style="color: #b58900;">int</span>&amp; <span style="color: #268bd2;">nw</span> = c-&gt;L<span style="color: #268bd2;">[</span><span style="color: #6c71c4;">(</span>s &gt;&gt; <span style="color: #859900;">(</span><span style="color: #6c71c4;">31</span> - i<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span> &amp; <span style="color: #6c71c4;">1</span><span style="color: #268bd2;">]</span>;
+        <span style="color: #859900; font-weight: bold;">if</span> <span style="color: #268bd2;">(</span><span style="color: #b58900; font-weight: bold;">!</span>nw<span style="color: #268bd2;">)</span> <span style="color: #268bd2;">{</span>
+            nw = idx;
+            ++idx;
+            heap<span style="color: #6c71c4;">[</span>nw<span style="color: #6c71c4;">]</span> = ct<span style="color: #6c71c4;">()</span>;
+        <span style="color: #268bd2;">}</span>
+        c = &amp;heap<span style="color: #268bd2;">[</span>nw<span style="color: #268bd2;">]</span>;
+    <span style="color: #b58900;">}</span>
+<span style="color: #2aa198;">}</span>
+
+<span style="color: #859900; font-weight: bold;">inline</span> <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span> <span style="color: #268bd2;">query</span><span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">const</span> <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span>&amp; <span style="color: #268bd2;">s</span><span style="color: #2aa198;">)</span> <span style="color: #2aa198;">{</span>
+    <span style="color: #b58900;">unsigned</span> <span style="color: #268bd2;">have</span> = <span style="color: #6c71c4;">0</span>;
+    <span style="color: #b58900;">int</span> <span style="color: #268bd2;">i</span> = <span style="color: #6c71c4;">0</span>;
+    <span style="color: #b58900;">ct</span> *<span style="color: #268bd2;">c</span> = heap;
+    <span style="color: #859900; font-weight: bold;">while</span> <span style="color: #b58900;">(</span>i &lt; <span style="color: #6c71c4;">32</span><span style="color: #b58900;">)</span> <span style="color: #b58900;">{</span>
+        <span style="color: #b58900;">int</span> <span style="color: #268bd2;">nw</span> = c-&gt;L<span style="color: #268bd2;">[</span><span style="color: #6c71c4;">(</span>s &gt;&gt; <span style="color: #859900;">(</span><span style="color: #6c71c4;">31</span> - i<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span> &amp; <span style="color: #6c71c4;">1</span><span style="color: #268bd2;">]</span>;
+        <span style="color: #859900; font-weight: bold;">if</span> <span style="color: #268bd2;">(</span>nw<span style="color: #268bd2;">)</span> <span style="color: #268bd2;">{</span>
+            c = &amp;heap<span style="color: #6c71c4;">[</span>nw<span style="color: #6c71c4;">]</span>;
+            have = <span style="color: #6c71c4;">(</span>have &lt;&lt; <span style="color: #6c71c4;">1</span><span style="color: #6c71c4;">)</span> + <span style="color: #6c71c4;">(</span><span style="color: #859900;">(</span>s &gt;&gt; <span style="color: #b58900;">(</span><span style="color: #6c71c4;">31</span> - i<span style="color: #b58900;">)</span><span style="color: #859900;">)</span> &amp; <span style="color: #6c71c4;">1</span><span style="color: #6c71c4;">)</span>;
+        <span style="color: #268bd2;">}</span>
+        <span style="color: #859900; font-weight: bold;">else</span> <span style="color: #268bd2;">{</span>
+            c = &amp;heap<span style="color: #6c71c4;">[</span>c-&gt;L<span style="color: #859900;">[</span><span style="color: #6c71c4;">1</span> - <span style="color: #b58900;">(</span><span style="color: #268bd2;">(</span>s &gt;&gt; <span style="color: #6c71c4;">(</span><span style="color: #6c71c4;">31</span> - i<span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span> &amp; <span style="color: #6c71c4;">1</span><span style="color: #b58900;">)</span><span style="color: #859900;">]</span><span style="color: #6c71c4;">]</span>;
+            have = <span style="color: #6c71c4;">(</span>have &lt;&lt; <span style="color: #6c71c4;">1</span><span style="color: #6c71c4;">)</span> + <span style="color: #6c71c4;">1</span> - <span style="color: #6c71c4;">(</span><span style="color: #859900;">(</span>s &gt;&gt; <span style="color: #b58900;">(</span><span style="color: #6c71c4;">31</span> - i<span style="color: #b58900;">)</span><span style="color: #859900;">)</span> &amp; <span style="color: #6c71c4;">1</span><span style="color: #6c71c4;">)</span>;
+        <span style="color: #268bd2;">}</span>
+        ++i;
+    <span style="color: #b58900;">}</span>
+    <span style="color: #859900; font-weight: bold;">return</span> have;
+<span style="color: #2aa198;">}</span>
+
+<span style="color: #b58900;">int</span> <span style="color: #268bd2;">main</span><span style="color: #2aa198;">()</span> <span style="color: #2aa198;">{</span>
+    <span style="color: #268bd2; font-weight: bold;">ios</span>::sync_with_stdio<span style="color: #b58900;">(</span><span style="color: #268bd2; font-weight: bold;">false</span><span style="color: #b58900;">)</span>;
+    cin.tie<span style="color: #b58900;">(</span><span style="color: #268bd2; font-weight: bold;">NULL</span><span style="color: #b58900;">)</span>;
+
+    <span style="color: #b58900;">int</span> <span style="color: #268bd2;">T</span>;
+    cin &gt;&gt; T;
+
+    <span style="color: #859900; font-weight: bold;">for</span> <span style="color: #b58900;">(</span><span style="color: #b58900;">int</span> <span style="color: #268bd2;">k</span> = <span style="color: #6c71c4;">1</span>;k &lt;= T;++k<span style="color: #b58900;">)</span>
+    <span style="color: #b58900;">{</span>
+        cout &lt;&lt; <span style="color: #2aa198;">"Case #"</span> &lt;&lt; k &lt;&lt; <span style="color: #2aa198;">":"</span> &lt;&lt; endl;
+        <span style="color: #b58900;">int</span> <span style="color: #268bd2;">n</span>, <span style="color: #268bd2;">m</span>;
+        cin &gt;&gt; n &gt;&gt; m;
+        idx = <span style="color: #6c71c4;">1</span>;
+        heap<span style="color: #268bd2;">[</span><span style="color: #6c71c4;">0</span><span style="color: #268bd2;">]</span> = ct<span style="color: #268bd2;">()</span>;
+
+        <span style="color: #859900; font-weight: bold;">while</span> <span style="color: #268bd2;">(</span>n--<span style="color: #268bd2;">)</span>
+        <span style="color: #268bd2;">{</span>
+            <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span> <span style="color: #268bd2;">a</span>;
+            cin &gt;&gt; a;
+
+            insert<span style="color: #6c71c4;">(</span>a<span style="color: #6c71c4;">)</span>;
+        <span style="color: #268bd2;">}</span>
+
+        <span style="color: #859900; font-weight: bold;">while</span> <span style="color: #268bd2;">(</span>m--<span style="color: #268bd2;">)</span>
+        <span style="color: #268bd2;">{</span>
+            <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span> <span style="color: #268bd2;">a</span>;
+            cin &gt;&gt; a;
+
+            cout &lt;&lt; query<span style="color: #6c71c4;">(</span>~a<span style="color: #6c71c4;">)</span> &lt;&lt; endl;
+        <span style="color: #268bd2;">}</span>
+    <span style="color: #b58900;">}</span>
+<span style="color: #2aa198;">}</span>
+</pre>
+</div>
+
+<p>
+代码使用 g++编译，耗时 405 MS，内存消耗 32936 KB。c++仍然超时。可见把递归改成循环可以提高一定的效率，但在本题效果不大（只减少了 172ms）
+</p>
+</div>
+</div>
+
+<div id="outline-container-org869fa34" class="outline-3">
+<h3 id="org869fa34">cin&amp;cout vs scanf&amp;printf</h3>
+<div class="outline-text-3" id="text-org869fa34">
+<p>
+众所周知，cin 的效率比 scanf 低了不止一点，因为 cin 会与 c 语言的输入输出函数自动同步，每次 cin 读取都会刷新缓冲区来防止其与 scanf 混合使用时产生错误。但我们可以通过下列语句来取消同步：
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #268bd2; font-weight: bold;">ios</span>::sync_with_stdio<span style="color: #2aa198;">(</span><span style="color: #268bd2; font-weight: bold;">false</span><span style="color: #2aa198;">)</span>;
+cin.tie<span style="color: #2aa198;">(</span><span style="color: #268bd2; font-weight: bold;">NULL</span><span style="color: #2aa198;">)</span>;
+</pre>
+</div>
+
+<p>
+加上这个语句之后大部分只有 scanf 能过的题 cin 也能过了，但是仍然有少部分题会卡时间。这里，我们把输入改成 scanf，输出仍然使用 cout，但是不使用 endl 来刷新缓冲区，而是输出 <code>\n</code> 来换行。本来 oj 的输入和输出就是固定的，什么时候刷新输出缓冲区对输入没有影响，这么做之后程序会在结束的时候刷新缓冲区输出内容。
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-right" />
+
+<col  class="org-right" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">编译器</td>
+<td class="org-right">耗时</td>
+<td class="org-right">内存消耗</td>
+</tr>
+
+<tr>
+<td class="org-left">g++</td>
+<td class="org-right">327</td>
+<td class="org-right">32932</td>
+</tr>
+
+<tr>
+<td class="org-left">c++</td>
+<td class="org-right">561</td>
+<td class="org-right">33096</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+顺带一提，如果不加上那两行代码，使用 endl 来换行的话，g++耗时是 561ms。
+</p>
+
+<p>
+在全部改成 scanf 和 printf 之后，耗时如下：
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-right" />
+
+<col  class="org-right" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">编译器</td>
+<td class="org-right">耗时</td>
+<td class="org-right">内存消耗</td>
+</tr>
+
+<tr>
+<td class="org-left">g++</td>
+<td class="org-right">280</td>
+<td class="org-right">32708</td>
+</tr>
+
+<tr>
+<td class="org-left">c++</td>
+<td class="org-right">374</td>
+<td class="org-right">33096</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org1b6563a" class="outline-2">
+<h2 id="org1b6563a">总结</h2>
+<div class="outline-text-2" id="text-org1b6563a">
+<p>
+貌似 c++对于递归的优化不大好，在这道题使用递归时 c++永远是超时的。其他时候 c++与 g++差不多，但效率总是低一些。
+</p>
+
+<p>
+而堆分配内存会极大地拖慢运行速度，改成栈分配之后无论是分配效率还是删除效率都会提高很多，删除的时候只需要把索引重新移到 1 的位置即可。另外，结构体中存储的子节点位置不一定是索引，和堆内存时一样存储指针也是行的，索引只需要在分配一个新的对象时使用即可。
+</p>
+
+<p>
+最终的代码：
+</p>
+<div class="org-src-container">
+<pre class="src src-c++">  <span style="color: #586e75;">// </span><span style="color: #586e75;">oj.cpp : &#23450;&#20041;&#25511;&#21046;&#21488;&#24212;&#29992;&#31243;&#24207;&#30340;&#20837;&#21475;&#28857;&#12290;</span>
+<span style="color: #586e75;">//</span>
+
+<span style="color: #586e75;">//</span><span style="color: #586e75;">#include &lt;iostream&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">cstdio</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">limits</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">algorithm</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">numeric</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">string</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">utility</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">cstdlib</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">vector</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">sstream</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">cstring</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">cctype</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">cmath</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">functional</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">deque</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">stack</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">bitset</span><span style="color: #2aa198;">&gt;</span>
+
+<span style="color: #859900; font-weight: bold;">using</span> <span style="color: #859900; font-weight: bold;">namespace</span> <span style="color: #268bd2; font-weight: bold;">std</span>;
+
+<span style="color: #859900; font-weight: bold;">struct</span> <span style="color: #b58900;">ct</span>
+<span style="color: #2aa198;">{</span>
+    <span style="color: #b58900;">int</span> <span style="color: #268bd2;">L</span><span style="color: #b58900;">[</span><span style="color: #6c71c4;">2</span><span style="color: #b58900;">]</span>;
+    <span style="color: #268bd2;">ct</span><span style="color: #b58900;">()</span> <span style="color: #b58900;">{</span>
+        L<span style="color: #268bd2;">[</span><span style="color: #6c71c4;">0</span><span style="color: #268bd2;">]</span> = L<span style="color: #268bd2;">[</span><span style="color: #6c71c4;">1</span><span style="color: #268bd2;">]</span> = <span style="color: #6c71c4;">0</span>;
+    <span style="color: #b58900;">}</span>
+<span style="color: #2aa198;">}</span>;
+
+<span style="color: #b58900;">ct</span> <span style="color: #268bd2;">heap</span><span style="color: #2aa198;">[</span><span style="color: #6c71c4;">1000000</span> &lt;&lt; <span style="color: #6c71c4;">2</span><span style="color: #2aa198;">]</span>;
+<span style="color: #b58900;">int</span> <span style="color: #268bd2;">idx</span> = <span style="color: #6c71c4;">1</span>;
+
+<span style="color: #859900; font-weight: bold;">inline</span> <span style="color: #b58900;">void</span> <span style="color: #268bd2;">insert</span><span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">const</span> <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span>&amp; <span style="color: #268bd2;">s</span><span style="color: #2aa198;">)</span> <span style="color: #2aa198;">{</span>
+    <span style="color: #b58900;">ct</span> *<span style="color: #268bd2;">c</span> = heap;
+    <span style="color: #859900; font-weight: bold;">for</span> <span style="color: #b58900;">(</span><span style="color: #b58900;">int</span> <span style="color: #268bd2;">i</span> = <span style="color: #6c71c4;">0</span>;i &lt; <span style="color: #6c71c4;">32</span>;++i<span style="color: #b58900;">)</span> <span style="color: #b58900;">{</span>
+        <span style="color: #b58900;">int</span>&amp; <span style="color: #268bd2;">nw</span> = c-&gt;L<span style="color: #268bd2;">[</span><span style="color: #6c71c4;">(</span>s &gt;&gt; <span style="color: #859900;">(</span><span style="color: #6c71c4;">31</span> - i<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span> &amp; <span style="color: #6c71c4;">1</span><span style="color: #268bd2;">]</span>;
+        <span style="color: #859900; font-weight: bold;">if</span> <span style="color: #268bd2;">(</span><span style="color: #b58900; font-weight: bold;">!</span>nw<span style="color: #268bd2;">)</span> <span style="color: #268bd2;">{</span>
+            nw = idx;
+            ++idx;
+            heap<span style="color: #6c71c4;">[</span>nw<span style="color: #6c71c4;">]</span> = ct<span style="color: #6c71c4;">()</span>;
+        <span style="color: #268bd2;">}</span>
+        c = &amp;heap<span style="color: #268bd2;">[</span>nw<span style="color: #268bd2;">]</span>;
+    <span style="color: #b58900;">}</span>
+<span style="color: #2aa198;">}</span>
+
+<span style="color: #859900; font-weight: bold;">inline</span> <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span> <span style="color: #268bd2;">query</span><span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">const</span> <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span>&amp; <span style="color: #268bd2;">s</span><span style="color: #2aa198;">)</span> <span style="color: #2aa198;">{</span>
+    <span style="color: #b58900;">unsigned</span> <span style="color: #268bd2;">have</span> = <span style="color: #6c71c4;">0</span>;
+    <span style="color: #b58900;">int</span> <span style="color: #268bd2;">i</span> = <span style="color: #6c71c4;">0</span>;
+    <span style="color: #b58900;">ct</span> *<span style="color: #268bd2;">c</span> = heap;
+    <span style="color: #859900; font-weight: bold;">while</span> <span style="color: #b58900;">(</span>i &lt; <span style="color: #6c71c4;">32</span><span style="color: #b58900;">)</span> <span style="color: #b58900;">{</span>
+        <span style="color: #b58900;">int</span> <span style="color: #268bd2;">nw</span> = c-&gt;L<span style="color: #268bd2;">[</span><span style="color: #6c71c4;">(</span>s &gt;&gt; <span style="color: #859900;">(</span><span style="color: #6c71c4;">31</span> - i<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span> &amp; <span style="color: #6c71c4;">1</span><span style="color: #268bd2;">]</span>;
+        <span style="color: #859900; font-weight: bold;">if</span> <span style="color: #268bd2;">(</span>nw<span style="color: #268bd2;">)</span> <span style="color: #268bd2;">{</span>
+            c = &amp;heap<span style="color: #6c71c4;">[</span>nw<span style="color: #6c71c4;">]</span>;
+            have = <span style="color: #6c71c4;">(</span>have &lt;&lt; <span style="color: #6c71c4;">1</span><span style="color: #6c71c4;">)</span> + <span style="color: #6c71c4;">(</span><span style="color: #859900;">(</span>s &gt;&gt; <span style="color: #b58900;">(</span><span style="color: #6c71c4;">31</span> - i<span style="color: #b58900;">)</span><span style="color: #859900;">)</span> &amp; <span style="color: #6c71c4;">1</span><span style="color: #6c71c4;">)</span>;
+        <span style="color: #268bd2;">}</span>
+        <span style="color: #859900; font-weight: bold;">else</span> <span style="color: #268bd2;">{</span>
+            c = &amp;heap<span style="color: #6c71c4;">[</span>c-&gt;L<span style="color: #859900;">[</span><span style="color: #6c71c4;">1</span> - <span style="color: #b58900;">(</span><span style="color: #268bd2;">(</span>s &gt;&gt; <span style="color: #6c71c4;">(</span><span style="color: #6c71c4;">31</span> - i<span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span> &amp; <span style="color: #6c71c4;">1</span><span style="color: #b58900;">)</span><span style="color: #859900;">]</span><span style="color: #6c71c4;">]</span>;
+            have = <span style="color: #6c71c4;">(</span>have &lt;&lt; <span style="color: #6c71c4;">1</span><span style="color: #6c71c4;">)</span> + <span style="color: #6c71c4;">1</span> - <span style="color: #6c71c4;">(</span><span style="color: #859900;">(</span>s &gt;&gt; <span style="color: #b58900;">(</span><span style="color: #6c71c4;">31</span> - i<span style="color: #b58900;">)</span><span style="color: #859900;">)</span> &amp; <span style="color: #6c71c4;">1</span><span style="color: #6c71c4;">)</span>;
+        <span style="color: #268bd2;">}</span>
+        ++i;
+    <span style="color: #b58900;">}</span>
+    <span style="color: #859900; font-weight: bold;">return</span> have;
+<span style="color: #2aa198;">}</span>
+
+<span style="color: #b58900;">int</span> <span style="color: #268bd2;">main</span><span style="color: #2aa198;">()</span> <span style="color: #2aa198;">{</span>
+<span style="color: #586e75;">//  </span><span style="color: #586e75;">ios::sync_with_stdio(false);</span>
+<span style="color: #586e75;">//  </span><span style="color: #586e75;">cin.tie(NULL);</span>
+
+    <span style="color: #b58900;">int</span> <span style="color: #268bd2;">T</span>;
+    scanf<span style="color: #b58900;">(</span><span style="color: #2aa198;">"%d"</span>, &amp;T<span style="color: #b58900;">)</span>;
+
+    <span style="color: #859900; font-weight: bold;">for</span> <span style="color: #b58900;">(</span><span style="color: #b58900;">int</span> <span style="color: #268bd2;">k</span> = <span style="color: #6c71c4;">1</span>;k &lt;= T;++k<span style="color: #b58900;">)</span>
+    <span style="color: #b58900;">{</span>
+        <span style="color: #586e75;">//</span><span style="color: #586e75;">cout &lt;&lt; "Case #" &lt;&lt; k &lt;&lt; ":" &lt;&lt; endl;</span>
+        printf<span style="color: #268bd2;">(</span><span style="color: #2aa198;">"Case #%d:\n"</span>, k<span style="color: #268bd2;">)</span>;
+        <span style="color: #b58900;">int</span> <span style="color: #268bd2;">n</span>, <span style="color: #268bd2;">m</span>;
+        scanf<span style="color: #268bd2;">(</span><span style="color: #2aa198;">"%d%d"</span>, &amp;n, &amp;m<span style="color: #268bd2;">)</span>;
+        idx = <span style="color: #6c71c4;">1</span>;
+        heap<span style="color: #268bd2;">[</span><span style="color: #6c71c4;">0</span><span style="color: #268bd2;">]</span> = ct<span style="color: #268bd2;">()</span>;
+
+        <span style="color: #859900; font-weight: bold;">while</span> <span style="color: #268bd2;">(</span>n--<span style="color: #268bd2;">)</span>
+        <span style="color: #268bd2;">{</span>
+            <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span> <span style="color: #268bd2;">a</span>;
+            scanf<span style="color: #6c71c4;">(</span><span style="color: #2aa198;">"%lu"</span>, &amp;a<span style="color: #6c71c4;">)</span>;
+
+            insert<span style="color: #6c71c4;">(</span>a<span style="color: #6c71c4;">)</span>;
+        <span style="color: #268bd2;">}</span>
+
+        <span style="color: #859900; font-weight: bold;">while</span> <span style="color: #268bd2;">(</span>m--<span style="color: #268bd2;">)</span>
+        <span style="color: #268bd2;">{</span>
+            <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span> <span style="color: #268bd2;">a</span>;
+            scanf<span style="color: #6c71c4;">(</span><span style="color: #2aa198;">"%lu"</span>, &amp;a<span style="color: #6c71c4;">)</span>;
+
+            <span style="color: #586e75;">//</span><span style="color: #586e75;">cout &lt;&lt; query(~a) &lt;&lt; endl;</span>
+            printf<span style="color: #6c71c4;">(</span><span style="color: #2aa198;">"%lu\n"</span>, query<span style="color: #859900;">(</span>~a<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span>;
+        <span style="color: #268bd2;">}</span>
+    <span style="color: #b58900;">}</span>
+<span style="color: #2aa198;">}</span>
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org3000a7e" class="outline-2">
+<h2 id="org3000a7e">16 年 8 月 20 日更新</h2>
+<div class="outline-text-2" id="text-org3000a7e">
+<p>
+最近发现了一个新的提升读取速度的方法：fread。
+</p>
+
+<p>
+这是一个 c 语言函数，具体作用是把 n 个字符作为字符串一次性读入。根据 <a href="http://www.bkjia.com/ASPjc/951313.html">这里</a> 的说法，它可以把读取时间效率再提高十倍。
+</p>
+
+<p>
+在那篇文章中，fread 被用来读取文件，由于 oj 实际上是把文件重定向到标准 io 来实现输入的，所以我们必须把它再映射回去才能实现从标准 io 输入。然后我们再手动把字符串转换成数字即可，这里的转换操作最好不要使用 <code>stringstream</code> ，因为创建字符串流的过程会将字符串中的内容复制进一个
+string 中，这个过程涉及到拷贝和堆的内存分配，耗时很多，还会多占用 2 倍的内存。
+</p>
+
+<p>
+以下是我的实际处理过程：
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #859900; font-weight: bold;">const</span> <span style="color: #b58900;">int</span> <span style="color: #268bd2;">MAXBUF</span> = <span style="color: #6c71c4;">1000000</span> &lt;&lt; <span style="color: #6c71c4;">2</span>;
+<span style="color: #b58900;">char</span> <span style="color: #268bd2;">buf</span><span style="color: #2aa198;">[</span>MAXBUF<span style="color: #2aa198;">]</span>;
+<span style="color: #b58900;">char</span>* <span style="color: #268bd2;">startpoint</span> = buf; <span style="color: #586e75;">//</span><span style="color: #586e75;">&#23383;&#31526;&#20018;&#30340;&#35835;&#21462;&#36215;&#28857;</span>
+</pre>
+</div>
+<p>
+buf 是一个字符数组，用来存储读入的数据，程序开始的时候会把所有输入都读取到这个地方。
+startpoint 表示读取的起点，下面的函数会使用它。
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #859900; font-weight: bold;">template</span><span style="color: #2aa198;">&lt;</span><span style="color: #859900; font-weight: bold;">typename</span> <span style="color: #b58900;">T</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #859900; font-weight: bold;">inline</span> <span style="color: #b58900;">void</span> <span style="color: #268bd2;">sread</span><span style="color: #2aa198;">(</span><span style="color: #b58900;">T</span> &amp;<span style="color: #268bd2;">res</span><span style="color: #2aa198;">)</span>
+<span style="color: #2aa198;">{</span>
+    res = <span style="color: #6c71c4;">0</span>;
+    <span style="color: #859900; font-weight: bold;">for</span> <span style="color: #b58900;">(</span>;*startpoint;++startpoint<span style="color: #b58900;">)</span>
+    <span style="color: #b58900;">{</span>
+        <span style="color: #859900; font-weight: bold;">if</span> <span style="color: #268bd2;">(</span>*startpoint == <span style="color: #2aa198;">' '</span> || *startpoint == <span style="color: #2aa198;">'\n'</span><span style="color: #268bd2;">)</span>
+        <span style="color: #268bd2;">{</span>
+            ++startpoint;
+            <span style="color: #859900; font-weight: bold;">return</span>;
+        <span style="color: #268bd2;">}</span>
+        <span style="color: #859900; font-weight: bold;">else</span>
+            res = res * <span style="color: #6c71c4;">10</span> + *startpoint - <span style="color: #2aa198;">'0'</span>;
+    <span style="color: #b58900;">}</span>
+<span style="color: #2aa198;">}</span>
+</pre>
+</div>
+<p>
+这个函数用来在 buf 数组中读取数据，类似于 scanf，每次调用会从 buf 中读取一个数据填充到
+res 中，并且以空白符为分隔。但是这里每次只能读取一个数据，而且只能读取十进制数字。这个函数使用指针 startpoint 来表示读取的起点，每次从这里读取并且将 startpoint 设置到下一个数据的开头（目前还没法处理连续两个分隔符的情况）。
+</p>
+
+<p>
+在 main 函数中的读取操作：
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #b58900;">int</span> <span style="color: #268bd2;">len</span> = fread<span style="color: #2aa198;">(</span>buf, <span style="color: #6c71c4;">1</span>, MAXBUF, stdin<span style="color: #2aa198;">)</span>;
+<span style="color: #859900; font-weight: bold;">if</span> <span style="color: #2aa198;">(</span>len &gt;= MAXBUF<span style="color: #2aa198;">)</span>
+    <span style="color: #859900; font-weight: bold;">throw</span> <span style="color: #b58900;">int</span><span style="color: #2aa198;">()</span>;
+buf<span style="color: #2aa198;">[</span>len<span style="color: #2aa198;">]</span> = <span style="color: #2aa198;">'\0'</span>;
+</pre>
+</div>
+<p>
+fread 函数的第一个参数是读取到的数据的存储位置，第二个是读取的单个数据的字节数，由于是 char，所以这里填 1；第三个是最多读取多少数据，这里填上数组的大小，总不能越界不是(´･ω･`)。第四个参数是重点：输入流。如果从文件读取的话，这里要填上一个 FILE 指针，但我们要从标准 io
+读入，所以写 stdin——标准输入流。当 fread 读满 MAXBUF 个字符或者读取到 EOF 的时候（别忘了
+oj 是从文件映射到标准输入的，所以最后一定会有 EOF），就会终止输入，并且返回读取的字符数。
+</p>
+
+<p>
+后面的两行是为了确保 fread 读取了全部的输入。如果 buf 被读取满了的话，很可能没有完整读入所有的输入，这里会抛出一个异常，在 oj 的结果页面可以看到一个 RE（如果你用的是 PC^2，很可能会得到一个 CE，貌似有些情况下 pc^2 会把 RE 当成 CE），这总比因为读入不完整而得到其他的奇怪结果要强得多，问题是很容易定位的。
+</p>
+
+<p>
+然后把最后一个位置赋成 <code>'\0'</code> ，表示字符串的结尾，这样对于以 EOF 结束输入的题比较有用。
+</p>
+
+<p>
+最后使用 sread 读取就可以了。
+</p>
+
+<p>
+经过测试，现在的耗时是 234ms，又缩短了 46ms。
+</p>
+
+<p>
+最终代码（应该是吧）：
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #586e75;">// </span><span style="color: #586e75;">oj.cpp : ??????????????</span>
+<span style="color: #586e75;">//</span>
+
+<span style="color: #586e75;">//</span><span style="color: #586e75;">#include &lt;iostream&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">cstdio</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">limits</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">algorithm</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">numeric</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">string</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">utility</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">cstdlib</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">vector</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">sstream</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">cstring</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">cctype</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">cmath</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">functional</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">deque</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">stack</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">bitset</span><span style="color: #2aa198;">&gt;</span>
+
+<span style="color: #859900; font-weight: bold;">using</span> <span style="color: #859900; font-weight: bold;">namespace</span> <span style="color: #268bd2; font-weight: bold;">std</span>;
+
+<span style="color: #859900; font-weight: bold;">struct</span> <span style="color: #b58900;">ct</span>
+<span style="color: #2aa198;">{</span>
+    <span style="color: #b58900;">int</span> <span style="color: #268bd2;">L</span><span style="color: #b58900;">[</span><span style="color: #6c71c4;">2</span><span style="color: #b58900;">]</span>;
+    <span style="color: #268bd2;">ct</span><span style="color: #b58900;">()</span> <span style="color: #b58900;">{</span>
+        L<span style="color: #268bd2;">[</span><span style="color: #6c71c4;">0</span><span style="color: #268bd2;">]</span> = L<span style="color: #268bd2;">[</span><span style="color: #6c71c4;">1</span><span style="color: #268bd2;">]</span> = <span style="color: #6c71c4;">0</span>;
+    <span style="color: #b58900;">}</span>
+<span style="color: #2aa198;">}</span>;
+
+<span style="color: #b58900;">ct</span> <span style="color: #268bd2;">heap</span><span style="color: #2aa198;">[</span><span style="color: #6c71c4;">1000000</span> &lt;&lt; <span style="color: #6c71c4;">2</span><span style="color: #2aa198;">]</span>;
+<span style="color: #b58900;">int</span> <span style="color: #268bd2;">idx</span> = <span style="color: #6c71c4;">1</span>;
+
+<span style="color: #859900; font-weight: bold;">inline</span> <span style="color: #b58900;">void</span> <span style="color: #268bd2;">insert</span><span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">const</span> <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span>&amp; <span style="color: #268bd2;">s</span><span style="color: #2aa198;">)</span> <span style="color: #2aa198;">{</span>
+    <span style="color: #b58900;">ct</span> *<span style="color: #268bd2;">c</span> = heap;
+    <span style="color: #859900; font-weight: bold;">for</span> <span style="color: #b58900;">(</span><span style="color: #b58900;">int</span> <span style="color: #268bd2;">i</span> = <span style="color: #6c71c4;">0</span>;i &lt; <span style="color: #6c71c4;">32</span>;++i<span style="color: #b58900;">)</span> <span style="color: #b58900;">{</span>
+        <span style="color: #b58900;">int</span>&amp; <span style="color: #268bd2;">nw</span> = c-&gt;L<span style="color: #268bd2;">[</span><span style="color: #6c71c4;">(</span>s &gt;&gt; <span style="color: #859900;">(</span><span style="color: #6c71c4;">31</span> - i<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span> &amp; <span style="color: #6c71c4;">1</span><span style="color: #268bd2;">]</span>;
+        <span style="color: #859900; font-weight: bold;">if</span> <span style="color: #268bd2;">(</span><span style="color: #b58900; font-weight: bold;">!</span>nw<span style="color: #268bd2;">)</span> <span style="color: #268bd2;">{</span>
+            nw = idx;
+            ++idx;
+            heap<span style="color: #6c71c4;">[</span>nw<span style="color: #6c71c4;">]</span> = ct<span style="color: #6c71c4;">()</span>;
+        <span style="color: #268bd2;">}</span>
+        c = &amp;heap<span style="color: #268bd2;">[</span>nw<span style="color: #268bd2;">]</span>;
+    <span style="color: #b58900;">}</span>
+<span style="color: #2aa198;">}</span>
+
+<span style="color: #859900; font-weight: bold;">inline</span> <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span> <span style="color: #268bd2;">query</span><span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">const</span> <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span>&amp; <span style="color: #268bd2;">s</span><span style="color: #2aa198;">)</span> <span style="color: #2aa198;">{</span>
+    <span style="color: #b58900;">unsigned</span> <span style="color: #268bd2;">have</span> = <span style="color: #6c71c4;">0</span>;
+    <span style="color: #b58900;">int</span> <span style="color: #268bd2;">i</span> = <span style="color: #6c71c4;">0</span>;
+    <span style="color: #b58900;">ct</span> *<span style="color: #268bd2;">c</span> = heap;
+    <span style="color: #859900; font-weight: bold;">while</span> <span style="color: #b58900;">(</span>i &lt; <span style="color: #6c71c4;">32</span><span style="color: #b58900;">)</span> <span style="color: #b58900;">{</span>
+        <span style="color: #b58900;">int</span> <span style="color: #268bd2;">nw</span> = c-&gt;L<span style="color: #268bd2;">[</span><span style="color: #6c71c4;">(</span>s &gt;&gt; <span style="color: #859900;">(</span><span style="color: #6c71c4;">31</span> - i<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span> &amp; <span style="color: #6c71c4;">1</span><span style="color: #268bd2;">]</span>;
+        <span style="color: #859900; font-weight: bold;">if</span> <span style="color: #268bd2;">(</span>nw<span style="color: #268bd2;">)</span> <span style="color: #268bd2;">{</span>
+            c = &amp;heap<span style="color: #6c71c4;">[</span>nw<span style="color: #6c71c4;">]</span>;
+            have = <span style="color: #6c71c4;">(</span>have &lt;&lt; <span style="color: #6c71c4;">1</span><span style="color: #6c71c4;">)</span> + <span style="color: #6c71c4;">(</span><span style="color: #859900;">(</span>s &gt;&gt; <span style="color: #b58900;">(</span><span style="color: #6c71c4;">31</span> - i<span style="color: #b58900;">)</span><span style="color: #859900;">)</span> &amp; <span style="color: #6c71c4;">1</span><span style="color: #6c71c4;">)</span>;
+        <span style="color: #268bd2;">}</span>
+        <span style="color: #859900; font-weight: bold;">else</span> <span style="color: #268bd2;">{</span>
+            c = &amp;heap<span style="color: #6c71c4;">[</span>c-&gt;L<span style="color: #859900;">[</span><span style="color: #6c71c4;">1</span> - <span style="color: #b58900;">(</span><span style="color: #268bd2;">(</span>s &gt;&gt; <span style="color: #6c71c4;">(</span><span style="color: #6c71c4;">31</span> - i<span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span> &amp; <span style="color: #6c71c4;">1</span><span style="color: #b58900;">)</span><span style="color: #859900;">]</span><span style="color: #6c71c4;">]</span>;
+            have = <span style="color: #6c71c4;">(</span>have &lt;&lt; <span style="color: #6c71c4;">1</span><span style="color: #6c71c4;">)</span> + <span style="color: #6c71c4;">1</span> - <span style="color: #6c71c4;">(</span><span style="color: #859900;">(</span>s &gt;&gt; <span style="color: #b58900;">(</span><span style="color: #6c71c4;">31</span> - i<span style="color: #b58900;">)</span><span style="color: #859900;">)</span> &amp; <span style="color: #6c71c4;">1</span><span style="color: #6c71c4;">)</span>;
+        <span style="color: #268bd2;">}</span>
+        ++i;
+    <span style="color: #b58900;">}</span>
+    <span style="color: #859900; font-weight: bold;">return</span> have;
+<span style="color: #2aa198;">}</span>
+
+<span style="color: #859900; font-weight: bold;">const</span> <span style="color: #b58900;">int</span> <span style="color: #268bd2;">MAXBUF</span> = <span style="color: #6c71c4;">1000000</span> &lt;&lt; <span style="color: #6c71c4;">2</span>;
+<span style="color: #b58900;">char</span> <span style="color: #268bd2;">buf</span><span style="color: #2aa198;">[</span>MAXBUF<span style="color: #2aa198;">]</span>;
+<span style="color: #b58900;">char</span>* <span style="color: #268bd2;">startpoint</span> = buf; <span style="color: #586e75;">//</span><span style="color: #586e75;">????????</span>
+
+<span style="color: #859900; font-weight: bold;">template</span><span style="color: #2aa198;">&lt;</span><span style="color: #859900; font-weight: bold;">typename</span> <span style="color: #b58900;">T</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #859900; font-weight: bold;">inline</span> <span style="color: #b58900;">void</span> <span style="color: #268bd2;">sread</span><span style="color: #2aa198;">(</span><span style="color: #b58900;">T</span> &amp;<span style="color: #268bd2;">res</span><span style="color: #2aa198;">)</span>
+<span style="color: #2aa198;">{</span>
+    res = <span style="color: #6c71c4;">0</span>;
+    <span style="color: #859900; font-weight: bold;">for</span> <span style="color: #b58900;">(</span>;*startpoint;++startpoint<span style="color: #b58900;">)</span>
+    <span style="color: #b58900;">{</span>
+        <span style="color: #859900; font-weight: bold;">if</span> <span style="color: #268bd2;">(</span>*startpoint == <span style="color: #2aa198;">' '</span> || *startpoint == <span style="color: #2aa198;">'\n'</span><span style="color: #268bd2;">)</span>
+        <span style="color: #268bd2;">{</span>
+            ++startpoint;
+            <span style="color: #859900; font-weight: bold;">return</span>;
+        <span style="color: #268bd2;">}</span>
+        <span style="color: #859900; font-weight: bold;">else</span>
+            res = res * <span style="color: #6c71c4;">10</span> + *startpoint - <span style="color: #2aa198;">'0'</span>;
+    <span style="color: #b58900;">}</span>
+<span style="color: #2aa198;">}</span>
+
+<span style="color: #b58900;">int</span> <span style="color: #268bd2;">main</span><span style="color: #2aa198;">()</span> <span style="color: #2aa198;">{</span>
+    <span style="color: #586e75;">//  </span><span style="color: #586e75;">ios::sync_with_stdio(false);</span>
+    <span style="color: #586e75;">//  </span><span style="color: #586e75;">cin.tie(NULL);</span>
+
+    <span style="color: #b58900;">int</span> <span style="color: #268bd2;">len</span> = fread<span style="color: #b58900;">(</span>buf, <span style="color: #6c71c4;">1</span>, MAXBUF, stdin<span style="color: #b58900;">)</span>;
+    <span style="color: #586e75;">//</span><span style="color: #586e75;">int len = fread(buf, 1, MAXBUF, fopen("oj.in", "r")); //debug</span>
+    <span style="color: #859900; font-weight: bold;">if</span> <span style="color: #b58900;">(</span>len &gt;= MAXBUF<span style="color: #b58900;">)</span>
+        <span style="color: #859900; font-weight: bold;">throw</span> <span style="color: #b58900;">int</span><span style="color: #b58900;">()</span>;
+    buf<span style="color: #b58900;">[</span>len<span style="color: #b58900;">]</span> = <span style="color: #2aa198;">'\0'</span>;
+
+    <span style="color: #b58900;">int</span> <span style="color: #268bd2;">T</span>;
+    sread<span style="color: #b58900;">(</span>T<span style="color: #b58900;">)</span>;
+
+    <span style="color: #859900; font-weight: bold;">for</span> <span style="color: #b58900;">(</span><span style="color: #b58900;">int</span> <span style="color: #268bd2;">k</span> = <span style="color: #6c71c4;">1</span>;k &lt;= T;++k<span style="color: #b58900;">)</span>
+    <span style="color: #b58900;">{</span>
+        <span style="color: #586e75;">//</span><span style="color: #586e75;">cout &lt;&lt; "Case #" &lt;&lt; k &lt;&lt; ":" &lt;&lt; endl;</span>
+        printf<span style="color: #268bd2;">(</span><span style="color: #2aa198;">"Case #%d:\n"</span>, k<span style="color: #268bd2;">)</span>;
+        <span style="color: #b58900;">int</span> <span style="color: #268bd2;">n</span>, <span style="color: #268bd2;">m</span>;
+        sread<span style="color: #268bd2;">(</span>n<span style="color: #268bd2;">)</span>;
+        sread<span style="color: #268bd2;">(</span>m<span style="color: #268bd2;">)</span>;
+        idx = <span style="color: #6c71c4;">1</span>;
+        heap<span style="color: #268bd2;">[</span><span style="color: #6c71c4;">0</span><span style="color: #268bd2;">]</span> = ct<span style="color: #268bd2;">()</span>;
+
+        <span style="color: #859900; font-weight: bold;">while</span> <span style="color: #268bd2;">(</span>n--<span style="color: #268bd2;">)</span>
+        <span style="color: #268bd2;">{</span>
+            <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span> <span style="color: #268bd2;">a</span>;
+            sread<span style="color: #6c71c4;">(</span>a<span style="color: #6c71c4;">)</span>;
+
+            insert<span style="color: #6c71c4;">(</span>a<span style="color: #6c71c4;">)</span>;
+        <span style="color: #268bd2;">}</span>
+
+        <span style="color: #859900; font-weight: bold;">while</span> <span style="color: #268bd2;">(</span>m--<span style="color: #268bd2;">)</span>
+        <span style="color: #268bd2;">{</span>
+            <span style="color: #b58900;">unsigned</span> <span style="color: #b58900;">long</span> <span style="color: #268bd2;">a</span>;
+            sread<span style="color: #6c71c4;">(</span>a<span style="color: #6c71c4;">)</span>;
+
+            <span style="color: #586e75;">//</span><span style="color: #586e75;">cout &lt;&lt; query(~a) &lt;&lt; endl;</span>
+            printf<span style="color: #6c71c4;">(</span><span style="color: #2aa198;">"%lu\n"</span>, query<span style="color: #859900;">(</span>~a<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span>;
+        <span style="color: #268bd2;">}</span>
+    <span style="color: #b58900;">}</span>
+<span style="color: #2aa198;">}</span>
+</pre>
+</div>
+
+<p>
+有趣的是，目前在 VJ 中这道题的所有提交里面，耗时最少和耗时最多的人都是我_(:зゝ∠)_
+</p>
+</div>
+</div>
+
+</div>
+</div>
+<div>
+        <div class="post-meta">
+            <span title="发布日期" class="post-info">2016-07-25</span>
+            <span title="最后修改日期" class="post-info">2017-02-24</span>
+            <span title="标签" class="post-info">:<a href="http://liu233w.github.io/tags/acm">acm</a>:</span>
+            <span title="作者" class="post-info"><a href="mailto:wwwlsmcom &lt;at&gt; outlook &lt;dot&gt; com">Liu233w</a></span>
+        </div>
+    <script src="http://liu233w.github.io/media/js/jquery-2.1.3.min.js"></script>
+        <section>
+            <h1>Comments</h1>
+            <div id="comment-wrap">
+                    <a class="disqus_label">使用 Disqus 评论</a>
+                    <a class="ds-label">使用多说评论</a>
+    </ul>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+         //var disqus_developer = 1;
+         var preempt_signal=false;
+         var disqus_identifier = "/acm/2016/07/25/hdu-4825/";
+         var disqus_url = "http://liu233w.github.io/acm/2016/07/25/hdu-4825/";
+         var disqus_shortname = 'liu233w';
+         /* * * DON'T EDIT BELOW THIS LINE * * */
+         (function() {
+             var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+             dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+             $('#disqus_thread').css('display','none');
+         })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        <div class="ds-thread"></div>
+        <script type="text/javascript">
+         var duoshuoQuery = {short_name:'liu233w'};
+         (function() {
+             var ds = document.createElement('script');
+             ds.type = 'text/javascript';ds.async = true;
+             ds.src = 'http://static.duoshuo.com/embed.js';
+             ds.charset = 'UTF-8';
+             (document.getElementsByTagName('head')[0]
+           || document.getElementsByTagName('body')[0]).appendChild(ds);
+             $('.ds-thread').css('display','block');
+         })();
+        </script>
+    <script>
+     /* comments */
+     var ego_disqus_thread=$('#disqus_thread');
+     var ego_ds_label=$('.ds-thread');
+     $('.disqus_label').click(function(){
+         ego_disqus_thread.show();
+         ego_ds_label.hide();
+     });
+     $('.ds-label').click(function(){
+         ego_disqus_thread.hide();
+         ego_ds_label.show();
+     });
+    </script>
+        </section>
+    <script src="http://liu233w.github.io/media/js/main.js"></script>
+    <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.x(<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+            Copyright &copy; 2014 - <span id="footerYear"></span> <a href="mailto:wwwlsmcom &lt;at&gt; outlook &lt;dot&gt; com">Liu233w</a>
+            &nbsp;&nbsp;-&nbsp;&nbsp;
+            Powered by <a href="https://github.com/emacs-china/ego" target="_blank">EGO</a><br/>
+            <a href="http://creativecommons.org/licenses/by-sa/3.0/" rel="license"><img src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" style="border-width:0" alt="Creative Commons License" class="center"></a>
+            <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+    </div>
+            </div>
+            <script type="text/javascript"
+                    src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG">
+            </script>
+            <script type="text/x-mathjax-config">
+             MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "AMS"} } });
+            </script>
+</div>
+
+  </div></body>
+</html>

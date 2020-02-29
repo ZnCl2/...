@@ -1,0 +1,244 @@
+{
+	"title": "冰与火",
+	"description": "冰与火的博客",
+	"links": "- [Source code](https://github.com/HelloZeroNet)",
+	"next_post_id": 43,
+	"demo": false,
+	"modified": 1567143898,
+	"post": [
+		{
+			"post_id": 42,
+			"title": "树莓派安装Dns Over https",
+			"date_published": 1567121488.663,
+			"body": "At first ，Please install this tool for command dig.\n apt-get install -y dnsutils\n\nARM architecture (Raspberry Pi)¶\nHere we are downloading the precompiled binary and copying it to the /usr/local/bin/ directory to allow execution by the cloudflared user. Proceed to run the binary with the -v flag to check it is all working.\n\n\nwget https://bin.equinox.io/c/VdrWdbjqyF/cloudflared-stable-linux-arm.tgz\ntar -xvzf cloudflared-stable-linux-arm.tgz\nsudo cp ./cloudflared /usr/local/bin\nsudo chmod +x /usr/local/bin/cloudflared\ncloudflared -v\nConfiguring cloudflared to run on startup¶\nCreate a cloudflared user to run the daemon.\n\n\nsudo useradd -s /usr/sbin/nologin -r -M cloudflared\nProceed to create a configuration file for cloudflared by copying the following in to /etc/default/cloudflared. This file contains the command-line options that get passed to cloudflared on startup.\n\n\n# Commandline args for cloudflared\nCLOUDFLARED_OPTS=--port 5053 --upstream https://1.1.1.1/dns-query --upstream https://1.0.0.1/dns-query\nUpdate the permissions for the configuration file and cloudflared binary to allow access for the cloudflared user\n\n\nsudo chown cloudflared:cloudflared /etc/default/cloudflared\nsudo chown cloudflared:cloudflared /usr/local/bin/cloudflared\nThen create the systemd script by copying the following in to /lib/systemd/system/cloudflared.service. This will control the running of the service and allow it to run on startup.\n\n\n[Unit]\nDescription=cloudflared DNS over HTTPS proxy\nAfter=syslog.target network-online.target\n\n[Service]\nType=simple\nUser=cloudflared\nEnvironmentFile=/etc/default/cloudflared\nExecStart=/usr/local/bin/cloudflared proxy-dns $CLOUDFLARED_OPTS\nRestart=on-failure\nRestartSec=10\nKillMode=process\n\n[Install]\nWantedBy=multi-user.target\nEnable the systemd service to run on startup, then start the service and check its status.\n\n\nsudo systemctl enable cloudflared\nsudo systemctl start cloudflared\nsudo systemctl status cloudflared\nNow test that it is working! Run the following dig command, a response should be returned similar to the one below\n\n\ndig @127.0.0.1 -p 5053 google.com\n\n\n; <<>> DiG 9.10.3-P4-Ubuntu <<>> @127.0.0.1 -p 5053 google.com\n; (1 server found)\n;; global options: +cmd\n;; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 65181\n;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; OPT PSEUDOSECTION:\n; EDNS: version: 0, flags:; udp: 1536\n;; QUESTION SECTION:\n;google.com.            IN  A\n\n;; ANSWER SECTION:\ngoogle.com.     299 IN  A   243.65.127.221\n\n;; Query time: 3 msec\n;; SERVER: 127.0.0.1#5053(127.0.0.1)\n;; MSG SIZE  rcvd: 65\n\n\nhttps://docs.pi-hole.net/guides/dns-over-https/\nhttps://judge.sh/how-to-enable-dns-over-https-on-chrome-right-now/"
+		},
+		{
+			"post_id": 41,
+			"title": "Resilio Sync,Locked files ,not enough permissions 完美解决",
+			"date_published": 1566833023.129,
+			"body": "在树莓派上挂了硬盘后，数据一直无法写入，即使将rslsync用户使用 usermod -aG加入了root ,pi用户组，也没用，修改权限也修改不了。\n\n黔驴技穷之际。考虑能否将Resilio sync 以当前用户运行，尝试成功，问题立即解决，修改方法如下：\n\nIf you want to run Sync under a  current user you need to follow the next steps:\nstop the app first:\nsudo service resilio-sync stop\n\ndisable the rslsync user:\nsudo systemctl disable resilio-sync\n\nenable sync service as current user:\nedit file /usr/lib/systemd/user/resilio-sync.service and change \"WantedBy=multi-user.target\" to \"WantedBy=default.target\". Save. Then enable the service:\nsystemctl --user enable resilio-sync\n\nand run the app:\nsystemctl --user start resilio-sync\n-Check the results via ps aux | grep rslsync command."
+		},
+		{
+			"post_id": 40,
+			"title": "一行命令在树莓派上安装Zeronet",
+			"date_published": 1566296101.922,
+			"body": "docker run -d --name zeronet -e \"ENABLE_TOR=true\" -e UI_HOST=0.0.0.0 -e UI_PASSWORD=rpi -v /mnt/2t/data:/root/data -p 26552:26552 -p 43110:43110 supersandro2000/zeronet\n\n发现安装到外挂硬盘上有权限问题，到home目录反倒没问题。"
+		},
+		{
+			"post_id": 39,
+			"title": "树莓派samba提速",
+			"date_published": 1541086189.419,
+			"body": "max xmit = 65535\nsocket options = TCP_NODELAY IPTOS_LOWDELAY SO_SNDBUF=65535 SO_RCVBUF=65535\nread raw = yes\nwrite raw = yes\nmax connections = 65535\nmax open files = 65535\n\n\n加在全局配置里面，速度就可以提高。实测我的速度从700KB提高到1.6MB"
+		},
+		{
+			"post_id": 38,
+			"title": "Office 2019",
+			"date_published": 1538050742.037,
+			"body": "Office 2019 Version 1808 (Build 10730.20102) RETAIL\n\n英文版：\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/en-us/ProPlus2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/en-us/Professional2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/en-us/HomeBusiness2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/en-us/HomeStudent2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/en-us/ProjectPro2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/en-us/ProjectStd2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/en-us/VisioPro2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/en-us/VisioStd2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/en-us/Access2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/en-us/Excel2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/en-us/Outlook2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/en-us/PowerPoint2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/en-us/Publisher2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/en-us/Word2019Retail.img\n\n简体中文：\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-cn/ProPlus2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-cn/Professional2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-cn/HomeStudent2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-cn/HomeBusiness2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-cn/ProjectStd2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-cn/ProjectPro2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-cn/VisioStd2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-cn/VisioPro2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-cn/Access2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-cn/Excel2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-cn/PowerPoint2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-cn/Outlook2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-cn/Publisher2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-cn/Word2019Retail.img\n\n繁体中文：\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-tw/ProPlus2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-tw/Professional2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-tw/HomeStudent2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-tw/HomeBusiness2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-tw/ProjectStd2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-tw/ProjectPro2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-tw/VisioStd2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-tw/VisioPro2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-tw/Access2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-tw/Excel2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-tw/PowerPoint2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-tw/Outlook2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-tw/Publisher2019Retail.img\nhttp://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/zh-tw/Word2019Retail.img\n\n附激活工具：\nhttps://pan.baidu.com/s/1eR1Noz7xBegSeNdHiasnlA\n\n==================================================================================================================\n\nMacOS版 多国语言 16.17.18090901\nhttps://officecdn-microsoft-com.akamaized.net/pr/C1297A47-86C4-4C1F-97FA-950631F94777/OfficeMac/Microsoft_Office_16.17.18090901_Installer.pkg\n\n附激活工具\nhttps://pan.baidu.com/s/1_g624UE37fVeW_VqGwLzvA  密码：wenf"
+		},
+		{
+			"post_id": 37,
+			"title": "如何安装和配置simple-obfs服务端",
+			"date_published": 1537367139.769,
+			"body": "本文的主要内容是，在已经安装完 Shadowsocks-libev 服务端的情况下，如何手动安装和配置 simple-obfs，以及在此过程中的排错。\n---\n首先，使用本站提供的一键脚本安装 Shadowsocks-libev 服务端\n2017 年 10 月 14 日更新\nShadowsocks 一键安装脚本（四合一）已经支持在安装 Shadowsocks-libev 时可选安装 simple-obfs 服务端。\n※ 注意：脚本仅支持在 autoconf 版本大于或等于 2.67 的系统里安装。\nShadowsocks 一键安装脚本（四合一）\n\nCentOS下shadowsocks-libev一键安装脚本\nDebian 下 Shadowsocks-libev 一键安装脚本\n\n其次，手动安装和配置 simple-obfs 服务端\n下文以 CentOS 7 的操作为范例。\n在用一键脚本安装完 Shadowsocks-libev 服务端的前提下，安装 simple-obfs 服务端所需的依赖包都已安装完毕。\n有可能还需要安装一下 git 命令。\n\n# Debian / Ubuntu\napt-get install -y git\n# CentOS / Fedora / RHEL\nyum install -y git\n下载和安装 simple-obfs\n\ncd /opt\ngit clone https://github.com/shadowsocks/simple-obfs.git\ncd simple-obfs\ngit submodule update --init --recursive\n./autogen.sh\n./configure --disable-documentation\nmake && make install\n需要特别注意的是，autogen.sh 脚本的配置限制了 autoconf 的版本不能低于 2.67。\n如何查看默认 autoconf 的版本号？\n\nautoconf --version\nCentOS 7 的 autoconf 版本为 2.69，符合条件。\n\n以下为在 CentOS 6 的操作步骤。\nCentOS 6 的 autoconf 版本为 2.63，因此需要用到 EPEL 的 autoconf268 依赖包。\n\nyum install -y autoconf268\n然后修改 autogen.sh 内容，将\n\nautoreconf --install --force\n修改为\n\nautoreconf268 --install --force\n还有一点，在 CentOS 6 下编译出现 error: ev.h: No such file or directory 错误时，原因如下：\nCentOS 6 下 ev.h 位于 /usr/include/libev/ev.h，因此需要修改以下代码里关于 ev.h 路径定义的地方。\n\nsrc/local.h\nsrc/server.h\n找到 #include <ev.h> 这一行，修改为 #include <libev/ev.h> 即可通过编译。\n\n一般情况下安装完成后，二进制文件的路径位于\n\n/usr/local/bin/obfs-local\n/usr/local/bin/obfs-server\n重新配置文件\n\n重新配置 Shadowsocks-libev 的配置文件 /etc/shadowsocks-libev/config.json\n添加如下\n\n\"plugin\":\"obfs-server\",\n\"plugin_opts\":\"obfs=http\"\n特别注意：请认真参考以下范例，method 那行最后不要缺少逗号，不然启动会报错。\n范例如下：\n\n{\n    \"server\":\"0.0.0.0\",\n    \"server_port\":your_server_port,\n    \"password\":\"your_password\",\n    \"timeout\":300,\n    \"method\":\"your_encryption_method\",\n    \"plugin\":\"obfs-server\",\n    \"plugin_opts\":\"obfs=http\"\n}\n然后重新启动 Shadowsocks-libev 即可。\n\n确认 ss-server 和 obfs-server 进程已经正常启动。\n命令如下：\n\nps -ef | grep -v grep | grep \"server\"\n输出结果参考：\n\n/usr/local/bin/ss-server -u -c /etc/shadowsocks-libev/config.json -f /var/run/shadowsocks-libev.pid\n/usr/local/bin/obfs-server --obfs http\nWindows 客户端的使用方法：\n1、下载最新 Windows 客户端\nWindows 客户端下载网址：\nhttps://github.com/shadowsocks/shadowsocks-windows/releases\n\n2、下载 obfs-local.zip \n下载网址：\nhttps://github.com/shadowsocks/simple-obfs/releases\n下载后，解压出来的文件一定要和 Windows 客户端的 exe 文件放在同一文件夹下\n\n3、客户端配置，如下图\nsimple-obfs客户端\n插件：obfs-local\n插件选项：obfs=tls\n插件参数：obfs-host=www.bing.com\n插件选项和插件参数根据你服务端上的配置选择用 http 或者 tls，obfs-host 随便你用什么网址都行。"
+		},
+		{
+			"post_id": 36,
+			"title": "Raspberrypi Docker emby/embyserver_arm32v7",
+			"date_published": 1535452012.612,
+			"body": "https://hub.docker.com/r/emby/embyserver/\nhttps://hub.docker.com/r/emby/embyserver_arm32v7/"
+		},
+		{
+			"post_id": 35,
+			"title": "树莓派各种软件收集",
+			"date_published": 1535446027.03,
+			"body": "https://post.smzdm.com/p/700751/"
+		},
+		{
+			"post_id": 34,
+			"title": "WireGuard 简单教程攻略",
+			"date_published": 1534740271.03,
+			"body": "* 到这里注册 https://www.azirevpn.com/manager/auth/login 并且激活\n* https://www.azirevpn.com/cfg/wireguard 在这里生成配置，并且下载\n* 安装安卓客户端，APKPure中就有，或者到谷歌市场搜索WireGuard \n* 安装好客户端之后，导入配置，就可以畅游了。"
+		},
+		{
+			"post_id": 33,
+			"title": "史上最全各类电影推荐清单",
+			"date_published": 1534238787.714,
+			"body": "【最费脑力的14部电影】\n\n《盗梦空间》、《记忆裂痕》、《生死停留》、《死亡幻觉》、《禁闭岛》、《穆赫兰道》、《蝴蝶效应》、《恐怖游轮》、《伤城》、《盗走达芬奇》、《88分钟》、《万能钥匙》、《决胜21点》、《沉默的羔羊》\n\n---\n\n【感动无数人的电影】\n\n《恋空》《婚纱》《比悲伤更悲伤的故事》《我脑中的橡皮擦》《属于你的我的初恋》《夏天协奏曲》《天使之恋》《分手信》《近在咫尺的爱恋》感动你的是哪部\n\n【15部让你哭的昏天暗地的电影】\n\n《假如爱有天意》《我脑海中的橡皮擦》《情书》《恋空》《等待，只为与你相遇》《我们的幸福时光》《请别相信她》《触不到的恋人》《菊花香》《剪刀手爱德华》《海上钢琴师》《恋恋笔记本》《美丽心灵的永恒阳光》《泰坦尼克号》\n\n【18部经典天才电影】\n\n《美丽心灵》、《雨人》、《波拉克》、《暗物质》、《想飞的钢琴少年》、《嫌疑人X的献身》、《天才瑞普利》、《猫鼠游戏》、《香水》、《一级恐惧》、《心灵捕手》、《莫扎特传》、《证据》、《海上钢琴师》、《电锯惊魂》、《沉默的羔羊》、《非常嫌疑犯》、《寻找弗罗斯特》\n\n【能够影响一生的十部电影】\n\n1.《阿甘正传》:执着；2.《东方不败》:才华；3.《美国往事》:人生；4.《罗马假日》:爱情；5.《勇敢的心》:勇气；6.《辛德勒的名单》:责任；7.《肖申克的救赎》:信念；8.《Ｅ.Ｔ》:童心；9.《现代启示录》:痛苦；10.《第七封印》:哲思。\n\n【人生必看的10部电影】\n\n爱情→《罗马假日》；执着→《阿甘正传》；哲理→《第七封印》；才华→《莫扎特传》；人生→《美国往事》；童心→《ET》；痛苦→《现代启示录》；信念→《肖申克的救赎》；责任→《辛德勒的名单》；勇气→《勇敢的心》\n\n【十部适合一个人静静看的电影】\n\n1。阿甘正传。2肖申克的救赎。3。触不到的恋人。4。海上钢琴师。5。千与千寻。6。雏菊。7。花样年华。8。幸福来敲门。9。蓝莓之夜。10。放牛班的春天\n\n【10部震撼狙击手电影】\n\n①《狙击电话亭》；②《最后的莫希干人》；③《敌人的荣誉》；④《兵临城下》；⑤《全金属外壳》、⑥《快枪手 》；⑦《双狙人》；⑧《杀手悲歌》；⑨《一号通缉令》；⑩《最后刺客》。\n\n【亚洲十大恐怖电影】\n\n1.《咒怨》；2.鬼娃娃花子；3.《午夜凶铃》；4.《鬼来电》；5.《笔仙》；6.《解剖学教室》；7.《邪降》；8.《四人餐桌》；9.《人形师》；10.《凶相》.\n\n【12部让你笑喷的电影】\n\n《神探飞机头》《我盛大的同志婚礼》《幸运库克》《校园卧底》《我的野蛮老师》《美女也烦恼》《疯狂的石头》《谋杀快乐》《XXXX》《我为玛丽狂》《美国派》《偷天情缘》。\n\n【18部讲述天才的电影】\n\n《美丽心灵》、《雨人》、《波拉克》、《暗物质》、《想飞的钢琴少年》、《嫌疑人X的献身》、《十一罗汉》、《猫鼠游戏》、《香水》、《一级恐惧》、《心灵捕手》、《莫扎特传》、《证据》、《海上钢琴师》、《电锯惊魂》、《沉默的羔羊》、《非常嫌疑犯》、《寻找弗罗斯特》。\n\n【最酷的狗】\n\n《101真狗》、最可爱的狗：《狗狗心事》、最红的狗：《史努比》、最搞怪的狗：《家有贱狗》、最苦命的狗：《龙龙与忠狗》、最懂孙子兵法的狗：《猫狗大战》、最大无畏的狗：《酷狗正传》、最会装傻的狗：《酷狗宝贝》、最忠心的狗：《导盲犬小Q》最早狗明星：《灵犬莱西》\n\n【哈佛商学院要求学生必看的10部经典电影】\n\n《华尔街》《大亨游戏》《颠倒乾坤》《抢钱大作战》《硅谷传奇》《可口可乐小子》《发达之路》《大公司小老板》《巴塞罗那》《社交网络》\n\n【最美的10部电影】\n\n1.《公民凯恩》、 2.《猎人之夜》、 3.《游戏规则》、 4.《日出》、 5.《亚特兰大号》、 6.《M就是凶手》、 7.《雨中曲》、 8.《迷魂记》、 9.《天堂的孩子》、 10.《搜索者》\n\n【国内10部经典同性恋电影】\n\n1.《蓝宇》；2. 《霸王别姬》；3. 《美少年之恋》；4. 《心动》；5. 《自梳》；6. 《喜宴》；7. 《春光乍泄》；8. 《夜奔》；9. 《今年夏天》；10. 《东宫西宫》；\n\n【15部治愈系温暖电影】\n\n《入殓师》、《大鱼》、《阳光小美女》、《放牛班的春天》、《天使爱美丽》、《菊次郎的夏天》、《天堂电影院》、《蝴蝶》、《蓝色大门》、《曾经》、《诺丁山》、《真爱至上》、《幸福终点站》、《西雅图夜未眠》、《当幸福来敲门》。\n\n【15部变态连环杀手的电影】\n\n《十二宫》，《七宗罪》，《沉默的羔羊》，《电锯惊魂》，《美国精神病人》，《看见恶魔》，《神秘拼图》，《可爱的骨头》，《天生杀人狂》，《机动杀人》，《香水》，《八面埋伏》，《十五号星期五系列》，《老无所依》，《女魔头》。\n\n【唯美如画的日本纯爱系电影】\n\n《花水木》《恋空》《现在只想爱你》《秒速5厘米》《情书》《花与爱丽丝》《泪光闪闪》《四月物语》《春之雪》《虹之女神》《燕尾蝶》《在世界心的中呼唤爱》《等待只为与你相遇》《属于你的我的初恋》《大约在雨季》《五年后的情书》《好想告诉你》\n\n【15部催泪电影】\n\n《假如爱有天意》,《我脑海中的橡皮擦》,《情书》,《恋空》,《等待，只为与你相遇》,《我们的幸福时光》,《请别相信她》,《触不到的恋人》,《菊花香》,《剪刀手爱德华》,《海上钢琴师》,《恋恋笔记本》,《美丽心灵的永恒阳光》,《泰坦尼克号》,《天使之恋》。\n\n【10部关于初恋的电影】\n\n1.《情书》；2. 《初恋50次》；3. 《牯岭街少年杀人事件》；4. 《这个杀手不太冷》；5. 《罗马假日》；6. 《蓝色大门》；7. 《心动》；8. 《教室别恋》；9. 《初恋这件小事》；10. 《初恋红豆冰》\n\n【美国好看的校园电影盘点】\n\n《牛仔裤的夏天》，《贱女孩》，《美国派》，《歌舞青春》，《朱诺》，《邻家女孩》，《回到17岁》，《暮光之城》，《足球尤物》，《平民天后》，《灰姑娘的玻璃手机》，《辣妈辣妹》，《公主日记》，《发胶》\n\n【当你失落时，不妨看看这10部电影，能带给你无尽勇气！】\n\n《听见天堂》《追梦女孩》《阳光小美女》《闻香识女人》《放牛班的春天》《百万宝贝》《跳出我天地》《永不妥协》《心灵捕手》《侧耳倾听》\n\n【全球十大魔幻电影榜】\n\n一、指环王系列；二、哈利波特系列；三、纳尼亚传奇系列；四、加勒比海盗系列；五、印第安纳琼斯(夺宝奇兵)三部曲；六、范海辛；七、狼族盟约；八、爱丽斯梦游仙境；九、暮光之城；十、画皮\n\n【最让人欲罢不能的15部美剧】\n\n《生活大爆炸》、《绯闻女孩》、《迷失》、《２４小时》、《老友记》、《越狱》、《豪斯医生》、《X档案》、《Lie to me》、《欲望都市》、《邪恶力量》、《吸血鬼日记》、《CSI》、《欢乐合唱团》、《ROME》\n\n【12星座推荐电影】\n\n金牛座《童梦失魂夜》狮子座《梦》天蝎座《我在伊朗长大》水瓶座《黑店狂想曲》白羊座《镜子面具》巨蟹座《科学睡眠》天秤座《Gil Alkabetz》摩羯座《漫长的婚约》双子座《人生七部曲》处女座《黑暗中的舞者》射手座《被嫌弃的松子的一生》双鱼座《The double life of Veronique》\n\n【五大悬疑电影推荐】\n\nNO.5万能钥匙：悬念迭起度:★★☆；NO.4恐怖油轮：悬念迭起度:★★★☆；NO.3灵异第六感：悬念迭起度:★★★★；NO.2空中危机：悬念迭起度:★★★★；NO.1致命ID：悬念迭起度:★★★★☆\n\n【让这些电影治愈你】\n\n1、缺乏学习动力：《幸福终点站》、《风雨哈佛路》；2、对爱失望：《偷天情缘》、《初恋50次 》；3、自卑失落：《阿甘正传》、《肖申克的救赎》；4、失败或绝望：《铁权男人》、《迫在眉梢》、《伊丽莎白镇》；5、厌倦生活：《在世界转角遇见爱》、《搏击俱乐部》\n\n【僵尸爱好者必看电影——真人大战僵尸】\n\n《生化危机》《惊变28天》《惊变28周》《活死人的黎明》《活死人之地》《僵尸肖恩》《我是传奇》《致命拜访》《隔山有眼》《毁灭战士》《丧尸出笼》《生化寿司》《群尸玩过界》《死亡航班》《厄夜三十》《活死人归来》\n\n【近期火爆的泰国青春浪漫电影】\n\n《yes or no》《初恋这件小事》《悲恋三人行》《初三大四我爱你》《亲爱的伽利略》《爱在暹罗》《爱久弥新》《季节变幻》《下一站，说爱你》《荷尔蒙》《让爱发光》《你好，陌生人》 《泰国派》《友谊我和你》\n\n【十四部塑造独立女性的电影】\n\n《走出非洲》《人在纽约》《阿黛尔·雨果的故事》《清洁》《时时刻刻》《乱世佳人》《征婚启事》《饮食男女》《蒙娜丽莎的微 笑》《革命之路》《朗读者》《成为简·奥斯汀》《朱莉与朱莉娅》《希尔维亚》\n\n【电影名导3部曲】\n\n多纳托雷时空3部曲：《西西里的美丽传说》、《天堂电影院》、《海上钢琴师》；瑟吉欧·莱昂美国3部曲：《西部往事》、《革命往事》、《美国往事》；库布里克未来3部曲：《奇爱博士》、《发条橙》、《2001太空漫游》；阿加多隔阂3部曲：《爱情是狗娘》、《21克》、《通天塔》。\n\n【因为名字烂而被错过的好电影】\n\n《三傻大闹宝莱坞》《刺激1995》《搏击俱乐部》《机器人总动员》《杀死比尔》 《低俗小说》《落水狗》《午夜牛郎》《洋葱电影》《蝴蝶效应》《诺丁山》《两杆大烟枪》《摇滚黑帮》《十诫》《黑道当家》《一酷到底》《热带惊雷》《叫我第一名》《记忆碎片》《摇滚校园》\n\n【12星座的恐怖片】\n\n摩羯《鬼影》；水瓶《女高怪谈》；双鱼《孤儿》；白羊座《鬼怨》；金牛《死神的十字路口》；双子《怪谈新耳袋》；巨蟹《恐怖油轮》；狮子《孤堡惊情》；处女《死寂》；天秤《厉鬼将映》；天蝎《咒怨》；射手《死亡录像》\n\n【十部能让女生看透自己的电影】\n\n1.情欲《情迷六月花》 2.梦幻《天使爱美丽》 3.母性《黑暗中的舞者》 4.纯真《花与爱丽丝》5.痴爱《绿光》 6.尊严《永不妥协》 7.孤独《迷失东京》 8.压抑《钢琴教师》 9.恐惧《恐惧吞噬灵魂》 10.女权《射杀安迪霍尔》。\n\n【适合一个人看的电影】\n\n独自等待、天使之城、海上钢琴师、蓝色大门、触不到的恋人、假如爱有天意、蓝莓之夜、两小无猜、千与千寻、花样年华、放牛班的春天、当幸福来敲门、恋恋三季、雏菊、阿司匹林、四月物语。\n\n【结局最意外的20部电影】\n\n《搏击俱乐部》、《迷雾》、《心理游戏》、《第六感》、《蝴蝶效应》、《 电锯惊魂》、《赛末点》、《 穆赫兰道》、《非常嫌疑犯》、《魔术师》、《小岛惊魂》、《万能钥匙》、《火柴人》、《七宗罪》、《魔鬼代言人》、《孤儿》、《八面埋伏 》、《香水》、《偷拐抢骗》\n\n【十佳剧情电影】\n\n1、《肖申克的救赎》；2、《 教父1、2》；3、《美国往事》；4、《天堂电影院》；5、《无主之城》；6、《阿甘正传》；7、《勇敢的心》；8、《楚门的世界》；9、《音乐之声》；10、《辛德勒的名单》。\n\n【值得收藏的韩国电影】\n\n1.杀人回忆2. 老男孩3. 薄荷糖4. 八月照相馆5. 母亲6. 春夏秋冬又一春7. 生活的发现8. 我的野蛮女友9. 共同警备区10. 绿洲11. 太极旗飘扬12. 国家代表13. 空房间14. 蔷花，红莲15. 汉江怪物16. 马拉松17. 触不到的恋人18. 亲切的金子19. 朋友20. 实尾岛\n\n【因为名字烂而被错过的好电影】\n\n《三傻大闹宝莱坞》、《刺激1995》、《搏击俱乐部》、《机器人总动员》、《杀死比尔》、 《低俗小说》、《落水狗》、《午夜牛郎》、《洋葱电影》、《蝴蝶效应》、《诺丁山》、《两杆大烟枪》、《摇滚黑帮》、《十诫》、《黑道当家》、《一酷到底》、《热带雷》\n\n【15部让你哭的昏天暗地的电影】\n\n《假如爱有天意》,《我脑海中的橡皮擦》,《情书》,《恋空》,《等待，只为与你相遇》,《我们的幸福时光》,《请别相信她》,《触不到的恋人》,《菊花香》,《剪刀手爱德华》,《海上钢琴师》,《恋恋笔记本》,《美丽心灵的永恒阳光》,《泰坦尼克号》\n\n【全球十大禁播电影】\n\n1.《索多玛120天》 2.《下水道人鱼》 3.《殘酷的浪漫》 4.《粉红色的火烈鸟》 5.《不可撤消》 6.《罗曼史》 7.《地狱解剖》 8.《罗马帝国艳情史》 9.《感官世界》 10.《九歌》\n\n【10部影视原声极佳电影推荐】\n\n1.《音乐之声》2.《歌舞青春》3.《海上钢琴师》4.《八月迷情》5.《钢琴家》6.《星球大战》7.《芝加哥》8.《狮子王》9.《放牛班的春天》10.《加勒比海盗》\n\n【英国电影推荐】\n\n：《猜火车》《贫民窟的百万富翁》《两杆大烟枪》《月球》《跳出我天地》《秘密与谎言》《英国病人》《雾都孤儿》《哈利布朗》《摇滚黑帮》《好事夜未眠》《僵尸肖恩》《两小无猜》《希望与荣耀》《红色之路》《惊变28天》《傲慢与偏见》《两小无猜》《国王的演讲》《偷拐抢骗》\n\n【20部不可错过的经典系列电影】\n\n《加勒比海盗》《教父》《夺宝奇兵》《碟中谍》《虎胆龙威》《墨西哥往事》《大白鲨》《小鬼当家》《洛奇》《木乃伊》《终结者》《蝙蝠侠》《哈利波特》《指环王》《惊声尖叫》《星球大战》《侏罗纪公园》《异形》《第一滴血》《骇客帝国》\n\n【日本超级十大重口味电影】\n\n其中三部还是世界级重口味：《下水道的美人鱼》《大逃杀》《感官世界》《杀手阿一》《切肤之爱》《花与蛇》《不溶性侵犯》《禁室培欲》《女理发师之恋》《拜访者Q》\n\n【重口味·通缉令】\n\n1、《雾》日本 2、《邪恶外星人》英国 3、《乱步地域》日本 4、《恶魔的艺术2》泰国 5、《神秘马戏团》日本 6、《梦魇疯人院》捷克 7、《兽餐》美国 8、《2001个疯子》美国 9、《色情狂》美国 10、《最后的晚餐》日本\n\n【唯美爱情电影推荐】\n\n《假如爱有天意》《夏天协奏曲》《雏菊》《恋空》《海角七号》《情书》《触不到的恋人》《四月物语》《我脑海中的橡皮擦》《天使之恋》《比悲伤更悲伤的故事》《听说》《云中漫步》《七音符》《八月照相馆》《现在只想爱你》《恋爱小说》《向左爱向右爱》《二见钟情》\n\n【腐男腐女必看的10部电影】\n\n1、《霸王别姬》；2、《春光乍泄》；3、《蓝宇》；4、《美少年之恋》；5、《断背山》；6、《刺青》；7、《暹罗之恋》；8、《天佑鲍比》；9、《盛夏光年》；10、《蓝色大门》。\n\n【推荐十部青少年成长电影】\n\n《牯岭街少年杀人事件》、《牛仔裤的夏天》、《菊次郎的夏天》、《毕业生》、《花与爱丽丝》、《情书》、《十七岁的单车》、《阳光灿烂的日子》、《西西里的美丽传说》、《留级之王》\n\n【15部感人电影】\n\n《辛德勒的名单》、《恋空》、《假如爱有天意》、《情书》、《妈妈再爱我一次》、《我的兄弟姐妹》、《泰坦尼克号》、《忠犬八公》、《我是山姆》、《再见萤火虫》、《大鱼》、《这个杀手不太冷》、《比悲伤更悲伤故事》、《人鬼情未了》、《情书》\n\n【韩国十大喜剧电影】\n\n1、《家族荣誉》 2、《我的野蛮女友》 3、《色即是空》 4、《僵尸刑警》 5、《谁和她睡觉了》 6、《朝鲜男人在韩国》 7 、《麻婆岛》 8、《一号街的奇迹》 9、《银妆刀》 10、《浪漫刺客》\n\n【11部莱昂纳多经典电影】\n\n1.《罗密欧与朱丽叶之后现代激情篇》 2.《泰坦尼克号》 3.《铁面人》 4.《海滩》 5.《纽约黑帮》 6.《猫鼠游戏》 7.《飞行家》 8.《血钻》 9.《无间行者》 10.《革命之路》 11.《盗梦空间》\n\n【学生电影推荐榜】\n\n1、《阿甘正传》2、《天堂的颜色》3、《死亡诗社》4、《美国派》5、《英雄本色》6、《大话西游》7、《阳光灿烂的日子》8、《坏孩子的天空》9、《毕业生》10.《肖申克的救赎》11.《燃情岁月》\n\n【《电影手册》评选出的世上最美的10部电影】\n\n1.《公民凯恩》、 2.《猎人之夜》、 3.《游戏规则》、 4.《日出》、 5.《亚特兰大号》、 6.《M就是凶手》、 7.《雨中曲》、 8.《迷魂记》、 9.《天堂的孩子》、 10.《搜索者》\n\n【十大必看经典心理学电影】\n\n1、《钢琴教师》；2、《美丽心灵》；3、《死亡试验》；4、《海滩》；5.、《记忆碎片》；6、《搏击俱乐部》；7、《灵异第六感》；8、《圣女贞德》；9、《一树梨花压海棠》；10、《心灵捕手》\n\n【10部能使女性受益的经典电影】\n\n1.《牛仔裤的夏天》：友情 2《情书》：爱情 3.《天使爱美丽》：孤独 4.《隐形的翅膀》：坚强 5.《千与千寻》:成长 6.《穿普拉达的女王》：自我 7.《成为简奥斯汀》：尊严 8.《黑暗中的舞者》：母爱 9.《蓝》:自由 10.《律政俏佳人》:智慧\n\n【十大争议电影】\n\n1.《索多玛120天》(1975) 2.《基督最后的诱惑》(1988) 3.《发条橘子》(1971) 4.《畸型人》(1932) 5.《雌雄大盗》(1967) 6.《巴黎最后的探戈》(1972) 7.《虎口巡航》(1980) 8.《耶稣受难记》(2004) 9.《沉默的羔羊》(1991) 10.《本能》(1992)\n\n【十大经典儿童电影】\n\n1、《哈利波特与魔法石》 2、《星球大战前传1：幽灵的威胁》 3、《怪物史瑞克》 4、《哈利波特与火焰杯》 5、《外星人E.T.》 6、《海底总动员》 7、《小鬼当家》 8、《狮子王》 9、《绿野仙踪》 10、《小鬼当街/超能塞豆隆》\n\n【十大女性暴力电影】\n\n御姐当道，挡我者死：《末路狂花》 1991 《霹雳娇娃》2000 《多米诺》2005 《贴身恐惧》2002 《古墓丽影》2001 《杀死比尔》2003 《水果硬糖》2005 《切肤之爱》1999 《本 能》1992 《死后就没人议论我们了》1995\n\n【提高听力口语能力，最值得欣赏的英式发音电影】\n\n《如果能再爱一次》《成长教育》《穿越时空爱上你》《生死朗读》《猜火车》《哈利波特》《女王》《真爱至上》《恋爱假期》《诺丁山》《真爱之吻》《傲慢与偏见》《莎翁情史》《成为简奥斯汀》《福尔摩斯》《雾都孤儿》《兵临城下》《英国病人》\n\n【盘点六大青春电影：永远漂泊在路上】\n\n1.《艋舺》：青春残酷往事。2.《朋友》：回首时物是人非。3.《在世界中心呼唤爱》：青春的爱与死。4.《猜火车》：无处安放的青春。5.《朱尔与吉姆》：三人行的青春。6.《观音山》：在路上的青春。\n\n【20部电影,让你足以胜任董事长、经理】\n\n《华尔街》《锅炉房》《硅谷传奇》《颠倒乾坤》《拜金一族》《可口可乐小子》《发达之路》《优势合作》《巴塞罗那》《甜心先生》《上班一条虫》《解构企业》《惊爆内幕》《影子大亨》《反垄断》《魔鬼营业员》《抢钱世界》《败露》《男人百分百》《门口的野蛮人》。\n\n【经典爱情电影推荐】\n\n无奈纯情之恋《罗马假日》、爱情史诗《乱世佳人》、生离死别的爱恋《人鬼情未了》、直到你爱我《捆着我绑着我》、凄美爱恋《卡萨布兰卡》、生活的细腻写真《东京日和》、爱情拯救人生《新桥恋人》、《大话西游》、青春的纯情《情书》、都市爱情童话《7月7日晴》\n\n【2010美国电影协会十佳电影】\n\n1，《黑天鹅》2，《斗士》3，《盗梦空间》4，《127小时》5，《社交网络》6，《城中大盗》7，《玩具总动员3》8，《大地惊雷》9，《冬天的骨头》10，《孩子们都很好》\n\n【将来你一定会让你的孩子看的10部电影】\n\n：1. 皮克斯制作的任何作品 2、《七宝奇谋》3、《公主新娘》 4、《夜魔水晶》 5、《大魔域》 6、《魔幻迷宫》 7、《捣蛋鬼》 8、《幽灵公主》 9、《圣诞夜惊魂》10、《E.T.外星人》。\n\n【十部声色俱佳的女人私房电影】\n\n1.《乐士浮生录》2.《纵情四海》3.《我心狂野》4.《芭蕾人生》5.《莎乐美》6.《舞动人生》7.《时时刻刻》8.《女人三步曲》9.《20 30 40》10.《一往无前》\n\n【女生成长必看九部电影】\n\n一，友情：《牛仔裤的夏天》、二，初恋：《情书》、三，孤独：《天使爱美丽》、四，成长：《千与千寻》、五，自信：《穿普拉达的女王》、六，尊严：《成为简奥斯汀》、七，母爱：《黑暗中的舞者》、八，自由：《蓝》、九，智慧：《律政俏佳人》\n\n【好电影推荐-温情篇】\n\n：《入殓师》、《大鱼》、《阳光小美女》、《放牛班的春天》、《天使爱美丽》、《菊次郎的故事》、《天堂电影院》、《蝴蝶》、《蓝色大门》、《曾经》、《诺丁山》、《真爱至上》、《幸福终点站》、《西雅图夜未眠》、《当幸福来敲门》\n\n【独立女性必看电影】\n\n《走出非洲》、《人在纽约》、《阿黛尔·雨果的故事》、《清洁》、《时时刻刻》、《乱世佳人》、《征婚启事》、《饮食男女》、《蒙娜丽莎的微笑》、《革命之路》、《朗读者》、《成为简·奥斯汀》、《朱莉与朱莉娅》、《希尔维亚》。\n\n【让你憋着尿直到看完的十部电影】\n\n：1《七磅》；2《小情人》；3《返老还童》；4《一生的唯一》；5《无耻混蛋》；6《珍爱人生》；7《盗梦空间》；8《婚纱》；9《怒火攻心》；10《马利与我》。\n\n【让这些电影给你“治病”】\n\n缺乏学习动力：《决战冰河》、《洛奇》；缺乏信心：《穆里尔的婚礼》、《心雨花露》；自卑失落：《阿甘正传》、《肖申克的救赎》；失败或绝望：《远大前程》、《功夫熊猫》、《小鞋子》；厌倦生活：《天生爱情狂》、《凡夫俗女》、《心理游戏》\n\n"
+		},
+		{
+			"post_id": 32,
+			"title": "树莓派 Docker镜像收集",
+			"date_published": 1532130010.659,
+			"body": "树莓派需要的架构是armhf的，这里收集了好多。\n\nhttps://hub.docker.com/r/pipill/armhf-alpine/\n\nhttps://github.com/yangxuan8282/\n\nhttps://blog.hypriot.com\n\nhttps://hub.docker.com/r/armhf/alpine/\n\nresin/rpi-raspbian https://github.com/resin-io-library\n\nhttps://hub.docker.com/r/arm32v6/alpine/"
+		},
+		{
+			"post_id": 31,
+			"title": "为小狼毫输入法增加搜狗词库",
+			"date_published": 1521968109.027,
+			"body": "首先要下载搜狗词库\n\n链接：http://pan.baidu.com/s/1jGF7btc 密码：2y8y\n\n然后使用1.0自带的词典导入工具导入即可。"
+		},
+		{
+			"post_id": 30,
+			"title": "使用n2n实现树莓派远程管理",
+			"date_published": 1512535149.207,
+			"body": "在debian与raspbian上使用如下命令安装\n\nsudo apt-get install n2n\n\nwindows上，使用下面工具，我使用的是低版本。\n\n必须有一个公网ip做supernode。网上有免费的，也可以自己租一个。\nn2n 有两种协议，一种是v1协议，另一种是v2协议，两种是不兼容的。\n\nhttps://github.com/meyerd/n2n\n\n地址是http://www.vpnhosting.cz/n2nguien.exe提供了一个安装包，里面包含了V1和V2版本，请选择V1版本\n\n\n公网主机：\n\nsupernode -l 12345 -v\n\nraspbian客户端\n\nedge -d edge0 -c rpinetwork -k ggg -u 1000 -g 1000 -a 10.0.0.10 -l 112.124.7.2XX:12345\n\nwindows 下面也填入相应的参数。即可搞定。\n\n经过测试发现supernode无法后台运行。\nsupernode -l 12345 >/dev/null 2>&1 &\n\n这样也不行。\n\n最后使用exit 退出，问题解决。\n"
+		},
+		{
+			"post_id": 29,
+			"title": "Aria2不下载的问题如何解决，加Tracker",
+			"date_published": 1512515463.188,
+			"body": "在aria2.conf里面加配置，注意下面是一行\n\n``` bt-tracker=udp://tracker.skyts.net:6969/announce,udp://tracker.safe.moe:6969/announce,udp://tracker.piratepublic.com:1337/announce,udp://tracker.pirateparty.gr:6969/announce,udp://tracker.leechers-paradise.org:6969/announce,udp://tracker.coppersurfer.tk:6969/announce,udp://allesanddro.de:1337/announce,udp://9.rarbg.com:2710/announce,http://p4p.arenabg.com:1337/announce,udp://p4p.arenabg.com:1337/announce,udp://tracker.internetwarriors.net:1337/announce,http://tracker.internetwarriors.net:1337/announce,udp://tracker.opentrackr.org:1337/announce,http://tracker.opentrackr.org:1337/announce,udp://public.popcorn-tracker.org:6969/announce,udp://trackerxyz.tk:1337/announce,udp://tracker4.itzmx.com:2710/announce,udp://tracker2.christianbro.pw:6969/announce,udp://tracker1.wasabii.com.tw:6969/announce,udp://tracker.zer0day.to:1337/announce\n```\nhttps://github.com/ngosang/trackerslist 这里是最新的trackers地址\n\n加了之后速度非常快。赛过迅雷\n"
+		},
+		{
+			"post_id": 28,
+			"title": "树莓派使用微力同步",
+			"date_published": 1508169246.571,
+			"body": "* 到这里下载软件，http://verysync.com/tech/verysync-obt.html，选择 arm的那个\n* 解压\n* ./verysync -gui-address http://0.0.0.0:8886/ &\n\n直接启动，然后浏览器输入地址即可"
+		},
+		{
+			"post_id": 27,
+			"title": "Docker aria2 latest vesion on raspberry pi 3",
+			"date_published": 1505433594.894,
+			"body": "官方的：https://raw.githubusercontent.com/aria2/aria2/master/Dockerfile.raspberrypi\n\nhttps://github.com/yangxuan8282/docker-image/tree/master/rpi-alpine-aria2\n树莓派3 装 docker\n\nhttps://www.douban.com/note/617557330/\n\ndocker run -d --name=aria2   -p 6800:6800 -p 65298:65298 -v /media/hdd/TDDOWNLOAD/:/home/aria2   yangxuan8282/rpi-alpine-aria2\n\n自己做一个\nhttp://xujinkai.net/posts/docker-aria2-with-webui\n\n首先，下载代码\n\nhttps://code.aliyun.com/zjhong/rpi-aria2.git\n\n然后\n\ndocker build -t rpi-alpine-aria2 .\n\n然后启动就可以了"
+		},
+		{
+			"post_id": 26,
+			"title": "SSH免密码，从A登录到B",
+			"date_published": 1502505192.759,
+			"body": "A：\n生成秘钥\nssh-keygen -t rsa -P ''\n拷贝文件到B\nscp .ssh/id_rsa.pub 远程用户名@192.168.1.181:/home/远程用户名/id_rsa.pub \n追加秘钥到认证秘钥中\n\nB：\ncat id_rsa.pub >> .ssh/authorized_keys\n设定权限\nchmod 600 .ssh/authorized_keys\n如有问题，设定.ssh文件夹权限为700\n然后在A上试试吧，成功了。\n\n也可以执行如下命令：\n\n　cat ~/.ssh/id_rsa.pub | ssh pi@192.168.x.x 'cat >> .ssh/authorized_keys'　\n\n一步到位"
+		},
+		{
+			"post_id": 25,
+			"title": "Docker tcp6 无法访问的问题",
+			"date_published": 1501211279.099,
+			"body": "```\nsudo vim /etc/modprobe.d/blacklist.conf \n```\n\n添加\n```\nblacklist ipv6\n```\n编辑\nsudo vim  /etc/default/grub \n```\n```\nGRUB_CMDLINE_LINUX_DEFAULT=\"ipv6.disable=1 console=ttyS0\"\n```\n然后\n```\nsudo update-grub\n```\nreboot.\n"
+		},
+		{
+			"post_id": 24,
+			"title": "树莓派Raspbian安装amule-web",
+			"date_published": 1500723955.216,
+			"body": "https://wiki.debian.org/aMule\n完全照这个做的。\n\n注意事项是，配置文件里面的密码，都要写MD5值：\n\n关系是：\n\namule是桌面环境下的\namuled是后台进程\namuleweb是管理界面。\n\namuled启动后会开放4712端口，amuleweb通过4712端口去连接amuled，如果连上了，就把服务通过4711端口放出来。\n\nhttp://upd.emule-security.org/server.met\n\n这个文件替换默认的server.met文件。\n这里也有服务器列表\nhttp://www.gruk.org/list\n另外注意要做端口转发。\n4662 4665 4672\n\n其他参考：https://wiki.archlinux.org/index.php/AMule_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)\n\n这个软件在树莓派上运行不稳定，总挂掉。最后不得不卸载了，有点是在ed2k server和kad上连接非常快，很快就开始下载了。"
+		},
+		{
+			"post_id": 23,
+			"title": "通过代理安装resilio sync",
+			"date_published": 1500589683.181,
+			"body": "```\necho \"deb http://linux-packages.resilio.com/resilio-sync/deb resilio-sync non-free\" | sudo tee /etc/apt/sources.list.d/resilio-sync.list\n\nwget  -e \"https_proxy=192.168.1.202:1080\" -qO - https://linux-packages.resilio.com/resilio-sync/key.a\nsc | sudo apt-key add -\n\nsudo apt-get -o Acquire::http::proxy=\"http://192.168.1.202:1080/\" update\n\nsudo apt-get -o Acquire::http::proxy=\"http://192.168.1.202:1080/\" install resilio-sync\n```\n\n参考：http://www.xitongzhijia.net/xtjc/20150525/49163.html\n"
+		},
+		{
+			"post_id": 22,
+			"title": "设置树莓派usb设备自动挂载",
+			"date_published": 1500503635.627,
+			"body": "https://gist.github.com/etes/aa76a6e9c80579872e5f\n\n挂载ntfs盘\n\nsudo mount -t ntfs-3g -o rw,uid=1000,gid=1000,umask=000 /dev/sda1 /media/hdd/\n\n自动：\n\nls -l /dev/disk/by-uuid/\n得到\nlrwxrwxrwx 1 root root 10 Jul 20 13:33 29D30EF8B53684D9 -> ../../sda1\n\n编辑/etc/fstab文件，加入如下行\n```\nUUID=29D30EF8B53684D9 /media/hdd ntfs-3g auto,defaults,rw,uid=pi,gid=pi  0  0\n```\n参照：http://www.raspberrypi-spy.co.uk/2014/05/how-to-mount-a-usb-flash-disk-on-the-raspberry-pi/"
+		},
+		{
+			"post_id": 21,
+			"title": "给curl加上代理配置，防止重定向脱离代理",
+			"date_published": 1499558942.028,
+			"body": "想把https://github.com/jpillora/cloud-torrent 安装到树莓派上，发现命令就一条。\ncurl https://i.jpillora.com/cloud-torrent! | bash\n\n\n执行后，无法安装\n---\n\n加上代理\n\ncurl -x http://ip:port https://i.jpillora.com/cloud-torrent! | bash\n\n\n仍然无效，查看原因，中间给跳转了，刚开始支持，后面的就不支持了\n\n查了下资料，发现可以给加一个配置\n\n```\ntouch  .curlrc\n```\n\n在里面加上一个配置\n\n\n```\nproxy=ip:port\n```\n\n结果发现全部都可以了，无论跳转与否！"
+		},
+		{
+			"post_id": 20,
+			"title": "给Homeassistant加上天气预报",
+			"date_published": 1499483839.927,
+			"body": "目的：给Homeassistant加上一个天气预报， 信息来自darksky平台\n---\n\n```\n customize:# 与time_zone: Asia/Shanghai左对齐。\n    sensor.forecastio_apparent_temperature:\n      friendly_name: 体感温度\n    sensor.cpu_use:  \n      friendly_name: CPU使用率\n    sensor.forecastio_cloud_coverage:\n      friendly_name: 天气云量\n    sensor.forecastio_daily_high_temperature:\n      friendly_name: 最高温度\n    sensor.forecastio_daily_low_temperature:\n      friendly_name: 最低温度\n    sensor.forecastio_humidity:\n      friendly_name: 天气湿度\n    sensor.forecastio_icon:\n      friendly_name: 天气概况\n    sensor.forecastio_summary:\n      friendly_name: 天气现况\n    sensor.forecastio_temperature:\n      friendly_name: 实时温度\n    sensor.forecastio_visibility:\n      friendly_name: 能见度\n    sensor.forecastio_wind_bearing:\n      friendly_name: 风向\n    sensor.forecastio_wind_speed:\n      friendly_name: 风速\n    sensor.ram_use: \n      friendly_name: RAM使用率\n    sun.sun:\n      friendly_name: 日出日落 时间 \nsensor 2:\n  - platform: darksky\n    api_key: XXXXXXXXXXXXXXXXXXXXXXX    # 在forecast.io网站注册并获得，然后填写好\n    monitored_conditions:\n      - summary\n      - icon\n      #- nearest_storm_distance\n      #- nearest_storm_bearing\n      #- precip_type\n      #- precip_intensity\n      #- precip_probability\n      - temperature\n      - apparent_temperature\n      #- dew_point\n      - wind_speed\n      - wind_bearing\n      - cloud_cover\n      - humidity\n      #- pressure\n      - visibility\n      #- ozone\n      #- minutely_summary\n      #- hourly_summary\n      #- daily_summary\n      - temperature_max\n      - temperature_min\n      #- apparent_temperature_max\n      #- apparent_temperature_min\n      #- precip_intensity_max \n```\n重启hass"
+		},
+		{
+			"post_id": 19,
+			"title": "iphone、树莓派、Homekit玩智能家居",
+			"date_published": 1498608733.822,
+			"body": "快速搞定看这个学习吧：http://bbs.feng.com/forum.php?mod=viewthread&tid=10878311&fromuid=42111\n第一个视频即可。\n---\n下面的我只是用来记录我遇到的问题的记录。\n以前不知道树莓派还可以玩这个。\n\n所需的工具：\n1、树莓派\n2、iPhone\n3、https://home-assistant.io/\n\n 在树莓派上安装Homeassistant，过程很简单，照做即可：\nhttps://home-assistant.io/docs/installation/raspberry-pi/\n\nios的APP\n\nhttps://itunes.apple.com/us/app/home-assistant-open-source-home-automation/id1099568401?mt=8\n\n要集成ios，需要在配置文件中加入如下代码\nvim /home/homeassistant/.homeassistant/configuration.yaml\n\n :ios\n\n要使用密码登录，还要注释掉配置文件中的密码行，注释掉之后，默认的密码是PASSWORD\n\n然后重启就可以在APP里面看到树莓派的homeassistant了\n\n如果要想在苹果手机的家庭里面看到并控制，还需要：\nhttps://github.com/nfarina/homebridge\n如何在树莓派上安装看这个教程：\nhttps://github.com/nfarina/homebridge/wiki/Running-HomeBridge-on-a-Raspberry-Pi\n\nhttps://github.com/home-assistant/homebridge-homeassistant\n\nhttp://jingyan.baidu.com/article/22fe7ceddf882c3003617f53.html\n\nhttps://sspai.com/post/38849?winzoom=1\n\n\n参考：\nhttp://bbs.feng.com/forum.php?mod=viewthread&tid=10857822&mobile=no\n\nhomebridge的config.json配置\n【bridge里面username 是树莓派的mac地址，host,password需要修改，其他可以不变】\n```\n{\n    \"bridge\": {\n        \"name\": \"Homebridge\",\n        \"username\": \"B8:27:EB:F0:48:26\",\n        \"port\": 46471,\n        \"pin\": \"123-45-678\"\n    },\n    \n    \"platforms\": [\n  {\n    \"platform\": \"HomeAssistant\",\n    \"name\": \"HomeAssistant\",\n    \"host\": \"http://192.168.1.218:8123\",\n    \"password\": \"PASSWORD\",\n    \"supported_types\": [\"fan\", \"garage_door\", \"input_boolean\", \"light\", \"lock\", \"media_player\", \"rollershutter\", \"scene\", \"switch\"]\n  }\n    ]\n}\n```\n\n设置homeassistant自启动。\n\n按照官方教程做了半天，不行，最后操作如下搞定：\n\nsudo nano /etc/rc.local\n\n```\nsudo -u homeassistant -H /srv/homeassistant/bin/hass\n```\n添加在exit 0 上面。"
+		},
+		{
+			"post_id": 18,
+			"title": "使用树莓派+Syncthing做同步网盘",
+			"date_published": 1497080561.595,
+			"body": "# 所需材料\n\n* 树莓派3B、电源、风扇、壳子、网线、SD卡\n* 移动硬盘1块\n* syncthing软件\n\n----------------\n#步骤\n* 先组装树莓派，让树莓派的系统跑起来，使用raspbian系统最新版本即可。\n* 插上硬盘，挂载到目录下，一般会自动出现在/media目录下面\n* 安装Syncthing，添加同步目录。\n* 使用https://github.com/canton7/SyncTrayzor软件作为Windows文件管理。\n\n```\n# Add the release PGP keys:\ncurl -s https://syncthing.net/release-key.txt | sudo apt-key add -\n\n# Add the \"stable\" channel to your APT sources:\necho \"deb https://apt.syncthing.net/ syncthing stable\" | sudo tee /etc/apt/sources.list.d/syncthing.list\n\n# Update and install syncthing:\nsudo apt-get update\nsudo apt-get install syncthing\n```\n启动syncthing \n\n# 优势\n\n* 耗电少，省钱\n* 自己的网盘自己随便折腾\n* 忽略内网，跨网段\n* 可以作为小型单位使用，将所有人的资料汇集备份起来。\n"
+		},
+		{
+			"post_id": 17,
+			"title": "利用zerotier搭建自己的超级局域网，远程控制无公网IP的树莓派",
+			"date_published": 1496389372.704,
+			"body": "* 在这里注册一个账号 https://www.zerotier.com/，同时创建一个网络名，网络地址。可以看首页的视频，不到1分钟，全看完，照做即可。\n* 下载客户端\n* 让每个客户端都加入网络\n* 认证客户端\n* 完工，搭建好之后，每个设备实际上都可以接入这个局域网。不管你有没有公网IP。\n\n参考：http://www.right.com.cn/forum/forum.php?mod=viewthread&tid=192351\n\nhttp://www.mamicode.com/info-detail-1815872.html"
+		},
+		{
+			"post_id": 16,
+			"title": "画流程图和思维导图最佳的工具",
+			"date_published": 1495239507.315,
+			"body": "Graphviz我认为是最棒的，Instaviz（ios）是手机上最好的版本。\n电脑上用这个吧\nhttps://dreampuf.github.io/GraphvizOnline/"
+		},
+		{
+			"post_id": 15,
+			"title": "Chrome+Tampermonkey下载YouTube视频",
+			"date_published": 1494226839.446,
+			"body": "1、先得翻墙。翻墙用的是puredns\n2、其次用谷歌浏览器，安装Tampermonkey插件。\n3、安装这个脚本。https://greasyfork.org/en/scripts/19592-youtube-best-video-downloader-2\n4、刷新YouTube，发现视频下方多了一个下载按钮。\n然后，下载吧！"
+		},
+		{
+			"post_id": 14,
+			"title": "一个取鸡蛋的题目",
+			"date_published": 1490364831.479,
+			"body": "#原题目\n\n一筐鸡蛋：\n1个1个拿，正好拿完。\n2个2个拿，还剩1个。\n3个3个拿，正好拿完。\n4个4个拿，还剩1个。\n5个5个拿，还差1个。\n6个6个拿，还剩3个。\n7个7个拿，正好拿完。\n8个8个拿，还剩1个。\n9个9个拿，正好拿完。\n\n问筐里最少有多少鸡蛋？\n\n---\n``` \n#!/usr/bin/python\n# -*- coding: UTF-8 -*-\na=9\nfor i in range(1,1000):\n\tx=a*i\n\tn4=(x-1)/float(4)\n\tn41=[str(n4),int(n4)][int(n4)==n4]\n\tif isinstance(n41,int) == True :\n\t\tn2=(x-1)/float(2)\n\t\tn21=[str(n2),int(n2)][int(n2)==n2]\n\t\tif isinstance(n21,int)== True  :\n\t\t\tn5=(x+1)/float(5)\n\t\t\tn51=[str(n5),int(n5)][int(n5)==n5]\n\t\t\tif isinstance(n51,int) == True :\n\t\t\t\tn6=(x-3)/float(6)\n\t\t\t\tn61=[str(n6),int(n6)][int(n6)==n6]\n\t\t\t\tif isinstance(n61,int)== True  :\n\t\t\t\t\t\tn3=x/float(3)\n\t\t\t\t\t\tn31=[str(n3),int(n3)][int(n3)==n3]\n\t\t\t\t\t\tif isinstance(n31,int) == True:\n\t\t\t\t\t\t\tn7=x/float(7)\n\t\t\t\t\t\t\tn71=[str(n7),int(n7)][int(n7)==n7]\n\t\t\t\t\t\t\tif isinstance(n71,int) == True:\n\t\t\t\t\t\t\t\tn8=(x-1)/float(8)\n\t\t\t\t\t\t\t\tn81=[str(n8),int(n8)][int(n8)==n8]\n\t\t\t\t\t\t\t\tif isinstance(n81,int)== True :\n\t\t\t\t\t\t\t\t\tprint x\n``` \n"
+		},
+		{
+			"post_id": 13,
+			"title": "树莓派+aria2+yaaw+百度盘下载文件",
+			"date_published": 1486781413.492,
+			"body": "##问题##\n\n有些文件下载很费劲，可以用百度离线，另外百度里好东西很多，但是搞本地来太慢。\n---\n##目标##\n使用aria2+yaaw+树莓派+chrome百度云下载插件把百度的好东西给搬回来。\n##准备##\n树莓派已安装好，挂个大硬盘吧。把nginx或者apache安装好\n##步骤##\n1、到这里安装这个文件https://github.com/yangshun1029/aria2gui，基本上是把public_zh目录放在/var/www/html目录下，改名，例如webui。然后再浏览器中输入地址，http://192.168.1.218/webui/。要修改下参数。\n2、启动aria2c，要附加上配置文件。\n3、装插件：https://chrome.google.com/webstore/detail/yaaw-for-chrome/dennnbdlpgjgbcjfgaohdahloollfgoc\n\n##代码##\n\n/etc/init.d目录下的启动代码\n<pre><code>\n #!/bin/sh\n### BEGIN INIT INFO\n# Provides:          aria2\n# Required-Start:    $remote_fs $network\n# Required-Stop:     $remote_fs $network\n# Default-Start:     2 3 4 5\n# Default-Stop:      0 1 6\n# Short-Description: Aria2 Downloader\n### END INIT INFO\n\nUSER=pi\nCONF=/home/pi/.aria2/aria2.conf\n\ncase \"$1\" in\nstart)\n    echo \"Start aria2c\"\n    umask 0002\n    su - $USER -c \"aria2c --conf-path=$CONF -D\"\n    ;;\nstop)\n    echo \"Stopping aria2c, please wait...\"\n    killall -w aria2c\n    ;;\nrestart)\n    echo \"Stopping aria2c, please wait...\"\n    killall -w aria2c\n    echo \"Start aria2c\"\n    umask 0002\n    su - $USER -c \"aria2c --conf-path=$CONF -D\"\n    ;;\n*)\n    echo \"$0 {start|stop|restart|status}\"\n    ;;\nesac\nexit\n</code></pre>\n/home/pi/.aria2/aria2.conf 代码\n<pre><code>\ndir=/media/pi/29D30EF8B53684D9/TDDOWNLOAD/\ndisable-ipv6=true\nenable-rpc=true\nrpc-allow-origin-all=true\nrpc-listen-all=true\n#rpc-listen-port=6800\ncontinue=true\ninput-file=/home/pi/.aria2/aria2.session\nsave-session=/home/pi/.aria2/aria2.session\nlog=/home/pi/.aria2/aria2.log\nlog-level=warn\nmax-concurrent-downloads=5\nmax-connection-per-server=5\n\n\nbt-enable-lpd=true\nbt-max-open-files=100\nbt-max-peers=55\nbt-min-crypto-level=plain\nbt-require-crypto=true\nfollow-torrent=true\nlisten-port=6881-6999\nmax-overall-upload-limit=0\nmax-upload-limit=0\nenable-dht=true\ndht-listen-port=6881\nenable-peer-exchange=true\nlisten-port=6881\n\n\nseed-ratio=1\nseed-time=120\nbt-tracker=udp://mgtracker.org:2710/announce,http://share.camoe.cn:8080/announce,udp://11.rarbg.me:80/announce,http://tracker.tfile.me/announce,http://open.acgtracker.com:1096/announce,http://mgtracker.org:2710/announce,udp://tracker.openbittorrent.com:80,udp://tracker.openbittorrent.com:80/announce,udp://torrent.gresille.org:80/announce,udp://glotorrents.pw:6969/announce,udp://208.67.16.113:8000/announce,udp://9.rarbg.com:2710/announce,udp://9.rarbg.me:2710/announce,udp://tracker.ex.ua:80/announce,http://open.acgtracker.com:1096/announce\n\n</code></pre>\n\n\n##参考##\n*https://github.com/yangshun1029/aria2gui/\n\n*https://github.com/binux/yaaw\n\n*http://aria2c.com/usage.html\n"
+		},
+		{
+			"post_id": 12,
+			"title": "Docker Alpine Apache php7",
+			"date_published": null,
+			"body": "alpine非常小，不到10M，搭建一个web服务器吧。\nhttps://c.163.com/hub#/m/repository/?repoId=2988\n\ndocker pull hub.c.163.com/library/php:7.1.4-alpine\n\n然后启动即可\n\n即可。\n"
+		},
+		{
+			"post_id": 11,
+			"title": "给Openwrt指定DNS服务器",
+			"date_published": 1484222429.114,
+			"body": "##目的：实现局域网下所有的设备自动翻墙##\n---\n\n位置：\nNetwork > interfaces > Lan > DHCP Server > Advanced Settings > DHCP-Options\n\n填入：\n\n6,192.168.1.218\n\n这个218服务器是DNS服务器。\n\n重连wifi，可以看到本机的网络属性中，配置已经改成了218服务器，上网随便。\n\n\n备忘：\n\n查看53端口是否运行服务\nnetstat -tlunp|grep 53\n\n"
+		},
+		{
+			"post_id": 10,
+			"title": "树莓派的WIFI链接问题修复",
+			"date_published": 1468631652.983,
+			"body": "某一次升级树莓派之后，莫名其妙的树莓派不能链接WIFI了，查了很多资料还是没有解决。\n---\n原因是：想多了。\n\n错误提示是wifi interface not found 连不上，应该就是缺乏驱动。\n\n使用dmesg |grep error\n\nbrcmfmac43430-sdio.bin failed with error -2\n\n查到这篇文章：http://www.tuicool.com/articles/rENfAzq\n\n这个Github链接 下载 brcmfmac43430-sdio.bin 和 brcmfmac43430-sdio.txt\n这两个文件，放到系统的\n\n/lib/firmware/brcm/\n\n问题解决！"
+		},
+		{
+			"post_id": 9,
+			"title": "树莓派自动上传CPU和内容使用数据到Yeelink",
+			"date_published": 1466950033.427,
+			"body": "实现目标：自动上传CPU的温度、占用、内容占用到Yeelink\n---\n参照网站：http://www.cnblogs.com/xiaowuyi/p/4020499.html\n代码：\n```\n#!/usr/bin/python\n#-*-coding:utf-8-*-\nimport os\nimport requests\nimport json,time,string\n\n#获取cpu温度\ndef getcputemperature():\n    cputemp=os.popen('vcgencmd measure_temp').readline()\n    sumcputemp=cputemp.replace(\"temp=\",\"\").replace(\"'C\\n\",\"\")\n    return sumcputemp\n\n#获取CPU及内存使用情况\ndef getcpuused():\n    return(os.popen(\"top -n1\"))\n\n#apikey为用户id\napiheaders={'U-ApiKey':'你的apikey','content-type': 'application/json'}\n\n#CPU温度使用 25322 传感器\ncputemp_apiurl=\"http://api.yeelink.net/v1.1/device/349250/sensor/391147/datapoints\"\n\n#cpu 使用情况使用 25356 传感器\ncpuused_apiurl=\"http://api.yeelink.net/v1.1/device/349250/sensor/391148/datapoints\"\n\n\n#内存占用率使用 25357 传感器\nmemeryused_apiurl=\"http://api.yeelink.net/v1.1/device/349250/sensor/391149/datapoints\"\n\nif __name__=='__main__':\n    while 1:\n        #上传cpu温度\n        cpu_temp=getcputemperature()\n        cputemp_payload={'value':cpu_temp}\n        r=requests.post(cputemp_apiurl, headers=apiheaders, data=json.dumps(cputemp_payload))\n        print cpu_temp\n\n    \n        #上传cpu占用率及内存使用率\n        tempcpuused=getcpuused()\n  \n        for cpuline in tempcpuused:\n\n            if cpuline[:3]==\"%Cp\":\n                #cpulineused=cpuline.split(\":\")[1].split(\",\")[0].strip(\"us\").split(\" \")[1]\n     \n                cpulineused=cpuline.split(\":\")[1].split(\",\")[0].split(\" \")[-2]\n                cpuused_payload={'value':cpulineused}\n                r=requests.post(cpuused_apiurl, headers=apiheaders, data=json.dumps(cpuused_payload))\n                print \"CPU USED %:\"+cpulineused\n            if \"Mem:\" in cpuline:\n               #提取数值，仅用字符串操作时，发现在数值前后有多个不可见字符，这里没怎么搞清楚这些字符是些什么\n                memlineused=cpuline.split(\":\")[1].split(\",\")[1].strip(\"used\").split(\" \")[-2]\n\n                memlinetotal=cpuline.split(\":\")[1].split(\",\")[0].strip(\"total\").split(\" \")[-2]\n \n                memeryusedratio=float(str(memlineused))/float(str(memlinetotal))\n                memeryusedratiostr=\"%.2f\"%(memeryusedratio*100)\n                memeryused_payload={'value':memeryusedratiostr}\n                r=requests.post(memeryused_apiurl, headers=apiheaders, data=json.dumps(memeryused_payload))\n                \n                print memeryusedratiostr\n                print \"================\"\n        time.sleep(20)\n```"
+		},
+		{
+			"post_id": 8,
+			"title": "【报警】HC-SR501+Instapush自动给手机发通知",
+			"date_published": 1466948180,
+			"body": "实现的功能：\n检测到有人在侦测区域，则自动亮起LED灯，并给手机发动态信息报警。\n---\n不会写python，照猫画虎改的代码，高手勿喷。\n\n参照http://www.geekfan.net/13505/进行操作，比较简单。\n```#!/usr/bin/python\n#-*-coding:utf-8-*-\nimport pycurl, json\nfrom StringIO import StringIO\nimport RPi.GPIO as GPIO\nimport time\nappID=\"填上你的\"\nappSecret=\"填上你的\"\npushEvent=\"Alert\"\npushMessage=\"有人来了\"\nbuffer = StringIO()\nc = pycurl.Curl()\nc.setopt(c.URL, 'https://api.instapush.im/v1/post')\nc.setopt(c.HTTPHEADER, ['x-instapush-appid: ' + appID,\n'x-instapush-appsecret: ' + appSecret,\n'Content-Type: application/json'])\njson_fields = {}\n\n# setup JSON values\njson_fields['event']=pushEvent\njson_fields['trackers'] = {}\njson_fields['trackers']['message']=pushMessage\n\npostfields = json.dumps(json_fields)\n\n# make sure to send the JSON with post\nc.setopt(c.POSTFIELDS, postfields)\n\n# set this so we can capture the resposne in our buffer\nc.setopt(c.WRITEFUNCTION, buffer.write)\n\n# uncomment to see the post that is sent\n#c.setopt(c.VERBOSE, True)\nPIN_NO=32\ndef init():\n\tGPIO.setwarnings(False)\n\tGPIO.setmode(GPIO.BOARD)\n\tGPIO.setup(PIN_NO, GPIO.OUT)\n\tGPIO.setup(23,GPIO.IN)\n\tpass\ndef led():\n\tGPIO.output(PIN_NO, GPIO.HIGH)\n\ttime.sleep(1)\n\ndef ledoff():\n\ttime.sleep(1)\n\tGPIO.output(PIN_NO, GPIO.LOW)\ndef detct():\n\t#for i in range(1,101):\n\twhile True:\n\t\tif GPIO.input(23) == True:\n\t\t\tprint time.strftime(\"%Y-%m-%d %H:%M:%S\",time.localtime(time.time())) + \"Waring:Someone is Closing!\"\n\t\t\tc.perform()\n\t\t\tbody= buffer.getvalue()\n\t\t\tprint(body)\n\t\t\tled()\n\t\telse:\n\t\t\tprint time.strftime(\"%Y-%m-%d %H:%M:%S\",time.localtime(time.time())) + \"Not anybody!\"\n\t\t\tledoff()\t\t\ntime.sleep(1)\ninit()\ndetct()\nbuffer.truncate(0)\nbuffer.seek(0)\nc.close()\nGPIO.cleanup()\n```\n"
+		},
+		{
+			"post_id": 7,
+			"title": "Rasbian jessie加代理安装 tor 最新版本",
+			"date_published": 1465915237.129,
+			"body": "装了Zeronet之后，发现tor无法连接，看了下启动过程，tor的版本太低了\n需要从官方获得。\n---\n翻墙去tor网站后，按照要求添加源。但是update无法进行，于是加代理\n\nsudo apt-get -o Acquire::http::proxy=\"http://127.0.0.1:8000/\" update\n\nsudo apt-get -o Acquire::http::proxy=\"http://127.0.0.1:8000/\" install tor\n\nzeronet+tor成功！"
+		},
+		{
+			"post_id": 6,
+			"title": "给树莓派RPi-Monitor增加DHT11温湿度数据",
+			"date_published": 1463277506.688,
+			"body": "安装RPi-Monitor\n---\n安装\n\n\n在data.conf文件中打开dht11的配置文件引用。\n\n git clone https://github.com/adafruit/Adafruit_Python_DHT.git\ncd Adafruit_Python_DHT/\nsudo python setup.py install\ncd examples/\n拷贝\nsudo cp AdafruitDHT.py /usr/bin\n\n如果想在命令行下查看数据，执行：\n\n AdafruitDHT.py 11 2\n\nsudo vim /etc/rpimonitor/template/dht11.conf\n\ndht11 GPIO 2pin，我插到第二个上了。\n\n\n代码改为：\n\n\ndynamic.1.name=living_room_temp\ndynamic.1.source=AdafruitDHT.py 11 2\ndynamic.1.regexp=Temp=(\\d+.\\d+)\ndynamic.1.postprocess=\ndynamic.1.rrd=GAUGE\n\ndynamic.2.name=humidity\ndynamic.2.source=AdafruitDHT.py 11 2\ndynamic.2.regexp=Humidity=(\\d+.\\d+)\ndynamic.2.postprocess=\ndynamic.2.rrd=GAUGE\n\n最后效果如下：\n![image alt](img/dht11.png)\n\n还要修改下data文件，把dht这条配置的注释去掉\n\n\n\n"
+		},
+		{
+			"post_id": 5,
+			"title": "树莓派MLdonkey-HightID配置指南",
+			"date_published": 1463061320.295,
+			"body": "##目的：树莓派＋MLdonkey做下载机 ##\n---\n安装容易，要配置一下MLdonkey，提高下载和上传速率。这些都比较简单。看着都可以做，主要是HighID的问题。\n\n首先安装了miniupnpd，但是发现mldonkey不能自己打洞，最后还是得做端口转发\n\n我是在Openwrt的防火墙端口转发这里配置的，配置TCP和UDP端口转发。\n\n默认是TCP：15025端口，UDP端口是TCP+4=15029端口。配置好UDP后，Server立即变成了High。下载速度立即飞升。\n\nKAD网络也会链接正常。\n\n参考：https://wiki.openwrt.org/doc/howto/port.forwarding"
+		},
+		{
+			"post_id": 2,
+			"title": "使用ffmpeg打造一个最方便的桌面录制工具",
+			"date_published": 1462347956.085,
+			"body": "# 使用到的工具\n---\n* ffmpeg\n\n* Setup Screen Capturer Recorder v0.12.8.exe\n\n# 安装过程\n\n* 安装如上两个软件，其中ffmpeg解压，并在系统path变量里面设置ffmpeg的bin目录，使得在执行ffmpeg时，系统指导这个ffmpeg.exe文件在什么位置。\n\n# 脚本\n\n新建一个文本文件，将如下的复制粘贴进去，注意修改audio，然后将文件保存，后缀名从txt改为bat\n\n```ffmpeg -rtbufsize 2000M -f dshow -r 25 -i video=\"screen-capture-recorder\":audio=\"麦克风 (Realtek High Definition Audio)\"   -strict experimental -acodec aac -ab 64k -c:v libx264 -preset:v veryfast -b:v 600k -pix_fmt yuv420p -bufsize 1000k  -q 1 -threads 4  D:\\Record.mp4\n```\n要注意不同的电脑的audio属性是不同的，可以在注册表里面找到，或者使用如下的命令来查看设备：\nffmpeg -list_devices 1 -f dshow -i dummy\n\n#收工，执行这个批处理文件，则自动开始录制桌面视频。\n\n\n"
+		}
+	]
+}

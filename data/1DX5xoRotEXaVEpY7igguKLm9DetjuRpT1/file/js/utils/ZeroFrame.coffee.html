@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>ZeroFrame.coffee - 0git - 0git - a list of git repositories on ZeroNet
+</title>
+<link rel="icon" type="image/png" href="../../../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="0git.git Atom Feed" href="../../../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../../../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../../../"><img src="../../../logo.png" alt="" width="32" height="32" /></a></td><td><h1>0git</h1><span class="desc">0git - a list of git repositories on ZeroNet
+</span></td></tr><tr class="url"><td></td><td>git clone <a href="http://127.0.0.1:43110/0git.bit/0git.git">http://127.0.0.1:43110/0git.bit/0git.git</a></td></tr><tr><td></td><td>
+<a href="../../../log.html">Log</a> | <a href="../../../files.html">Files</a> | <a href="../../../refs.html">Refs</a> | <a href="../../../file/README.md.html">README</a> | <a href="../../../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<p> ZeroFrame.coffee (1924B)</p><hr/><table id="blob"><tr><td class="num"><pre>
+<a href="#l1" id="l1">1</a>
+<a href="#l2" id="l2">2</a>
+<a href="#l3" id="l3">3</a>
+<a href="#l4" id="l4">4</a>
+<a href="#l5" id="l5">5</a>
+<a href="#l6" id="l6">6</a>
+<a href="#l7" id="l7">7</a>
+<a href="#l8" id="l8">8</a>
+<a href="#l9" id="l9">9</a>
+<a href="#l10" id="l10">10</a>
+<a href="#l11" id="l11">11</a>
+<a href="#l12" id="l12">12</a>
+<a href="#l13" id="l13">13</a>
+<a href="#l14" id="l14">14</a>
+<a href="#l15" id="l15">15</a>
+<a href="#l16" id="l16">16</a>
+<a href="#l17" id="l17">17</a>
+<a href="#l18" id="l18">18</a>
+<a href="#l19" id="l19">19</a>
+<a href="#l20" id="l20">20</a>
+<a href="#l21" id="l21">21</a>
+<a href="#l22" id="l22">22</a>
+<a href="#l23" id="l23">23</a>
+<a href="#l24" id="l24">24</a>
+<a href="#l25" id="l25">25</a>
+<a href="#l26" id="l26">26</a>
+<a href="#l27" id="l27">27</a>
+<a href="#l28" id="l28">28</a>
+<a href="#l29" id="l29">29</a>
+<a href="#l30" id="l30">30</a>
+<a href="#l31" id="l31">31</a>
+<a href="#l32" id="l32">32</a>
+<a href="#l33" id="l33">33</a>
+<a href="#l34" id="l34">34</a>
+<a href="#l35" id="l35">35</a>
+<a href="#l36" id="l36">36</a>
+<a href="#l37" id="l37">37</a>
+<a href="#l38" id="l38">38</a>
+<a href="#l39" id="l39">39</a>
+<a href="#l40" id="l40">40</a>
+<a href="#l41" id="l41">41</a>
+<a href="#l42" id="l42">42</a>
+<a href="#l43" id="l43">43</a>
+<a href="#l44" id="l44">44</a>
+<a href="#l45" id="l45">45</a>
+<a href="#l46" id="l46">46</a>
+<a href="#l47" id="l47">47</a>
+<a href="#l48" id="l48">48</a>
+<a href="#l49" id="l49">49</a>
+<a href="#l50" id="l50">50</a>
+<a href="#l51" id="l51">51</a>
+<a href="#l52" id="l52">52</a>
+<a href="#l53" id="l53">53</a>
+<a href="#l54" id="l54">54</a>
+<a href="#l55" id="l55">55</a>
+<a href="#l56" id="l56">56</a>
+<a href="#l57" id="l57">57</a>
+<a href="#l58" id="l58">58</a>
+<a href="#l59" id="l59">59</a>
+<a href="#l60" id="l60">60</a>
+<a href="#l61" id="l61">61</a>
+<a href="#l62" id="l62">62</a>
+<a href="#l63" id="l63">63</a>
+<a href="#l64" id="l64">64</a>
+<a href="#l65" id="l65">65</a>
+<a href="#l66" id="l66">66</a>
+<a href="#l67" id="l67">67</a>
+<a href="#l68" id="l68">68</a>
+<a href="#l69" id="l69">69</a>
+<a href="#l70" id="l70">70</a>
+<a href="#l71" id="l71">71</a>
+<a href="#l72" id="l72">72</a>
+<a href="#l73" id="l73">73</a>
+<a href="#l74" id="l74">74</a>
+<a href="#l75" id="l75">75</a>
+<a href="#l76" id="l76">76</a>
+<a href="#l77" id="l77">77</a>
+<a href="#l78" id="l78">78</a>
+<a href="#l79" id="l79">79</a>
+<a href="#l80" id="l80">80</a>
+<a href="#l81" id="l81">81</a>
+<a href="#l82" id="l82">82</a>
+<a href="#l83" id="l83">83</a>
+<a href="#l84" id="l84">84</a>
+<a href="#l85" id="l85">85</a>
+</pre></td><td><pre>
+class ZeroFrame extends Class
+	constructor: (url) -&gt;
+		@url = url
+		@waiting_cb = {}
+		@wrapper_nonce = document.location.href.replace(/.*wrapper_nonce=([A-Za-z0-9]+).*/, &quot;$1&quot;)
+		@connect()
+		@next_message_id = 1
+		@history_state = {}
+		@init()
+
+
+	init: -&gt;
+		@
+
+
+	connect: -&gt;
+		@target = window.parent
+		window.addEventListener(&quot;message&quot;, @onMessage, false)
+		@cmd(&quot;innerReady&quot;)
+
+		# Save scrollTop
+		window.addEventListener &quot;beforeunload&quot;, (e) =&gt;
+			@log &quot;save scrollTop&quot;, window.pageYOffset
+			@history_state[&quot;scrollTop&quot;] = window.pageYOffset
+			@cmd &quot;wrapperReplaceState&quot;, [@history_state, null]
+
+		# Restore scrollTop
+		@cmd &quot;wrapperGetState&quot;, [], (state) =&gt;
+			@history_state = state if state?
+			@log &quot;restore scrollTop&quot;, state, window.pageYOffset
+			if window.pageYOffset == 0 and state
+				window.scroll(window.pageXOffset, state.scrollTop)
+
+
+	onMessage: (e) =&gt;
+		message = e.data
+		cmd = message.cmd
+		if cmd == &quot;response&quot;
+			if @waiting_cb[message.to]?
+				@waiting_cb[message.to](message.result)
+			else
+				@log &quot;Websocket callback not found:&quot;, message
+		else if cmd == &quot;wrapperReady&quot; # Wrapper inited later
+			@cmd(&quot;innerReady&quot;)
+		else if cmd == &quot;ping&quot;
+			@response message.id, &quot;pong&quot;
+		else if cmd == &quot;wrapperOpenedWebsocket&quot;
+			@onOpenWebsocket()
+		else if cmd == &quot;wrapperClosedWebsocket&quot;
+			@onCloseWebsocket()
+		else
+			@onRequest cmd, message
+
+
+	onRequest: (cmd, message) =&gt;
+		@log &quot;Unknown request&quot;, message
+
+
+	response: (to, result) -&gt;
+		@send {&quot;cmd&quot;: &quot;response&quot;, &quot;to&quot;: to, &quot;result&quot;: result}
+
+
+	cmd: (cmd, params={}, cb=null) -&gt;
+		@send {&quot;cmd&quot;: cmd, &quot;params&quot;: params}, cb
+
+
+	send: (message, cb=null) -&gt;
+		message.wrapper_nonce = @wrapper_nonce
+		message.id = @next_message_id
+		@next_message_id += 1
+		@target.postMessage(message, &quot;*&quot;)
+		if cb
+			@waiting_cb[message.id] = cb
+
+
+	onOpenWebsocket: =&gt;
+		@log &quot;Websocket open&quot;
+
+
+	onCloseWebsocket: =&gt;
+		@log &quot;Websocket close&quot;
+
+
+
+window.ZeroFrame = ZeroFrame
+</pre></td></tr></table>
+</div>
+</body>
+</html>

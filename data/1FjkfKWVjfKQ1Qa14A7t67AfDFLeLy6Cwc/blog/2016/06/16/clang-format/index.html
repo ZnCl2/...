@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>在 emacs 中使用 clang-format 自动格式化 c++代码 - 科学君的不科学博客</title>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+  <meta name="author" content="liu233w" />
+  <meta name="description" content="&lt;Add description here&gt;" />
+  <meta name="keywords" content="emacs, LLVM, clang-format, c++" />
+  <style>
+   #ds-thread #ds-reset .ds-comment-body p {color: #ffffff;}
+   #ds-thread #ds-reset .ds-comment-body p a {color: #ff0;}
+   #ds-thread #ds-reset .ds-comment-body p a:hover {color: #0ff;}
+   #disqus_thread a {color: #00ffff;}
+  </style>
+  <link rel="stylesheet" href="http://liu233w.github.io/media/css/main.css" type="text/css"/>
+  <link rel="stylesheet" href="http://liu233w.github.io/media/css/comment.css" type="text/css"/>
+  <link rel="Shortcut Icon" href="https://raw.githubusercontent.com/Liu233w/liu233w.github.io/source/avatar.jpg" type="image/x-icon">
+</head>
+
+  <body><div class="container">
+<div>
+  <header class="masthead">
+    <h1 class="masthead-title"><a href="http://liu233w.github.io/">科学君的不科学博客</a></h1>
+    <p>by 不科学的科学君</p>
+    <nav class="site-nav">
+      <div class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z" fill="#ffff00"/>
+          <path d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z" fill="#ffff00"/>
+          <path d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z" fill="#ffff00"/>
+        </svg>
+      </div>
+      <ul class="trigger">
+        <li><a href="http://liu233w.github.io/所有文章/">所有文章</a></li>
+        <li><a href="http://liu233w.github.io/tags/">按标签索引</a></li>
+        <li><a href="http://liu233w.github.io/acm/">Acm</a></li>
+        <li><a href="http://liu233w.github.io/blog/">Blog</a></li>
+        <li><a href="http://liu233w.github.io/about/">About</a></li>
+        <li><a href="https://github.com/liu233w/liu233w.github.io">Github</a></li>
+        <li><a href="http://liu233w.github.io/rss.xml">RSS</a></li>
+      </ul>
+    </nav>
+    <form method="get" id="searchform" action="http://www.google.com/search">
+      <input type="text" class="field" name="q" id="s" placeholder="Search">
+      <input type="hidden" name="as_sitesearch" value="liu233w.github.io">
+    </form>
+    <img id="avatarid" class="avatar" src="https://raw.githubusercontent.com/Liu233w/liu233w.github.io/source/avatar.jpg" />
+  </header>
+</div>
+
+<div>
+<div class="post">
+<h1 class="title">在 emacs 中使用 clang-format 自动格式化 c++代码</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org15af480">序言</a></li>
+<li><a href="#org3bdfb3d">需要的工具</a></li>
+<li><a href="#org7573069">安装步骤</a></li>
+<li><a href="#orge09c2ba">需要改进的方面</a></li>
+<li><a href="#org66eb950">16/11/3 更新</a>
+<ul>
+<li><a href="#orgfac9989">正文</a></li>
+<li><a href="#org681bbc4">编码问题</a></li>
+<li><a href="#org42d343e">TIPS</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org15af480" class="outline-2">
+<h2 id="org15af480">序言</h2>
+<div class="outline-text-2" id="text-org15af480">
+<p>
+Visual Studio 中的 c++ 编辑器有一个很强大的功能，就是在键入分号或者右大括号之后可以自动格式化当前区域的代码。这个功能也可以在 Emacs 中实现。
+</p>
+</div>
+</div>
+<div id="outline-container-org3bdfb3d" class="outline-2">
+<h2 id="org3bdfb3d">需要的工具</h2>
+<div class="outline-text-2" id="text-org3bdfb3d">
+<ul class="org-ul">
+<li>emacs（废话）</li>
+<li>clang-format（windows 版的 clang 中自带了，linux 版需要自己安装）</li>
+<li>evil（我的函数使用了 evil 中的一些函数） -- EDIT：我最新的代码取消了这个限制</li>
+<li>spacemacs（可选，只是配置起来方便一些）</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org7573069" class="outline-2">
+<h2 id="org7573069">安装步骤</h2>
+<div class="outline-text-2" id="text-org7573069">
+<p>
+这里使用 spacemacs 做示范，在.spacemacs.el 或者.spacemacs.d/init.el 的 layer 函数中找到 c++ layer，把它替换成
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #2aa198;">(</span>c-c++ <span style="color: #839496; font-weight: bold;">:variables</span>
+       c-c++-enable-clang-support t
+       <span style="color: #2aa198;">)</span>
+</pre>
+</div>
+<p>
+如果没有找到 c++的话直接加上这一行就可以了。对于不使用 spacemacs 的用户，可以参考<a href="http://clang.llvm.org/docs/ClangFormat.html">官方网站</a>。
+</p>
+
+<p>
+然后我们需要这两个函数来做格式化：
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">liu233w/semi-clang-format</span> <span style="color: #b58900;">(</span>args<span style="color: #b58900;">)</span>
+  <span style="color: #2aa198;">"format by clang-format when enter ';'"</span>
+  <span style="color: #b58900;">(</span><span style="color: #859900; font-weight: bold;">interactive</span> <span style="color: #2aa198;">"*P"</span><span style="color: #b58900;">)</span>
+  <span style="color: #b58900;">(</span>c-electric-semi&amp;comma args<span style="color: #b58900;">)</span>
+  <span style="color: #b58900;">(</span>clang-format-region <span style="color: #268bd2;">(</span>line-beginning-position <span style="color: #6c71c4;">0</span><span style="color: #268bd2;">)</span> <span style="color: #268bd2;">(</span>line-beginning-position <span style="color: #6c71c4;">2</span><span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span>
+  <span style="color: #2aa198;">)</span>
+
+<span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">liu233w/brace-clang-format</span> <span style="color: #b58900;">(</span>args<span style="color: #b58900;">)</span>
+  <span style="color: #2aa198;">"format by clang-format when enter '}'"</span>
+  <span style="color: #b58900;">(</span><span style="color: #859900; font-weight: bold;">interactive</span> <span style="color: #2aa198;">"*P"</span><span style="color: #b58900;">)</span>
+  <span style="color: #b58900;">(</span>c-electric-brace args<span style="color: #b58900;">)</span>
+  <span style="color: #b58900;">(</span><span style="color: #859900; font-weight: bold;">let</span> <span style="color: #268bd2;">(</span><span style="color: #6c71c4;">(</span>end-position <span style="color: #859900;">(</span>point<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span>
+        begin-position<span style="color: #268bd2;">)</span>
+    <span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">save-excursion</span>
+      <span style="color: #6c71c4;">(</span>evil-jump-item<span style="color: #6c71c4;">)</span>
+      <span style="color: #6c71c4;">(</span><span style="color: #859900; font-weight: bold;">setf</span> begin-position <span style="color: #859900;">(</span>point<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span>
+    <span style="color: #268bd2;">(</span>clang-format-region begin-position end-position<span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span>
+  <span style="color: #2aa198;">)</span>
+</pre>
+</div>
+
+<p>
+linux 用户注意：Ubuntu 版 clang-format 的可执行文件名不是 clang-format，而是 clang-format-&lt;版本号&gt;，在使用这两个函数之前需要做一个链接：
+</p>
+<div class="org-src-container">
+<pre class="src src-shell" id="orga35ef64"><span style="color: #839496; font-weight: bold;">cd</span> /usr/bin
+sudo ln clang-format-&lt;&#29256;&#26412;&#21495;&gt; clang-format
+</pre>
+</div>
+
+<p>
+然后加上快捷键：
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #586e75;">;;</span><span style="color: #586e75;">add clang-format support</span>
+<span style="color: #2aa198;">(</span>add-hook 'c++-mode-hook
+          <span style="color: #b58900;">(</span><span style="color: #859900; font-weight: bold;">lambda</span> <span style="color: #268bd2;">()</span>
+            <span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">when</span> <span style="color: #6c71c4;">(</span>executable-find <span style="color: #2aa198;">"clang-format"</span><span style="color: #6c71c4;">)</span>
+              <span style="color: #586e75;">;;</span><span style="color: #586e75;">&#20351;&#29992; clang-format &#20316;&#20026;&#40664;&#35748;&#25490;&#29256;&#24037;&#20855;</span>
+              <span style="color: #6c71c4;">(</span>local-set-key <span style="color: #859900;">(</span>kbd <span style="color: #2aa198;">"C-M-\\"</span><span style="color: #859900;">)</span> 'clang-format<span style="color: #6c71c4;">)</span>
+              <span style="color: #586e75;">;;</span><span style="color: #586e75;">&#24403;&#25554;&#20837;&#20998;&#21495;&#26102;&#33258;&#21160;&#23545;&#24403;&#21069;&#34892;&#25490;&#29256;</span>
+              <span style="color: #6c71c4;">(</span>local-set-key <span style="color: #859900;">(</span>kbd <span style="color: #2aa198;">";"</span><span style="color: #859900;">)</span>
+                             'liu233w/semi-clang-format<span style="color: #6c71c4;">)</span>
+              <span style="color: #6c71c4;">(</span>local-set-key <span style="color: #859900;">(</span>kbd <span style="color: #2aa198;">"}"</span><span style="color: #859900;">)</span>
+                             'liu233w/brace-clang-format<span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span><span style="color: #2aa198;">)</span>
+</pre>
+</div>
+
+<p>
+我的代码只能在 c++-mode 下使用，现在只要输入分号（如果使用 evil 的话要在插入模式下输入）就可以自动对包括当前行和前后两行在内的代码格式化。如果输入右大括号就会跳到最近的右大括号之后，并且对整个代码块进行格式化。和 Visual Studio 不同的是不能通过删除右大括号再重新插入的方式来格式化代码块——这样代码就乱了（这是 c-electric-brace 函数的原因）。不过有了右大括号跳到代码块之外的功能和括号自动补全之后也就不需要单独输入右大括号了吧。
+</p>
+
+<p>
+clang-format 还有一个格式化配置文件的功能。可以把一个命名为.clang-format 的文本文件放在源代码的同级或上级目录中来控制 clang-format 的格式化行为。具体配置方法请参考<a href="http://clang.llvm.org/docs/ClangFormatStyleOptions.html"><a href="http://clang.llvm.org/docs/ClangFormatStyleOptions.html">http://clang.llvm.org/docs/ClangFormatStyleOptions.html</a></a>。 这里贴上我的配置文件
+</p>
+<div class="org-src-container">
+<pre class="src src-shell" id="orgceea234">BasedOnStyle: google
+IndentWidth: <span style="color: #6c71c4;">4</span>
+BreakBeforeBraces: Allman
+AllowShortFunctionsOnASingleLine: false
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orge09c2ba" class="outline-2">
+<h2 id="orge09c2ba">需要改进的方面</h2>
+<div class="outline-text-2" id="text-orge09c2ba">
+<p>
+clang-format 的格式化行为缺少默认值，如果能在找不到配置文件的时候使用一个默认的就好了。等我把 elisp 学好之后再加上这个功能吧。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org66eb950" class="outline-2">
+<h2 id="org66eb950">16/11/3 更新</h2>
+<div class="outline-text-2" id="text-org66eb950">
+</div><div id="outline-container-orgfac9989" class="outline-3">
+<h3 id="orgfac9989">正文</h3>
+<div class="outline-text-3" id="text-orgfac9989">
+<p>
+今天完成了新版的代码，改动如下：
+</p>
+<ul class="org-ul">
+<li>独立成了一个单独的 package，虽然目前还是只能用在 c 和 c++ 上，但是我懒得改了_(:зゝ∠)_</li>
+<li>在没有提供配置文件的时候自动提供一个默认的配置选项，此选项可以定制</li>
+<li>去除了对 evil 的依赖。</li>
+</ul>
+
+<p>
+新的代码在：<a href="https://github.com/Liu233w/.spacemacs.d/blob/master/layers/liu233w/local/auto-clang-format/auto-clang-format.el">https://github.com/Liu233w/.spacemacs.d/blob/master/layers/liu233w/local/auto-clang-format/auto-clang-format.el</a>
+</p>
+
+<p>
+使用方法： <code>(add-hook 'c++-mode-hook #'acf-enable-auto-clang-format)</code>
+spacemacs 用户可以参考<a href="https://github.com/Liu233w/.spacemacs.d/commit/5040d6f32c7b91811f40256e39d1830aae2a3bfc">我的配置。</a>
+</p>
+</div>
+</div>
+
+<div id="outline-container-org681bbc4" class="outline-3">
+<h3 id="org681bbc4">编码问题</h3>
+<div class="outline-text-3" id="text-org681bbc4">
+<p>
+最近更新了新版的 emacs25 和 spacemacs 0.200.1，发现 clang-format 没法正常格式化代码了（windows 系统）。因为 clang-format 程序会使用 windows 下的 CR LF 行尾，而 emacs 保存的临时文件是 Unix 的 LF 行尾。使用下面的代码可以修复（在 clang-format 之后求值）：
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">when</span> <span style="color: #b58900;">(</span>spacemacs/system-is-mswindows<span style="color: #b58900;">)</span>
+  <span style="color: #b58900;">(</span><span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">liu233w//utf-8-dos-as-coding-system-for-write</span> <span style="color: #268bd2;">(</span>func <span style="color: #b58900;">&amp;rest</span> rest<span style="color: #268bd2;">)</span>
+    <span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">let</span> <span style="color: #6c71c4;">(</span><span style="color: #859900;">(</span>coding-system-for-write 'utf-8-dos<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span>
+      <span style="color: #6c71c4;">(</span>apply func rest<span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span>
+  <span style="color: #b58900;">(</span>advice-add #'clang-format-region <span style="color: #839496; font-weight: bold;">:around</span>
+              #'liu233w//utf-8-dos-as-coding-system-for-write<span style="color: #b58900;">)</span><span style="color: #2aa198;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org42d343e" class="outline-3">
+<h3 id="org42d343e">TIPS</h3>
+<div class="outline-text-3" id="text-org42d343e">
+<ul class="org-ul">
+<li>locate-dominating-file 函数可以在指定的文件（第一个参数）的当前目录和上级目录中寻找指定的文件（夹）名（第二个参数）。找到时返回其绝对地址，找不到返回 nil。</li>
+</ul>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+<div>
+        <div class="post-meta">
+            <span title="发布日期" class="post-info">2016-06-16</span>
+            <span title="最后修改日期" class="post-info">2016-11-03</span>
+            <span title="标签" class="post-info">:<a href="http://liu233w.github.io/tags/emacs">emacs</a> : <a href="http://liu233w.github.io/tags/llvm">LLVM</a> : <a href="http://liu233w.github.io/tags/clang-format">clang-format</a> : <a href="http://liu233w.github.io/tags/c++">c++</a>:</span>
+            <span title="作者" class="post-info"><a href="mailto:wwwlsmcom &lt;at&gt; outlook &lt;dot&gt; com">liu233w</a></span>
+        </div>
+    <script src="http://liu233w.github.io/media/js/jquery-2.1.3.min.js"></script>
+        <section>
+            <h1>Comments</h1>
+            <div id="comment-wrap">
+                    <a class="disqus_label">使用 Disqus 评论</a>
+                    <a class="ds-label">使用多说评论</a>
+    </ul>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+         //var disqus_developer = 1;
+         var preempt_signal=false;
+         var disqus_identifier = "/blog/2016/06/16/clang-format/";
+         var disqus_url = "http://liu233w.github.io/blog/2016/06/16/clang-format/";
+         var disqus_shortname = 'liu233w';
+         /* * * DON'T EDIT BELOW THIS LINE * * */
+         (function() {
+             var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+             dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+             $('#disqus_thread').css('display','none');
+         })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        <div class="ds-thread"></div>
+        <script type="text/javascript">
+         var duoshuoQuery = {short_name:'liu233w'};
+         (function() {
+             var ds = document.createElement('script');
+             ds.type = 'text/javascript';ds.async = true;
+             ds.src = 'http://static.duoshuo.com/embed.js';
+             ds.charset = 'UTF-8';
+             (document.getElementsByTagName('head')[0]
+           || document.getElementsByTagName('body')[0]).appendChild(ds);
+             $('.ds-thread').css('display','block');
+         })();
+        </script>
+    <script>
+     /* comments */
+     var ego_disqus_thread=$('#disqus_thread');
+     var ego_ds_label=$('.ds-thread');
+     $('.disqus_label').click(function(){
+         ego_disqus_thread.show();
+         ego_ds_label.hide();
+     });
+     $('.ds-label').click(function(){
+         ego_disqus_thread.hide();
+         ego_ds_label.show();
+     });
+    </script>
+        </section>
+    <script src="http://liu233w.github.io/media/js/main.js"></script>
+    <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.x(<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+            Copyright &copy; 2014 - <span id="footerYear"></span> <a href="mailto:wwwlsmcom &lt;at&gt; outlook &lt;dot&gt; com">liu233w</a>
+            &nbsp;&nbsp;-&nbsp;&nbsp;
+            Powered by <a href="https://github.com/emacs-china/ego" target="_blank">EGO</a><br/>
+            <a href="http://creativecommons.org/licenses/by-sa/3.0/" rel="license"><img src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" style="border-width:0" alt="Creative Commons License" class="center"></a>
+            <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+    </div>
+            </div>
+            <script type="text/javascript"
+                    src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG">
+            </script>
+            <script type="text/x-mathjax-config">
+             MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "AMS"} } });
+            </script>
+</div>
+
+  </div></body>
+</html>

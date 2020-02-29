@@ -1,0 +1,114 @@
+{
+	"title": "DDu学习总结",
+	"description": "DDu ZeroBlog.",
+	"links": "工具类网站\n\n- [NameCha-bit域名查hash](http://namecha.in/name/d/)\n\n<hr>\n\n友情链接\n\n- [CXG2014](http://127.0.0.1:43110/cxg2014.bit)\n",
+	"next_post_id": 17,
+	"demo": false,
+	"modified": 1504418445,
+	"post": [
+		{
+			"post_id": 15,
+			"title": "置顶和讨论组设置",
+			"date_published": 1471500401.848,
+			"body": "按nofish的说法，单独立贴：\n- Sticky topics (changed some days ago, no longer need to edit .js): Add topic uri to content.json settings.topic_sticky_uris.\n\n- Topic group: Edit your data/users/youruserid/data.json and add \"type\": \"group\", to topic settings you want to turin into topic group. Example: \n\n\n\t\"topic\": [\n\t{\n  \t\"body\": \"Articles about Bitcoin, Torrent and Peer To Peer networks\", \n\t  \"added\": 1436262090, \n\t  \"type\": \"group\", \n\t  \"topic_id\": 1, \n\t  \"title\": \"P2P news flow\"\n\t}\n\n感谢P2P提供线索。",
+			"date_modified": 1471500694.412
+		},
+		{
+			"post_id": 14,
+			"title": "破解OSSIM商业版USM的30天试用期",
+			"date_published": 1464625541.353,
+			"body": "进入 `/usr/share/ossim/include/classes` 目录\n编辑 session.inc 文件\n第511 行  编辑    `public static function is_pro()` 方法， 直接返回TRUE\n第5037行 编辑    `public static function trial_days_to_expire()`  直接返回 999999 即可\n\n\n    cd /usr/share/ossim/include/classes\n    vi session.inc\n\n    //第511行\n    public static function is_pro()\n    {\n        return TRUE;   // 直接函数第一行返回TRUE就行;\n        ......\n    }\n\n    //第5037行左右\n    public static function trial_days_to_expire()\n    {\n        return 999999; // 直接函数第一行返回999999就行;\n        ......\n    }\n\n    /etc/init.d/apache2 restart\n\n重启服务器，搞定\nhttps://YourUSMServer/ossim/session/login.php  登陆即可",
+			"date_modified": 1464625645.422
+		},
+		{
+			"post_id": 13,
+			"title": "转：一个p2p资源搜索引擎",
+			"date_published": 1464518866.49,
+			"body": "来源：[冲虚志](http://127.0.0.1:43110/19CY4ZtRDoWugjsRSBBDcniKWB7rdPNCqD)\nhttp://127.0.0.1:43110/19CY4ZtRDoWugjsRSBBDcniKWB7rdPNCqD/?Post:6\n\nhttp://engiy.com/\n亲测还是不错，唯一的问题就是下载资源的人太少，下载起来太费劲。当然，这也不是搜索引擎的问题。",
+			"date_modified": 1464518953.081
+		},
+		{
+			"post_id": 12,
+			"title": "OSSIM系统里 配置 MySQL开放远程访问权限",
+			"date_published": 1464322529.416,
+			"body": "# mysql添加权限用户\n\n**不要自己去修改OSSIM里 Mysql的root密码**，这个root密码是随机生成的，至少4-5个文件使用了这个密码，不要随便修改\n\n\n    cat /etc/ossim/ossim_setup.conf | grep -in \"pass\"   //查看mysql的root密码 , 第18行 pass后面的字符串\n    mysql -h localhost -uroot -pROOTPASSWORD;  //登陆mysql\n    use mysql;   //切换到mysql数据库\n\n    grant select on *.* to 'dbviewer'@'%' identified by 'ossim';\n\n---\n这里创建了一个 用户名为 dbviewer，密码为ossim的用户， %表示开放任意ip地址访问权限，并且只开放select查询权限，可用于大家从数据库查询数据等测试目的。\n\n如果要开放其他权限请使用\n\n    grant all on *.* to 'dbviewer'@'%' identified by 'ossim';\n\n### 查看权限\n    show grants;    // 查看当前用户权限\n    show grants for dbviewer;  // 查看 dbviewer 用户的权限\n    use mysql;\n    select host,user,password from user;\n\n### 移除权限\n    revoke all on *.* from 'dbviewer'@'%';\n\n# iptables 防火墙配置\n运行下面代码，开放3306端口\n\n    iptables -I INPUT 1 -p tcp --dport 3306 -j ACCEPT\n\n### Debian 系统保存 iptable配置\n    iptables-save > /etc/iptables.conf\n\n然后在 /etc/rc.local 文件末尾添加下面代码\n\n    iptables-restore < /etc/iptables.conf\n\n这样即使OSSIM服务重启，iptables规则也会被自动加载",
+			"date_modified": 1464322660.891
+		},
+		{
+			"post_id": 11,
+			"title": "ShadowsocksR 作者网盘地址",
+			"date_published": 1464314970.905,
+			"body": "SSR 主页：http://127.0.0.1:43110/1GUwoyRUxHWkUik5o4BBKgjrpbeCMXFj9z/\n\n密码讨论：\nhttp://127.0.0.1:43110/GFWtalk.bit/?Topics:10_1NV87VmSkezRyz8NbFpdkYJsJUSfXx7LJa/\n\n历史版本下载：\nhttp://userscloud.com/go/embed/iss72k58dh2l/\n\n## <font color = red> 使用前务必使用pgp校验签名 </font> ##",
+			"date_modified": 1464315191.654
+		},
+		{
+			"post_id": 10,
+			"title": "单独立贴：置顶和讨论组设置",
+			"date_published": 1464278756.313,
+			"body": "来自：http://127.0.0.1:43110/1NzWeweqJ32aRVdM5UzFnYCszuvG5xV3vS/?Topic:9_1M1c7x7SLau8D2bm8Gw8iWQbBqe9X4zqPw/\n\n\n按nofish的说法，单独立贴：\n- Sticky topics (changed some days ago, no longer need to edit .js): Add topic uri to content.json settings.topic_sticky_uris.\n\n- Topic group: Edit your data/users/youruserid/data.json and add \"type\": \"group\", to topic settings you want to turin into topic group. Example: http://127.0.0.1:43110/Talk.ZeroNetwork.bit/data/users/1KbV1e1u6P6AsY8XNBydgtbtN8iSB5WMyG/data.json\n\n---\n\n````\n\"topic\": [\n{\n  \"body\": \"Articles about Bitcoin, Torrent and Peer To Peer networks\", \n  \"added\": 1436262090, \n  \"type\": \"group\", \n  \"topic_id\": 1, \n  \"title\": \"P2P news flow\"\n}\t\n````\n\n感谢P2P提供线索。",
+			"date_modified": 1464278988.017
+		},
+		{
+			"post_id": 9,
+			"title": "如何快速找到别人对你的评论、回复等",
+			"date_published": 1464277661.358,
+			"body": "没升级zn的升级一下，在zn最新版本里点击update all site，然后在主页的搜索框里输入自己的ID，就能看到所有提到你的ID的回复、评论或文章了",
+			"date_modified": 1464277702.04
+		},
+		{
+			"post_id": 8,
+			"title": "使Blog支持按时间索引及标签索引",
+			"date_published": 1463978883.273,
+			"body": "1. 备份你自己的Blog网站\n1. 复制本站目录下的\n`index.html`\n`dbschema.json`\n`js/all.js`\n共3个文件覆盖你网站的原来文件\n1. 更新网站数据，publish即可\n\n",
+			"date_modified": 1463979243.493
+		},
+		{
+			"post_id": 4,
+			"title": "ZeroNet网站私钥找回教程",
+			"date_published": 1463925836,
+			"body": "Original Link: [ZeroNet网站私钥找回教程](http://127.0.0.1:43110/cxg2014.bit/?Post:3:ZeroNet%E7%BD%91%E7%AB%99%E7%A7%81%E9%92%A5%E6%89%BE%E5%9B%9E%E6%95%99%E7%A8%8B)\n\n自己建了个blog并绑定了cxg2014.bit这个域名，前两天一时手贱点了delete删掉了自己的网站，于是重新clone了一个...但是当我想要到namecoin客户端里去更改域名记录时却发现更改记录还需要支付域名币。。没办法，只能手动恢复原来的站点私钥。\n\n---\n在GFW Talk上看到了@p2p老大的主题[ZeroNet私钥需要像比特币钱包那样定期备份吗？ZeroNet私钥体系初探](http://127.0.0.1:43110/gfwtalk.bit/?Topic:28_13Z7XxTa7JuFat3KzzMWu3onwM6biLuurJ/ZeroNet+ZeroNet)一文，在阅读相关代码之后便开始动手了。\n\n1. 用ZeroNet访问你丢失的站点，然后退出zeronet。\n2. 打开ZeroBundle/ZeroNet/data/你的站点地址/content.json，找到\"address_index\"一项，把属性值记下来备用。\n1. 打开ZeroBundle/ZeroNet/data/users.json，找到\"master_seed\"一项，把属性值记下来备用。\n1. 打开ZeroBundle/ZeroNet/src/main.py，然后到131行插入以下代码并保存。\n\n          logging.info(\"--------------------Recovery Begin--------------------\")\n          from Crypt import CryptBitcoin\n          logging.info(CryptBitcoin.hdPrivatekey(\"你的master_seed\", 站点的address_index))\n          logging.info(\"-------------------Recovery Finished--------------------\")  \t\n注意，你的master_seed一项因为字符串型参数，应以\"包含起来, 站点的address_index因为是整数型参数，故不用。最终修改效果如下。\n代码修改效果\n![](img/codeblock.png)\n\n1. 启动ZeroNet，在输出里便能看到您的站点私钥。\n![](img/rec_console.png)\n将其拷贝出来之后退出ZeroNet，并删除刚才插入到ZeroBundle/ZeroNet/src/main.py文件里的代码。\n\n1. 打开ZeroBundle/ZeroNet/data/users.json，找到自己的站点节点并添加以下属性和属性值。\n`\"privatekey\": 您刚才拷贝出来的站点私钥`\n保存。\n\n1. 打开ZeroBundle/ZeroNet/data/site.json找到自己的站点节点并把\"own\"属性属性值修改为true并保存。\n\n1. 启动ZeroNet。\n\n就酱站点就完美找回可以和以前一样使用了。推荐各位还是备份一下自己的users.json还有site.json两个文件，若是自己的\"master_seed\"丢失、站点地址遗忘，那可就怎么也找不回来了。",
+			"date_modified": 1463932793.375
+		},
+		{
+			"post_id": 1,
+			"title": "Blog Initialized！",
+			"date_published": 1463705779,
+			"body": "创建博客第一帖，学习中……",
+			"date_modified": 1463976807.054
+		}
+	],
+	"tag": [
+		{
+			"value": "初始化",
+			"post_id": 1
+		},
+		{
+			"value": "ZeroNet技术",
+			"post_id": 4
+		},
+		{
+			"value": "ZeroNet技术",
+			"post_id": 8
+		},
+		{
+			"value": "ZeroNet技术",
+			"post_id": 9
+		},
+		{
+			"value": "ZeroNet技术",
+			"post_id": 10
+		},
+		{
+			"value": "SSR",
+			"post_id": 11
+		},
+		{
+			"value": "OSSIM",
+			"post_id": 12
+		},
+		{
+			"value": "OSSIM",
+			"post_id": 14
+		}
+	]
+}

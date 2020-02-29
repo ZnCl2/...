@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>fix relpath for files, small cleanup - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/9d264890845398cf3b931b63f629c2c42a7f843d.html">9d264890845398cf3b931b63f629c2c42a7f843d</a>
+<b>parent</b> <a href="../commit/9b100464647ccbef09e5fe9f6e41e793c93f9753.html">9b100464647ccbef09e5fe9f6e41e793c93f9753</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Mon Dec  7 19:01:40 +0100
+
+fix relpath for files, small cleanup
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">urmoms.c</a></td><td> | </td><td class="num">22</td><td><span class="i">++++++++++++</span><span class="d">----------</span></td></tr>
+</table>1 file changed, 12 insertions(+), 10 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/urmoms.c.html">urmoms.c</a> b/<a href="../file/urmoms.c.html">urmoms.c</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -332,13 +332,18 @@ writelog(FILE *fp)
+</a> 	git_revwalk_push_head(w);
+ 
+ 	/* TODO: also make &quot;expanded&quot; log ? (with message body) */
+<a href="#h0-0-3" id="h0-0-3" class="d">-	i = 0;
+</a><a href="#h0-0-4" id="h0-0-4" class="d">-	fputs(&quot;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;td&gt;Summary&lt;/td&gt;&lt;td&gt;Author&lt;/td&gt;&lt;td align=\&quot;right\&quot;&gt;Age&lt;/td&gt;&quot;
+</a><a href="#h0-0-5" id="h0-0-5" class="d">-	      &quot;&lt;td align=\&quot;right\&quot;&gt;Files&lt;/td&gt;&lt;td align=\&quot;right\&quot;&gt;+&lt;/td&gt;&lt;td align=\&quot;right\&quot;&gt;-&lt;/td&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&quot;, fp);
+</a><a href="#h0-0-6" id="h0-0-6" class="i">+	i = 0; /* DEBUG: to limit commits */
+</a><a href="#h0-0-7" id="h0-0-7" class="i">+	fputs(&quot;&lt;table&gt;&lt;thead&gt;\n&lt;tr&gt;&lt;td&gt;Commit message&lt;/td&gt;&lt;td&gt;Author&lt;/td&gt;&lt;td align=\&quot;right\&quot;&gt;Age&lt;/td&gt;&quot;
+</a><a href="#h0-0-8" id="h0-0-8" class="i">+	      &quot;&lt;td align=\&quot;right\&quot;&gt;Files&lt;/td&gt;&lt;td align=\&quot;right\&quot;&gt;+&lt;/td&gt;&lt;td align=\&quot;right\&quot;&gt;-&lt;/td&gt;&lt;/tr&gt;\n&lt;/thead&gt;&lt;tbody&gt;\n&quot;, fp);
+</a> 	while (!git_revwalk_next(&amp;id, w)) {
+<a href="#h0-0-10" id="h0-0-10" class="i">+		/* DEBUG */
+</a><a href="#h0-0-11" id="h0-0-11" class="i">+		if (i++ &gt; 100)
+</a><a href="#h0-0-12" id="h0-0-12" class="i">+			break;
+</a><a href="#h0-0-13" id="h0-0-13" class="i">+
+</a><a href="#h0-0-14" id="h0-0-14" class="i">+		relpath = &quot;&quot;;
+</a><a href="#h0-0-15" id="h0-0-15" class="i">+
+</a> 		if (git_commit_lookup(&amp;commit, repo, &amp;id))
+ 			return 1; /* TODO: error */
+<a href="#h0-0-18" id="h0-0-18" class="d">-
+</a> 		if ((error = git_commit_parent(&amp;parent, commit, 0)))
+ 			continue; /* TODO: handle error */
+ 		if ((error = git_commit_tree(&amp;commit_tree, commit)))
+<a href="#h0-1" id="h0-1" class="h">@@ -379,20 +384,17 @@ writelog(FILE *fp)
+</a> 		fprintf(fp, &quot;+%zu&quot;, nadd);
+ 		fputs(&quot;&lt;/td&gt;&lt;td align=\&quot;right\&quot;&gt;&quot;, fp);
+ 		fprintf(fp, &quot;-%zu&quot;, ndel);
+<a href="#h0-1-3" id="h0-1-3" class="d">-		fputs(&quot;&lt;/td&gt;&lt;/tr&gt;&quot;, fp);
+</a><a href="#h0-1-4" id="h0-1-4" class="i">+		fputs(&quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;, fp);
+</a> 
+<a href="#h0-1-6" id="h0-1-6" class="i">+		relpath = &quot;../&quot;;
+</a> 		printshowfile(commit);
+ 
+ 		git_diff_free(diff);
+ 		git_commit_free(commit);
+<a href="#h0-1-11" id="h0-1-11" class="d">-
+</a><a href="#h0-1-12" id="h0-1-12" class="d">-		/* DEBUG */
+</a><a href="#h0-1-13" id="h0-1-13" class="d">-		i++;
+</a><a href="#h0-1-14" id="h0-1-14" class="d">-		if (i &gt; 100)
+</a><a href="#h0-1-15" id="h0-1-15" class="d">-			break;
+</a> 	}
+ 	fprintf(fp, &quot;&lt;/tbody&gt;&lt;/table&gt;&quot;);
+ 	git_revwalk_free(w);
+<a href="#h0-1-19" id="h0-1-19" class="i">+	relpath = &quot;&quot;;
+</a> 
+ 	return 0;
+ }
+</pre>
+</div>
+</body>
+</html>

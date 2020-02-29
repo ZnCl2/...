@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>strip .git suffix from name - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/ede4982f67f54904a1be6de77c6db033d56b0a34.html">ede4982f67f54904a1be6de77c6db033d56b0a34</a>
+<b>parent</b> <a href="../commit/db02820a175c43cf1c225928bc09dd3fd5d93d71.html">db02820a175c43cf1c225928bc09dd3fd5d93d71</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Wed Jan  6 20:00:38 +0100
+
+strip .git suffix from name
+
+also free stripped_name in the case of stagit-index
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">stagit-index.c</a></td><td> | </td><td class="num">14</td><td><span class="i">+++++++</span><span class="d">-------</span></td></tr>
+<tr><td><a href="#h1">stagit.c</a></td><td> | </td><td class="num">23</td><td><span class="i">++++++++++++++</span><span class="d">---------</span></td></tr>
+</table>2 files changed, 21 insertions(+), 16 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/stagit-index.c.html">stagit-index.c</a> b/<a href="../file/stagit-index.c.html">stagit-index.c</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -118,13 +118,13 @@ writeheader(FILE *fp)
+</a> int
+ writefooter(FILE *fp)
+ {
+<a href="#h0-0-3" id="h0-0-3" class="d">-	return !fputs(&quot;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;&lt;/body&gt;\n&lt;/html&gt;&quot;, fp);
+</a><a href="#h0-0-4" id="h0-0-4" class="i">+	return !fputs(&quot;&lt;/tbody&gt;\n&lt;/table&gt;\n&lt;/div&gt;\n&lt;/body&gt;\n&lt;/html&gt;\n&quot;, fp);
+</a> }
+ 
+ int
+ writelog(FILE *fp)
+ {
+<a href="#h0-0-10" id="h0-0-10" class="d">-	char *stripped_name, *p;
+</a><a href="#h0-0-11" id="h0-0-11" class="i">+	char *stripped_name = NULL, *p;
+</a> 	git_commit *commit = NULL;
+ 	const git_signature *author;
+ 	git_revwalk *w = NULL;
+<a href="#h0-1" id="h0-1" class="h">@@ -144,18 +144,17 @@ writelog(FILE *fp)
+</a> 
+ 	author = git_commit_author(commit);
+ 
+<a href="#h0-1-3" id="h0-1-3" class="d">-	fputs(&quot;&lt;tr&gt;&lt;td&gt;&lt;a href=\&quot;&quot;, fp);
+</a><a href="#h0-1-4" id="h0-1-4" class="d">-	xmlencode(fp, name, strlen(name));
+</a><a href="#h0-1-5" id="h0-1-5" class="d">-	fputs(&quot;/log.html\&quot;&gt;&quot;, fp);
+</a><a href="#h0-1-6" id="h0-1-6" class="d">-
+</a> 	/* strip .git suffix */
+ 	if (!(stripped_name = strdup(name)))
+ 		err(1, &quot;strdup&quot;);
+ 	if ((p = strrchr(stripped_name, &apos;.&apos;)))
+ 		if (!strcmp(p, &quot;.git&quot;))
+ 			*p = &apos;\0&apos;;
+<a href="#h0-1-13" id="h0-1-13" class="d">-	xmlencode(fp, stripped_name, strlen(stripped_name));
+</a> 
+<a href="#h0-1-15" id="h0-1-15" class="i">+	fputs(&quot;&lt;tr&gt;&lt;td&gt;&lt;a href=\&quot;&quot;, fp);
+</a><a href="#h0-1-16" id="h0-1-16" class="i">+	xmlencode(fp, stripped_name, strlen(stripped_name));
+</a><a href="#h0-1-17" id="h0-1-17" class="i">+	fputs(&quot;/log.html\&quot;&gt;&quot;, fp);
+</a><a href="#h0-1-18" id="h0-1-18" class="i">+	xmlencode(fp, stripped_name, strlen(stripped_name));
+</a> 	fputs(&quot;&lt;/a&gt;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+ 	xmlencode(fp, description, strlen(description));
+ 	fputs(&quot;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+<a href="#h0-2" id="h0-2" class="h">@@ -168,6 +167,7 @@ writelog(FILE *fp)
+</a> 	git_commit_free(commit);
+ err:
+ 	git_revwalk_free(w);
+<a href="#h0-2-3" id="h0-2-3" class="i">+	free(stripped_name);
+</a> 
+ 	return ret;
+ }
+<b>diff --git a/<a id="h1" href="../file/stagit.c.html">stagit.c</a> b/<a href="../file/stagit.c.html">stagit.c</a></b>
+<a href="#h1-0" id="h1-0" class="h">@@ -42,7 +42,8 @@ static git_repository *repo;
+</a> static const char *relpath = &quot;&quot;;
+ static const char *repodir;
+ 
+<a href="#h1-0-3" id="h1-0-3" class="d">-static char name[255];
+</a><a href="#h1-0-4" id="h1-0-4" class="i">+static char *name;
+</a><a href="#h1-0-5" id="h1-0-5" class="i">+static char *stripped_name;
+</a> static char description[255];
+ static char cloneurl[1024];
+ static int hasreadme, haslicense;
+<a href="#h1-1" id="h1-1" class="h">@@ -239,7 +240,7 @@ writeheader(FILE *fp)
+</a> 		&quot;&lt;html dir=\&quot;ltr\&quot; lang=\&quot;en\&quot;&gt;\n&lt;head&gt;\n&quot;
+ 		&quot;&lt;meta http-equiv=\&quot;Content-Type\&quot; content=\&quot;text/html; charset=UTF-8\&quot; /&gt;\n&quot;
+ 		&quot;&lt;meta http-equiv=\&quot;Content-Language\&quot; content=\&quot;en\&quot; /&gt;\n&lt;title&gt;&quot;, fp);
+<a href="#h1-1-3" id="h1-1-3" class="d">-	xmlencode(fp, name, strlen(name));
+</a><a href="#h1-1-4" id="h1-1-4" class="i">+	xmlencode(fp, stripped_name, strlen(stripped_name));
+</a> 	if (description[0])
+ 		fputs(&quot; - &quot;, fp);
+ 	xmlencode(fp, description, strlen(description));
+<a href="#h1-2" id="h1-2" class="h">@@ -251,7 +252,7 @@ writeheader(FILE *fp)
+</a> 	fprintf(fp, &quot;&lt;a href=\&quot;../%s\&quot;&gt;&lt;img src=\&quot;%slogo.png\&quot; alt=\&quot;\&quot; width=\&quot;32\&quot; height=\&quot;32\&quot; /&gt;&lt;/a&gt;&quot;,
+ 	        relpath, relpath);
+ 	fputs(&quot;&lt;/td&gt;&lt;td&gt;&lt;h1&gt;&quot;, fp);
+<a href="#h1-2-3" id="h1-2-3" class="d">-	xmlencode(fp, name, strlen(name));
+</a><a href="#h1-2-4" id="h1-2-4" class="i">+	xmlencode(fp, stripped_name, strlen(stripped_name));
+</a> 	fputs(&quot;&lt;/h1&gt;&lt;span class=\&quot;desc\&quot;&gt;&quot;, fp);
+ 	xmlencode(fp, description, strlen(description));
+ 	fputs(&quot;&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&quot;, fp);
+<a href="#h1-3" id="h1-3" class="h">@@ -553,9 +554,8 @@ writeatom(FILE *fp)
+</a> 
+ 	fputs(&quot;&lt;?xml version=\&quot;1.0\&quot; encoding=\&quot;UTF-8\&quot;?&gt;\n&quot;
+ 	      &quot;&lt;feed xmlns=\&quot;http://www.w3.org/2005/Atom\&quot;&gt;\n&lt;title&gt;&quot;, fp);
+<a href="#h1-3-3" id="h1-3-3" class="d">-	xmlencode(fp, name, strlen(name));
+</a><a href="#h1-3-4" id="h1-3-4" class="d">-	fputs(&quot;, branch master&lt;/title&gt;\n&lt;subtitle&gt;&quot;, fp);
+</a><a href="#h1-3-5" id="h1-3-5" class="d">-
+</a><a href="#h1-3-6" id="h1-3-6" class="i">+	xmlencode(fp, stripped_name, strlen(stripped_name));
+</a><a href="#h1-3-7" id="h1-3-7" class="i">+	fputs(&quot;, branch HEAD&lt;/title&gt;\n&lt;subtitle&gt;&quot;, fp);
+</a> 	xmlencode(fp, description, strlen(description));
+ 	fputs(&quot;&lt;/subtitle&gt;\n&quot;, fp);
+ 
+<a href="#h1-4" id="h1-4" class="h">@@ -914,9 +914,14 @@ main(int argc, char *argv[])
+</a> 	}
+ 
+ 	/* use directory name as name */
+<a href="#h1-4-3" id="h1-4-3" class="d">-	p = xbasename(repodir);
+</a><a href="#h1-4-4" id="h1-4-4" class="d">-	snprintf(name, sizeof(name), &quot;%s&quot;, p);
+</a><a href="#h1-4-5" id="h1-4-5" class="d">-	free(p);
+</a><a href="#h1-4-6" id="h1-4-6" class="i">+	name = xbasename(repodir);
+</a><a href="#h1-4-7" id="h1-4-7" class="i">+
+</a><a href="#h1-4-8" id="h1-4-8" class="i">+	/* strip .git suffix */
+</a><a href="#h1-4-9" id="h1-4-9" class="i">+	if (!(stripped_name = strdup(name)))
+</a><a href="#h1-4-10" id="h1-4-10" class="i">+		err(1, &quot;strdup&quot;);
+</a><a href="#h1-4-11" id="h1-4-11" class="i">+	if ((p = strrchr(stripped_name, &apos;.&apos;)))
+</a><a href="#h1-4-12" id="h1-4-12" class="i">+		if (!strcmp(p, &quot;.git&quot;))
+</a><a href="#h1-4-13" id="h1-4-13" class="i">+			*p = &apos;\0&apos;;
+</a> 
+ 	/* read description or .git/description */
+ 	snprintf(path, sizeof(path), &quot;%s%s%s&quot;,
+</pre>
+</div>
+</body>
+</html>

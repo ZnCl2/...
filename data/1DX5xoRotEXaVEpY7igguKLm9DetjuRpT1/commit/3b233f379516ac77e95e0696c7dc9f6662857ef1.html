@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Only quote the last message, Message height fix, Dont display images - 0git - 0git - a list of git repositories on ZeroNet
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="0git.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>0git</h1><span class="desc">0git - a list of git repositories on ZeroNet
+</span></td></tr><tr class="url"><td></td><td>git clone <a href="http://127.0.0.1:43110/0git.bit/0git.git">http://127.0.0.1:43110/0git.bit/0git.git</a></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.md.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/3b233f379516ac77e95e0696c7dc9f6662857ef1.html">3b233f379516ac77e95e0696c7dc9f6662857ef1</a>
+<b>parent</b> <a href="../commit/f1dc2ca10b7dc1b009be0a0fff5c38c64ac4a04d.html">f1dc2ca10b7dc1b009be0a0fff5c38c64ac4a04d</a>
+<b>Author:</b> HelloZeroNet &lt;<a href="mailto:hello@noloop.me">hello@noloop.me</a>&gt;
+<b>Date:</b>   Sat Apr 18 02:51:15 +0200
+
+Only quote the last message, Message height fix, Dont display images
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">js/TopicShow.coffee</a></td><td> | </td><td class="num">4</td><td><span class="i">+++</span><span class="d">-</span></td></tr>
+<tr><td><a href="#h1">js/all.js</a></td><td> | </td><td class="num">32</td><td><span class="i">++++++++++++++++++++++++++</span><span class="d">------</span></td></tr>
+<tr><td><a href="#h2">js/lib/jquery.cssanim.coffee</a></td><td> | </td><td class="num">1</td><td><span class="i">+</span><span class="d"></span></td></tr>
+<tr><td><a href="#h3">js/utils/Text.coffee</a></td><td> | </td><td class="num">7</td><td><span class="i">++++++</span><span class="d">-</span></td></tr>
+</table>4 files changed, 36 insertions(+), 8 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/js/TopicShow.coffee.html">js/TopicShow.coffee</a> b/<a href="../file/js/TopicShow.coffee.html">js/TopicShow.coffee</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -208,7 +208,9 @@ class TopicShow extends Class
+</a> 		user_name = $(&quot;.user_name&quot;, elem).text()
+ 		post_id = elem.attr(&quot;id&quot;)
+ 		body_add = &quot;&gt; [#{user_name}](\##{post_id}): &quot;
+<a href="#h0-0-3" id="h0-0-3" class="d">-		body_add+= $(&quot;.body&quot;, elem).text().trim(&quot;\n&quot;).replace(/\n/g, &quot;\n&gt; &quot;)
+</a><a href="#h0-0-4" id="h0-0-4" class="i">+		elem_quote = $(&quot;.body&quot;, elem).clone()
+</a><a href="#h0-0-5" id="h0-0-5" class="i">+		$(&quot;blockquote&quot;, elem_quote).remove() # Remove other people&apos;s quotes
+</a><a href="#h0-0-6" id="h0-0-6" class="i">+		body_add+= elem_quote.text().trim(&quot;\n&quot;).replace(/\n/g, &quot;\n&gt; &quot;)
+</a> 		body_add+= &quot;\n\n&quot;
+ 
+ 
+<b>diff --git a/<a id="h1" href="../file/js/all.js.html">js/all.js</a> b/<a href="../file/js/all.js.html">js/all.js</a></b>
+<a href="#h1-0" id="h1-0" class="h">@@ -705,9 +705,26 @@ jQuery.extend( jQuery.easing,
+</a> 
+ 
+ (function() {
+<a href="#h1-0-3" id="h1-0-3" class="d">-  var Text,
+</a><a href="#h1-0-4" id="h1-0-4" class="i">+  var Renderer, Text,
+</a><a href="#h1-0-5" id="h1-0-5" class="i">+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+</a><a href="#h1-0-6" id="h1-0-6" class="i">+    __hasProp = {}.hasOwnProperty,
+</a>     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+ 
+<a href="#h1-0-9" id="h1-0-9" class="i">+  Renderer = (function(_super) {
+</a><a href="#h1-0-10" id="h1-0-10" class="i">+    __extends(Renderer, _super);
+</a><a href="#h1-0-11" id="h1-0-11" class="i">+
+</a><a href="#h1-0-12" id="h1-0-12" class="i">+    function Renderer() {
+</a><a href="#h1-0-13" id="h1-0-13" class="i">+      return Renderer.__super__.constructor.apply(this, arguments);
+</a><a href="#h1-0-14" id="h1-0-14" class="i">+    }
+</a><a href="#h1-0-15" id="h1-0-15" class="i">+
+</a><a href="#h1-0-16" id="h1-0-16" class="i">+    Renderer.prototype.image = function(href, title, text) {
+</a><a href="#h1-0-17" id="h1-0-17" class="i">+      return &quot;&lt;code&gt;![&quot; + text + &quot;](&quot; + href + &quot;)&lt;/code&gt;&quot;;
+</a><a href="#h1-0-18" id="h1-0-18" class="i">+    };
+</a><a href="#h1-0-19" id="h1-0-19" class="i">+
+</a><a href="#h1-0-20" id="h1-0-20" class="i">+    return Renderer;
+</a><a href="#h1-0-21" id="h1-0-21" class="i">+
+</a><a href="#h1-0-22" id="h1-0-22" class="i">+  })(marked.Renderer);
+</a><a href="#h1-0-23" id="h1-0-23" class="i">+
+</a>   Text = (function() {
+     function Text() {
+       this.toUrl = __bind(this.toUrl, this);
+<a href="#h1-1" id="h1-1" class="h">@@ -734,6 +751,7 @@ jQuery.extend( jQuery.easing,
+</a>       }
+       options[&quot;gfm&quot;] = true;
+       options[&quot;breaks&quot;] = true;
+<a href="#h1-1-3" id="h1-1-3" class="i">+      options[&quot;renderer&quot;] = renderer;
+</a>       text = marked(text, options);
+       return this.fixLinks(text);
+     };
+<a href="#h1-2" id="h1-2" class="h">@@ -750,6 +768,8 @@ jQuery.extend( jQuery.easing,
+</a> 
+   })();
+ 
+<a href="#h1-2-3" id="h1-2-3" class="i">+  window.renderer = new Renderer();
+</a><a href="#h1-2-4" id="h1-2-4" class="i">+
+</a>   window.Text = new Text();
+ 
+ }).call(this);
+<a href="#h1-3" id="h1-3" class="h">@@ -1763,12 +1783,14 @@ jQuery.extend( jQuery.easing,
+</a>     };
+ 
+     TopicShow.prototype.buttonReply = function(elem) {
+<a href="#h1-3-3" id="h1-3-3" class="d">-      var body_add, post_id, user_name;
+</a><a href="#h1-3-4" id="h1-3-4" class="i">+      var body_add, elem_quote, post_id, user_name;
+</a>       this.log(&quot;Reply to&quot;, elem);
+       user_name = $(&quot;.user_name&quot;, elem).text();
+       post_id = elem.attr(&quot;id&quot;);
+       body_add = &quot;&gt; [&quot; + user_name + &quot;](\#&quot; + post_id + &quot;): &quot;;
+<a href="#h1-3-9" id="h1-3-9" class="d">-      body_add += $(&quot;.body&quot;, elem).text().trim(&quot;\n&quot;).replace(/\n/g, &quot;\n&gt; &quot;);
+</a><a href="#h1-3-10" id="h1-3-10" class="i">+      elem_quote = $(&quot;.body&quot;, elem).clone();
+</a><a href="#h1-3-11" id="h1-3-11" class="i">+      $(&quot;blockquote&quot;, elem_quote).remove();
+</a><a href="#h1-3-12" id="h1-3-12" class="i">+      body_add += elem_quote.text().trim(&quot;\n&quot;).replace(/\n/g, &quot;\n&gt; &quot;);
+</a>       body_add += &quot;\n\n&quot;;
+       $(&quot;.comment-new #comment_body&quot;).val($(&quot;.comment-new #comment_body&quot;).val() + body_add);
+       $(&quot;.comment-new #comment_body&quot;).trigger(&quot;input&quot;).focus();
+<a href="#h1-4" id="h1-4" class="h">@@ -1857,7 +1879,6 @@ jQuery.extend( jQuery.easing,
+</a> }).call(this);
+ 
+ 
+<a href="#h1-4-3" id="h1-4-3" class="d">-
+</a> /* ---- data/1TaLk3zM7ZRskJvrh3ZNCDVGXvkJusPKQ/js/Users.coffee ---- */
+ 
+ 
+<a href="#h1-5" id="h1-5" class="h">@@ -2408,4 +2429,4 @@ jQuery.extend( jQuery.easing,
+</a> 
+   window.Page = new ZeroTalk();
+ 
+<a href="#h1-5-3" id="h1-5-3" class="d">-}).call(this);</a><a href="#h1-5-4" id="h1-5-4" class="d">-
+\ No newline at end of file
+</a><a href="#h1-5-5" id="h1-5-5" class="i">+}).call(this);
+</a><b>diff --git a/<a id="h2" href="../file/js/lib/jquery.cssanim.coffee.html">js/lib/jquery.cssanim.coffee</a> b/<a href="../file/js/lib/jquery.cssanim.coffee.html">js/lib/jquery.cssanim.coffee</a></b>
+<a href="#h2-0" id="h2-0" class="h">@@ -2,6 +2,7 @@ jQuery.fn.cssSlideDown = -&gt;
+</a> 	elem = @
+ 	elem.css({&quot;opacity&quot;: 0, &quot;margin-bottom&quot;: 0, &quot;margin-top&quot;: 0, &quot;padding-bottom&quot;: 0, &quot;padding-top&quot;: 0, &quot;display&quot;: &quot;none&quot;, &quot;transform&quot;: &quot;scale(0.8)&quot;}) 
+ 	setTimeout (-&gt;
+<a href="#h2-0-3" id="h2-0-3" class="i">+		elem.css(&quot;display&quot;, &quot;&quot;)
+</a> 		height = elem.outerHeight()
+ 		elem.css({&quot;height&quot;: 0, &quot;display&quot;: &quot;&quot;}).cssLater(&quot;transition&quot;, &quot;all 0.3s ease-out&quot;, 20)
+ 		elem.cssLater({&quot;height&quot;: height, &quot;opacity&quot;: 1, &quot;margin-bottom&quot;: &quot;&quot;, &quot;margin-top&quot;: &quot;&quot;, &quot;padding-bottom&quot;: &quot;&quot;, &quot;padding-top&quot;: &quot;&quot;, &quot;transform&quot;: &quot;scale(1)&quot;}, null, 40)
+<b>diff --git a/<a id="h3" href="../file/js/utils/Text.coffee.html">js/utils/Text.coffee</a> b/<a href="../file/js/utils/Text.coffee.html">js/utils/Text.coffee</a></b>
+<a href="#h3-0" id="h3-0" class="h">@@ -1,3 +1,7 @@
+</a><a href="#h3-0-0" id="h3-0-0" class="i">+class Renderer extends marked.Renderer
+</a><a href="#h3-0-1" id="h3-0-1" class="i">+	image: (href, title, text) -&gt;
+</a><a href="#h3-0-2" id="h3-0-2" class="i">+		return (&quot;&lt;code&gt;![#{text}](#{href})&lt;/code&gt;&quot;)
+</a><a href="#h3-0-3" id="h3-0-3" class="i">+
+</a> class Text
+ 	toColor: (text) -&gt;
+ 		hash = 0
+<a href="#h3-1" id="h3-1" class="h">@@ -14,6 +18,7 @@ class Text
+</a> 	toMarked: (text, options={}) -&gt;
+ 		options[&quot;gfm&quot;] = true
+ 		options[&quot;breaks&quot;] = true
+<a href="#h3-1-3" id="h3-1-3" class="i">+		options[&quot;renderer&quot;] = renderer
+</a> 		text = marked(text, options)
+ 		return @fixLinks text
+ 
+<a href="#h3-2" id="h3-2" class="h">@@ -26,5 +31,5 @@ class Text
+</a> 	toUrl: (text) =&gt;
+ 		return text.replace(/[^A-Za-z0-9]/g, &quot;+&quot;).replace(/[+]+/g, &quot;+&quot;).replace(/[+]+$/, &quot;&quot;)
+ 
+<a href="#h3-2-3" id="h3-2-3" class="d">-
+</a><a href="#h3-2-4" id="h3-2-4" class="i">+window.renderer = new Renderer()
+</a> window.Text = new Text() 
+\ No newline at end of file
+</pre>
+</div>
+</body>
+</html>

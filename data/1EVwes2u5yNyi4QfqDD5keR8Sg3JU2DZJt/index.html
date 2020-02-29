@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>JSNES: A JavaScript NES emulator</title>
+</head>
+
+<body>
+    
+<center><h1>Nes Central</h1>
+    <div id="emulator"></div>
+    
+    <h2>Controls</h2>
+    <table id="controls">
+        <tr>
+            <th>Button</th>
+            <th>Player 1</th>
+            <th>Player 2</th>
+        </tr>
+        <tr>
+            <td>Left</td>
+            <td>Left</td>
+            <td>Num-4</td>
+        <tr>
+            <td>Right</td>
+            <td>Right</td>
+            <td>Num-6</td>
+        </tr>
+        <tr>
+            <td>Up</td>
+            <td>Up</td>
+            <td>Num-8</td>
+        </tr>
+        <tr>
+            <td>Down</td>
+            <td>Down</td>
+            <td>Num-2</td>
+        </tr>
+        <tr>
+            <td>A</td>
+            <td>X</td>
+            <td>Num-7</td>
+        </tr>
+        <tr>
+            <td>B</td>
+            <td>Z/Y</td>
+            <td>Num-9</td>
+        </tr>
+        <tr>
+            <td>Start</td>
+            <td>Enter</td>
+            <td>Num-1</td>
+        </tr>
+        <tr>
+            <td>Select</td>
+            <td>Ctrl</td>
+            <td>Num-3</td>
+        </tr>
+    </table>
+
+    <script src="lib/jquery-1.4.2.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="lib/dynamicaudio-min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="source/nes.js" type="text/javascript" charset="utf-8"></script>
+    <script src="source/utils.js" type="text/javascript" charset="utf-8"></script>
+    <script src="source/cpu.js" type="text/javascript" charset="utf-8"></script>
+    <script src="source/keyboard.js" type="text/javascript" charset="utf-8"></script>
+    <script src="source/mappers.js" type="text/javascript" charset="utf-8"></script>
+    <script src="source/papu.js" type="text/javascript" charset="utf-8"></script>
+    <script src="source/ppu.js" type="text/javascript" charset="utf-8"></script>
+    <script src="source/rom.js" type="text/javascript" charset="utf-8"></script>
+    <script src="source/ui.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript" charset="utf-8">
+        var nes;
+        $(function() {
+            nes = new JSNES({
+                'ui': $('#emulator').JSNESUI({
+                    "Working": [
+                        ['Bubble Bobble', '/1EVwes2u5yNyi4QfqDD5keR8Sg3JU2DZJt/local-roms/BubbleBobble.nes'],                        
+                    ]
+                })
+            });
+        });
+
+        function loadGames_()
+        {
+           $.getJSON( "data.json", function( data ) {
+              var items = [];               
+              $.each( data, function( key, val ) {
+                items.push( "<li onclick='loadrom(this)' id='" + key + "'>" + val.name + "</li>" );
+              });             
+              $( "<ul/>", {
+                "class": "my-new-list",
+                html: items.join( "" )
+              }).appendTo( "body" );
+            });                     
+        }
+
+        function loadGames(page)
+        {
+              $.getJSON( "/"+page+"/data.json", function( data ) {
+              //$.getJSON( "content.json", function( data ) {
+              var items = [];
+              var files;
+              $.each( data, function( key, val ) {           
+                   if(key=='files') {
+                    $.each( val, function( key2, val2 ) {   
+                        if (key2.match("^local-roms/")) {                                                       
+                               items.push(key2);
+                            }                          
+                    });            
+                   }          
+              });     
+              
+
+              var itemlis = [];
+              $.each( items, function( key, val ) { 
+                    if(val.indexOf(".nes")>0){                                             
+                        var k = val.substring(0,val.indexOf(".nes"));                        
+                        var v = null;
+                        $.each( items, function( key2, val2 ) {                             
+                            if(val2.indexOf(k)==0 && val2.indexOf(".nes")==-1){ 
+                                v = val2;  
+                            }
+                        });
+                        if(v==null) {
+                            itemlis.push( "<li onclick='loadrom(this)' id='" + k+".nes" + "'>" +k.replace('local-roms/','') + "</li>" );                                                   
+                        }
+                        else
+                        {                            
+                            itemlis.push( "<li onclick='loadrom(this)' id='" + k+".nes" + "'><a>"+k.replace('local-roms/','')+"</a><br/> <img class='icon' src='"+ v+"'/></li>" );                                                   
+                        }   
+                    }
+                });
+              
+
+              
+              $( "<ul/>", {
+              "class": "my-new-list",
+              html: itemlis.join( "" )
+              }).appendTo( "body" );            
+              });
+
+              
+        }
+
+        loadrom = function(el)
+        {            
+            nes.ui.romSelect.children().remove();           
+            $('<option>'+"/1MQMC37hiMd27thStg2BhVH8XDhn5FQzbZ/"+el.id+'</option>').attr("value", "/1MQMC37hiMd27thStg2BhVH8XDhn5FQzbZ/"+el.id).appendTo(nes.ui.romSelect);                                
+            //nes.ui.romSelect.val(el.id);
+            nes.ui.romSelect.val("/1MQMC37hiMd27thStg2BhVH8XDhn5FQzbZ/"+el.id);
+            
+           //.attr("value", "local-roms/"+el.id)
+           // nes.ui.romSelect.val("local-roms/"+el.id);
+            nes.ui.loadROM();
+        }
+
+        $(document).ready(function() 
+            {
+                loadGames("1KASSUVX8kBq1yKaboo4hgmuydVxq7ELFh");                
+            }
+            
+        );
+    </script>
+    <style type="text/css">
+       * { font-family: Arial; line-height: 1.5em; font-size: 13px; vertical-align: middle; }
+        ul.my-new-list{            
+            position: absolute;
+            left:0;
+            top:0;
+            border-right:1px solid #ccc;
+            list-style: none;
+            width:450px;
+            height: 100%;
+            overflow: auto;
+
+        }
+
+        ul.my-new-list li{ cursor:default; }
+        ul.my-new-list li:hover{ color: blue; text-decoration: underline;}
+        ul li img.icon{
+            width:280px;
+            height:180px;
+        }
+       #emulator .nes-roms{display:none;}
+    </style>
+    <!--[if IE]>
+        <script type="text/vbscript" src="source/jsnes-ie-hacks.vbscript"></script>
+  
+  <![endif]-->
+
+</center>
+</body>
+</html>

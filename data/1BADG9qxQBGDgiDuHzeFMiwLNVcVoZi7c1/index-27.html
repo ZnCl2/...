@@ -1,0 +1,624 @@
+
+
+<!DOCTYPE html>
+<html>
+  <head>
+<script type="text/javascript" src="/resources/tw2.jquery/static/jquery/1.7.1/jquery.js" ></script>
+
+<script type="text/javascript" src="/resources/moksha.wsgi.widgets.moksha_js/static/moksha.js" ></script>
+    <meta charset="UTF-8">
+    <!-- VIEWPORT STUFF -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1,
+                                   maximum-scale=1" />
+    <!-- end viewport stuff -->
+    <link rel="stylesheet" href="https://badges.fedoraproject.org/static/css/tahrir.css" />
+    <link rel="stylesheet" href="https://badges.fedoraproject.org/static/css/monokai.css" />
+    <link rel="stylesheet" media="mobile" href="https://badges.fedoraproject.org/static/css/unsemantic-grid-mobile.css" />
+    <link rel="stylesheet" media="screen" href="https://badges.fedoraproject.org/static/css/unsemantic-grid-responsive.css" />
+    <link rel="shortcut icon" href="https://badges.fedoraproject.org/static/img/favicon.ico" />
+    <script src="https://badges.fedoraproject.org/static/js/social.js"></script>
+    <script src="https://badges.fedoraproject.org/static/js/favico-0.3.4.min.js"></script>
+    <script>
+        // This is animated by the websocket
+        var notifs_count = 0;
+        var favicon = new Favico({animation : 'popFade'});
+        $(window).bind("focus", function() {
+            // Reset favicon if user switches to this tab.
+            notifs_count = 0;
+            favicon.badge(notifs_count);
+        });
+    </script>
+    <title>Fedora Badges</title>
+
+
+
+
+	<script type="text/javascript" src="//apps.fedoraproject.org/global/js/jsautologin.js">
+	</script>
+
+	<script type="text/javascript">
+		function loginSuccess(userdata)
+		{
+			var child = document.getElementById('login-button');
+			child.parentNode.removeChild(child);
+			var list = document.getElementById('login-list');
+
+			var profile_url = document.createElement('li');
+			var profile_url_template = "https://badges.fedoraproject.org/user/TEMP";
+			if("nickname" in userdata)
+			{
+				profile_url_template = profile_url_template.replace('TEMP', userdata['nickname']);
+			}
+			else
+			{
+				profile_url_template = profile_url_template.replace('TEMP', userdata['id']);
+			}
+			profile_url.innerHTML = '<a href="' + profile_url_template + '">Profile</a>';
+			list.appendChild(profile_url);
+
+			var logout_url = document.createElement('li');
+			logout_url.innerHTML = '<a href="https://badges.fedoraproject.org/logout">Logout</a>';
+			list.appendChild(logout_url);
+		}
+
+		var userdata = null;
+		var myurl = "https://badges.fedoraproject.org:10032";
+		function handleLogin()
+		{
+			if(userdata != null)
+			{
+				// The user is currently logged in
+				//  If this was a recursive auth attempt, report back
+				respondToLogin(myurl, true, userdata);
+			}
+			else
+			{
+				tryBackgroundLogin('/login', loginSuccess, null);
+			}
+		}	
+	</script>
+  </head>
+  <body onload="handleLogin()">
+    <div class="page clearfix">
+      <div class="page-content grid-container">
+        <div class="header clearfix grid-100">
+          <h1>
+            <a href="https://badges.fedoraproject.org/">
+            <div id="site-logo">
+            </div>
+            </a>
+          </h1>
+
+          <form method="POST" action="/explore" id="header-search" class="mobile-hidden">
+            <input type="hidden" name="csrf_token" value="5d614440833775b1dd30e5446d27d3cdaa9876e7"/>
+            <input name="badge-query" required="required" />
+            <input name="badge-search" type="submit" value="Search" />
+          </form>
+        </div>
+
+        <ul class="grid-100 navbar" id="login-list">
+          <li><a href="https://badges.fedoraproject.org/about">About</a></li>
+          <li><a href="https://badges.fedoraproject.org/explore">Explore</a></li>
+          <li><a href="https://badges.fedoraproject.org/report/this/month">Leaderboard</a></li>
+            <li id="login-button"><a href="https://badges.fedoraproject.org/login">Login</a></li>
+        </ul>
+
+
+        
+<div class="page">
+  <!-- COLUMN 1 (Left)-->
+  <div class="grid-33">
+    <div class="shadow">
+      <h1 class="section-header">Latest Awards</h1>
+      <div id="latest-awards" class="padded-content">
+          <div class="grid-container">
+            
+	<div class="grid-33 thumbnail-container">
+		<div class="thumbnail thumbnail-64">
+			<span class="tooltip tooltip-64" data-tooltip="fsdf345">
+				<a href="https://badges.fedoraproject.org/user/fsdf345">
+					<img property="foaf:img schema:image" src="https://seccdn.libravatar.org/avatar/a4fdbdefd62acd002c676696b5734f3f184719f1252ff08c5986d73e20edb97c?s=64&amp;d=https%3A%2F%2Fbadges.fedoraproject.org%2Fstatic%2Fimg%2Fbadger_avatar.png" />
+				</a>
+			</span>
+		</div>
+	</div>
+
+            <div class="grid-33 text-64">
+              <a href="https://badges.fedoraproject.org/user/fsdf345">
+                fsdf345
+              </a>
+              <span class="date">8 mins ago</span>
+            </div>
+            
+	<div class="grid-33 thumbnail-container">
+		<div class="thumbnail thumbnail-64">
+			<span class="tooltip tooltip-64 tooltip-top" data-tooltip="Paranoid Panda -- You updated your password with the Fedora Account System (FAS)">
+				<a href="https://badges.fedoraproject.org/badge/paranoid-panda">
+					<img class="badge-64"
+						src="https://badges.fedoraproject.org/pngs/fas-paranoid-panda.png"
+						alt="paranoid-panda icon" />
+				</a>
+			</span>
+		</div>
+	</div>
+
+          </div>
+          <div class="grid-container">
+            
+	<div class="grid-33 thumbnail-container">
+		<div class="thumbnail thumbnail-64">
+			<span class="tooltip tooltip-64" data-tooltip="dzhang">
+				<a href="https://badges.fedoraproject.org/user/dzhang">
+					<img property="foaf:img schema:image" src="https://seccdn.libravatar.org/avatar/46b78d0963c2da499d2282b18e7f7a6611e2acdb6a1786b698b89ebd25f070c0?s=64&amp;d=https%3A%2F%2Fbadges.fedoraproject.org%2Fstatic%2Fimg%2Fbadger_avatar.png" />
+				</a>
+			</span>
+		</div>
+	</div>
+
+            <div class="grid-33 text-64">
+              <a href="https://badges.fedoraproject.org/user/dzhang">
+                dzhang
+              </a>
+              <span class="date">36 mins ago</span>
+            </div>
+            
+	<div class="grid-33 thumbnail-container">
+		<div class="thumbnail thumbnail-64">
+			<span class="tooltip tooltip-64 tooltip-top" data-tooltip="Paranoid Panda -- You updated your password with the Fedora Account System (FAS)">
+				<a href="https://badges.fedoraproject.org/badge/paranoid-panda">
+					<img class="badge-64"
+						src="https://badges.fedoraproject.org/pngs/fas-paranoid-panda.png"
+						alt="paranoid-panda icon" />
+				</a>
+			</span>
+		</div>
+	</div>
+
+          </div>
+          <div class="grid-container">
+            
+	<div class="grid-33 thumbnail-container">
+		<div class="thumbnail thumbnail-64">
+			<span class="tooltip tooltip-64" data-tooltip="pemensik">
+				<a href="https://badges.fedoraproject.org/user/pemensik">
+					<img property="foaf:img schema:image" src="https://seccdn.libravatar.org/avatar/0db4e7d0cca898a63a8af2fb0a59d558b16bd4b4a1c1afb6942f460ca9e98970?s=64&amp;d=https%3A%2F%2Fbadges.fedoraproject.org%2Fstatic%2Fimg%2Fbadger_avatar.png" />
+				</a>
+			</span>
+		</div>
+	</div>
+
+            <div class="grid-33 text-64">
+              <a href="https://badges.fedoraproject.org/user/pemensik">
+                pemensik
+              </a>
+              <span class="date">55 mins ago</span>
+            </div>
+            
+	<div class="grid-33 thumbnail-container">
+		<div class="thumbnail thumbnail-64">
+			<span class="tooltip tooltip-64 tooltip-top" data-tooltip="If you build it... (Koji Success IV) -- Succesfully completed 250 koji builds.">
+				<a href="https://badges.fedoraproject.org/badge/if-you-build-it...-koji-success-iv">
+					<img class="badge-64"
+						src="https://badges.fedoraproject.org/pngs/koji-if-you-build-it-04.png"
+						alt="if-you-build-it...-koji-success-iv icon" />
+				</a>
+			</span>
+		</div>
+	</div>
+
+          </div>
+          <div class="grid-container">
+            
+	<div class="grid-33 thumbnail-container">
+		<div class="thumbnail thumbnail-64">
+			<span class="tooltip tooltip-64" data-tooltip="mklvr">
+				<a href="https://badges.fedoraproject.org/user/mklvr">
+					<img property="foaf:img schema:image" src="https://seccdn.libravatar.org/avatar/d0756216ee8eda244f1a9642dd185cdef9c6b5ba74cc9edff9c282308bbfac96?s=64&amp;d=https%3A%2F%2Fbadges.fedoraproject.org%2Fstatic%2Fimg%2Fbadger_avatar.png" />
+				</a>
+			</span>
+		</div>
+	</div>
+
+            <div class="grid-33 text-64">
+              <a href="https://badges.fedoraproject.org/user/mklvr">
+                mklvr
+              </a>
+              <span class="date">1 hr ago</span>
+            </div>
+            
+	<div class="grid-33 thumbnail-container">
+		<div class="thumbnail thumbnail-64">
+			<span class="tooltip tooltip-64 tooltip-top" data-tooltip="If you build it... (Koji Success I) -- Succesfully completed a koji build.">
+				<a href="https://badges.fedoraproject.org/badge/if-you-build-it...-koji-success-i">
+					<img class="badge-64"
+						src="https://badges.fedoraproject.org/pngs/koji-if-you-build-it-01.png"
+						alt="if-you-build-it...-koji-success-i icon" />
+				</a>
+			</span>
+		</div>
+	</div>
+
+          </div>
+          <div class="grid-container">
+            
+	<div class="grid-33 thumbnail-container">
+		<div class="thumbnail thumbnail-64">
+			<span class="tooltip tooltip-64" data-tooltip="mklvr">
+				<a href="https://badges.fedoraproject.org/user/mklvr">
+					<img property="foaf:img schema:image" src="https://seccdn.libravatar.org/avatar/d0756216ee8eda244f1a9642dd185cdef9c6b5ba74cc9edff9c282308bbfac96?s=64&amp;d=https%3A%2F%2Fbadges.fedoraproject.org%2Fstatic%2Fimg%2Fbadger_avatar.png" />
+				</a>
+			</span>
+		</div>
+	</div>
+
+            <div class="grid-33 text-64">
+              <a href="https://badges.fedoraproject.org/user/mklvr">
+                mklvr
+              </a>
+              <span class="date">1 hr ago</span>
+            </div>
+            
+	<div class="grid-33 thumbnail-container">
+		<div class="thumbnail thumbnail-64">
+			<span class="tooltip tooltip-64 tooltip-top" data-tooltip="Helping Hand -- You built a package owned by someone else.  It takes a village...">
+				<a href="https://badges.fedoraproject.org/badge/helping-hand">
+					<img class="badge-64"
+						src="https://badges.fedoraproject.org/pngs/helping_hand.png"
+						alt="helping-hand icon" />
+				</a>
+			</span>
+		</div>
+	</div>
+
+          </div>
+      </div> <!-- End padded content. -->
+    </div> <!-- End shadow -->
+  </div>
+  <!-- COLUMN 2 (Middle)-->
+  <div class="grid-33">
+    <div class="shadow">
+      <h1 class="section-header">Weekly Leaders</h1>
+      <div class="padded-content">
+          <div class="grid-container">
+            
+	<div class="grid-33 thumbnail-container">
+		<div class="thumbnail thumbnail-64">
+			<span class="tooltip tooltip-64" data-tooltip="fsze88">
+				<a href="https://badges.fedoraproject.org/user/fsze88">
+					<img property="foaf:img schema:image" src="https://seccdn.libravatar.org/avatar/f692c157454e6e3638a9614be7cd47ae27104da199ef01c6516ee6af59980087?s=64&amp;d=https%3A%2F%2Fbadges.fedoraproject.org%2Fstatic%2Fimg%2Fbadger_avatar.png" />
+				</a>
+			</span>
+		</div>
+	</div>
+
+            <div class="grid-66 text-64">
+              <a href="https://badges.fedoraproject.org/user/fsze88">
+                fsze88
+              </a>
+              with <strong>9</strong>
+              badges this week.
+            </div>
+          </div> <!-- end grid-container -->
+          <div class="grid-container">
+            
+	<div class="grid-33 thumbnail-container">
+		<div class="thumbnail thumbnail-64">
+			<span class="tooltip tooltip-64" data-tooltip="coz">
+				<a href="https://badges.fedoraproject.org/user/coz">
+					<img property="foaf:img schema:image" src="https://seccdn.libravatar.org/avatar/b3ed96b5b71a8d8e85c46a59312c06e3cea40a11575cce0a5d612a1f5694c8cc?s=64&amp;d=https%3A%2F%2Fbadges.fedoraproject.org%2Fstatic%2Fimg%2Fbadger_avatar.png" />
+				</a>
+			</span>
+		</div>
+	</div>
+
+            <div class="grid-66 text-64">
+              <a href="https://badges.fedoraproject.org/user/coz">
+                coz
+              </a>
+              with <strong>8</strong>
+              badges this week.
+            </div>
+          </div> <!-- end grid-container -->
+          <div class="grid-container">
+            
+	<div class="grid-33 thumbnail-container">
+		<div class="thumbnail thumbnail-64">
+			<span class="tooltip tooltip-64" data-tooltip="rrelyea">
+				<a href="https://badges.fedoraproject.org/user/rrelyea">
+					<img property="foaf:img schema:image" src="https://seccdn.libravatar.org/avatar/0aae52e252793409c23a5be1789ef5f3417df356350dbd211fbe8f3aa7fb47a7?s=64&amp;d=https%3A%2F%2Fbadges.fedoraproject.org%2Fstatic%2Fimg%2Fbadger_avatar.png" />
+				</a>
+			</span>
+		</div>
+	</div>
+
+            <div class="grid-66 text-64">
+              <a href="https://badges.fedoraproject.org/user/rrelyea">
+                rrelyea
+              </a>
+              with <strong>6</strong>
+              badges this week.
+            </div>
+          </div> <!-- end grid-container -->
+          <div class="grid-container">
+            
+	<div class="grid-33 thumbnail-container">
+		<div class="thumbnail thumbnail-64">
+			<span class="tooltip tooltip-64" data-tooltip="supervillain">
+				<a href="https://badges.fedoraproject.org/user/supervillain">
+					<img property="foaf:img schema:image" src="https://seccdn.libravatar.org/avatar/f0c0722aa4ede156495338ada44b8d475d97f38409fc61030c07fa1a98714423?s=64&amp;d=https%3A%2F%2Fbadges.fedoraproject.org%2Fstatic%2Fimg%2Fbadger_avatar.png" />
+				</a>
+			</span>
+		</div>
+	</div>
+
+            <div class="grid-66 text-64">
+              <a href="https://badges.fedoraproject.org/user/supervillain">
+                supervillain
+              </a>
+              with <strong>6</strong>
+              badges this week.
+            </div>
+          </div> <!-- end grid-container -->
+          <div class="grid-container">
+            
+	<div class="grid-33 thumbnail-container">
+		<div class="thumbnail thumbnail-64">
+			<span class="tooltip tooltip-64" data-tooltip="bc0102">
+				<a href="https://badges.fedoraproject.org/user/bc0102">
+					<img property="foaf:img schema:image" src="https://seccdn.libravatar.org/avatar/345b9b62fc6417f774b4011f92a184b21db3d5b92ebf4bf9674c1cc85611c3f9?s=64&amp;d=https%3A%2F%2Fbadges.fedoraproject.org%2Fstatic%2Fimg%2Fbadger_avatar.png" />
+				</a>
+			</span>
+		</div>
+	</div>
+
+            <div class="grid-66 text-64">
+              <a href="https://badges.fedoraproject.org/user/bc0102">
+                bc0102
+              </a>
+              with <strong>5</strong>
+              badges this week.
+            </div>
+          </div> <!-- end grid-container -->
+      </div> <!-- End padded content. -->
+    </div> <!-- End shadow -->
+
+  </div>
+  <!-- COLUMN 3 (Right)-->
+  <div class="grid-33">
+    <div class="shadow">
+      <h1 class="section-header">Monthly Leaders</h1>
+      <div class="padded-content">
+          <div class="grid-container">
+            
+	<div class="grid-33 thumbnail-container">
+		<div class="thumbnail thumbnail-64">
+			<span class="tooltip tooltip-64" data-tooltip="ret2libc">
+				<a href="https://badges.fedoraproject.org/user/ret2libc">
+					<img property="foaf:img schema:image" src="https://seccdn.libravatar.org/avatar/af41d2d350feb23f829f0a719854e0318292fa75753e4ccc6403916df28fcfef?s=64&amp;d=https%3A%2F%2Fbadges.fedoraproject.org%2Fstatic%2Fimg%2Fbadger_avatar.png" />
+				</a>
+			</span>
+		</div>
+	</div>
+
+            <div class="grid-66 text-64">
+              <a href="https://badges.fedoraproject.org/user/ret2libc">
+                ret2libc
+              </a>
+              with <strong>13</strong>
+              badges this month.
+            </div>
+          </div> <!-- end grid-container -->
+          <div class="grid-container">
+            
+	<div class="grid-33 thumbnail-container">
+		<div class="thumbnail thumbnail-64">
+			<span class="tooltip tooltip-64" data-tooltip="boydkelly">
+				<a href="https://badges.fedoraproject.org/user/boydkelly">
+					<img property="foaf:img schema:image" src="https://seccdn.libravatar.org/avatar/ccfa698b8812881421f3ed346759cf8ee96d7647d8179f8e533f1babfd454180?s=64&amp;d=https%3A%2F%2Fbadges.fedoraproject.org%2Fstatic%2Fimg%2Fbadger_avatar.png" />
+				</a>
+			</span>
+		</div>
+	</div>
+
+            <div class="grid-66 text-64">
+              <a href="https://badges.fedoraproject.org/user/boydkelly">
+                boydkelly
+              </a>
+              with <strong>12</strong>
+              badges this month.
+            </div>
+          </div> <!-- end grid-container -->
+          <div class="grid-container">
+            
+	<div class="grid-33 thumbnail-container">
+		<div class="thumbnail thumbnail-64">
+			<span class="tooltip tooltip-64" data-tooltip="avm">
+				<a href="https://badges.fedoraproject.org/user/avm">
+					<img property="foaf:img schema:image" src="https://seccdn.libravatar.org/avatar/98cb12b0465b4541bd9cf7d73d7780c454e56dbb1080aa7619e721da88932639?s=64&amp;d=https%3A%2F%2Fbadges.fedoraproject.org%2Fstatic%2Fimg%2Fbadger_avatar.png" />
+				</a>
+			</span>
+		</div>
+	</div>
+
+            <div class="grid-66 text-64">
+              <a href="https://badges.fedoraproject.org/user/avm">
+                avm
+              </a>
+              with <strong>11</strong>
+              badges this month.
+            </div>
+          </div> <!-- end grid-container -->
+          <div class="grid-container">
+            
+	<div class="grid-33 thumbnail-container">
+		<div class="thumbnail thumbnail-64">
+			<span class="tooltip tooltip-64" data-tooltip="juliogonzalez">
+				<a href="https://badges.fedoraproject.org/user/juliogonzalez">
+					<img property="foaf:img schema:image" src="https://seccdn.libravatar.org/avatar/5b6fa5500beab76a5cb936744e525dbd8006b31b77ef27013ac493e5ad2b1415?s=64&amp;d=https%3A%2F%2Fbadges.fedoraproject.org%2Fstatic%2Fimg%2Fbadger_avatar.png" />
+				</a>
+			</span>
+		</div>
+	</div>
+
+            <div class="grid-66 text-64">
+              <a href="https://badges.fedoraproject.org/user/juliogonzalez">
+                juliogonzalez
+              </a>
+              with <strong>9</strong>
+              badges this month.
+            </div>
+          </div> <!-- end grid-container -->
+          <div class="grid-container">
+            
+	<div class="grid-33 thumbnail-container">
+		<div class="thumbnail thumbnail-64">
+			<span class="tooltip tooltip-64" data-tooltip="fsze88">
+				<a href="https://badges.fedoraproject.org/user/fsze88">
+					<img property="foaf:img schema:image" src="https://seccdn.libravatar.org/avatar/f692c157454e6e3638a9614be7cd47ae27104da199ef01c6516ee6af59980087?s=64&amp;d=https%3A%2F%2Fbadges.fedoraproject.org%2Fstatic%2Fimg%2Fbadger_avatar.png" />
+				</a>
+			</span>
+		</div>
+	</div>
+
+            <div class="grid-66 text-64">
+              <a href="https://badges.fedoraproject.org/user/fsze88">
+                fsze88
+              </a>
+              with <strong>9</strong>
+              badges this month.
+            </div>
+          </div> <!-- end grid-container -->
+      </div> <!-- End padded content. -->
+    </div> <!-- End shadow -->
+  </div>
+
+  <!-- Set up the moksha live socket -->
+  
+<script type="text/javascript">
+$(document).ready(function() {
+
+if (typeof moksha_callbacks == 'undefined') { moksha_callbacks = {}; }
+
+	var topic = "org.fedoraproject.prod.fedbadges.badge.award";
+	if (!moksha_callbacks[topic]) {
+		re = new RegExp("^"+topic.replace('.', '\.').replace('*', '.*')+"$$");
+		moksha_callbacks[topic] = {};
+		moksha_callbacks[topic].re = re;
+		moksha_callbacks[topic].callbacks = [];
+	}
+	moksha_callbacks[topic].callbacks.push(function(json, frame) {
+		
+        (function(json){
+            setTimeout(function() {
+                var user = json.msg.user.badges_user_id;
+                var badge = json.msg.badge.badge_id;
+                notifs_count = notifs_count + 1;
+                $.ajax({
+                    url: "https://badges.fedoraproject.org/_w/assertion/" + user + "/" + badge,
+                    dataType: "html",
+                    success: function (html) {
+                        favicon.badge(notifs_count); // animate the favicon
+                        $("#latest-awards").prepend(html);
+                        $("#latest-awards > div:first-child").hide();
+                        $("#latest-awards > div:first-child").slideDown("slow");
+                        $("#latest-awards > div:last-child").slideUp('slow', complete=function() {
+                            $("#latest-awards > div:last-child").remove();
+                        });
+                    }
+                });
+            }, 1000)
+        })(json);
+        ;
+	});
+
+if (typeof raw_msg_callback == 'undefined') {
+	raw_msg_callback = function(e) {
+		var data, json, topic, body;
+
+		data = e.data;
+		json = JSON.parse(data);
+		topic = json.topic;
+		body = json.body;
+
+		$.each(moksha_callbacks, function(_topic, obj) {
+			if (obj.re.test(topic)) {
+				$.each(obj.callbacks, function(i, callback) {
+					callback(body);
+				});
+			}
+		});
+    }
+}
+
+if (typeof WebSocket == 'undefined') { WebSocket = MozWebSocket; }
+
+function setup_moksha_socket() {
+	
+
+	moksha_websocket = new WebSocket(
+		'wss://hub.fedoraproject.org:9939'
+	);
+
+  moksha_websocket.onopen = function(e){moksha.topic_subscribe('org.fedoraproject.prod.fedbadges.badge.award');;}
+
+	moksha_websocket.onmessage = raw_msg_callback;
+}
+
+if (typeof moksha_websocket == 'undefined') {
+  setup_moksha_socket();
+} else {
+	moksha.topic_subscribe('org.fedoraproject.prod.fedbadges.badge.award');
+}
+
+if (typeof moksha == 'undefined') {moksha = {};}
+
+moksha.send_message = function(topic, body) {
+	moksha_websocket.send(
+		JSON.stringify({topic: topic, body: body})
+	);
+}
+
+moksha.topic_subscribe = function(topic) {
+ moksha.send_message('__topic_subscribe__', topic);
+}
+
+});
+</script>
+
+
+  <div class="clear spacer"></div>
+</div>
+
+
+
+
+        <!-- End of flash message template -->
+      
+      </div> <!-- End grid-container -->
+
+    </div> <!-- End page -->
+
+    <footer>
+	  Running ﺎﻠﺘﺣﺮﻳﺭ (Tahrir) version 0.9.2
+	  and Tahrir-API version 0.8.1.
+      <div class="document">
+<p>You can submit new badge ideas on the <a class="reference external" href="https://fedorahosted.org/fedora-badges">fedora-badges</a> tracker.</p>
+<p>Please report bugs and file issues with التحرير (Tahrir) on <a class="reference external" href="https://github.com/fedora-infra/tahrir/issues">the GitHub issues
+tracker</a>.</p>
+<p>This project is free software; you can find the <a class="reference external" href="http://github.com/fedora-infra/tahrir">source</a> on GitHub.</p>
+</div>
+
+    </footer>
+
+    <script src="https://apps.fedoraproject.org/fedmenu/js/fedora-libravatar.js"></script>
+    <script src="https://apps.fedoraproject.org/fedmenu/js/fedmenu.js"></script>
+    <script>
+      fedmenu({
+          'url': 'https://apps.fedoraproject.org/js/data.js',
+          'mimeType': 'application/javascript',
+          'position': 'bottom-right',
+      });
+    </script>
+
+  </body>
+</html>

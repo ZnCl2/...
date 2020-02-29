@@ -1,0 +1,213 @@
+@supports (--foo: bar) {
+
+body, h1, ul, li, p, a {
+  margin: 0; padding: 0; border: 0 none;
+  text-decoration: none;
+}
+ul, li {
+  list-style: none;
+}
+
+html.loading,
+html.loading *,
+html.loading ::before,
+html.loading ::after {
+  transition: none !important;
+}
+html {
+  --light-bg: #ffffff;
+  --dark-bg: #454545;
+  --theme-time: 2s;
+  --item-height: 64px;
+  --list-left-bar: 3px;
+  --item-start-offset: 0px;
+  --logo-size: 233px;
+  background-color: var(--light-bg);
+  transition: background-color var(--theme-time);
+}
+html.dark {
+  background-color: var(--dark-bg);
+}
+body {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+body::before {
+  content: "";
+  flex-grow: 1;
+}
+body::after {
+  content: "";
+  flex-grow: 1.5;
+}
+h1 {
+  position: relative;
+  width: var(--logo-size);
+  height: var(--logo-size);
+  left: -96px;
+}
+h1::before,
+h1::after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 0; left: 0;
+  width: var(--logo-size);
+  height: var(--logo-size);
+}
+h1::before {
+  background: center/110% url(logo_dark.png);
+  background-color: var(--dark-bg);
+}
+h1::after {
+  background: center/110% url(logo_light.png);
+  background-color: var(--light-bg);
+  transition: opacity var(--theme-time);
+}
+html.theme-may-change h1::after {
+  will-change: opacity;
+}
+html.dark h1::after {
+  opacity: 0;
+}
+#list {
+  width: 225px;
+  margin: -192px 0 0 320px;
+}
+#list a {
+  color: transparent;
+  display: block;
+  height: var(--item-height);
+  line-height: calc(var(--item-height) * 1.05);
+  position: relative;
+  outline: 0;
+}
+#list a::before,
+#list a::after {
+  display: block;
+  width: 100%; height: 100%;
+  text-indent: calc(var(--list-left-bar) + var(--item-height) +
+                    var(--item-start-offset));
+  box-sizing: border-box;
+  background: calc(var(--list-left-bar) + var(--item-start-offset)) /
+              var(--item-height) no-repeat;
+  content: var(--content);
+  position: absolute;
+  top: 0; left: 0;
+  overflow: hidden;
+}
+#list a::before {
+  color: var(--color);
+  background-image: var(--image-normal);
+  transition: background-color var(--theme-time);
+}
+#list a::after {
+  color: white;
+  background-color: var(--color);
+  width: var(--list-left-bar);
+  transition: width .3s;
+  background-image: var(--image-active);
+}
+#list li:hover a::after,
+#list li a:focus::after {
+  width: 100%;
+}
+
+#twitter {
+  --color: #1da1f2;
+  --content: "Twitter";
+  --image-normal: url(sites.svg#twitterc);
+  --image-active: url(sites.svg#twitterw);
+}
+#github {
+  --color: #808080;
+  --content: "GitHub";
+  --image-normal: url(sites.svg#githubc);
+  --image-active: url(sites.svg#githubw);
+}
+#bangumi {
+  --color: #f09199;
+  --content: "Bangumi";
+  --image-normal: url(sites.svg#bangumic);
+  --image-active: url(sites.svg#bangumiw);
+}
+
+footer {
+  flex-grow: 1;
+  flex-direction: column;
+  justify-content: flex-end;
+  max-height: 96px;
+  min-height: 50px;
+  display: flex;
+  text-align: center;
+  font-size: 80%;
+  color: #999;
+}
+footer li {
+  display: inline-block;
+  padding: 0 10px;
+}
+footer li:not(:first-child) {
+  border-left: 1px solid currentcolor;
+}
+footer a {
+  color: #ccc;
+}
+footer a:hover {
+  text-decoration: underline;
+}
+footer p {
+  margin-top: 8px;
+}
+
+#theme-switch + label {
+  position: fixed;
+  right: 15px;
+  bottom: 15px;
+  width: 24px; height: 16px;
+  background: #ccc;
+  border-radius: 8px;
+  cursor: pointer;
+}
+#theme-switch + label::before {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 1px; left: 1px;
+  width: 14px; height: 14px;
+  border-radius: 8px;
+  background: #fff;
+  transition: all .3s;
+}
+#theme-switch:checked + label::before {
+  background: #454545;
+  left: 9px;
+}
+
+@media (max-width: 450px) {
+
+html {
+  --item-start-offset: 36px;
+}
+body::after {
+  flex-grow: 3;
+}
+h1 {
+  left: auto;
+  flex-grow: 2;
+  min-height: var(--logo-size);
+  max-height: 280px;
+}
+#list {
+  margin: auto;
+}
+footer p {
+  margin-top: 5px;
+}
+
+} /* @media (max-width: 450px) */
+
+} /* @supports (--foo: bar) */

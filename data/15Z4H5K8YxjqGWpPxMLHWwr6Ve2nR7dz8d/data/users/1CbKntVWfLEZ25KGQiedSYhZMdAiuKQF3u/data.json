@@ -1,0 +1,169 @@
+{
+    "issue_comments": [
+        {
+            "issue_id": 0,
+            "issue_json": "data/users/1BphMmzmrPc3zawVj6ES9va18a6PxJqb47",
+            "body": "Thanks for your suggestion.\n\nDownloading an optional file is generally considered an expensive action on ZeroNet, which means it is not quite appropriate to perform on hover. Additionally, the media popup can get troublesome to navigate around, should one be triggered accidentally. Users would have to dodge thumbnails as they scroll, which certainly does not add up to a positive user experience. The same goes for expanding comment lists, as they will disrupt vertical positioning of other posts in the list, and are not appropriate to be triggered by hover.\n\nIf you have other thoughts, please let me know.\n\n- - -\n\nFor further suggestions, please use the `proposal` label for new features and the `enhancement` label for existing features. For bug reports, please use the `bug` label. Please open a separate issue for each suggestion or bug report you have to post, so that the topics can be kept clean-cut and self-contained.",
+            "date_added": 1513072639600,
+            "id": 0
+        },
+        {
+            "issue_id": 0,
+            "issue_json": "data/users/1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3h",
+            "body": "So links always open to the immediate right of the current column. The one with navbar is leftmost, thus links from there open in the leftmost navigation pane. Seems solid and consistent. Honestly I haven't thought much about the single column layout yet, and this should work much better under that situation. I will see into implementing this.",
+            "date_added": 1513256032800,
+            "id": 1
+        },
+        {
+            "issue_id": 0,
+            "issue_json": "data/users/1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3h",
+            "body": "Done.",
+            "date_added": 1513258697700,
+            "id": 2
+        },
+        {
+            "issue_id": 0,
+            "issue_json": "data/users/1BphMmzmrPc3zawVj6ES9va18a6PxJqb47",
+            "body": "Closed due to inactivity.",
+            "date_added": 1513309379600,
+            "id": 3
+        },
+        {
+            "issue_id": 0,
+            "issue_json": "data/users/1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3h",
+            "body": "That's good to hear!",
+            "date_added": 1513309392600,
+            "id": 4
+        },
+        {
+            "issue_id": 1,
+            "issue_json": "data/users/1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3h",
+            "body": "It's possible that the owner of the mentioning activity has changed its `date_added`, causing it to be selected a second time. Or there might actually have been more than one activity, usually follows, caused by having profiles on multiple hubs. If there is another case possible, then it's rare enough that I have yet to observe it. Further information is needed.\n\nThe URL should have no effect on this, as the panes are separate from each other, each having its own path.",
+            "date_added": 1513528359300,
+            "id": 5
+        },
+        {
+            "issue_id": 1,
+            "issue_json": "data/users/1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3h",
+            "body": "> 1. Open your profile link.\n> 2. Create a post on ZeroMe and mention yourself.\n> 3. A moment later check Sakana if there are two same posts in Mentions column or your profile.\n\nCannot reproduce using these procedures. Posts show up normally.",
+            "date_added": 1513613764400,
+            "id": 6
+        },
+        {
+            "issue_id": 1,
+            "issue_json": "data/users/1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3h",
+            "body": "If all new posts are being duplicated, there is another possible case that may lead to this. When a `post-list` is reused for an exactly same set of filters, without closing it's previous `PostStream`, its callback will be invoked more than one time for a post. This is not supposed to happen, either, but it fits your description of the problem, that it only happens after navigation.",
+            "date_added": 1513614260400,
+            "id": 7
+        },
+        {
+            "issue_id": 2,
+            "issue_json": "data/users/1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3h",
+            "body": "The problem with names is, as described in `doc/markdown.md`, that they are mutable and non-unique. A generated link for a name might well get lost after a name change, or even point to the wrong user: and that is why it isn't already done for text mentions right now. The ZeroMe solution i.e. \"search user feature\" is equally broken for the same reasons, complete with the further problem that it's utterly tedious for the user. I had considered several ways to tackle the mention problem, and the current one is which I considered the least bad. Here are them:\n\n* The current solution: markdown link. Consumes space. Robust. Does not break compatibility with ZeroMe at all.\n* Markdown link, but with automatic rotation into optional file on full quota. Robust. Partly incompatible with ZeroMe, as older posts will no longer be accessible in other ZeroMe frontends that don't know about the protocol.\n* Text, but use address instead of name. e.g. `@1J3rJ8ecnwH2EPYa6MrgZttBNc61ACFiCj:`. Saves space. Robust. Completely incompatible with ZeroMe.\n* `meta` field. e.g. `\"mentions\": [{ \"address\": \"1J3rJ8ecnwH2EPYa6MrgZttBNc61ACFiCj\", \"start\": 0, \"end\": 7 }, ...]`. Consumes less space. Fragile, will break if post is edited in other ZeroMe frontends that don't know about the protocol. Read-only compatibility with ZeroMe. Does not work with comments.\n\nAs it stands now, there are no standards defining behavior of ZeroMe frontends, except the de-facto standard that is the original ZeroMe itself. And indeed, all others that I know of before `|><||>` are modifications on the original ZeroMe codebase. That is why I deem compatibility with the original ZeroMe a high value objective, and went down the current path. If you have a better idea, please let me know.",
+            "date_added": 1513667449400,
+            "id": 8
+        },
+        {
+            "issue_id": 2,
+            "issue_json": "data/users/1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3h",
+            "body": "Implemented as `compose.exactMention`. Set the option to `false` in `/config/raw` to use name-based mentions.",
+            "date_added": 1513871841900,
+            "id": 9
+        },
+        {
+            "issue_id": 1,
+            "issue_json": "data/users/1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3h",
+            "body": "I have witnessed what I suppose to be an instance of this, and the two posts had different `post_id`s. Apparently two posts with identical content were made, and then one of them was removed, perhaps manualy. This is likely a problem with the original ZeroMe, or whatever frontend that user was using, instead of `|><||>`.\n\nAs there has been no further information in the past few weeks, this is being closed as not-applicable.",
+            "date_added": 1514610328000,
+            "id": 10
+        },
+        {
+            "issue_id": 3,
+            "issue_json": "data/users/1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3h",
+            "body": "Confirmed. The issue is caused by browser caching, and ZeroMe using post IDs for image file names. The cache can be circumvented on the client side by attaching query strings to image URLs. For images, deterministic ones derived from preview data (`meta.img`) should do, as those are mostly guaranteed to exist.\n\nThe same glitch would also happen on other ZeroMe frontends that don't implement query strings yet, if the image was downloaded within 10 minutes before the update arrived, so you may want to report the issue to them as well.",
+            "date_added": 1514818453800,
+            "id": 11
+        },
+        {
+            "issue_id": 3,
+            "issue_json": "data/users/1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3h",
+            "body": "This should be fixed now.",
+            "date_added": 1514820813000,
+            "id": 12
+        }
+    ],
+    "next_issue_comment_id": 13,
+    "issue_actions": [
+        {
+            "issue_id": 2,
+            "issue_json": "data/users/1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3h",
+            "action": "changeStatus",
+            "param": "close",
+            "date_added": 1513871842100,
+            "id": 0
+        },
+        {
+            "issue_id": 1,
+            "issue_json": "data/users/1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3h",
+            "action": "removeTags",
+            "param": "needs-more-info",
+            "date_added": 1514610283400,
+            "id": 1
+        },
+        {
+            "issue_id": 1,
+            "issue_json": "data/users/1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3h",
+            "action": "addTags",
+            "param": "not-applicable",
+            "date_added": 1514610287000,
+            "id": 2
+        },
+        {
+            "issue_id": 1,
+            "issue_json": "data/users/1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3h",
+            "action": "changeStatus",
+            "param": "close",
+            "date_added": 1514610328300,
+            "id": 3
+        },
+        {
+            "issue_id": 3,
+            "issue_json": "data/users/1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3h",
+            "action": "addTags",
+            "param": "fixed",
+            "date_added": 1514820779300,
+            "id": 4
+        }
+    ],
+    "next_issue_action_id": 5,
+    "issues": [
+        {
+            "title": "New panes no longer guaranteed to be in the right column.",
+            "body": "With the resolution of #0@1AWwhg4EiWAVttfQboJZ4wJfX3WawfJT3h, new panes are no longer guaranteed to be the last element of `#container`. A new mechanism for distinguishing new panes needs to be devised.\n\nWorkaround: set `panes.navigation.count` to `1` in `/config/raw`.",
+            "date_added": 1513915418800,
+            "open": 1,
+            "reopened": 0,
+            "tags": "bug,regression,maguro,workaround-available",
+            "id": 0
+        },
+        {
+            "title": "Sort activity by other criteria than time descending.",
+            "body": "Idea from binchan2@zeroid.bit.\n\nCurrently, the only way of sorting activity is by time descending. Non-trivial changes to the `PostStream` class are required to allow for other sorting options. Namely, the following situations have to be considered:\n\n* When time descending is the first criterion. Nothing needs to be changed.\n* When time ascending is the first criterion. `date_added` conditions should be inversed.\n* When the first criterion is neither. Alternative method of pagination required.\n* In case there exists useful criteria not expressible in SQL. Fetch all activity when those are used. JavaScript sorting methods need to be coded for all criteria.\n\nThe sorting criteria should be specifiable via a `/tl/` option `sort`, as a flat string array `[ \"column1\", \"direction1\", \"column2\", \"direction2\", ... ]`, where `direction#` are either `asc` or `desc`. The default value should be `[ \"time\", \"desc\" ]`. In `/tl/` syntax, this should look like `/tl/:sort=$time,desc/...`.\n\nA preliminary implementation should only be required to consider the first two situations.",
+            "date_added": 1514604335800,
+            "open": 1,
+            "reopened": 0,
+            "tags": "proposal,timeline",
+            "id": 1
+        },
+        {
+            "title": "Filter by time range.",
+            "body": "Idea from binchan2@zeroid.bit.\n\n`|><||>` should be able to filter activities by time range. A new filter should be created for this purpose, with the following requirements:\n\n* The filter should have two options: `start` and `end`.\n* Both timestamps and strings of standard date representations should be handled. `moment` may be used for this. Relative time e.g. \"1 month ago\" is not required.\n* When only one of those options are provided, the other end should be assumed to be unbounded.\n* The filter should be accessible from `/tl/` as `time`.",
+            "date_added": 1514614556200,
+            "open": 1,
+            "reopened": 0,
+            "tags": "proposal,timeline",
+            "id": 2
+        }
+    ],
+    "next_issue_id": 3
+}

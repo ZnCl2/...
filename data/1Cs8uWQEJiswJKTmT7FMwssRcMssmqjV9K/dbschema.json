@@ -1,0 +1,95 @@
+{
+    "db_name": "zv_cluster",
+    "db_file": "data/zv_cluster.db",
+    "version": 2,
+    "maps": {
+        ".+/data.json":{
+            "to_table": [
+                {"node": "channel", "table": "channel"},
+                {"node": "comment", "table": "comment"},                
+                {"node": "item", "table": "item"},
+                {"moderation": "moderation", "table": "moderation"},
+                {"node": "vote", "table": "vote"}
+            ]
+        }
+    },
+    "tables": {
+        "channel": {
+            "cols": [
+                ["channel_address", "TEXT"],
+                ["channel_name", "TEXT"],
+                ["channel_description", "TEXT"],
+                ["logo_file", "TEXT"],
+                ["cluster_id", "TEXT"],
+                ["date_added", "INTEGER"],
+                ["hide", "INTEGER"],
+                ["user", "TEXT"],
+                ["user_id", "TEXT"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX channel_key ON channel(json_id, date_added)"],
+            "schema_changed": 1
+        },        
+        "comment": {
+            "cols": [
+                ["comment_id", "INTEGER"],
+                ["item_id", "INTEGER"],
+                ["channel", "TEXT"],
+                ["user_id", "INTEGER"],
+                ["comment", "TEXT"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX comment_key ON comment(json_id, date_added)"],
+            "schema_changed": 1
+        },
+        "item": {
+            "cols": [
+                ["item_id", "TEXT"],
+                ["category", "INTEGER"],
+                ["subcategory", "INTEGER"],
+                ["channel", "TEXT"],
+                ["content_type", "TEXT"],
+                ["date_added", "INTEGER"],
+                ["file_name", "TEXT"],
+                ["file_size", "INTEGER"],
+                ["file_type", "TEXT"],
+                ["inner_file", "TEXT"],
+                ["poster_file", "TEXT"],
+                ["publisher", "TEXT"],
+                ["year", "TEXT"],
+                ["genre", "TEXT"],
+                ["title", "TEXT"],                
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX item_key ON item(json_id, date_added)"],
+            "schema_changed": 1
+        },
+        "moderation": {
+            "cols": [
+                ["moderation_id", "INTEGER"],
+                ["moderation_type", "TEXT"],
+                ["item_id", "INTEGER"],
+                ["hide", "INTEGER"],
+                ["current", "INTEGER"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX moderation_key ON moderation(json_id, date_added)"],
+            "schema_changed": 1
+        },
+        "vote": {
+            "cols": [
+                ["vote_id", "INTEGER"],
+                ["item_id", "INTEGER"],
+                ["channel", "TEXT"],
+                ["user_id", "INTEGER"],
+                ["vote", "INTEGER"],
+                ["date_added", "INTEGER"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX vote_key ON vote(json_id, date_added)"],
+            "schema_changed": 1
+        }
+    }
+}

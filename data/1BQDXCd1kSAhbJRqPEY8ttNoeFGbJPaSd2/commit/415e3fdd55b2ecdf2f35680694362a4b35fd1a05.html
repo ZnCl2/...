@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>rewrite in C with libgit2, first version - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/415e3fdd55b2ecdf2f35680694362a4b35fd1a05.html">415e3fdd55b2ecdf2f35680694362a4b35fd1a05</a>
+<b>parent</b> <a href="../commit/bda4633633a0701bbd2f7861674a8e612d961fb7.html">bda4633633a0701bbd2f7861674a8e612d961fb7</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Sat Dec  5 20:22:57 +0100
+
+rewrite in C with libgit2, first version
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">urmoms</a></td><td> | </td><td class="num">135</td><td><span class="i"></span><span class="d">-------------------------------------------------------------------------------</span></td></tr>
+<tr><td><a href="#h1">urmoms.c</a></td><td> | </td><td class="num">222</td><td><span class="i">+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++</span><span class="d"></span></td></tr>
+</table>2 files changed, 222 insertions(+), 135 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/urmoms.html">urmoms</a> b/<a href="../file/urmoms.html">urmoms</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -1,135 +0,0 @@
+</a><a href="#h0-0-0" id="h0-0-0" class="d">-#!/bin/sh
+</a><a href="#h0-0-1" id="h0-0-1" class="d">-
+</a><a href="#h0-0-2" id="h0-0-2" class="d">-# DEBUG
+</a><a href="#h0-0-3" id="h0-0-3" class="d">-#set -e -x
+</a><a href="#h0-0-4" id="h0-0-4" class="d">-
+</a><a href="#h0-0-5" id="h0-0-5" class="d">-usage() {
+</a><a href="#h0-0-6" id="h0-0-6" class="d">-	printf &apos;%s &lt;repodir&gt; &lt;htmldir&gt;\n&apos; &quot;$0&quot;
+</a><a href="#h0-0-7" id="h0-0-7" class="d">-	exit 1
+</a><a href="#h0-0-8" id="h0-0-8" class="d">-}
+</a><a href="#h0-0-9" id="h0-0-9" class="d">-
+</a><a href="#h0-0-10" id="h0-0-10" class="d">-header() {
+</a><a href="#h0-0-11" id="h0-0-11" class="d">-	cat &lt;&lt;!__EOF__
+</a><a href="#h0-0-12" id="h0-0-12" class="d">-&lt;!DOCTYPE HTML&gt;
+</a><a href="#h0-0-13" id="h0-0-13" class="d">-&lt;html dir=&quot;ltr&quot; lang=&quot;en&quot;&gt;
+</a><a href="#h0-0-14" id="h0-0-14" class="d">-&lt;head&gt;
+</a><a href="#h0-0-15" id="h0-0-15" class="d">-&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot; /&gt;
+</a><a href="#h0-0-16" id="h0-0-16" class="d">-&lt;meta http-equiv=&quot;Content-Language&quot; content=&quot;en&quot; /&gt;
+</a><a href="#h0-0-17" id="h0-0-17" class="d">-&lt;title&gt;${name} - ${description}&lt;/title&gt;
+</a><a href="#h0-0-18" id="h0-0-18" class="d">-&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;style.css&quot; /&gt;
+</a><a href="#h0-0-19" id="h0-0-19" class="d">-&lt;/head&gt;
+</a><a href="#h0-0-20" id="h0-0-20" class="d">-&lt;body&gt;
+</a><a href="#h0-0-21" id="h0-0-21" class="d">-&lt;center&gt;
+</a><a href="#h0-0-22" id="h0-0-22" class="d">-&lt;h1&gt;&lt;img src=&quot;${relpath}logo.png&quot; alt=&quot;&quot; /&gt; ${name}&lt;/h1&gt;
+</a><a href="#h0-0-23" id="h0-0-23" class="d">-&lt;span class=&quot;desc&quot;&gt;${description}&lt;/span&gt;&lt;br/&gt;
+</a><a href="#h0-0-24" id="h0-0-24" class="d">-&lt;a href=&quot;${relpath}log.html&quot;&gt;Log&lt;/a&gt; |
+</a><a href="#h0-0-25" id="h0-0-25" class="d">-&lt;a href=&quot;${relpath}files.html&quot;&gt;Files&lt;/a&gt; |
+</a><a href="#h0-0-26" id="h0-0-26" class="d">-&lt;a href=&quot;${relpath}stats.html&quot;&gt;Stats&lt;/a&gt; |
+</a><a href="#h0-0-27" id="h0-0-27" class="d">-&lt;a href=&quot;${relpath}readme.html&quot;&gt;README&lt;/a&gt; |
+</a><a href="#h0-0-28" id="h0-0-28" class="d">-&lt;a href=&quot;${relpath}license.html&quot;&gt;LICENSE&lt;/a&gt;
+</a><a href="#h0-0-29" id="h0-0-29" class="d">-&lt;/center&gt;
+</a><a href="#h0-0-30" id="h0-0-30" class="d">-&lt;hr/&gt;
+</a><a href="#h0-0-31" id="h0-0-31" class="d">-&lt;pre&gt;
+</a><a href="#h0-0-32" id="h0-0-32" class="d">-!__EOF__
+</a><a href="#h0-0-33" id="h0-0-33" class="d">-}
+</a><a href="#h0-0-34" id="h0-0-34" class="d">-
+</a><a href="#h0-0-35" id="h0-0-35" class="d">-footer() {
+</a><a href="#h0-0-36" id="h0-0-36" class="d">-	cat &lt;&lt;!__EOF__
+</a><a href="#h0-0-37" id="h0-0-37" class="d">-&lt;/pre&gt;
+</a><a href="#h0-0-38" id="h0-0-38" class="d">-&lt;/body&gt;
+</a><a href="#h0-0-39" id="h0-0-39" class="d">-&lt;/html&gt;
+</a><a href="#h0-0-40" id="h0-0-40" class="d">-!__EOF__
+</a><a href="#h0-0-41" id="h0-0-41" class="d">-}
+</a><a href="#h0-0-42" id="h0-0-42" class="d">-
+</a><a href="#h0-0-43" id="h0-0-43" class="d">-# usage: repodir and htmldir must be set.
+</a><a href="#h0-0-44" id="h0-0-44" class="d">-if test x&quot;$1&quot; = x&quot;&quot; || test x&quot;$2&quot; = x&quot;&quot;; then
+</a><a href="#h0-0-45" id="h0-0-45" class="d">-	usage
+</a><a href="#h0-0-46" id="h0-0-46" class="d">-fi
+</a><a href="#h0-0-47" id="h0-0-47" class="d">-
+</a><a href="#h0-0-48" id="h0-0-48" class="d">-# make absolute path to htmldir.
+</a><a href="#h0-0-49" id="h0-0-49" class="d">-htmldir=&quot;$(readlink -f $2)&quot;
+</a><a href="#h0-0-50" id="h0-0-50" class="d">-mkdir -p &quot;${htmldir}&quot;
+</a><a href="#h0-0-51" id="h0-0-51" class="d">-
+</a><a href="#h0-0-52" id="h0-0-52" class="d">-# repodir must be a directory to go to.
+</a><a href="#h0-0-53" id="h0-0-53" class="d">-cd &quot;$1&quot; || usage
+</a><a href="#h0-0-54" id="h0-0-54" class="d">-
+</a><a href="#h0-0-55" id="h0-0-55" class="d">-# default index page (symlink).
+</a><a href="#h0-0-56" id="h0-0-56" class="d">-indexpage=&quot;log.html&quot;
+</a><a href="#h0-0-57" id="h0-0-57" class="d">-
+</a><a href="#h0-0-58" id="h0-0-58" class="d">-# project name, if bare repo remove .git suffix.
+</a><a href="#h0-0-59" id="h0-0-59" class="d">-name=$(basename &quot;$(pwd)&quot; &quot;.git&quot;)
+</a><a href="#h0-0-60" id="h0-0-60" class="d">-
+</a><a href="#h0-0-61" id="h0-0-61" class="d">-# read .git/description.
+</a><a href="#h0-0-62" id="h0-0-62" class="d">-description=&quot;&quot;
+</a><a href="#h0-0-63" id="h0-0-63" class="d">-test -f &quot;.git/description&quot; &amp;&amp; description=&quot;$(cat &apos;.git/description&apos;)&quot;
+</a><a href="#h0-0-64" id="h0-0-64" class="d">-
+</a><a href="#h0-0-65" id="h0-0-65" class="d">-# make diff for each commit (all files).
+</a><a href="#h0-0-66" id="h0-0-66" class="d">-relpath=&quot;../&quot;
+</a><a href="#h0-0-67" id="h0-0-67" class="d">-mkdir -p &quot;${htmldir}/commit&quot;
+</a><a href="#h0-0-68" id="h0-0-68" class="d">-git log --pretty=&apos;%H&apos; | while read -r commit; do
+</a><a href="#h0-0-69" id="h0-0-69" class="d">-	test -e &quot;${htmldir}/commit/${commit}.html&quot; &amp;&amp; continue
+</a><a href="#h0-0-70" id="h0-0-70" class="d">-
+</a><a href="#h0-0-71" id="h0-0-71" class="d">-	header &gt; &quot;${htmldir}/commit/${commit}.html&quot;
+</a><a href="#h0-0-72" id="h0-0-72" class="d">-	git show --pretty=full &quot;${commit}&quot; | \
+</a><a href="#h0-0-73" id="h0-0-73" class="d">-		sed -E &apos;s@^commit (.*)$@commit &lt;a href=&quot;&apos;${relpath}&apos;commit/\1.html&quot;&gt;\1&lt;/a&gt;@g&apos; &gt;&gt; &quot;${htmldir}/commit/${commit}.html&quot;
+</a><a href="#h0-0-74" id="h0-0-74" class="d">-	footer &gt;&gt; &quot;${htmldir}/commit/${commit}.html&quot;
+</a><a href="#h0-0-75" id="h0-0-75" class="d">-done 
+</a><a href="#h0-0-76" id="h0-0-76" class="d">-
+</a><a href="#h0-0-77" id="h0-0-77" class="d">-# make log with all commits.
+</a><a href="#h0-0-78" id="h0-0-78" class="d">-relpath=&quot;&quot;
+</a><a href="#h0-0-79" id="h0-0-79" class="d">-header &gt; &quot;${htmldir}/log.html&quot;
+</a><a href="#h0-0-80" id="h0-0-80" class="d">-printf &apos;&lt;table border=&quot;0&quot;&gt;&apos; &gt;&gt; &quot;${htmldir}/log.html&quot;
+</a><a href="#h0-0-81" id="h0-0-81" class="d">-git log --pretty=&apos;&lt;tr&gt;&lt;td align=&quot;right&quot;&gt;%cr&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;&apos;${relpath}&apos;commit/%H.html&quot;&gt;%H&lt;/a&gt;&lt;/td&gt;&lt;td&gt;%an&lt;/td&gt;&lt;td&gt;%s&lt;/td&gt;&lt;/tr&gt;&apos; &gt;&gt; &quot;${htmldir}/log.html&quot;
+</a><a href="#h0-0-82" id="h0-0-82" class="d">-printf &apos;&lt;/table&gt;&apos; &gt;&gt; &quot;${htmldir}/log.html&quot;
+</a><a href="#h0-0-83" id="h0-0-83" class="d">-footer &gt;&gt; &quot;${htmldir}/log.html&quot;
+</a><a href="#h0-0-84" id="h0-0-84" class="d">-
+</a><a href="#h0-0-85" id="h0-0-85" class="d">-# make index with file links.
+</a><a href="#h0-0-86" id="h0-0-86" class="d">-relpath=&quot;&quot;
+</a><a href="#h0-0-87" id="h0-0-87" class="d">-header &gt;&gt; &quot;${htmldir}/files.html&quot;
+</a><a href="#h0-0-88" id="h0-0-88" class="d">-printf &apos;&lt;table&gt;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Mode&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;Name&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;Size&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;&apos; &gt;&gt; &quot;${htmldir}/files.html&quot;
+</a><a href="#h0-0-89" id="h0-0-89" class="d">-git ls-tree -r -l master | while read -r mode type object size file; do
+</a><a href="#h0-0-90" id="h0-0-90" class="d">-	git log -1 --pretty=&apos;&lt;tr&gt;&lt;td&gt;&apos;${mode}&apos;&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;&apos;${relpath}&apos;commit/%H.html#file-&apos;${file}&apos;&quot;&gt;&apos;${file}&apos;&lt;/a&gt;&lt;/td&gt;&lt;td&gt;&apos;${size}&apos;&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;file/&apos;${file}&apos;&quot;&gt;[plain]&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;&apos; &quot;${file}&quot;
+</a><a href="#h0-0-91" id="h0-0-91" class="d">-done &gt;&gt; &quot;${htmldir}/files.html&quot;
+</a><a href="#h0-0-92" id="h0-0-92" class="d">-printf &apos;&lt;/table&gt;&apos; &gt;&gt; &quot;${htmldir}/files.html&quot;
+</a><a href="#h0-0-93" id="h0-0-93" class="d">-footer &gt;&gt; &quot;${htmldir}/files.html&quot;
+</a><a href="#h0-0-94" id="h0-0-94" class="d">-
+</a><a href="#h0-0-95" id="h0-0-95" class="d">-# readme page
+</a><a href="#h0-0-96" id="h0-0-96" class="d">-# find README file.
+</a><a href="#h0-0-97" id="h0-0-97" class="d">-relpath=&quot;&quot;
+</a><a href="#h0-0-98" id="h0-0-98" class="d">-readme=&quot;&quot;
+</a><a href="#h0-0-99" id="h0-0-99" class="d">-for f in README README.md readme.md; do
+</a><a href="#h0-0-100" id="h0-0-100" class="d">-	test -e &quot;${f}&quot; &amp;&amp; readme=&quot;${f}&quot;
+</a><a href="#h0-0-101" id="h0-0-101" class="d">-done
+</a><a href="#h0-0-102" id="h0-0-102" class="d">-# make page.
+</a><a href="#h0-0-103" id="h0-0-103" class="d">-header &gt; &quot;${htmldir}/readme.html&quot;
+</a><a href="#h0-0-104" id="h0-0-104" class="d">-if test x&quot;${readme}&quot; != x&quot;&quot;; then
+</a><a href="#h0-0-105" id="h0-0-105" class="d">-	cat &quot;${readme}&quot; &gt;&gt; &quot;${htmldir}/readme.html&quot;
+</a><a href="#h0-0-106" id="h0-0-106" class="d">-else
+</a><a href="#h0-0-107" id="h0-0-107" class="d">-	echo &quot;no README file found&quot; &gt;&gt; &quot;${htmldir}/readme.html&quot;
+</a><a href="#h0-0-108" id="h0-0-108" class="d">-fi
+</a><a href="#h0-0-109" id="h0-0-109" class="d">-footer &gt;&gt; &quot;${htmldir}/readme.html&quot;
+</a><a href="#h0-0-110" id="h0-0-110" class="d">-
+</a><a href="#h0-0-111" id="h0-0-111" class="d">-# license page
+</a><a href="#h0-0-112" id="h0-0-112" class="d">-# find LICENSE file.
+</a><a href="#h0-0-113" id="h0-0-113" class="d">-relpath=&quot;&quot;
+</a><a href="#h0-0-114" id="h0-0-114" class="d">-license=&quot;&quot;
+</a><a href="#h0-0-115" id="h0-0-115" class="d">-for f in LICENSE LICENSE.md; do
+</a><a href="#h0-0-116" id="h0-0-116" class="d">-	test -e &quot;${f}&quot; &amp;&amp; license=&quot;${f}&quot;
+</a><a href="#h0-0-117" id="h0-0-117" class="d">-done
+</a><a href="#h0-0-118" id="h0-0-118" class="d">-# make page.
+</a><a href="#h0-0-119" id="h0-0-119" class="d">-header &gt; &quot;${htmldir}/license.html&quot;
+</a><a href="#h0-0-120" id="h0-0-120" class="d">-if test x&quot;${readme}&quot; != x&quot;&quot;; then
+</a><a href="#h0-0-121" id="h0-0-121" class="d">-	cat &quot;${license}&quot; &gt;&gt; &quot;${htmldir}/license.html&quot;
+</a><a href="#h0-0-122" id="h0-0-122" class="d">-else
+</a><a href="#h0-0-123" id="h0-0-123" class="d">-	echo &quot;unknown license&quot; &gt;&gt; &quot;${htmldir}/license.html&quot;
+</a><a href="#h0-0-124" id="h0-0-124" class="d">-fi
+</a><a href="#h0-0-125" id="h0-0-125" class="d">-footer &gt;&gt; &quot;${htmldir}/license.html&quot;
+</a><a href="#h0-0-126" id="h0-0-126" class="d">-
+</a><a href="#h0-0-127" id="h0-0-127" class="d">-# stats (authors).
+</a><a href="#h0-0-128" id="h0-0-128" class="d">-relpath=&quot;&quot;
+</a><a href="#h0-0-129" id="h0-0-129" class="d">-header &gt; &quot;${htmldir}/stats.html&quot;
+</a><a href="#h0-0-130" id="h0-0-130" class="d">-git shortlog -n -s &gt;&gt; &quot;${htmldir}/stats.html&quot;
+</a><a href="#h0-0-131" id="h0-0-131" class="d">-footer &gt;&gt; &quot;${htmldir}/stats.html&quot;
+</a><a href="#h0-0-132" id="h0-0-132" class="d">-
+</a><a href="#h0-0-133" id="h0-0-133" class="d">-# symlink to index page.
+</a><a href="#h0-0-134" id="h0-0-134" class="d">-ln -sf &quot;$indexpage&quot; &quot;${htmldir}/index.html&quot;
+</a><b>diff --git a/<a id="h1" href="../file/urmoms.c.html">urmoms.c</a> b/<a href="../file/urmoms.c.html">urmoms.c</a></b>
+<a href="#h1-0" id="h1-0" class="h">@@ -0,0 +1,222 @@
+</a><a href="#h1-0-0" id="h1-0-0" class="i">+#include &lt;err.h&gt;
+</a><a href="#h1-0-1" id="h1-0-1" class="i">+#include &lt;stdio.h&gt;
+</a><a href="#h1-0-2" id="h1-0-2" class="i">+#include &lt;stdlib.h&gt;
+</a><a href="#h1-0-3" id="h1-0-3" class="i">+
+</a><a href="#h1-0-4" id="h1-0-4" class="i">+#include &quot;git2.h&quot;
+</a><a href="#h1-0-5" id="h1-0-5" class="i">+
+</a><a href="#h1-0-6" id="h1-0-6" class="i">+static const char *relpath = &quot;&quot;;
+</a><a href="#h1-0-7" id="h1-0-7" class="i">+static const char *name = &quot;&quot;;
+</a><a href="#h1-0-8" id="h1-0-8" class="i">+static const char *description = &quot;&quot;;
+</a><a href="#h1-0-9" id="h1-0-9" class="i">+
+</a><a href="#h1-0-10" id="h1-0-10" class="i">+static const char *repodir = &quot;.&quot;;
+</a><a href="#h1-0-11" id="h1-0-11" class="i">+
+</a><a href="#h1-0-12" id="h1-0-12" class="i">+static git_repository *repo;
+</a><a href="#h1-0-13" id="h1-0-13" class="i">+
+</a><a href="#h1-0-14" id="h1-0-14" class="i">+FILE *
+</a><a href="#h1-0-15" id="h1-0-15" class="i">+efopen(const char *name, const char *flags)
+</a><a href="#h1-0-16" id="h1-0-16" class="i">+{
+</a><a href="#h1-0-17" id="h1-0-17" class="i">+	FILE *fp;
+</a><a href="#h1-0-18" id="h1-0-18" class="i">+
+</a><a href="#h1-0-19" id="h1-0-19" class="i">+	fp = fopen(name, flags);
+</a><a href="#h1-0-20" id="h1-0-20" class="i">+	if (!fp)
+</a><a href="#h1-0-21" id="h1-0-21" class="i">+		err(1, &quot;fopen&quot;);
+</a><a href="#h1-0-22" id="h1-0-22" class="i">+
+</a><a href="#h1-0-23" id="h1-0-23" class="i">+	return fp;
+</a><a href="#h1-0-24" id="h1-0-24" class="i">+}
+</a><a href="#h1-0-25" id="h1-0-25" class="i">+
+</a><a href="#h1-0-26" id="h1-0-26" class="i">+static void
+</a><a href="#h1-0-27" id="h1-0-27" class="i">+printtime(FILE *fp, const git_time * intime, const char *prefix)
+</a><a href="#h1-0-28" id="h1-0-28" class="i">+{
+</a><a href="#h1-0-29" id="h1-0-29" class="i">+	struct tm *intm;
+</a><a href="#h1-0-30" id="h1-0-30" class="i">+	time_t t;
+</a><a href="#h1-0-31" id="h1-0-31" class="i">+	int offset, hours, minutes;
+</a><a href="#h1-0-32" id="h1-0-32" class="i">+	char sign, out[32];
+</a><a href="#h1-0-33" id="h1-0-33" class="i">+
+</a><a href="#h1-0-34" id="h1-0-34" class="i">+	offset = intime-&gt;offset;
+</a><a href="#h1-0-35" id="h1-0-35" class="i">+	if (offset &lt; 0) {
+</a><a href="#h1-0-36" id="h1-0-36" class="i">+		sign = &apos;-&apos;;
+</a><a href="#h1-0-37" id="h1-0-37" class="i">+		offset = -offset;
+</a><a href="#h1-0-38" id="h1-0-38" class="i">+	} else {
+</a><a href="#h1-0-39" id="h1-0-39" class="i">+		sign = &apos;+&apos;;
+</a><a href="#h1-0-40" id="h1-0-40" class="i">+	}
+</a><a href="#h1-0-41" id="h1-0-41" class="i">+
+</a><a href="#h1-0-42" id="h1-0-42" class="i">+	hours = offset / 60;
+</a><a href="#h1-0-43" id="h1-0-43" class="i">+	minutes = offset % 60;
+</a><a href="#h1-0-44" id="h1-0-44" class="i">+
+</a><a href="#h1-0-45" id="h1-0-45" class="i">+	t = (time_t) intime-&gt;time + (intime-&gt;offset * 60);
+</a><a href="#h1-0-46" id="h1-0-46" class="i">+
+</a><a href="#h1-0-47" id="h1-0-47" class="i">+	intm = gmtime(&amp;t);
+</a><a href="#h1-0-48" id="h1-0-48" class="i">+	strftime(out, sizeof(out), &quot;%a %b %e %T %Y&quot;, intm);
+</a><a href="#h1-0-49" id="h1-0-49" class="i">+
+</a><a href="#h1-0-50" id="h1-0-50" class="i">+	fprintf(fp, &quot;%s%s %c%02d%02d\n&quot;, prefix, out, sign, hours, minutes);
+</a><a href="#h1-0-51" id="h1-0-51" class="i">+}
+</a><a href="#h1-0-52" id="h1-0-52" class="i">+
+</a><a href="#h1-0-53" id="h1-0-53" class="i">+static void
+</a><a href="#h1-0-54" id="h1-0-54" class="i">+printcommit(FILE *fp, git_commit * commit)
+</a><a href="#h1-0-55" id="h1-0-55" class="i">+{
+</a><a href="#h1-0-56" id="h1-0-56" class="i">+	const git_signature *sig;
+</a><a href="#h1-0-57" id="h1-0-57" class="i">+	char buf[GIT_OID_HEXSZ + 1];
+</a><a href="#h1-0-58" id="h1-0-58" class="i">+	int i, count;
+</a><a href="#h1-0-59" id="h1-0-59" class="i">+	const char *scan, *eol;
+</a><a href="#h1-0-60" id="h1-0-60" class="i">+
+</a><a href="#h1-0-61" id="h1-0-61" class="i">+	git_oid_tostr(buf, sizeof(buf), git_commit_id(commit));
+</a><a href="#h1-0-62" id="h1-0-62" class="i">+	fprintf(fp, &quot;commit &lt;a href=\&quot;commit/%s.html\&quot;&gt;%s&lt;/a&gt;\n&quot;, buf, buf);
+</a><a href="#h1-0-63" id="h1-0-63" class="i">+
+</a><a href="#h1-0-64" id="h1-0-64" class="i">+	if ((count = (int)git_commit_parentcount(commit)) &gt; 1) {
+</a><a href="#h1-0-65" id="h1-0-65" class="i">+		fprintf(fp, &quot;Merge:&quot;);
+</a><a href="#h1-0-66" id="h1-0-66" class="i">+		for (i = 0; i &lt; count; ++i) {
+</a><a href="#h1-0-67" id="h1-0-67" class="i">+			git_oid_tostr(buf, 8, git_commit_parent_id(commit, i));
+</a><a href="#h1-0-68" id="h1-0-68" class="i">+			fprintf(fp, &quot; %s&quot;, buf);
+</a><a href="#h1-0-69" id="h1-0-69" class="i">+		}
+</a><a href="#h1-0-70" id="h1-0-70" class="i">+		fprintf(fp, &quot;\n&quot;);
+</a><a href="#h1-0-71" id="h1-0-71" class="i">+	}
+</a><a href="#h1-0-72" id="h1-0-72" class="i">+	if ((sig = git_commit_author(commit)) != NULL) {
+</a><a href="#h1-0-73" id="h1-0-73" class="i">+		fprintf(fp, &quot;Author: &lt;a href=\&quot;author/%s.html\&quot;&gt;%s&lt;/a&gt; &lt;%s&gt;\n&quot;,
+</a><a href="#h1-0-74" id="h1-0-74" class="i">+			sig-&gt;name, sig-&gt;name, sig-&gt;email);
+</a><a href="#h1-0-75" id="h1-0-75" class="i">+		printtime(fp, &amp;sig-&gt;when, &quot;Date:   &quot;);
+</a><a href="#h1-0-76" id="h1-0-76" class="i">+	}
+</a><a href="#h1-0-77" id="h1-0-77" class="i">+	fprintf(fp, &quot;\n&quot;);
+</a><a href="#h1-0-78" id="h1-0-78" class="i">+
+</a><a href="#h1-0-79" id="h1-0-79" class="i">+	for (scan = git_commit_message(commit); scan &amp;&amp; *scan;) {
+</a><a href="#h1-0-80" id="h1-0-80" class="i">+		for (eol = scan; *eol &amp;&amp; *eol != &apos;\n&apos;; ++eol)	/* find eol */
+</a><a href="#h1-0-81" id="h1-0-81" class="i">+			;
+</a><a href="#h1-0-82" id="h1-0-82" class="i">+
+</a><a href="#h1-0-83" id="h1-0-83" class="i">+		fprintf(fp, &quot;    %.*s\n&quot;, (int) (eol - scan), scan);
+</a><a href="#h1-0-84" id="h1-0-84" class="i">+		scan = *eol ? eol + 1 : NULL;
+</a><a href="#h1-0-85" id="h1-0-85" class="i">+	}
+</a><a href="#h1-0-86" id="h1-0-86" class="i">+	fprintf(fp, &quot;\n&quot;);
+</a><a href="#h1-0-87" id="h1-0-87" class="i">+}
+</a><a href="#h1-0-88" id="h1-0-88" class="i">+
+</a><a href="#h1-0-89" id="h1-0-89" class="i">+int
+</a><a href="#h1-0-90" id="h1-0-90" class="i">+writeheader(FILE *fp)
+</a><a href="#h1-0-91" id="h1-0-91" class="i">+{
+</a><a href="#h1-0-92" id="h1-0-92" class="i">+	fprintf(fp, &quot;&lt;!DOCTYPE HTML&gt;&quot;
+</a><a href="#h1-0-93" id="h1-0-93" class="i">+		&quot;&lt;html dir=\&quot;ltr\&quot; lang=\&quot;en\&quot;&gt;&lt;head&gt;&quot;
+</a><a href="#h1-0-94" id="h1-0-94" class="i">+		&quot;&lt;meta http-equiv=\&quot;Content-Type\&quot; content=\&quot;text/html; charset=UTF-8\&quot; /&gt;&quot;
+</a><a href="#h1-0-95" id="h1-0-95" class="i">+		&quot;&lt;meta http-equiv=\&quot;Content-Language\&quot; content=\&quot;en\&quot; /&gt;&quot;);
+</a><a href="#h1-0-96" id="h1-0-96" class="i">+	fprintf(fp, &quot;&lt;title&gt;%s - %s&lt;/title&gt;&quot;, name, description);
+</a><a href="#h1-0-97" id="h1-0-97" class="i">+	fprintf(fp, &quot;&lt;link rel=\&quot;stylesheet\&quot; type=\&quot;text/css\&quot; href=\&quot;style.css\&quot; /&gt;&quot;
+</a><a href="#h1-0-98" id="h1-0-98" class="i">+		&quot;&lt;/head&gt;&lt;body&gt;&lt;center&gt;&quot;);
+</a><a href="#h1-0-99" id="h1-0-99" class="i">+	fprintf(fp, &quot;&lt;h1&gt;&lt;img src=\&quot;%slogo.png\&quot; alt=\&quot;\&quot; /&gt; %s&lt;/h1&gt;&quot;, relpath, name);
+</a><a href="#h1-0-100" id="h1-0-100" class="i">+	fprintf(fp, &quot;&lt;span class=\&quot;desc\&quot;&gt;%s&lt;/span&gt;&lt;br/&gt;&quot;, description);
+</a><a href="#h1-0-101" id="h1-0-101" class="i">+	fprintf(fp, &quot;&lt;a href=\&quot;%slog.html\&quot;&gt;Log&lt;/a&gt; |&quot;, relpath);
+</a><a href="#h1-0-102" id="h1-0-102" class="i">+	fprintf(fp, &quot;&lt;a href=\&quot;%sfiles.html\&quot;&gt;Files&lt;/a&gt;| &quot;, relpath);
+</a><a href="#h1-0-103" id="h1-0-103" class="i">+	fprintf(fp, &quot;&lt;a href=\&quot;%sstats.html\&quot;&gt;Stats&lt;/a&gt; | &quot;, relpath);
+</a><a href="#h1-0-104" id="h1-0-104" class="i">+	fprintf(fp, &quot;&lt;a href=\&quot;%sreadme.html\&quot;&gt;README&lt;/a&gt; | &quot;, relpath);
+</a><a href="#h1-0-105" id="h1-0-105" class="i">+	fprintf(fp, &quot;&lt;a href=\&quot;%slicense.html\&quot;&gt;LICENSE&lt;/a&gt;&quot;, relpath);
+</a><a href="#h1-0-106" id="h1-0-106" class="i">+	fprintf(fp, &quot;&lt;/center&gt;&lt;hr/&gt;&lt;pre&gt;&quot;);
+</a><a href="#h1-0-107" id="h1-0-107" class="i">+
+</a><a href="#h1-0-108" id="h1-0-108" class="i">+	return 0;
+</a><a href="#h1-0-109" id="h1-0-109" class="i">+}
+</a><a href="#h1-0-110" id="h1-0-110" class="i">+
+</a><a href="#h1-0-111" id="h1-0-111" class="i">+int
+</a><a href="#h1-0-112" id="h1-0-112" class="i">+writefooter(FILE *fp)
+</a><a href="#h1-0-113" id="h1-0-113" class="i">+{
+</a><a href="#h1-0-114" id="h1-0-114" class="i">+	fprintf(fp, &quot;&lt;/pre&gt;&lt;/body&gt;&lt;/html&gt;&quot;);
+</a><a href="#h1-0-115" id="h1-0-115" class="i">+
+</a><a href="#h1-0-116" id="h1-0-116" class="i">+	return 0;
+</a><a href="#h1-0-117" id="h1-0-117" class="i">+}
+</a><a href="#h1-0-118" id="h1-0-118" class="i">+
+</a><a href="#h1-0-119" id="h1-0-119" class="i">+int
+</a><a href="#h1-0-120" id="h1-0-120" class="i">+writelog(FILE *fp)
+</a><a href="#h1-0-121" id="h1-0-121" class="i">+{
+</a><a href="#h1-0-122" id="h1-0-122" class="i">+	git_revwalk *w = NULL;
+</a><a href="#h1-0-123" id="h1-0-123" class="i">+	git_oid id;
+</a><a href="#h1-0-124" id="h1-0-124" class="i">+	git_commit *c = NULL;
+</a><a href="#h1-0-125" id="h1-0-125" class="i">+
+</a><a href="#h1-0-126" id="h1-0-126" class="i">+	git_revwalk_new(&amp;w, repo);
+</a><a href="#h1-0-127" id="h1-0-127" class="i">+	git_revwalk_push_head(w);
+</a><a href="#h1-0-128" id="h1-0-128" class="i">+
+</a><a href="#h1-0-129" id="h1-0-129" class="i">+	while (!git_revwalk_next(&amp;id, w)) {
+</a><a href="#h1-0-130" id="h1-0-130" class="i">+		if (git_commit_lookup(&amp;c, repo, &amp;id))
+</a><a href="#h1-0-131" id="h1-0-131" class="i">+			return 1;
+</a><a href="#h1-0-132" id="h1-0-132" class="i">+		printcommit(fp, c);
+</a><a href="#h1-0-133" id="h1-0-133" class="i">+		git_commit_free(c);
+</a><a href="#h1-0-134" id="h1-0-134" class="i">+	}
+</a><a href="#h1-0-135" id="h1-0-135" class="i">+	git_revwalk_free(w);
+</a><a href="#h1-0-136" id="h1-0-136" class="i">+
+</a><a href="#h1-0-137" id="h1-0-137" class="i">+	return 0;
+</a><a href="#h1-0-138" id="h1-0-138" class="i">+}
+</a><a href="#h1-0-139" id="h1-0-139" class="i">+
+</a><a href="#h1-0-140" id="h1-0-140" class="i">+int
+</a><a href="#h1-0-141" id="h1-0-141" class="i">+writefiles(FILE *fp)
+</a><a href="#h1-0-142" id="h1-0-142" class="i">+{
+</a><a href="#h1-0-143" id="h1-0-143" class="i">+	git_index *index;
+</a><a href="#h1-0-144" id="h1-0-144" class="i">+	const git_index_entry *entry;
+</a><a href="#h1-0-145" id="h1-0-145" class="i">+	size_t count, i;
+</a><a href="#h1-0-146" id="h1-0-146" class="i">+
+</a><a href="#h1-0-147" id="h1-0-147" class="i">+	git_repository_index(&amp;index, repo);
+</a><a href="#h1-0-148" id="h1-0-148" class="i">+
+</a><a href="#h1-0-149" id="h1-0-149" class="i">+	count = git_index_entrycount(index);
+</a><a href="#h1-0-150" id="h1-0-150" class="i">+	for (i = 0; i &lt; count; i++) {
+</a><a href="#h1-0-151" id="h1-0-151" class="i">+		entry = git_index_get_byindex(index, i);
+</a><a href="#h1-0-152" id="h1-0-152" class="i">+		fprintf(fp, &quot;name: %s, size: %lu, mode: %lu\n&quot;,
+</a><a href="#h1-0-153" id="h1-0-153" class="i">+			entry-&gt;path, entry-&gt;file_size, entry-&gt;mode);
+</a><a href="#h1-0-154" id="h1-0-154" class="i">+	}
+</a><a href="#h1-0-155" id="h1-0-155" class="i">+
+</a><a href="#h1-0-156" id="h1-0-156" class="i">+	return 0;
+</a><a href="#h1-0-157" id="h1-0-157" class="i">+}
+</a><a href="#h1-0-158" id="h1-0-158" class="i">+
+</a><a href="#h1-0-159" id="h1-0-159" class="i">+#if 0
+</a><a href="#h1-0-160" id="h1-0-160" class="i">+int
+</a><a href="#h1-0-161" id="h1-0-161" class="i">+writebranches(FILE *fp)
+</a><a href="#h1-0-162" id="h1-0-162" class="i">+{
+</a><a href="#h1-0-163" id="h1-0-163" class="i">+	git_branch_iterator *branchit = NULL;
+</a><a href="#h1-0-164" id="h1-0-164" class="i">+	git_branch_t branchtype;
+</a><a href="#h1-0-165" id="h1-0-165" class="i">+	git_reference *branchref;
+</a><a href="#h1-0-166" id="h1-0-166" class="i">+	char branchbuf[BUFSIZ] = &quot;&quot;;
+</a><a href="#h1-0-167" id="h1-0-167" class="i">+	int status;
+</a><a href="#h1-0-168" id="h1-0-168" class="i">+
+</a><a href="#h1-0-169" id="h1-0-169" class="i">+	git_branch_iterator_new(&amp;branchit, repo, GIT_BRANCH_LOCAL);
+</a><a href="#h1-0-170" id="h1-0-170" class="i">+
+</a><a href="#h1-0-171" id="h1-0-171" class="i">+	while ((status = git_branch_next(&amp;branchref, &amp;branchtype, branchit)) == GIT_ITEROVER) {
+</a><a href="#h1-0-172" id="h1-0-172" class="i">+		git_reference_normalize_name(branchbuf, sizeof(branchbuf), git_reference_name(branchref), GIT_REF_FORMAT_ALLOW_ONELEVEL | GIT_REF_FORMAT_REFSPEC_SHORTHAND);
+</a><a href="#h1-0-173" id="h1-0-173" class="i">+
+</a><a href="#h1-0-174" id="h1-0-174" class="i">+		/* fprintf(fp, &quot;branch: |%s|\n&quot;, branchbuf); */
+</a><a href="#h1-0-175" id="h1-0-175" class="i">+	}
+</a><a href="#h1-0-176" id="h1-0-176" class="i">+
+</a><a href="#h1-0-177" id="h1-0-177" class="i">+	git_branch_iterator_free(branchit);
+</a><a href="#h1-0-178" id="h1-0-178" class="i">+
+</a><a href="#h1-0-179" id="h1-0-179" class="i">+	return 0;
+</a><a href="#h1-0-180" id="h1-0-180" class="i">+}
+</a><a href="#h1-0-181" id="h1-0-181" class="i">+#endif
+</a><a href="#h1-0-182" id="h1-0-182" class="i">+
+</a><a href="#h1-0-183" id="h1-0-183" class="i">+int
+</a><a href="#h1-0-184" id="h1-0-184" class="i">+main(int argc, char *argv[])
+</a><a href="#h1-0-185" id="h1-0-185" class="i">+{
+</a><a href="#h1-0-186" id="h1-0-186" class="i">+	int status;
+</a><a href="#h1-0-187" id="h1-0-187" class="i">+	const git_error *e = NULL;
+</a><a href="#h1-0-188" id="h1-0-188" class="i">+	FILE *fp;
+</a><a href="#h1-0-189" id="h1-0-189" class="i">+
+</a><a href="#h1-0-190" id="h1-0-190" class="i">+	if (argc != 2) {
+</a><a href="#h1-0-191" id="h1-0-191" class="i">+		fprintf(stderr, &quot;%s &lt;repodir&gt;\n&quot;, argv[0]);
+</a><a href="#h1-0-192" id="h1-0-192" class="i">+		return 1;
+</a><a href="#h1-0-193" id="h1-0-193" class="i">+	}
+</a><a href="#h1-0-194" id="h1-0-194" class="i">+	repodir = argv[1];
+</a><a href="#h1-0-195" id="h1-0-195" class="i">+
+</a><a href="#h1-0-196" id="h1-0-196" class="i">+	git_libgit2_init();
+</a><a href="#h1-0-197" id="h1-0-197" class="i">+
+</a><a href="#h1-0-198" id="h1-0-198" class="i">+	if ((status = git_repository_open(&amp;repo, repodir)) &lt; 0) {
+</a><a href="#h1-0-199" id="h1-0-199" class="i">+		e = giterr_last();
+</a><a href="#h1-0-200" id="h1-0-200" class="i">+		fprintf(stderr, &quot;error %d/%d: %s\n&quot;, status, e-&gt;klass, e-&gt;message);
+</a><a href="#h1-0-201" id="h1-0-201" class="i">+		exit(status);
+</a><a href="#h1-0-202" id="h1-0-202" class="i">+	}
+</a><a href="#h1-0-203" id="h1-0-203" class="i">+
+</a><a href="#h1-0-204" id="h1-0-204" class="i">+	fp = efopen(&quot;logs.html&quot;, &quot;w+b&quot;);
+</a><a href="#h1-0-205" id="h1-0-205" class="i">+	writeheader(fp);
+</a><a href="#h1-0-206" id="h1-0-206" class="i">+	writelog(fp);
+</a><a href="#h1-0-207" id="h1-0-207" class="i">+	writefooter(fp);
+</a><a href="#h1-0-208" id="h1-0-208" class="i">+	fclose(fp);
+</a><a href="#h1-0-209" id="h1-0-209" class="i">+
+</a><a href="#h1-0-210" id="h1-0-210" class="i">+	fp = efopen(&quot;files.html&quot;, &quot;w+b&quot;);
+</a><a href="#h1-0-211" id="h1-0-211" class="i">+	writeheader(fp);
+</a><a href="#h1-0-212" id="h1-0-212" class="i">+	writefiles(fp);
+</a><a href="#h1-0-213" id="h1-0-213" class="i">+	writefooter(fp);
+</a><a href="#h1-0-214" id="h1-0-214" class="i">+	fclose(fp);
+</a><a href="#h1-0-215" id="h1-0-215" class="i">+
+</a><a href="#h1-0-216" id="h1-0-216" class="i">+	/* cleanup */
+</a><a href="#h1-0-217" id="h1-0-217" class="i">+	git_repository_free(repo);
+</a><a href="#h1-0-218" id="h1-0-218" class="i">+	git_libgit2_shutdown();
+</a><a href="#h1-0-219" id="h1-0-219" class="i">+
+</a><a href="#h1-0-220" id="h1-0-220" class="i">+	return 0;
+</a><a href="#h1-0-221" id="h1-0-221" class="i">+}
+</a></pre>
+</div>
+</body>
+</html>

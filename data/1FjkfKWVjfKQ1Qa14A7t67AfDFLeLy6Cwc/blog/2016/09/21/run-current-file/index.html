@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>执行当前 buffer 中的源代码 - 科学君的不科学博客</title>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+  <meta name="author" content="Liu233w" />
+  <meta name="description" content="&lt;Add description here&gt;" />
+  <meta name="keywords" content="emacs," />
+  <style>
+   #ds-thread #ds-reset .ds-comment-body p {color: #ffffff;}
+   #ds-thread #ds-reset .ds-comment-body p a {color: #ff0;}
+   #ds-thread #ds-reset .ds-comment-body p a:hover {color: #0ff;}
+   #disqus_thread a {color: #00ffff;}
+  </style>
+  <link rel="stylesheet" href="http://liu233w.github.io/media/css/main.css" type="text/css"/>
+  <link rel="stylesheet" href="http://liu233w.github.io/media/css/comment.css" type="text/css"/>
+  <link rel="Shortcut Icon" href="https://raw.githubusercontent.com/Liu233w/liu233w.github.io/source/avatar.jpg" type="image/x-icon">
+</head>
+
+  <body><div class="container">
+<div>
+  <header class="masthead">
+    <h1 class="masthead-title"><a href="http://liu233w.github.io/">科学君的不科学博客</a></h1>
+    <p>by 不科学的科学君</p>
+    <nav class="site-nav">
+      <div class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z" fill="#ffff00"/>
+          <path d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z" fill="#ffff00"/>
+          <path d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z" fill="#ffff00"/>
+        </svg>
+      </div>
+      <ul class="trigger">
+        <li><a href="http://liu233w.github.io/所有文章/">所有文章</a></li>
+        <li><a href="http://liu233w.github.io/tags/">按标签索引</a></li>
+        <li><a href="http://liu233w.github.io/acm/">Acm</a></li>
+        <li><a href="http://liu233w.github.io/blog/">Blog</a></li>
+        <li><a href="http://liu233w.github.io/about/">About</a></li>
+        <li><a href="https://github.com/liu233w/liu233w.github.io">Github</a></li>
+        <li><a href="http://liu233w.github.io/rss.xml">RSS</a></li>
+      </ul>
+    </nav>
+    <form method="get" id="searchform" action="http://www.google.com/search">
+      <input type="text" class="field" name="q" id="s" placeholder="Search">
+      <input type="hidden" name="as_sitesearch" value="liu233w.github.io">
+    </form>
+    <img id="avatarid" class="avatar" src="https://raw.githubusercontent.com/Liu233w/liu233w.github.io/source/avatar.jpg" />
+  </header>
+</div>
+
+<div>
+<div class="post">
+<h1 class="title">执行当前 buffer 中的源代码</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org1b7581c">正文</a></li>
+<li><a href="#orgf8bb6bc">TIPS</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org1b7581c" class="outline-2">
+<h2 id="org1b7581c">正文</h2>
+<div class="outline-text-2" id="text-org1b7581c">
+<p>
+Xah Lee 写过一个<a href="http://ergoemacs.org/emacs/elisp_run_current_file.html">函数</a>， 可以执行当前 buffer 中的源代码。如果是解释执行的程序，则调用相应的编译器/解释器，如果是编译执行的，则先编译代码，然后执行编译之后的程序。但是这个函数有一些缺陷，如果代码有错误导致编译无法完成，这个函数仍然会尝试运行程序。我对它做了一些修改，如果编译不成功，则不会运行程序；如果编译成功，则会在新的 buffer 中运行程序，这个 buffer 会在 <code>*compilation*</code>
+的窗口中显示，覆盖原来的 buffer。代码如下（我还加上的编译 c++的支持）：
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #586e75;">;;; </span><span style="color: #586e75;">-----------liu233w/run-current-file-------------------</span>
+<span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">liu233w/run-current-file</span> <span style="color: #b58900;">()</span>
+  <span style="color: #2aa198;">"Execute the current file.</span>
+<span style="color: #2aa198;">For example, if the current buffer is the file x.py, then it'll call&#12300;python x.py&#12301;in a shell.</span>
+<span style="color: #2aa198;">The file can be Emacs Lisp, PHP, Perl, Python, Ruby, JavaScript, Bash, Ocaml, Visual Basic, TeX, Java, Clojure.</span>
+<span style="color: #2aa198;">File suffix is used to determine what program to run.</span>
+
+<span style="color: #2aa198;">If the file is modified or not saved, save it automatically before run.</span>
+
+<span style="color: #2aa198;">URL `</span><span style="color: #268bd2; font-weight: bold;">http://ergoemacs.org/emacs/elisp_run_current_file.html</span><span style="color: #2aa198;">'</span>
+<span style="color: #2aa198;">version 2016-01-28"</span>
+  <span style="color: #b58900;">(</span><span style="color: #859900; font-weight: bold;">interactive</span><span style="color: #b58900;">)</span>
+  <span style="color: #b58900;">(</span><span style="color: #859900; font-weight: bold;">let</span> <span style="color: #268bd2;">(</span>
+        <span style="color: #6c71c4;">(</span>-suffix-map
+         <span style="color: #586e75;">;; </span><span style="color: #586e75;">(&#8249;extension&#8250; . &#8249;shell program name&#8250;)</span>
+         `<span style="color: #859900;">(</span>
+           <span style="color: #b58900;">(</span><span style="color: #2aa198;">"php"</span> . <span style="color: #2aa198;">"php"</span><span style="color: #b58900;">)</span>
+           <span style="color: #b58900;">(</span><span style="color: #2aa198;">"pl"</span> . <span style="color: #2aa198;">"perl"</span><span style="color: #b58900;">)</span>
+           <span style="color: #b58900;">(</span><span style="color: #2aa198;">"py"</span> . <span style="color: #2aa198;">"python"</span><span style="color: #b58900;">)</span>
+           <span style="color: #b58900;">(</span><span style="color: #2aa198;">"py3"</span> . ,<span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">if</span> <span style="color: #6c71c4;">(</span>string-equal system-type <span style="color: #2aa198;">"windows-nt"</span><span style="color: #6c71c4;">)</span> <span style="color: #2aa198;">"python.exe"</span> <span style="color: #2aa198;">"python3"</span><span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span>
+           <span style="color: #b58900;">(</span><span style="color: #2aa198;">"rb"</span> . <span style="color: #2aa198;">"ruby"</span><span style="color: #b58900;">)</span>
+           <span style="color: #b58900;">(</span><span style="color: #2aa198;">"go"</span> . <span style="color: #2aa198;">"go run"</span><span style="color: #b58900;">)</span>
+           <span style="color: #b58900;">(</span><span style="color: #2aa198;">"js"</span> . <span style="color: #2aa198;">"node"</span><span style="color: #b58900;">)</span> <span style="color: #586e75;">; </span><span style="color: #586e75;">node.js</span>
+           <span style="color: #b58900;">(</span><span style="color: #2aa198;">"sh"</span> . <span style="color: #2aa198;">"bash"</span><span style="color: #b58900;">)</span>
+           <span style="color: #b58900;">(</span><span style="color: #2aa198;">"clj"</span> . <span style="color: #2aa198;">"java -cp /home/xah/apps/clojure-1.6.0/clojure-1.6.0.jar clojure.main"</span><span style="color: #b58900;">)</span>
+           <span style="color: #b58900;">(</span><span style="color: #2aa198;">"rkt"</span> . <span style="color: #2aa198;">"racket"</span><span style="color: #b58900;">)</span>
+           <span style="color: #b58900;">(</span><span style="color: #2aa198;">"ml"</span> . <span style="color: #2aa198;">"ocaml"</span><span style="color: #b58900;">)</span>
+           <span style="color: #b58900;">(</span><span style="color: #2aa198;">"vbs"</span> . <span style="color: #2aa198;">"cscript"</span><span style="color: #b58900;">)</span>
+           <span style="color: #b58900;">(</span><span style="color: #2aa198;">"tex"</span> . <span style="color: #2aa198;">"pdflatex"</span><span style="color: #b58900;">)</span>
+           <span style="color: #b58900;">(</span><span style="color: #2aa198;">"latex"</span> . <span style="color: #2aa198;">"pdflatex"</span><span style="color: #b58900;">)</span>
+           <span style="color: #b58900;">(</span><span style="color: #2aa198;">"java"</span> . <span style="color: #2aa198;">"javac"</span><span style="color: #b58900;">)</span>
+           <span style="color: #b58900;">(</span><span style="color: #2aa198;">"cpp"</span> . ,<span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">or</span> <span style="color: #6c71c4;">(</span>executable-find <span style="color: #2aa198;">"myclang"</span><span style="color: #6c71c4;">)</span>
+                         <span style="color: #6c71c4;">(</span>executable-find <span style="color: #2aa198;">"clang"</span><span style="color: #6c71c4;">)</span>
+                         <span style="color: #2aa198;">"g++"</span><span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span>
+           <span style="color: #586e75;">;; </span><span style="color: #586e75;">("pov" . "/usr/local/bin/povray +R2 +A0.1 +J1.2 +Am2 +Q9 +H480 +W640")</span>
+           <span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span>
+
+        -fname
+        -fSuffix
+        -prog-name
+        -cmd-str<span style="color: #268bd2;">)</span>
+
+    <span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">when</span> <span style="color: #6c71c4;">(</span>null <span style="color: #859900;">(</span>buffer-file-name<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span> <span style="color: #6c71c4;">(</span>save-buffer<span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span>
+    <span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">when</span> <span style="color: #6c71c4;">(</span>buffer-modified-p<span style="color: #6c71c4;">)</span> <span style="color: #6c71c4;">(</span>save-buffer<span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span>
+
+    <span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">setq</span> -fname <span style="color: #6c71c4;">(</span>buffer-file-name<span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span>
+    <span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">setq</span> -fSuffix <span style="color: #6c71c4;">(</span>file-name-extension -fname<span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span>
+    <span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">setq</span> -prog-name <span style="color: #6c71c4;">(</span>cdr <span style="color: #859900;">(</span>assoc -fSuffix -suffix-map<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span>
+    <span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">setq</span> -cmd-str <span style="color: #6c71c4;">(</span>concat -prog-name <span style="color: #2aa198;">" \""</span>   -fname <span style="color: #2aa198;">"\""</span><span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span>
+
+    <span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">cond</span>
+     <span style="color: #6c71c4;">(</span><span style="color: #859900;">(</span>string-equal -fSuffix <span style="color: #2aa198;">"el"</span><span style="color: #859900;">)</span> <span style="color: #859900;">(</span>load -fname<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span>
+     <span style="color: #6c71c4;">(</span><span style="color: #859900;">(</span>string-equal -fSuffix <span style="color: #2aa198;">"java"</span><span style="color: #859900;">)</span>
+      <span style="color: #859900;">(</span>liu233w//compile-and-run
+       -cmd-str
+       <span style="color: #b58900;">(</span>format <span style="color: #2aa198;">"java %s"</span> <span style="color: #268bd2;">(</span>file-name-sans-extension <span style="color: #6c71c4;">(</span>file-name-nondirectory -fname<span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span><span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span>
+     <span style="color: #6c71c4;">(</span><span style="color: #859900;">(</span>string-equal -fSuffix <span style="color: #2aa198;">"cpp"</span><span style="color: #859900;">)</span>
+      <span style="color: #859900;">(</span>liu233w//compile-and-run
+       <span style="color: #b58900;">(</span>format <span style="color: #2aa198;">"%s --std=c++11"</span> -cmd-str<span style="color: #b58900;">)</span>
+       <span style="color: #2aa198;">"a"</span><span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span>
+     <span style="color: #6c71c4;">(</span>t <span style="color: #859900;">(</span><span style="color: #859900; font-weight: bold;">if</span> -prog-name
+            <span style="color: #b58900;">(</span><span style="color: #859900; font-weight: bold;">progn</span>
+              <span style="color: #268bd2;">(</span>message <span style="color: #2aa198;">"Running&#8230;"</span><span style="color: #268bd2;">)</span>
+              <span style="color: #268bd2;">(</span>async-shell-command -cmd-str <span style="color: #2aa198;">"*liu233w/run-current-file output*"</span> <span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span>
+          <span style="color: #b58900;">(</span>message <span style="color: #2aa198;">"No recognized program file suffix for this file."</span><span style="color: #b58900;">)</span><span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span><span style="color: #2aa198;">)</span>
+
+<span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">liu233w//compile-and-run</span> <span style="color: #b58900;">(</span>cmp-cmd run-cmd<span style="color: #b58900;">)</span>
+  <span style="color: #2aa198;">"Run cmp-cmd, if success, then run run-cmd and print the result.</span>
+<span style="color: #2aa198;">Or just print the error message.</span>
+
+<span style="color: #2aa198;">When it's compiling a file, this function may cause error behavior."</span>
+  <span style="color: #b58900;">(</span><span style="color: #859900; font-weight: bold;">setf</span> liu233w//compile-status <span style="color: #268bd2;">(</span>cons run-cmd compile-command<span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span>
+  <span style="color: #b58900;">(</span>compile cmp-cmd<span style="color: #b58900;">)</span>
+  <span style="color: #2aa198;">)</span>
+
+<span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">defvar</span> <span style="color: #268bd2;">liu233w//compile-status</span> nil <span style="color: #2aa198;">"doc"</span><span style="color: #2aa198;">)</span>
+
+<span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">liu233w//run-after-compile</span> <span style="color: #b58900;">(</span>buffer string<span style="color: #b58900;">)</span>
+  <span style="color: #b58900;">(</span><span style="color: #859900; font-weight: bold;">when</span> <span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">and</span>
+         <span style="color: #6c71c4;">(</span>string-match <span style="color: #2aa198;">"compilation"</span> <span style="color: #859900;">(</span>buffer-name buffer<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span>
+         <span style="color: #6c71c4;">(</span>string-match <span style="color: #2aa198;">"finished"</span> string<span style="color: #6c71c4;">)</span>
+         liu233w//compile-status<span style="color: #268bd2;">)</span>
+    <span style="color: #586e75;">;; </span><span style="color: #586e75;">&#38450;&#27490; liu233w/bury-compile-buffer-if-successful &#21024;&#38500; compilation buffer</span>
+    <span style="color: #586e75;">;; </span><span style="color: #586e75;">&#36825;&#26679; async-shell-command &#21629;&#20196;&#23601;&#33021;&#35206;&#30422; compilation buffer &#32780;&#19981;&#26159;&#28304;&#20195;&#30721;&#30340;</span>
+    <span style="color: #586e75;">;; </span><span style="color: #586e75;">buffer &#20102;&#12290;</span>
+    <span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">with-current-buffer</span> <span style="color: #2aa198;">"*compilation*"</span>
+      <span style="color: #6c71c4;">(</span>insert <span style="color: #2aa198;">"warning LOL"</span><span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span>
+    <span style="color: #268bd2;">(</span>async-shell-command <span style="color: #6c71c4;">(</span>car liu233w//compile-status<span style="color: #6c71c4;">)</span>
+                         <span style="color: #2aa198;">"*liu233w/run-current-file output*"</span><span style="color: #268bd2;">)</span>
+    <span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">setf</span> compile-command <span style="color: #6c71c4;">(</span>cdr liu233w//compile-status<span style="color: #6c71c4;">)</span>
+          liu233w//compile-status nil<span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span><span style="color: #2aa198;">)</span>
+<span style="color: #2aa198;">(</span>add-hook 'compilation-finish-functions
+          #'liu233w//run-after-compile<span style="color: #2aa198;">)</span>
+<span style="color: #586e75;">;;; </span><span style="color: #586e75;">END -----------liu233w/run-current-file-------------------</span>
+</pre>
+</div>
+
+<p>
+理论上这个函数没法在编译还没完成的时候运行，但我也没测试过。
+</p>
+
+<p>
+另外，我还找到了另一段代码，可以在编译结果没有 error 或 warning 的时候自动关闭 <code>*compilation*</code>
+buffer。不过如果想要把这段代码搭配 <code>run-current-file</code> 运行的话需要把函数加到 hook 的最后，而不是前面。我的代码也是通过在 <code>*compilation*</code> buffer 写入 warning 的文字来阻止这段代码关闭相应的窗口从而令程序的运行结果显示在原来显示编译状态的位置的。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #586e75;">;;; </span><span style="color: #586e75;">from http://stackoverflow.com/questions/11043004/emacs-compile-buffer-auto-close</span>
+<span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">liu233w/bury-compile-buffer-if-successful</span> <span style="color: #b58900;">(</span>buffer string<span style="color: #b58900;">)</span>
+  <span style="color: #2aa198;">"Bury a compilation buffer if succeeded without warnings "</span>
+  <span style="color: #b58900;">(</span><span style="color: #859900; font-weight: bold;">if</span> <span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">and</span>
+       <span style="color: #6c71c4;">(</span>string-match <span style="color: #2aa198;">"compilation"</span> <span style="color: #859900;">(</span>buffer-name buffer<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span>
+       <span style="color: #6c71c4;">(</span>string-match <span style="color: #2aa198;">"finished"</span> string<span style="color: #6c71c4;">)</span>
+       <span style="color: #6c71c4;">(</span>not
+        <span style="color: #859900;">(</span><span style="color: #859900; font-weight: bold;">with-current-buffer</span> buffer
+          <span style="color: #b58900;">(</span>goto-char <span style="color: #268bd2;">(</span>point-min<span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span>
+          <span style="color: #b58900;">(</span>search-forward <span style="color: #2aa198;">"warning"</span> nil t<span style="color: #b58900;">)</span><span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span>
+      <span style="color: #268bd2;">(</span>run-with-timer <span style="color: #6c71c4;">1</span> nil
+                      <span style="color: #6c71c4;">(</span><span style="color: #859900; font-weight: bold;">lambda</span> <span style="color: #859900;">(</span>buf<span style="color: #859900;">)</span>
+                        <span style="color: #859900;">(</span>bury-buffer buf<span style="color: #859900;">)</span>
+                        <span style="color: #859900;">(</span>delete-window <span style="color: #b58900;">(</span>get-buffer-window buf<span style="color: #b58900;">)</span><span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span>
+                      buffer<span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span><span style="color: #2aa198;">)</span>
+<span style="color: #2aa198;">(</span>add-hook 'compilation-finish-functions
+          #'liu233w/bury-compile-buffer-if-successful
+          t<span style="color: #2aa198;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgf8bb6bc" class="outline-2">
+<h2 id="orgf8bb6bc">TIPS</h2>
+<div class="outline-text-2" id="text-orgf8bb6bc">
+<ul class="org-ul">
+<li><code>add-hook</code> 函数有一个可选形参 <code>:append</code> ，为 t 时相应的函数将加到 hook 的最后，而不是最前面。</li>
+</ul>
+</div>
+</div>
+
+</div>
+</div>
+<div>
+        <div class="post-meta">
+            <span title="发布日期" class="post-info">2016-09-21</span>
+            <span title="最后修改日期" class="post-info">2016-09-21</span>
+            <span title="标签" class="post-info">:<a href="http://liu233w.github.io/tags/emacs">emacs</a>:</span>
+            <span title="作者" class="post-info"><a href="mailto:wwwlsmcom &lt;at&gt; outlook &lt;dot&gt; com">Liu233w</a></span>
+        </div>
+    <script src="http://liu233w.github.io/media/js/jquery-2.1.3.min.js"></script>
+        <section>
+            <h1>Comments</h1>
+            <div id="comment-wrap">
+                    <a class="disqus_label">使用 Disqus 评论</a>
+                    <a class="ds-label">使用多说评论</a>
+    </ul>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+         //var disqus_developer = 1;
+         var preempt_signal=false;
+         var disqus_identifier = "/blog/2016/09/21/run-current-file/";
+         var disqus_url = "http://liu233w.github.io/blog/2016/09/21/run-current-file/";
+         var disqus_shortname = 'liu233w';
+         /* * * DON'T EDIT BELOW THIS LINE * * */
+         (function() {
+             var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+             dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+             $('#disqus_thread').css('display','none');
+         })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        <div class="ds-thread"></div>
+        <script type="text/javascript">
+         var duoshuoQuery = {short_name:'liu233w'};
+         (function() {
+             var ds = document.createElement('script');
+             ds.type = 'text/javascript';ds.async = true;
+             ds.src = 'http://static.duoshuo.com/embed.js';
+             ds.charset = 'UTF-8';
+             (document.getElementsByTagName('head')[0]
+           || document.getElementsByTagName('body')[0]).appendChild(ds);
+             $('.ds-thread').css('display','block');
+         })();
+        </script>
+    <script>
+     /* comments */
+     var ego_disqus_thread=$('#disqus_thread');
+     var ego_ds_label=$('.ds-thread');
+     $('.disqus_label').click(function(){
+         ego_disqus_thread.show();
+         ego_ds_label.hide();
+     });
+     $('.ds-label').click(function(){
+         ego_disqus_thread.hide();
+         ego_ds_label.show();
+     });
+    </script>
+        </section>
+    <script src="http://liu233w.github.io/media/js/main.js"></script>
+    <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.x(<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+            Copyright &copy; 2014 - <span id="footerYear"></span> <a href="mailto:wwwlsmcom &lt;at&gt; outlook &lt;dot&gt; com">Liu233w</a>
+            &nbsp;&nbsp;-&nbsp;&nbsp;
+            Powered by <a href="https://github.com/emacs-china/ego" target="_blank">EGO</a><br/>
+            <a href="http://creativecommons.org/licenses/by-sa/3.0/" rel="license"><img src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" style="border-width:0" alt="Creative Commons License" class="center"></a>
+            <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+    </div>
+            </div>
+            <script type="text/javascript"
+                    src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG">
+            </script>
+            <script type="text/x-mathjax-config">
+             MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "AMS"} } });
+            </script>
+</div>
+
+  </div></body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>code cleanup + style, functionally equivalent - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/c13c4119501291e5c276d4d1217491b16a2a7ff9.html">c13c4119501291e5c276d4d1217491b16a2a7ff9</a>
+<b>parent</b> <a href="../commit/254f215e5007592127b9e760a01bd1747e1cf71e.html">254f215e5007592127b9e760a01bd1747e1cf71e</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Sun May  1 14:09:42 +0200
+
+code cleanup + style, functionally equivalent
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">stagit-index.c</a></td><td> | </td><td class="num">2</td><td><span class="i">+</span><span class="d">-</span></td></tr>
+<tr><td><a href="#h1">stagit.c</a></td><td> | </td><td class="num">30</td><td><span class="i">+++++++++++</span><span class="d">-------------------</span></td></tr>
+</table>2 files changed, 12 insertions(+), 20 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/stagit-index.c.html">stagit-index.c</a> b/<a href="../file/stagit-index.c.html">stagit-index.c</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -92,11 +92,11 @@ writefooter(FILE *fp)
+</a> int
+ writelog(FILE *fp)
+ {
+<a href="#h0-0-3" id="h0-0-3" class="d">-	char *stripped_name = NULL, *p;
+</a> 	git_commit *commit = NULL;
+ 	const git_signature *author;
+ 	git_revwalk *w = NULL;
+ 	git_oid id;
+<a href="#h0-0-8" id="h0-0-8" class="i">+	char *stripped_name = NULL, *p;
+</a> 	int ret = 0;
+ 
+ 	git_revwalk_new(&amp;w, repo);
+<b>diff --git a/<a id="h1" href="../file/stagit.c.html">stagit.c</a> b/<a href="../file/stagit.c.html">stagit.c</a></b>
+<a href="#h1-0" id="h1-0" class="h">@@ -141,7 +141,6 @@ commitinfo_free(struct commitinfo *ci)
+</a> 
+ 	if (!ci)
+ 		return;
+<a href="#h1-0-3" id="h1-0-3" class="d">-
+</a> 	if (ci-&gt;deltas)
+ 		for (i = 0; i &lt; ci-&gt;ndeltas; i++)
+ 			deltainfo_free(ci-&gt;deltas[i]);
+<a href="#h1-1" id="h1-1" class="h">@@ -158,15 +157,13 @@ commitinfo_getbyoid(const git_oid *id)
+</a> {
+ 	struct commitinfo *ci;
+ 	git_diff_options opts;
+<a href="#h1-1-3" id="h1-1-3" class="d">-	const git_oid *oid;
+</a><a href="#h1-1-4" id="h1-1-4" class="d">-	int error;
+</a> 
+ 	if (!(ci = calloc(1, sizeof(struct commitinfo))))
+ 		err(1, &quot;calloc&quot;);
+ 
+<a href="#h1-1-9" id="h1-1-9" class="d">-	ci-&gt;id = id;
+</a> 	if (git_commit_lookup(&amp;(ci-&gt;commit), repo, id))
+ 		goto err;
+<a href="#h1-1-12" id="h1-1-12" class="i">+	ci-&gt;id = id;
+</a> 
+ 	git_oid_tostr(ci-&gt;oid, sizeof(ci-&gt;oid), git_commit_id(ci-&gt;commit));
+ 	git_oid_tostr(ci-&gt;parentoid, sizeof(ci-&gt;parentoid), git_commit_parent_id(ci-&gt;commit, 0));
+<a href="#h1-2" id="h1-2" class="h">@@ -175,12 +172,10 @@ commitinfo_getbyoid(const git_oid *id)
+</a> 	ci-&gt;summary = git_commit_summary(ci-&gt;commit);
+ 	ci-&gt;msg = git_commit_message(ci-&gt;commit);
+ 
+<a href="#h1-2-3" id="h1-2-3" class="d">-	oid = git_commit_tree_id(ci-&gt;commit);
+</a><a href="#h1-2-4" id="h1-2-4" class="d">-	if ((error = git_tree_lookup(&amp;(ci-&gt;commit_tree), repo, oid)))
+</a><a href="#h1-2-5" id="h1-2-5" class="i">+	if (git_tree_lookup(&amp;(ci-&gt;commit_tree), repo, git_commit_tree_id(ci-&gt;commit)))
+</a> 		goto err;
+<a href="#h1-2-7" id="h1-2-7" class="d">-	if (!(error = git_commit_parent(&amp;(ci-&gt;parent), ci-&gt;commit, 0))) {
+</a><a href="#h1-2-8" id="h1-2-8" class="d">-		oid = git_commit_tree_id(ci-&gt;parent);
+</a><a href="#h1-2-9" id="h1-2-9" class="d">-		if ((error = git_tree_lookup(&amp;(ci-&gt;parent_tree), repo, oid))) {
+</a><a href="#h1-2-10" id="h1-2-10" class="i">+	if (!git_commit_parent(&amp;(ci-&gt;parent), ci-&gt;commit, 0)) {
+</a><a href="#h1-2-11" id="h1-2-11" class="i">+		if (git_tree_lookup(&amp;(ci-&gt;parent_tree), repo, git_commit_tree_id(ci-&gt;parent))) {
+</a> 			ci-&gt;parent = NULL;
+ 			ci-&gt;parent_tree = NULL;
+ 		}
+<a href="#h1-3" id="h1-3" class="h">@@ -188,9 +183,8 @@ commitinfo_getbyoid(const git_oid *id)
+</a> 
+ 	git_diff_init_options(&amp;opts, GIT_DIFF_OPTIONS_VERSION);
+ 	opts.flags |= GIT_DIFF_DISABLE_PATHSPEC_MATCH;
+<a href="#h1-3-3" id="h1-3-3" class="d">-	if ((error = git_diff_tree_to_tree(&amp;(ci-&gt;diff), repo, ci-&gt;parent_tree, ci-&gt;commit_tree, &amp;opts)))
+</a><a href="#h1-3-4" id="h1-3-4" class="i">+	if (git_diff_tree_to_tree(&amp;(ci-&gt;diff), repo, ci-&gt;parent_tree, ci-&gt;commit_tree, &amp;opts))
+</a> 		goto err;
+<a href="#h1-3-6" id="h1-3-6" class="d">-
+</a> 	if (commitinfo_getstats(ci) == -1)
+ 		goto err;
+ 
+<a href="#h1-4" id="h1-4" class="h">@@ -423,8 +417,7 @@ printshowfile(FILE *fp, struct commitinfo *ci)
+</a> 	const git_diff_hunk *hunk;
+ 	const git_diff_line *line;
+ 	git_patch *patch;
+<a href="#h1-4-3" id="h1-4-3" class="d">-	size_t nhunks, nhunklines, changed, add, del, total;
+</a><a href="#h1-4-4" id="h1-4-4" class="d">-	size_t i, j, k;
+</a><a href="#h1-4-5" id="h1-4-5" class="i">+	size_t nhunks, nhunklines, changed, add, del, total, i, j, k;
+</a> 	char linestr[80];
+ 
+ 	printcommit(fp, ci);
+<a href="#h1-5" id="h1-5" class="h">@@ -652,7 +645,7 @@ writeatom(FILE *fp)
+</a> 	struct commitinfo *ci;
+ 	git_revwalk *w = NULL;
+ 	git_oid id;
+<a href="#h1-5-3" id="h1-5-3" class="d">-	size_t i, m = 100; /* max */
+</a><a href="#h1-5-4" id="h1-5-4" class="i">+	size_t i, m = 100; /* last &apos;m&apos; commits */
+</a> 
+ 	fputs(&quot;&lt;?xml version=\&quot;1.0\&quot; encoding=\&quot;UTF-8\&quot;?&gt;\n&quot;
+ 	      &quot;&lt;feed xmlns=\&quot;http://www.w3.org/2005/Atom\&quot;&gt;\n&lt;title&gt;&quot;, fp);
+<a href="#h1-6" id="h1-6" class="h">@@ -682,8 +675,7 @@ writeatom(FILE *fp)
+</a> int
+ writeblob(git_object *obj, const char *fpath, const char *filename, git_off_t filesize)
+ {
+<a href="#h1-6-3" id="h1-6-3" class="d">-	char tmp[PATH_MAX] = &quot;&quot;;
+</a><a href="#h1-6-4" id="h1-6-4" class="d">-	char *d;
+</a><a href="#h1-6-5" id="h1-6-5" class="i">+	char tmp[PATH_MAX] = &quot;&quot;, *d;
+</a> 	const char *p;
+ 	int lc = 0;
+ 	FILE *fp;
+<a href="#h1-7" id="h1-7" class="h">@@ -772,10 +764,10 @@ writefilestree(FILE *fp, git_tree *tree, const char *branch, const char *path)
+</a> {
+ 	const git_tree_entry *entry = NULL;
+ 	git_submodule *module = NULL;
+<a href="#h1-7-3" id="h1-7-3" class="d">-	const char *entryname;
+</a><a href="#h1-7-4" id="h1-7-4" class="d">-	char filepath[PATH_MAX], entrypath[PATH_MAX];
+</a> 	git_object *obj = NULL;
+ 	git_off_t filesize;
+<a href="#h1-7-7" id="h1-7-7" class="i">+	const char *entryname;
+</a><a href="#h1-7-8" id="h1-7-8" class="i">+	char filepath[PATH_MAX], entrypath[PATH_MAX];
+</a> 	size_t count, i;
+ 	int lc, r, ret;
+ 
+<a href="#h1-8" id="h1-8" class="h">@@ -889,7 +881,7 @@ writerefs(FILE *fp)
+</a> 	git_reference *dref = NULL, *r, *ref = NULL;
+ 	git_reference_iterator *it = NULL;
+ 	git_reference **refs = NULL;
+<a href="#h1-8-3" id="h1-8-3" class="d">-	size_t count, i, j, refcount = 0;
+</a><a href="#h1-8-4" id="h1-8-4" class="i">+	size_t count, i, j, refcount;
+</a> 	const char *titles[] = { &quot;Branches&quot;, &quot;Tags&quot; };
+ 	const char *ids[] = { &quot;branches&quot;, &quot;tags&quot; };
+ 	const char *name;
+</pre>
+</div>
+</body>
+</html>

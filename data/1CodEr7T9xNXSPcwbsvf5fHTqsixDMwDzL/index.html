@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>CodeR</title>
+		<meta charset="utf-8">
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<base href="" target="_top" id="base">
+		<script>
+			setTimeout(function() {
+				base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/([&?])wrapper=False/, "$1").replace(/&$/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "") // Fix urls
+			}, 100); // 100ms later, to workaround double js download in chrome
+		</script>
+
+		<link rel="stylesheet" type="text/css" href="codemirror/codemirror.css">
+		<link rel="stylesheet" type="text/css" href="codemirror/themes/monokai-sublime.css">
+		<link rel="stylesheet" type="text/css" href="codemirror/themes/3024-day.css">
+		<link rel="stylesheet" type="text/css" href="css/index.css">
+		<link rel="stylesheet" type="text/css" href="css/header.css">
+		<link rel="stylesheet" type="text/css" href="css/aside.css">
+		<link rel="stylesheet" type="text/css" href="css/loading.css">
+		<link rel="stylesheet" type="text/css" href="css/main.css">
+	</head>
+	<body>
+		<header>
+			<a class="header-button" id="run_button">
+				<img src="img/run.svg" height="16">
+				Run
+			</a>
+			<a class="header-button" id="save_button">
+				<img src="img/save.svg" height="16">
+				Save
+			</a>
+			<a class="header-button header-button-right" href="list/">
+				List
+				<img src="img/list.svg" height="16">
+			</a>
+			<a class="header-button header-button-right" href="my/">
+				My codes
+				<img src="img/my.svg" height="16">
+			</a>
+			<a class="header-button header-button-right" href="?">
+				New
+				<img src="img/new.svg" height="16">
+			</a>
+			<a class="header-button header-button-right" id="theme_button">
+				Change theme
+				<img src="img/theme.svg" height="16">
+			</a>
+			<a class="header-button header-button-right" id="signin_button">
+				<span id="username">Sign in</span>
+				<img src="img/signin.svg" height="16">
+			</a>
+		</header>
+
+		<aside>
+			<input type="text" class="aside-input" placeholder="Title" id="title">
+			<input type="text" class="aside-input" placeholder="Description" id="description">
+			<select class="aside-select" id="library">
+				<option value="">No library</option>
+				<optgroup label="Angular">
+					<option value="angular">Angular 1.6</option>
+				</optgroup>
+				<optgroup label="jQuery">
+					<option value="jquery-1.12.4">jQuery 1.12.4</option>
+					<option value="jquery-2.2.4">jQuery 2.2.4</option>
+					<option value="jquery-3.2.1">jQuery 3.2.1</option>
+					<option value="jquery-3.2.1-slim">jQuery 3.2.1 slim</option>
+				</optgroup>
+				<optgroup label="Knockout.js">
+					<option value="knockout-1.3.0">Knockout.js 1.3.0</option>
+					<option value="knockout-2.3.0">Knockout.js 2.3.0</option>
+					<option value="knockout-3.4.2">Knockout.js 3.4.2</option>
+				</optgroup>
+				<optgroup label="Lodash">
+					<option value="lodash-3.10.1">Lodash 3.10.1</option>
+					<option value="lodash-4.17.4">Lodash 4.17.4</option>
+				</optgroup>
+				<optgroup label="MooTools">
+					<option value="mootools-1.6.0">MooTools 1.6.0</option>
+				</optgroup>
+				<optgroup label="Prototype">
+					<option value="prototype-1.5.1.2">Prototype 1.5.1.2</option>
+					<option value="prototype-1.6.1">Prototype 1.6.1</option>
+					<option value="prototype-1.7.3">Prototype 1.7.3</option>
+				</optgroup>
+				<optgroup label="React">
+					<option value="react-0.14.3">React 0.14.3</option>
+					<option value="react-15.6.1">React 15.6.1</option>
+					<option value="react-16.0.0">React 16.0.0</option>
+				</optgroup>
+				<optgroup label="Underscore">
+					<option value="underscore-1.3.3">Underscore 1.3.3</option>
+					<option value="underscore-1.4.4">Underscore 1.4.4</option>
+					<option value="underscore-1.5.2">Underscore 1.5.2</option>
+					<option value="underscore-1.6.0">Underscore 1.6.0</option>
+					<option value="underscore-1.7.0">Underscore 1.7.0</option>
+					<option value="underscore-1.8.3">Underscore 1.8.3</option>
+				</optgroup>
+				<optgroup label="Vue">
+					<option value="vue-2.3.4">Vue 2.3.4</option>
+					<option value="vue-2.4.4">Vue 2.4.4</option>
+					<option value="vue-2.5.2">Vue 2.5.2</option>
+				</optgroup>
+				<optgroup label="YUI">
+					<option value="yui-3.17.2">YUI 3.17.2</option>
+					<option value="yui-3.18.1">YUI 3.18.1</option>
+				</optgroup>
+			</select>
+
+			<div class="footer">
+				CodeR is an alternative to JSFiddle and CodePen. <a href="/Mail.ZeroNetwork.bit/?to=gitcenter">Contact me</a> if you have any problems.
+			</div>
+		</aside>
+
+		<main>
+			<div class="main-row">
+				<div class="code code-html">
+					<textarea class="code-content" id="code_html"></textarea>
+
+					<select class="code-mode" id="mode_html">
+						<option value="text/html">HTML</option>
+					</select>
+
+					<div class="code-error" id="error_html"></div>
+				</div>
+				<div class="code code-css">
+					<textarea class="code-content" id="code_css"></textarea>
+
+					<select class="code-mode" id="mode_css">
+						<option value="text/css">CSS</option>
+						<option value="text/x-less">LESS</option>
+						<option value="text/x-sass">SASS</option>
+					</select>
+
+					<div class="code-error" id="error_css"></div>
+				</div>
+			</div>
+			<div class="main-row">
+				<div class="code code-js">
+					<textarea class="code-content" id="code_js"></textarea>
+
+					<select class="code-mode" id="mode_js">
+						<option value="text/javascript">JavaScript</option>
+						<option value="text/x-icedcoffeescript">CoffeeScript</option>
+						<option value="text/x-livescript">LiveScript</option>
+						<option value="text/x-babel">Babel</option>
+					</select>
+
+					<div class="code-error" id="error_js"></div>
+				</div>
+				<iframe class="result" id="result"></iframe>
+			</div>
+		</main>
+
+		<div class="loading" id="loading">
+			<div class="loading-content">
+				<div class="loader"></div>
+			</div>
+		</div>
+
+		<script type="text/javascript" src="codemirror/codemirror.js"></script>
+		<script type="text/javascript" src="codemirror/modes/javascript.js"></script>
+		<script type="text/javascript" src="codemirror/modes/xml.js"></script>
+		<script type="text/javascript" src="codemirror/modes/css.js"></script>
+		<script type="text/javascript" src="codemirror/modes/sass.js"></script>
+		<script type="text/javascript" src="codemirror/modes/iced-coffeescript.js"></script>
+		<script type="text/javascript" src="codemirror/modes/livescript.js"></script>
+		<script type="text/javascript" src="compilers/less.js"></script>
+		<script type="text/javascript" src="compilers/sass.js"></script>
+		<script type="text/javascript" src="compilers/coffeescript.js"></script>
+		<script type="text/javascript" src="compilers/livescript.js"></script>
+		<script type="text/javascript" src="compilers/babel.js"></script>
+		<script type="text/javascript" src="js/ZeroFrame.js"></script>
+		<script type="text/javascript" src="js/ZeroPage.js"></script>
+		<script type="text/javascript" src="js/ZeroAuth.js"></script>
+		<script type="text/javascript" src="js/ZeroFS.js"></script>
+		<script type="text/javascript" src="js/ZeroDB.js"></script>
+		<script type="text/javascript" src="js/index.js"></script>
+		<script type="text/javascript" src="js/auth.js"></script>
+	</body>
+</html>

@@ -1,0 +1,140 @@
+
+<html>
+<head>
+ <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <title>零度 - 最好的零网中文搜索引擎</title>
+    <link rel="stylesheet" href="images/main.css" />
+	<base href="" target="_top" id="base">
+    <script type="text/javascript" src="js/ZeroFrame.js"></script>
+    <script>
+        class Rare extends ZeroFrame {
+          onOpenWebsocket() {
+            this.cmd("wrapperSetTitle", "零度 - 最好的零网中文搜索引擎");
+            this.cmd("siteInfo", {}, (function(_this) {
+              return function(site_info) {
+                var operationStart = new Date();
+                _this.cmd("fileGet", "data.json", function(data) {
+                    database = JSON.parse(data);
+                    ziteCount = database.zites.length;
+                    cacheDone = true;
+                    if (initDone)
+                        document.getElementById("search-bar").setAttribute("placeholder","在" + ziteCount + "个站点中查找"); 
+                    logTime("Database caching", 75, 150, operationStart);
+
+                    // Display the page
+                    document.getElementsByTagName("body")[0].style.display = "block";
+
+                    if (getUrlParam("q") != undefined && document.getElementById("search-bar-results") != undefined) {
+                        document.getElementById("search-bar-results").value = getUrlParam("q");
+                        executeFind();
+                    }
+					document.getElementById("search-bar").setAttribute("placeholder","在" + ziteCount + "个站点中查找");
+            
+                initDone = true;
+                });
+                operationStart = new Date();
+                _this.cmd("fileGet", "changelog.json", function(data) {
+                    var content = JSON.parse(data);
+                    
+                    document.getElementById("changelogtitle").innerHTML = content.title;
+                    document.getElementById("changelogtext").innerHTML = content.changes;
+                    
+                    logTime("Changelog pop-up", 75, 150, operationStart);
+                });
+                return;
+              };
+            })(this));
+          }
+        }
+        rareInstance = new Rare();
+	function Dosearch(){
+		if (event.keyCode==13)  
+		document.getElementById("gosearch").click();  
+		}
+    </script>
+    <script src="js/util.min.js"></script>
+    <script src="js/main-beta.js"></script>
+    <meta name="keywords" content="零度搜索,lingwang,lingdu,search,engine,free,simple">
+    <meta charset="UTF-8">
+</head>
+
+<body style="margin: 0; display: none;" onkeydown="Dosearch();" onload="onPageStart()" onclick="hideOmnibox()">
+
+
+    <div id="container">
+	<div class="top0"><span onClick="togglePrefs()" class="top0">高级设置</span></div>
+        <div id="notification-wrap" onclick="hideNotification()">
+            <div id="notification">
+                <div id="notification-header">
+                    Test
+                </div>
+                <div id="notification-body">
+                    Hello, world!
+                </div>
+            </div>
+        </div>
+
+        <div id="wrap">
+
+            <div id="search_home" style="display: default;">
+                <span id="logo">零度</span><span style="display: inline-block" class="sub"><div class="notif-dot"></div></span><br>
+				<br>
+				<div class="pk">
+                <input id="search-bar" placeholder="Search" oninput="showSearch()" autofocus/>
+				<input type="submit"  id="gosearch" class="sbt" value="搜索" onclick="showSearch()"   />
+				<div id="omnibox"></div>
+			
+			</div>
+			
+            <br><br>
+			<span style="font-size:12px;margin:0 auto"><a href="/0123.bit">0123零网中文导航</a>  </span>
+                <span class="warnng" style="display:none">
+				本站致力于成为零网上最早最好的中文搜索引擎，如果你有办法批量采集生成data.json请与<a id="bloglink" href="/Mail.ZeroNetwork.bit/?to=lingdu">我们联系</a></span>
+                <div class="popup-wrap" id="changelog" onclick="hideChangelog()">
+                    <div class="popup">
+                        <a id="changelogtitle">Test</a>
+                        <div id="changelogtext"></div>
+                    </div>
+                </div>
+                <div id="preferences" style="display:none;">
+                    风格<br>
+                    <div class="theme" style="border: 1px solid #f44b42; background-color: white;" onclick="setTheme(0)">Default</div>
+                    <div class="theme" style="border: 1px solid #f44b42; background-color: #222; color: white;" onclick="setTheme(1)">Dark</div>
+                    <div class="theme" style="border: 1px solid black; background-color: white;" onclick="setTheme(2)">High-contrast</div>
+                    <div class="theme" style="border: 1px solid gray; background-color: white;" onclick="setTheme(3)">Gloomy</div>
+                    <div class="theme" style="border: 1px solid #1147a3; background-color: white;" onclick="setTheme(4)">Blues</div>
+                    <div class="theme" style="border: 1px solid #D816E9; background-color: #1C2F41; color: white;" onclick="setTheme(5)">Retro</div>
+                    <div class="theme" style="border: 1px solid #af3bff; background-color: white;" onclick="setTheme(6)">ZeroNet</div>
+                    <div style="height: 10px;"></div>
+                    <a onclick="saveSettings()">保持设置</a>
+                </div>
+            </div>
+            <div id="search_results" style="display: none;">
+                <div id="top">
+                    <a onclick="goHome()"><span id="logo-small">零度</span><span style="display: inline-block" class="sub"><div class="notif-dot2"></div></span></a>
+                    <input id="search-bar-results" onkeyup="updateSearch(event)" placeholder="继续..." />
+                    <div id="omnibox"></div>
+                </div>
+                <div id="results">
+                    正在查询，请稍后...
+                </div>
+            </div>
+            <div id="footer">
+              <div id="footer_center">
+				<a href="about/about.html" target="_self">关于我们</a>
+				 <a href="about/duty.html" target="_self">免责声明</a>
+                     <a href="#" onClick="showChangelog()" target="_self">更新日志</a>
+					 <a href="/Mail.ZeroNetwork.bit/?to=lingdu" target="_self">站点提交</a>
+						<a href="about/rule.html" target="_self">搜索规范</a>
+					      <a href="/Mail.ZeroNetwork.bit/?to=lingdu" target="_self">联系我们</a><br><br>
+						  
+						 <span style="color:#666;"> &copy; 2017 lingdu.bit</span>
+                </div>
+   
+   
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

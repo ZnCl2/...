@@ -1,0 +1,100 @@
+{
+	"title": "Post Redacted",
+	"description": "Not approved for release.",
+	"links": "- [Source code](https://github.com/HelloZeroNet)",
+	"next_post_id": 18,
+	"demo": false,
+	"modified": 1462310068,
+	"post": [
+		{
+			"post_id": 17,
+			"title": "Browsable Git Repositories in ZeroNet",
+			"date_published": 1462309749.762,
+			"body": "I had originally been thinking I needed to build some Javascript thing to make my [git repositories](http://localhost:43110/1MCfWoCtcbPXYc3rhYhKeSAWVpzAQYyWKS/) browsable, but then I was looking at [suckless's git repositories](http://git.2f30.org/) and realized they're using static HTML generation. So I found their tool, [stagit](http://git.2f30.org/stagit/log.html), compiled it, ran it on my repositories, and published it. Voila! [Browsable git repositories with an index in ZeroNet](http://localhost:43110/1MCfWoCtcbPXYc3rhYhKeSAWVpzAQYyWKS/git/)!\n\nNext step is a commit hook to regenerate the HTML automatically on commit, then maybe automatic republishing (is that possible from the CLI without shutting down the server?) and some CSS so it's not so ugly. I also need to rewrite my README.md files to just README, in plain text, because apparently markup beyond the simplest of html \"sucks\" just like HTTPS does."
+		},
+		{
+			"post_id": 16,
+			"title": "Beyond Docker",
+			"date_published": 1462295804.692,
+			"body": "Ok, so I realize I just got into Docker, but there are some things about it that concern me from a complexity and security standpoint, and I think there are simpler, more secure alternatives available, even if they don't have a community behind them (yet).\n\nFirst and most important, there's that privileged daemon. You have two options: either put one or more regular users in the docker group, thus giving them the equivalent of root access to the system, or let them run the docker command with sudo, giving them the equivalent of root access to the system and also a command they can try to trick into doing their bidding to boot.\n\nSecond, there's the use of an overlay filesystem to get around the fact that most Linux filesystems don't have any concept of snapshots, LVM snapshots aren't useful for anything beyond backup, and most people don't use LVM. But if you're going to build an OS from the ground up to support containers, the better approach is to do what SmartOS, FreeNAS, etc do: use ZFS.\n\nSince 3.8, Linux has had a feature called USER_NS. This lets unprivileged users create UID namespaces. So what, you ask? Well, in the new UID namespace, the user can then give themselves root privileges, after which they can create other namespaces, such as a mount namespace, then mount filesystems, etc. Hard to get right, security-wise, because there could be kernel bugs with privileged operations inside the container, but that's true of every single system call already, so the real issue is that USER_NS is relatively new, which means it probably has bugs hiding in it. On the other hand, though, if someone does manage to break out of the container somehow, they are an unprivileged user on the host.\n\nIt appears as though what I am thinking of may only barely be possible at this point. A [bug in ZFS](https://github.com/zfsonlinux/zfs/issues/4177) related to user namespaces was fixed only a few days ago. But I plan to experiment with some ideas, and I'll report back here on my progress."
+		},
+		{
+			"post_id": 15,
+			"title": "Dockerfiles for ZeroNet and Tor",
+			"date_published": 1462256102.608,
+			"body": "Finally, a real use for my [git repository zite](http://localhost:43110/1MCfWoCtcbPXYc3rhYhKeSAWVpzAQYyWKS/)!\n\nI've created Alpine-based Dockerfiles for ZeroNet and Tor, such that they can run in separate containers with ZeroNet being able to access Tor's control auth cookie. Just clone the repository with `git clone http://localhost:43110/1MCfWoCtcbPXYc3rhYhKeSAWVpzAQYyWKS/git/docker.git` and follow the instructions in README.md. Please comment with feedback both on the Dockerfiles themselves and the instructions.\n\nCouple probably minor concerns:\n* This uses the Tor package from Alpine's testing repository with Alpine 3.3. It seems to work fine, but there might be symbol or dependency issues if it's updated. It's also probably not that well tested yet.\n* The current version of the Tor package uses group \"nogroup\", though it appears the APKBUILD in aports has already been updated to use a group named \"tor\". Once that's published, the Dockerfiles will need to be updated to use the correct groups.  "
+		},
+		{
+			"post_id": 14,
+			"title": "Another Theory About the Craig Wright Scam",
+			"date_published": 1462227980.474,
+			"body": "What if, instead of simply being a tragic side effect of Craig Wright's Satoshi Nakamoto pretense, the destruction of Gavin Andresen's credibility is the *original intent*? Wright did, after all, approach Andresen directly. And he does appear to have made some kind of personal appeal to Andresen that Andresen has not yet been willing to talk about publicly. In other words, he's behaved in the exact way any psyops operative does when trying to undermine the credibility of a person or a story: get them to make some public claim that then gets proven to be bogus."
+		},
+		{
+			"post_id": 13,
+			"title": "Why is Craig Wright Trying to Scam us?",
+			"date_published": 1462216841.021,
+			"body": "Craig Wright is [unquestionably trying to scam us](https://dankaminsky.com/2016/05/02/validating-satoshi-or-not/). The question is, why?\n\nAt one point, I suspected that he'd begun developing a mental illness, but as far as I can tell he's always been a bit of a shady character. He seems pretty smart, so he must know he'd get caught. So what's he up to?\n\nI think he's trying to get the real Satoshi Nakamoto to step forward. Not because he wants to be some kind of hero, since it seems likely he will rapidly be forgotten once Nakamoto comes forward. But because he is working for someone who is looking for Nakamoto. Someone who would like to recruit Nakamoto for their own ends. Like, say, turning Bitcoin into an all-encompassing version of the Clipper program from the '90s, where everyone is required to use the single \"blessed\" blockchain, complete with surveillance, backdoors, and \"know your customer\" laws.\n\nIt's just a theory, but it seems like it's as good as any that are being floated right now."
+		},
+		{
+			"post_id": 12,
+			"title": "Don't Use Other People's Dockerfiles (or images)",
+			"date_published": 1462208562.265,
+			"body": "I'm not saying they'll kill your dog or anything, just that running a bunch of containers all built on different bases and following different (if any) standards rapidly becomes a maintenance and security nightmare. It will also waste a bunch of space because each separate base needs to be stored on every host running your containers.\n\nDockerfiles really aren't that hard to make yourself. Choose a base and a standard and stick to it. My current preferred base is Alpine, because it makes very small images and has a \"traditional\" major/minor release cycle, where each major release gets a lot of testing. With a rolling release like Gentoo, each release gets very little testing. Alpine also makes a decent host operating system with a little tweaking. In particular, if you use the default grsec kernel, you need to relax restrictions on chroots a bit to make Docker work. And it lacks the bloated security and dependency nightmare known as systemd.\n\nOther possible bases that might someday become interesting are [stali](http://sta.li/), because it's statically linked, and [Sabotage](http://sabotage.tech/) because it is very easy to bootstrap all the way from source. It'll probably be challenging to remove all the development tools that aren't needed to run a container from it, though. Both are based on busybox and musl and lack systemd."
+		},
+		{
+			"post_id": 11,
+			"title": "New Version of IPFS URL-rewriting UserScript",
+			"date_published": 1461700949.061,
+			"body": "This version matches anything that looks like an IPFS URL regardless of the gateway used. I also fixed a bug that would cause pages to start loading images from the original gateway before the script had a chance to rewrite them, because it ran at document-idle. Not sure if document-end would be sufficient, so I'm playing it safe and running at document-start.\n\nhttp://localhost:43110/1MgHVPCE1ve6QfKrgsqCURzRj72HrRWioz/?19qsuxKBkNZWYft3epWgn6u3gG82sQHs6n_1"
+		},
+		{
+			"post_id": 10,
+			"title": "First Attempt at a UserScript to Rewrite IPFS URLs",
+			"date_published": 1461361796.677,
+			"body": "Just rewrites ipfs.pics URLs at the moment, and doesn't handle ipns at all. Please feel free to add to it and paste your own. Maybe I should make a git repository :)\n\nhttp://localhost:43110/1MgHVPCE1ve6QfKrgsqCURzRj72HrRWioz/?19qsuxKBkNZWYft3epWgn6u3gG82sQHs6n_0"
+		},
+		{
+			"post_id": 9,
+			"title": "Publishing a Git Repository in ZeroNet",
+			"date_published": 1461346738.263,
+			"body": "1. Create a new site for publishing your repositor(y|ies).\n2. If desired, create a subdirectory for repositories and cd into it.\n3. Clone your repository: `git clone --bare <path_to_original_repo> <repo_name>.git`\n4. Set up your post-update hook for \"dumb http\":\n  a. `cd <repo_name>.git/hooks`\n  b. `mv post-update.sample post-update`\n  c. `chmod a+x post-update`\n5. Push to the path under ZeroNet of the repo, either via ssh or locally, i.e. `git push <zeronet_path>/data/<site_addr>/<git_subdir>/<repo_name>.git master:master`. You might need to create a new commit to get the hook to run.\n6. Sign and publish your new site.\n7. Try cloning with `git clone http://localhost:43110/<site_addr>/<git_subdir>/<repo_name>.git <repo_name>`\n8. Profit!\n\nYou will not be able to push back to the repository through ZeroNet, at least not yet. Push the way you did in step 5. Pro tip: git lets you set a separate push URL if you want to pull from ZeroNet and push via ssh. Use `git remote set-url --push <remote_name> <url>`.\n\nIt would be really great to have some pure Javascript web front-end for \"dumb http\" repositories hosted on the same host as the script, because then you could just stick the script and an index.html into the root directory of the site and browse away. I've been looking for such a thing but have not found anything that would work \"out of the box\" yet. Stay tuned."
+		},
+		{
+			"post_id": 8,
+			"title": "Blog fixed!",
+			"date_published": 1461281591.37,
+			"body": "Erkan pointed out to me that he was getting the following error when trying to read my blog:\n\n```\nWebSocket handleRequest error: TypeError: 'NoneType' object does not support item assignment in UiWebsocket.py line 98 > UiWebsocket.py line 178 > UiWebsocket.py line 467\n```\n\nDigging in the source code revealed that a None there could only come from the includes processing. I had changed my data/users/content.json, so I asked Erkan to see if he could see my changes. He said I had no data/users/content.json at all. Then he pointed me at [this blog post](/zeroblog.bit/?Post:34:you+have+to+tell+siteSign+what+to+sign,+specifically). Apparently if you update an include file, you need to explicitly sign it.\n\nThanks for the help, Erkan!"
+		},
+		{
+			"post_id": 7,
+			"title": "Apps Can't Leak What They Don't Know",
+			"date_published": 1461278881.334,
+			"body": "A lot of people seem to assume that just because they're using Tor, their identity is safe. Nothing could be farther from the truth. Most applications are complex beasts, with web browsers being the most complex application most people run. You should assume anything an application knows about you, it is likely to leak. Everything from your IP address to your username to your MAC address to naked pictures of you. The solution? Run applications in a virtual machine that contains no personal information about you and that has no direct access to the outside world. Run Tor in a separate virtual machine that has two separate interfaces, one to the outside world, and one (virtual) interface connected to your VM. This is the approach Whonix takes.\n\nA simpler approach is to run TAILS, but TAILS relies on using a carefully chosen and configured set of applications. Since the applications still run on a host that has direct Internet access, it's still possible for them to leak your IP or information about your hardware to the outside world. This is still way more secure than trying to run regular apps through Tor yourself, though."
+		},
+		{
+			"post_id": 6,
+			"title": "Tor > I2P",
+			"date_published": 1461278699.464,
+			"body": "I'm sure this will not be very popular, but Tor is better than I2P. Not because it has a better design, because it doesn't. But because Tor has received substantially more attention from the security community and has a much larger network. I2P almost certainly has a number of massive security flaws that have yet to be discovered. Tor has known flaws, but if you're not trying to run a Silk Road, you're far more likely to get nailed through vulnerabilities in the apps you run than through Tor itself."
+		},
+		{
+			"post_id": 5,
+			"title": "Why The Matrix Sucks",
+			"date_published": 1461190541.996,
+			"body": "Yes, I know the Matrix came out 17 years ago. But for some reason I was thinking about this recently and I figured I'd write it down. I originally wrote a long rant, but I think the crappiness of The Matrix boils down to one thing: it should have been a story about people overcoming a far more powerful adversary through ingenuity and creativity, but instead it was religious mumbo-jumbo about a messiah saving everyone by using magic."
+		},
+		{
+			"post_id": 3,
+			"title": "Two centralized systems != \"decentralized\"",
+			"date_published": 1460950738.844,
+			"body": "Among mail.zeroverse.bit's claimed advantages is that it makes email in ZeroNet \"decentralized.\" As far as I can tell, this is not because mail.zeroverse.bit is itself decentralized, but because it is a second email system. And also as far as I can tell, it does not interoperate with ZeroMail. So I'd say far from making ZeroNet mail \"decentralized,\" the best word for the current state of mail in ZeroNet is \"balkanized,\" with multiple systems that do not interoperate. At least the state of nyms/IDs is slightly better, being federated instead of balkanized.\n\nWhat we really need for identification is a blockchain. I suspect the reason for the current federated system is that the developers want to use Namecoin for blockchain stuff, and Namecoin is still pretty hard for mere mortals to use. While I sympathize with the lack of interest in creating Yet Another Blockchain, the result is a reduction in usability for ZeroNet itself. Compare to Twister, which has its own blockchain that it uses for usernames (and I'm not sure what else, if anything). It uses the Bittorrent DHT and Bittorrent for most everything else.\n\nWhich brings me to the way I think ZeroNet should handle mail: a DHT. The DHT could have two or three key types: \n\n1. Signature-based keys which are a hash of a public key hash and a human-readable name, with any newer update signed with the public key superceding any older value.\n2. \"Dropbox\" or \"topic\" keys, based on a hash of the recipient's ID, possibly with an appended \"spambuster,\" work requirement ala Bitmessage, etc. Anyone can append an update to these keys using some kind of proof of work, with a replay prevention mechanism of some kind. Updates don't have to be ordered, though, so it doesn't demand a full blockchain. These would be used for email.\n3. (Optional) your traditional content-based keys, just a hash of the content. These could be used to keep the size of the other two keys smaller. Or the blobs you would store in these could be handled with torrents."
+		},
+		{
+			"post_id": 2,
+			"title": "First Post",
+			"date_published": 1460611844.616,
+			"body": "Yay! I seem to be figuring this thing out."
+		}
+	]
+}

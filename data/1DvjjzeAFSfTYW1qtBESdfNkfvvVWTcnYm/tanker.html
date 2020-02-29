@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta charset="utf-8"> 
+<title>如果我们的铁骑继续前进</title> 
+<style> 
+body,p,ul{margin:0;}
+body{font:14px arial,sans-serif;color:#222;}
+a{color:#337DE3;text-decoration:none;}
+a:hover{text-decoration:underline;}
+html,body{min-width:900px;overflow:hidden;height:100%;}
+#tk span,#pp,#msg,#txt,#box,#s_btn{position:absolute;position:fixed;}
+#tk span,#pp{background:url(tanker.png) no-repeat;}
+#tk span{top:-105px;width:64px;height:103px;}
+.boom{
+	opacity:0;filter:alpha(opacity='0');
+	-webkit-transform:rotate(360deg) scale(3);
+	-moz-transform:rotate(360deg) scale(3);
+	-o-transform:rotate(360deg) scale(3);
+	transform:rotate(360deg) scale(3);
+
+	-webkit-transition:-webkit-transform 1s linear,opacity 1s linear;
+	-moz-transition:-moz-transform 1s linear,opacity 1s linear;
+	-o-transition:-o-transform 1s linear,opacity 1s linear;
+	transition:transform 1s linear,opacity 1s linear;}
+#pp{background-position:-77px 0;bottom:5px;left:50%;width:254px;height:121px;}
+#msg,#box{opacity:0;filter:alpha(opacity='0');}
+#msg{z-index:-1;font:50px/60px '黑体',arial,sans-serif;top:50%;left:0;width:100%;margin-top:-30px;text-align:center;
+	color:#FC7421;color:rgba(242,147,1,.1);text-shadow:#F29402 0 0 3px;}
+#msg,html,#s_btn,#box{-webkit-transition:.3s linear;-moz-transition:.3s linear;-o-transition:.3s linear;transition:.3s linear;}
+#txt{top:10px;left:10px;color:#999;}
+#box{z-index:4;width:400px;height:200px;padding:50px;margin:-250px 0 0 -250px;background:#EEE;color:#333;border-radius:10px;position:relative;
+	top:50%;left:50%;}
+.box_key{font:24px/80px '微软雅黑','黑体';display:block;text-align:center;}
+#s_btn{left:50%;top:50%;z-index:5;margin:-25px 0 0 -115px;width:190px;background:#E0360D;text-align:center;}
+.share{position:absolute;bottom:30px;left:45px;}
+.z_btn,#s_btn{float:left;padding:0 20px;color:#FFF;font:bold 21px/50px '微软雅黑','黑体';text-shadow:rgba(0,0,0,.2) 1px 1px 0;border-radius:5px;cursor:pointer;}
+.z_btn{background:#ED5155;margin-right:20px;}
+.sina_btn{margin-right:10px;background:#CB1708;float:left;padding:0 10px;color:#FFF;font:bold 16px/35px '微软雅黑','黑体';text-shadow:rgba(0,0,0,.2) 1px 1px 0;border-radius:5px;cursor:pointer;}
+.z_btn:hover,.sina_btn:hover,.qq_btn:hover{text-decoration:none;}
+/*�卜卜口の<http://mouto.org>*/
+</style> 
+<style></style></head> 
+<body>
+<p id="tk"></p>
+<i id="pp" class="boom"></i>
+<p id="msg">测试文字</p>
+<p id="txt"></p>
+<a id="pl" href="#" style="color: white" onclick="return plus();">强行续命</a>
+<div id="box"></div>
+<span id="s_btn">PLAY</span>
+<script>
+var $=function(i){return document.getElementById(i)},
+c=function(p,i){return p.getElementsByTagName(i)},
+cl=function(c,p){for(var e=(p||document.body).getElementsByTagName('*'),r=[],i=0;j=e[i];i++)(' '+j.className+' ').indexOf(' '+c+' ')!=-1?r.push(j):0;return r},
+css=function(p,i){p.style.cssText+=(';'+i)},
+addEvent=function(o,t,f){if(o.attachEvent){o['e'+t+f]=f;o[t+f]=function(){o['e'+t+f](window.event);};o.attachEvent('on'+t,o[t+f]);}else o.addEventListener(t,f,false)};
+var key={},
+pp=$('pp'),
+tk=$('tk'),
+_html=c(document,'html')[0],
+speed=8,
+_i=0,
+b_n=0,
+fps=60,
+life=3,
+die=0;
+addEvent(document,'keydown',function(e){
+	key[e.keyCode] = true;
+});
+addEvent(document,'keyup',function(e){
+	key[e.keyCode] = false;
+});
+addEvent(window,'resize',function(){
+	key[37]=key[39]=false;
+});
+var _alse,$alert=function(i){
+	$('msg').innerHTML=i;
+	css($('msg'),'opacity:1;filter:none;');
+	clearTimeout(_alse);
+	_alse=setTimeout(function(){
+		css($('msg'),'opacity:0;filter:alpha(opacity=\'0\');');
+	},2000);
+},
+_pic=['/thereisnoaddress/','/thereisnoaddress/','/thereisnoaddress/','/thereisnoaddress/','/thereisnoaddress/','/thereisnoaddress/'],
+_picsrc=_pic[parseInt(Math.random()*_pic.length)],
+_alse2,move=function(){
+	if(_i%(4*fps/parseInt(Math.random()*speed))==1){
+		var span=document.createElement('span');
+		span.style.left=(parseInt(Math.random()*(_html.offsetWidth-170))+70)+'px';
+		tk.appendChild(span);
+	}
+	for(var _span=c(tk,'span'),_l=_span.length,i=0;i<_l;i++){
+		if(_span[i].className!='boom')_span[i].style.top=(_span[i].offsetTop+speed/2)+'px';
+		if(_span[i].className!='boom'&&_span[i].offsetTop>(pp.offsetTop-110) && Math.abs(_span[i].offsetLeft-(pp.offsetLeft+100))<100){
+			_span[i].className='boom';
+			b_n++;
+			document.title='挡住了'+b_n+'个*关键词*';
+			if(b_n%12==0){
+				life++;
+				$alert('获得了一名同志支援！');
+			}
+			if(speed<40){
+				speed++;
+			}else if(speed<100 && parseInt(Math.random()*10)==1){
+				speed++;
+			}
+		}
+		if(_span[i].offsetTop>_html.offsetHeight && _span[i].className!='boom'){
+			tk.removeChild(_span[i]);
+			i--;
+			_l--;
+			life--;
+			die++;
+			$alert('一名同志去见了斯大林！');
+		}
+	};
+	if(life==0){
+		clearInterval(_alse2);
+		pp.className='boom';
+		$alert('你这个螳臂当车的*关键词*，*关键词*的铁骑轻易的就能消灭你！');
+		setTimeout(function(){
+			css($('box'),'z-index:5;opacity:1;filter:none;');
+			$('s_btn').innerHTML='PLAY AGAIN';
+			css($('s_btn'),'z-index:5;margin-top:80px;opacity:1;filter:none;');
+			$('box').innerHTML='<p>同志你挡住了 <font color="ED5155">'+b_n+'</font> 个*关键词*，留场了 <font color="ED5155">'+die+'</font> 名同志，深刻的贯彻了马哲主义，是一名深得涩秽足矣忍痛的好少年！<a href="/plus1s.bit/" target="_blank" class="box_key">ZeroNet 长者续一秒</a></p><p>游戏作者：长者网，可去 archive.org 查看遗迹</p><p class="share"><a class="sina_btn" href="./?Red=https://web.archive.org/web/*/http://zhangzhe.pub/" target="_blank">archive.org 上的长者网</a><a class="sina_btn" href="./?Comm:9='+ encodeURIComponent('我用 **'+die+'** 位同志的螳臂阻挡了 **'+b_n+'** 驾铁骑！**中国共产党万岁！**此消息来自：[如果我们的铁骑继续前进](./?Post:9)')+'" target="_blank">在 eroz.bit 晒晒我的成绩</a></p>';
+			},2000);
+		}
+	if(key[37]&&pp.offsetLeft>10)pp.style.left=(pp.offsetLeft-speed)+'px';
+	else if(key[39]&&(pp.offsetLeft+260)<_html.offsetWidth)pp.style.left=(pp.offsetLeft+speed)+'px';
+	_i++;
+	$('txt').innerHTML='挡住了 <font color="ED5155">'+b_n+'</font> 个*关键词*，还有 <font color="ED5155">'+life+'</font> 名同志在坚守';
+};
+
+$('s_btn').onclick=function(){
+	css($('box'),'opacity:0;filter:alpha(opacity=\'0\');z-index:-1;');
+	css($('s_btn'),'opacity:0;filter:alpha(opacity=\'0\');z-index:-1;');
+	pp.className='';
+	tk.innerHTML='';
+	$alert('关键字行进中...');
+	speed=8,
+	_i=0,
+	b_n=0,
+	life=3,
+	die=0;
+	_alse2=setInterval(move,1000/fps);
+};
+
+var plus=function(){
+	life = life + 1;
+};
+/*�卜卜口の</web/20150609120812/http://mouto.org>*/
+</script> 
+
+</body></html>
+<!--
+     FILE ARCHIVED ON 12:08:12 六月 9, 2015 AND RETRIEVED FROM THE
+     INTERNET ARCHIVE ON 15:19:24 四月 27, 2016.
+     JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.
+
+     ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.
+     SECTION 108(a)(3)).
+-->

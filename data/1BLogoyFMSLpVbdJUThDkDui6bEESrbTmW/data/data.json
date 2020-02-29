@@ -1,0 +1,270 @@
+{
+	"title": "LiberIT Blog",
+	"description": "Blogging about how we will colonize the cosmos, while promoting diversity and liberty.",
+	"links": "- [Source code](https://github.com/HelloZeroNet)",
+	"next_post_id": 14,
+	"demo": false,
+	"modified": 1505438359,
+	"post": [
+		{
+			"post_id": 13,
+			"title": "New LiberIT Blog with Static pages",
+			"date_published": 1504804251.786,
+			"body": "Due to problems with having a dynamic blog such as this, \nI made a static blog with jekyll you can find it on [zeronet](http://127.0.0.1:43110/1vLoKesxKQDnLFrmJDoUXyrWX1h2YwSGJ). "
+		},
+		{
+			"post_id": 12,
+			"title": "(Genetic Programmer in less than 150 lines of C) Evolutionary Programmer Training: Ration One",
+			"date_published": 1504711134.505,
+			"body": "I couldn't find a simple genetic programmer tutorial on the Internet, so I loosely followed one on [Evolutionary Algorithms ](https://www.electricmonk.nl/docs/evolutionary_algorithm/evolutionary_algorithm.html) to make this post. \n\n### Seductive Concept\nThe seductive concept behind establishing an evolutionary programmer is that it can in principle do a lot of computer programming for you. All you have to do is provide it with inputs, outputs and some functions and then it will fill in the algorithm. \n\nWhy C you ask? Because it has the best OpenCL integration, and Evolutionary Programming is embarrassingly parallelizable, so is pliant to highly parallel processors.\n\n### Brief Glance\n\nAt a brief glance, we can look at the main function:\n```\nint main() {\n#define TRAINING_SERIES_LONG 3\n  const uint16_t training_series_long = TRAINING_SERIES_LONG;\n  const uint16_t training_series[TRAINING_SERIES_LONG][2] = {\n      {'1', '2'}, {'2', '3'}, {'3', '4'}}; // return input\n  uint16_t program_output[TRAINING_SERIES_LONG] = {0};\n```\nHere the training series has been established,\neach input is paired with an output.  Can have very large training sets, though generally 3 is a minimum. Two for evolving and one for testing. \n\nYou'll note also there is a program_output variable, it will be used as local memory for one of the function calls, to avoid dynamic allotment each time. \n\n```\n#define CEREMONY_LONG 3\n  const uint16_t ceremony_long = CEREMONY_LONG;\n  const v16us ceremony[CEREMONY_LONG] = {\n      {plus_WORD}, {return_WORD}, {invert_WORD}};\n```\nHere the ceremonies or available functions have been established, using constants from pyashWords.h. \n\n```\n#define POPULATION_LONG 16\n  const uint16_t population_long = POPULATION_LONG;\n  v16us population[POPULATION_LONG] = {0};\n  uint16_t population_health[POPULATION_LONG] = {0};\n```\nHere the population has been alloted, each person is a program and fits in a vector of sixteen, sixteen bit values (a Pyash Tablet).  Later on can have larger populations, but for ration one, it should be sufficient.\n\n```\n  uint16_t champion_iteration = 0;\n  uint16_t champion_health = 0;\n```\nAllotment for the champion program.\n\n```\n  population_establish(ceremony_long, ceremony, population_long, population);\n```\nHere the population is established, by making some random programs and filling in the population allotment. \n  \n```\npopulation_quiz(population_long, population, training_series_long,\n                  training_series, program_output, population_health);\n```\nThis is the most computation intensive part, where the population is quized, by giving it the input, finding the output, and then checking how many that program got correct.\n\n```\n  champion_choose(population_long, population_health, &champion_iteration,\n                  &champion_health);\n```\nThis is a simple ceremony that finds the fittest program.\n\nTypically at this point, if the champion_health is not maximum_health, then we would be going through additional population modification steps, but we'll leave that for ration two. \n\n```\n  printf(\"0x%X is champion, %d is health\\n\", population[champion_iteration].s0,\n         champion_health);\n\n  return 0;\n}\n```\nHere we declare the champion and finish successfully.\nFor the rest of the article will look at the inner ceremonies more deeply. \n\n#### Health Assessment\nThe original tutorial started with a fitness function, so did I. \n\n```\nvoid health_assess(const uint16_t training_series_long,\n                   const uint16_t training_series[][2],\n                   const uint16_t *program_output, uint16_t *health) {\n  assert(training_series_long > 0);\n  assert(training_series != NULL);\n  assert(program_output != NULL);\n  assert(health != NULL);\n  uint16_t iteration = 0;\n  uint16_t health_collector = 0;\n  for (iteration = 0; iteration < training_series_long; ++iteration) {\n    if (training_series[iteration][1] == program_output[iteration]) {\n      ++health_collector;\n    }\n  }\n  *health = health_collector;\n}\n```\n\nIt is a skeleton  simply returns the number of results that it got correct. Later on we'll include partials.\n\n#### Population Establish\nWe need to have an initial population of programs.\n```\nvoid population_establish(const uint16_t ceremony_long, const v16us *ceremony,\n                          const uint16_t population_long, v16us *population) {\n  uint16_t iteration = 0;\n  srand(5);\n  for (iteration = 0; iteration < population_long; ++iteration) {\n    population[iteration] = ceremony[rand() % 3];\n  }\n}\n```\nHere the population is comprised of persons performing a single ceremony.  Later on we could have them doing multiple and more complicated ceremonies.\n\n#### Program Interpret\n\n```\nvoid program_interpret(const v16us program, const uint16_t input,\n                       uint16_t *output) {\n  uint16_t activity = program.s0;\n  assert(activity != 0);\n  switch (activity) {\n  case plus_WORD:\n    *output = input + 1;\n    break;\n  case return_WORD:\n    *output = input;\n    break;\n  case invert_WORD:\n    *output = ~input;\n    break;\n  default:\n    assert(1 == 0);\n  }\n}\n\n```\nThe program interpreter is where there is the most room for growth. Ideally it would be Turing complete, support multiple input arguments and have named functions. \n\nIt will be the largest part of the OpenCL kernel. \n\n\n#### Program Quiz and Population Quiz\n```\nvoid program_quiz(const uint16_t training_series_long,\n                  const uint16_t training_series[][2], const v16us program,\n                  uint16_t *output) {\n  assert(output != NULL);\n  uint16_t iteration = 0;\n  uint16_t program_output = 0;\n  for (iteration = 0; iteration < training_series_long; ++iteration) {\n    program_interpret(program, training_series[iteration][0], &program_output);\n    output[iteration] = program_output;\n  }\n}\n```\n\nThis quizzes a single program, by running it through all the inputs, and getting the outputs.  It would be possible to use this  as an OpenCL kernel, however it would be inefficient unless you have many thousands of inputs and outputs.\n\n```\nvoid population_quiz(const uint16_t population_long, const v16us *population,\n                     const uint16_t training_series_long,\n                     const uint16_t training_series[][2],\n                     /*local*/ uint16_t *program_output,\n                     uint16_t *population_health) {\n  assert(population != NULL);\n  assert(training_series != NULL);\n  assert(population_health != NULL);\n  uint16_t iteration = 0;\n  v16us program = {0};\n  uint16_t health = 0;\n  for (iteration = 0; iteration < population_long; ++iteration) {\n    program = population[iteration];\n    program_quiz(training_series_long, training_series, program,\n                 program_output);\n    health_assess(training_series_long, training_series, program_output,\n                  &health);\n    population_health[iteration] = health;\n  }\n}\n```\nThis ceremony quizzes each program and returns their health.\n\nFor an OpenCL implementation it would be feeding a parallel_program_quiz ceremony that accepts as input the training_series, a list of programs and a program_output array large enough to fit all the outputs. \n\nWithin parallel_program_quiz each worker would then select a point in the training_series and a program to interpret. After it finishes interpreting the program it would write the output to it's program_output point. It would then go onto the next training_series and program that hadn't been done yet, until they are all finished. \n\n#### champion_choose\n```\nvoid champion_choose(const uint16_t population_long,\n                     const uint16_t *population_health,\n                     uint16_t *champion_iteration, uint16_t *champion_health) {\n  assert(champion_health != NULL);\n  assert(champion_iteration != NULL);\n  assert(population_health != NULL);\n  uint16_t iteration = 0;\n  uint16_t fittest_health = 0;\n  uint16_t fittest_iteration = 0; // expand to array for multiple fittest\n  uint16_t health = 0;\n  for (iteration = 0; iteration < population_long; ++iteration) {\n    health = population_health[iteration];\n    if (health > fittest_health) {\n      fittest_iteration = iteration;\n      fittest_health = health;\n    }\n  }\n  *champion_iteration = fittest_iteration;\n  *champion_health = fittest_health;\n}\n```\nThis is a simple ceremony that chooses the fittest individual based on the most health. \n\nAnd that's it!\n\n## All Program Code\n\nFor the working program code you can Git copy it from [gitlab](https://gitlab.com/liberit/lwonprom) and [zeronet](http://127.0.0.1:43110/1LwonpedFh54k36SMVJ7i98GdPHL5uGkZ/)\n"
+		},
+		{
+			"post_id": 11,
+			"title": "Submarine Trance: Robot miners and refiners",
+			"date_published": 1504408722.888,
+			"body": "Had another subconscious trance today, went into the soul world future trajectory viewer. \n\nI saw myself climbing into a bottom loading submarine, and a collage of various underwater robots. It was the robot submarine factory in my plans. \nThe submarine robot company specialized in underwater mining and refining. \n\nUnderwater mining by robots is more cost-effective due to a variety of factors, including fewer human costs, and that rocks and minerals are lighter underwater due to displacement. Another factor is that underwater mining does not displace human workers, since humans aren't able to operate at those depths. \n\nThere are diamonds and other [mineral resources](https://www.lakesuperior.com/the-lake/natural-world/lake-superior-minerals/) in the great lakes.\n\nUnderwater refining and other chemical processes can be cost-effective as attaining and maintaining pressure is quite easy (it is primarily a change of depth). For instance [nitrogen steel](http://www.sciencedirect.com/science/article/pii/0921509395099913),  could be produced in bulk.\n \nThe software was considered secondary, mostly used as a funding vehicle and enabling technology. It was mentioned that I should implement a simple Genetic Programmer in the next week, such as by following a tutorial, I'll be able to adapt it later to my programming language. \n\nI feel pressure to get a server computer, with 32 cores, to run the genetic programmer, but haven't written it yet, so would like to. \n\n "
+		},
+		{
+			"post_id": 10,
+			"title": "Software Shelter with Comrade Web",
+			"date_published": 1504146930.865,
+			"body": "As part of the International Software Supermarket, there will have to be a software shelter.  This essay will analyze generic shelter website criterion and software iteration regulation hierarchy. \n\n### Shelter Website Criterion\n\nThe [GNU Ethical Repository Criteria](https://www.gnu.org/software/repo-criteria.en.html) (GERC)  makes a lot of demands of a source code repository.  They use it to [evaluate](https://www.gnu.org/software/repo-criteria-evaluation.html) the available repositories, and come up with a list where only GitLab and Savannah pass.  While Savannah may have the highest rating, joining up with them is rather difficult as it is not an automated process. \n\nThe main hurdle with following the GERC, would be getting ZeroNet to be LibreJS compatible. Some of the main good things GERC recommends are following [Best Practices for Online Service Providers](https://www.eff.org/wp/osp) (OSP),  [Web Content Accessibility Guidelines](https://www.w3.org/WAI/WCAG20/quickref/) (WCAG), [Web Accessibility Initiative — Accessible Rich Internet Applications](https://www.w3.org/TR/wai-aria-practices/) (WAI-WRIA).  \n\nOSP should be easy to follow since it is implemented in ZeroNet, so there is an absolute minimum of user information (a username), and all payments happen through Pyash Coin, so no need to keep any billing information. \n\nWCAG and WAI-WRIA can be supported by simply making sure the site is based on text, screen-readable and keyboard navigable. \n\n\n### Software Iteration Regulation Hierarchy\nThe most popular software iteration regulation hierarchy (SIRH) for the servant web is known as Git. While Git has contributed much, comrades file hierarchy (IPFS) makes the retaining of previous copies excessive. \n\nThe cardinal ingredients to keep are the avoid list (binary files), \nand a historical iteration list.  The latest iteration list can have a list of all the IPFS links and their place in the directory hierarchy, including a final hash of the files together, \nso that all files could be downloaded, and the whole could be verified.\n\nThese iteration lists would be stored in a ZeroNet website, so one could easily copy it, and update for new iterations. The most difficult aspect would be integrating code from coworkers.  Considering this trouble in isolation, would be enough reason to use an improved version of git for the comrade web. \n\nThough this is really going into the region of seedling adaptation. There is no need to develop an alternative to git for a medium program which is less than 100 MB in size, as could simply host the git shelter on a simple zeronet website.\n\nMaking a comrade web specific SIRH can wait until there are very large programs that require of shelter. \n \n### Programs Integration Website\nThe cardinal software website will have a list of program websites which can be integrated.  People can submit their program integration websites for listing. \n\nThe program integration websites require several statistics.\n\n"
+		},
+		{
+			"post_id": 9,
+			"title": "International Software Supermarket Concept",
+			"date_published": 1504005328.012,
+			"body": "There are several ingredients to any software supermarket.\n\n1. The marketplace or social network where projects are posted and people join and-or contribute.  The front page can be setup like ZeroTalk, with each project having it's own merger site. \n2. The source code, binaries, data, and other large files, could be hosted on IPFS, linked to from the project site. Proprietary projects could have their code stored in an encrypted format. \n3. The coin used for paying people and computers for their contributions. Ideally this would be hyper scalable, but can simply have something that support multi-signature transactions, and has IPFS links to code-contributions in it's data.\n\nThe main differentiating point of the international software supermarket, is that all or most communication will be in Pyash -- which translates to and from all languages. In particular Pyash is ideal for making smart contracts because it is both a human language and a computer programming language."
+		},
+		{
+			"post_id": 8,
+			"title": "Zirch Automatic Search ",
+			"date_published": 1503851352.807,
+			"body": "Zirch Automatic Search, has the most zites listed of any Zeronet Search Engine.   It automatically updates at least once a day, to get all the next zites, that have been posted.\n \nCan get it here (remember to bookmark it): \nhttp://127.0.0.1:43110/zirch.bit"
+		},
+		{
+			"post_id": 7,
+			"title": "LiberIT Pyash ICO Plans",
+			"date_published": 1503545355.758,
+			"body": "Based on a few ICO  (Initial Coin Offering) overviews [1][2], what is necessary for an ICO:\n\n* a team\n* goals\n* protection of investor interests\n\nA working prototype is a very good thing.\n\nThe main thing LiberIT is lacking is a team.\nIn particular we need:\n* a lawyer to make sure it's all lawfully compliant. \n* an accountant with experience in ICO.\n* a PR person \n\nThe article said it is good to use people you know. \nMost of the people I know are computer programmers or IT people. \nIn terms of high prestige people, the most likely candidate for an Advisory Team position would be Ben Goertzel. \nWell I do IT work for several law offices, so I could find out if any of them are interested. \n\nPersonally I have this inner hoarder, where I'm trying to hoard all the work of making the prototype.  It is somewhat of a hard sell, as the Pyash Software Development Marketplace seems hard to believe -- where human and AI computer programmers with different native languages can compete and co-operate for best price and quality. \n\nSo I'm starting with the Pyash chat, but I need to grow it into the International Software Supermarket.  Likely will need it to work with IPFS to support large projects. \n\nThe goal of course is robot host bodies with human level AI or greater for colonizing areas not livable homo-sapiens -- such as deep ocean, extreme deserts and other planets. \n\n[1] How to Launch a Successful ICO, Explained https://cointelegraph.com/explained/how-to-launch-a-successful-ico-explained \n[2] Anatomy of ICO For Blockchain Investors and Entrepreneurs https://cointelegraph.com/news/anatomy-of-ico-for-blockchain-investors-and-entrepreneurs "
+		},
+		{
+			"post_id": 6,
+			"title": "LiberIT Website now on ZeroNet",
+			"date_published": 1503456768.313,
+			"body": "The main LiberIT website is now on ZeroNet http://127.0.0.1:43110/1LiBERiTK9i16N44VWbJsHEgG2d7D7yhCd It's clearnet version is simply a limited ZeroProxy at http://liberit.ca \n\nOne somewhat frustrating thing is that liberit.bit is already registered. Though I guess that's to be expected considering I had applied for the name with name_new, but then sat on it for months before doing a first_update. At which point I found out that it was already taken by some bitmessege holder.  \n\nI am looking into using a different .bit domain, which I wont disclose, so someone else doesn't snatch it up before I can, ha!\n\nIn other news, I'm getting more curious about using IPFS. Perhaps will host some of the Pyash data files on there, since they are rather too large for the ZeroNet format. \n\nAlso I've begun work on a Pyash chat zite, which will allow for people to chat in a formal version of their natural language, and the zite will translate so all the content is in that same version.  I'm hoping having something useable up by the end of the week.  I'll need lots of feedback to make it as good as possible."
+		},
+		{
+			"post_id": 5,
+			"title": "Pyash: A Language to Unite Them All",
+			"date_published": 1501881117.455,
+			"body": "Pyash: One Language to Unite Them All\nA draft submission to ACM Software Language Engineering Conference 2017\nhttp://127.0.0.1:43110/1DYjc22BP5VkqNLJgr3nQfoGiNLbGFGffG"
+		},
+		{
+			"post_id": 4,
+			"title": "Pyash Translation in Pyash",
+			"date_published": 1501172519.893,
+			"body": "I'm thinking of writing the Pyash translation to and from other languages in Pyash. \nThough that it certainly a worthwhile goal, I only have about two weeks before artifact submission. \n\nSo I'm thinking that instead I will adapt one of the Javascript translation scripts, for rudimentary translation that will make it easier to program in Pyash. \n"
+		},
+		{
+			"post_id": 3,
+			"title": "ZeroNet Archive",
+			"date_published": 1499992163.612,
+			"body": "One thing I've noticed with ZeroNet is there is very little content.  After downloading all the zites I could get a hold of for my filling my search engine,  the sum total is 3.1GB, and there are 1858 zites. \nOne way I was thinking that can increase the amount of relevant content, and increase the value of ZeroNet, is to make it similar to archive.org.\n\nthe idea is there could be for instance a ZeroNet Firefox add-on, that you could click on when you are on a site that you think is cool, but is owned by some one or two people and might disappear, or already has and is only available on archive.org.  Another way of looking at it is as a snapshot. \nAnyways is such a case you could archive it to zeronet, by clicking the archive button.  \nIt would download the website, turn it into a zite, sign and publish it, then link to it from some zite like 0list, or something dedicated to archival snapshots.   \n\nI'm thinking could probably host the entire body of gutenberg, in a Library zite with merger sites. \neach hub would be a different collection of books.  Though they don't like robots crawling them on Gutenberg, so could simply put the books you like into a hub.   Could of course use other sources of books like torrents and IRC. \n\nOne of the main issues to overcome is ease of use. \nCurrently can use httrack to download websites and put them up with fairly minimal hassle, but most of that is on the command line.  So having a Firefox add-on that could automate that could drastically increase the rate of new material being added to the network. \n"
+		},
+		{
+			"post_id": 2,
+			"title": "Investor's Guide to LiberIT/Pyash",
+			"date_published": 1499129567.182,
+			"body": "An <a href=\"https://www.cryptocoinsnews.com/boring-investors-guide-cryptocurrency-investing/\">article</a> about what to look for in a cryptocurrency for investment was found. The layout is followed for LiberIT family of technologies.\n\n\nTHINGS TO THINK ABOUT BEFORE INVESTING\n◹THE PROBLEM\n<blockquote>What problem are they addressing?</blockquote>\nThe long-term problem  LiberIT is addressing is the providing electronic bodies to take advantage of the large amount of real-estate not safely habitable by homo-sapiens. \n\nThe short-term problem LiberIT is addressing is the low number of people that can communicate with computers (future host-bodies) fluently. \n\n<blockquote> Why is it important to solve this problem?</blockquote>\nFor the long-term it is for maximizing the amount of habitable space in both this solar system and beyond. \n\nFor the short-term it is important for people to be able to fluently communicate with computers because computers are growing in the workforce, and within the next century there may be more cognitive power in the computer workforce than the human workforce. \n\n<blockquote>How important is solving this problem?</blockquote>\nPeople may be willing to pay large sums of money for new and high quality bodies, much more than for education, or even houses.  Having bodies with access to new real-estate can also greatly increase their value.\n\n For anyone that wants to stay relevant in the future where computers take increasing number of roles, it is essential to be able to communicate with them fluently. \n\n◹THE SOLUTION\n<blockquote>What is their proposed solution to the problem? </blockquote>\nFor the long-term it is to make a project specific cryptocurrency that will be doled out sparringly for completion of various elements moving towards the goal of colonizing all electronics-compatible eco-regions of the solar-system.  \n\nFor the short-term the proposed solution is Pyash, a programming language based on linguistic universals (features in common to the majority of human languages), that is also geared for GPU processing and automated programming.\n\n<blockquote>Are there other solutions to this problem?</blockquote>\nFor the long-term, the primary alternative is creating artificial habitats for homo-sapiens in eco-regions that are hostile to their existence.\n\nFor the short-term the primary alternative is the use of a  babel of context-free programming languages, such as C, Javascript, HTML, SQL among a multitude of others. \n\n<blockquote>Why is this solution better than other solutions at addressing the problem?</blockquote>\nFor the long-term, having electronic bodies which are compatible with the eco-region is better because the alternative is little better than homo-sapiens living in cages surrounded by hostile wastes. \n\nFor the short term, using one human grammar based programming language that allows intercommunication between the majority of homo-sapiens and computers can greatly increase the supply of programming labor, and thus drive down it's cost, which makes the long-term objective cheaper to accomplish.\n\n<blockquote>Has the solution been explained clearly and succinctly?  Can you describe the solution in simple words? </blockquote>\nThe long-term solution is providing portable and-or self-assembling robot-factories. \n\nThe short-term solution is a programming language based on linguistic universals.\n\nThe primary funding method is making a project specific crypto currency for paying bounties on programs and things that bring us closer to fulfilling the mission. \n\n<blockquote>Is this solution live and usable?</blockquote>\nThe short-term programming language is in a rudimentary working state, it's code is available on gitlab. \n\n◹THE TEAM\n<blockquote>Can the management team implement this solution?</blockquote>\nHopefully. \n<blockquote>How does their previous experience relate to the opportunity?</blockquote>\nThe reptilian's robot army turned out to be too aggressive an approach, so trying a more peaceful one. \n<blockquote>Why are they qualified to implement this particular solution and deliver it to market?</blockquote>\nThe short term solution has been mostly implemented, there are some finishing touches to bring it to beta. \n\n<blockquote>What is missing from their team?</blockquote>\nFeel free to apply to become a team member.  We particularly need people in China that speak and write in Standard Mandarin to help access and understand how to market ourselves there, and for making the Pyash-Mandarin interface.\n\n<blockquote>How “hungry” is the management team?</blockquote>\nWell-fed.\n\n◹THE MARKET\n\n<blockquote>Is the market large enough to support substantial growth?</blockquote>\nThe best margins are in pioneering new markets, which is what both the short and long-term missions do. \n\n<blockquote>How large is the overall market?</blockquote>\nFor the short-term, software development is the main source of revenue.  \nChina's software-development <a href=\"https://www.ibisworld.com/industry-trends/international/china-market-research-reports/information-transmission-computer-services-software/software-development.html\">market</a> alone is over 700 billion dollars, growing  at over 15% annually.\n\nSo globally we are likely looking at trillions of dollars -- for the short term mission's overall market. \n\nFor the long-term in terms of robots, the current market is only approaching a billion dollars, but the required processing power to implement human-incarnation worthy robots will likely only be available in the 2030's, so there is plenty of time for growth.\n\n<blockquote>How large is the market segment being targeted? Who will be the customers?</blockquote>\nThe short term customers will be primarily business owners and IT departments looking to outsource computer programming and software development. \n\nThe long term target segment is a rather broad range, but the initial focus will likely be earth ecoregions that are not habitable by humans, such as hot deserts which are likely to increase due to climate change, and underwater. \n\nIn terms of a portable robot factory, having submarines is one of the most viable solutions, because can transport large amounts of equipment, and there is decreasing amount of wave action with increasing depth.\n\n<blockquote>How will they get people to use their product? Why will people use this product?</blockquote>\nFor initial developers a motivating factor may be learning a programming language without needing a strong grasp of English.  Or for the desire to socialize with people that speak a different language with higher precision than offered by Google Translate. \n\nThe automatic programmer is also a possible attractant, (though it is not yet implemented), it could be desirable  especially for business customers as it would be easier to maintain code, debug code and adapt it to new interfaces.\n\nFor the long-term, some people will use robot host-bodies simply because of availability. \nThe portable robot factories should be a hot item, since they are self-maintaining and produce lots of technological goods from raw materials. \n\n<blockquote>What do people use now?</blockquote>\nNative languages which are not computer compatible, and-or Python, and a variety of other English/Math hybrid languages, which can't be used for communicating with humans.\n\nDNA based bodies. \n<blockquote>Why will people switch from their current product?</blockquote>\nLearning one language for both communicating with humans and computers is easier to learn and maintain than many.\n\nElectronic bodies offer more control over body composition, cognitive power and opens new forms of real-estate for habitation.\n\n◹THE COMPETITION\n<blockquote>Who is the competition?</blockquote>\nFor the long-term, most portable factories use containers and trucks, so are limited in their size and scope to one or a few aspects of what would be required to make a robot from raw materials.  So for instance a carpenter may have a workshop in their trailer,  or someone may have a 3D printer.  Currently the closest to competition would be prefab housing manufacturers, or ship builders.  Though there are also human mothers. \n\nFor the short-term,  the primary competition would be other software development marketplaces like guru.com, upwork and freelancer.com. \n\n<blockquote>How is their solution/product differentiated from the market?</blockquote>\n\nFor Pyash, the solution is different because it allows for people to hire humans and-or computers which speak a different language than them.\n\nMost freelancing websites require the service providers to speak English, and to be human. However for the LiberIT marketplace, people can speak in any language so long as it compiles to Pyash, and computers can generate code based on customer specifications.\n\nAlso the customers would have to trade in their fiat for cryptocurrency to buy services, and the service providers would be paid in the cryptocurrency.  \n\nFor the factories, electronic bodies could be produced to a much greater degree of specificity, and to alternative eco-regions of the producer, than can human mothers, who can only create homo-sapiens that are partial clones. \n\n<blockquote>What technologies may compete with theirs in the future?</blockquote> \nFor the factories, Gray aliens could be competitors in the future, since they also can produce host-bodies with greater specificity and for a greater range of eco-regions than homo-sapiens due to their increased ability with genetic engineering.  However electronic bodies can live in eco-regions where DNA based organisms simply can't survive, such as where liquid water is not viable. \n\n<blockquote>What is their unique value proposition? </blockquote>\nThe value proposition is that of a LiberIT cryptocurrency which should gain value once it can be used for buying software development, via the LiberIT marketplace. \n\n<blockquote>Are there any barriers to entry that will make it difficult for competitors to enter this market?</blockquote>\nComing up with a programming language based on linguistic universals that isn't intrinsically compatible with Pyash is of a level of difficulty that I can't calculate. \n\n<blockquote>What will new entrants to this space do?</blockquote> \nIn order to compete with the Pyash marketplace, the new entrants would have to have a different marketplace for Pyash or a different language based on linguistic universals. \n\n<blockquote>How will this team respond?</blockquote>\nIf there is another language based on linguistic universals that has useful libraries not available in Pyash,  then it should be a fairly simple process of translating that language to Pyash, so the libraries get absorbed into the Pyash code base. \n\nIf there is an alternative marketplace for Pyash that is experiencing success. Analyzing what it is that makes it attractive could be done, and the LiberIT marketplace improved -- by the dedicated humans and computers that receive the LiberIT cryptocurrency as payment. \n\n<blockquote>\n◹THE BUSINESS\n\nWhat is the business plan?</blockquote>\n\nIn short,  an international software supermarket that trades in Pyash coin.\n\nLong term, submarine robot factories, for underwater mining operations.\n\n<blockquote>\n Why hasn’t this opportunity been taken already?\n</blockquote>\nIt's too grandiose for most people to think of. \n\n<blockquote>\n How much money do they plan to raise?\n</blockquote>\nFor the short term...\nIt's pretty much funded.\nWill make sense to get more funds when more complete picture takes shape. \n\nThough may need staff and other team members, so they might need money for salaries and such.  Hopefully could get them internationally, so as to lower cost. North Americans tend to be expensive. \n\nFor the long term...\nIt could be many millions of dollars, possibly billions,\nhave to buy a property to make and test submarines,\nhave to build a robot and boat factory in one.\nGotta build lots of robots and submarines.\n\nOf course with the incremental approach it could be much cheaper, \nmaybe could get away with thousands for a small prototype,\nsuch as an underwater mapping submarine.\n\n<blockquote>\n When do they need this money?\n</blockquote>\nWhen... I guess when there is a team that needs money.\n\nFor the submarines, that may take a while, the deep sea mining industry is still in its infancy.\n\n<blockquote>\n Why do they need this money, and how exactly will this money be spent? \n</blockquote>\nFor short term, mostly to pay staff, to do things like legal work, accounting, public relations, software engineering, customer and technical support. \n\nIt could bootstrap in theory... But would be faster with incentive.\n\n<blockquote>\nHow quickly can this be implemented?\n</blockquote>\nThe international software marketplace, maybe 3 or 4 years, \nthe submarine robot factories, decades.\n\n<blockquote>\n◹THE RETURN\n\nInvestor’s want to see a return on their money, has this been addressed by the management team?\n</blockquote>\nYes, the currency's value is based on the hard work of humans and computers.\nThe primary international software marketplace interface will include a recommended costs benefit calculator, so that a worker could see at what price they should sell their Pyash coin in order to make a profit. \n\nThis should increase incentive for the worker to only sell for that price or greater, and otherwise to hold. Thus keeping the value of the PyashCoin good for the majority of people using it to make a living. \n\n<blockquote>\n Are there appropriate incentives to potential investors?\n</blockquote>\nEarly birds will get the standard incentives of any ICO.\n\n<blockquote>\n◹TRANSPARENCY\nHow transparent is the management team?\n</blockquote>\nNot super great, but all the work is open source and available on the internet for free. \n\n<blockquote>\n Has anyone ever seen their product? \n</blockquote>\nIt is still in progress.\n<blockquote>\nDo you know how their product will work or is it vaporware? \n</blockquote>\nBecause the plan is so astronomically grandiose. \nThe plan is to have a minimally working version before starting the ICO.\n\n <blockquote>\nDo they have a github where people can go and check their code, smart contracts, etc?\n</blockquote>\nGitlab, but yeah.\nhttps://gitlab.com/liberit\n\n<blockquote>\n Does the team have a Slack channel where you can go and talk to members of the team?\n</blockquote>\nSlack is not open source, so is completely unacceptable.\nCould setup a zeronet forum or riot.io if there was any interest,\nthere is an IRC channel #pyac on freenode. \n\n<blockquote>\n How responsive is the team?\n</blockquote>\nWhen a query is noticed, it is responded to in a timely fashion.\n\n<blockquote>\n◹LIKELIHOOD OF CRITICAL MASS\n\nThis is referring to Metcalfe’s law. Metcalfe’s law states that there is a critical crossover point where the value of a network grows more than it costs to acquire the next new user. This is also sometimes called the network effect. In other words, as more people use this product, the more useful this product becomes (phones, the internet, Facebook, etc). In competition, Metcalfe’s law is useful because once a product has critical mass, it creates a barrier for new entrants which makes it really hard to compete with the product. Does this product have the potential of achieving critical mass?\n</blockquote>\n\nYes, it most certainly does, due to a number of factors. \nOne of the foremost being that it is meant for a truly interlingual audience.\n\nAnother  being that there are a huge number of technologies, that all have to work together in a synchronized dance to make this happen. \nThe sheer scale of it means it would be very difficult to make a competing product which isn't just a copy. \n\nAlso if the competing project is similar, then any of it's good code could simply be harvested and assimilated by automated programmers, that would check for security flaws, trojans and other malware before committing to any beta testers.\n\n\n\n"
+		},
+		{
+			"post_id": 1,
+			"title": "Congratulations!",
+			"date_published": 1433033779.604,
+			"body": "Your zeronet blog has been successfully created!"
+		}
+	],
+	"tag": [
+		{
+			"value": "pyac,",
+			"post_id": 2
+		},
+		{
+			"value": "investors,",
+			"post_id": 2
+		},
+		{
+			"value": "programming",
+			"post_id": 2
+		},
+		{
+			"value": "language",
+			"post_id": 2
+		},
+		{
+			"value": "archive,",
+			"post_id": 3
+		},
+		{
+			"value": "zeronet,",
+			"post_id": 3
+		},
+		{
+			"value": "plugin,",
+			"post_id": 3
+		},
+		{
+			"value": "addon,",
+			"post_id": 3
+		},
+		{
+			"value": "browser",
+			"post_id": 3
+		},
+		{
+			"value": "programming",
+			"post_id": 5
+		},
+		{
+			"value": "software",
+			"post_id": 5
+		},
+		{
+			"value": "pyash",
+			"post_id": 5
+		},
+		{
+			"value": "translation",
+			"post_id": 5
+		},
+		{
+			"value": "academic",
+			"post_id": 5
+		},
+		{
+			"value": "article",
+			"post_id": 5
+		},
+		{
+			"value": "LiberIT",
+			"post_id": 6
+		},
+		{
+			"value": "blog",
+			"post_id": 6
+		},
+		{
+			"value": "zeronet",
+			"post_id": 6
+		},
+		{
+			"value": "ICO",
+			"post_id": 7
+		},
+		{
+			"value": "crypto",
+			"post_id": 7
+		},
+		{
+			"value": "LiberIT",
+			"post_id": 7
+		},
+		{
+			"value": "Pyash",
+			"post_id": 7
+		},
+		{
+			"value": "search,",
+			"post_id": 8
+		},
+		{
+			"value": "zirch,",
+			"post_id": 8
+		},
+		{
+			"value": "liberit,",
+			"post_id": 8
+		},
+		{
+			"value": "zeronet",
+			"post_id": 8
+		},
+		{
+			"value": "software",
+			"post_id": 9
+		},
+		{
+			"value": "supermarket",
+			"post_id": 9
+		},
+		{
+			"value": "programming",
+			"post_id": 9
+		},
+		{
+			"value": "p2p",
+			"post_id": 10
+		},
+		{
+			"value": "ZeroNet",
+			"post_id": 10
+		},
+		{
+			"value": "IPFS",
+			"post_id": 10
+		},
+		{
+			"value": "software",
+			"post_id": 10
+		},
+		{
+			"value": "robot",
+			"post_id": 11
+		},
+		{
+			"value": "meditation",
+			"post_id": 11
+		},
+		{
+			"value": "trance",
+			"post_id": 11
+		},
+		{
+			"value": "vision",
+			"post_id": 11
+		},
+		{
+			"value": "GP",
+			"post_id": 12
+		},
+		{
+			"value": "evolution",
+			"post_id": 12
+		},
+		{
+			"value": "programming",
+			"post_id": 12
+		},
+		{
+			"value": "tutorial",
+			"post_id": 12
+		},
+		{
+			"value": "ration",
+			"post_id": 12
+		},
+		{
+			"value": "blog",
+			"post_id": 13
+		},
+		{
+			"value": "jekyll",
+			"post_id": 13
+		},
+		{
+			"value": "static",
+			"post_id": 13
+		}
+	]
+}

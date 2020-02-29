@@ -1,0 +1,258 @@
+<html>
+<script src="jquery.min.js"></script>
+<link rel="stylesheet" type="text/css" href="glitch.css">
+<link rel="stylesheet" type="text/css" href="index.css">
+<div id="overlay"></div>
+<div id="overlay2"></div>
+
+<audio loop autoplay>
+  <source src="music.ogg" type="audio/ogg">
+</audio>
+<body>
+	<a href="calculator.html" target="_top">Calculator</a>
+	<br><br>
+	<div id="main" align="center">
+		<span id='countdown' class='displayval'></span><br>
+		<span id='unlinkdate' class='displayval'></span><br>
+		<h2>Current Status</h2>
+		<b>Current <span class="glitch gan" data-text="mirgatns">migrants</span>: </b><span id='migrants' class='displayvalgood'></span><br>
+		<b>Cancelled: </b><span id='cancelled' class='displayvalgood'></span>
+		<b>Queue: </b><span id='queue' class='displayvalgood'></span><br>
+		<b>Slots available: </b><span id='slots' class='displayvalgood'></span><br>
+		<b><span class="glitch gan2" data-text="rAuoar">Aurora</span> available: </b><span id='auroradisplay' class='displayvalgood'><span id='aurora'></span> k.nHa</span><br>
+		<b><span class="glitch gan3" data-text="rAuoar">Aurora</span> Usage: </b><span id='aurorausagedisplay' class='displayvalgood'><span id='aurorausage'></span> nhA/sss</span><br>
+
+		<br>
+		<h2>Extra Slots/Time Usage</h2>
+		<b>Extra slots used: </b><span id='extraslots' class='displayval'></span><br>
+		<b>Extra time used: </b><span id='extratime' class='displayval'></span><br>
+		<b>Slots used up by extra time: </b><span id='slotsbytime' class='displayval'></span><br>
+		<b>Time used by extra slots: </b><span id='timebyslots' class='displayval'></span><br>
+
+		<br>
+		<h2>Additional <span class="glitch gan3" data-text="Unikln">Unlink</span> Info</h2>
+ 		<b>Original time of <span class="glitch gan" data-text="nuilnk">unlink</span>: </b><span id='originalunlink' class='displayvalwarn'></span><br>
+		<b>Time of <span class="glitch gan4" data-text="unlink">unlink</span> with no 3000+ <span class="glitch gan2" data-text="mirgatns">migrants</span>: </b><span id='oldunlink' class='displayval'></span><br>
+		<b>Time of <span class="glitch gan5" data-text="unlink">unlink</span> with queue: </b><span id='queueunlink' class='displayval'></span><br><br>
+		<a href="https://systemspace.link/register.php" id="register" class="hidden" target="_top">
+			<span id="register-button" class="glitch gan2" data-text="Register">Register</span>
+			</a>
+		<br>
+		Created by <span class="glitch gan5" data-text="1948">4189</span>
+	</div>
+</body>
+
+
+<script>
+var absolute_slots = 31000;
+var original_migrants = 3000;
+var slot_cost = 1728; //~28.8 minutes
+var original_unlink = 1498921200; //07/01/2017 @ 3:00pm (UTC)
+var original_unlink_date = new Date(original_unlink * 1000)
+//Old Unlink Date with 3000 migrants
+var extra_slots = absolute_slots - original_migrants;
+var old_unlink = original_unlink + (slot_cost * extra_slots);
+var old_unlink_date = new Date(old_unlink * 1000)
+$("#originalunlink").html(original_unlink_date.toUTCString())
+$("#oldunlink").html(old_unlink_date.toUTCString())
+
+
+var current_migrants = 4969;
+var cancelled_registrants = 0;
+var queue = 0;
+var new_migrants = 1969;		
+//New Unlink Date
+var absolute_slots_left = absolute_slots - current_migrants;;
+var new_unlink = original_unlink + (slot_cost * absolute_slots_left);
+var new_unlink_date = new Date(new_unlink * 1000);
+
+//Queue Unlink Date
+var estimate_unlink = original_unlink + (slot_cost * absolute_slots_left);
+var estimate_unlink_date = new Date(estimate_unlink * 1000);
+
+//Amount of time taken by extra slots
+var slot_time_used = 0;
+//Elapsed Time since Original Unlink
+var time_used = 0;
+var countdown = 0;
+//Slot Calculations
+var slots_usedby_time = 0;
+var slots_left = absolute_slots_left;
+var aurora_left = 3000000;
+var aurora_usage = 46936150.218;
+
+
+
+function secondsTimeSpanToHMS(s) {
+	var d = Math.floor(s/86400); //Get whole days
+	s -= d*86400;
+    var h = Math.floor(s/3600); //Get whole hours
+    s -= h*3600;
+    var m = Math.floor(s/60); //Get remaining minutes
+    s -= m*60;
+    return d+"d "+h+"h "+(m < 10 ? '0'+m : m)+"m "+Math.floor(s < 10 ? '0'+s : s)+"s"; //zero padding on minutes and seconds
+}
+
+secondsTimeSpanToHMS(125);
+
+function GetRegistrants() {
+				$.ajax({
+					type: "GET",
+					url: "https://ex.systemspace.network/api/status.php",
+					//data:{url:"https://systemspace.link/api/status.php"},
+					async:true,
+					dataType: 'json',
+					crossDomain:true,
+					success: function(data, status, xhr)
+					{
+						data = data['data'];
+						current_migrants = data['migrants'];
+						cancelled_registrants = data['unregistrations'];
+						queue = data['queue_length'];
+						//console.log(data)
+					}
+				})
+
+				new_migrants = current_migrants - original_migrants;
+
+				
+				//New Unlink Date
+				absolute_slots_left = absolute_slots - current_migrants;
+				new_unlink = original_unlink + (slot_cost * absolute_slots_left);
+				new_unlink_date = new Date(new_unlink * 1000)
+
+
+				//Estimate Unlink Date with Queued Registrants
+				estimate_unlink = original_unlink + (slot_cost * (absolute_slots_left-queue));
+				estimate_unlink_date = new Date(estimate_unlink * 1000)
+
+				
+
+				//Amount of time taken by extra slots
+				slot_time_used = slot_cost * new_migrants;
+
+
+				//Elapsed Time since Original Unlink
+				var now_datetime = new Date().getTime();
+				var now = now_datetime/1000;
+				time_used = now - original_unlink_date.getTime()/1000;
+				countdown = new_unlink_date.getTime()/1000 - now;
+				
+
+				//Slot Calculations
+				slots_usedby_time = Math.ceil(time_used/slot_cost);
+				slots_left = absolute_slots_left - slots_usedby_time;
+
+
+				aurora_left = ((new_unlink_date.getTime()-now_datetime) * 1185611831116156 / Math.pow(2, 64)).toFixed(2);
+			//});
+		}
+function display()
+{
+	//Display
+	var now_datetime = new Date().getTime();
+	var now = now_datetime/1000;
+	time_used = now - original_unlink_date.getTime()/1000;
+	countdown = new_unlink_date.getTime()/1000 - now;
+	aurora_left = ((new_unlink_date.getTime()-now_datetime) * 1185611831116156 / Math.pow(2, 64)).toFixed(2);
+
+	if(countdown <= 604800) //1week left
+	{
+		$( "#countdown" ).removeClass("displayval");
+		$( "#countdown" ).addClass("displayvalwarn");
+	}else
+	{
+		$( "#countdown" ).addClass("displayval");
+		$( "#countdown" ).removeClass("displayvalwarn");
+	}
+	if(aurora_left <= 50000)
+	{
+		$( "#auroradisplay" ).removeClass("displayvalgood");
+		$( "#auroradisplay" ).removeClass("displayval");
+		$( "#auroradisplay" ).addClass("displayvalwarn");
+	}
+	else if(aurora_left <= 1000000)
+	{
+		$( "#auroradisplay" ).removeClass("displayvalgood");
+		$( "#auroradisplay" ).addClass("displayval");
+		$( "#auroradisplay" ).removeClass("displayvalwarn");
+	}else
+	{
+		$( "#auroradisplay" ).addClass("displayvalgood");
+		$( "#auroradisplay" ).removeClass("displayval");
+		$( "#auroradisplay" ).removeClass("displayvalwarn");
+	}
+	if(slots_left <= 5000)
+	{
+		$( "#slots" ).removeClass("displayvalgood");
+		$( "#slots" ).removeClass("displayval");
+		$( "#slots" ).addClass("displayvalwarn");
+	}
+	else if(slots_left <= 15000)
+	{
+		$( "#slots" ).removeClass("displayvalgood");
+		$( "#slots" ).addClass("displayval");
+		$( "#slots" ).removeClass("displayvalwarn");
+	}else
+	{
+		$( "#slots" ).addClass("displayvalgood");
+		$( "#slots" ).removeClass("displayval");
+		$( "#slots" ).removeClass("displayvalwarn");
+	}
+	if(queue >= slots_left*0.75)
+	{
+		$( "#queue" ).removeClass("displayvalgood");
+		$( "#queue" ).removeClass("displayval");
+		$( "#queue" ).addClass("displayvalwarn");
+	}
+	else if(queue >= slots_left/2)
+	{
+		$( "#queue" ).removeClass("displayvalgood");
+		$( "#queue" ).addClass("displayval");
+		$( "#queue" ).removeClass("displayvalwarn");
+	}else
+	{
+		$( "#queue" ).addClass("displayvalgood");
+		$( "#queue" ).removeClass("displayval");
+		$( "#queue" ).removeClass("displayvalwarn");
+	}
+	
+	$("#countdown").html(secondsTimeSpanToHMS(countdown));
+	$("#unlinkdate").html(new_unlink_date.toUTCString());
+	$("#queueunlink").html(estimate_unlink_date.toUTCString());
+	$("#migrants").html(current_migrants);
+	$("#cancelled").html(cancelled_registrants);
+	$("#queue").html(queue);
+	$("#aurora").html(aurora_left);
+	$("#aurorausage").html(aurora_usage);
+	$("#slots").html(slots_left)
+	$("#extraslots").html(new_migrants);
+	$("#extratime").html(secondsTimeSpanToHMS(time_used))
+	$("#slotsbytime").html(slots_usedby_time)
+	$("#timebyslots").html(secondsTimeSpanToHMS(slot_time_used))
+
+}
+GetRegistrants();
+display();
+setInterval(function(){
+				GetRegistrants();
+			}, 1000);
+setInterval(function(){
+				display();
+			}, 100);
+
+var konami = "38,38,40,40,37,39,37,39,66,65";
+var kkeys = [];
+
+$(document).keydown(function(e) {
+	kkeys.push(e.keyCode);
+
+	if (kkeys.toString().indexOf(konami) >= 0) {
+		$(document).unbind('keydown', arguments.callee);
+		$("#register").removeClass("hidden")
+		
+	}
+});
+</script>
+
+</html>

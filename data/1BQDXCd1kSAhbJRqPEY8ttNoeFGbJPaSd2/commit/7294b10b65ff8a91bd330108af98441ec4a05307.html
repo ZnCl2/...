@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>add README and LICENSE file-detection - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/7294b10b65ff8a91bd330108af98441ec4a05307.html">7294b10b65ff8a91bd330108af98441ec4a05307</a>
+<b>parent</b> <a href="../commit/415e3fdd55b2ecdf2f35680694362a4b35fd1a05.html">415e3fdd55b2ecdf2f35680694362a4b35fd1a05</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Sat Dec  5 20:43:29 +0100
+
+add README and LICENSE file-detection
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">TODO</a></td><td> | </td><td class="num">2</td><td><span class="i">+</span><span class="d">-</span></td></tr>
+<tr><td><a href="#h1">urmoms.c</a></td><td> | </td><td class="num">62</td><td><span class="i">+++++++++++++++++++++++++++++++++++++++++++++++++++++++++</span><span class="d">-----</span></td></tr>
+</table>2 files changed, 58 insertions(+), 6 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/TODO.html">TODO</a> b/<a href="../file/TODO.html">TODO</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -3,7 +3,7 @@
+</a> - add raw link to latest files: raw/file...
+ - add summary page?
+ - add diffstat to diff page? + and - lines summary?
+<a href="#h0-0-3" id="h0-0-3" class="d">-- escape &lt; &gt; &apos; &quot; etc, maybe even use CDATA ?
+</a><a href="#h0-0-4" id="h0-0-4" class="i">+- escape HTML: &lt; &gt; &apos; &quot; etc, maybe even use CDATA ?
+</a> - shorter date format for logs.html page.
+ - speed up generating files.
+ - for files link to the commit but make the filename a link anchor.
+<b>diff --git a/<a id="h1" href="../file/urmoms.c.html">urmoms.c</a> b/<a href="../file/urmoms.c.html">urmoms.c</a></b>
+<a href="#h1-0" id="h1-0" class="h">@@ -1,16 +1,20 @@
+</a> #include &lt;err.h&gt;
+<a href="#h1-0-1" id="h1-0-1" class="i">+#include &lt;limits.h&gt;
+</a> #include &lt;stdio.h&gt;
+ #include &lt;stdlib.h&gt;
+<a href="#h1-0-4" id="h1-0-4" class="i">+#include &lt;string.h&gt;
+</a> 
+ #include &quot;git2.h&quot;
+ 
+<a href="#h1-0-8" id="h1-0-8" class="i">+static git_repository *repo;
+</a><a href="#h1-0-9" id="h1-0-9" class="i">+
+</a> static const char *relpath = &quot;&quot;;
+ static const char *name = &quot;&quot;;
+ static const char *description = &quot;&quot;;
+ 
+ static const char *repodir = &quot;.&quot;;
+ 
+<a href="#h1-0-16" id="h1-0-16" class="d">-static git_repository *repo;
+</a><a href="#h1-0-17" id="h1-0-17" class="i">+static int hasreadme, haslicense;
+</a> 
+ FILE *
+ efopen(const char *name, const char *flags)
+<a href="#h1-1" id="h1-1" class="h">@@ -102,8 +106,10 @@ writeheader(FILE *fp)
+</a> 	fprintf(fp, &quot;&lt;a href=\&quot;%slog.html\&quot;&gt;Log&lt;/a&gt; |&quot;, relpath);
+ 	fprintf(fp, &quot;&lt;a href=\&quot;%sfiles.html\&quot;&gt;Files&lt;/a&gt;| &quot;, relpath);
+ 	fprintf(fp, &quot;&lt;a href=\&quot;%sstats.html\&quot;&gt;Stats&lt;/a&gt; | &quot;, relpath);
+<a href="#h1-1-3" id="h1-1-3" class="d">-	fprintf(fp, &quot;&lt;a href=\&quot;%sreadme.html\&quot;&gt;README&lt;/a&gt; | &quot;, relpath);
+</a><a href="#h1-1-4" id="h1-1-4" class="d">-	fprintf(fp, &quot;&lt;a href=\&quot;%slicense.html\&quot;&gt;LICENSE&lt;/a&gt;&quot;, relpath);
+</a><a href="#h1-1-5" id="h1-1-5" class="i">+	if (hasreadme)
+</a><a href="#h1-1-6" id="h1-1-6" class="i">+		fprintf(fp, &quot;&lt;a href=\&quot;%sreadme.html\&quot;&gt;README&lt;/a&gt; | &quot;, relpath);
+</a><a href="#h1-1-7" id="h1-1-7" class="i">+	if (haslicense)
+</a><a href="#h1-1-8" id="h1-1-8" class="i">+		fprintf(fp, &quot;&lt;a href=\&quot;%slicense.html\&quot;&gt;LICENSE&lt;/a&gt;&quot;, relpath);
+</a> 	fprintf(fp, &quot;&lt;/center&gt;&lt;hr/&gt;&lt;pre&gt;&quot;);
+ 
+ 	return 0;
+<a href="#h1-2" id="h1-2" class="h">@@ -181,12 +187,27 @@ writebranches(FILE *fp)
+</a> }
+ #endif
+ 
+<a href="#h1-2-3" id="h1-2-3" class="i">+void
+</a><a href="#h1-2-4" id="h1-2-4" class="i">+concat(FILE *fp1, FILE *fp2)
+</a><a href="#h1-2-5" id="h1-2-5" class="i">+{
+</a><a href="#h1-2-6" id="h1-2-6" class="i">+	char buf[BUFSIZ];
+</a><a href="#h1-2-7" id="h1-2-7" class="i">+	size_t n;
+</a><a href="#h1-2-8" id="h1-2-8" class="i">+
+</a><a href="#h1-2-9" id="h1-2-9" class="i">+	while ((n = fread(buf, 1, sizeof(buf), fp1))) {
+</a><a href="#h1-2-10" id="h1-2-10" class="i">+		fwrite(buf, 1, n, fp2);
+</a><a href="#h1-2-11" id="h1-2-11" class="i">+
+</a><a href="#h1-2-12" id="h1-2-12" class="i">+		if (feof(fp1) || ferror(fp1) || ferror(fp2))
+</a><a href="#h1-2-13" id="h1-2-13" class="i">+			break;
+</a><a href="#h1-2-14" id="h1-2-14" class="i">+	}
+</a><a href="#h1-2-15" id="h1-2-15" class="i">+}
+</a><a href="#h1-2-16" id="h1-2-16" class="i">+
+</a> int
+ main(int argc, char *argv[])
+ {
+<a href="#h1-2-20" id="h1-2-20" class="d">-	int status;
+</a> 	const git_error *e = NULL;
+<a href="#h1-2-22" id="h1-2-22" class="d">-	FILE *fp;
+</a><a href="#h1-2-23" id="h1-2-23" class="i">+	FILE *fp, *fpread;
+</a><a href="#h1-2-24" id="h1-2-24" class="i">+	char path[PATH_MAX];
+</a><a href="#h1-2-25" id="h1-2-25" class="i">+	int status;
+</a> 
+ 	if (argc != 2) {
+ 		fprintf(stderr, &quot;%s &lt;repodir&gt;\n&quot;, argv[0]);
+<a href="#h1-3" id="h1-3" class="h">@@ -202,6 +223,37 @@ main(int argc, char *argv[])
+</a> 		exit(status);
+ 	}
+ 
+<a href="#h1-3-3" id="h1-3-3" class="i">+	snprintf(path, sizeof(path), &quot;%s%s%s&quot;,
+</a><a href="#h1-3-4" id="h1-3-4" class="i">+		repodir, repodir[strlen(repodir)] == &apos;/&apos; ? &quot;&quot; : &quot;/&quot;, &quot;LICENSE&quot;);
+</a><a href="#h1-3-5" id="h1-3-5" class="i">+	if ((fpread = fopen(path, &quot;r+b&quot;))) {
+</a><a href="#h1-3-6" id="h1-3-6" class="i">+		fp = efopen(&quot;license.html&quot;, &quot;w+b&quot;);
+</a><a href="#h1-3-7" id="h1-3-7" class="i">+		writeheader(fp);
+</a><a href="#h1-3-8" id="h1-3-8" class="i">+		concat(fpread, fp);
+</a><a href="#h1-3-9" id="h1-3-9" class="i">+		if (ferror(fpread) || ferror(fp))
+</a><a href="#h1-3-10" id="h1-3-10" class="i">+			err(1, &quot;concat&quot;);
+</a><a href="#h1-3-11" id="h1-3-11" class="i">+		writefooter(fp);
+</a><a href="#h1-3-12" id="h1-3-12" class="i">+
+</a><a href="#h1-3-13" id="h1-3-13" class="i">+		fclose(fp);
+</a><a href="#h1-3-14" id="h1-3-14" class="i">+		fclose(fpread);
+</a><a href="#h1-3-15" id="h1-3-15" class="i">+
+</a><a href="#h1-3-16" id="h1-3-16" class="i">+		haslicense = 1;
+</a><a href="#h1-3-17" id="h1-3-17" class="i">+	}
+</a><a href="#h1-3-18" id="h1-3-18" class="i">+
+</a><a href="#h1-3-19" id="h1-3-19" class="i">+	snprintf(path, sizeof(path), &quot;%s%s%s&quot;,
+</a><a href="#h1-3-20" id="h1-3-20" class="i">+		repodir, repodir[strlen(repodir)] == &apos;/&apos; ? &quot;&quot; : &quot;/&quot;, &quot;README&quot;);
+</a><a href="#h1-3-21" id="h1-3-21" class="i">+	if ((fpread = fopen(path, &quot;r+b&quot;))) {
+</a><a href="#h1-3-22" id="h1-3-22" class="i">+		fp = efopen(&quot;readme.html&quot;, &quot;w+b&quot;);
+</a><a href="#h1-3-23" id="h1-3-23" class="i">+		writeheader(fp);
+</a><a href="#h1-3-24" id="h1-3-24" class="i">+		concat(fpread, fp);
+</a><a href="#h1-3-25" id="h1-3-25" class="i">+		if (ferror(fpread) || ferror(fp))
+</a><a href="#h1-3-26" id="h1-3-26" class="i">+			err(1, &quot;concat&quot;);
+</a><a href="#h1-3-27" id="h1-3-27" class="i">+		writefooter(fp);
+</a><a href="#h1-3-28" id="h1-3-28" class="i">+		fclose(fp);
+</a><a href="#h1-3-29" id="h1-3-29" class="i">+		fclose(fpread);
+</a><a href="#h1-3-30" id="h1-3-30" class="i">+
+</a><a href="#h1-3-31" id="h1-3-31" class="i">+		hasreadme = 1;
+</a><a href="#h1-3-32" id="h1-3-32" class="i">+	}
+</a><a href="#h1-3-33" id="h1-3-33" class="i">+
+</a> 	fp = efopen(&quot;logs.html&quot;, &quot;w+b&quot;);
+ 	writeheader(fp);
+ 	writelog(fp);
+</pre>
+</div>
+</body>
+</html>

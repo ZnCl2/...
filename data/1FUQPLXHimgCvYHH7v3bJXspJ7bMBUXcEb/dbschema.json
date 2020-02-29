@@ -1,0 +1,29 @@
+{
+	"db_name": "ZeroTube",
+	"db_file": "data/zerotube.db",
+	"version": 2,
+	"maps": {
+		"users/.*/data.json": {
+			"to_table": [
+				"video"
+			]
+		},
+		"users/.+/content.json": {
+			"to_keyvalue": [ "cert_user_id" ]
+		}
+	},
+	"tables": {
+		"video": {
+			"cols": [
+				["video_id", "TEXT"],
+				["title", "TEXT"],
+				["description", "TEXT"],
+				["magnet", "TEXT"],
+				["date_added", "INTEGER"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX video_key ON video(video_id, json_id)"],
+			"schema_changed": 7
+		}
+	}
+}

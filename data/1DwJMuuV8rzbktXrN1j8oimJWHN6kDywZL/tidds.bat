@@ -1,0 +1,1 @@
+tiddlywiki --verbose  --load heeg.html --rendertiddlers [!is[system]] $:/core/templates/tid-tiddler tids text/plain .tid

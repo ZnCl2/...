@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Bring in reallocarray() from OpenBSD - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/2809fd3795e8445f686547d08eef4631efc05030.html">2809fd3795e8445f686547d08eef4631efc05030</a>
+<b>parent</b> <a href="../commit/87360fe2526f7713c4626d04da521579141fcf68.html">87360fe2526f7713c4626d04da521579141fcf68</a>
+<b>Author:</b> sin &lt;<a href="mailto:sin@2f30.org">sin@2f30.org</a>&gt;
+<b>Date:</b>   Wed Jan  6 17:02:28 +0000
+
+Bring in reallocarray() from OpenBSD
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">Makefile</a></td><td> | </td><td class="num">1</td><td><span class="i">+</span><span class="d"></span></td></tr>
+<tr><td><a href="#h1">compat.h</a></td><td> | </td><td class="num">2</td><td><span class="i">++</span><span class="d"></span></td></tr>
+<tr><td><a href="#h2">config.mk</a></td><td> | </td><td class="num">4</td><td><span class="i">++</span><span class="d">--</span></td></tr>
+<tr><td><a href="#h3">reallocarray.c</a></td><td> | </td><td class="num">39</td><td><span class="i">+++++++++++++++++++++++++++++++++++++++</span><span class="d"></span></td></tr>
+<tr><td><a href="#h4">strlcat.c</a></td><td> | </td><td class="num">2</td><td><span class="i">++</span><span class="d"></span></td></tr>
+<tr><td><a href="#h5">strlcpy.c</a></td><td> | </td><td class="num">2</td><td><span class="i">++</span><span class="d"></span></td></tr>
+</table>6 files changed, 48 insertions(+), 2 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/Makefile.html">Makefile</a> b/<a href="../file/Makefile.html">Makefile</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -6,6 +6,7 @@ SRC = \
+</a> 	stagit.c\
+ 	stagit-index.c
+ COMPATSRC = \
+<a href="#h0-0-3" id="h0-0-3" class="i">+	reallocarray.c\
+</a> 	strlcat.c\
+ 	strlcpy.c
+ BIN = \
+<b>diff --git a/<a id="h1" href="../file/compat.h.html">compat.h</a> b/<a href="../file/compat.h.html">compat.h</a></b>
+<a href="#h1-0" id="h1-0" class="h">@@ -3,4 +3,6 @@
+</a> size_t strlcat(char *, const char *, size_t);
+ #undef strlcpy
+ size_t strlcpy(char *, const char *, size_t);
+<a href="#h1-0-3" id="h1-0-3" class="i">+#undef reallocarray
+</a><a href="#h1-0-4" id="h1-0-4" class="i">+void *reallocarray(void *, size_t, size_t);
+</a> #endif
+<b>diff --git a/<a id="h2" href="../file/config.mk.html">config.mk</a> b/<a href="../file/config.mk.html">config.mk</a></b>
+<a href="#h2-0" id="h2-0" class="h">@@ -28,8 +28,8 @@ LDFLAGS = ${LIBS}
+</a> 
+ # uncomment for compat
+ CFLAGS += -DCOMPAT
+<a href="#h2-0-3" id="h2-0-3" class="d">-# uncomment if your libc doesn&apos;t support strlcat, strlcpy.
+</a><a href="#h2-0-4" id="h2-0-4" class="d">-COMPATOBJ = strlcat.o strlcpy.o
+</a><a href="#h2-0-5" id="h2-0-5" class="i">+# uncomment if your libc doesn&apos;t support reallocarray, strlcat, strlcpy.
+</a><a href="#h2-0-6" id="h2-0-6" class="i">+COMPATOBJ = reallocarray.o strlcat.o strlcpy.o
+</a> 
+ # compiler and linker
+ #CC = cc
+<b>diff --git a/<a id="h3" href="../file/reallocarray.c.html">reallocarray.c</a> b/<a href="../file/reallocarray.c.html">reallocarray.c</a></b>
+<a href="#h3-0" id="h3-0" class="h">@@ -0,0 +1,39 @@
+</a><a href="#h3-0-0" id="h3-0-0" class="i">+/*
+</a><a href="#h3-0-1" id="h3-0-1" class="i">+ * Copyright (c) 2008 Otto Moerbeek &lt;otto@drijf.net&gt;
+</a><a href="#h3-0-2" id="h3-0-2" class="i">+ *
+</a><a href="#h3-0-3" id="h3-0-3" class="i">+ * Permission to use, copy, modify, and distribute this software for any
+</a><a href="#h3-0-4" id="h3-0-4" class="i">+ * purpose with or without fee is hereby granted, provided that the above
+</a><a href="#h3-0-5" id="h3-0-5" class="i">+ * copyright notice and this permission notice appear in all copies.
+</a><a href="#h3-0-6" id="h3-0-6" class="i">+ *
+</a><a href="#h3-0-7" id="h3-0-7" class="i">+ * THE SOFTWARE IS PROVIDED &quot;AS IS&quot; AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+</a><a href="#h3-0-8" id="h3-0-8" class="i">+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+</a><a href="#h3-0-9" id="h3-0-9" class="i">+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+</a><a href="#h3-0-10" id="h3-0-10" class="i">+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+</a><a href="#h3-0-11" id="h3-0-11" class="i">+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+</a><a href="#h3-0-12" id="h3-0-12" class="i">+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+</a><a href="#h3-0-13" id="h3-0-13" class="i">+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+</a><a href="#h3-0-14" id="h3-0-14" class="i">+ */
+</a><a href="#h3-0-15" id="h3-0-15" class="i">+
+</a><a href="#h3-0-16" id="h3-0-16" class="i">+#include &lt;sys/types.h&gt;
+</a><a href="#h3-0-17" id="h3-0-17" class="i">+#include &lt;errno.h&gt;
+</a><a href="#h3-0-18" id="h3-0-18" class="i">+#include &lt;stdint.h&gt;
+</a><a href="#h3-0-19" id="h3-0-19" class="i">+#include &lt;stdlib.h&gt;
+</a><a href="#h3-0-20" id="h3-0-20" class="i">+
+</a><a href="#h3-0-21" id="h3-0-21" class="i">+#include &quot;compat.h&quot;
+</a><a href="#h3-0-22" id="h3-0-22" class="i">+
+</a><a href="#h3-0-23" id="h3-0-23" class="i">+/*
+</a><a href="#h3-0-24" id="h3-0-24" class="i">+ * This is sqrt(SIZE_MAX+1), as s1*s2 &lt;= SIZE_MAX
+</a><a href="#h3-0-25" id="h3-0-25" class="i">+ * if both s1 &lt; MUL_NO_OVERFLOW and s2 &lt; MUL_NO_OVERFLOW
+</a><a href="#h3-0-26" id="h3-0-26" class="i">+ */
+</a><a href="#h3-0-27" id="h3-0-27" class="i">+#define MUL_NO_OVERFLOW	(1UL &lt;&lt; (sizeof(size_t) * 4))
+</a><a href="#h3-0-28" id="h3-0-28" class="i">+
+</a><a href="#h3-0-29" id="h3-0-29" class="i">+void *
+</a><a href="#h3-0-30" id="h3-0-30" class="i">+reallocarray(void *optr, size_t nmemb, size_t size)
+</a><a href="#h3-0-31" id="h3-0-31" class="i">+{
+</a><a href="#h3-0-32" id="h3-0-32" class="i">+	if ((nmemb &gt;= MUL_NO_OVERFLOW || size &gt;= MUL_NO_OVERFLOW) &amp;&amp;
+</a><a href="#h3-0-33" id="h3-0-33" class="i">+	    nmemb &gt; 0 &amp;&amp; SIZE_MAX / nmemb &lt; size) {
+</a><a href="#h3-0-34" id="h3-0-34" class="i">+		errno = ENOMEM;
+</a><a href="#h3-0-35" id="h3-0-35" class="i">+		return NULL;
+</a><a href="#h3-0-36" id="h3-0-36" class="i">+	}
+</a><a href="#h3-0-37" id="h3-0-37" class="i">+	return realloc(optr, size * nmemb);
+</a><a href="#h3-0-38" id="h3-0-38" class="i">+}
+</a><b>diff --git a/<a id="h4" href="../file/strlcat.c.html">strlcat.c</a> b/<a href="../file/strlcat.c.html">strlcat.c</a></b>
+<a href="#h4-0" id="h4-0" class="h">@@ -19,6 +19,8 @@
+</a> #include &lt;sys/types.h&gt;
+ #include &lt;string.h&gt;
+ 
+<a href="#h4-0-3" id="h4-0-3" class="i">+#include &quot;compat.h&quot;
+</a><a href="#h4-0-4" id="h4-0-4" class="i">+
+</a> /*
+  * Appends src to string dst of size dsize (unlike strncat, dsize is the
+  * full size of dst, not space left).  At most dsize-1 characters
+<b>diff --git a/<a id="h5" href="../file/strlcpy.c.html">strlcpy.c</a> b/<a href="../file/strlcpy.c.html">strlcpy.c</a></b>
+<a href="#h5-0" id="h5-0" class="h">@@ -19,6 +19,8 @@
+</a> #include &lt;sys/types.h&gt;
+ #include &lt;string.h&gt;
+ 
+<a href="#h5-0-3" id="h5-0-3" class="i">+#include &quot;compat.h&quot;
+</a><a href="#h5-0-4" id="h5-0-4" class="i">+
+</a> /*
+  * Copy string src to buffer dst of size dsize.  At most dsize-1
+  * chars will be copied.  Always NUL terminates (unless dsize == 0).
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,114 @@
+{
+	"title": "0sum",
+	"description": "0sum.",
+	"links": "- [Source code](https://github.com/HelloZeroNet)",
+	"next_post_id": 56,
+	"demo": false,
+	"modified": 1489412551,
+	"post": [
+		{
+			"post_id": 55,
+			"title": "Wireless Digital Dead Drop",
+			"date_published": 1486396384.883,
+			"body": "The electronic portion of this project is the same as the wireless survey mote project [[http://127.0.0.1:43110/0sum.bit/?Post:50:Wireless+Survey+Mote]](http://127.0.0.1:43110/0sum.bit/?Post:50:Wireless+Survey+Mote])  refer there to build the electronics\n\n## **Things Used In This Project**\n\n_Hardware Components_\n\n - Adafruit Feather Huzza with ESP8266\n\n - Adalogger FeatherWing\n\n - MicroSD Card (8GB)\n\n_Software Components_\n\n - Arduino IDE\n\n - Android Studio (if you want to change the app at all)\n\n_Tools_\n\n - Basic Soldering Equipment\n\n - Computer for programming\n\n - Pointy Tweezers\n\n## **Story**\n\nFor build electronics build instructions refer here: http://127.0.0.1:43110/0sum.bit/?Post:50:Wireless+Survey+Mote"
+		},
+		{
+			"post_id": 54,
+			"title": "Obsolete Security Camera Resurrection",
+			"date_published": 1485805077.288,
+			"body": "### **Overview**\n\nThe objective of this project is to resurrect a SpeedDome 2000 so that it can be controlled using an Xbox controller. While controllers to operate this camera are still available, they often cost hundreds of dollars. This method reduces the cost significantly and allows for much greater capability.\n\n![1485889257.jpg (500x374)](data/img/post_54_1485889257.jpg)\n\n**Things Used In This Project**\n\n_Hardware Components_\n\n*   Sensormatic Speed Dome 2000 (RA485LP)\n*   Arduino Uno or Mega\n*   [USB Host Shield](https://www.amazon.com/Host-Shield-Arduino-MEGA-Duemilanove/dp/B00SSQAI0K/ref=sr_1_1?ie=UTF8&qid=1483632913&sr=8-1&keywords=usb+host+arduino)\n*   [RS-422/RS-485 Shield](https://www.tindie.com/products/Conceptinetics/rs485-rs422-shield-for-arduino/)\n*   Xbox Controller\n*   [24VAC Power Supply](https://www.amazon.com/24V40AC-24V-40VA-Transformer-Input/dp/B00MAKCNM6/ref=sr_1_10?ie=UTF8&qid=1483557190&sr=8-10&keywords=24VAC)\n\n_Software Components_\n\n*   Arduino IDE\n*   [USB Host Shield library](https://github.com/felis/USB_Host_Shield_2.0)\n\n_Tools_\n\n*   Basic Soldering Equipment\n*   Wire\n*   Computer\n*   Supporting documentation:\n    *   [American Dynamics RS-422/RS-485 Communications Protocol Manual](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=0ahUKEwj0z_jqvNvRAhWKOyYKHfIoAM4QFggeMAA&url=http%3A%2F%2Famericandynamics.net%2FWebApps%2FgetDocument.aspx%3Ffilename%3D8000-2694-01_B_E.pdf&usg=AFQjCNFaGQ_7p0YVIA9VIHqYwgMo0ItLsg)\n    *   [SpeedDome Installation and Service Manual](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=0ahUKEwjPuuKkvdvRAhXBKiYKHWTnDjAQFggjMAE&url=http%3A%2F%2Famericandynamics.net%2FWebApps%2FgetDocument.aspx%3Ffilename%3D8000-1715-01_A_E.pdf&usg=AFQjCNG5GdQORZA2a09rQo5yDQ2eWTwGWw)\n\n**Step 1: Connect Power**\n\nThe SpeedDome 2000 requires a 24V power supply. Using the supply listed above, or any 24VAC supply that can handle 1.5A+, connect 2 wires to the two terminals on the power supply. _Note: Make sure that the power supply is AC, not DC. A DC supply may damage the device._\n\n![1485889551.jpg (400x299)](data/img/post_54_1485889551.jpg)\n\nThe other end of these wires must go to the connector on the board itself. The board has two orange connectors: one called “ALARM IN” and the other “AC PWR IN/DATA I/O.” The alarm input is optional and not addressed in this project. Pins 3 and 5 of the power and data connector are where the power supply must be connected (the two red wires). Since the original cable was not available, the connector was removed so that the wires could be soldered directly.\n\n![1485889635.jpg (400x300)](data/img/post_54_1485889635.jpg)\n\nIn order to provide a 5V supply to the arduino (discussed later), a power cable can be soldered to the reverse side of the board. Look for the red plug at the top-right of the rear board (where the AC/DC converter plugs in). The red wire is 5V and black is GND. Check for continuity on the plug with a multimeter to determine polarity, where the center of the plug is +5V and the outer ring is GND.\n\n![1485889662.jpg (400x300)](data/img/post_54_1485889662.jpg)\n\n_Optional:_ In the case that the AC/DC converter (black box on opposite side) doesn’t work, the entire device can also be powered using 5V and 12V DC supplies. Cut off the ends of both supplies and the the red plug from the AC/DC converter. Checking polarity of the wires, solder the +12V to white, +5V to red, and both GNDs to black. Use heat shrink or electrical tape to ensure that none of the wires are shorting. If this method is used, the original 24VAC supply is no longer necessary.\n\n![1485889735.jpg (400x300)](data/img/post_54_1485889735.jpg)\n\n![1485889746.jpg (400x300)](data/img/post_54_1485889746.jpg)\n\n_Note: Before continuing, power up the camera to make sure that it works. The camera must complete an automatic calibration sequence before communication can be initiated. Bad motors can prevent this sequence from completing. Also test the video output by connecting the BNC connector to a TV. If a BNC input isn’t available, a [BNC to composite adapter](https://www.radioshack.com/products/radioshack-gold-series-rca-to-bnc-adapter) can be used._\n\n**Step 2: Assemble Arduino Interface**\n\nIn order to control the camera, an Arduino Mega (or Uno) is used with a USB host shield and an RS-422 shield. The USB host must be placed on the Arduino first since it uses the ICSP connector. The Xbox controller will be connected to this shield.\n\n![1485889933.jpg (400x299)](data/img/post_54_1485889933.jpg)\n\nBefore connecting the RS-422 shield, the SpeedDome interface must be connected. A total of 5 wires are needed: TX+, TX-, GND, RX+ and RX-. These are connected as outlined below.\n\n![1485890240.png (302x311)](data/img/post_54_1485890240.png)\n\nIn order to get a common ground, the grounds of the SpeedDome and Arduino must be connected. Solder a wire between the center pin of the SpeedDome to a GND pin on the bottom of the shield.\n\n![1485890273.jpg (400x299)](data/img/post_54_1485890273.jpg)\n\nThe TX+/- and RX+/- pins can be connected to the screw terminals of the shield.\n\n![1485890306.jpg (400x300)](data/img/post_54_1485890306.jpg)\n\n**Step 3: Programming**\n\nIn order to program the Arduino to communicate with the SpeedDome, the Sensormatic RS-422 protocol needs to be understood. Using a baud rate of 4800, every command sent to the SpeedDome requires at least 3 bytes: An address, command code, and a checksum. A successful transmission prompts the SpeedDome to immediately respond with a repeat of the address.\n\n![1485890342.png (797x573)](data/img/post_54_1485890342.png)\n\nThe first byte, the address, can be any number between 01 and 99\\. This allows you to control multiple SpeedDomes with the same controller. In this case, 01 is used.\n\n![1485890578.jpg (528x433)](data/img/post_54_1485890578.jpg)\n\nThe second byte, the Command Code, is the instruction. Some of the basic commands are listed below, but a complete list can be found in the Communications Protocol manual, starting on page 3.\n\n![1485890991.png (941x684)](data/img/post_54_1485890991.png)\n\n*   Control of the iris requires setting the SpeedDome to manual mode. This process is explained in the “Extras” _section._\n\n_Note: Before swapping between directions with Pan, Tilt or Iris, the respective stop command\n(or All Stop) MUST be sent before the opposite direction will initiate._\n\nThe last byte, the checksum, verifies that the full command has been received. This is calculated by adding the first two bytes and subtracting the sum from 00\\. The least significant byte is the checksum.\n\nExample: Pan Left on address 04\n**04 81 7B**\n(04+81 = 85; 00-85 = FFFFFFFF**7B**)\n\nUsing the Arduino IDE, the USB host library first needs to be imported and its required variables declared.\n\n![1485891244.png (178x130)](data/img/post_54_1485891244.png)\n\nIn order for the the transmission of the RS-422 shield to be enabled, pin 2 needs to be pulled high. The pin is declared as a global variable and pulled high in the setup function.\nAdditional variables are declared that will later be used to allow the Arduino to “remember” the current state of each action.\nSince the RS-422 shield converts the protocol to UART, serial communication must be initiated with a 4800 baud rate.\nThe setup function also waits until the Xbox controller is connected to continue into the loop function.\n\n![1485891277.png (488x270)](data/img/post_54_1485891277.png)\n\nOnce the loop function starts, the Xbox controller is then activated. By sending the required bytes using the Serial.write() commands with a “0x” before the hex command code, the hexidecimal number is converted to a single byte before transmitting. Since Serial.print() commands are usually meant to be readable through the serial monitor, the contents are instead converted to ASCII before transmitting, usually requiring more than one byte.\n\n![1485891305.png (794x340)](data/img/post_54_1485891305.png)\n\nThe complete program can be found [here](https://github.com/hopperms/SpeedDome-XboxCtrl/tree/master/Camera_Program).\n\n**Step 4: Extras**\n\n_Camera Settings_\n\nThe SpeedDome is also configurable using the red DIP switch array found on the top board. While switch 1 and 2 are dependent on your camera type (can be found on the sticker just below the board), the remaining swiches allow you to enable or disable other features.\n\n![1485892343.png (519x284)](data/img/post_54_1485892343.png)\n\nAs noted earlier, control of the Iris requires manual mode. By flipping switch 4, manual iris mode can be enabled.\n\n![1485892379.jpg (400x300)](data/img/post_54_1485892379.jpg)\n\n_Flipping Image_\n\nSince this camera is intended to be mounted to a ceiling, all of the controls and camera image are flipped from the direction shown throughout this document. If a 180º rotation is desired, remove the back plate of the dome by unscrewing the 4 screws around the circumference of the camera. Unplug the camera and remove the 2 screws in the center holes. Rotate the camera 180º, replace the camera screws and reassemble.\n\n![1485892440.jpg (400x300)](data/img/post_54_1485892440.jpg)\n\nIn order to flip the controls, flip the directions of the pan and tilt in the program. The alternative program can also be found [here](https://github.com/hopperms/SpeedDome-XboxCtrl/tree/master/Camera_Program_Flipped_Controls_).\n\n_Fixing Blurry Image_\n\nIf the image is very blurry and facial features cannot be easily observed, one possible scenario is that the IR lens needs cleaning. Using the same procedures used above, remove the camera board to get to the IR lens. This lens can be removed by removing the two screws. This lens can be cleaned or removed to clear the image.\n\n![1485892522.jpg (400x299)](data/img/post_54_1485892522.jpg)"
+		},
+		{
+			"post_id": 53,
+			"title": "Using 0sum Page",
+			"date_published": 1484253811.909,
+			"body": "Anybody with ZeroNet installed can access this site and comment on projects (if registered with a zeroid.bit username). Users can reply to other comments and like projects, these likes will be used to rank projects.\n\nIn order to add a project one must have access to the private key for the site and claim the site as own site. This is closed for users for now since administering content has not been finalized yet.\n\nOnce you have access to add a project you can either use the editor or write code in markdown format. Quick guide located @ [https://blog.ghost.org/markdown/](https://blog.ghost.org/markdown/)\n\nAll based on ZeroBlog.\n\nReport any issues to my github @ [https://github.com/discosteffen/0sum](https://github.com/discosteffen/0sum) or contact discosteffen@zeroid.bit via [ZeroMail](http://127.0.0.1:43110/Mail.ZeroNetwork.bit/)​​​​​​​"
+		},
+		{
+			"post_id": 50,
+			"title": "Wireless Survey Mote",
+			"date_published": 1484237529.162,
+			"body": "**Things Used In This Project**\n\n_Hardware Components_\n\n*   Adafruit Feather Huzza with ESP8266\n\n*   Adalogger FeatherWing\n\n*   MicroSD Card (8GB)\n\n_Software Components_\n\n*   Arduino IDE\n\n*   Python\n\n_Tools_\n\n*   Basic Soldering Equipment\n\n*   Computer for programming\n\n*   Pointy Tweezers\n\n* * *\n\n**Story**\n\nStart with your Adalogger FeatherWing. In order to make the adalogger board sit as close as possible to the Feather board, we will need to remove the backup battery holder for the real time clock. We won't be using the realtime clock so no functionality is being lost\n\n* * *\n\n**Step 1: Remove the Backup Battery Holder**\n\n![20161102_114022.jpg (1200x675)](data/img/post_50_20161102_114022.jpg)\n\nI started by adding some solder to the 2 pads of the battery holder. You don't have to do this, but it will help the heat from your soldering iron distribute evenly along the pad.\n\n![20161102_114112.jpg (1200x675)](data/img/post_50_20161102_114112.jpg)\n\nUsing pointy tweezers, get the tip under the plastic of the battery holder while heating one of the pads that holds it down.\n\n![20161102_114134.jpg (1200x675)](data/img/post_50_20161102_114134.jpg)\n\nOnce the solder flows you should be able to carefully bend up the battery holder.\n\n![20161102_114227.jpg (1200x675)](data/img/post_50_20161102_114227.jpg)\n\nHeat the other pad of the battery holder and lift it off the board.\n\n![20161102_114253.jpg (1200x675)](data/img/post_50_20161102_114253.jpg)\n\n**Step 2: Install Headers**\n\nStart by aligning the headers in the adalogger board as shown. Don't solder anything yet.\n\n![20161102_114327.jpg (1200x675)](data/img/post_50_20161102_114327.jpg)\n\nNext, place the Feather board on top as shown. Start by soldering the first and last pin of each row. Flip the whole thing over and solder the first and last pin of each row to the adalogger. Inspect and make sure that your boards are lined up nicely.\n\n![20161102_114341.jpg (1200x675)](data/img/post_50_20161102_114341.jpg)\n\nSolder the rest of the pins to each board.\n\n![20161102_114556.jpg (1200x675)](data/img/post_50_20161102_114556.jpg)\n\n![20161102_114603.jpg (1200x675)](data/img/post_50_20161102_114603.jpg)\n\nThat's it! You are fully assembled. Install your Micro SD card if you haven't already.\n\n**Step 3: Programming**\n\n*   Use a Micro USB cable to attach your Wireless Survey Mote to your computer.\n\n*   If you don't already have the Arduino IDE installed with the ESP8266 libraries, follow the directions here: o [https://learn.adafruit.com/adafruit-huzzah-esp8266-breakout/using-arduino-ide#install-the-arduino-ide-1-dot-6-4-or-greater](https://learn.adafruit.com/adafruit-huzzah-esp8266-breakout/using-arduino-ide#install-the-arduino-ide-1-dot-6-4-or-greater)\n\nMake sure to complete the steps to install the IDE, Install the ESP8266 Board Package and Setup ESP8266 Support.\n\n*   Open the Arduino IDE.\n\n*   To run this project you will need to install the library \"Time\" by Michael Margolis. In the Arduino IDE go to Sketch > Include Library > Manage Libraries… This will open the library manager. Use the search box to search for \"time\". Scroll to find \"time\" by Michael Margolis and install it\n\nGet the code from this GitHub repository: [https://github.com/timogiles/wireless-survey-mote](https://github.com/timogiles/wireless-survey-mote)\n\n*   Open the .ino file in the Arduino IDE.  \n*   From the Tools menu, select \"Board:\" then \"Adafruit HUZZAH ESP8266\"\n*   From the Tools menu, select \"Port\" then the COM port that your board has shown up as.\n\nNow you are ready to upload code!  Hit the \"Upload\" arrow and your code will build and upload to the board.\n\n**Step 4: Usage**\n\nNow that code is uploaded you can check for proper operation by opening the serial monitor.  Hit ctrl + shift + M to open the serial monitor.  Regular operation should look something like this:\n\n![regular_operation.png (960x773)](data/img/post_50_regular_operation.png)\n\n**Step 5: Analysis**"
+		},
+		{
+			"post_id": 49,
+			"title": "Installing ZeroNet",
+			"date_published": 1484228027.922,
+			"body": "## Installing ZeroNet\n\nThe following are install instructions from ZeroNet:\n\n*   Download ZeroBundle package: [Microsoft Windows](https://github.com/HelloZeroNet/ZeroBundle/raw/master/dist/ZeroBundle-win.zip), [Apple OS X](https://github.com/HelloZeroNet/ZeroBundle/raw/master/dist/ZeroBundle-mac-osx.zip), [Linux 64bit](https://github.com/HelloZeroNet/ZeroBundle/raw/master/dist/ZeroBundle-linux64.tar.gz), [Linux 32bit](https://github.com/HelloZeroNet/ZeroBundle/raw/master/dist/ZeroBundle-linux32.tar.gz)\n*   Unpack anywhere\n*   Run `ZeroNet.cmd` (win), `ZeroNet(.app)` (osx), `ZeroNet.sh` (linux)\n\nIf you get \"classic environment no longer supported\" error on OS X: Open a Terminal window and drop ZeroNet.app on it\n\nIt downloads the latest version of ZeroNet then starts it automatically.\n\n[Click Here For Original Page](https://zeronet.readthedocs.io/en/latest/using_zeronet/installing/)"
+		}
+	],
+	"tag": [
+		{
+			"value": "drone",
+			"post_id": 5
+		},
+		{
+			"value": "drone",
+			"post_id": 29
+		},
+		{
+			"value": "ZeroNet",
+			"post_id": 49
+		},
+		{
+			"value": "eps8266",
+			"post_id": 50
+		},
+		{
+			"value": "IoT",
+			"post_id": 50
+		},
+		{
+			"value": "wifi",
+			"post_id": 50
+		},
+		{
+			"value": "espionage",
+			"post_id": 50
+		},
+		{
+			"value": "ZeroNet",
+			"post_id": 53
+		},
+		{
+			"value": "0sum",
+			"post_id": 53
+		},
+		{
+			"value": "arduino",
+			"post_id": 54
+		},
+		{
+			"value": "surveillance",
+			"post_id": 54
+		},
+		{
+			"value": "camera",
+			"post_id": 54
+		},
+		{
+			"value": "arduino",
+			"post_id": 55
+		},
+		{
+			"value": "ESP8266",
+			"post_id": 55
+		},
+		{
+			"value": "android",
+			"post_id": 55
+		},
+		{
+			"value": "deaddrop",
+			"post_id": 55
+		},
+		{
+			"value": "drop",
+			"post_id": 55
+		},
+		{
+			"value": "wifi",
+			"post_id": 55
+		}
+	]
+}

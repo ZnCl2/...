@@ -1,0 +1,243 @@
+<HTML>
+<HEAD>
+<TITLE>Cyphernomicon 5.7:  Related Ideas</TITLE>
+</HEAD>
+<BODY>
+<A HREF="../cyphernomicon.contents.html">Cyphernomicon Top</A>
+<HR>
+<B>Cyphernomicon 5.7</B>
+<H2><A HREF="../5.html"> Cryptology:</A><BR>  Related Ideas</H2>
+<HR>
+<PRE>
+    5.7.1. "What is "blinding"?"
+           + This is a basic primitive operation of most digital cash
+              systems. Any good textbook on crypto should explain it, and
+              cover the math needed to unerstand it in detail. Several
+              people have explained it (many times) on the list; here's a
+              short explanation by Karl Barrus:
+             - "Conceptually, when you blind a message, nobody else can
+                read it.  A property about blinding is that under the
+                right circumstances if another party digitally signs a
+                blinded message, the unblinded message will contain a
+                valid digital signature.
+                
+                "So if Alice blinds the message "I owe Alice $1000" so
+                that it reads (say) "a;dfafq)(*&" or whatever, and Bob
+                agrees to sign this message, later Alice can unblind the
+                message Bob signed to retrieve the original.  And Bob's
+                digital signature will appear on the original, although
+                he didn't sign the original directly.
+                
+                "Mathematically, blinding a message means multiplying it
+                by a number (think of the message as being a number).
+                Unblinding is simply dividing the original blinding
+                factor out." [Karl Barrus, 1993-08-24]
+           + And another explanation by Hal Finney, which came up in the
+              context of how to delink pharmacy prescriptions from
+              personal identity (fears of medial dossiers(:
+             - "Chaum's "blinded credential" system is intended to solve
+                exactly this kind of problem, but it requires an
+                extensive infrastructure.  There has to be an agency
+                where you physically identify yourself.  It doesn't have
+                to know anything about you other than some physical ID
+                like fingerprints.  You and it cooperate to create
+                pseudonyms of various classes, for example, a "go to the
+                doctor" pseudonym, and a "go to the pharmacy" pseudonym.
+                These pseudonyms have a certain mathematical relationship
+                which allows you to re-blind credentials written to one
+                pseudonym to apply to any other.  But the agency uses
+                your physical ID to make sure you only get one pseudonym
+                of each kind....So, when the doctor gives you a
+                prescription, that is a credential applied to your "go to
+                the doctor" pseudonym.  (You can of course also reveal
+                your real name to the doctor if you want.)  Then you show
+                it at the pharmacy using your "go to the pharmacy"
+                pseudonym.  The credential can only be shown on this one
+                pseudonym at the pharamacy, but it is unlinkable to the
+                one you got at the doctor's.  " [Hal Finney, 1994-09-07]
+    5.7.2. "Crypto protocols are often confusing. Is there a coherent
+            theory of these things?"
+           - Yes, crypto protocols are often expressed as scenarios, as
+              word problems, as "Alice and Bob and Eve" sorts of
+              complicated interaction protocols. Not exactly game theory,
+              not exactly logic, and not exactly anything else in
+              particular...its own area.
+           - Expert systems, proof-of-correctness calculi, etc.
+           - spoofing, eavesdropping, motivations, reputations, trust
+              models
+           + In my opinion, much more work is needed here.
+             - Graphs, agents, objects, capabilities, goals, intentions,
+                logic
+             - evolutionary game theory, cooperation, defection, tit-for-
+                tat, ecologies, economies
+             - mostly ignored, to date, by crypto community
+    5.7.3. The holder of a key *is* the person, basically
+           - that's the bottom line
+           - those that worry about this are free to adopt stronger,
+              more elaborate systems (multi-part, passphrases, biometric
+              security, limits on account access, etc.)
+           - whoever has a house key is essentially able to gain access
+              (not saying this is the legal situation, but the practical
+              one)
+    5.7.4. Strong crypto is helped by huge increases in processor power,
+            networks
+           + Encryption *always wins out* over cryptanalysis...gap grows
+              greater with time
+             - "the bits win"
+           + Networks can hide more bits...gigabits flowing across
+              borders, stego, etc.
+             - faster networks mean more "degrees of freedom," more
+                avenues to hide bits in, exponentially increasing efforts
+                to eavesdrop and track
+             - (However, these additional degrees of freedome can mean
+                greater chances for slipping up and leaving clues that
+                allow correlation. Complexity can be a problem.)
+           + "pulling the plug" hurts too much...shuts down world
+              economy to stop illegal bits ("naughty bits"?)
+             - one of the main goals is to reach the "point of no
+                return," beyond which pulling the plug hurts too much
+             - this is not to say they won't still pull the plug, damage
+                be damned
+    5.7.5. "What is the "Diffie-Hellman" protocol and why is it
+            important?"
+           + What it is
+             - Diffie-Hellman, first described in 1976, allows key
+                exchange over insecure channels.
+             + Steve Bellovin was one of several people to explaine D-H
+                to the list (every few months someone does!). I'm
+                including his explanation, despite its length, to help
+                readers who are not cryptologists get some flavor of the
+                type of math involved. The thing to notice is the use of
+                *exponentiations* and *modular arithmetic* (the "clock
+                arithmetic" of our "new math" childhoods, except with
+                really, really big numbers!). The difficulty of inverting
+                the exponention (the discrete log problem) is what makes
+                this a cryptographically interesting approach.
+               - "The basic idea is simple.  Pick a large number p
+                  (probably a prime), and a base b that is a generator of
+                  the group of integers modulo p. Now, it turns out that
+                  given a known p, b, and (b^x) mod p, it's extremely
+                  hard to find out x.  That's known as the discrete log
+                  problem.
+                  
+                  "Here's how to use it.  Let two parties, X and Y, pick
+                  random numbers x and y, 1 &lt; x,y &lt; p.  They each
+                  calculate
+                  
+                      (b^x) mod p
+                  
+                  and
+                  
+                          (b^y) mod p
+                  
+                  and transmit them to each other.  Now, X knows x and
+                  (b^y) mod p, so s/he can calculate (b^y)^x mod p =
+                  (b^(xy)) mod p.  Y can do the same calculation.  Now
+                  they both know (b^(xy)) mod p.  But eavesdroppers know
+                  only (b^x) mod p and (b^y) mod p, and can't use those
+                  quantities to recover the shared secret.  Typically, of
+                  course, X and Y will use that shared secret as a key to
+                  a conventional cryptosystem.
+                  
+                  "The biggest problem with the algorithm, as outlined
+                  above, is that there is no authentication.  An attacker
+                  can sit in the middle and speak that protocol to each
+                  legitimate party.
+                  
+                  "One last point -- you can treat x as a secret key, and
+                  publish
+                  (b^X) mod p as a public key.  Proof is left as an
+                  exercise for
+                  the reader."  [Steve Bellovin, 1993-07-17]
+           - Why it's important
+           + Using it
+             + Matt Ghio has made available Phil Karn's program for
+                generating numbers useful for D-H:
+               - ftp cs.cmu.edu:
+                  /afs/andrew.cmu.edu/usr12/mg5n/public/Karn.DH.generator
+           + Variants and Comments
+             + Station to Station protocol
+               - "The STS protocol is a regular D-H followed by a
+                  (delicately designed) exchange of signatures on the key
+                  exchange parameters.  The signatures in the second
+                  exchange that they can't be separated from the original
+                  parameters.....STS is a well-thought out protocol, with
+                  many subtleties already arranged for.  For the issue at
+                  hand, though, which is Ethernet sniffing, it's
+                  authentication aspects are not required now, even
+                  though they certainly will be in the near future."
+                  [Eric Hughes, 1994-02-06]
+    5.7.6. groups, multiple encryption, IDEA, DES, difficulties in
+            analyzing
+    5.7.7. "Why and how is "randomness" tested?"
+           - Randomness is a core concept in cryptography. Ciphers often
+              fail when things are not as random as designers thought
+              they would be.
+           - Entropy, randomness, predictablility. Can never actually
+              _prove_ a data set is random, though one can be fairly
+              confident (cf. Kolmogorov-Chaitin complexity theory).
+           - Still, tricks can make a random-looking text block look
+              regular....this is what decryption does; such files are
+              said to be cryptoregular.
+           + As to how much testing is needed, this depends on the use,
+              and on the degree of confidence needed. It may take
+              millions of test samples, or even more, to establish
+              randomness in set of data. For example:
+             - "The standard tests for 'randomness' utilized in govt
+                systems requires 1X10^6 samples. Most of the tests are
+                standard probability stuff and some are classified. "
+                [Wray Kephart, sci.crypt, 1994-08-07]
+             - never assume something is really random just becuase it
+                _looks_ random! (Dynamic Markov compressors can find
+                nonrandomness quickly.)
+    5.7.8. "Is it possible to tell if a file is encrypted?"
+           - Not in general. Undecideability and all that. (Can't tell
+              in general if a virus exists in code, Adleman showed, and
+              can't tell in general if a file is encrypted, compressed,
+              etc. Goes to issues of what we mean by encrypted or
+              compressed.)
+           + Sometimes we can have some pretty clear signals:
+             - headers are attached
+             - other characteristic signs
+             - entropy per character
+           + But files encrypted with strong methods typically look
+              random; in fact, randomness is closely related to
+              encyption.
+             + regularity: all symbols represented equally, in all bases
+                (that is, in doubles, triples, and all n-tuples)
+               - "cryptoregular" is the term: file looks random
+                  (regular) until proper key is applied, then the
+                  randomness vaDCharles Bennett, "Physics of Computation
+                  Workshop," 1993]
+             - "entropy" near the maximum (e.g., near 6 or 7 bits per
+                character, whereas ordinary English has roughly 1.5-2
+                bits per character of entropy)
+    5.7.9. "Why not use CD-ROMs for one-time pads?"
+           - The key distribution problem, and general headaches. Theft
+              or compromise of the keying material is of course the
+              greatest threat.
+           - And one-time pads, being symmetric ciphers, give up the
+              incredible advantages of public key methods.
+           - "CD ROM is a terrible medium for the OTP key stream.
+              First, you want exactly two copies of the random stream.
+              CD ROM has an economic advantage only for large runs.
+              Second, you want to destroy the part of the stream already
+              used.  CD ROM has no erase facilities, outside of physical
+              destruction of the entire disk." [Bryan G. Olson,
+              sci.crypt, 1994-08-31]
+           - If you have to have a one-time pad, a DAT makes more sense;
+              cheap, can erase the bits already used, doesn't require
+              pressing of a CD, etc. (One company claims to be selling CD-
+              ROMs as one-time pads to customers...the security problems
+              here should be obvious to all.)
+  
+</PRE>
+</BODY>
+<HR>
+Next Page: <A HREF="5.8.html">5.8  The Nature of Cryptology</A>
+ <BR>
+Previous Page: <A HREF="5.6.html">5.6  Crypto Programs and Products</A>
+
+<P>By Tim May, see <A HREF="../20.html">README</A>
+<P>HTML by Jonathan Rochkind
+</HTML>

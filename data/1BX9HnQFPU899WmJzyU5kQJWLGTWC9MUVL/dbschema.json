@@ -1,0 +1,36 @@
+{
+    "db_name": "ZeroGram",
+    "db_file": "data/users/0gram.db",
+    "version": 2,
+    "maps": {
+        ".+/data.json": {
+            "to_table": [
+                {"node": "messages", "table": "messages", "key_col": "date_added", "val_col": "encrypted"},
+                {"node": "secrets", "table": "secrets", "key_col": "date_added", "val_col": "encrypted"}
+            ]
+        },
+        ".+/content.json": {
+            "to_keyvalue": [ "cert_user_id" ]
+        }
+    },
+    "tables": {
+        "messages": {
+            "cols": [
+                ["date_added", "INTEGER"],
+                ["encrypted", "TEXT"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX message_key ON message(json_id, date_added)"],
+            "schema_changed": 2
+        },
+        "secrets": {
+            "cols": [
+                ["date_added", "INTEGER"],
+                ["encrypted", "TEXT"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX secret_key ON secret(json_id, date_added)"],
+            "schema_changed": 2
+        }
+    }
+}

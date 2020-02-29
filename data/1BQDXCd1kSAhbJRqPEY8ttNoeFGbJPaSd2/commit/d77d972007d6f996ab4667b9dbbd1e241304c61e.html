@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>file page improvements - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/d77d972007d6f996ab4667b9dbbd1e241304c61e.html">d77d972007d6f996ab4667b9dbbd1e241304c61e</a>
+<b>parent</b> <a href="../commit/23fdbb0c8cd8f875e678c17ef79919a22d704c7a.html">23fdbb0c8cd8f875e678c17ef79919a22d704c7a</a>
+<b>Author:</b> Eivind Uggedal &lt;<a href="mailto:eivind@uggedal.com">eivind@uggedal.com</a>&gt;
+<b>Date:</b>   Thu Dec 10 18:13:08 +0000
+
+file page improvements
+
+- header with filename and size
+- handle binary files
+- small style changes
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">urmoms.c</a></td><td> | </td><td class="num">36</td><td><span class="i">+++++++++++++++++++++</span><span class="d">---------------</span></td></tr>
+</table>1 file changed, 21 insertions(+), 15 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/urmoms.c.html">urmoms.c</a> b/<a href="../file/urmoms.c.html">urmoms.c</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -529,31 +529,37 @@ writeatom(FILE *fp)
+</a> }
+ 
+ int
+<a href="#h0-0-3" id="h0-0-3" class="d">-writeblob(const char *path)
+</a><a href="#h0-0-4" id="h0-0-4" class="i">+writeblob(git_index_entry *entry)
+</a> {
+<a href="#h0-0-6" id="h0-0-6" class="d">-	char htmlpath[PATH_MAX];
+</a><a href="#h0-0-7" id="h0-0-7" class="d">-	char refpath[PATH_MAX];
+</a><a href="#h0-0-8" id="h0-0-8" class="i">+	char fpath[PATH_MAX];
+</a><a href="#h0-0-9" id="h0-0-9" class="i">+	char ref[PATH_MAX];
+</a> 	git_object *obj = NULL;
+ 	FILE *fp;
+ 
+<a href="#h0-0-13" id="h0-0-13" class="d">-	snprintf(htmlpath, sizeof(htmlpath), &quot;file/%s.html&quot;, path);
+</a><a href="#h0-0-14" id="h0-0-14" class="d">-	snprintf(refpath, sizeof(refpath), &quot;HEAD:%s&quot;, path);
+</a><a href="#h0-0-15" id="h0-0-15" class="i">+	snprintf(fpath, sizeof(fpath), &quot;file/%s.html&quot;, entry-&gt;path);
+</a><a href="#h0-0-16" id="h0-0-16" class="i">+	snprintf(ref, sizeof(ref), &quot;HEAD:%s&quot;, entry-&gt;path);
+</a> 
+<a href="#h0-0-18" id="h0-0-18" class="d">-	if (git_revparse_single(&amp;obj, repo, refpath))
+</a><a href="#h0-0-19" id="h0-0-19" class="d">-		return 1; /* TODO: handle error */
+</a><a href="#h0-0-20" id="h0-0-20" class="i">+	if (git_revparse_single(&amp;obj, repo, ref))
+</a><a href="#h0-0-21" id="h0-0-21" class="i">+		return 1;
+</a> 
+<a href="#h0-0-23" id="h0-0-23" class="d">-	mkdirp(dirname(htmlpath));
+</a><a href="#h0-0-24" id="h0-0-24" class="i">+	if (mkdirp(dirname(fpath)))
+</a><a href="#h0-0-25" id="h0-0-25" class="i">+		return 1;
+</a> 
+ 	relpath = &quot;../&quot;; /* TODO: dynamic relpath based on number of /&apos;s */
+ 
+<a href="#h0-0-29" id="h0-0-29" class="d">-	fp = efopen(htmlpath, &quot;w+b&quot;);
+</a><a href="#h0-0-30" id="h0-0-30" class="i">+	fp = efopen(fpath, &quot;w+b&quot;);
+</a> 	writeheader(fp);
+<a href="#h0-0-32" id="h0-0-32" class="d">-	fputs(&quot;&lt;pre&gt;\n&quot;, fp);
+</a><a href="#h0-0-33" id="h0-0-33" class="d">-	writeblobhtml(fp, (git_blob *)obj);
+</a><a href="#h0-0-34" id="h0-0-34" class="d">-	if (ferror(fp))
+</a><a href="#h0-0-35" id="h0-0-35" class="d">-		err(1, &quot;fwrite&quot;);
+</a><a href="#h0-0-36" id="h0-0-36" class="i">+	fprintf(fp, &quot;&lt;p&gt;%s (%&quot; PRIu64 &quot;b)&lt;/p&gt;&lt;hr/&gt;&quot;, entry-&gt;path, entry-&gt;file_size);
+</a><a href="#h0-0-37" id="h0-0-37" class="i">+	if (git_blob_is_binary((git_blob *)obj)) {
+</a><a href="#h0-0-38" id="h0-0-38" class="i">+		fprintf(fp, &quot;&lt;p&gt;Binary file&lt;/p&gt;\n&quot;);
+</a><a href="#h0-0-39" id="h0-0-39" class="i">+	} else {
+</a><a href="#h0-0-40" id="h0-0-40" class="i">+		fputs(&quot;&lt;pre&gt;\n&quot;, fp);
+</a><a href="#h0-0-41" id="h0-0-41" class="i">+		writeblobhtml(fp, (git_blob *)obj);
+</a><a href="#h0-0-42" id="h0-0-42" class="i">+		if (ferror(fp))
+</a><a href="#h0-0-43" id="h0-0-43" class="i">+			err(1, &quot;fwrite&quot;);
+</a><a href="#h0-0-44" id="h0-0-44" class="i">+		fputs(&quot;&lt;/pre&gt;\n&quot;, fp);
+</a><a href="#h0-0-45" id="h0-0-45" class="i">+	}
+</a> 	git_object_free(obj);
+<a href="#h0-0-47" id="h0-0-47" class="d">-	fputs(&quot;&lt;/pre&gt;\n&quot;, fp);
+</a> 	writefooter(fp);
+ 	fclose(fp);
+ 
+<a href="#h0-1" id="h0-1" class="h">@@ -589,7 +595,7 @@ writefiles(FILE *fp)
+</a> 		fprintf(fp, &quot;%&quot; PRIu64, entry-&gt;file_size);
+ 		fputs(&quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;, fp);
+ 
+<a href="#h0-1-3" id="h0-1-3" class="d">-		writeblob(entry-&gt;path);
+</a><a href="#h0-1-4" id="h0-1-4" class="i">+		writeblob(entry);
+</a> 	}
+ 
+ 	fputs(&quot;&lt;/tbody&gt;&lt;/table&gt;&quot;, fp);
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>ZeroDocs</title>
+	<link rel="stylesheet" href="css/all.css">
+	<style>
+		body, html {
+			height: 100%;
+			color: #222;
+		}
+		.pure-g{
+			background-color: white;
+			position: relative;
+			height: 100%;
+		}
+		#sidebar{
+			box-sizing: border-box;
+			padding: 1em;
+			
+		}
+		#content{
+			box-sizing: border-box;
+			padding: 1em;
+			
+			overflow: scroll;
+			height: 100% !important;
+		}
+		hr{
+			display: block;
+			height: 1px;
+			border-width: 1px 0 0;
+			border-style: solid none none;
+			padding: 0;
+			border-color: #999
+		}
+	</style>
+</head>
+<body>
+	<div class="pure-g">
+		<div id="sidebar" class="pure-u-1-5">
+			Hello
+		</div>
+		<div id="content" class="pure-u-4-5">
+			#Tesing
+			123
+		</div>
+	</div>
+	
+	<!-- Javascript -->
+	<script src="js/marked-min.js"></script>
+	<script src="js/jquery-min.js"></script>
+	<script src="js/js-yaml-min.js"></script>
+	<script>
+		
+		$.ajax({
+			url: 'Documentation/mkdocs.yml',
+			success: function(data){
+				var sidebar_object = jsyaml.load(data);
+				var sidebar_contents = "<div class='pure-menu'><ul class='pure-menu-list'>"
+				
+				console.log(sidebar_object.pages);
+				
+				for (var i = 1; i < sidebar_object.pages.length; i++) {
+					var element = sidebar_object.pages[i];
+					
+					sidebar_contents += "<li class='pure-menu-item'><a class='pure-menu-link' onclick='loadDoc(\"Documentation/docs/"+element[0]+"\")'>" +element[1] +"-"+ element[2] + "</a></li>\n"
+					
+				}
+				sidebar_contents += "</ul></div>";
+				document.getElementById('sidebar').innerHTML = sidebar_contents;
+				console.log(sidebar_contents);
+			}
+		})		
+		
+		
+		$.ajax({
+			url: 'Documentation/docs/index.md',
+			success: function(data){
+				document.getElementById('content').innerHTML = marked(data)
+			}
+		})
+		
+		var loadDoc = function(URL){
+			$.ajax({
+				url: URL,
+				success: function(data){
+					document.getElementById('content').innerHTML = marked(data)
+				}
+			})
+		}
+	</script>
+</body>
+</html>

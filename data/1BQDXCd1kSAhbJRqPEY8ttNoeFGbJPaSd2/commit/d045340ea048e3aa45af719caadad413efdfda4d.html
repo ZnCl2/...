@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>lookup commits of annotated tags - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/d045340ea048e3aa45af719caadad413efdfda4d.html">d045340ea048e3aa45af719caadad413efdfda4d</a>
+<b>parent</b> <a href="../commit/9128782aa848465c47928d4ce8f40bd3320a5661.html">9128782aa848465c47928d4ce8f40bd3320a5661</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Wed Jan  6 15:35:34 +0100
+
+lookup commits of annotated tags
+
+NOTE: as described in the TODO this will be rewritten more cleanly
+      later using git_reference_*.
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">stagit.c</a></td><td> | </td><td class="num">16</td><td><span class="i">++++++++++++++++</span><span class="d"></span></td></tr>
+</table>1 file changed, 16 insertions(+), 0 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/stagit.c.html">stagit.c</a> b/<a href="../file/stagit.c.html">stagit.c</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -875,6 +875,7 @@ writetags(FILE *fp)
+</a> 	struct commitinfo *ci;
+ 	git_strarray tagnames;
+ 	git_object *obj = NULL;
+<a href="#h0-0-3" id="h0-0-3" class="i">+	git_tag *tag = NULL;
+</a> 	const git_oid *id = NULL;
+ 	size_t i, len;
+ 
+<a href="#h0-1" id="h0-1" class="h">@@ -900,6 +901,18 @@ writetags(FILE *fp)
+</a> 		if (git_revparse_single(&amp;obj, repo, tagnames.strings[i]))
+ 			continue;
+ 		id = git_object_id(obj);
+<a href="#h0-1-3" id="h0-1-3" class="i">+
+</a><a href="#h0-1-4" id="h0-1-4" class="i">+		/* lookup actual commit (from annotated tag etc) */
+</a><a href="#h0-1-5" id="h0-1-5" class="i">+		if (!git_tag_lookup(&amp;tag, repo, id)) {
+</a><a href="#h0-1-6" id="h0-1-6" class="i">+			git_object_free(obj);
+</a><a href="#h0-1-7" id="h0-1-7" class="i">+			obj = NULL;
+</a><a href="#h0-1-8" id="h0-1-8" class="i">+			if (git_tag_peel(&amp;obj, tag))
+</a><a href="#h0-1-9" id="h0-1-9" class="i">+				break;
+</a><a href="#h0-1-10" id="h0-1-10" class="i">+			git_tag_free(tag);
+</a><a href="#h0-1-11" id="h0-1-11" class="i">+			tag = NULL;
+</a><a href="#h0-1-12" id="h0-1-12" class="i">+			id = git_object_id(obj);
+</a><a href="#h0-1-13" id="h0-1-13" class="i">+		}
+</a><a href="#h0-1-14" id="h0-1-14" class="i">+
+</a> 		if (!(ci = commitinfo_getbyoid(id)))
+ 			break;
+ 
+<a href="#h0-2" id="h0-2" class="h">@@ -936,9 +949,12 @@ writetags(FILE *fp)
+</a> 
+ 		commitinfo_free(ci);
+ 		git_object_free(obj);
+<a href="#h0-2-3" id="h0-2-3" class="i">+		obj = NULL;
+</a> 	}
+ 	fputs(&quot;&lt;/tbody&gt;&lt;/table&gt;&quot;, fp);
+ 	git_strarray_free(&amp;tagnames);
+<a href="#h0-2-7" id="h0-2-7" class="i">+	git_tag_free(tag);
+</a><a href="#h0-2-8" id="h0-2-8" class="i">+	git_object_free(obj);
+</a> 
+ 	return 0;
+ }
+</pre>
+</div>
+</body>
+</html>

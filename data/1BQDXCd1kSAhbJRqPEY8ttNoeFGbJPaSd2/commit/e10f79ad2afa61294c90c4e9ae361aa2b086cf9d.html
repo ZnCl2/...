@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>add refs page (branches and tags) - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/e10f79ad2afa61294c90c4e9ae361aa2b086cf9d.html">e10f79ad2afa61294c90c4e9ae361aa2b086cf9d</a>
+<b>parent</b> <a href="../commit/c226554b64a9529296b690d827966ccf139336bd.html">c226554b64a9529296b690d827966ccf139336bd</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Sun Jan  3 21:06:03 +0100
+
+add refs page (branches and tags)
+
+quite some code is added, this will be cleaned up in a following code iteration.
+
+- make sure to free some more allocated git objects.
+- use fputs() asmuch as possible instead of fprintf().
+- code cleanup
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">TODO</a></td><td> | </td><td class="num">1</td><td><span class="i">+</span><span class="d"></span></td></tr>
+<tr><td><a href="#h1">stagit.c</a></td><td> | </td><td class="num">282</td><td><span class="i">++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++</span><span class="d">---------</span></td></tr>
+</table>2 files changed, 251 insertions(+), 32 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/TODO.html">TODO</a> b/<a href="../file/TODO.html">TODO</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -4,6 +4,7 @@ performance:
+</a> 
+ layout:
+ - make top menu look nicer in links/lynx again.
+<a href="#h0-0-3" id="h0-0-3" class="i">+- show tags in log.
+</a> 
+ documentation:
+ - improve mandoc pages.
+<b>diff --git a/<a id="h1" href="../file/stagit.c.html">stagit.c</a> b/<a href="../file/stagit.c.html">stagit.c</a></b>
+<a href="#h1-0" id="h1-0" class="h">@@ -264,7 +264,8 @@ writeheader(FILE *fp)
+</a> 	}
+ 	fputs(&quot;&lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;\n&quot;, fp);
+ 	fprintf(fp, &quot;&lt;a href=\&quot;%slog.html\&quot;&gt;Log&lt;/a&gt; | &quot;, relpath);
+<a href="#h1-0-3" id="h1-0-3" class="d">-	fprintf(fp, &quot;&lt;a href=\&quot;%sfiles.html\&quot;&gt;Files&lt;/a&gt;&quot;, relpath);
+</a><a href="#h1-0-4" id="h1-0-4" class="i">+	fprintf(fp, &quot;&lt;a href=\&quot;%sfiles.html\&quot;&gt;Files&lt;/a&gt; | &quot;, relpath);
+</a><a href="#h1-0-5" id="h1-0-5" class="i">+	fprintf(fp, &quot;&lt;a href=\&quot;%srefs.html\&quot;&gt;Refs&lt;/a&gt;&quot;, relpath);
+</a> 	if (hasreadme)
+ 		fprintf(fp, &quot; | &lt;a href=\&quot;%sfile/README.html\&quot;&gt;README&lt;/a&gt;&quot;, relpath);
+ 	if (haslicense)
+<a href="#h1-1" id="h1-1" class="h">@@ -283,7 +284,7 @@ writefooter(FILE *fp)
+</a> void
+ writeblobhtml(FILE *fp, const git_blob *blob)
+ {
+<a href="#h1-1-3" id="h1-1-3" class="d">-	off_t i = 0;
+</a><a href="#h1-1-4" id="h1-1-4" class="i">+	off_t i;
+</a> 	size_t n = 1;
+ 	char *nfmt = &quot;&lt;a href=\&quot;#l%d\&quot; id=\&quot;l%d\&quot;&gt;%d&lt;/a&gt;\n&quot;;
+ 	const char *s = git_blob_rawcontent(blob);
+<a href="#h1-2" id="h1-2" class="h">@@ -293,12 +294,11 @@ writeblobhtml(FILE *fp, const git_blob *blob)
+</a> 
+ 	if (len) {
+ 		fprintf(fp, nfmt, n, n, n);
+<a href="#h1-2-3" id="h1-2-3" class="d">-		while (i &lt; len - 1) {
+</a><a href="#h1-2-4" id="h1-2-4" class="i">+		for (i = 0; i &lt; len - 1; i++) {
+</a> 			if (s[i] == &apos;\n&apos;) {
+ 				n++;
+ 				fprintf(fp, nfmt, n, n, n);
+ 			}
+<a href="#h1-2-9" id="h1-2-9" class="d">-			i++;
+</a> 		}
+ 	}
+ 
+<a href="#h1-3" id="h1-3" class="h">@@ -319,7 +319,7 @@ printcommit(FILE *fp, struct commitinfo *ci)
+</a> 
+ #if 0
+ 	if ((count = (int)git_commit_parentcount(commit)) &gt; 1) {
+<a href="#h1-3-3" id="h1-3-3" class="d">-		fprintf(fp, &quot;&lt;b&gt;Merge:&lt;/b&gt;&quot;);
+</a><a href="#h1-3-4" id="h1-3-4" class="i">+		fputs(&quot;&lt;b&gt;Merge:&lt;/b&gt;&quot;, fp);
+</a> 		for (i = 0; i &lt; count; i++) {
+ 			git_oid_tostr(buf, 8, git_commit_parent_id(commit, i));
+ 			fprintf(fp, &quot; &lt;a href=\&quot;%scommit/%s.html\&quot;&gt;%s&lt;/a&gt;&quot;,
+<a href="#h1-4" id="h1-4" class="h">@@ -329,9 +329,9 @@ printcommit(FILE *fp, struct commitinfo *ci)
+</a> 	}
+ #endif
+ 	if (ci-&gt;author) {
+<a href="#h1-4-3" id="h1-4-3" class="d">-		fprintf(fp, &quot;&lt;b&gt;Author:&lt;/b&gt; &quot;);
+</a><a href="#h1-4-4" id="h1-4-4" class="i">+		fputs(&quot;&lt;b&gt;Author:&lt;/b&gt; &quot;, fp);
+</a> 		xmlencode(fp, ci-&gt;author-&gt;name, strlen(ci-&gt;author-&gt;name));
+<a href="#h1-4-6" id="h1-4-6" class="d">-		fprintf(fp, &quot; &amp;lt;&lt;a href=\&quot;mailto:&quot;);
+</a><a href="#h1-4-7" id="h1-4-7" class="i">+		fputs(&quot; &amp;lt;&lt;a href=\&quot;mailto:&quot;, fp);
+</a> 		xmlencode(fp, ci-&gt;author-&gt;email, strlen(ci-&gt;author-&gt;email));
+ 		fputs(&quot;\&quot;&gt;&quot;, fp);
+ 		xmlencode(fp, ci-&gt;author-&gt;email, strlen(ci-&gt;author-&gt;email));
+<a href="#h1-5" id="h1-5" class="h">@@ -377,7 +377,7 @@ printshowfile(struct commitinfo *ci)
+</a> 		if (!git_diff_stats_to_buf(&amp;statsbuf, ci-&gt;stats,
+ 		    GIT_DIFF_STATS_FULL | GIT_DIFF_STATS_SHORT, 80)) {
+ 			if (statsbuf.ptr &amp;&amp; statsbuf.ptr[0]) {
+<a href="#h1-5-3" id="h1-5-3" class="d">-				fprintf(fp, &quot;&lt;b&gt;Diffstat:&lt;/b&gt;\n&quot;);
+</a><a href="#h1-5-4" id="h1-5-4" class="i">+				fputs(&quot;&lt;b&gt;Diffstat:&lt;/b&gt;\n&quot;, fp);
+</a> 				fputs(statsbuf.ptr, fp);
+ 			}
+ 		}
+<a href="#h1-6" id="h1-6" class="h">@@ -431,24 +431,30 @@ printshowfile(struct commitinfo *ci)
+</a> 	}
+ 	git_buf_free(&amp;statsbuf);
+ 
+<a href="#h1-6-3" id="h1-6-3" class="d">-	fputs( &quot;&lt;/pre&gt;\n&quot;, fp);
+</a><a href="#h1-6-4" id="h1-6-4" class="i">+	fputs(&quot;&lt;/pre&gt;\n&quot;, fp);
+</a> 	writefooter(fp);
+ 	fclose(fp);
+ 	return;
+ }
+ 
+<a href="#h1-6-10" id="h1-6-10" class="d">-void
+</a><a href="#h1-6-11" id="h1-6-11" class="d">-writelog(FILE *fp)
+</a><a href="#h1-6-12" id="h1-6-12" class="i">+int
+</a><a href="#h1-6-13" id="h1-6-13" class="i">+writelog(FILE *fp, const char *branch)
+</a> {
+ 	struct commitinfo *ci;
+<a href="#h1-6-16" id="h1-6-16" class="i">+	const git_oid *oid;
+</a> 	git_revwalk *w = NULL;
+<a href="#h1-6-18" id="h1-6-18" class="i">+	git_object *obj = NULL;
+</a> 	git_oid id;
+ 	size_t len;
+ 
+ 	mkdir(&quot;commit&quot;, 0755);
+ 
+<a href="#h1-6-24" id="h1-6-24" class="i">+	if (git_revparse_single(&amp;obj, repo, branch))
+</a><a href="#h1-6-25" id="h1-6-25" class="i">+		return -1;
+</a><a href="#h1-6-26" id="h1-6-26" class="i">+	oid = git_object_id(obj);
+</a><a href="#h1-6-27" id="h1-6-27" class="i">+
+</a> 	git_revwalk_new(&amp;w, repo);
+<a href="#h1-6-29" id="h1-6-29" class="d">-	git_revwalk_push_head(w);
+</a><a href="#h1-6-30" id="h1-6-30" class="i">+	git_revwalk_push(w, oid);
+</a> 	git_revwalk_sorting(w, GIT_SORT_TIME);
+ 	git_revwalk_simplify_first_parent(w);
+ 
+<a href="#h1-7" id="h1-7" class="h">@@ -491,10 +497,14 @@ writelog(FILE *fp)
+</a> 
+ 		commitinfo_free(ci);
+ 	}
+<a href="#h1-7-3" id="h1-7-3" class="d">-	fprintf(fp, &quot;&lt;/tbody&gt;&lt;/table&gt;&quot;);
+</a><a href="#h1-7-4" id="h1-7-4" class="i">+	fputs(&quot;&lt;/tbody&gt;&lt;/table&gt;&quot;, fp);
+</a> 
+ 	git_revwalk_free(w);
+<a href="#h1-7-7" id="h1-7-7" class="i">+	git_object_free(obj);
+</a><a href="#h1-7-8" id="h1-7-8" class="i">+
+</a> 	relpath = &quot;&quot;;
+<a href="#h1-7-10" id="h1-7-10" class="i">+
+</a><a href="#h1-7-11" id="h1-7-11" class="i">+	return 0;
+</a> }
+ 
+ void
+<a href="#h1-8" id="h1-8" class="h">@@ -521,7 +531,7 @@ printcommitatom(FILE *fp, struct commitinfo *ci)
+</a> 
+ #if 0
+ 	if ((count = (int)git_commit_parentcount(commit)) &gt; 1) {
+<a href="#h1-8-3" id="h1-8-3" class="d">-		fprintf(fp, &quot;Merge:&quot;);
+</a><a href="#h1-8-4" id="h1-8-4" class="i">+		fputs(&quot;Merge:&quot;, fp);
+</a> 		for (i = 0; i &lt; count; i++) {
+ 			git_oid_tostr(buf, 8, git_commit_parent_id(commit, i));
+ 			fprintf(fp, &quot; %s&quot;, buf);
+<a href="#h1-9" id="h1-9" class="h">@@ -531,11 +541,11 @@ printcommitatom(FILE *fp, struct commitinfo *ci)
+</a> #endif
+ 
+ 	if (ci-&gt;author) {
+<a href="#h1-9-3" id="h1-9-3" class="d">-		fprintf(fp, &quot;Author: &quot;);
+</a><a href="#h1-9-4" id="h1-9-4" class="i">+		fputs(&quot;Author: &quot;, fp);
+</a> 		xmlencode(fp, ci-&gt;author-&gt;name, strlen(ci-&gt;author-&gt;name));
+<a href="#h1-9-6" id="h1-9-6" class="d">-		fprintf(fp, &quot; &amp;lt;&quot;);
+</a><a href="#h1-9-7" id="h1-9-7" class="i">+		fputs(&quot; &amp;lt;&quot;, fp);
+</a> 		xmlencode(fp, ci-&gt;author-&gt;email, strlen(ci-&gt;author-&gt;email));
+<a href="#h1-9-9" id="h1-9-9" class="d">-		fprintf(fp, &quot;&amp;gt;\nDate:   &quot;);
+</a><a href="#h1-9-10" id="h1-9-10" class="i">+		fputs(&quot;&amp;gt;\nDate:   &quot;, fp);
+</a> 		printtime(fp, &amp;(ci-&gt;author-&gt;when));
+ 	}
+ 	fputc(&apos;\n&apos;, fp);
+<a href="#h1-10" id="h1-10" class="h">@@ -619,7 +629,7 @@ writeblob(git_object *obj, const char *filename, git_off_t filesize)
+</a> 	fputs(&quot;&lt;/p&gt;&lt;hr/&gt;&quot;, fp);
+ 
+ 	if (git_blob_is_binary((git_blob *)obj)) {
+<a href="#h1-10-3" id="h1-10-3" class="d">-		fprintf(fp, &quot;&lt;p&gt;Binary file&lt;/p&gt;\n&quot;);
+</a><a href="#h1-10-4" id="h1-10-4" class="i">+		fputs(&quot;&lt;p&gt;Binary file&lt;/p&gt;\n&quot;, fp);
+</a> 	} else {
+ 		writeblobhtml(fp, (git_blob *)obj);
+ 		if (ferror(fp))
+<a href="#h1-11" id="h1-11" class="h">@@ -676,7 +686,7 @@ filemode(git_filemode_t m)
+</a> }
+ 
+ int
+<a href="#h1-11-3" id="h1-11-3" class="d">-writefilestree(FILE *fp, git_tree *tree, const char *path)
+</a><a href="#h1-11-4" id="h1-11-4" class="i">+writefilestree(FILE *fp, git_tree *tree, const char *branch, const char *path)
+</a> {
+ 	const git_tree_entry *entry = NULL;
+ 	const char *filename;
+<a href="#h1-12" id="h1-12" class="h">@@ -690,15 +700,15 @@ writefilestree(FILE *fp, git_tree *tree, const char *path)
+</a> 	for (i = 0; i &lt; count; i++) {
+ 		if (!(entry = git_tree_entry_byindex(tree, i)))
+ 			return -1;
+<a href="#h1-12-3" id="h1-12-3" class="d">-
+</a><a href="#h1-12-4" id="h1-12-4" class="d">-		filename = git_tree_entry_name(entry);
+</a> 		if (git_tree_entry_to_object(&amp;obj, repo, entry))
+ 			return -1;
+<a href="#h1-12-7" id="h1-12-7" class="i">+		filename = git_tree_entry_name(entry);
+</a> 		switch (git_object_type(obj)) {
+ 		case GIT_OBJ_BLOB:
+ 			break;
+ 		case GIT_OBJ_TREE:
+<a href="#h1-12-12" id="h1-12-12" class="d">-			ret = writefilestree(fp, (git_tree *)obj, filename);
+</a><a href="#h1-12-13" id="h1-12-13" class="i">+			ret = writefilestree(fp, (git_tree *)obj, branch,
+</a><a href="#h1-12-14" id="h1-12-14" class="i">+			                     filename);
+</a> 			git_object_free(obj);
+ 			if (ret)
+ 				return ret;
+<a href="#h1-13" id="h1-13" class="h">@@ -708,7 +718,8 @@ writefilestree(FILE *fp, git_tree *tree, const char *path)
+</a> 			continue;
+ 		}
+ 		if (path[0]) {
+<a href="#h1-13-3" id="h1-13-3" class="d">-			snprintf(filepath, sizeof(filepath), &quot;%s/%s&quot;, path, filename);
+</a><a href="#h1-13-4" id="h1-13-4" class="i">+			snprintf(filepath, sizeof(filepath), &quot;%s/%s&quot;,
+</a><a href="#h1-13-5" id="h1-13-5" class="i">+			         path, filename);
+</a> 			filename = filepath;
+ 		}
+ 
+<a href="#h1-14" id="h1-14" class="h">@@ -731,42 +742,221 @@ writefilestree(FILE *fp, git_tree *tree, const char *path)
+</a> }
+ 
+ int
+<a href="#h1-14-3" id="h1-14-3" class="d">-writefiles(FILE *fp)
+</a><a href="#h1-14-4" id="h1-14-4" class="i">+writefiles(FILE *fp, const char *branch)
+</a> {
+ 	const git_oid *id;
+ 	git_tree *tree = NULL;
+ 	git_object *obj = NULL;
+ 	git_commit *commit = NULL;
+<a href="#h1-14-10" id="h1-14-10" class="i">+	int ret = -1;
+</a> 
+ 	fputs(&quot;&lt;table id=\&quot;files\&quot;&gt;&lt;thead&gt;\n&lt;tr&gt;&quot;
+ 	      &quot;&lt;td&gt;Mode&lt;/td&gt;&lt;td&gt;Name&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;Size&lt;/td&gt;&quot;
+ 	      &quot;&lt;/tr&gt;\n&lt;/thead&gt;&lt;tbody&gt;\n&quot;, fp);
+ 
+<a href="#h1-14-16" id="h1-14-16" class="d">-	if (git_revparse_single(&amp;obj, repo, &quot;HEAD&quot;))
+</a><a href="#h1-14-17" id="h1-14-17" class="d">-		return -1;
+</a><a href="#h1-14-18" id="h1-14-18" class="i">+	if (git_revparse_single(&amp;obj, repo, branch))
+</a><a href="#h1-14-19" id="h1-14-19" class="i">+		goto err;
+</a> 	id = git_object_id(obj);
+ 	if (git_commit_lookup(&amp;commit, repo, id))
+<a href="#h1-14-22" id="h1-14-22" class="d">-		return -1;
+</a><a href="#h1-14-23" id="h1-14-23" class="i">+		goto err;
+</a> 	if (git_commit_tree(&amp;tree, commit)) {
+ 		git_commit_free(commit);
+<a href="#h1-14-26" id="h1-14-26" class="d">-		return -1;
+</a><a href="#h1-14-27" id="h1-14-27" class="i">+		goto err;
+</a> 	}
+<a href="#h1-14-29" id="h1-14-29" class="d">-	git_commit_free(commit);
+</a><a href="#h1-14-30" id="h1-14-30" class="i">+	ret = writefilestree(fp, tree, branch, &quot;&quot;);
+</a> 
+<a href="#h1-14-32" id="h1-14-32" class="d">-	writefilestree(fp, tree, &quot;&quot;);
+</a><a href="#h1-14-33" id="h1-14-33" class="i">+err:
+</a><a href="#h1-14-34" id="h1-14-34" class="i">+	fputs(&quot;&lt;/tbody&gt;&lt;/table&gt;&quot;, fp);
+</a> 
+<a href="#h1-14-36" id="h1-14-36" class="i">+	git_object_free(obj);
+</a> 	git_commit_free(commit);
+ 	git_tree_free(tree);
+ 
+<a href="#h1-14-40" id="h1-14-40" class="i">+	return ret;
+</a><a href="#h1-14-41" id="h1-14-41" class="i">+}
+</a><a href="#h1-14-42" id="h1-14-42" class="i">+
+</a><a href="#h1-14-43" id="h1-14-43" class="i">+int
+</a><a href="#h1-14-44" id="h1-14-44" class="i">+writebranches(FILE *fp)
+</a><a href="#h1-14-45" id="h1-14-45" class="i">+{
+</a><a href="#h1-14-46" id="h1-14-46" class="i">+	struct commitinfo *ci;
+</a><a href="#h1-14-47" id="h1-14-47" class="i">+	git_branch_iterator *it = NULL;
+</a><a href="#h1-14-48" id="h1-14-48" class="i">+	git_branch_t branch;
+</a><a href="#h1-14-49" id="h1-14-49" class="i">+	git_reference *ref = NULL, *dref = NULL;
+</a><a href="#h1-14-50" id="h1-14-50" class="i">+	const git_oid *id = NULL;
+</a><a href="#h1-14-51" id="h1-14-51" class="i">+	const char *branchname = NULL;
+</a><a href="#h1-14-52" id="h1-14-52" class="i">+	size_t len;
+</a><a href="#h1-14-53" id="h1-14-53" class="i">+	int ret = -1;
+</a><a href="#h1-14-54" id="h1-14-54" class="i">+
+</a><a href="#h1-14-55" id="h1-14-55" class="i">+	/* log for local branches */
+</a><a href="#h1-14-56" id="h1-14-56" class="i">+	if (git_branch_iterator_new(&amp;it, repo, GIT_BRANCH_LOCAL))
+</a><a href="#h1-14-57" id="h1-14-57" class="i">+		return -1;
+</a><a href="#h1-14-58" id="h1-14-58" class="i">+
+</a><a href="#h1-14-59" id="h1-14-59" class="i">+	fputs(&quot;&lt;h2&gt;Branches&lt;/h2&gt;&lt;table id=\&quot;branches\&quot;&gt;&lt;thead&gt;\n&lt;tr&gt;&lt;td&gt;Branch&lt;/td&gt;&lt;td&gt;Age&lt;/td&gt;&quot;
+</a><a href="#h1-14-60" id="h1-14-60" class="i">+		  &quot;&lt;td&gt;Commit message&lt;/td&gt;&quot;
+</a><a href="#h1-14-61" id="h1-14-61" class="i">+		  &quot;&lt;td&gt;Author&lt;/td&gt;&lt;td&gt;Files&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;+&lt;/td&gt;&quot;
+</a><a href="#h1-14-62" id="h1-14-62" class="i">+		  &quot;&lt;td class=\&quot;num\&quot;&gt;-&lt;/td&gt;&lt;/tr&gt;\n&lt;/thead&gt;&lt;tbody&gt;\n&quot;, fp);
+</a><a href="#h1-14-63" id="h1-14-63" class="i">+
+</a><a href="#h1-14-64" id="h1-14-64" class="i">+	while (!git_branch_next(&amp;ref, &amp;branch, it)) {
+</a><a href="#h1-14-65" id="h1-14-65" class="i">+		if (git_branch_name(&amp;branchname, ref))
+</a><a href="#h1-14-66" id="h1-14-66" class="i">+			continue;
+</a><a href="#h1-14-67" id="h1-14-67" class="i">+
+</a><a href="#h1-14-68" id="h1-14-68" class="i">+		id = NULL;
+</a><a href="#h1-14-69" id="h1-14-69" class="i">+		switch (git_reference_type(ref)) {
+</a><a href="#h1-14-70" id="h1-14-70" class="i">+		case GIT_REF_SYMBOLIC:
+</a><a href="#h1-14-71" id="h1-14-71" class="i">+			if (git_reference_resolve(&amp;dref, ref))
+</a><a href="#h1-14-72" id="h1-14-72" class="i">+				goto err;
+</a><a href="#h1-14-73" id="h1-14-73" class="i">+			id = git_reference_target(dref);
+</a><a href="#h1-14-74" id="h1-14-74" class="i">+			break;
+</a><a href="#h1-14-75" id="h1-14-75" class="i">+		case GIT_REF_OID:
+</a><a href="#h1-14-76" id="h1-14-76" class="i">+			id = git_reference_target(ref);
+</a><a href="#h1-14-77" id="h1-14-77" class="i">+			break;
+</a><a href="#h1-14-78" id="h1-14-78" class="i">+		default:
+</a><a href="#h1-14-79" id="h1-14-79" class="i">+			continue;
+</a><a href="#h1-14-80" id="h1-14-80" class="i">+		}
+</a><a href="#h1-14-81" id="h1-14-81" class="i">+		if (!id)
+</a><a href="#h1-14-82" id="h1-14-82" class="i">+			goto err;
+</a><a href="#h1-14-83" id="h1-14-83" class="i">+		if (!(ci = commitinfo_getbyoid(id)))
+</a><a href="#h1-14-84" id="h1-14-84" class="i">+			break;
+</a><a href="#h1-14-85" id="h1-14-85" class="i">+
+</a><a href="#h1-14-86" id="h1-14-86" class="i">+		relpath = &quot;&quot;;
+</a><a href="#h1-14-87" id="h1-14-87" class="i">+
+</a><a href="#h1-14-88" id="h1-14-88" class="i">+		fputs(&quot;&lt;tr&gt;&lt;td&gt;&quot;, fp);
+</a><a href="#h1-14-89" id="h1-14-89" class="i">+		xmlencode(fp, branchname, strlen(branchname));
+</a><a href="#h1-14-90" id="h1-14-90" class="i">+		fputs(&quot;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+</a><a href="#h1-14-91" id="h1-14-91" class="i">+		if (ci-&gt;author)
+</a><a href="#h1-14-92" id="h1-14-92" class="i">+			printtimeshort(fp, &amp;(ci-&gt;author-&gt;when));
+</a><a href="#h1-14-93" id="h1-14-93" class="i">+		fputs(&quot;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+</a><a href="#h1-14-94" id="h1-14-94" class="i">+		if (ci-&gt;summary) {
+</a><a href="#h1-14-95" id="h1-14-95" class="i">+			fprintf(fp, &quot;&lt;a href=\&quot;%scommit/%s.html\&quot;&gt;&quot;, relpath, ci-&gt;oid);
+</a><a href="#h1-14-96" id="h1-14-96" class="i">+			if ((len = strlen(ci-&gt;summary)) &gt; summarylen) {
+</a><a href="#h1-14-97" id="h1-14-97" class="i">+				xmlencode(fp, ci-&gt;summary, summarylen - 1);
+</a><a href="#h1-14-98" id="h1-14-98" class="i">+				fputs(&quot;…&quot;, fp);
+</a><a href="#h1-14-99" id="h1-14-99" class="i">+			} else {
+</a><a href="#h1-14-100" id="h1-14-100" class="i">+				xmlencode(fp, ci-&gt;summary, len);
+</a><a href="#h1-14-101" id="h1-14-101" class="i">+			}
+</a><a href="#h1-14-102" id="h1-14-102" class="i">+			fputs(&quot;&lt;/a&gt;&quot;, fp);
+</a><a href="#h1-14-103" id="h1-14-103" class="i">+		}
+</a><a href="#h1-14-104" id="h1-14-104" class="i">+		fputs(&quot;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+</a><a href="#h1-14-105" id="h1-14-105" class="i">+		if (ci-&gt;author)
+</a><a href="#h1-14-106" id="h1-14-106" class="i">+			xmlencode(fp, ci-&gt;author-&gt;name, strlen(ci-&gt;author-&gt;name));
+</a><a href="#h1-14-107" id="h1-14-107" class="i">+		fputs(&quot;&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;&quot;, fp);
+</a><a href="#h1-14-108" id="h1-14-108" class="i">+		fprintf(fp, &quot;%zu&quot;, ci-&gt;filecount);
+</a><a href="#h1-14-109" id="h1-14-109" class="i">+		fputs(&quot;&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;&quot;, fp);
+</a><a href="#h1-14-110" id="h1-14-110" class="i">+		fprintf(fp, &quot;+%zu&quot;, ci-&gt;addcount);
+</a><a href="#h1-14-111" id="h1-14-111" class="i">+		fputs(&quot;&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;&quot;, fp);
+</a><a href="#h1-14-112" id="h1-14-112" class="i">+		fprintf(fp, &quot;-%zu&quot;, ci-&gt;delcount);
+</a><a href="#h1-14-113" id="h1-14-113" class="i">+		fputs(&quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;, fp);
+</a><a href="#h1-14-114" id="h1-14-114" class="i">+
+</a><a href="#h1-14-115" id="h1-14-115" class="i">+		relpath = &quot;../&quot;;
+</a><a href="#h1-14-116" id="h1-14-116" class="i">+
+</a><a href="#h1-14-117" id="h1-14-117" class="i">+		commitinfo_free(ci);
+</a><a href="#h1-14-118" id="h1-14-118" class="i">+		git_reference_free(ref);
+</a><a href="#h1-14-119" id="h1-14-119" class="i">+		git_reference_free(dref);
+</a><a href="#h1-14-120" id="h1-14-120" class="i">+		ref = NULL;
+</a><a href="#h1-14-121" id="h1-14-121" class="i">+		dref = NULL;
+</a><a href="#h1-14-122" id="h1-14-122" class="i">+	}
+</a><a href="#h1-14-123" id="h1-14-123" class="i">+	ret = 0;
+</a><a href="#h1-14-124" id="h1-14-124" class="i">+
+</a><a href="#h1-14-125" id="h1-14-125" class="i">+err:
+</a> 	fputs(&quot;&lt;/tbody&gt;&lt;/table&gt;&quot;, fp);
+<a href="#h1-14-127" id="h1-14-127" class="i">+	git_reference_free(ref);
+</a><a href="#h1-14-128" id="h1-14-128" class="i">+	git_reference_free(dref);
+</a><a href="#h1-14-129" id="h1-14-129" class="i">+	git_branch_iterator_free(it);
+</a><a href="#h1-14-130" id="h1-14-130" class="i">+
+</a><a href="#h1-14-131" id="h1-14-131" class="i">+	return ret;
+</a><a href="#h1-14-132" id="h1-14-132" class="i">+}
+</a><a href="#h1-14-133" id="h1-14-133" class="i">+
+</a><a href="#h1-14-134" id="h1-14-134" class="i">+int
+</a><a href="#h1-14-135" id="h1-14-135" class="i">+tagcompare(void *s1, void *s2)
+</a><a href="#h1-14-136" id="h1-14-136" class="i">+{
+</a><a href="#h1-14-137" id="h1-14-137" class="i">+	return strcmp(*(char **)s1, *(char **)s2);
+</a><a href="#h1-14-138" id="h1-14-138" class="i">+}
+</a><a href="#h1-14-139" id="h1-14-139" class="i">+
+</a><a href="#h1-14-140" id="h1-14-140" class="i">+int
+</a><a href="#h1-14-141" id="h1-14-141" class="i">+writetags(FILE *fp)
+</a><a href="#h1-14-142" id="h1-14-142" class="i">+{
+</a><a href="#h1-14-143" id="h1-14-143" class="i">+	struct commitinfo *ci;
+</a><a href="#h1-14-144" id="h1-14-144" class="i">+	git_strarray tagnames;
+</a><a href="#h1-14-145" id="h1-14-145" class="i">+	git_object *obj = NULL;
+</a><a href="#h1-14-146" id="h1-14-146" class="i">+	const git_oid *id = NULL;
+</a><a href="#h1-14-147" id="h1-14-147" class="i">+	size_t i, len;
+</a><a href="#h1-14-148" id="h1-14-148" class="i">+
+</a><a href="#h1-14-149" id="h1-14-149" class="i">+	fputs(&quot;&lt;h2&gt;Tags&lt;/h2&gt;&lt;table id=\&quot;branches\&quot;&gt;&lt;thead&gt;\n&lt;tr&gt;&lt;td&gt;Tag&lt;/td&gt;&quot;
+</a><a href="#h1-14-150" id="h1-14-150" class="i">+	      &quot;&lt;td&gt;Age&lt;/td&gt;&lt;td&gt;Commit message&lt;/td&gt;&quot;
+</a><a href="#h1-14-151" id="h1-14-151" class="i">+	      &quot;&lt;td&gt;Author&lt;/td&gt;&lt;td&gt;Files&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;+&lt;/td&gt;&quot;
+</a><a href="#h1-14-152" id="h1-14-152" class="i">+	      &quot;&lt;td class=\&quot;num\&quot;&gt;-&lt;/td&gt;&lt;/tr&gt;\n&lt;/thead&gt;&lt;tbody&gt;\n&quot;, fp);
+</a><a href="#h1-14-153" id="h1-14-153" class="i">+
+</a><a href="#h1-14-154" id="h1-14-154" class="i">+	/* summary page with branches and tags */
+</a><a href="#h1-14-155" id="h1-14-155" class="i">+	memset(&amp;tagnames, 0, sizeof(tagnames));
+</a><a href="#h1-14-156" id="h1-14-156" class="i">+	git_tag_list(&amp;tagnames, repo);
+</a><a href="#h1-14-157" id="h1-14-157" class="i">+	/* sort names */
+</a><a href="#h1-14-158" id="h1-14-158" class="i">+	qsort(tagnames.strings, tagnames.count, sizeof(char *),
+</a><a href="#h1-14-159" id="h1-14-159" class="i">+	      (int (*)(const void *, const void *))&amp;tagcompare);
+</a><a href="#h1-14-160" id="h1-14-160" class="i">+	for (i = 0; i &lt; tagnames.count; i++) {
+</a><a href="#h1-14-161" id="h1-14-161" class="i">+		if (git_revparse_single(&amp;obj, repo, tagnames.strings[i]))
+</a><a href="#h1-14-162" id="h1-14-162" class="i">+			continue;
+</a><a href="#h1-14-163" id="h1-14-163" class="i">+		id = git_object_id(obj);
+</a><a href="#h1-14-164" id="h1-14-164" class="i">+		if (!(ci = commitinfo_getbyoid(id)))
+</a><a href="#h1-14-165" id="h1-14-165" class="i">+			break;
+</a><a href="#h1-14-166" id="h1-14-166" class="i">+
+</a><a href="#h1-14-167" id="h1-14-167" class="i">+		relpath = &quot;&quot;;
+</a><a href="#h1-14-168" id="h1-14-168" class="i">+
+</a><a href="#h1-14-169" id="h1-14-169" class="i">+		fputs(&quot;&lt;tr&gt;&lt;td&gt;&quot;, fp);
+</a><a href="#h1-14-170" id="h1-14-170" class="i">+		xmlencode(fp, tagnames.strings[i], strlen(tagnames.strings[i]));
+</a><a href="#h1-14-171" id="h1-14-171" class="i">+		fputs(&quot;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+</a><a href="#h1-14-172" id="h1-14-172" class="i">+		if (ci-&gt;author)
+</a><a href="#h1-14-173" id="h1-14-173" class="i">+			printtimeshort(fp, &amp;(ci-&gt;author-&gt;when));
+</a><a href="#h1-14-174" id="h1-14-174" class="i">+		fputs(&quot;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+</a><a href="#h1-14-175" id="h1-14-175" class="i">+		if (ci-&gt;summary) {
+</a><a href="#h1-14-176" id="h1-14-176" class="i">+			fprintf(fp, &quot;&lt;a href=\&quot;%scommit/%s.html\&quot;&gt;&quot;, relpath, ci-&gt;oid);
+</a><a href="#h1-14-177" id="h1-14-177" class="i">+			if ((len = strlen(ci-&gt;summary)) &gt; summarylen) {
+</a><a href="#h1-14-178" id="h1-14-178" class="i">+				xmlencode(fp, ci-&gt;summary, summarylen - 1);
+</a><a href="#h1-14-179" id="h1-14-179" class="i">+				fputs(&quot;…&quot;, fp);
+</a><a href="#h1-14-180" id="h1-14-180" class="i">+			} else {
+</a><a href="#h1-14-181" id="h1-14-181" class="i">+				xmlencode(fp, ci-&gt;summary, len);
+</a><a href="#h1-14-182" id="h1-14-182" class="i">+			}
+</a><a href="#h1-14-183" id="h1-14-183" class="i">+			fputs(&quot;&lt;/a&gt;&quot;, fp);
+</a><a href="#h1-14-184" id="h1-14-184" class="i">+		}
+</a><a href="#h1-14-185" id="h1-14-185" class="i">+		fputs(&quot;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+</a><a href="#h1-14-186" id="h1-14-186" class="i">+		if (ci-&gt;author)
+</a><a href="#h1-14-187" id="h1-14-187" class="i">+			xmlencode(fp, ci-&gt;author-&gt;name, strlen(ci-&gt;author-&gt;name));
+</a><a href="#h1-14-188" id="h1-14-188" class="i">+		fputs(&quot;&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;&quot;, fp);
+</a><a href="#h1-14-189" id="h1-14-189" class="i">+		fprintf(fp, &quot;%zu&quot;, ci-&gt;filecount);
+</a><a href="#h1-14-190" id="h1-14-190" class="i">+		fputs(&quot;&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;&quot;, fp);
+</a><a href="#h1-14-191" id="h1-14-191" class="i">+		fprintf(fp, &quot;+%zu&quot;, ci-&gt;addcount);
+</a><a href="#h1-14-192" id="h1-14-192" class="i">+		fputs(&quot;&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;&quot;, fp);
+</a><a href="#h1-14-193" id="h1-14-193" class="i">+		fprintf(fp, &quot;-%zu&quot;, ci-&gt;delcount);
+</a><a href="#h1-14-194" id="h1-14-194" class="i">+		fputs(&quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;, fp);
+</a><a href="#h1-14-195" id="h1-14-195" class="i">+
+</a><a href="#h1-14-196" id="h1-14-196" class="i">+		relpath = &quot;../&quot;;
+</a><a href="#h1-14-197" id="h1-14-197" class="i">+
+</a><a href="#h1-14-198" id="h1-14-198" class="i">+		commitinfo_free(ci);
+</a><a href="#h1-14-199" id="h1-14-199" class="i">+		git_object_free(obj);
+</a><a href="#h1-14-200" id="h1-14-200" class="i">+	}
+</a><a href="#h1-14-201" id="h1-14-201" class="i">+	fputs(&quot;&lt;/tbody&gt;&lt;/table&gt;&quot;, fp);
+</a><a href="#h1-14-202" id="h1-14-202" class="i">+	git_strarray_free(&amp;tagnames);
+</a> 
+ 	return 0;
+ }
+ 
+ int
+<a href="#h1-14-208" id="h1-14-208" class="i">+writerefs(FILE *fp)
+</a><a href="#h1-14-209" id="h1-14-209" class="i">+{
+</a><a href="#h1-14-210" id="h1-14-210" class="i">+	int ret;
+</a><a href="#h1-14-211" id="h1-14-211" class="i">+
+</a><a href="#h1-14-212" id="h1-14-212" class="i">+	if ((ret = writebranches(fp)))
+</a><a href="#h1-14-213" id="h1-14-213" class="i">+		return ret;
+</a><a href="#h1-14-214" id="h1-14-214" class="i">+	return writetags(fp);
+</a><a href="#h1-14-215" id="h1-14-215" class="i">+}
+</a><a href="#h1-14-216" id="h1-14-216" class="i">+
+</a><a href="#h1-14-217" id="h1-14-217" class="i">+int
+</a> main(int argc, char *argv[])
+ {
+ 	git_object *obj = NULL;
+<a href="#h1-14-221" id="h1-14-221" class="i">+	git_branch_iterator *it = NULL;
+</a><a href="#h1-14-222" id="h1-14-222" class="i">+	git_branch_t branch;
+</a><a href="#h1-14-223" id="h1-14-223" class="i">+	git_reference *ref = NULL;
+</a><a href="#h1-14-224" id="h1-14-224" class="i">+	const char *branchname = NULL;
+</a> 	const git_error *e = NULL;
+ 	FILE *fp, *fpread;
+ 	char path[PATH_MAX], *p;
+<a href="#h1-15" id="h1-15" class="h">@@ -827,15 +1017,43 @@ main(int argc, char *argv[])
+</a> 	hasreadme = !git_revparse_single(&amp;obj, repo, &quot;HEAD:README&quot;);
+ 	git_object_free(obj);
+ 
+<a href="#h1-15-3" id="h1-15-3" class="i">+	/* log for HEAD */
+</a> 	fp = efopen(&quot;log.html&quot;, &quot;w&quot;);
+ 	writeheader(fp);
+<a href="#h1-15-6" id="h1-15-6" class="d">-	writelog(fp);
+</a><a href="#h1-15-7" id="h1-15-7" class="i">+	writelog(fp, &quot;HEAD&quot;);
+</a> 	writefooter(fp);
+ 	fclose(fp);
+ 
+<a href="#h1-15-11" id="h1-15-11" class="i">+	/* log for local branches */
+</a><a href="#h1-15-12" id="h1-15-12" class="i">+	if (git_branch_iterator_new(&amp;it, repo, GIT_BRANCH_LOCAL))
+</a><a href="#h1-15-13" id="h1-15-13" class="i">+		err(1, &quot;git_branch_iterator_new&quot;);
+</a><a href="#h1-15-14" id="h1-15-14" class="i">+
+</a><a href="#h1-15-15" id="h1-15-15" class="i">+	while (!git_branch_next(&amp;ref, &amp;branch, it)) {
+</a><a href="#h1-15-16" id="h1-15-16" class="i">+		if (git_branch_name(&amp;branchname, ref))
+</a><a href="#h1-15-17" id="h1-15-17" class="i">+			continue;
+</a><a href="#h1-15-18" id="h1-15-18" class="i">+
+</a><a href="#h1-15-19" id="h1-15-19" class="i">+		snprintf(path, sizeof(path), &quot;log-%s.html&quot;, branchname);
+</a><a href="#h1-15-20" id="h1-15-20" class="i">+
+</a><a href="#h1-15-21" id="h1-15-21" class="i">+		fp = efopen(path, &quot;w&quot;);
+</a><a href="#h1-15-22" id="h1-15-22" class="i">+		writeheader(fp);
+</a><a href="#h1-15-23" id="h1-15-23" class="i">+		writelog(fp, branchname);
+</a><a href="#h1-15-24" id="h1-15-24" class="i">+		writefooter(fp);
+</a><a href="#h1-15-25" id="h1-15-25" class="i">+		fclose(fp);
+</a><a href="#h1-15-26" id="h1-15-26" class="i">+	}
+</a><a href="#h1-15-27" id="h1-15-27" class="i">+	git_reference_free(ref);
+</a><a href="#h1-15-28" id="h1-15-28" class="i">+	git_branch_iterator_free(it);
+</a><a href="#h1-15-29" id="h1-15-29" class="i">+
+</a><a href="#h1-15-30" id="h1-15-30" class="i">+	/* files for HEAD */
+</a> 	fp = efopen(&quot;files.html&quot;, &quot;w&quot;);
+ 	writeheader(fp);
+<a href="#h1-15-33" id="h1-15-33" class="d">-	writefiles(fp);
+</a><a href="#h1-15-34" id="h1-15-34" class="i">+	writefiles(fp, &quot;HEAD&quot;);
+</a><a href="#h1-15-35" id="h1-15-35" class="i">+	writefooter(fp);
+</a><a href="#h1-15-36" id="h1-15-36" class="i">+	fclose(fp);
+</a><a href="#h1-15-37" id="h1-15-37" class="i">+
+</a><a href="#h1-15-38" id="h1-15-38" class="i">+	/* summary page with branches and tags */
+</a><a href="#h1-15-39" id="h1-15-39" class="i">+	fp = efopen(&quot;refs.html&quot;, &quot;w&quot;);
+</a><a href="#h1-15-40" id="h1-15-40" class="i">+	writeheader(fp);
+</a><a href="#h1-15-41" id="h1-15-41" class="i">+	writerefs(fp);
+</a> 	writefooter(fp);
+ 	fclose(fp);
+ 
+</pre>
+</div>
+</body>
+</html>

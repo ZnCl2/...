@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>detect name and description - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/3872d9e902722b0c85c7f5c6ef8975389167e7d9.html">3872d9e902722b0c85c7f5c6ef8975389167e7d9</a>
+<b>parent</b> <a href="../commit/7294b10b65ff8a91bd330108af98441ec4a05307.html">7294b10b65ff8a91bd330108af98441ec4a05307</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Sat Dec  5 20:59:14 +0100
+
+detect name and description
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">urmoms.c</a></td><td> | </td><td class="num">82</td><td><span class="i">+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++</span><span class="d">--------------------</span></td></tr>
+</table>1 file changed, 62 insertions(+), 20 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/urmoms.c.html">urmoms.c</a> b/<a href="../file/urmoms.c.html">urmoms.c</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -1,4 +1,5 @@
+</a> #include &lt;err.h&gt;
+<a href="#h0-0-1" id="h0-0-1" class="i">+#include &lt;libgen.h&gt;
+</a> #include &lt;limits.h&gt;
+ #include &lt;stdio.h&gt;
+ #include &lt;stdlib.h&gt;
+<a href="#h0-1" id="h0-1" class="h">@@ -8,12 +9,11 @@
+</a> 
+ static git_repository *repo;
+ 
+<a href="#h0-1-3" id="h0-1-3" class="d">-static const char *relpath = &quot;&quot;;
+</a><a href="#h0-1-4" id="h0-1-4" class="d">-static const char *name = &quot;&quot;;
+</a><a href="#h0-1-5" id="h0-1-5" class="d">-static const char *description = &quot;&quot;;
+</a><a href="#h0-1-6" id="h0-1-6" class="d">-
+</a><a href="#h0-1-7" id="h0-1-7" class="i">+static const char *relpath;
+</a> static const char *repodir = &quot;.&quot;;
+ 
+<a href="#h0-1-10" id="h0-1-10" class="i">+static char name[255];
+</a><a href="#h0-1-11" id="h0-1-11" class="i">+static char description[255];
+</a> static int hasreadme, haslicense;
+ 
+ FILE *
+<a href="#h0-2" id="h0-2" class="h">@@ -28,6 +28,41 @@ efopen(const char *name, const char *flags)
+</a> 	return fp;
+ }
+ 
+<a href="#h0-2-3" id="h0-2-3" class="i">+void
+</a><a href="#h0-2-4" id="h0-2-4" class="i">+concat(FILE *fp1, FILE *fp2)
+</a><a href="#h0-2-5" id="h0-2-5" class="i">+{
+</a><a href="#h0-2-6" id="h0-2-6" class="i">+	char buf[BUFSIZ];
+</a><a href="#h0-2-7" id="h0-2-7" class="i">+	size_t n;
+</a><a href="#h0-2-8" id="h0-2-8" class="i">+
+</a><a href="#h0-2-9" id="h0-2-9" class="i">+	while ((n = fread(buf, 1, sizeof(buf), fp1))) {
+</a><a href="#h0-2-10" id="h0-2-10" class="i">+		fwrite(buf, 1, n, fp2);
+</a><a href="#h0-2-11" id="h0-2-11" class="i">+
+</a><a href="#h0-2-12" id="h0-2-12" class="i">+		if (feof(fp1) || ferror(fp1) || ferror(fp2))
+</a><a href="#h0-2-13" id="h0-2-13" class="i">+			break;
+</a><a href="#h0-2-14" id="h0-2-14" class="i">+	}
+</a><a href="#h0-2-15" id="h0-2-15" class="i">+}
+</a><a href="#h0-2-16" id="h0-2-16" class="i">+
+</a><a href="#h0-2-17" id="h0-2-17" class="i">+/* Some implementations of basename(3) return a pointer to a static
+</a><a href="#h0-2-18" id="h0-2-18" class="i">+ * internal buffer (OpenBSD). Others modify the contents of `path` (POSIX).
+</a><a href="#h0-2-19" id="h0-2-19" class="i">+ * This is a wrapper function that is compatible with both versions.
+</a><a href="#h0-2-20" id="h0-2-20" class="i">+ * The program will error out if basename(3) failed, this can only happen
+</a><a href="#h0-2-21" id="h0-2-21" class="i">+ * with the OpenBSD version. */
+</a><a href="#h0-2-22" id="h0-2-22" class="i">+char *
+</a><a href="#h0-2-23" id="h0-2-23" class="i">+xbasename(const char *path)
+</a><a href="#h0-2-24" id="h0-2-24" class="i">+{
+</a><a href="#h0-2-25" id="h0-2-25" class="i">+	char *p, *b;
+</a><a href="#h0-2-26" id="h0-2-26" class="i">+
+</a><a href="#h0-2-27" id="h0-2-27" class="i">+	if (!(p = strdup(path)))
+</a><a href="#h0-2-28" id="h0-2-28" class="i">+		err(1, &quot;strdup&quot;);
+</a><a href="#h0-2-29" id="h0-2-29" class="i">+	if (!(b = basename(p)))
+</a><a href="#h0-2-30" id="h0-2-30" class="i">+		err(1, &quot;basename&quot;);
+</a><a href="#h0-2-31" id="h0-2-31" class="i">+	if (!(b = strdup(b)))
+</a><a href="#h0-2-32" id="h0-2-32" class="i">+		err(1, &quot;strdup&quot;);
+</a><a href="#h0-2-33" id="h0-2-33" class="i">+	free(p);
+</a><a href="#h0-2-34" id="h0-2-34" class="i">+
+</a><a href="#h0-2-35" id="h0-2-35" class="i">+	return b;
+</a><a href="#h0-2-36" id="h0-2-36" class="i">+}
+</a><a href="#h0-2-37" id="h0-2-37" class="i">+
+</a> static void
+ printtime(FILE *fp, const git_time * intime, const char *prefix)
+ {
+<a href="#h0-3" id="h0-3" class="h">@@ -98,7 +133,7 @@ writeheader(FILE *fp)
+</a> 		&quot;&lt;html dir=\&quot;ltr\&quot; lang=\&quot;en\&quot;&gt;&lt;head&gt;&quot;
+ 		&quot;&lt;meta http-equiv=\&quot;Content-Type\&quot; content=\&quot;text/html; charset=UTF-8\&quot; /&gt;&quot;
+ 		&quot;&lt;meta http-equiv=\&quot;Content-Language\&quot; content=\&quot;en\&quot; /&gt;&quot;);
+<a href="#h0-3-3" id="h0-3-3" class="d">-	fprintf(fp, &quot;&lt;title&gt;%s - %s&lt;/title&gt;&quot;, name, description);
+</a><a href="#h0-3-4" id="h0-3-4" class="i">+	fprintf(fp, &quot;&lt;title&gt;%s%s%s&lt;/title&gt;&quot;, name, description[0] ? &quot; - &quot; : &quot;&quot;, description);
+</a> 	fprintf(fp, &quot;&lt;link rel=\&quot;stylesheet\&quot; type=\&quot;text/css\&quot; href=\&quot;style.css\&quot; /&gt;&quot;
+ 		&quot;&lt;/head&gt;&lt;body&gt;&lt;center&gt;&quot;);
+ 	fprintf(fp, &quot;&lt;h1&gt;&lt;img src=\&quot;%slogo.png\&quot; alt=\&quot;\&quot; /&gt; %s&lt;/h1&gt;&quot;, relpath, name);
+<a href="#h0-4" id="h0-4" class="h">@@ -187,26 +222,12 @@ writebranches(FILE *fp)
+</a> }
+ #endif
+ 
+<a href="#h0-4-3" id="h0-4-3" class="d">-void
+</a><a href="#h0-4-4" id="h0-4-4" class="d">-concat(FILE *fp1, FILE *fp2)
+</a><a href="#h0-4-5" id="h0-4-5" class="d">-{
+</a><a href="#h0-4-6" id="h0-4-6" class="d">-	char buf[BUFSIZ];
+</a><a href="#h0-4-7" id="h0-4-7" class="d">-	size_t n;
+</a><a href="#h0-4-8" id="h0-4-8" class="d">-
+</a><a href="#h0-4-9" id="h0-4-9" class="d">-	while ((n = fread(buf, 1, sizeof(buf), fp1))) {
+</a><a href="#h0-4-10" id="h0-4-10" class="d">-		fwrite(buf, 1, n, fp2);
+</a><a href="#h0-4-11" id="h0-4-11" class="d">-
+</a><a href="#h0-4-12" id="h0-4-12" class="d">-		if (feof(fp1) || ferror(fp1) || ferror(fp2))
+</a><a href="#h0-4-13" id="h0-4-13" class="d">-			break;
+</a><a href="#h0-4-14" id="h0-4-14" class="d">-	}
+</a><a href="#h0-4-15" id="h0-4-15" class="d">-}
+</a><a href="#h0-4-16" id="h0-4-16" class="d">-
+</a> int
+ main(int argc, char *argv[])
+ {
+ 	const git_error *e = NULL;
+ 	FILE *fp, *fpread;
+<a href="#h0-4-22" id="h0-4-22" class="d">-	char path[PATH_MAX];
+</a><a href="#h0-4-23" id="h0-4-23" class="i">+	char path[PATH_MAX], *p;
+</a> 	int status;
+ 
+ 	if (argc != 2) {
+<a href="#h0-5" id="h0-5" class="h">@@ -223,6 +244,26 @@ main(int argc, char *argv[])
+</a> 		exit(status);
+ 	}
+ 
+<a href="#h0-5-3" id="h0-5-3" class="i">+	/* use directory name as name */
+</a><a href="#h0-5-4" id="h0-5-4" class="i">+	p = xbasename(repodir);
+</a><a href="#h0-5-5" id="h0-5-5" class="i">+	snprintf(name, sizeof(name), &quot;%s&quot;, p);
+</a><a href="#h0-5-6" id="h0-5-6" class="i">+	free(p);
+</a><a href="#h0-5-7" id="h0-5-7" class="i">+
+</a><a href="#h0-5-8" id="h0-5-8" class="i">+	/* read description or .git/description */
+</a><a href="#h0-5-9" id="h0-5-9" class="i">+	snprintf(path, sizeof(path), &quot;%s%s%s&quot;,
+</a><a href="#h0-5-10" id="h0-5-10" class="i">+		repodir, repodir[strlen(repodir)] == &apos;/&apos; ? &quot;&quot; : &quot;/&quot;, &quot;description&quot;);
+</a><a href="#h0-5-11" id="h0-5-11" class="i">+	if (!(fpread = fopen(path, &quot;r+b&quot;))) {
+</a><a href="#h0-5-12" id="h0-5-12" class="i">+		snprintf(path, sizeof(path), &quot;%s%s%s&quot;,
+</a><a href="#h0-5-13" id="h0-5-13" class="i">+			repodir, repodir[strlen(repodir)] == &apos;/&apos; ? &quot;&quot; : &quot;/&quot;, &quot;.git/description&quot;);
+</a><a href="#h0-5-14" id="h0-5-14" class="i">+		fpread = fopen(path, &quot;r+b&quot;);
+</a><a href="#h0-5-15" id="h0-5-15" class="i">+	}
+</a><a href="#h0-5-16" id="h0-5-16" class="i">+	if (fpread) {
+</a><a href="#h0-5-17" id="h0-5-17" class="i">+		if (!fgets(description, sizeof(description), fpread))
+</a><a href="#h0-5-18" id="h0-5-18" class="i">+			description[0] = &apos;\0&apos;;
+</a><a href="#h0-5-19" id="h0-5-19" class="i">+		fclose(fpread);
+</a><a href="#h0-5-20" id="h0-5-20" class="i">+	}
+</a><a href="#h0-5-21" id="h0-5-21" class="i">+
+</a><a href="#h0-5-22" id="h0-5-22" class="i">+	/* read LICENSE */
+</a> 	snprintf(path, sizeof(path), &quot;%s%s%s&quot;,
+ 		repodir, repodir[strlen(repodir)] == &apos;/&apos; ? &quot;&quot; : &quot;/&quot;, &quot;LICENSE&quot;);
+ 	if ((fpread = fopen(path, &quot;r+b&quot;))) {
+<a href="#h0-6" id="h0-6" class="h">@@ -239,6 +280,7 @@ main(int argc, char *argv[])
+</a> 		haslicense = 1;
+ 	}
+ 
+<a href="#h0-6-3" id="h0-6-3" class="i">+	/* read README */
+</a> 	snprintf(path, sizeof(path), &quot;%s%s%s&quot;,
+ 		repodir, repodir[strlen(repodir)] == &apos;/&apos; ? &quot;&quot; : &quot;/&quot;, &quot;README&quot;);
+ 	if ((fpread = fopen(path, &quot;r+b&quot;))) {
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<link rel="stylesheet" type="text/css" href="inc/template/modal-post/index.css">
+
+<a href="{{activeLink}}" class="modal-post" id="modal_post_{{page}}_{{section}}_{{partition}}_{{id}}">
+	<div class="modal-post-image" style="background-image: {{picture}};"></div>
+	<div class="modal-post-text">
+		<div class="modal-post-top">
+			{{name}}
+			<if condition="(by && by.length) || (bygroup && bygroup.length)">
+				<then>
+					by
+					<if condition="by && by.length">
+						<then>
+							<span class="post-link" onclick="Modal.search('by', '{{by}}'); event.preventDefault();">{{by}}</span>
+						</then>
+					</if>
+					<if condition="(by && by.length) && (bygroup && bygroup.length)">
+						<then>
+							/
+						</then>
+					</if>
+					<if condition="bygroup && bygroup.length">
+						<then>
+							<span class="post-link" onclick="Modal.search('bygroup', '{{bygroup}}'); event.preventDefault();">{{bygroup}}</span>
+						</then>
+					</if>
+				</then>
+			</if>
+			<br>
+
+			<include src="inc/{{page}}/info.html" pass="{{*}}"></include>
+		</div>
+		<div class="modal-post-bottom">
+			<div class="modal-post-bottom-left">
+				<span class="post-link post-link-like {{mapped && mapped.liked ? 'post-link-liked' : ''}}" data-page="{{page}}" data-section="{{section || ''}}" data-partition="{{partition || ''}}" data-id="{{id}}" onclick="event.preventDefault();">
+					<if condition="mapped && mapped.liked">
+						<then>{{Translate.likes(mapped.likes)}}</then>
+						<else>Like</else>
+					</if>
+				</span>
+				<if condition="hideComments">
+					<else>
+						<span>|</span>
+						<span class="post-link" onclick="Modal.comment('{{page}}', '{{section}}', '{{partition}}', {{id}}); event.preventDefault();">
+							<if condition="mapped && mapped.comments">
+								<then>{{Translate.comments(mapped.comments)}}</then>
+								<else>Comment</else>
+							</if>
+						</span>
+					</else>
+				</if>
+			</div>
+
+			<div class="modal-post-bottom-right">
+				<span class="post-link" href="{{downloadLink}}" onclick="location.href = this.getAttribute('href'); event.preventDefault();">Download</span>
+			</div>
+		</div>
+	</div>
+</a>

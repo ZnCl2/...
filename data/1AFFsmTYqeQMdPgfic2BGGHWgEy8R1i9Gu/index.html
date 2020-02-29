@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8" />
+	<title>Nouveau vloggeur</title>
+	<link href="css/videojs.css" rel="stylesheet" />
+    <script src="js/video.min.js"></script>
+    <link href="css/videoBlocCoq.css" rel="stylesheet" />
+    <script src="js/TweenLite.min.js"></script>
+	<script src="js/Draggable.min.js"></script>
+	<script src="js/CSSPlugin.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="css/akzidenzgrotesk.css">
+</head>
+<body>
+	<div id="cyan" class="grab" style="font-family:Akzidenz-Grotesk;text-align:left;background-color:cyan;font-size:22px;width:500px;height:auto;padding:20px;margin:0;cursor:move;position:absolute;">
+		Je vais publier Aurore 2 en plusieurs épisodes</br>
+		sur <a href="/bloccoq.bit/">Bloc coq</a>. Au plaisir…</br>
+		kkbye</br></br>
+		— Vincent Olivier</br>
+		Rawdon, 19 juillet 2015</br></br></br>
+		P.S.: en Septembre 2015, Guillaume Lambert a publié son premier roman <a href="http://www.lemeac.com/catalogue/1528-satyriasis.html">Satyriasis</a>, inspiré de conversations qu'il a eues avec moi et de lectures que je lui ai recommandées pendant le tournage d'Aurore 2. Je lui ai proposé de faire une projection du film à l'occasion de son lancement. Nous avons fait un vidéo pour faire la promotion de l'évènement. Gâte-toi…
+	</div>
+	<video width="480" height="480" id="vlog" class="video-js videoBlocCoq grab" poster="img/NouveauVloggeur.jpg" controls preload="none" data-setup='{"language":"fr"}'>
+		<source src="http://lo2jnb7p4cvfxyae.onion/1AFFsmTYqeQMdPgfic2BGGHWgEy8R1i9Gu/mp4/NouveauVloggeur.mp4" type="video/mp4" />
+	</video>
+	<div id="yellow" class="grab" style="font-family:Akzidenz-Grotesk;text-align:left;background-color:yellow;font-size:22px;width:auto;height:auto;padding:20px;margin:0;cursor:move;position:absolute;">
+		Salut ! Je m’appelle Vincent Olivier.</br>
+		J’ai fait un film qui s’appelle Aurore 2</br>
+		et j’aimerais t’en parler.</br></br>
+		Clique sur ma face.
+		<!--
+			https://medium.com/@UP4/yo-madame-merci-de-votre-compréhension-c-est-mon-mème-à-moi-eecdceade7fe#.1lfh0uvk2
+			img/mediumLarge.jpg
+		-->
+	</div>
+	<video width="480" height="480" id="gsat" class="video-js videoBlocCoq grab" poster="img/gsatyriasis8v4.jpg" controls preload="none" data-setup='{"language":"fr"}'>
+		<source src="http://lo2jnb7p4cvfxyae.onion/1AFFsmTYqeQMdPgfic2BGGHWgEy8R1i9Gu/mp4/gsatyriasis8v4.mp4" type="video/mp4" />
+	</video>
+	<img src="img/mediumLarge.jpg" id="medlarg" alt="oups" style="display:bloc;position:absolute;width:578px;height:368px;"  class="grab" >
+	<script type="text/javascript">
+		//initialize player
+		var player = videojs('vlog');
+		player.on('firstplay', function() {player.loadingSpinner.addClass('pasPrete')});
+		player.on('playing', function(){player.loadingSpinner.removeClass('pasPrete')});
+		player.on('error', function(){
+			player.loadingSpinner.removeClass('pasPrete');
+			var error = document.getElementsByClassName('vjs-modal-dialog-content')[0];
+			error.innerHTML = error.innerText;
+		});
+		player.on('canplay', function() {
+			this.loadingSpinner.removeClass('pasPrete');
+		});
+		player = videojs('gsat');
+		player.on('firstplay', function() {player.loadingSpinner.addClass('pasPrete')});
+		player.on('playing', function(){player.loadingSpinner.removeClass('pasPrete')});
+		player.on('error', function(){
+			player.loadingSpinner.removeClass('pasPrete');
+			var error = document.getElementsByClassName('vjs-modal-dialog-content')[0];
+			error.innerHTML = error.innerText;
+		});
+		player.on('canplay', function() {
+			this.loadingSpinner.removeClass('pasPrete');
+		});
+
+		//make draggable
+		Draggable.create('.grab', {
+			type:"top,left",
+			bounds: window,
+			edgeResistance:1,
+			cursor: 'inherit'
+		});
+
+		//set positions
+		var vlog = document.getElementById("vlog");
+		vlog.style.left = String((window.innerWidth/2) - 400) + 'px';
+		vlog.style.top = String((window.innerHeight/2) - 400) + 'px';
+		vlog.style.zIndex = 20;
+
+		var yellow = document.getElementById("yellow");
+		yellow.style.left = String((window.innerWidth/2) - 600) + 'px';
+		yellow.style.top = String((window.innerHeight/2) - 300) + 'px';
+		yellow.style.zIndex = 30;
+
+
+		var cyan = document.getElementById("cyan");
+		cyan.style.left = String((window.innerWidth/2) - 50) + 'px';
+		cyan.style.top = String((window.innerHeight/2) - 50) + 'px';
+		cyan.style.zIndex = 10;
+
+		var gsat = document.getElementById("gsat");
+		gsat.style.left = String((window.innerWidth/2) - 300) + 'px';
+		gsat.style.top = String((window.innerHeight/2) - 500) + 'px';
+		gsat.style.zIndex = 5;
+
+		var medlarg = document.getElementById("medlarg");
+		medlarg.style.left = String((window.innerWidth/2) - 500) + 'px';
+		medlarg.style.top = String((window.innerHeight/2) - 50) + 'px';
+		medlarg.style.zIndex = 0;
+
+		//set new language
+		videojs.addLanguage('fr', {
+			"Play": "Lecture",
+			"Pause": "Pause",
+			"Current Time": "Temps actuel",
+			"Duration Time": "Durée",
+			"Remaining Time": "Temps restant",
+			"Stream Type": "Type de flux",
+			"LIVE": "DIRECT",
+			"Loaded": "Prêt",
+			"Progress": "Progression",
+			"Fullscreen": "Plein écran",
+			"Non-Fullscreen": "Fenêtré",
+			"Mute": "Sourdine",
+			"Unmuted": "Son activé",
+			"Playback Rate": "Vitesse",
+			"Subtitles": "Sous-titres",
+			"subtitles off": "Sous-titres désactivés",
+			"Captions": "Sous-titres",
+			"captions off": "Sous-titres désactivés",
+			"Chapters": "Chapitres",
+			"You aborted the video playback": "Vous avez interrompu la lecture de la vidéo.",
+			"A network error caused the video download to fail part-way.": "Une erreur de réseau a interrompu le téléchargement de la vidéo.",
+			"The media could not be loaded, either because the server or network failed or because the format is not supported.": "Oups !! Ça marche pas. Soit parce que l'oignon est dead, soit que tor a besoin d'un massage, ou soit ton proxy est pas bien setté. Besoin d'aide pour le proxy ? Par <a href=\"/1MZTSurvwBMiVGcMgRQTtM1tGnjBbQKA3z/\">ici</a> yo.",
+			"The video playback was aborted due to a corruption problem or because the video used features your browser did not support.": "La lecture de la vidéo a été interrompue à cause d'un problème de corruption ou parce que la vidéo utilise des fonctionnalités non prises en charge par votre navigateur.",
+			"No compatible source was found for this video.": "Ton navigateur est pourri. <a href=\"/1MZTSurvwBMiVGcMgRQTtM1tGnjBbQKA3z/\">Fait quelque chose.</a>"
+		});
+	</script>
+</body>
+</html>

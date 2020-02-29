@@ -1,0 +1,72 @@
+<link rel="stylesheet" type="text/css" href="inc/template/post/index.css">
+<link rel="stylesheet" type="text/css" href="inc/{{page}}/{{section}}/index.css">
+
+<a class="post post-{{page}} post-{{page}}-{{section}} post-{{page}}-{{section}}-{{partition}} {{typeof hasPair !== 'undefined' ? 'post-pair-' + hasPair : ''}} {{hasPicture ? 'post-hasimage' : 'post-noimage'}}" href="{{activeLink}}" id="post_{{page}}_{{section}}_{{partition}}_{{id}}">
+	<div class="post-image" style="background-image: {{picture}};"></div>
+	<div class="post-image-secondary"></div>
+	<div class="post-cover"></div>
+	<div class="post-header">
+		<div class="post-header-main">
+			{{name}}
+			<if condition="(by && by.length) || (bygroup && bygroup.length)">
+				<then>
+					by
+					<if condition="by && by.length">
+						<then>
+							<span class="post-link" onclick="Modal.search('by', '{{by}}'); event.preventDefault();">{{by}}</span>
+						</then>
+					</if>
+					<if condition="(by && by.length) && (bygroup && bygroup.length)">
+						<then>
+							/
+						</then>
+					</if>
+					<if condition="bygroup && bygroup.length">
+						<then>
+							<span class="post-link" onclick="Modal.search('bygroup', '{{bygroup}}'); event.preventDefault();">{{bygroup}}</span>
+						</then>
+					</if>
+				</then>
+			</if>
+		</div><br>
+		<div class="post-header-info">
+			<include src="inc/{{page}}/info.html" pass="{{*}}" pass-page="{{page}}"></include>
+		</div>
+	</div>
+	<div class="post-footer post-footer-left">
+		<span class="post-link post-link-like {{mapped && mapped.liked ? 'post-link-liked' : ''}}" data-page="{{page}}" data-section="{{section || ''}}" data-partition="{{partition || ''}}" data-id="{{id}}" onclick="event.preventDefault();">
+			<if condition="mapped && mapped.liked">
+				<then>{{Translate.likes(mapped.likes)}}</then>
+				<else>Like</else>
+			</if>
+		</span>
+		<span>|</span>
+		<span class="post-link" onclick="Modal.comment('{{page}}', '{{section}}', '{{partition}}', {{id}}); event.preventDefault();">
+			<if condition="mapped && mapped.comments">
+				<then>{{Translate.comments(mapped.comments)}}</then>
+				<else>Comment</else>
+			</if>
+		</span>
+	</div>
+	<div class="post-footer post-footer-right">
+		<!--
+			<if condition="typeof viewLink !== 'undefined' && viewLink !== null">
+				<then>
+					<span class="post-link">View</span>
+				</then>
+			</if>
+			<if condition="typeof viewLink !== 'undefined' && viewLink !== null && downloadLink !== null">
+				<then>
+					<span>|</span>
+				</then>
+			</if>
+		-->
+		<if condition="downloadLink !== null">
+			<then>
+				<span class="post-link" href="{{downloadLink}}" onclick="location.href = this.getAttribute('href'); event.preventDefault();">Download</span>
+			</then>
+		</if>
+	</div>
+</a>
+
+<script type="text/javascript" src="inc/template/post/index.js"></script>

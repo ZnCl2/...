@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>improve example: strip .git suffix - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/44a49f51db565cbfc31f31393d8dcdec1cdc8167.html">44a49f51db565cbfc31f31393d8dcdec1cdc8167</a>
+<b>parent</b> <a href="../commit/837427b09ea3a592e9b364b180c2011b517ab2c8.html">837427b09ea3a592e9b364b180c2011b517ab2c8</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Sun May 29 13:06:32 +0200
+
+improve example: strip .git suffix
+
+stagit-index and stagit strip the .git suffix so also strip it from the
+directory for the possible www root.
+
+Thanks to ng0 for reporting it!
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">example.sh</a></td><td> | </td><td class="num">5</td><td><span class="i">+++</span><span class="d">--</span></td></tr>
+</table>1 file changed, 3 insertions(+), 2 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/example.sh.html">example.sh</a> b/<a href="../file/example.sh.html">example.sh</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -22,12 +22,13 @@ find . -maxdepth 1 -type d | grep -v &quot;^.$&quot; | sort | xargs stagit-index &gt; &quot;${curd
+</a> # make files per repo.
+ cd &quot;${reposdir}&quot;
+ find . -maxdepth 1 -type d | grep -v &quot;^.$&quot; | sort | while read -r dir; do
+<a href="#h0-0-3" id="h0-0-3" class="d">-	d=$(basename &quot;${dir}&quot;)
+</a><a href="#h0-0-4" id="h0-0-4" class="i">+	r=$(basename &quot;${dir}&quot;)
+</a><a href="#h0-0-5" id="h0-0-5" class="i">+	d=$(basename &quot;${dir}&quot; &quot;.git&quot;)
+</a> 	printf &quot;%s... &quot; &quot;${d}&quot;
+ 
+ 	mkdir -p &quot;${curdir}/${d}&quot;
+ 	cd &quot;${curdir}/${d}&quot;
+<a href="#h0-0-10" id="h0-0-10" class="d">-	stagit -c &quot;.cache&quot; &quot;${reposdir}/${d}&quot;
+</a><a href="#h0-0-11" id="h0-0-11" class="i">+	stagit -c &quot;.cache&quot; &quot;${reposdir}/${r}&quot;
+</a> 
+ 	# symlinks
+ 	ln -sf log.html index.html
+</pre>
+</div>
+</body>
+</html>

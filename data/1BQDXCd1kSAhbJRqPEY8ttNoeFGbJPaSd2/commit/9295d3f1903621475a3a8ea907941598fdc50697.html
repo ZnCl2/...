@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>remove TODO from code, see TODO file - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/9295d3f1903621475a3a8ea907941598fdc50697.html">9295d3f1903621475a3a8ea907941598fdc50697</a>
+<b>parent</b> <a href="../commit/1cc9f5fcb114c33a9c163a1b436c2a7431b94b8e.html">1cc9f5fcb114c33a9c163a1b436c2a7431b94b8e</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Fri Dec 25 17:49:54 +0100
+
+remove TODO from code, see TODO file
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">urmoms.c</a></td><td> | </td><td class="num">14</td><td><span class="i">++++</span><span class="d">----------</span></td></tr>
+</table>1 file changed, 4 insertions(+), 10 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/urmoms.c.html">urmoms.c</a> b/<a href="../file/urmoms.c.html">urmoms.c</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -73,7 +73,6 @@ commitinfo_getbyoid(const git_oid *id)
+</a> 	if (git_commit_lookup(&amp;(ci-&gt;commit), repo, id))
+ 		goto err;
+ 
+<a href="#h0-0-3" id="h0-0-3" class="d">-	/* TODO: show tags when commit has it */
+</a> 	git_oid_tostr(ci-&gt;oid, sizeof(ci-&gt;oid), git_commit_id(ci-&gt;commit));
+ 	git_oid_tostr(ci-&gt;parentoid, sizeof(ci-&gt;parentoid), git_commit_parent_id(ci-&gt;commit, 0));
+ 
+<a href="#h0-1" id="h0-1" class="h">@@ -82,7 +81,7 @@ commitinfo_getbyoid(const git_oid *id)
+</a> 	ci-&gt;msg = git_commit_message(ci-&gt;commit);
+ 
+ 	if ((error = git_commit_tree(&amp;(ci-&gt;commit_tree), ci-&gt;commit)))
+<a href="#h0-1-3" id="h0-1-3" class="d">-		goto err; /* TODO: handle error */
+</a><a href="#h0-1-4" id="h0-1-4" class="i">+		goto err;
+</a> 	if (!(error = git_commit_parent(&amp;(ci-&gt;parent), ci-&gt;commit, 0))) {
+ 		if ((error = git_commit_tree(&amp;(ci-&gt;parent_tree), ci-&gt;parent)))
+ 			goto err;
+<a href="#h0-2" id="h0-2" class="h">@@ -102,8 +101,6 @@ commitinfo_getbyoid(const git_oid *id)
+</a> 	ci-&gt;delcount = git_diff_stats_deletions(ci-&gt;stats);
+ 	ci-&gt;filecount = git_diff_stats_files_changed(ci-&gt;stats);
+ 
+<a href="#h0-2-3" id="h0-2-3" class="d">-	/* TODO: show tag when commit has it */
+</a><a href="#h0-2-4" id="h0-2-4" class="d">-
+</a> 	return ci;
+ 
+ err:
+<a href="#h0-3" id="h0-3" class="h">@@ -168,7 +165,7 @@ mkdirp(const char *path)
+</a> {
+ 	char tmp[PATH_MAX], *p;
+ 
+<a href="#h0-3-3" id="h0-3-3" class="d">-	strlcpy(tmp, path, sizeof(tmp)); /* TODO: bring in libutil? */
+</a><a href="#h0-3-4" id="h0-3-4" class="i">+	strlcpy(tmp, path, sizeof(tmp));
+</a> 	for (p = tmp + (tmp[0] == &apos;/&apos;); *p; p++) {
+ 		if (*p != &apos;/&apos;)
+ 			continue;
+<a href="#h0-4" id="h0-4" class="h">@@ -283,7 +280,6 @@ writeblobhtml(FILE *fp, const git_blob *blob)
+</a> void
+ printcommit(FILE *fp, struct commitinfo *ci)
+ {
+<a href="#h0-4-3" id="h0-4-3" class="d">-	/* TODO: show tag when commit has it */
+</a> 	fprintf(fp, &quot;&lt;b&gt;commit&lt;/b&gt; &lt;a href=\&quot;%scommit/%s.html\&quot;&gt;%s&lt;/a&gt;\n&quot;,
+ 		relpath, ci-&gt;oid, ci-&gt;oid);
+ 
+<a href="#h0-5" id="h0-5" class="h">@@ -363,7 +359,7 @@ printshowfile(struct commitinfo *ci)
+</a> 	for (i = 0; i &lt; ndeltas; i++) {
+ 		if (git_patch_from_diff(&amp;patch, ci-&gt;diff, i)) {
+ 			git_patch_free(patch);
+<a href="#h0-5-3" id="h0-5-3" class="d">-			break; /* TODO: handle error */
+</a><a href="#h0-5-4" id="h0-5-4" class="i">+			break;
+</a> 		}
+ 
+ 		delta = git_patch_get_delta(patch);
+<a href="#h0-6" id="h0-6" class="h">@@ -381,7 +377,7 @@ printshowfile(struct commitinfo *ci)
+</a> 		nhunks = git_patch_num_hunks(patch);
+ 		for (j = 0; j &lt; nhunks; j++) {
+ 			if (git_patch_get_hunk(&amp;hunk, &amp;nhunklines, patch, j))
+<a href="#h0-6-3" id="h0-6-3" class="d">-				break; /* TODO: handle error ? */
+</a><a href="#h0-6-4" id="h0-6-4" class="i">+				break;
+</a> 
+ 			fprintf(fp, &quot;&lt;span class=\&quot;h\&quot;&gt;%s&lt;/span&gt;\n&quot;, hunk-&gt;header);
+ 
+<a href="#h0-7" id="h0-7" class="h">@@ -426,7 +422,6 @@ writelog(FILE *fp)
+</a> 	git_revwalk_sorting(w, GIT_SORT_TIME);
+ 	git_revwalk_simplify_first_parent(w);
+ 
+<a href="#h0-7-3" id="h0-7-3" class="d">-	/* TODO: also make &quot;expanded&quot; log ? (with message body) */
+</a> 	fputs(&quot;&lt;table id=\&quot;log\&quot;&gt;&lt;thead&gt;\n&lt;tr&gt;&lt;td&gt;Age&lt;/td&gt;&lt;td&gt;Commit message&lt;/td&gt;&quot;
+ 		  &quot;&lt;td&gt;Author&lt;/td&gt;&lt;td&gt;Files&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;+&lt;/td&gt;&quot;
+ 		  &quot;&lt;td class=\&quot;num\&quot;&gt;-&lt;/td&gt;&lt;/tr&gt;\n&lt;/thead&gt;&lt;tbody&gt;\n&quot;, fp);
+<a href="#h0-8" id="h0-8" class="h">@@ -644,7 +639,6 @@ writefilestree(FILE *fp, git_tree *tree, const char *path)
+</a> 		filesize = git_blob_rawsize((git_blob *)obj);
+ 
+ 		fputs(&quot;&lt;tr&gt;&lt;td&gt;&quot;, fp);
+<a href="#h0-8-3" id="h0-8-3" class="d">-		/* TODO: fancy print, like: &quot;-rw-r--r--&quot; */
+</a> 		fprintf(fp, &quot;%u&quot;, git_tree_entry_filemode_raw(entry));
+ 		fprintf(fp, &quot;&lt;/td&gt;&lt;td&gt;&lt;a href=\&quot;%sfile/&quot;, relpath);
+ 		xmlencode(fp, filename, strlen(filename));
+</pre>
+</div>
+</body>
+</html>

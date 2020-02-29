@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>filldb.py - 0git - 0git - a list of git repositories on ZeroNet
+</title>
+<link rel="icon" type="image/png" href="../../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="0git.git Atom Feed" href="../../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../../"><img src="../../logo.png" alt="" width="32" height="32" /></a></td><td><h1>0git</h1><span class="desc">0git - a list of git repositories on ZeroNet
+</span></td></tr><tr class="url"><td></td><td>git clone <a href="http://127.0.0.1:43110/0git.bit/0git.git">http://127.0.0.1:43110/0git.bit/0git.git</a></td></tr><tr><td></td><td>
+<a href="../../log.html">Log</a> | <a href="../../files.html">Files</a> | <a href="../../refs.html">Refs</a> | <a href="../../file/README.md.html">README</a> | <a href="../../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<p> filldb.py (2249B)</p><hr/><table id="blob"><tr><td class="num"><pre>
+<a href="#l1" id="l1">1</a>
+<a href="#l2" id="l2">2</a>
+<a href="#l3" id="l3">3</a>
+<a href="#l4" id="l4">4</a>
+<a href="#l5" id="l5">5</a>
+<a href="#l6" id="l6">6</a>
+<a href="#l7" id="l7">7</a>
+<a href="#l8" id="l8">8</a>
+<a href="#l9" id="l9">9</a>
+<a href="#l10" id="l10">10</a>
+<a href="#l11" id="l11">11</a>
+<a href="#l12" id="l12">12</a>
+<a href="#l13" id="l13">13</a>
+<a href="#l14" id="l14">14</a>
+<a href="#l15" id="l15">15</a>
+<a href="#l16" id="l16">16</a>
+<a href="#l17" id="l17">17</a>
+<a href="#l18" id="l18">18</a>
+<a href="#l19" id="l19">19</a>
+<a href="#l20" id="l20">20</a>
+<a href="#l21" id="l21">21</a>
+<a href="#l22" id="l22">22</a>
+<a href="#l23" id="l23">23</a>
+<a href="#l24" id="l24">24</a>
+<a href="#l25" id="l25">25</a>
+<a href="#l26" id="l26">26</a>
+<a href="#l27" id="l27">27</a>
+<a href="#l28" id="l28">28</a>
+<a href="#l29" id="l29">29</a>
+<a href="#l30" id="l30">30</a>
+<a href="#l31" id="l31">31</a>
+<a href="#l32" id="l32">32</a>
+<a href="#l33" id="l33">33</a>
+<a href="#l34" id="l34">34</a>
+<a href="#l35" id="l35">35</a>
+<a href="#l36" id="l36">36</a>
+<a href="#l37" id="l37">37</a>
+<a href="#l38" id="l38">38</a>
+<a href="#l39" id="l39">39</a>
+<a href="#l40" id="l40">40</a>
+<a href="#l41" id="l41">41</a>
+<a href="#l42" id="l42">42</a>
+<a href="#l43" id="l43">43</a>
+<a href="#l44" id="l44">44</a>
+<a href="#l45" id="l45">45</a>
+<a href="#l46" id="l46">46</a>
+<a href="#l47" id="l47">47</a>
+<a href="#l48" id="l48">48</a>
+<a href="#l49" id="l49">49</a>
+<a href="#l50" id="l50">50</a>
+<a href="#l51" id="l51">51</a>
+<a href="#l52" id="l52">52</a>
+<a href="#l53" id="l53">53</a>
+<a href="#l54" id="l54">54</a>
+<a href="#l55" id="l55">55</a>
+<a href="#l56" id="l56">56</a>
+<a href="#l57" id="l57">57</a>
+<a href="#l58" id="l58">58</a>
+<a href="#l59" id="l59">59</a>
+<a href="#l60" id="l60">60</a>
+<a href="#l61" id="l61">61</a>
+<a href="#l62" id="l62">62</a>
+<a href="#l63" id="l63">63</a>
+<a href="#l64" id="l64">64</a>
+<a href="#l65" id="l65">65</a>
+<a href="#l66" id="l66">66</a>
+<a href="#l67" id="l67">67</a>
+<a href="#l68" id="l68">68</a>
+<a href="#l69" id="l69">69</a>
+<a href="#l70" id="l70">70</a>
+<a href="#l71" id="l71">71</a>
+<a href="#l72" id="l72">72</a>
+<a href="#l73" id="l73">73</a>
+</pre></td><td><pre>
+import json, random, string, os
+
+topic_uris = []
+comment_uris = []
+
+for user_id in range(500):
+	# Add user to fake content.json
+	user_dir = &apos;&apos;.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(34))
+	os.mkdir(&quot;users/%s&quot; % user_dir)
+	# Fake data.json
+	data_json = {
+		&quot;next_topic_id&quot;: random.randint(0,1000),
+		&quot;topic&quot;: [],
+		&quot;topic_vote&quot;: {},
+		&quot;next_comment_id&quot;: random.randint(0,1000),
+		&quot;comment&quot;: {},
+		&quot;comment_vote&quot;: {}
+	}
+
+	# Fake topics: 0-10pcs
+	for i in range(random.randint(0,10)):
+		topic_uri = &quot;%s_%s&quot; % (i, user_dir)
+		topic_uris.append(topic_uri)
+		data_json[&quot;topic&quot;].append({
+			&quot;topic_id&quot;: i,
+			&quot;title&quot;: &quot;Test topic %s&quot; % topic_uri,
+			&quot;body&quot;: &quot;Test message! &quot;*random.randint(0,100),
+			&quot;added&quot;: random.randint(0, 1423439701)
+		})	
+
+	# Fake topic upvotes
+	for i in range(random.randint(0,100)):
+		data_json[&quot;topic_vote&quot;][random.choice(topic_uris)] = 1	
+
+	# Fake comments: 0-100pcs
+	for i in range(random.randint(0,100)):
+		comment_uri = &quot;%s_%s&quot; % (i, user_dir)
+		comment_uris.append(comment_uri)
+		topic_uri = random.choice(topic_uris)
+		if topic_uri not in data_json[&quot;comment&quot;]:
+			data_json[&quot;comment&quot;][topic_uri] = []
+		data_json[&quot;comment&quot;][topic_uri].append({
+			&quot;comment_id&quot;: i,
+			&quot;body&quot;: &quot;Test message! &quot;*random.randint(0,100),
+			&quot;added&quot;: random.randint(0, 1423439701)
+		})	
+
+	# Fake comment upvotes
+	for i in range(random.randint(0,100)):
+		data_json[&quot;comment_vote&quot;][random.choice(comment_uris)] = 1	
+	
+	# Save data.json
+	json.dump(data_json, open(&quot;users/%s/data.json&quot; % user_dir, &quot;wb&quot;), indent=4)
+
+	# Save content.json
+	content_json = {
+		&quot;cert_auth_type&quot;: &quot;web&quot;,
+		&quot;cert_user_id&quot;: &quot;fakeuser%s@zeroid.bit&quot; % user_id,
+		&quot;cert_sign&quot;: &quot;GxFy7o9PLalScvP3S7OaWzRFUYYaR3hx8KXUXDpHP1usZSwqd0qQ7D5BT5QOxOMeqnjzEuX9r/eHO4OcL3BSmz8=&quot;,
+		  &quot;files&quot;: {
+		    &quot;data.json&quot;: {
+		      &quot;sha512&quot;: &quot;7be9e5e83ae36885ea036e47c1d7c81e950bd841e402a6367f4c154308b31b68&quot;, 
+		      &quot;size&quot;: 169
+		    }
+		  }, 
+  		&quot;modified&quot;: 1429329453.758, 
+  		&quot;signs&quot;: {
+    	 &quot;13mF85kC4dWcsiUZYqq77E5fnQizLdNJHE&quot;: &quot;GxFy7o9PLalScvP3S7OaWzRFUYYaR3hx8KXUXDpHP1usZSwqd0qQ7D5BT5QOxOMeqnjzEuX9r/eHO4OcL3BSmz8=&quot;
+  		}
+  	}
+	json.dump(content_json, open(&quot;users/%s/content.json&quot; % user_dir, &quot;wb&quot;), indent=4)	
+	print &quot;.&quot;,
+
+</pre></td></tr></table>
+</div>
+</body>
+</html>

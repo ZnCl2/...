@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>ESP8266</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<link rel="stylesheet" href="../../css/global.css">
+</head>
+
+<body>
+	
+<header>
+  <a href="../../index.html"><img src="../../img/logo.png" width="55"></a><br>ChronCache	
+</header>
+	
+<nav>
+	<hr>
+  <p><a href="../../talk.html">архив</a> <tt>|</tt> <a href="../../help.html">помощь</a> <tt>|</tt> <a href="/1Q9LVNLD1ghusGxpiwjYnVjPsxD5xGTGc7/donate/index.html">донат</a></p>
+	<hr>
+</nav>
+
+<article>
+	
+<acide><p>Это резервная страница от 11.03.2019 / <a href="/1diyHbGrjKR65DLVpaLoMYsiwqiQYskKD/?Topic:1535871645_1PniNzyi8fygvwyBaLpA9oBDVWZ5fXuJUw/">оригинал</a></p></acide>
+
+<section>
+	<h1>ESP8266 &#60;-> Arduino Mega для RGB LCD матрицы</h1>
+	<p><b>balancer73</b> <tt>(Sep 02, 2018)</tt>:</p>
+	<blockquote><a href="/1ApsfuUfnyJm19qZguDzzqj7se41Ggxzrt/?Post:17:Px+marices+with+ESP8266#comment_1_1Nyvgpgzk7BEEHs1TeTRwAtEDhF2txevSe">trooper</a>: По какому протоколу Вы передавали команды на Мега? Я так понимаю, какой то самописный? Интересно было бы взглянуть.</blockquote>
+	<p>Да, самописный. В идеале надо сделать под Мегу простенький Форт, тогда можно будет очень гибко управлять, Форт для управления по последовательному каналу просто идеален, но я очень мало этим занимаюсь сейчас, так что слепил простейший протокол на базе JSON. Т.е. ESP8266 запихивает команты в JSON-формате, Mega парсит.</p>
+	<figure><img src="../../temp/017.jpg" alt="" style="max-width:300px"></figure>
+	<p><u>http://127.0.0.1:43110/1ApsfuUfnyJm19qZguDzzqj7se41Ggxzrt/?Post:7:RGB+LED+matrix+64x32</u></p>
+	<p>Команды вида:</p>
+	<div class="code"><code>[{c:sz,s:1},{c:c,r:0,g:0,b:0},{c:go,x:2,y:24},{c:fr,x:0,y:24,w:32,h:8},{c:c,r:0,g:0,b:3},{c:p,t:\"24'c\"}]</code></div>
+	<p>Смысл, типа:</p>
+	<ul>
+		<li><code>{c:sz,s:1}</code>: command: <code>size</code> (размер шрифта); <code>size=1</code>
+		<li><code>{c:c,r:0,g:0,b:0}</code>: <code>c</code> = <code>color</code>, цвет. Аргументы - R, G и B от 0 до 7.
+		<li><code>{c:go,x:2,y:24}</code>: <code>go</code> = позиционирование курсора в пикселах
+		<li><code>{c:fr,x:0,y:24,w:32,h:8}</code>: <code>fr</code> = frame, рисовать заполненный прямоугольник по координатам x, y размерами w, h. В данном случае — очистка экрана (ранее — чёрный цвет).
+		<li><code>{c:c,r:0,g:0,b:3}</code> — делаем бледный синий цвет
+		<li><code>{c:p,t:"24'c"}</code> — <code>p</code> = print, печать текста.
+	</ul>
+	<p>Парсер очень примитивный:</p>
+	<div class="code">
+		<code>jsonBuffer.clear();
+JsonArray&amp; root = jsonBuffer.parseArray(str);
+
+if(!root.success())
+{
+  Serial.println("parseObject() failed");
+  continue;
+}
+
+for(auto &amp;cmd : root)
+{
+  String command = cmd["c"];
+
+  if(command == "p")
+      cmd_print(cmd);
+  else if(command == "go")
+      cmd_goxy(cmd);
+  else if(command == "c")
+      cmd_color(cmd);
+  else if(command == "cls")
+      cmd_cls(cmd);
+  else if(command == "hl")
+      cmd_hline(cmd);
+  else if(command == "vl")
+      cmd_vline(cmd);
+  else if(command == "dr")
+      cmd_dr(cmd);
+  else if(command == "fr")
+      cmd_fr(cmd);
+  else if(command == "sz")
+      cmdTextSize(cmd);
+  else
+      Serial.println("Unknown command: ["+command+"]");
+}</code>
+	</div>
+	<p>Косяков пока много, всё руки не доходят допилить как надо... Как допилю, надо будет и кодом поделиться, можно сразу в ZN в Git Center :)</p>
+</section>
+	
+<p class="dr">Sep 02, 2018 / DIY.Talk (Сделай сам)</p>
+	
+</article>		
+		
+</body>
+</html>

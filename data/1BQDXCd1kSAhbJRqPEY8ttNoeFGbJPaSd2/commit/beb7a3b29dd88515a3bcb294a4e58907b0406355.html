@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>add diffstat - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/beb7a3b29dd88515a3bcb294a4e58907b0406355.html">beb7a3b29dd88515a3bcb294a4e58907b0406355</a>
+<b>parent</b> <a href="../commit/a95a439aaa7d048c25e988b0d9770f5040f0a17f.html">a95a439aaa7d048c25e988b0d9770f5040f0a17f</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Mon Dec  7 14:26:35 +0100
+
+add diffstat
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">urmoms.c</a></td><td> | </td><td class="num">31</td><td><span class="i">++++++++++++++++++++++++</span><span class="d">-------</span></td></tr>
+</table>1 file changed, 24 insertions(+), 7 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/urmoms.c.html">urmoms.c</a> b/<a href="../file/urmoms.c.html">urmoms.c</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -186,16 +186,19 @@ printshowfile(git_commit *commit)
+</a> 	git_tree *commit_tree = NULL, *parent_tree = NULL;
+ 	git_patch *patch = NULL;
+ 	git_diff *diff = NULL;
+<a href="#h0-0-3" id="h0-0-3" class="i">+	git_buf diffstatsbuf;
+</a><a href="#h0-0-4" id="h0-0-4" class="i">+	git_diff_stats *diffstats = NULL;
+</a> 	size_t i, j, k, ndeltas, nhunks = 0, nhunklines = 0;
+ 	char buf[GIT_OID_HEXSZ + 1], path[PATH_MAX];
+ 	FILE *fp;
+ 	int error;
+ 
+ 	git_oid_tostr(buf, sizeof(buf), git_commit_id(commit));
+<a href="#h0-0-11" id="h0-0-11" class="d">-
+</a> 	snprintf(path, sizeof(path), &quot;commit/%s.html&quot;, buf);
+ 	fp = efopen(path, &quot;w+b&quot;);
+ 
+<a href="#h0-0-15" id="h0-0-15" class="i">+	memset(&amp;diffstatsbuf, 0, sizeof(diffstatsbuf));
+</a><a href="#h0-0-16" id="h0-0-16" class="i">+
+</a> 	writeheader(fp);
+ 	printcommit(fp, commit);
+ 
+<a href="#h0-1" id="h0-1" class="h">@@ -205,16 +208,25 @@ printshowfile(git_commit *commit)
+</a> 
+ 	error = git_commit_tree(&amp;commit_tree, commit);
+ 	if (error)
+<a href="#h0-1-3" id="h0-1-3" class="d">-		return;
+</a><a href="#h0-1-4" id="h0-1-4" class="i">+		goto err;
+</a> 	error = git_commit_tree(&amp;parent_tree, parent);
+ 	if (error)
+<a href="#h0-1-7" id="h0-1-7" class="d">-		return;
+</a><a href="#h0-1-8" id="h0-1-8" class="d">-
+</a><a href="#h0-1-9" id="h0-1-9" class="i">+		goto err;
+</a> 	error = git_diff_tree_to_tree(&amp;diff, repo, commit_tree, parent_tree, NULL);
+ 	if (error)
+<a href="#h0-1-12" id="h0-1-12" class="d">-		return;
+</a><a href="#h0-1-13" id="h0-1-13" class="d">-
+</a><a href="#h0-1-14" id="h0-1-14" class="d">-	/* TODO: diff stat (files list and insertions/deletions) */
+</a><a href="#h0-1-15" id="h0-1-15" class="i">+		goto err;
+</a><a href="#h0-1-16" id="h0-1-16" class="i">+
+</a><a href="#h0-1-17" id="h0-1-17" class="i">+	/* diff stat */
+</a><a href="#h0-1-18" id="h0-1-18" class="i">+	if (!git_diff_get_stats(&amp;diffstats, diff)) {
+</a><a href="#h0-1-19" id="h0-1-19" class="i">+		if (!git_diff_stats_to_buf(&amp;diffstatsbuf, diffstats,
+</a><a href="#h0-1-20" id="h0-1-20" class="i">+			GIT_DIFF_STATS_FULL | GIT_DIFF_STATS_SHORT | GIT_DIFF_STATS_NUMBER | GIT_DIFF_STATS_INCLUDE_SUMMARY, 80)) {
+</a><a href="#h0-1-21" id="h0-1-21" class="i">+			fputs(&quot;&lt;hr/&gt;&quot;, fp);
+</a><a href="#h0-1-22" id="h0-1-22" class="i">+			fprintf(fp, &quot;Diffstat:\n&quot;);
+</a><a href="#h0-1-23" id="h0-1-23" class="i">+			fputs(diffstatsbuf.ptr, fp);
+</a><a href="#h0-1-24" id="h0-1-24" class="i">+		}
+</a><a href="#h0-1-25" id="h0-1-25" class="i">+		git_diff_stats_free(diffstats);
+</a><a href="#h0-1-26" id="h0-1-26" class="i">+	}
+</a><a href="#h0-1-27" id="h0-1-27" class="i">+	fputs(&quot;&lt;hr/&gt;&quot;, fp);
+</a> 
+ 	ndeltas = git_diff_num_deltas(diff);
+ 	for (i = 0; i &lt; ndeltas; i++) {
+<a href="#h0-2" id="h0-2" class="h">@@ -262,6 +274,11 @@ printshowfile(git_commit *commit)
+</a> 
+ 	writefooter(fp);
+ 	fclose(fp);
+<a href="#h0-2-3" id="h0-2-3" class="i">+	return;
+</a><a href="#h0-2-4" id="h0-2-4" class="i">+
+</a><a href="#h0-2-5" id="h0-2-5" class="i">+err:
+</a><a href="#h0-2-6" id="h0-2-6" class="i">+	git_buf_free(&amp;diffstatsbuf);
+</a><a href="#h0-2-7" id="h0-2-7" class="i">+	fclose(fp);
+</a> }
+ 
+ int
+</pre>
+</div>
+</body>
+</html>

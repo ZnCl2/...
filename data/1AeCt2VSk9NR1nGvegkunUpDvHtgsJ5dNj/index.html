@@ -1,0 +1,244 @@
+
+<!DOCTYPE html>
+
+<html>
+<head>
+ <title>rDany - Chatbot</title>
+ <meta charset="utf-8">
+ <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+ <base href="" target="_top" id="base">
+ <script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+</head>
+<body>
+
+<div>
+<h1>rDany</h1>
+
+<p><img src="avatar.png" alt="rDany"/> Hola! Busco amigos con quienes charlar y compartir 😉</p>
+
+<p>Mensaje de <a href="#Select+user" id="select_user" onclick='return page.selectUser()'>(Aguarda unos segundos, conectando a ZeroNet)</a>:<br><input type="text" id="message" onkeypress="if (event.keyCode == 13) page.sendMessage()"></p>
+</div>
+
+<div id="advanced" style="font-size: 0.8em">
+<p>Por que yo estoy diciendo esto? (opcional):<br><input type="text" id="my_background"></p>
+<p>Por que rDany me dijo eso? (opcional):<br><input type="text" id="hir_background"></p>
+<p>Nivel de mis emociones (opcional):<br>
+Felicidad: <input class="emotion" type="number" id="me_happy" value="0" min="0" max="100">
+Entuciasmo: <input class="emotion" type="number" id="me_excited" value="0" min="0" max="100">
+Ternura: <input class="emotion" type="number" id="me_tender" value="0" min="0" max="100">
+Miedo: <input class="emotion" type="number" id="me_scared" value="0" min="0" max="100">
+Enojo: <input class="emotion" type="number" id="me_angry" value="0" min="0" max="100">
+Tristeza: <input class="emotion" type="number" id="me_sad" value="0" min="0" max="100">
+</p>
+<p>Nivel de las emociones de rDany (opcional):<br>
+Felicidad: <input class="emotion" type="number" id="ze_happy" value="0" min="0" max="100">
+Entuciasmo: <input class="emotion" type="number" id="ze_excited" value="0" min="0" max="100">
+Ternura: <input class="emotion" type="number" id="ze_tender" value="0" min="0" max="100">
+Miedo: <input class="emotion" type="number" id="ze_scared" value="0" min="0" max="100">
+Enojo: <input class="emotion" type="number" id="ze_angry" value="0" min="0" max="100">
+Tristeza: <input class="emotion" type="number" id="ze_sad" value="0" min="0" max="100">
+</p>
+</div>
+
+<div>
+<p><input type="button" id="send" value="¡Enviar!" onclick="return page.sendMessage()"/></p>
+<p><a href="#Reload" id="reload" onclick='return page.loadMessages()'>Load messages</a></p>
+<p id="recipient"></p>
+<p id="debug"></p>
+<p style="font-size:0.8em">IMPORTANTE: Todo lo que se publica en ZeroNet (incluyendo los mensajes de este chat) es publico! Ten cuidado con la informacion que brindas.<br>
+Las respuestas pueden tomar tiempo, cada mensaje es revisado por un humano para asegurar que la conversacion tenga sentido.</p>
+<ul id="messages">
+ <li></li>
+</ul>
+</div>
+
+<script type="text/javascript" src="js/ZeroFrame.js"></script>
+
+<script>
+class rDanyChat extends ZeroFrame {
+
+    //recipient = ""
+
+    addMessage (username, message) {
+        //.body,  messages[i].recipient
+        var msgclass = ""
+        if (username == "eibriel@zeroid.bit") {
+            username = "rDany"
+            msgclass = "rdanymsg"
+        }
+        var message_escaped = message.body.replace(/</g, "&lt;").replace(/>/g, "&gt;")  // Escape html tags in the message
+        var info = ""
+        if (this.site_info.cert_user_id == "eibriel@zeroid.bit" && username == "rDany") {
+            info = "<br>("+username+":"+message.my_background+")("+message.recipient+":"+message.hir_background+")"
+            info = info + "<br>H:" + message.me_happy + " E:" + message.me_excited + " T:" + message.me_tender + " Sc:" + message.me_scared + " A:" + message.me_angry + " Sa:" + message.me_sad
+            info = info + "<br>H:" + message.ze_happy + " E:" + message.ze_excited + " T:" + message.ze_tender + " Sc:" + message.ze_scared + " A:" + message.ze_angry + " Sa:" + message.ze_sad
+        }
+        this.messages.innerHTML += "<li><b><a class=\"" + msgclass + "\" href=\"#Recipient\" id=\"recipient\" onclick='return page.setRecipient(\"" + username + "\")'>" + username + "</a></b> (" + message.recipient + "): " + message_escaped + info +"</li>"
+        //<p><a href="#Recipient" id="recipient" onclick='return page.setRecipient()'></a></p>
+    }
+
+    onOpenWebsocket () {
+        this.messages = document.getElementById("messages")
+        //this.addMessage("System", "Ready to call ZeroFrame API!", "")
+
+        this.cmd("siteInfo", {}, (site_info) => {
+            if (site_info.cert_user_id)
+                document.getElementById("select_user").innerText = site_info.cert_user_id
+            this.site_info = site_info
+            this.loadMessages()
+        })
+        //this.loadMessages()
+    }
+
+    selectUser () {
+        this.cmd("certSelect", {accepted_domains: ["zeroid.bit","zeroverse.bit"], "accept_any": true})
+        return false
+    }
+
+    onRequest (cmd, message) {
+        if (cmd == "setSiteInfo") {
+            if (message.params.cert_user_id) {
+                document.getElementById("select_user").innerHTML = message.params.cert_user_id
+            } else
+                document.getElementById("select_user").innerHTML = "(Haz click aqui para seleccionar un usuario)"
+            this.site_info = message.params  // Save site info data to allow access it later
+
+            // Reload messages if new file arrives
+            if (message.params.event[0] == "file_done")
+                this.loadMessages()
+        }
+    }
+
+    sendMessage () {
+        if (!this.site_info.cert_user_id) {  // No account selected, display error
+            this.cmd("wrapperNotification", ["info", "Please, select your account."])
+            return false
+        }
+
+        if (document.getElementById("message").value=="") {
+            return false
+        }
+
+        // This is our data file path
+        var inner_path = "data/users/" + this.site_info.auth_address + "/data.json"
+
+        // Load our current messages
+        this.cmd("fileGet", {"inner_path": inner_path, "required": false}, (data) => {
+            if (data)  // Parse current data file
+                var data = JSON.parse(data)
+            else  // Not exists yet, use default data
+                var data = { "message": [] }
+
+            if (this.site_info.cert_user_id != "eibriel@zeroid.bit") {
+                this.recipient = "rdany"
+            }
+
+            // Add the new message to data
+            data.message.push({
+                "body": document.getElementById("message").value,
+                "me_happy": parseInt(document.getElementById("me_happy").value),
+                "me_excited": parseInt(document.getElementById("me_excited").value),
+                "me_tender": parseInt(document.getElementById("me_tender").value),
+                "me_scared": parseInt(document.getElementById("me_scared").value),
+                "me_angry": parseInt(document.getElementById("me_angry").value),
+                "me_sad": parseInt(document.getElementById("me_sad").value),
+                "ze_happy": parseInt(document.getElementById("ze_happy").value),
+                "ze_excited": parseInt(document.getElementById("ze_excited").value),
+                "ze_tender": parseInt(document.getElementById("ze_tender").value),
+                "ze_scared": parseInt(document.getElementById("ze_scared").value),
+                "ze_angry": parseInt(document.getElementById("ze_angry").value),
+                "ze_sad": parseInt(document.getElementById("ze_sad").value),
+                "my_background": document.getElementById("my_background").value,
+                "hir_background": document.getElementById("hir_background").value,
+                "ze_impostor": 0,
+                "requested_action": "",
+                "action_parameters": "",
+                "recipient": this.recipient,
+                "date_added": Date.now()
+            })
+
+            // Encode data array to utf8 json text
+            var json_raw = unescape(encodeURIComponent(JSON.stringify(data, undefined, '\t')))
+
+            // Write file to disk
+            this.cmd("fileWrite", [inner_path, btoa(json_raw)], (res) => {
+                this.loadMessages()
+                if (res == "ok") {
+                    // Reset the message input
+                    document.getElementById("message").value = ""
+                    document.getElementById("my_background").value = ""
+                    document.getElementById("hir_background").value = ""
+                    document.getElementById("me_happy").value = 0
+                    document.getElementById("me_excited").value = 0
+                    document.getElementById("me_tender").value = 0
+                    document.getElementById("me_scared").value = 0
+                    document.getElementById("me_angry").value = 0
+                    document.getElementById("me_sad").value = 0
+                    document.getElementById("ze_happy").value = 0
+                    document.getElementById("ze_excited").value = 0
+                    document.getElementById("ze_tender").value = 0
+                    document.getElementById("ze_scared").value = 0
+                    document.getElementById("ze_angry").value = 0
+                    document.getElementById("ze_sad").value = 0
+                    // Publish the file to other users
+                    this.cmd("sitePublish", {"inner_path": inner_path})
+                } else {
+                    this.cmd("wrapperNotification", ["error", "File write error: #{res}"])
+                }
+            })
+        })
+
+        return false
+    }
+
+    setRecipient (recipient) {
+        this.recipient = recipient
+        document.getElementById("recipient").innerHTML = this.recipient
+        return false
+    }
+
+    loadMessages () {
+        if (!this.site_info || !this.site_info.cert_user_id) {
+            return
+        }
+        var sql_cmd =  ""
+        if (this.site_info.cert_user_id != "eibriel@zeroid.bit") {
+            sql_cmd = "SELECT * FROM message LEFT JOIN json USING (json_id) WHERE ((cert_user_id=\"eibriel@zeroid.bit\" AND recipient=\""+this.site_info.cert_user_id+"\") OR (cert_user_id=\""+this.site_info.cert_user_id+"\" AND recipient=\"rdany\")) ORDER BY date_added DESC"
+            //document.getElementById("debug").innerHTML = sql_cmd
+        } else
+            sql_cmd = "SELECT * FROM message LEFT JOIN json USING (json_id) ORDER BY date_added DESC"
+        this.cmd("dbQuery", [sql_cmd], (messages) => {
+            document.getElementById("messages").innerHTML = ""  // Always start with empty messages
+            for (var i=0; i < messages.length; i++) {
+                this.addMessage(messages[i].cert_user_id, messages[i])
+            }
+            //this.setRecipient(messages[0].cert_user_id)
+        })
+        return false
+    }
+
+}
+
+page = new rDanyChat()
+</script>
+
+
+<style>
+div { font-family: monospace; line-height: 1.5em; font-size: 13px; vertical-align: middle; }-
+body { background-color: white; }
+input#message,input#my_background,input#hir_background  { padding: 5px; width: 50%;  }
+input#send { height: 34px; margin-left: -2px; }
+ul { padding: 0px; }
+li { list-style-type: none; border-top: 1px solid #eee; padding: 5px 0px; }
+li:nth-child(odd) { background-color: #F9FAFD; }
+li b { color: #3F51B5; }
+.rdanymsg {
+    color: green;
+}
+.emotion {
+    width: 3em;
+}
+</style>
+
+</body>
+</html>

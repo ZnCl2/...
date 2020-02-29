@@ -1,0 +1,73 @@
+
+<!DOCTYPE html>
+
+<html>
+<head>
+ <title>New ZeroNet site!</title>
+ <meta charset="utf-8">
+ <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+ <base href="" target="_top" id="base">
+ <script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+</head>
+
+<body>
+
+<center>
+	<table width="85%"> 
+		<tbody>
+			<tr align="center" class="hd" valign="top">
+				<th><a href="./">Home</a></th>
+				<th><a href="./discuss.html">Discuss</a></th>
+				<th><a href="./problem.html">Problem</a></th>
+				<th><a href="./submission.html">Submission</a></th>
+				<th><a href="#Select+user" id="select_user" onclick='return page.selectUser()'>Login</a></th>
+			</tr>
+		</tbody>
+	</table>
+</center>
+
+<center>
+
+	<ul id="messages">
+		Welcome to Zero Online Judge!
+	</ul>
+	<script type="text/javascript" src="js/ZeroFrame.js"></script>
+
+	<script>
+	class ZOJHome extends ZeroFrame {
+		
+		selectUser () {
+			this.cmd("certSelect", {accepted_domains: ["zeroid.bit"]})
+			return false
+		}
+		onRequest (cmd, message) {
+			if (cmd == "setSiteInfo") {
+				if (message.params.cert_user_id)
+					document.getElementById("select_user").innerHTML = message.params.cert_user_id
+				else
+					document.getElementById("select_user").innerHTML = "Select user"
+				this.site_info = message.params  // Save site info data to allow access it later
+
+				// Reload messages if new file arrives
+				if (message.params.event[0] == "file_done")
+					this.loadMessages()
+			}
+		}
+
+		onOpenWebsocket () {
+			this.messages = document.getElementById("messages")
+			this.cmd("siteInfo", {}, (site_info) => {
+				if (site_info.cert_user_id)
+					document.getElementById("select_user").innerText = site_info.cert_user_id
+				this.site_info = site_info
+			})		
+		}
+	}
+
+	page = new ZOJHome()
+	</script>
+	
+</center>	
+</body>
+
+</html>

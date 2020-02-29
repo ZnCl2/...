@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Пишем свой зайт с нуля: еще немного прокачиваем роутер</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<link rel="stylesheet" href="../../css/global.css">
+</head>
+
+<body>
+	
+<header>
+  <a href="../../index.html"><img src="../../img/logo.png" width="55"></a><br>ChronCache	
+</header>
+	
+<nav>
+	<hr>
+  <p><a href="../../blog.html">архив</a> <tt>|</tt> <a href="../../help.html">помощь</a> <tt>|</tt> <a href="/1Q9LVNLD1ghusGxpiwjYnVjPsxD5xGTGc7/donate/index.html">донат</a></p>
+	<hr>
+</nav>
+
+<article>
+	
+<acide><p>Это резервная страница от 06.03.2019 / <a href="/1CpGZyfbUBBV5uXUoY653wVoqZFRojbEzd/?Post:19">оригинал</a></p></acide>
+
+<section>
+	<h1>Пишем свой зайт с нуля: еще немного прокачиваем роутер</h1>
+	<p>Совсем маленькая заметка о том, как сделать наш роутер еще немного лучше!</p>
+	<p>Посмотрев на этот кошмар:</p>
+	<div class="code"><code>&lt;a :href="router.url('test', {param: 123})" @click="router.go('test', {param: 123}, $event)">Test link&lt;/a></code></div>
+	<p>Понял, что это очень сильно отличается от того, что я вижу при использовании Vue-router в обычном вебе и решил немного поправить данную несправедливость.</p>
+	<p>Добавим файл <code>components/router_link.js</code>:</p>
+	<div class="code">
+		<code>import router from 'router.js'
+
+function guardEvent(event) {
+  if (event &amp;&amp; (event.ctrlKey || event.metaKey)) return
+  if (event) event.preventDefault()
+  return true
+}
+
+export default {
+  name: 'router-link',
+  props: ['to', 'params'],
+  render: function(h) {
+    console.log(this.to, this.params)
+    let on = {
+      click: event => {
+        if (guardEvent(event)) {
+          router.go(this.to, this.params)
+        }
+      }
+    }
+    const data = {
+      on, attrs: {href: router.url(this.to, this.params)}
+    }
+    return h('a', data, this.$slots.default)
+  }
+}</code>
+	</div>
+	<p>А так же уберем строки из метода <code>go</code> нашего роутера:</p>
+	<div class="code">
+		<code>// В сигнатуре метода стоит убрать параметр event
+// ...
+if (event &amp;&amp; (event.ctrlKey || event.metaKey)) return
+if (event) event.preventDefault()
+// ...</code>
+	</div>
+	<p>Далее в наши компоненты мы заимпортируем наш свежеиспеченный <code>router_link.js</code> и начнем использовать его в разметке:</p>
+	<div class="code">
+		<code>import RouterLink from 'components/router_link.js'
+// ...
+export default {
+  // ...
+  components: { // ...
+    RouterLink
+  }
+}</code>
+	</div>
+	<div class="code"><code>&#60;router-link to="test" :params="{param: 123}">Test Link&#60;/router-link></code></div>
+	<p>Ну ведь гораздо приятнее же, не так ли?</p>
+	<h4>PS</h4>
+	<p>Да, я несколько задержииваюсь с дальнейшей разработкой, но не беда, я расковыряю детали по мерджеру и базам данных в ZeroNet и обязательно напишу об этом.</p>
+</section>
+	
+<hr><p>Комментарии:</p>
+	
+<section class="com">
+	<div>
+		<p><b>linxon:</b> <tt>(Jul 16, 2017)</tt><br>спасибо</p>
+	</div>
+	<div>
+		<p><b>coolplay:</b> <tt>(Feb 24, 2018)</tt><br><u>http://127.0.0.1:43110/18fvHT5oGbS1KaeedGpQS4wr8eQ1QD36Dn/</u></p>
+	</div>
+	<div>
+		<p><b>coolplay:</b> <tt>(Feb 26, 2018)</tt><br><u>http://127.0.0.1:43110/1NLFg344SMHsMMNZayCYcTvY4RStC7ELWX/</u></p>
+	</div>
+	<div>
+		<p><b>1230321:</b> <tt>(Jul 22, 2018)</tt><br>КУРТЯК<br>or<br>good woRK</p>
+	</div>
+	<div>
+		<p><b>alexum:</b> <tt>(Sep 15, 2019)</tt><br>Продолжения не будет?</p>
+	</div>
+	<div>
+		<p><b>gomzik:</b> <tt>(Dec 05, 2019)</tt><br><em><b>alexum:</b> Продолжения не будет?</em><br>Боюсь уже и нет, времени стало гораздо меньше, да и интерес именно к javascript пропал, после знакомства с Elm. Теперь я уже работаю как раз над возможностью создания зайтов на Elm <a href="/19ZNbKNRKFfL5nQHRs6h5L1zsoic87u55A">elm-zeronet</a></p>
+	</div>
+</section>
+	
+<p class="dr">Jul 13, 2017 / GomZik's Blog</p>
+	
+</article>		
+		
+</body>
+</html>

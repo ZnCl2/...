@@ -1,0 +1,60 @@
+{
+	"db_name": "db",
+	"db_file": "data/site/db.db",
+	"version": 2,
+	"maps": {
+		"data.json": {
+			"to_table": [
+				{"node":"video", "table":"video"},
+				{"node":"tag", "table":"tag"},
+				{"node":"tag2video", "table":"tag2video"}
+			]
+		}
+	},
+	"tables": {
+		"json": {
+			"cols": [
+				["json_id", "integer primary key autoincrement"],
+				["directory", "text"],
+				["file_name", "text"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX path ON json(directory, file_name)"],
+			"schema_changed": 1
+		},
+		"video": {
+			"cols": [
+				["id", "integer"],
+				["date", "integer"],
+				["title", "text"],
+				["length", "text"],
+				["prev_id", "integer"],
+				["next_id", "integer"],
+				["json_id", "integer references json(json_id)"]
+			],
+			"indexes": [
+				"CREATE UNIQUE INDEX video_id ON video(id)"
+			],
+			"schema_changed": 4
+		},
+		"tag": {
+			"cols": [
+				["id", "integer"],
+				["tag", "text"],
+				["json_id", "integer references json(json_id)"]
+			],
+			"indexes": [
+				"CREATE UNIQUE INDEX tag_id ON tag(id)"
+			],
+			"schema_changed": 3
+		},
+		"tag2video": {
+			"cols": [
+				["tag_id", "integer"],
+				["video_id", "integer"],
+				["json_id", "integer references json(json_id)"]
+			],
+			"indexes": [],
+			"schema_changed": 3
+		}
+	}
+}

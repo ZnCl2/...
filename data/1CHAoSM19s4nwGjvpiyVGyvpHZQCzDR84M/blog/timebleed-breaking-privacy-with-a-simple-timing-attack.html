@@ -1,0 +1,65 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>Kevin Froman's blog - Timebleed Breaking Privacy With a Simple Timing Attack</title>
+  <meta name='description' content='Kevin Froman's blog on security, programming, and other musings'>
+  <meta name='author' content='Kevin Froman'>
+  <link rel='icon' type='image/x-icon' href='/favicon.ico'>
+  <link rel='stylesheet' href='theme.css'>
+  <script src="https://widget.battleforthenet.com/widget.js" integrity="sha384-OzmvdVOIBjM9YAUmPdrxpGclC0fg2bTYlwv12prMWoF1y4osMdsZ1UvH1ufTqAQ3" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="wrapper">
+    <h1 id='siteTitle'><a href='index.html'>Kevin Froman's blog</a></h1>
+    
+<div id='myIntro' class='center'>Blog on security, programming, & other musings</div>
+    <div id='mainContent'><h2 id='postTitle'>Timebleed Breaking Privacy With a Simple Timing Attack</h2>
+        <div id='postDate' class='center'>2017-04-18</div><h2>TimeBleed: Simple Attack, Serious Issue</h2>
+<p><img alt="TimeBleed logo" src="./images/time-bleed-logo.svg.png" /></p>
+<h2>Background</h2>
+<p>While <a href="./tracking-ipfs-users-via-cache-probing.html">researching IPFS</a>, I realized that using a simple timing attack, attackers could IPFS' gateway to check what pages a user has accessed, and download unique pages for use as a 'supercookie'.</p>
+<p>Shortly after, I realized this attack would apply to the web in general, and could have serious implications for other networks/software.</p>
+<h2>The Attack</h2>
+<p>The attack is simple. A malicious website will simply send an XHR request (or a hidden img tag) to a website it wishes to test for. If the user has recently visited the requested website, the domain will resolve/respond faster than if they had not, due to DNS and other caching.</p>
+<p>The "same origin" policy does not prevent this, since requests can still be measured.</p>
+<h3>Whats the big deal?</h3>
+<p>Trackers, scammers, hackers, and anyone else could check if you have visited any given site recently.</p>
+<p>Scareware could use this to extort users who visit adult websites.</p>
+<p>While tracking is possible using normal 'web bugs', the target website needs to embed this themselves, and many browser extensions/settings will protect against them. TimeBleed is not so simple to prevent.</p>
+<h2>Tor Browser</h2>
+<p>Tor Browser effectively defends aganist this attack by properly isolating connections, <a href="https://www.torproject.org/projects/torbrowser/design/#identifier-linkability">see here for more information</a>.</p>
+<h2>Orfox</h2>
+<p><img alt="orfox logo" src="./images/orfox.png" /></p>
+<p>Orfox, the unofficial but most recommended browser for using Tor on Android devices, sadly does not defend against TimeBleed, which could be used to help correlate multiple connections. Orfox needs to use the unlinkability features specified in the Tor Browser draft.</p>
+<h2>Other Networks</h2>
+<p><a href="https://freenetproject.org/">Freenet</a>, <a href="https://zeronet.io/">ZeroNet</a> and <a href="https://geti2p.net/">I2P</a> are vulnerable to varying degrees.</p>
+<h3>Freenet</h3>
+<p><img alt="freenet log" src="./images/freenet.svg" /></p>
+<p>Freenet is affected by this the worst.</p>
+<p>Some Freenet "links" (keys) are consistant to every file, so an attacker could generate many links for files they are interested in checking for,or they could use site indexes/search engines to create a list.</p>
+<p>Like most of the other networks in this post, Freenet's default and most popular implementation ('FRED') uses an HTTP server to provide access to "websites" within the network.</p>
+<p>Although it is not perfect, Freenet does a decent job protecting users. Despite this, TimeBleed can be used to check a user's FRED for cached keys. An attacker could embed the TimeBleed script into normal web traffic, as web browsers do not prevent 3rd party requests to localhost servers.</p>
+<h3>ZeroNet</h3>
+<p><img alt="ZeroNet Logo" src="./images/zeronet.png" /></p>
+<p>ZeroNet is affected much in the same way as IPFS, with attackers being able to check what sites a person has in their client. Like IPFS, this is not a huge deal as nodes can already see who has what site, however ZeroNet nodes can also hide behind Tor, VPNs, etc. TimeBleed is potentially a way of bypassing that, and in addition it can be used as a supercookie by "sending" ZeroNet users unique sites, and checking for them later.</p>
+<p>I was getting somewhat conflicting results when testing ZeroNet, so anyone who tests ZeroNet for this themselves, please let me know what you find. I noticed that .bit domains are more reliable for detection than Bitcoin address websites.</p>
+<h3>I2P</h3>
+<p><img alt="I2P logo" src="./images/i2p.png" /></p>
+<p>I2P is affected in the same way as Orfox, however, in some cases it is permanent, as I2P has no concept of domains at the network level. Instead, I2P uses an 'addressbook' (similar to a hosts file) to map hostnames. If a user tries to visit a site not in their address book, I2P offers to use a 'jump service'. If the jump service finds the site for them, they have the option of adding it to their book.</p>
+<p>If the user chooses to do so, this will make the user's addressbook unique and therefore fingerprintable.</p>
+<h2>Proof of Concept</h2>
+<p>I have created a <a href="https://ChaosWebs.net/timebleed/">proof of concept page</a> with a tl;dr description of the issue.</p>
+<h2>Lessons Learned &amp; Mitigation</h2>
+<p><img alt="this is fine gif" src="./images/this-is-fine.gif" /></p>
+<p>It is very difficult to make a web based application anonymous. There is much room to slip up, and something as simple as how long a request response takes can give away a lot of information.</p>
+<p>Browser vendors should implement a setting to 'forget' cross origin request DNS connections/sessions. I think this is a long shot because they still enable 3rd party cookies by default...</p>
+<p>Users who want to prevent this attack should use the noscript + uMatrix addons, or Tor Browser. When using Orfox, restarting Orbot &amp; Orfox will close your tunnels and cache.</p><div class="center" style="margin-bottom: -25%; margin-top: 2em; border-radius: 5px; padding: 5px;"><span>Written by anonymous</span><br><br></div>
+    </div>
+  </div>
+  <div id="footer">
+    <footer>Powered by TinyGen<div id='socialLinks'><a class="socialLink" href="https://twitter.com/@beardog108"><img src="../images/twitter.png" alt="TWITTER"></a><a class="socialLink" href="https://github.com/beardog108"><img src="../images/github.png" alt="GITHUB"></a><a class="socialLink" href="beardog@firemail.cc"><img src="../images/email.png" alt="EMAIL"></a><a class="socialLink" href="https://keybase.io/beardog"><img src="../images/keybase.png" alt="KEYBASE"></a><a class="socialLink" href="feed.rss"><img src="../images/feed.png" alt="RSS feed"></a></div></footer>
+  </div>
+</body>
+</html>

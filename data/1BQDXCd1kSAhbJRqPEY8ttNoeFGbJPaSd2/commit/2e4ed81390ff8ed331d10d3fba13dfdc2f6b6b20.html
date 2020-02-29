@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>urmoms-index: kill some lines - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/2e4ed81390ff8ed331d10d3fba13dfdc2f6b6b20.html">2e4ed81390ff8ed331d10d3fba13dfdc2f6b6b20</a>
+<b>parent</b> <a href="../commit/75cba4e6fd3b32d5477312f0174f01d830a2d341.html">75cba4e6fd3b32d5477312f0174f01d830a2d341</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Sun Dec 20 21:13:54 +0100
+
+urmoms-index: kill some lines
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">urmoms-index.c</a></td><td> | </td><td class="num">104</td><td><span class="i">+++++++</span><span class="d">------------------------------------------------------------------------</span></td></tr>
+</table>1 file changed, 9 insertions(+), 95 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/urmoms-index.c.html">urmoms-index.c</a> b/<a href="../file/urmoms-index.c.html">urmoms-index.c</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -13,28 +13,6 @@
+</a> #include &quot;config.h&quot;
+ #include &quot;git2.h&quot;
+ 
+<a href="#h0-0-3" id="h0-0-3" class="d">-struct commitinfo {
+</a><a href="#h0-0-4" id="h0-0-4" class="d">-	const git_oid *id;
+</a><a href="#h0-0-5" id="h0-0-5" class="d">-
+</a><a href="#h0-0-6" id="h0-0-6" class="d">-	char oid[GIT_OID_HEXSZ + 1];
+</a><a href="#h0-0-7" id="h0-0-7" class="d">-	char parentoid[GIT_OID_HEXSZ + 1];
+</a><a href="#h0-0-8" id="h0-0-8" class="d">-
+</a><a href="#h0-0-9" id="h0-0-9" class="d">-	const git_signature *author;
+</a><a href="#h0-0-10" id="h0-0-10" class="d">-	const char *summary;
+</a><a href="#h0-0-11" id="h0-0-11" class="d">-	const char *msg;
+</a><a href="#h0-0-12" id="h0-0-12" class="d">-
+</a><a href="#h0-0-13" id="h0-0-13" class="d">-	git_diff_stats *stats;
+</a><a href="#h0-0-14" id="h0-0-14" class="d">-	git_diff       *diff;
+</a><a href="#h0-0-15" id="h0-0-15" class="d">-	git_commit     *commit;
+</a><a href="#h0-0-16" id="h0-0-16" class="d">-	git_commit     *parent;
+</a><a href="#h0-0-17" id="h0-0-17" class="d">-	git_tree       *commit_tree;
+</a><a href="#h0-0-18" id="h0-0-18" class="d">-	git_tree       *parent_tree;
+</a><a href="#h0-0-19" id="h0-0-19" class="d">-
+</a><a href="#h0-0-20" id="h0-0-20" class="d">-	size_t addcount;
+</a><a href="#h0-0-21" id="h0-0-21" class="d">-	size_t delcount;
+</a><a href="#h0-0-22" id="h0-0-22" class="d">-	size_t filecount;
+</a><a href="#h0-0-23" id="h0-0-23" class="d">-};
+</a><a href="#h0-0-24" id="h0-0-24" class="d">-
+</a> static git_repository *repo;
+ 
+ static const char *relpath = &quot;&quot;;
+<a href="#h0-1" id="h0-1" class="h">@@ -44,73 +22,6 @@ static char description[255] = &quot;Repositories&quot;;
+</a> static char name[255];
+ static char owner[255];
+ 
+<a href="#h0-1-3" id="h0-1-3" class="d">-void
+</a><a href="#h0-1-4" id="h0-1-4" class="d">-commitinfo_free(struct commitinfo *ci)
+</a><a href="#h0-1-5" id="h0-1-5" class="d">-{
+</a><a href="#h0-1-6" id="h0-1-6" class="d">-	if (!ci)
+</a><a href="#h0-1-7" id="h0-1-7" class="d">-		return;
+</a><a href="#h0-1-8" id="h0-1-8" class="d">-
+</a><a href="#h0-1-9" id="h0-1-9" class="d">-	git_diff_stats_free(ci-&gt;stats);
+</a><a href="#h0-1-10" id="h0-1-10" class="d">-	git_diff_free(ci-&gt;diff);
+</a><a href="#h0-1-11" id="h0-1-11" class="d">-	git_tree_free(ci-&gt;commit_tree);
+</a><a href="#h0-1-12" id="h0-1-12" class="d">-	git_tree_free(ci-&gt;parent_tree);
+</a><a href="#h0-1-13" id="h0-1-13" class="d">-	git_commit_free(ci-&gt;commit);
+</a><a href="#h0-1-14" id="h0-1-14" class="d">-}
+</a><a href="#h0-1-15" id="h0-1-15" class="d">-
+</a><a href="#h0-1-16" id="h0-1-16" class="d">-struct commitinfo *
+</a><a href="#h0-1-17" id="h0-1-17" class="d">-commitinfo_getbyoid(const git_oid *id)
+</a><a href="#h0-1-18" id="h0-1-18" class="d">-{
+</a><a href="#h0-1-19" id="h0-1-19" class="d">-	struct commitinfo *ci;
+</a><a href="#h0-1-20" id="h0-1-20" class="d">-	git_diff_options opts;
+</a><a href="#h0-1-21" id="h0-1-21" class="d">-	int error;
+</a><a href="#h0-1-22" id="h0-1-22" class="d">-
+</a><a href="#h0-1-23" id="h0-1-23" class="d">-	if (!(ci = calloc(1, sizeof(struct commitinfo))))
+</a><a href="#h0-1-24" id="h0-1-24" class="d">-		err(1, &quot;calloc&quot;);
+</a><a href="#h0-1-25" id="h0-1-25" class="d">-
+</a><a href="#h0-1-26" id="h0-1-26" class="d">-	ci-&gt;id = id;
+</a><a href="#h0-1-27" id="h0-1-27" class="d">-	if (git_commit_lookup(&amp;(ci-&gt;commit), repo, id))
+</a><a href="#h0-1-28" id="h0-1-28" class="d">-		goto err;
+</a><a href="#h0-1-29" id="h0-1-29" class="d">-
+</a><a href="#h0-1-30" id="h0-1-30" class="d">-	/* TODO: show tags when commit has it */
+</a><a href="#h0-1-31" id="h0-1-31" class="d">-	git_oid_tostr(ci-&gt;oid, sizeof(ci-&gt;oid), git_commit_id(ci-&gt;commit));
+</a><a href="#h0-1-32" id="h0-1-32" class="d">-	git_oid_tostr(ci-&gt;parentoid, sizeof(ci-&gt;parentoid), git_commit_parent_id(ci-&gt;commit, 0));
+</a><a href="#h0-1-33" id="h0-1-33" class="d">-
+</a><a href="#h0-1-34" id="h0-1-34" class="d">-	ci-&gt;author = git_commit_author(ci-&gt;commit);
+</a><a href="#h0-1-35" id="h0-1-35" class="d">-	ci-&gt;summary = git_commit_summary(ci-&gt;commit);
+</a><a href="#h0-1-36" id="h0-1-36" class="d">-	ci-&gt;msg = git_commit_message(ci-&gt;commit);
+</a><a href="#h0-1-37" id="h0-1-37" class="d">-
+</a><a href="#h0-1-38" id="h0-1-38" class="d">-	if ((error = git_commit_tree(&amp;(ci-&gt;commit_tree), ci-&gt;commit)))
+</a><a href="#h0-1-39" id="h0-1-39" class="d">-		goto err; /* TODO: handle error */
+</a><a href="#h0-1-40" id="h0-1-40" class="d">-	if (!(error = git_commit_parent(&amp;(ci-&gt;parent), ci-&gt;commit, 0))) {
+</a><a href="#h0-1-41" id="h0-1-41" class="d">-		if ((error = git_commit_tree(&amp;(ci-&gt;parent_tree), ci-&gt;parent)))
+</a><a href="#h0-1-42" id="h0-1-42" class="d">-			goto err;
+</a><a href="#h0-1-43" id="h0-1-43" class="d">-	} else {
+</a><a href="#h0-1-44" id="h0-1-44" class="d">-		ci-&gt;parent = NULL;
+</a><a href="#h0-1-45" id="h0-1-45" class="d">-		ci-&gt;parent_tree = NULL;
+</a><a href="#h0-1-46" id="h0-1-46" class="d">-	}
+</a><a href="#h0-1-47" id="h0-1-47" class="d">-
+</a><a href="#h0-1-48" id="h0-1-48" class="d">-	git_diff_init_options(&amp;opts, GIT_DIFF_OPTIONS_VERSION);
+</a><a href="#h0-1-49" id="h0-1-49" class="d">-	opts.flags |= GIT_DIFF_DISABLE_PATHSPEC_MATCH;
+</a><a href="#h0-1-50" id="h0-1-50" class="d">-	if ((error = git_diff_tree_to_tree(&amp;(ci-&gt;diff), repo, ci-&gt;parent_tree, ci-&gt;commit_tree, &amp;opts)))
+</a><a href="#h0-1-51" id="h0-1-51" class="d">-		goto err;
+</a><a href="#h0-1-52" id="h0-1-52" class="d">-	if (git_diff_get_stats(&amp;(ci-&gt;stats), ci-&gt;diff))
+</a><a href="#h0-1-53" id="h0-1-53" class="d">-		goto err;
+</a><a href="#h0-1-54" id="h0-1-54" class="d">-
+</a><a href="#h0-1-55" id="h0-1-55" class="d">-	ci-&gt;addcount = git_diff_stats_insertions(ci-&gt;stats);
+</a><a href="#h0-1-56" id="h0-1-56" class="d">-	ci-&gt;delcount = git_diff_stats_deletions(ci-&gt;stats);
+</a><a href="#h0-1-57" id="h0-1-57" class="d">-	ci-&gt;filecount = git_diff_stats_files_changed(ci-&gt;stats);
+</a><a href="#h0-1-58" id="h0-1-58" class="d">-
+</a><a href="#h0-1-59" id="h0-1-59" class="d">-	/* TODO: show tag when commit has it */
+</a><a href="#h0-1-60" id="h0-1-60" class="d">-
+</a><a href="#h0-1-61" id="h0-1-61" class="d">-	return ci;
+</a><a href="#h0-1-62" id="h0-1-62" class="d">-
+</a><a href="#h0-1-63" id="h0-1-63" class="d">-err:
+</a><a href="#h0-1-64" id="h0-1-64" class="d">-	commitinfo_free(ci);
+</a><a href="#h0-1-65" id="h0-1-65" class="d">-	free(ci);
+</a><a href="#h0-1-66" id="h0-1-66" class="d">-
+</a><a href="#h0-1-67" id="h0-1-67" class="d">-	return NULL;
+</a><a href="#h0-1-68" id="h0-1-68" class="d">-}
+</a><a href="#h0-1-69" id="h0-1-69" class="d">-
+</a> FILE *
+ efopen(const char *name, const char *flags)
+ {
+<a href="#h0-2" id="h0-2" class="h">@@ -211,7 +122,8 @@ writefooter(FILE *fp)
+</a> int
+ writelog(FILE *fp)
+ {
+<a href="#h0-2-3" id="h0-2-3" class="d">-	struct commitinfo *ci;
+</a><a href="#h0-2-4" id="h0-2-4" class="i">+	git_commit *commit = NULL;
+</a><a href="#h0-2-5" id="h0-2-5" class="i">+	const git_signature *author;
+</a> 	git_revwalk *w = NULL;
+ 	git_oid id;
+ 	int ret = 0;
+<a href="#h0-3" id="h0-3" class="h">@@ -222,11 +134,13 @@ writelog(FILE *fp)
+</a> 	git_revwalk_simplify_first_parent(w);
+ 
+ 	if (git_revwalk_next(&amp;id, w) ||
+<a href="#h0-3-3" id="h0-3-3" class="d">-	    !(ci = commitinfo_getbyoid(&amp;id))) {
+</a><a href="#h0-3-4" id="h0-3-4" class="i">+	    git_commit_lookup(&amp;commit, repo, &amp;id)) {
+</a> 		ret = -1;
+ 		goto err;
+ 	}
+ 
+<a href="#h0-3-9" id="h0-3-9" class="i">+	author = git_commit_author(commit);
+</a><a href="#h0-3-10" id="h0-3-10" class="i">+
+</a> 	fputs(&quot;&lt;tr&gt;&lt;td&gt;&lt;a href=\&quot;&quot;, fp);
+ 	xmlencode(fp, name, strlen(name));
+ 	fputs(&quot;/log.html\&quot;&gt;&quot;, fp);
+<a href="#h0-4" id="h0-4" class="h">@@ -236,10 +150,11 @@ writelog(FILE *fp)
+</a> 	fputs(&quot;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+ 	xmlencode(fp, owner, strlen(owner));
+ 	fputs(&quot;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+<a href="#h0-4-3" id="h0-4-3" class="d">-	if (ci-&gt;author)
+</a><a href="#h0-4-4" id="h0-4-4" class="d">-		printtimeshort(fp, &amp;(ci-&gt;author-&gt;when));
+</a><a href="#h0-4-5" id="h0-4-5" class="i">+	if (author)
+</a><a href="#h0-4-6" id="h0-4-6" class="i">+		printtimeshort(fp, &amp;(author-&gt;when));
+</a> 	fputs(&quot;&lt;/td&gt;&lt;/tr&gt;&quot;, fp);
+ 
+<a href="#h0-4-9" id="h0-4-9" class="i">+	git_commit_free(commit);
+</a> err:
+ 	git_revwalk_free(w);
+ 
+<a href="#h0-5" id="h0-5" class="h">@@ -252,8 +167,7 @@ main(int argc, char *argv[])
+</a> 	const git_error *e = NULL;
+ 	FILE *fp;
+ 	char path[PATH_MAX], *p;
+<a href="#h0-5-3" id="h0-5-3" class="d">-	int status;
+</a><a href="#h0-5-4" id="h0-5-4" class="d">-	size_t i;
+</a><a href="#h0-5-5" id="h0-5-5" class="i">+	int i, status;
+</a> 
+ 	if (argc &lt; 2) {
+ 		fprintf(stderr, &quot;%s [repodir...]\n&quot;, argv[0]);
+</pre>
+</div>
+</body>
+</html>

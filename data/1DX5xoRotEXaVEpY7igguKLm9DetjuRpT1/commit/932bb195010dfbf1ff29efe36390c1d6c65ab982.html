@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Experimental scroll position save and restore - 0git - 0git - a list of git repositories on ZeroNet
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="0git.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>0git</h1><span class="desc">0git - a list of git repositories on ZeroNet
+</span></td></tr><tr class="url"><td></td><td>git clone <a href="http://127.0.0.1:43110/0git.bit/0git.git">http://127.0.0.1:43110/0git.bit/0git.git</a></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.md.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/932bb195010dfbf1ff29efe36390c1d6c65ab982.html">932bb195010dfbf1ff29efe36390c1d6c65ab982</a>
+<b>parent</b> <a href="../commit/66cd8989f3ec319bcadd7f12e94f4979daeabdde.html">66cd8989f3ec319bcadd7f12e94f4979daeabdde</a>
+<b>Author:</b> HelloZeroNet &lt;<a href="mailto:hello@noloop.me">hello@noloop.me</a>&gt;
+<b>Date:</b>   Sat Feb 27 21:30:53 +0100
+
+Experimental scroll position save and restore
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">js/all.js</a></td><td> | </td><td class="num">23</td><td><span class="i">+++++++++++++++++++++</span><span class="d">--</span></td></tr>
+<tr><td><a href="#h1">js/utils/ZeroFrame.coffee</a></td><td> | </td><td class="num">14</td><td><span class="i">++++++++++++++</span><span class="d"></span></td></tr>
+</table>2 files changed, 35 insertions(+), 2 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/js/all.js.html">js/all.js</a> b/<a href="../file/js/all.js.html">js/all.js</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -1133,6 +1133,7 @@ jQuery.extend( jQuery.easing,
+</a>       this.wrapper_nonce = document.location.href.replace(/.*wrapper_nonce=([A-Za-z0-9]+).*/, &quot;$1&quot;);
+       this.connect();
+       this.next_message_id = 1;
+<a href="#h0-0-3" id="h0-0-3" class="i">+      this.history_state = {};
+</a>       this.init();
+     }
+ 
+<a href="#h0-1" id="h0-1" class="h">@@ -1143,7 +1144,25 @@ jQuery.extend( jQuery.easing,
+</a>     ZeroFrame.prototype.connect = function() {
+       this.target = window.parent;
+       window.addEventListener(&quot;message&quot;, this.onMessage, false);
+<a href="#h0-1-3" id="h0-1-3" class="d">-      return this.cmd(&quot;innerReady&quot;);
+</a><a href="#h0-1-4" id="h0-1-4" class="i">+      this.cmd(&quot;innerReady&quot;);
+</a><a href="#h0-1-5" id="h0-1-5" class="i">+      window.addEventListener(&quot;beforeunload&quot;, (function(_this) {
+</a><a href="#h0-1-6" id="h0-1-6" class="i">+        return function(e) {
+</a><a href="#h0-1-7" id="h0-1-7" class="i">+          _this.log(&quot;save scrollTop&quot;, window.pageYOffset);
+</a><a href="#h0-1-8" id="h0-1-8" class="i">+          _this.history_state[&quot;scrollTop&quot;] = window.pageYOffset;
+</a><a href="#h0-1-9" id="h0-1-9" class="i">+          return _this.cmd(&quot;wrapperReplaceState&quot;, [_this.history_state, null]);
+</a><a href="#h0-1-10" id="h0-1-10" class="i">+        };
+</a><a href="#h0-1-11" id="h0-1-11" class="i">+      })(this));
+</a><a href="#h0-1-12" id="h0-1-12" class="i">+      return this.cmd(&quot;wrapperGetState&quot;, [], (function(_this) {
+</a><a href="#h0-1-13" id="h0-1-13" class="i">+        return function(state) {
+</a><a href="#h0-1-14" id="h0-1-14" class="i">+          if (state != null) {
+</a><a href="#h0-1-15" id="h0-1-15" class="i">+            _this.history_state = state;
+</a><a href="#h0-1-16" id="h0-1-16" class="i">+          }
+</a><a href="#h0-1-17" id="h0-1-17" class="i">+          _this.log(&quot;restore scrollTop&quot;, state, window.pageYOffset);
+</a><a href="#h0-1-18" id="h0-1-18" class="i">+          if (window.pageYOffset === 0 &amp;&amp; state) {
+</a><a href="#h0-1-19" id="h0-1-19" class="i">+            return window.scroll(window.pageXOffset, state.scrollTop);
+</a><a href="#h0-1-20" id="h0-1-20" class="i">+          }
+</a><a href="#h0-1-21" id="h0-1-21" class="i">+        };
+</a><a href="#h0-1-22" id="h0-1-22" class="i">+      })(this));
+</a>     };
+ 
+     ZeroFrame.prototype.onMessage = function(e) {
+<a href="#h0-2" id="h0-2" class="h">@@ -1224,6 +1243,7 @@ jQuery.extend( jQuery.easing,
+</a> }).call(this);
+ 
+ 
+<a href="#h0-2-3" id="h0-2-3" class="i">+
+</a> /* ---- data/1TaLkFrMwvbNsooF4ioKAY9EuxTBTjipT/js/TopicList.coffee ---- */
+ 
+ 
+<a href="#h0-3" id="h0-3" class="h">@@ -1553,7 +1573,6 @@ jQuery.extend( jQuery.easing,
+</a> }).call(this);
+ 
+ 
+<a href="#h0-3-3" id="h0-3-3" class="d">-
+</a> /* ---- data/1TaLkFrMwvbNsooF4ioKAY9EuxTBTjipT/js/TopicShow.coffee ---- */
+ 
+ 
+<b>diff --git a/<a id="h1" href="../file/js/utils/ZeroFrame.coffee.html">js/utils/ZeroFrame.coffee</a> b/<a href="../file/js/utils/ZeroFrame.coffee.html">js/utils/ZeroFrame.coffee</a></b>
+<a href="#h1-0" id="h1-0" class="h">@@ -5,6 +5,7 @@ class ZeroFrame extends Class
+</a> 		@wrapper_nonce = document.location.href.replace(/.*wrapper_nonce=([A-Za-z0-9]+).*/, &quot;$1&quot;)
+ 		@connect()
+ 		@next_message_id = 1
+<a href="#h1-0-3" id="h1-0-3" class="i">+		@history_state = {}
+</a> 		@init()
+ 
+ 
+<a href="#h1-1" id="h1-1" class="h">@@ -17,6 +18,19 @@ class ZeroFrame extends Class
+</a> 		window.addEventListener(&quot;message&quot;, @onMessage, false)
+ 		@cmd(&quot;innerReady&quot;)
+ 
+<a href="#h1-1-3" id="h1-1-3" class="i">+		# Save scrollTop
+</a><a href="#h1-1-4" id="h1-1-4" class="i">+		window.addEventListener &quot;beforeunload&quot;, (e) =&gt;
+</a><a href="#h1-1-5" id="h1-1-5" class="i">+			@log &quot;save scrollTop&quot;, window.pageYOffset
+</a><a href="#h1-1-6" id="h1-1-6" class="i">+			@history_state[&quot;scrollTop&quot;] = window.pageYOffset
+</a><a href="#h1-1-7" id="h1-1-7" class="i">+			@cmd &quot;wrapperReplaceState&quot;, [@history_state, null]
+</a><a href="#h1-1-8" id="h1-1-8" class="i">+
+</a><a href="#h1-1-9" id="h1-1-9" class="i">+		# Restore scrollTop
+</a><a href="#h1-1-10" id="h1-1-10" class="i">+		@cmd &quot;wrapperGetState&quot;, [], (state) =&gt;
+</a><a href="#h1-1-11" id="h1-1-11" class="i">+			@history_state = state if state?
+</a><a href="#h1-1-12" id="h1-1-12" class="i">+			@log &quot;restore scrollTop&quot;, state, window.pageYOffset
+</a><a href="#h1-1-13" id="h1-1-13" class="i">+			if window.pageYOffset == 0 and state
+</a><a href="#h1-1-14" id="h1-1-14" class="i">+				window.scroll(window.pageXOffset, state.scrollTop)
+</a><a href="#h1-1-15" id="h1-1-15" class="i">+
+</a> 
+ 	onMessage: (e) =&gt;
+ 		message = e.data
+</pre>
+</div>
+</body>
+</html>

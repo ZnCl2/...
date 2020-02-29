@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Display comments only 2 minute from future - 0git - 0git - a list of git repositories on ZeroNet
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="0git.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>0git</h1><span class="desc">0git - a list of git repositories on ZeroNet
+</span></td></tr><tr class="url"><td></td><td>git clone <a href="http://127.0.0.1:43110/0git.bit/0git.git">http://127.0.0.1:43110/0git.bit/0git.git</a></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.md.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/ecb5bfd160b653ce00e50d72dc82868e77c5c0cf.html">ecb5bfd160b653ce00e50d72dc82868e77c5c0cf</a>
+<b>parent</b> <a href="../commit/30ed9aa42f2eddac172f3bf90fe313091e9ca488.html">30ed9aa42f2eddac172f3bf90fe313091e9ca488</a>
+<b>Author:</b> HelloZeroNet &lt;<a href="mailto:hello@noloop.me">hello@noloop.me</a>&gt;
+<b>Date:</b>   Sat Mar 12 20:27:16 +0100
+
+Display comments only 2 minute from future
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">js/TopicList.coffee</a></td><td> | </td><td class="num">2</td><td><span class="i">+</span><span class="d">-</span></td></tr>
+<tr><td><a href="#h1">js/TopicShow.coffee</a></td><td> | </td><td class="num">2</td><td><span class="i">+</span><span class="d">-</span></td></tr>
+</table>2 files changed, 2 insertions(+), 2 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/js/TopicList.coffee.html">js/TopicList.coffee</a> b/<a href="../file/js/TopicList.coffee.html">js/TopicList.coffee</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -116,7 +116,7 @@ class TopicList extends Class
+</a> 		if @parent_topic_uri # Topic group listing
+ 			where = &quot;WHERE parent_topic_uri = &apos;#{@parent_topic_uri}&apos; OR row_topic_uri = &apos;#{@parent_topic_uri}&apos;&quot;
+ 		else # Main listing
+<a href="#h0-0-3" id="h0-0-3" class="d">-			where = &quot;WHERE topic.type IS NULL AND topic.parent_topic_uri IS NULL &quot;
+</a><a href="#h0-0-4" id="h0-0-4" class="i">+			where = &quot;WHERE topic.type IS NULL AND topic.parent_topic_uri IS NULL AND (comment.added &lt; #{Date.now()/1000+120} OR comment.added IS NULL)&quot;
+</a> 		last_elem = $(&quot;.topics-list .topic.template&quot;)
+ 
+ 		query = &quot;&quot;&quot;
+<b>diff --git a/<a id="h1" href="../file/js/TopicShow.coffee.html">js/TopicShow.coffee</a> b/<a href="../file/js/TopicShow.coffee.html">js/TopicShow.coffee</a></b>
+<a href="#h1-0" id="h1-0" class="h">@@ -116,7 +116,7 @@ class TopicShow extends Class
+</a> 			 LEFT JOIN json AS user_json_data ON (user_json_data.json_id = comment.json_id)
+ 			 LEFT JOIN json AS user_json_content ON (user_json_content.directory = user_json_data.directory AND user_json_content.file_name = &apos;content.json&apos;)
+ 			 LEFT JOIN keyvalue AS user ON (user.json_id = user_json_content.json_id AND user.key = &apos;cert_user_id&apos;)
+<a href="#h1-0-3" id="h1-0-3" class="d">-			WHERE comment.topic_uri = &apos;#{@topic_id}_#{@topic_user_address}&apos;
+</a><a href="#h1-0-4" id="h1-0-4" class="i">+			WHERE comment.topic_uri = &apos;#{@topic_id}_#{@topic_user_address}&apos; AND added &lt; #{Date.now()/1000+120}
+</a> 			ORDER BY added DESC
+ 			&quot;
+ 
+</pre>
+</div>
+</body>
+</html>

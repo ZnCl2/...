@@ -1,0 +1,54 @@
+<?xml version="1.0"><!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content = "text/html; charset = utf-8" />
+
+<link rel="stylesheet" type="text/css" href="../themes/ghost.css" />
+
+<link rel="icon" href = "../favicon.ico"><title>Lifting the veil - how to test browsers for spyware.</title>
+</head>
+
+<body>
+
+<div id="center">
+
+<h2>Lifting the veil - how to test browsers for spyware.</h2>
+
+<p>Privacy support is one of the chief criteria upon which users pick (or should, anyway) a web browser. Often, a person's opinion of a browser's privacy is manufactured by assumptions, marketing talk, or its privacy policy (which can be hard to read and understand, <em>omit information or outright lie)</em>. Wouldn't it be great if we had a way to <em>prove</em> whether a browser actually cares about your privacy, or just bullshits its way through? Fortunately, there is a powerful tool to see exactly what a browser does behind your back, and I'm going to present it to you right now. <em>Let's lift the veils!</em></p>
+
+<h3>Getting, running and configuring the tool</h3>
+
+<p>First of all, install <a href="https://mitmproxy.org/">mitmproxy</a>. You can do it easily by typing this command on the terminal: <em>pip3 install mitmproxy</em> (you will have to install python3 first - should be available in most Linux repositories). What is mitmproxy? Simply, it is a local proxy server to which you can point your browser, which will allow you to see the connections it makes (it has much more features, but in this article, that's our only focus). </p>
+
+<h4>Hooking up a browser to mitmproxy</h4>
+
+<P>First, run mitmproxy by typing the terminal command <em>mitmproxy -p 3128</em>. The 3128 is the port on which the proxy runs on. Now go to your browser's proxy settings, and put in <em>127.0.0.1</em> for the IP, and <em>3128</em> for the port (make sure to fill both the HTTP and HTTPS sections). Chrome based browsers have it slightly harder, since they don't support GUI proxy settings. You have to run them from the command line like this: <em>name of browser --proxy-server="127.0.0.1:3128"</em>. Replace "name of browser" with the executable name, for example <em>iridium-browser --proxy-server="127.0.0.1:3128".</em></p>
+
+<h4>Enabling SSL decryption</h4>
+
+<p>Now, if your browser is of the spyware kind, you should already see some requests in your terminal window - but wait, setting up mitmproxy isn't over yet. By default, it only shows pure HTTP requests, since browsers won't allow it to decrypt SSL. Fortunately it has an easy way to add a root certificate to your browser, which will allow just that (the "mitm" part in mitmproxy refers to that). Switch to your browser window and type <em>mitm.it</em> in the address bar. Now choose your platform and follow further instructions. If you succeeded, you should be able to go to any HTTPS website and see the request in mitmproxy (which will start with <em>GET https://</em>). Note: the Chrome instructions are needlessly complicated <em>and appear not to even work</em>. All you need to do is enter Settings, search for "cert" at the top, click <q>Manage certificates</q>, then import the mitmproxy-ca-cert.pem file (<q>Authorities</q> tab). Okay, we've got SSL decryption enabled - what now?</p>
+
+<h3>Using mitmproxy</h3>
+
+<p><em>Just wait!</em> Yes that's it. The whole point is to wait and see what requests the browser makes without your input. You can scroll through requests with the arrow keys and inspect them in detail by pressing Enter. This will show ALL the data that the browser is sending, as well as receiving. Of course, understanding it takes a lot of experience, but at least you now have the opportunity to <em>Lift The Veil</em>, if you want to! You might be surprised to see that common web browsers make <em>hundreds of requests without your knowledge</em>, even ones that are generally considered "respectful or your privacy". For example, Waterfox scores at exactly  <a href="../images/wfox.png">109 unsolicited requests</a>, just by turning it on! And it's advertised as privacy-based - but thanks to mitmproxy, you can lift the veil, and expose the claim for the lie it is. Isn't that empowering? No more relying on popular opinion, deceptive advertising, or shitty privacy policies (which should be called spy policies). Now it's all there for you to check.</p>
+
+<p>Of course, you won't see all the spyware by just waiting. Some of it can hide in places such as the new tab pages or require visiting a website (Opera's collection of browsing history for example). Also, many requests are only made the first time you run a browser, where it's not going through mitmproxy yet, which will prevent you from seeing them. How to bypass this?
+
+<h4>Chrome-based</h4>
+
+<p>Close your browser. Now go to the browser's config directory (for example <em>/home/hackerman/.config/vivaldi/</em>) and delete the "First Run" file. That should do it. Use the Z key in mitmproxy to delete all previous requests, so that it is easier to see only the new ones. Run the browser again.</p>
+
+<h4>Firefox-based</h4>
+
+<p>A little tougher. You also have to go to the browsers config directory, but that will not be .config but <em>.mozilla</em> (for FF and IceCat), <em>.waterfox</em> (for Waterfox), or <em>.moonchild productions</em> (for Pale Moon). Now CLOSE YOUR BROWSER (if you have it open), find the file <em>prefs.js</em>, and in it, the line <em>user_pref("network.proxy.http", "127.0.0.1");</em>. Now copy everything from that until <em>user_pref("network.proxy.type", 1);</em>. Delete everything else in the file and save . Your prefs.js file should look <a href="../txt/prefs.txt">like this</a> (now probably not everything has to be necessarily deleted, but let's be safe..). Also delete every other file except prefs.js and cert8.db (contains mitmproxy certificate info) - this will leave your Firefox-based browser with ONLY the proxy settings changed from the default clean install.</p>
+
+<h3>Some other uses for mitmproxy</h3>
+
+<p>Endless. You can even check if an extension is making unnecessary requests. Some of the so-called privacy extensions will in fact <em>intrude on your privacy</em> by making requests behind your back. Replaying requests, replacing parts of the content in a webpage. Hell, you can <em>do actual hacking with it</em>, such as sniffing passwords, or sending a fake page to your victim - but these are much tougher than simply testing a browser's privacy, and a subject for another article. You can also hook up any program that communicates over HTTP, like RSS readers. Have fun..</p>
+
+<a href = "../index.html">Back to the front page</a>
+
+</div>
+
+</body>
+
+</html>

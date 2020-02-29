@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Add config.def.h and make summary length configurable - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/c3014aaaba1d98b8e54537cef6246add1ab62094.html">c3014aaaba1d98b8e54537cef6246add1ab62094</a>
+<b>parent</b> <a href="../commit/f33bca44bdd4f6758b9045c02ddbab9adc7b97c0.html">f33bca44bdd4f6758b9045c02ddbab9adc7b97c0</a>
+<b>Author:</b> FRIGN &lt;<a href="mailto:dev@frign.de">dev@frign.de</a>&gt;
+<b>Date:</b>   Mon Dec 14 12:49:23 +0100
+
+Add config.def.h and make summary length configurable
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">Makefile</a></td><td> | </td><td class="num">6</td><td><span class="i">+++++</span><span class="d">-</span></td></tr>
+<tr><td><a href="#h1">config.def.h</a></td><td> | </td><td class="num">2</td><td><span class="i">++</span><span class="d"></span></td></tr>
+<tr><td><a href="#h2">urmoms.c</a></td><td> | </td><td class="num">7</td><td><span class="i">++++</span><span class="d">---</span></td></tr>
+</table>3 files changed, 11 insertions(+), 4 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/Makefile.html">Makefile</a> b/<a href="../file/Makefile.html">Makefile</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -33,7 +33,11 @@ dist: $(BIN)
+</a> 	(cd release/${VERSION}; \
+ 	tar -czf ../../urmoms-${VERSION}.tar.gz .)
+ 
+<a href="#h0-0-3" id="h0-0-3" class="d">-${OBJ}: config.mk ${HDR}
+</a><a href="#h0-0-4" id="h0-0-4" class="i">+${OBJ}: config.h config.mk ${HDR}
+</a><a href="#h0-0-5" id="h0-0-5" class="i">+
+</a><a href="#h0-0-6" id="h0-0-6" class="i">+config.h:
+</a><a href="#h0-0-7" id="h0-0-7" class="i">+	@echo creating $@ from config.def.h
+</a><a href="#h0-0-8" id="h0-0-8" class="i">+	@cp config.def.h $@
+</a> 
+ urmoms: urmoms.o
+ 	${CC} -o $@ urmoms.o ${LDFLAGS}
+<b>diff --git a/<a id="h1" href="../file/config.def.h.html">config.def.h</a> b/<a href="../file/config.def.h.html">config.def.h</a></b>
+<a href="#h1-0" id="h1-0" class="h">@@ -0,0 +1,2 @@
+</a><a href="#h1-0-0" id="h1-0-0" class="i">+/* See LICENSE file for copyright and license details. */
+</a><a href="#h1-0-1" id="h1-0-1" class="i">+static const unsigned summarylen = 70; /* summary length in the log */
+</a><b>diff --git a/<a id="h2" href="../file/urmoms.c.html">urmoms.c</a> b/<a href="../file/urmoms.c.html">urmoms.c</a></b>
+<a href="#h2-0" id="h2-0" class="h">@@ -10,6 +10,7 @@
+</a> #include &lt;string.h&gt;
+ #include &lt;unistd.h&gt;
+ 
+<a href="#h2-0-3" id="h2-0-3" class="i">+#include &quot;config.h&quot;
+</a> #include &quot;git2.h&quot;
+ 
+ struct commitinfo {
+<a href="#h2-1" id="h2-1" class="h">@@ -428,9 +429,9 @@ writelog(FILE *fp)
+</a> 		fputs(&quot;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+ 		if (ci-&gt;summary) {
+ 			fprintf(fp, &quot;&lt;a href=\&quot;%scommit/%s.html\&quot;&gt;&quot;, relpath, ci-&gt;oid);
+<a href="#h2-1-3" id="h2-1-3" class="d">-			if ((len = strlen(ci-&gt;summary)) &gt; 79) {
+</a><a href="#h2-1-4" id="h2-1-4" class="d">-				xmlencode(fp, ci-&gt;summary, 76);
+</a><a href="#h2-1-5" id="h2-1-5" class="d">-				fputs(&quot;...&quot;, fp);
+</a><a href="#h2-1-6" id="h2-1-6" class="i">+			if ((len = strlen(ci-&gt;summary)) &gt; summarylen) {
+</a><a href="#h2-1-7" id="h2-1-7" class="i">+				xmlencode(fp, ci-&gt;summary, summarylen - 1);
+</a><a href="#h2-1-8" id="h2-1-8" class="i">+				fputs(&quot;…&quot;, fp);
+</a> 			} else {
+ 				xmlencode(fp, ci-&gt;summary, len);
+ 			}
+</pre>
+</div>
+</body>
+</html>

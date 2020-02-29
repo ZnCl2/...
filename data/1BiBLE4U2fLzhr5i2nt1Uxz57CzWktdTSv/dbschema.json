@@ -1,0 +1,85 @@
+{
+  "db_name": "Bible4u",
+  "db_file": "data/bible4u.db",
+  "version": 2,
+  "maps": {
+    "db/baseData.json": {
+      "to_table": [
+          {
+              "node": "languages",
+              "table": "languages"
+          },
+          {
+              "node": "bibles",
+              "table": "bibles"
+          },
+          {
+              "node": "books",
+              "table": "books"
+          }
+      ]
+    },
+    "db/bibles/.*/.*.json": {
+      "to_table": [
+          {
+              "node": "verses",
+              "table": "verses"
+          }
+      ]
+    }
+  },
+  "tables": {
+    "languages": {
+      "cols": [
+          ["id", "TEXT PRIMARY KEY NOT NULL"],
+          ["name", "TEXT NOT NULL"],
+          ["sort_order", "INTEGER"],
+          ["json_id", "integer references json(json_id)"]
+      ],
+      "indexes": ["CREATE INDEX languages_key ON languages(json_id)"],
+      "schema_changed": 2
+    },
+    "bibles": {
+      "cols": [
+          ["id", "TEXT PRIMARY KEY NOT NULL"],
+          ["lang_id", "TEXT NOT NULL REFERENCES languages (id)"],
+          ["name", "TEXT NOT NULL"],
+          ["publisher", "TEXT NOT NULL"],
+          ["copyright_info", "TEXT NOT NULL"],
+          ["access_download", "INTEGER NOT NULL"],
+          ["default_translation", "INTEGER"],
+          ["json_id", "integer references json(json_id)"]
+      ],
+      "indexes": ["CREATE INDEX ix_bibles_lang_id ON bibles(lang_id)", "CREATE INDEX bibles_key ON bibles(json_id)"],
+      "schema_changed": 3
+    },
+    "books": {
+      "cols": [
+          ["id", "TEXT PRIMARY KEY NOT NULL"],
+          ["bible_id", "INTEGER NOT NULL REFERENCES bibles (id)"],
+          ["ref", "TEXT NOT NULL"],
+          ["name", "TEXT NOT NULL"],
+          ["book_order", "INTEGER NOT NULL"],
+          ["chapters_count", "INTEGER NOT NULL"],
+          ["json_id", "integer references json(json_id)"]
+      ],
+      "indexes": ["CREATE INDEX ix_books_bible_id ON books(bible_id)", "CREATE INDEX books_key ON books(json_id)"],
+      "schema_changed": 1
+    },
+    "verses": {
+      "cols": [
+          ["id", "TEXT PRIMARY KEY NOT NULL"],
+          ["book_id", "INTEGER NOT NULL REFERENCES books (id)"],
+          ["chapter", "INTEGER NOT NULL"],
+          ["ref", "INTEGER NOT NULL"],
+          ["text", "TEXT NOT NULL"],
+          ["json_id", "integer references json(json_id)"]
+      ],
+      "indexes": [
+        "CREATE INDEX ix_verses_book_id ON verses(book_id)",
+        "CREATE INDEX ix_verses_chapter ON verses(chapter)",
+        "CREATE INDEX verses_key ON verses(json_id)"],
+      "schema_changed": 1
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+    "db_name": "rDanyChat",
+    "db_file": "data/rdanychat.db",
+    "version": 2,
+    "maps": {
+        "users/.+/data.json": {
+            "to_table": [ "message" ]
+        },
+        "users/.+/content.json": {
+            "to_json_table": [ "cert_user_id" ],
+            "file_name": "data.json"
+        }
+    },
+    "tables": {
+        "json": {
+            "cols": [
+                ["json_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+                ["directory", "TEXT"],
+                ["file_name", "TEXT"],
+                ["cert_user_id", "TEXT"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX path ON json(directory, file_name)"],
+            "schema_changed": 10
+        },
+        "message": {
+            "cols": [
+                ["body", "TEXT"],
+                ["me_happy", "INTEGER"],
+                ["me_excited", "INTEGER"],
+                ["me_tender", "INTEGER"],
+                ["me_scared", "INTEGER"],
+                ["me_angry", "INTEGER"],
+                ["me_sad", "INTEGER"],
+                ["ze_happy", "INTEGER"],
+                ["ze_excited", "INTEGER"],
+                ["ze_tender", "INTEGER"],
+                ["ze_scared", "INTEGER"],
+                ["ze_angry", "INTEGER"],
+                ["ze_sad", "INTEGER"],
+                ["my_background", "TEXT"],
+                ["hir_background", "TEXT"],
+                ["ze_impostor", "INTEGER"],
+                ["requested_action", "TEXT"],
+                ["action_parameters", "TEXT"],
+                ["date_added", "INTEGER"],
+                ["recipient", "TEXT"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX message_key ON message(json_id, date_added)"],
+            "schema_changed": 10
+        }
+    }
+}

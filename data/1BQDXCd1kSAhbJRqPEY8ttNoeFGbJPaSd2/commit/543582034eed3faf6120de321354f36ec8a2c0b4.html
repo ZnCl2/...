@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>fix joinpath(): use of global &apos;repodir&apos;, should be &apos;path&apos; - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/543582034eed3faf6120de321354f36ec8a2c0b4.html">543582034eed3faf6120de321354f36ec8a2c0b4</a>
+<b>parent</b> <a href="../commit/2d8eb85f01fdb97ab76c538b868128db4c3e99f0.html">2d8eb85f01fdb97ab76c538b868128db4c3e99f0</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Tue May  3 20:42:46 +0200
+
+fix joinpath(): use of global &apos;repodir&apos;, should be &apos;path&apos;
+
+use joinpath for another case.
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">stagit-index.c</a></td><td> | </td><td class="num">24</td><td><span class="i">++++++++++++</span><span class="d">------------</span></td></tr>
+<tr><td><a href="#h1">stagit.c</a></td><td> | </td><td class="num">39</td><td><span class="i">+++++++++++++++++</span><span class="d">----------------------</span></td></tr>
+</table>2 files changed, 29 insertions(+), 34 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/stagit-index.c.html">stagit-index.c</a> b/<a href="../file/stagit-index.c.html">stagit-index.c</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -30,6 +30,18 @@ pledge(const char *promises, const char *paths[])
+</a> }
+ #endif
+ 
+<a href="#h0-0-3" id="h0-0-3" class="i">+void
+</a><a href="#h0-0-4" id="h0-0-4" class="i">+joinpath(char *buf, size_t bufsiz, const char *path, const char *path2)
+</a><a href="#h0-0-5" id="h0-0-5" class="i">+{
+</a><a href="#h0-0-6" id="h0-0-6" class="i">+	int r;
+</a><a href="#h0-0-7" id="h0-0-7" class="i">+
+</a><a href="#h0-0-8" id="h0-0-8" class="i">+	r = snprintf(buf, bufsiz, &quot;%s%s%s&quot;,
+</a><a href="#h0-0-9" id="h0-0-9" class="i">+		path, path[0] &amp;&amp; path[strlen(path) - 1] != &apos;/&apos; ? &quot;/&quot; : &quot;&quot;, path2);
+</a><a href="#h0-0-10" id="h0-0-10" class="i">+	if (r == -1 || (size_t)r &gt;= bufsiz)
+</a><a href="#h0-0-11" id="h0-0-11" class="i">+		errx(1, &quot;path truncated: &apos;%s%s%s&apos;&quot;,
+</a><a href="#h0-0-12" id="h0-0-12" class="i">+			path, path[0] &amp;&amp; path[strlen(path) - 1] != &apos;/&apos; ? &quot;/&quot; : &quot;&quot;, path2);
+</a><a href="#h0-0-13" id="h0-0-13" class="i">+}
+</a><a href="#h0-0-14" id="h0-0-14" class="i">+
+</a> /* Escape characters below as HTML 2.0 / XML 1.0. */
+ void
+ xmlencode(FILE *fp, const char *s, size_t len)
+<a href="#h0-1" id="h0-1" class="h">@@ -139,18 +151,6 @@ err:
+</a> 	return ret;
+ }
+ 
+<a href="#h0-1-3" id="h0-1-3" class="d">-void
+</a><a href="#h0-1-4" id="h0-1-4" class="d">-joinpath(char *buf, size_t bufsiz, const char *path, const char *path2)
+</a><a href="#h0-1-5" id="h0-1-5" class="d">-{
+</a><a href="#h0-1-6" id="h0-1-6" class="d">-	int r;
+</a><a href="#h0-1-7" id="h0-1-7" class="d">-
+</a><a href="#h0-1-8" id="h0-1-8" class="d">-	r = snprintf(buf, bufsiz, &quot;%s%s%s&quot;,
+</a><a href="#h0-1-9" id="h0-1-9" class="d">-		repodir, path[0] &amp;&amp; path[strlen(path) - 1] != &apos;/&apos; ? &quot;/&quot; : &quot;&quot;, path2);
+</a><a href="#h0-1-10" id="h0-1-10" class="d">-	if (r == -1 || (size_t)r &gt;= bufsiz)
+</a><a href="#h0-1-11" id="h0-1-11" class="d">-		errx(1, &quot;path truncated: &apos;%s%s%s&apos;&quot;,
+</a><a href="#h0-1-12" id="h0-1-12" class="d">-			path, path[0] &amp;&amp; path[strlen(path) - 1] != &apos;/&apos; ? &quot;/&quot; : &quot;&quot;, path2);
+</a><a href="#h0-1-13" id="h0-1-13" class="d">-}
+</a><a href="#h0-1-14" id="h0-1-14" class="d">-
+</a> int
+ main(int argc, char *argv[])
+ {
+<b>diff --git a/<a id="h1" href="../file/stagit.c.html">stagit.c</a> b/<a href="../file/stagit.c.html">stagit.c</a></b>
+<a href="#h1-0" id="h1-0" class="h">@@ -77,6 +77,18 @@ pledge(const char *promises, const char *paths[])
+</a> #endif
+ 
+ void
+<a href="#h1-0-3" id="h1-0-3" class="i">+joinpath(char *buf, size_t bufsiz, const char *path, const char *path2)
+</a><a href="#h1-0-4" id="h1-0-4" class="i">+{
+</a><a href="#h1-0-5" id="h1-0-5" class="i">+	int r;
+</a><a href="#h1-0-6" id="h1-0-6" class="i">+
+</a><a href="#h1-0-7" id="h1-0-7" class="i">+	r = snprintf(buf, bufsiz, &quot;%s%s%s&quot;,
+</a><a href="#h1-0-8" id="h1-0-8" class="i">+		path, path[0] &amp;&amp; path[strlen(path) - 1] != &apos;/&apos; ? &quot;/&quot; : &quot;&quot;, path2);
+</a><a href="#h1-0-9" id="h1-0-9" class="i">+	if (r == -1 || (size_t)r &gt;= bufsiz)
+</a><a href="#h1-0-10" id="h1-0-10" class="i">+		errx(1, &quot;path truncated: &apos;%s%s%s&apos;&quot;,
+</a><a href="#h1-0-11" id="h1-0-11" class="i">+			path, path[0] &amp;&amp; path[strlen(path) - 1] != &apos;/&apos; ? &quot;/&quot; : &quot;&quot;, path2);
+</a><a href="#h1-0-12" id="h1-0-12" class="i">+}
+</a><a href="#h1-0-13" id="h1-0-13" class="i">+
+</a><a href="#h1-0-14" id="h1-0-14" class="i">+void
+</a> deltainfo_free(struct deltainfo *di)
+ {
+ 	if (!di)
+<a href="#h1-1" id="h1-1" class="h">@@ -796,17 +808,12 @@ writefilestree(FILE *fp, git_tree *tree, const char *branch, const char *path)
+</a> 		if (!(entry = git_tree_entry_byindex(tree, i)) ||
+ 		    !(entryname = git_tree_entry_name(entry)))
+ 			return -1;
+<a href="#h1-1-3" id="h1-1-3" class="d">-		r = snprintf(entrypath, sizeof(entrypath), &quot;%s%s%s&quot;,
+</a><a href="#h1-1-4" id="h1-1-4" class="d">-			 path, path[0] ? &quot;/&quot; : &quot;&quot;, entryname);
+</a><a href="#h1-1-5" id="h1-1-5" class="d">-		if (r == -1 || (size_t)r &gt;= sizeof(entrypath))
+</a><a href="#h1-1-6" id="h1-1-6" class="d">-			errx(1, &quot;path truncated: &apos;%s%s%s&apos;&quot;,
+</a><a href="#h1-1-7" id="h1-1-7" class="d">-			        path, path[0] ? &quot;/&quot; : &quot;&quot;, entryname);
+</a><a href="#h1-1-8" id="h1-1-8" class="d">-
+</a><a href="#h1-1-9" id="h1-1-9" class="d">-		r = snprintf(filepath, sizeof(filepath), &quot;file/%s%s%s.html&quot;,
+</a><a href="#h1-1-10" id="h1-1-10" class="d">-		         path, path[0] ? &quot;/&quot; : &quot;&quot;, entryname);
+</a><a href="#h1-1-11" id="h1-1-11" class="i">+		joinpath(entrypath, sizeof(entrypath), path, entryname);
+</a><a href="#h1-1-12" id="h1-1-12" class="i">+
+</a><a href="#h1-1-13" id="h1-1-13" class="i">+		r = snprintf(filepath, sizeof(filepath), &quot;file/%s.html&quot;,
+</a><a href="#h1-1-14" id="h1-1-14" class="i">+		         entrypath);
+</a> 		if (r == -1 || (size_t)r &gt;= sizeof(filepath))
+<a href="#h1-1-16" id="h1-1-16" class="d">-			errx(1, &quot;path truncated: &apos;file/%s%s%s.html&apos;&quot;,
+</a><a href="#h1-1-17" id="h1-1-17" class="d">-			        path, path[0] ? &quot;/&quot; : &quot;&quot;, entryname);
+</a><a href="#h1-1-18" id="h1-1-18" class="i">+			errx(1, &quot;path truncated: &apos;file/%s.html&apos;&quot;, entrypath);
+</a> 
+ 		if (!git_tree_entry_to_object(&amp;obj, repo, entry)) {
+ 			switch (git_object_type(obj)) {
+<a href="#h1-2" id="h1-2" class="h">@@ -991,18 +998,6 @@ err:
+</a> }
+ 
+ void
+<a href="#h1-2-3" id="h1-2-3" class="d">-joinpath(char *buf, size_t bufsiz, const char *path, const char *path2)
+</a><a href="#h1-2-4" id="h1-2-4" class="d">-{
+</a><a href="#h1-2-5" id="h1-2-5" class="d">-	int r;
+</a><a href="#h1-2-6" id="h1-2-6" class="d">-
+</a><a href="#h1-2-7" id="h1-2-7" class="d">-	r = snprintf(buf, bufsiz, &quot;%s%s%s&quot;,
+</a><a href="#h1-2-8" id="h1-2-8" class="d">-		repodir, path[0] &amp;&amp; path[strlen(path) - 1] != &apos;/&apos; ? &quot;/&quot; : &quot;&quot;, path2);
+</a><a href="#h1-2-9" id="h1-2-9" class="d">-	if (r == -1 || (size_t)r &gt;= bufsiz)
+</a><a href="#h1-2-10" id="h1-2-10" class="d">-		errx(1, &quot;path truncated: &apos;%s%s%s&apos;&quot;,
+</a><a href="#h1-2-11" id="h1-2-11" class="d">-			path, path[0] &amp;&amp; path[strlen(path) - 1] != &apos;/&apos; ? &quot;/&quot; : &quot;&quot;, path2);
+</a><a href="#h1-2-12" id="h1-2-12" class="d">-}
+</a><a href="#h1-2-13" id="h1-2-13" class="d">-
+</a><a href="#h1-2-14" id="h1-2-14" class="d">-void
+</a> usage(char *argv0)
+ {
+ 	fprintf(stderr, &quot;%s [-c cachefile] repodir\n&quot;, argv0);
+</pre>
+</div>
+</body>
+</html>

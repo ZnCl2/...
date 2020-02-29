@@ -1,0 +1,311 @@
+{
+	"next_comment_id": 55,
+	"comment": [
+		{
+			"comment_id": 1,
+			"body": "Status Update: KGPE-D16's head build works!\n\n-OpenBMC can be flashed from within heads environment.\n-Heads can be flashed from within heads environment.\n-Sigining works.\n-TPM is currently disabled since TPM 2.0 support is not present.",
+			"post_id": 3,
+			"date_added": 1518467819
+		},
+		{
+			"comment_id": 2,
+			"body": "Current TPMless heads can be found here: https://github.com/tlaurion/heads/tree/KGPE-D16_PORT-BOOT-NoTpm",
+			"post_id": 3,
+			"date_added": 1518469077
+		},
+		{
+			"comment_id": 3,
+			"body": "test",
+			"post_id": 6,
+			"date_added": 1557091402
+		},
+		{
+			"comment_id": 4,
+			"body": "If you want to review pending PR and help correct logic before it's frozen for a year following QubesOS's certification requirements, take a look and participate here: https://github.com/osresearch/heads/pull/551/!",
+			"post_id": 5,
+			"date_added": 1557243920
+		},
+		{
+			"comment_id": 5,
+			"body": "> [mg0](#comment_1_1LbP2cNA6NkvuFJvs7McUmv9qGjkNqVkTa): Nice project, I'd like to know if you have some resources as to become aware of how all these security technologies work and how to use them (LUKS, TPM, etc...). I think this is important because otherwise what you work for looks like a lot of highly nerdy stuff that normal user won't ever get to use properly. Another thing is the addition of more cert signers for this blog, I'm posting this on my zeroid nick but I'd like to use my kaffieid one for a change, others may find it useful too.\n> About the forum, it sounds like a good idea since it would be easier to reach old posts and allow for interaction and community, I don't know of any zite that looks forum-like enough; the closest call is ZeroTalk, you could clone it and tweak it for Insurgo needs.\n> Keep zeroing~\n\nThanks for reaching out!\nThe high level stuff will be present on the official website soon enough. I was intending to reach more technical people here. But you should watch this talk and read this blog post by Heads project starter, Trammel Hudson: https://trmm.net/Heads_33c3. It covers it all, really.\n\nBut in short:\n\nLUKS is just the disk encryption container used under Linux deployment. The reason this is a breakthrough is because normally, OEM cannot preinstall a Linux Operating System in such container without themselves having a copy of the LUKS Disk Recovery Key, which at time, they could hand to authorities, compromising users privacy. With Heads replacing the firmware (BIOS), which is coreboot with a linux payload, Heads permits to deploy necessary tools (cryptsetup-reencrypt) to reencrypt the container, which eencrypts the data in place, while permitting the user to change the LUKS Disk Recovery Key passphrase.\n\nThe TPM, or Trusted Platform Module, is a external root of trust that permits to measure things, XOR them one on top of another, and make sure the end result is the same. As a consequence for Heads, it permits to measure boot modules (romstage, and so on) to make sure they have not been modified, and some weapons of the Vault 7. Such modifications would modify the measurements and Heads would warn the user for possibile compromise. That is why we talk of tamper-evidence and not tamper-proofing here. The system could still be compromised, but the user would know it before booting it.\n\nThe Librem Key/Nitrokey serves as a external validating device, flashing green when those integrity measures from the TPM are valid.\n\nAs a result of this, QubesOs can now be preinstalled. The measurements of /boot and firmware are sealed in the Librem Key/Nitrokey and verifiable by the user at each boot. The reownership process i'm nearly done developping will take the user by the end in reowning those components, making the hardware his own and only upon reception. Note also that the ME module is neutered. The X230 laptop is really the best we currently have, privacy wise, for QubesOS.",
+			"post_id": 11,
+			"date_added": 1557344365
+		},
+		{
+			"comment_id": 6,
+			"body": "> [pexo](#comment_1_1DfrA2M9Qra6stqT6tzwNMYNweswY54KAC): I made a detailed how-to a good while back on my blog on how to get ZeroNet running with it's own dedicated templateVM and double tor. So maybe this is of interest for you as well.\n> I recently made a improved slightly more secure way of doing that for the py3 version, which I still need to actually sit down and write. I even made a installer bash script that does most of the work.\n\nI replied on your blog post! :)\nThanks for interacting!",
+			"post_id": 9,
+			"date_added": 1557429386
+		},
+		{
+			"comment_id": 7,
+			"body": "> [mg0](#comment_1_1LbP2cNA6NkvuFJvs7McUmv9qGjkNqVkTa): Nice project, I'd like to know if you have some resources as to become aware of how all these security technologies work and how to use them (LUKS, TPM, etc...). I think this is important because otherwise what you work for looks like a lot of highly nerdy stuff that normal user won't ever get to use properly. Another thing is the addition of more cert signers for this blog, I'm posting this on my zeroid nick but I'd like to use my kaffieid one for a change, others may find it useful too.\n> About the forum, it sounds like a good idea since it would be easier to reach old posts and allow for interaction and community, I don't know of any zite that looks forum-like enough; the closest call is ZeroTalk, you could clone it and tweak it for Insurgo needs.\n> Keep zeroing~\n\nI updated the OP with clickable references there: http://127.0.0.1:43110/1DMb3CV66qZPwJqkgm4z12nu8BrAwDoD4g/?Post:5:Insurgo%27s+refurbished+reasonably+secure+X230+laptop+is+under+QubesOS+certification!\n\nLet me know if more clarifications are required!",
+			"post_id": 11,
+			"date_added": 1557432301
+		},
+		{
+			"comment_id": 8,
+			"body": "Added emphasis on why encryption is important to properly secure secrets, even deleted ones on SSD and flash-based storage devices in OP. Direct link here: https://ssd.eff.org/en/module/how-delete-your-data-securely-linux##SSDs",
+			"post_id": 11,
+			"date_added": 1557496570
+		},
+		{
+			"comment_id": 9,
+			"body": "> [mg0](#comment_2_1LbP2cNA6NkvuFJvs7McUmv9qGjkNqVkTa): I thought meltdown and spectre are based on out-of-order speculative branching, afaik that's not just related to SMT enabled processors, like, it should go back haunting really old processors and different architectures as well.\n\nYep, you're right, not everything is mitigated by switch hyperthreading off. \n\nPreventive exectution and side channels attacks are really complex problem to dissect and underlying vulnerabilities got mixed up in people's mind. Some fixes require microcode updates, some can be dodged through HVM/PVH virtualization (full virtualization), but again side channel attacks can be mitigated by deactivating HyperThreading like in ZombieLoad, while applying microcode/kernel updates that are available attempt to fix while retaining hyperthreading. \n\nBut most importantly, the solution lies into making sure secrets that what you do not want to leak cannot leak; meaning: [not having them available at all times](https://github.com/QubesOS/qubes-app-shutdown-idle).\n\nThis is why QubesOS is so interesting; you can limit exposition. Of yourself, your collaborators/clients data only for what is currently needed to be done, in specific compartments, thus empowering yourself to do proper preventive choices into creating the proper environments that work for you AND to protect efficiently your collaborators data. Monolithic operating systems,  containers sharing host memory and kernel and application sandboxing have serious limitations that HVM/PVH resolves. Nothing will ever be perfect, but closing our eyes on current architecture limitations is not an option.\n\nSecurity will never be a product. It's a process. And user's awareness in there is key, which depends of its  [threat model](https://sec.eff.org/materials/threat-modeling-activity-handout-for-learners) deep awareness and the available energy to answer the fourth and most important question, which is, basically : what are you willing to deploy (energy wise) into putting proper mechanisms in place to protect you from such threats.\n\n\nQSBs are available [here](https://www.qubes-os.org/security/bulletins/)\n[Meltdown/Spectre related bulletin](https://github.com/QubesOS/qubes-secpack/blob/master/QSBs/qsb-037-2018.txt)\nExerpt:\n\"Fully virtualized VMs offer significant protection against Meltdown\"\n\"Virtualization makes at least one variant of Spectre seem difficult\"\n\"Only running VMs are vulnerable\"\n\n[ZombieLoad related bulletin](https://github.com/QubesOS/qubes-secpack/blob/master/QSBs/qsb-049-2019.txt)\nExerpt:\n\"Vulnerable data is that on the same physical core as the attacker. This includes, when hyper-threading is enabled, adjacent threads.\"\n\n",
+			"post_id": 14,
+			"date_added": 1558021319
+		},
+		{
+			"comment_id": 10,
+			"body": "> [filedropper](#comment_1_1FaeGRPQwnrZC2NTZgTe8hZNT5ad2AsPD1): Sounds like you just described freenet. But unlike zeronet and IPFS files are distributed among people running the network and not dependent on people \"pinning\"\n\nInteresting. Will look into it. It is true that all files being shared would facilitate collaboration.\n\nMeanwhile I fell upon [KopyKate](http://127.0.0.1:43110/big.kopykate.bit/) which could fit the bill by not being video-only oriented.",
+			"post_id": 13,
+			"date_added": 1558202053
+		},
+		{
+			"comment_id": 13,
+			"body": "> [mrflibble](#comment_1_174K6TcAsHBzCgA4Fqq9duYKdNaFPtSSUf): Sounds great! Hopefully this is the start of more hardware support for this kind of thing. Keep it up dudes!\n\nThanks! Finally, encrypted preinstalled QubesOS, with firmware and boot integrity tamper evidence!",
+			"post_id": 17,
+			"date_added": 1560299777
+		},
+		{
+			"comment_id": 14,
+			"body": "> [leftside](#comment_1_16dEowtNbV89NxPcDrAKkmnuXtiJVoVcDm): You need to secure a non-shared IP address based proxy server to hide ur actual IP address.Yes, this is a client-side solution not a server-side or systemic solution.\n\nSo the client has the burden. No server side solution that are more privacy friendly then Stripe/Paypal while mainstream and integrated to WooCommerce?!!",
+			"post_id": 19,
+			"date_added": 1560300716
+		},
+		{
+			"comment_id": 16,
+			"body": "> [mg0](#comment_3_1LbP2cNA6NkvuFJvs7McUmv9qGjkNqVkTa): If the windows 7 VM is meant for being stateful, like, changes and files will stay across VM reboots, then you could use a sysprep'ed image, it removes unique stuff from a windows installation but that stuff should be recreated once the image is booted again. I've used it once to deploy that OS to about 20 machines or so quickly. It will uninstall already installed drivers in the machine you install (the machine in which you sysprep the image) so you could move the installation to another machine, may it be swapping hdds or cloning them altogether.\n> Now, I can't help with the legal aspects, I'm pretty used to warez (hehe) and KMS makes activating everything really a breeze.\n\nIn QubesOS, the TemplateVM is instanciated in read only by the \"qube\" that used it as a template, discarding changes that are done upon reboot. Installing a software in the VM itself would work within a VM boot, but the TemplateVM wouldn't be touched at all and be dismissed upon reboot.\n\nActivating a copy or installing software, updates, or syspreping the image would require to be done in the TemplateVM itself for the state to be kept in across reboots.\n\nNow, my real question is, for privacy needs:  Does the image NEEDS to be sysprep'ed before being cloned to  individual physical machines TO NOT SHARE some unique identification, bound to Windows Installation ID?\n\nSince we are talking about a VM, the \"hardware\" linked to the installation will always be the same across physical deployments, so the drivers being deployed for QubesOS VM<->Xen hypervisor are required to properly support network and disk operations (qvm-copy, XEN drivers, etc). So no need to make that installation generalized.",
+			"post_id": 20,
+			"date_added": 1560354201
+		},
+		{
+			"comment_id": 17,
+			"body": "> [mg0](#comment_3_1LbP2cNA6NkvuFJvs7McUmv9qGjkNqVkTa): If the windows 7 VM is meant for being stateful, like, changes and files will stay across VM reboots, then you could use a sysprep'ed image, it removes unique stuff from a windows installation but that stuff should be recreated once the image is booted again. I've used it once to deploy that OS to about 20 machines or so quickly. It will uninstall already installed drivers in the machine you install (the machine in which you sysprep the image) so you could move the installation to another machine, may it be swapping hdds or cloning them altogether.\n> Now, I can't help with the legal aspects, I'm pretty used to warez (hehe) and KMS makes activating everything really a breeze.\n\nSee OP.",
+			"post_id": 20,
+			"date_added": 1560355493
+		},
+		{
+			"comment_id": 18,
+			"body": "> [mg0](#comment_4_1LbP2cNA6NkvuFJvs7McUmv9qGjkNqVkTa): After edit: So, if I understand correctly, there's the TemplateVM which pretty much has read-write access to VMs and can make modifications that survive reboots, and instantiations of a VM that would just get a running copy of what templateVM had and anything done there is lost forever at reboot.  In this case you'd just need to have a sysprep'd image in the templateVM, then boot it in it so it creates unique identificators that will stay, same for the drivers. Subsequent uses of that VM, though instantiation will feature a fully activated and unique windows 7 OS, which should be unique with other windows 7 OSs across the world (I don't know how W7 comes up with its unique IDs tho).\n> So, just take a normal PC and install Windows 7 in it, tweak it as much as you'd like/need it for the templateVM and then sysprep it. Set up the VM with TemplateVM and run it once so it creates its unique stuff and it should be done since it will always be called in the same Virtual hardware drivers should work. The need for sysprep is because if for whatever reason two or more of those VMs connect through the network they are essentially the same and may have a really hard time trying to communicate with each other. I'm talking about the same PC names, and maybe same MAC address but that depends on the hypervisor too.\n\nIt's the other way around, if I got your understanding well.\n\nTemplateVM are RW if instanciated by themselves, and RO if instanciated as a base filesystem for VMs.\n\nNo TemplateVM filesystem related changes are stateful in the VM, but the mountpoints that are RW in the VM itself (Basically, \"Documents and Settings\" filesystem)\n\nFollowing my undertanding of what you say, the TemplateVM would need to be sysprep \"Ready\" by a script to be launched on next reboot, and not done prior to image deployment. Initiated by the user on the next TemplateVM boot, which would lead to Windows Activation by Phone anyway?\n\nAgain if I underatand well, the TemplateVM would then be Unique for that deployed image. The part I'm not sure getting is that if that sysprep is initiated after image deployment, all drivers would be wiped, defeating the purpose. So maybe what i'm looking for is not really sysprep but another term I do not yet know, to prepae the generic image to be \"singularized\" on next user boot. The user would have to install software to be used inside the TemplateVM himself, like on a new received PC, prior to create his VMs to fit his needs (Office, Taxes, whatever else) and Activate his copy of Windows with the OEM code that his under his laptop.\n\nDo I get it right? ",
+			"post_id": 20,
+			"date_added": 1560359016
+		},
+		{
+			"comment_id": 19,
+			"body": "> [xcape2net](#comment_1_1GJc2vm4vJjAKsFoFJ2D3gGmKiRac2kfnz): I tried running Qubes from a USB stick on an HP 8570p, which according to the hardware compatibility list should work.  But it didn't work at all.  I finally decided to stop wasting my time on Qubes.  I love the idea of Qubes, but I can't get it to work.  I do the same thing Qubes does by booting Linux on one of 3 different USB sticks, depending on my security needs.  I have one Linux USB stick for general internet surfing, one for sites where I enter passwords, and one for online shopping and other high-security needs.  This works fine for me, unlike Qubes.   \n> Nice zite you have created.  I hope you keep it going.\n\n@xcape2net : Live Qubes downloaded from QubesOS website is unfortunately unmaintained and was a Google Summer of Code (GSoC) project this summer. \nMeanwhile, unman, a QubesOS Debian dev put a rudimentary version here: http://qubes.3isec.org/Live/ ",
+			"post_id": 14,
+			"date_added": 1562381241
+		},
+		{
+			"comment_id": 21,
+			"body": "So... It seems legal!\nhttps://groups.google.com/d/msg/qubes-devel/20q7qr-yvBU/nfiLSxN-AwAJ",
+			"post_id": 20,
+			"date_added": 1563308703
+		},
+		{
+			"comment_id": 22,
+			"body": "Keep getting errors on updating and commenting my own posts... Trying a new one",
+			"post_id": 21,
+			"date_added": 1563308773
+		},
+		{
+			"comment_id": 23,
+			"body": "Content signing failed\nInclude too large 17925B > 10000B",
+			"post_id": 21,
+			"date_added": 1563308781
+		},
+		{
+			"comment_id": 25,
+			"body": "> [xcape2net](#comment_2_1GJc2vm4vJjAKsFoFJ2D3gGmKiRac2kfnz): I don't know this for a fact, but my opinion is the following.  Paypal and all other payment services have to follow the same rules that banks are required to follow--specifically, the \"know your customer\" regulations that are designed to prevent money laundering (or actual privacy).  So, I don't think you will find a payment service organization that will work without knowing who you are.  That means you woun't be able to use TOR.  If I'm wrong, and you find a way to do this, please let us know.  It's gotten so you can't even buy bitcoin anymore without jumping through a lot of hoops to avoid identifying yourself.  I'm sure in a couple of more years you will have no way of buying bitcoin without identifying yourself.\n\nActually, I made my way slowly into the realm, and didn't dove deep down yet enough to talk by experience...\n\nBut what I understood of it is that bitcoin is not made to protect identity by default, while some wallets have emerged, with backends in them (read .Net) that permits to collaborate with others so that transactions are actually paid from wallets of others, with additional fees. Those technologies, called CoinJoin (wasabi wallet) partly resolve the problem. Yet, open source code doesn't mean libre (.Net again): https://www.wasabiwallet.io/  https://samouraiwallet.com/\n\nWith Monero, for which reputation got bruised from a 2016 paper, still has confidentitality in its design and was corrected since then. https://www.wired.com/story/monero-privacy/\n\nSo.... I decided to be plural on my website.\nStripe, Paypal, BTC and XMR will be supported as a start.\nI enforced BTC payments to MPK automatically derived wallet addresses (difficult to track to main wallet address used to cash out.)\n\nMain concern is to protect customer's privacy. Mine is not at risk since bank and tax accountability is still required for the business i'm running.\n\nAll crypto guys suggested me to host my own BTCpay server. I'll do soon enough, on my own RYF certified hardware, hosted in collocation somewhere I know safe and sound! Stay tuned!",
+			"post_id": 19,
+			"date_added": 1563310395
+		},
+		{
+			"comment_id": 26,
+			"body": "Resolved. I love this community :)",
+			"post_id": 24,
+			"date_added": 1563319660
+		},
+		{
+			"comment_id": 27,
+			"body": "So. \nStripe holds the money for 7 days prior to depositing into linked bank account.\nPaypal is faster but has a higher fee.\nBTC payment takes 6 hours and provided wallet addresses are derived from MPK, without any middle man and informs me when a payment is received.\nMonero is completely manual, requires me to transfer it to BTC first and then transfer it to bank account.\n\nSo:\nBTC is best for business and respects privacy.\nMonero respects privacy but is complicated to manage.\nStripe deposits directly in bank account but takes a week to have required liquidity\nPaypal gives access to money directly to pay hardware providers through Paypal",
+			"post_id": 19,
+			"date_added": 1563888109
+		},
+		{
+			"comment_id": 28,
+			"body": "Works :)",
+			"post_id": 24,
+			"date_added": 1564253631
+		},
+		{
+			"comment_id": 29,
+			"body": "Good news: **_Latest LTS Kernel has been downsized and now fits into SPI flash with SDHCI and MMC woking as expected, not showing instabilities as before._**\n\nChanges can be [seen here from August 8](https://github.com/osresearch/heads/compare/master...tlaurion:PrivacyBeast_X230_QubesOS_Certified)\n\nOriginal PR that was certified by QubesOS was [here](https://github.com/osresearch/heads/pull/551#issuecomment-519986106). \n\nCI build attempts are happening [here](https://gitlab.com/tlaurion/heads/-/jobs)\n\nThanks for you patience. This worked on my local environment. Hoping to get it working ASAP and flash all your hardware and apply the reownership wizard on all your orders later on today so they can ship monday/tuesday!\n\nInsurgo\n\n",
+			"post_id": 29,
+			"date_added": 1565369241
+		},
+		{
+			"comment_id": 30,
+			"body": "Yep. That phone is awesome.",
+			"post_id": 27,
+			"date_added": 1565374592
+		},
+		{
+			"comment_id": 31,
+			"body": "Here is a [Replicant changelog](https://web.archive.org/web/diff/20190713161228/20190809220102/https://redmine.replicant.us/projects/replicant/wiki/Porting_Replicant_to_Android_9/) in the last month for work done (July-August 2019)",
+			"post_id": 27,
+			"date_added": 1565388310
+		},
+		{
+			"comment_id": 32,
+			"body": "And then, I hit GitLab CI runner timeout: https://gitlab.com/tlaurion/heads/-/jobs/269763637\n\nOpened ticket, waiting for reproducible builds to be built to flash your devices...",
+			"post_id": 29,
+			"date_added": 1565407453
+		},
+		{
+			"comment_id": 33,
+			"body": "And then it worked.\nhttps://gitlab.com/tlaurion/heads/-/jobs/269840965",
+			"post_id": 29,
+			"date_added": 1565445516
+		},
+		{
+			"comment_id": 34,
+			"body": "If for some reason, you forgot your LUKS Disk Recovery Key, the only solution is to reinstall QubesOS.\n\nIf that happens inside of the Re-Ownership process, you have to first turn off OEM Re-Ownership. Else skip to the next section.\n\n\nDEACTIVATE RE-OWNERSHIP WIZARD IN HEADS\n\nTo do so, go directly into a recovery shell. To do so, hit frenetically the 'r' key after hitting the power button, prior to Heads booting up. Hit 'r' until you reach the recovery shell.\n\nThen:\nmount /boot\nmount -o remount,rw /boot\nrm /boot/oem\nmount -o remount,ro /boot\n \nThe changes have be synced to your boot disk. Reboot\n\n\n\nREINSTALL/INSTALL QUBESOS\n\nWINDOWS IS PREINSTALLED ON THE MACHINE\nWhen buying refurbished hardware, this normally comes with Windows preinstalled. Heads requires a Linux partition in /dev/sda1. If you are prompted to select an alternate boot drive, just select the option to go into recovery shell.\n\nInto recovery shell, format the first partition of your hard drive into Linux partition:\nmke2fs /dev/sda1\nreboot\n\nINSTALL QUBESOS:\nUnder Heads, select Settings ->> Boot Options -> Boot from SDCARD or Boot from USB\n\nSEAL EVERYTHING BACK\nOn reboot, you are in a unknow state. No /boot files are signed, there is no Disk Unlock Key password set. The TPM counter file in /boot is no longer present.\n\nReseal TPM/HOTP:\nGo in Settings -> TPM/TOTP/HOTP OPTIONS-> Reset the TPM\nChoose a new TPM passphrase. It is suggested for it to match your GPG Admin PIN\nYou'll be asked to enter it twice, then once again to seal measurements.\nScan your new TPMTOTP Qr Code.\nreboot\n\nSign boot configurations:\nSettings -> Update checksums and sign all files in /boot\nType your GPG User PIN when requested.\nreboot\n\nDEFINE A NEW DEFAULT BOOT OPTION & DISK UNLOCK KEY\nSettings-> Boot Options -> Show OS Boot menu (Select first option)\nSelect all default choices presented.\nEnter Disk Recovery Key (Disk encryption passphrase selected)\nChoose a Disk Unlock Passphrase (doesn't need to be crazy. 3 EFF diceware passphrase is more then enough.)\nreboot\n\nVoila!\n\n\n\n",
+			"post_id": 28,
+			"date_added": 1566053529
+		},
+		{
+			"comment_id": 35,
+			"body": "BLISS now works with work profiles from that change. \nhttps://gitlab.e.foundation/e/apps/BlissLauncher/commit/f7b97b87b85363e47bae27acf2e9e35a04ed758e",
+			"post_id": 27,
+			"date_added": 1566226424
+		},
+		{
+			"comment_id": 36,
+			"body": "Big advancement this week!!!\n\nTracking: https://web.archive.org/web/20190820193206/https://redmine.replicant.us/projects/replicant/wiki/Porting_Replicant_to_Android_9/\n\nTicket has been updated. What was the most problematic part was slow graphic acceleration. That has been resolved. See videos of differences here:\nhttps://github.com/CustomROMs/android_local_manifests_i9300/issues/1#issuecomment-521899752\n\nSpecifics on hardware acceleration blogpost:\nhttps://blog.replicant.us/2019/07/graphics-support-for-replicant-9/",
+			"post_id": 27,
+			"date_added": 1566330518
+		},
+		{
+			"comment_id": 37,
+			"body": "Sad update: The Librem keys are supposed to arrive at my place on the 29th. More updates to come from Purism...",
+			"post_id": 31,
+			"date_added": 1566430109
+		},
+		{
+			"comment_id": 38,
+			"body": "Update: The keys are supposed to be delivered today August 30th. Let's wish for the best. And let's wish the next order won't take 18 days to come my way.",
+			"post_id": 31,
+			"date_added": 1567182826
+		},
+		{
+			"comment_id": 39,
+			"body": "Update: The delivery was \"lost\" by FedEx. (How to not become paranoid, seriously)\n\n1- Opened a case at FedEx: could take 3 days before they come back to me (September 5th).\n2- Recontacted Purism to put this waybill to be returned to sender and them to resend the same number of units, with express delivery this time. (Current order was FedEx ground)\n\nMore updates to come.",
+			"post_id": 31,
+			"date_added": 1567273860
+		},
+		{
+			"comment_id": 40,
+			"body": "Paypal is now being really invasive, requiring really confidential information to validate commercial address, while all that information, even linked with shipments, point to that same address.\n\nChanges in payment systems:\n- I decided to drop Paypal for the moment.\n- Elavon was chosen as the credit card gateway, and transfers funds under 48h on working days.\n- Bitcoin address is a derivative of my main wallet address and changes for each payment. I receive an e-mail when the funds are transferred, else the transaction is cancelled after 24h.\n- Monero is dropped until something interesting pops out.  Manually concealing funds is time consuming and currently unmanageable.",
+			"post_id": 19,
+			"date_added": 1568066783
+		},
+		{
+			"comment_id": 41,
+			"body": "The situation is stabilized since September!",
+			"post_id": 31,
+			"date_added": 1575412608
+		},
+		{
+			"comment_id": 43,
+			"body": "Update.\n- Encryption support was not /e/ fault, see referred ticket for resolution steps\n- Tasks.org now support EteSync so that calendar and taks do not imply disclosing private information to the cloud\n",
+			"post_id": 41,
+			"date_added": 1602801934
+		},
+		{
+			"comment_id": 44,
+			"body": "Imagine those leaks analyzed locally by a https://datashare-demo.icij.org/ and that database merged and distributed.... ",
+			"post_id": 13,
+			"date_added": 1604621143
+		},
+		{
+			"comment_id": 45,
+			"body": "> [annnnnnnnnnon](#comment_1_1LFN8PWszgQqqFrqLGatX4kF8xgPUD8VEm): https://www.linuxglobal.com/fix-lvm-thin-cant-create-snapshot-failed-suspend-vg01pool0-queued-messages/\n\n?",
+			"post_id": 44,
+			"date_added": 1605208404
+		},
+		{
+			"comment_id": 47,
+			"body": "Sources of documentation:\n- https://gitlab.com/stevenshiau/clonezilla/-/raw/master/scripts/sbin/ocs-functions\n\nBefore. ocs-live-server-feed.sh:\n      \n     ocs-live-feed-img -cbm netboot -dm start-new-dhcpd -lscm massive-deployment -mdst from-device -bdt disk-2-mdisks -bsdf sfsck -g auto -e1 auto -e2 -r -x -j2 -p true -md bittorrent --clients-to-wait 5 start sda sda\n\n\n\n\nDocumenting as I go:\n- \"ocs-live-feed-img\"\n      script to which we pass arguments (code here:https://gitlab.com/stevenshiau/clonezilla/-/raw/master/sbin/ocs-live-feed-img) \n\n- \"-cbm netboot \" \n      \" -cbm, --client-boot-mode MODE     Assign the client boot mode: netboot, local-boot-media, or both\"\n- \"-dm start-new-dhcpd\" \n      \" -dm, --dhcpd-mode  MODE  Assign the dhcp service mode: use-existing-dhcpd, start-new-dhcpd, auto-detect, no-dhcpd\" \n- \"-lscm massive-deployment\" \n      \" -lscm, --lite-srv-client-mode MODE  Assign lite server client mode: massive-deployment or interactive-client\"\n- \"-mdst from-device\" \n      \" -mdst, --massive-deploy-source-type MODE  Assign massive deployment source type: from-image or from-device\" \n- \"-bdt disk-2-mdisks\" \n      \" -bdt, --bt-dev-type MODE Assign BT device type: disk-2-mdisks or part-2-mparts\" \n- \"-bsdf sfsck\" \n      \" -bsdf, --bt-src-dev-fsck  TYPE   Assign the type for fsck the source device: sfsck, fsck, fsck-y. Do not put \\\"-\\\" before the TYPE. It will confuse $ocs. Use it like: \\\"-bsdf fsck-y\\\"\"\n     \" sfsck, --skip-fsck-src-part  Skip running fsck on the source file system before saving it.\"\n- \"-g auto\" \n      \" -g|--grub-install auto\"\n- \"-e1 auto\"\n      \" -e1, --change-geometry NTFS-BOOT-PARTITION Force to change the CHS (cylinders, heads, sectors) value of NTFS boot partition after image is restored. NTFS-BOOT-PARTITION can be one of \\\"/dev/sda1\\\", \\\"/dev/sda2\\\"... or \\\"auto\\\" (\\\"auto\\\" will let clonezilla detect the NTFS boot partition automatically)\"  \n- \"-e2\" \n      \" -e2, --load-geometry-from-edd  Force to use the CHS (cylinders, heads, sectors) from EDD (Enhanced Disk Device) when creating partition table by sfdisk\"\n- \"-r\" \n       \" -r, --resize-partition   Resize the file system size to fit the partition size in the destination disk. It is normally used when when a small partition image is restored to a larger partition.\"\n- \"-x\" \n      \" -x|--full-duplex\"\n- \"-j2\" \n      \" -j, --create-part-by-sfdisk Use sfdisk to create partition table instead of using dd to dump the partition table from saved image (This is default)\"\n      \" -j0, --create-part-by-dd  Use dd to dump the partition table from saved image instead of sfdisk. ///Note/// This does NOT work when logical drives exist.\"\n      \" -j1, --dump-mbr-in-the-end  Use dd to dump the MBR (total 512 bytes, i.e. 446 bytes (executable code area) + 64 bytes (table of primary partitions) + 2 bytes (MBR signature; # 0xAA55) = 512 bytes) after disk image was restored. This is an insurance for some hard drive has different numbers of cylinder, head and sector between image was saved and restored.\"\n      \" -j2, --clone-hidden-data  Use dd to clone the image of the data between MBR (1st sector, i.e. 512 bytes) and 1st partition, which might be useful for some recovery tool.\"\n      \" -e2, --load-geometry-from-edd  Force to use the CHS (cylinders, heads, sectors) from EDD (Enhanced Disk Device) when creating partition table by sfdisk\"\n\n- \"-p true\" \n      \" -p|--postaction\" \n- \" -md bittorrent\"  \n      \"-md|--massive-deploy-mode\" \n- --clients-to-wait 5 \n- start sda sda\n\nThis without changes: \n\n    ocs-live-feed-img -cbm netboot -dm start-new-dhcpd -lscm massive-deployment -mdst from-device -bdt disk-2-mdisks -bsdf sfsck -g auto -e1 auto -e2 -r -x -j2 -p true -md bittorrent --clients-to-wait 5 start sda sda\n\nBecomes for sake of clarity:\n\n    ocs-live-feed-img --client-boot-mode netboot --dhcpd-mode start-new-dhcpd --lite-srv-client-mode massive-deployment --massive-deploy-source-type from-device --bt-dev-type disk-2-mdisks --bt-src-dev-fsck sfsck --grub-install auto --change-geometry auto --load-geometry-from-edd --resize-partition --full-duplex --clone-hidden-data --postaction true --massive-deploy-mode bittorrent --clients-to-wait 5 start sda sda \n\nWhere the thought culprits are linked to cfdisk options (-j and -e options) which will be replaced with dd.\n\nA test run with the following will follow:\n\n    ocs-live-feed-img --client-boot-mode netboot --dhcpd-mode start-new-dhcpd --lite-srv-client-mode massive-deployment --massive-deploy-source-type from-device --bt-dev-type disk-2-mdisks --bt-src-dev-fsck sfsck --grub-install auto  --full-duplex --clone-hidden-data --create-part-by-dd --postaction true --massive-deploy-mode bittorrent --clients-to-wait 5 start sda sda \n\nThis resulted in dd being called on partitions. We are still in partition mode. We want to remove all introspection on partitions, not clone hidden partition etc. We want a disk clone of the source without manipulation whatsoever:\n\n    ocs-live-feed-img --client-boot-mode netboot --dhcpd-mode start-new-dhcpd --lite-srv-client-mode massive-deployment --massive-deploy-mode bittorrent --massive-deploy-source-type from-device --bt-dev-type disk-2-mdisks --bt-src-dev-fsck sfsck --grub-install auto --full-duplex --postaction true --clients-to-wait 5 start sda sda\n\n",
+			"post_id": 48,
+			"date_added": 1606425827
+		},
+		{
+			"comment_id": 48,
+			"body": "```\nsudo mkdir -p /rw/config/qubes-bind-dirs.d\nsudo vim /rw/config/qubes-bind-dirs.d/50_user.conf\n```\n\ncontent:\n```\nbinds+=( '/root' )\nbinds+=( '/var/guix' )\nbinds+=( '/gnu/store' )\nbinds+=( '/etc/guix' )\nbinds+=( '/etc/systemd/system/guix-daemon.service' )\nbinds+=( '/etc/systemd/system/multi-user.target.wants/nscd.service')\n```",
+			"post_id": 42,
+			"date_added": 1611197059
+		},
+		{
+			"comment_id": 49,
+			"body": "Cloned debian-10 into debian-10-nscd, installed nscd into debian-10-nsdc",
+			"post_id": 42,
+			"date_added": 1611197292
+		},
+		{
+			"comment_id": 50,
+			"body": "To install specific versions of package:\n```\nguix install make@4.2.1\n```",
+			"post_id": 42,
+			"date_added": 1611198714
+		},
+		{
+			"comment_id": 51,
+			"body": "Once the setup is done, installing all required applications can be done under current user, at the condition of having the profile set:\n```\nGUIX_PROFILE=\"/home/user/.guix-profile\"\n. \"$GUIX_PROFILE/etc/profile\"\n```",
+			"post_id": 42,
+			"date_added": 1611199548
+		},
+		{
+			"comment_id": 52,
+			"body": "There might be a trick to also restore dom0 LVM!!!!?!\n\nWhile the content of /boot is already backuped (read: not the partition layout created at installation: just its content.)\n\nTesting on my todo list. Maybe we will start seeing a PoC afterall....",
+			"post_id": 53,
+			"date_added": 1624996501
+		},
+		{
+			"comment_id": 53,
+			"body": "TPM support was added. Works on top of Coreboot 4.11. Mainstreamed into Heads project!",
+			"post_id": 3,
+			"date_added": 1636048116
+		},
+		{
+			"comment_id": 54,
+			"body": "> [musickiller@zeroid.bit](#comment_1_15NScazvsCHNmiXi6o6nvaMiwjeJYizgZQ): sorry for the off-topic, but I really love your logo =D\n> What does it mean?\n\n@musickiller@zeroid.bit\nIt's a generic Electronic Power symbol found on all electronic devices (Power Button symbol). But with the line normally cutting the circle on top replaced by a human. \n\nThat is my way of putting back the human in the center of computing; for humans to \"take their power\" back :) I find this logo really empowering... Which is what it should inspire. :)",
+			"post_id": 54,
+			"date_added": 1636121185
+		}
+	],
+	"comment_vote": {},
+	"post_vote": {
+		"2": 1,
+		"3": 1,
+		"5": 1,
+		"9": 1,
+		"11": 1,
+		"12": 1,
+		"13": 1,
+		"14": 1,
+		"17": 1,
+		"18": 1,
+		"19": 1,
+		"20": 1,
+		"26": 1,
+		"27": 1,
+		"28": 1,
+		"29": 1,
+		"30": 1,
+		"31": 1,
+		"41": 1,
+		"43": 1,
+		"54": 1
+	}
+}

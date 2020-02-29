@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Пишем свой зайт с нуля: ZeroNet Hello world</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<link rel="stylesheet" href="../../css/global.css">
+</head>
+
+<body>
+	
+<header>
+  <a href="../../index.html"><img src="../../img/logo.png" width="55"></a><br>ChronCache	
+</header>
+	
+<nav>
+	<hr>
+  <p><a href="../../blog.html">архив</a> <tt>|</tt> <a href="../../help.html">помощь</a> <tt>|</tt> <a href="/1Q9LVNLD1ghusGxpiwjYnVjPsxD5xGTGc7/donate/index.html">донат</a></p>
+	<hr>
+</nav>
+
+<article>
+	
+<acide><p>Это резервная страница от 05.03.2019 / <a href="/1CpGZyfbUBBV5uXUoY653wVoqZFRojbEzd/?Post:15">оригинал</a></p></acide>
+
+<section>
+	<h1>Пишем свой зайт с нуля: ZeroNet Hello world</h1>
+	<p><i>В этом уроке мы создадим стартовую страницу для нового сайта, но своим путем.</i></p>
+	<p>В прошлом уроке мы подготовили окружение для разработки. Маленькое замечание к предыдущей статье:</p>
+	<p>Можно было бы сделать еще лучше, и перенести папку с проектом куда-то в отдельное место, оставив в папке с ZeroNet лишь симлинку (справедливо для *nix-based систем). Делается это просто</p>
+	<div class="code">
+		<code>cd &lt;path to zeronet>/data/
+mv &lt;our site address> ~/prg/zeronet/
+ln -s /home/&lt;user>/prg/zeronet/&lt;our site address> ./</code>
+	</div>
+	<p>Таким образом мы вполне себе можем инициализировать например тот же git репозиторий в этой папке, однако не забудьте добавить <code>.git</code> в <code>ignore</code> ключ файла content.json</p>
+	<p>А теперь начнем восстановление стандартной страницы с использованием наших "современных" штук.</p>
+	<h2>Перенесем <code>ZeroFrame.js</code> в папку <code>src</code></h2>
+	<p>Для начала нам стоит сделать <code>ZeroFrame.js</code> доступным из нашего проекта через <code>import</code>. Для этого сделаем пару модификаций, перенесем файл <code>js/ZeroFrame.js</code> в <code>src/ZeroFrame.js</code>, а так же слегка модифицируем его, добавив в самый конец одну единственную строчку</p>
+	<code>export default ZeroFrame</code>
+	<h2>Создадим VueJS приложение</h2>
+	<p>Создадим новый файл, например <code>src/components/app.vue</code> и опишем наше Hello, world! приложение:</p>
+	<div class="code">
+		<code>&lt;template>
+  &lt;div>
+    &lt;h1>Hello, world&lt;/h1>
+  &lt;/div>
+&lt;/template>
+
+&lt;style scoped>
+&lt;/style>
+
+&lt;script>
+import Vue from 'vue'
+
+export default {
+  data: () => {
+    return {}
+  }
+}
+&lt;/script></code>
+	</div>
+	<p>А теперь, что бы что-то заработало, нам нужно сделать две вещи.</p>
+	<p>Идем в <code>src/index.js</code> и пишем там всего пару строк</p>
+	<div class="code">
+		<code>import Vue from 'vue'
+
+import App from 'components/app.vue'
+
+const app = new Vue({
+
+  render: h => h(App)
+
+}).$mount('#app')</code>
+	</div>
+	<p>Указываем VueJS где будет располагаться наше приложение. Так же нам нужно создать соответствующий элемент в нашей изначальной верстке, т.е. в <code>index.html</code></p>
+	<p>Во первых там стоит убрать все теги <code>&#60;script></code> кроме того, что мы написали в прошлый раз, а также добавить <code>&#60;div id="app">&#60;/div></code>. Ваш итоговый html файл должен выглядеть следующим образом:</p>
+	<div class="code">
+		<code>&lt;!DOCTYPE html>
+
+&lt;html>
+&lt;head>
+ &lt;title>New ZeroNet site!&lt;/title>
+ &lt;meta charset="utf-8">
+ &lt;meta http-equiv="content-type" content="text/html; charset=utf-8" />
+ &lt;base href="" target="_top" id="base">
+ &lt;script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&amp;?]wrapper=False/, "").replace(/[&amp;?]wrapper_nonce=[A-Za-z0-9]+/, "")&lt;/script>
+&lt;/head>
+&lt;body>
+
+&lt;div id="app">&lt;/div>
+
+&lt;script type="text/javascript" src="js/all.js">&lt;/script>
+
+&lt;/body>
+&lt;/html></code>
+	</div>
+	<p>На текущий момент, вызвав <code>./node_modules/.bin/webpack</code> (а можно запустить его в watch режиме используюя <code>./node_modules/.bin/webpack -w</code>), а после, зайдя на свой зайт, мы легко должны увидеть надпись <code>Hello, world!</code>.</p>
+	<p>Да, это все выглядит слишком многословно, для хелловорда, но мы обязательно еще ощутим профит от всей этой навороченности!</p>
+	<h2>Подключаемся к ZeroNet API</h2>
+	<p>Следующим шагом мы выведем информацию о зайте точно так же, как это было сделано до того, как мы полезли своими ручками в проект.</p>
+	<p>К сожалению, мистер Nofish создал свой ZeroFrame API с расчетом, что его будут использовать несколько иначе, однако мы все же сделаем некоторые шаги, чтобы использование ZeroFrame API было можно сказать нативным с точки зрения проекта на VueJS.</p>
+	<p>Так что создадим свой <code>src/zero_api.js</code>, где и будем делать, так сказать, слой совместимости. Импортируем оригинальный <code>ZeroFrame.js</code>, наследуемся от класса, добавляем необходимые методы и оборачиваем это в инстанс Vue объекта.</p>
+	<div class="code">
+		<code>import ZeroFrame from 'ZeroFrame.js'
+import Vue from 'vue'
+
+class App extends ZeroFrame {
+  init() {
+    this.subscribers = {}
+  }
+
+  setSiteInfo(siteInfo) {
+    apiWrapper.siteInfo = siteInfo
+  }
+
+  onOpenWebsocket() {
+    apiWrapper.connected = true
+    this.cmd("siteInfo", [], siteInfo => {
+      this.setSiteInfo(siteInfo)
+    })
+  }
+
+  onRequest(cmd, msg) {
+    if (this.subscribers[cmd] !== undefined) {
+      this.subscribers[cmd].forEach(cb => {
+        cb(msg)
+      })
+    } else {
+      console.log('No listers for', cmd, msg)
+    }
+  }
+
+  subscribe(cmd, cb) {
+    if (this.subscribers[cmd] === undefined) {
+      this.subscribers[cmd] = []
+    }
+
+    this.subscribers[cmd].push(cb);
+  }
+}
+
+const app = new App()
+
+const apiWrapper = new Vue({
+  data: {
+    connected: false,
+    siteInfo: null
+  },
+
+  computed: {
+    siteModifiedDate: function() {
+      return new Date(this.siteInfo.content.modified*1000)
+    }
+  },
+
+  created: function() {
+    app.subscribe('setSiteInfo', msg => {
+      this.siteInfo = msg.params
+    })
+  },
+
+  methods: {
+    api: () => app,
+  }
+})
+
+export default apiWrapper</code>
+	</div>
+	<p>Пока так, криво и коряво, думаю чуть позже это все мы исправим, когда столкнемся с уже действительно частым и серьезным использованием ZeroFrame API</p>
+	<p>Наверное стоит оставить немного пояснений: как только ZeroFrame сообщает нам, что он готов к использованию мы запрашиваем информацию о нашем зайте, а как только ее получим, запишем эту информацию в объект Vue, да бы иметь возможность использовать это информацию "реактивно" (т.е. как только она по каким-либо причинам обновится, благодаря самому Vue, все приложение об этом сразу узнает). Из модуля мы уже вернем инстанс Vue, но на всякий случай дадим ему возможность вернуть оригинальный ZeroFrame инстанс, позже придумаем, что с ним делать :)</p>
+	<p>За деталями имеет смысл читать <a href="https://zeronet.readthedocs.io/en/latest/site_development/zeroframe_api_reference/" target="_blank">оригинальную документацию</a>. Она конечно не фонтан, но какую-то информацию предоставляет.</p>
+	<p>Что ж, осталось всего ничего, отобразить полученную информацию о зайте на странице. Для этого идем в наш <code>src/components/app.vue</code> и модифицируем его следующим образом:</p>
+	<div class="code">
+		<code>&lt;template>
+  &lt;div>
+    &lt;h1>Hello, world&lt;/h1>
+    &lt;div>{{ api.connected ? 'Connected' : 'Disconnected' }}&lt;/div>
+    &lt;template v-if="api.siteInfo !== null">
+      &lt;h2>Site Info&lt;/h2>
+      &lt;p>Page address: {{ api.siteInfo.adress }}&lt;/p>
+      &lt;p>- Peers: {{ api.siteInfo.peers }}&lt;/p>
+      &lt;p>- Size: {{ api.siteInfo.settings.size }}&lt;/p>
+      &lt;p>- Modified: {{ api.siteModifiedDate }} &lt;/p>
+    &lt;/template>
+  &lt;/div>
+&lt;/template>
+
+&lt;style scoped>
+&lt;/style>
+
+&lt;script>
+import Vue from 'vue'
+
+import ZeroApi from 'zero_api.js'
+
+export default {
+  data: () => {
+    return {
+      api: ZeroApi,
+    }
+  }
+}
+&lt;/script></code>
+	</div>
+	<p>Обновив наш зайт, мы увидим вcю ту же информацию, что видели при создании нового зайта. В качестве эксперимента, можно потянуть за "нолик" справа вверху, изменить Title или Description, сохранить и в течении пары секунд мы увидим, как Modified поле изменится на более актуальное.</p>
+	<p>На этом на сегодня все. В следующем уроке мы с вами начнем наконец двигаться к цели и делать что-то на пользу нашему приложению. Например напишем роутер, так как Vue-router, как оказалось, немного не готов для использования внутри iFrame, заменяет GET параметры, которые ZeroNet прокидывает в целях безопасности. К тому же, url в ZeroNet меняется иначе, нежели в обычных веб-приложениях.</p>
+</section>
+	
+<p class="dr">May 26, 2017 / GomZik's Blog</p>
+	
+</article>		
+		
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>add Makefile and config.mk - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/b069cb6fd50d180cd6afb272c0016a6715f126d9.html">b069cb6fd50d180cd6afb272c0016a6715f126d9</a>
+<b>parent</b> <a href="../commit/8b6a646b7a654488afc9f5969d977de942bbb030.html">8b6a646b7a654488afc9f5969d977de942bbb030</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Sat Dec  5 21:07:52 +0100
+
+add Makefile and config.mk
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">Makefile</a></td><td> | </td><td class="num">72</td><td><span class="i">++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++</span><span class="d"></span></td></tr>
+<tr><td><a href="#h1">config.mk</a></td><td> | </td><td class="num">30</td><td><span class="i">++++++++++++++++++++++++++++++</span><span class="d"></span></td></tr>
+</table>2 files changed, 102 insertions(+), 0 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/Makefile.html">Makefile</a> b/<a href="../file/Makefile.html">Makefile</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -0,0 +1,72 @@
+</a><a href="#h0-0-0" id="h0-0-0" class="i">+include config.mk
+</a><a href="#h0-0-1" id="h0-0-1" class="i">+
+</a><a href="#h0-0-2" id="h0-0-2" class="i">+NAME = urmoms
+</a><a href="#h0-0-3" id="h0-0-3" class="i">+VERSION = 0.1
+</a><a href="#h0-0-4" id="h0-0-4" class="i">+SRC = \
+</a><a href="#h0-0-5" id="h0-0-5" class="i">+	urmoms.c
+</a><a href="#h0-0-6" id="h0-0-6" class="i">+BIN = \
+</a><a href="#h0-0-7" id="h0-0-7" class="i">+	urmoms
+</a><a href="#h0-0-8" id="h0-0-8" class="i">+MAN1 = \
+</a><a href="#h0-0-9" id="h0-0-9" class="i">+	urmoms.1
+</a><a href="#h0-0-10" id="h0-0-10" class="i">+DOC = \
+</a><a href="#h0-0-11" id="h0-0-11" class="i">+	LICENSE\
+</a><a href="#h0-0-12" id="h0-0-12" class="i">+	README\
+</a><a href="#h0-0-13" id="h0-0-13" class="i">+	TODO
+</a><a href="#h0-0-14" id="h0-0-14" class="i">+HDR = 
+</a><a href="#h0-0-15" id="h0-0-15" class="i">+
+</a><a href="#h0-0-16" id="h0-0-16" class="i">+OBJ = ${SRC:.c=.o}
+</a><a href="#h0-0-17" id="h0-0-17" class="i">+
+</a><a href="#h0-0-18" id="h0-0-18" class="i">+all: $(BIN)
+</a><a href="#h0-0-19" id="h0-0-19" class="i">+
+</a><a href="#h0-0-20" id="h0-0-20" class="i">+.c.o:
+</a><a href="#h0-0-21" id="h0-0-21" class="i">+	${CC} -c ${CFLAGS} $&lt;
+</a><a href="#h0-0-22" id="h0-0-22" class="i">+
+</a><a href="#h0-0-23" id="h0-0-23" class="i">+dist: $(BIN)
+</a><a href="#h0-0-24" id="h0-0-24" class="i">+	rm -rf release/${VERSION}
+</a><a href="#h0-0-25" id="h0-0-25" class="i">+	mkdir -p release/${VERSION}
+</a><a href="#h0-0-26" id="h0-0-26" class="i">+	cp -f ${MAN1} ${HDR} ${SCRIPTS} ${SRC} ${COMPATSRC} ${DOC} \
+</a><a href="#h0-0-27" id="h0-0-27" class="i">+		Makefile config.mk \
+</a><a href="#h0-0-28" id="h0-0-28" class="i">+		logo.png style.css \
+</a><a href="#h0-0-29" id="h0-0-29" class="i">+		release/${VERSION}/
+</a><a href="#h0-0-30" id="h0-0-30" class="i">+	# make tarball
+</a><a href="#h0-0-31" id="h0-0-31" class="i">+	rm -f urmoms-${VERSION}.tar.gz
+</a><a href="#h0-0-32" id="h0-0-32" class="i">+	(cd release/${VERSION}; \
+</a><a href="#h0-0-33" id="h0-0-33" class="i">+	tar -czf ../../urmoms-${VERSION}.tar.gz .)
+</a><a href="#h0-0-34" id="h0-0-34" class="i">+
+</a><a href="#h0-0-35" id="h0-0-35" class="i">+${OBJ}: config.mk ${HDR}
+</a><a href="#h0-0-36" id="h0-0-36" class="i">+
+</a><a href="#h0-0-37" id="h0-0-37" class="i">+urmoms: urmoms.o
+</a><a href="#h0-0-38" id="h0-0-38" class="i">+	${CC} -o $@ urmoms.o ${LDFLAGS}
+</a><a href="#h0-0-39" id="h0-0-39" class="i">+
+</a><a href="#h0-0-40" id="h0-0-40" class="i">+clean:
+</a><a href="#h0-0-41" id="h0-0-41" class="i">+	rm -f ${BIN} ${OBJ}
+</a><a href="#h0-0-42" id="h0-0-42" class="i">+
+</a><a href="#h0-0-43" id="h0-0-43" class="i">+install: all
+</a><a href="#h0-0-44" id="h0-0-44" class="i">+	# installing executable files.
+</a><a href="#h0-0-45" id="h0-0-45" class="i">+	mkdir -p ${DESTDIR}${PREFIX}/bin
+</a><a href="#h0-0-46" id="h0-0-46" class="i">+	cp -f ${BIN} ${SCRIPTS} ${DESTDIR}${PREFIX}/bin
+</a><a href="#h0-0-47" id="h0-0-47" class="i">+	for f in $(BIN) $(SCRIPTS); do chmod 755 ${DESTDIR}${PREFIX}/bin/$$f; done
+</a><a href="#h0-0-48" id="h0-0-48" class="i">+	# installing example files.
+</a><a href="#h0-0-49" id="h0-0-49" class="i">+	mkdir -p ${DESTDIR}${PREFIX}/share/${NAME}
+</a><a href="#h0-0-50" id="h0-0-50" class="i">+	cp -f style.css\
+</a><a href="#h0-0-51" id="h0-0-51" class="i">+		logo.png\
+</a><a href="#h0-0-52" id="h0-0-52" class="i">+		README\
+</a><a href="#h0-0-53" id="h0-0-53" class="i">+		${DESTDIR}${PREFIX}/share/${NAME}
+</a><a href="#h0-0-54" id="h0-0-54" class="i">+	# installing manual pages.
+</a><a href="#h0-0-55" id="h0-0-55" class="i">+	mkdir -p ${DESTDIR}${MANPREFIX}/man1
+</a><a href="#h0-0-56" id="h0-0-56" class="i">+	cp -f ${MAN1} ${DESTDIR}${MANPREFIX}/man1
+</a><a href="#h0-0-57" id="h0-0-57" class="i">+	for m in $(MAN1); do chmod 644 ${DESTDIR}${MANPREFIX}/man1/$$m; done
+</a><a href="#h0-0-58" id="h0-0-58" class="i">+
+</a><a href="#h0-0-59" id="h0-0-59" class="i">+uninstall:
+</a><a href="#h0-0-60" id="h0-0-60" class="i">+	# removing executable files and scripts.
+</a><a href="#h0-0-61" id="h0-0-61" class="i">+	for f in $(BIN) $(SCRIPTS); do rm -f ${DESTDIR}${PREFIX}/bin/$$f; done
+</a><a href="#h0-0-62" id="h0-0-62" class="i">+	# removing example files.
+</a><a href="#h0-0-63" id="h0-0-63" class="i">+	rm -f \
+</a><a href="#h0-0-64" id="h0-0-64" class="i">+		${DESTDIR}${PREFIX}/share/${NAME}/style.css\
+</a><a href="#h0-0-65" id="h0-0-65" class="i">+		${DESTDIR}${PREFIX}/share/${NAME}/logo.png\
+</a><a href="#h0-0-66" id="h0-0-66" class="i">+		${DESTDIR}${PREFIX}/share/${NAME}/README
+</a><a href="#h0-0-67" id="h0-0-67" class="i">+	-rmdir ${DESTDIR}${PREFIX}/share/${NAME}
+</a><a href="#h0-0-68" id="h0-0-68" class="i">+	# removing manual pages.
+</a><a href="#h0-0-69" id="h0-0-69" class="i">+	for m in $(MAN1); do rm -f ${DESTDIR}${MANPREFIX}/man1/$$m; done
+</a><a href="#h0-0-70" id="h0-0-70" class="i">+
+</a><a href="#h0-0-71" id="h0-0-71" class="i">+.PHONY: all clean dist install uninstall
+</a><b>diff --git a/<a id="h1" href="../file/config.mk.html">config.mk</a> b/<a href="../file/config.mk.html">config.mk</a></b>
+<a href="#h1-0" id="h1-0" class="h">@@ -0,0 +1,30 @@
+</a><a href="#h1-0-0" id="h1-0-0" class="i">+# customize below to fit your system
+</a><a href="#h1-0-1" id="h1-0-1" class="i">+
+</a><a href="#h1-0-2" id="h1-0-2" class="i">+# paths
+</a><a href="#h1-0-3" id="h1-0-3" class="i">+PREFIX = /usr/local
+</a><a href="#h1-0-4" id="h1-0-4" class="i">+MANPREFIX = ${PREFIX}/share/man
+</a><a href="#h1-0-5" id="h1-0-5" class="i">+
+</a><a href="#h1-0-6" id="h1-0-6" class="i">+GITINC = /usr/local/include
+</a><a href="#h1-0-7" id="h1-0-7" class="i">+GITLIB = /usr/local/lib
+</a><a href="#h1-0-8" id="h1-0-8" class="i">+
+</a><a href="#h1-0-9" id="h1-0-9" class="i">+# includes and libs
+</a><a href="#h1-0-10" id="h1-0-10" class="i">+INCS = -I${GITINC}
+</a><a href="#h1-0-11" id="h1-0-11" class="i">+LIBS = -L${GITLIB} -lgit2 -lc
+</a><a href="#h1-0-12" id="h1-0-12" class="i">+
+</a><a href="#h1-0-13" id="h1-0-13" class="i">+# debug
+</a><a href="#h1-0-14" id="h1-0-14" class="i">+CFLAGS = -fstack-protector-all -O0 -g -std=c99 -Wall -Wextra -pedantic \
+</a><a href="#h1-0-15" id="h1-0-15" class="i">+	-D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_BSD_SOURCE ${INCS}
+</a><a href="#h1-0-16" id="h1-0-16" class="i">+LDFLAGS = ${LIBS}
+</a><a href="#h1-0-17" id="h1-0-17" class="i">+
+</a><a href="#h1-0-18" id="h1-0-18" class="i">+# optimized
+</a><a href="#h1-0-19" id="h1-0-19" class="i">+#CFLAGS = -O2 -std=c99 \
+</a><a href="#h1-0-20" id="h1-0-20" class="i">+#	-D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_BSD_SOURCE ${INCS}
+</a><a href="#h1-0-21" id="h1-0-21" class="i">+#LDFLAGS = -s ${LIBS}
+</a><a href="#h1-0-22" id="h1-0-22" class="i">+
+</a><a href="#h1-0-23" id="h1-0-23" class="i">+# optimized static
+</a><a href="#h1-0-24" id="h1-0-24" class="i">+#CFLAGS = -static -O2 -std=c99 \
+</a><a href="#h1-0-25" id="h1-0-25" class="i">+#	-D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_BSD_SOURCE ${INCS}
+</a><a href="#h1-0-26" id="h1-0-26" class="i">+#LDFLAGS = -static -s ${LIBS}
+</a><a href="#h1-0-27" id="h1-0-27" class="i">+
+</a><a href="#h1-0-28" id="h1-0-28" class="i">+# compiler and linker
+</a><a href="#h1-0-29" id="h1-0-29" class="i">+#CC = cc
+</a></pre>
+</div>
+</body>
+</html>

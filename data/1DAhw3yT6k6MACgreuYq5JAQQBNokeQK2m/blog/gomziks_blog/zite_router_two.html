@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Пишем свой зайт с нуля: прокачиваем роутер</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<link rel="stylesheet" href="../../css/global.css">
+</head>
+
+<body>
+	
+<header>
+  <a href="../../index.html"><img src="../../img/logo.png" width="55"></a><br>ChronCache	
+</header>
+	
+<nav>
+	<hr>
+  <p><a href="../../blog.html">архив</a> <tt>|</tt> <a href="../../help.html">помощь</a> <tt>|</tt> <a href="/1Q9LVNLD1ghusGxpiwjYnVjPsxD5xGTGc7/donate/index.html">донат</a></p>
+	<hr>
+</nav>
+
+<article>
+	
+<acide><p>Это резервная страница от 06.03.2019 / <a href="/1CpGZyfbUBBV5uXUoY653wVoqZFRojbEzd/?Post:17">оригинал</a></p></acide>
+
+<section>
+	<h1>Пишем свой зайт с нуля: прокачиваем роутер</h1>
+	<p>Итак, в прошлом уроке мы сделали самый-самый простенький роутер, в этом мы попробуем превратить его в крутой роутер с интеграцией с ZeroFrame API.</p>
+	<p>Для начала - давайте определим, чего нам не хватает:</p>
+	<ul>
+		<li>При переходе со страницу на страницу, URL в строке браузера не меняется
+		<li>Нельзя по прямому URL перейти на необходимую страницу
+		<li>Не хватает параметризации URL
+	</ul>
+	<p>Что ж, сегодня попробуем это все поправить. Приступим?</p>
+	<p>Начнем с того, что реализуем клик по ссылке, который меняет URL в строке браузера, одновременно с этим мы сделаем параметризированные URL'ы</p>
+	<p>Для этого идем в наш <code>src/router.js</code> и модифицируем его следующим образом:</p>
+	<div class="code">
+		<code>// ...
+import pathToRegexp from 'path-to-regexp'
+
+import ZeroApi from 'zero_api.js'
+// ...
+
+const router = new Vue({
+  // ...
+  data: {
+    //...
+    routeParams: null
+  },
+  methods: {
+    go: function(to, params = {}) {
+      const url = this.relativeUrl(to, params)
+
+      /**
+       * Инструкция для ZeroFrame API, которая позволяет поменять URL браузера
+       * В качестве параметров можно передать объект-состояние, который поможет
+       * восстановить страницу при нажатии кнопки "Назад" в браузере
+       * (например {scrollTop: 100}), вторым параметром - тайтл новой страницы
+       * третьим - урл новой страницы.
+       * Интерфейс аналогичен соответствующему методу в HTML5 History API
+       * ZeroNet wrapper в итоге установит урл в строке браузера вида
+       * http://127.0.0.1:43110/&lt;zite_address>/?&lt;url>
+       */
+      ZeroApi.api().cmd('wrapperPushState', [{}, '', url])
+      this.route(url)
+    },
+
+    relativeUrl: function(to, params = {}) {
+      const route = this.routes.find(x => x.name === for_route)
+      const url = pathToRegexp.compile(route.path)(params)
+      return url
+    },
+
+    route: function(url) {
+      let matchedRoute = null
+      let params = null
+
+      // Находим подходящий route, устанавливаем соответствующий компонент
+      // Сохраняем внутри роутера параметры.
+      for (const route of this.routes) {
+        let keys = []
+        const re = pathToRegexp(route.path, keys)
+        const result = re.exec(url)
+        if (result !== null) {
+          matchedRoute = route
+          params = {}
+          keys.forEach((item, index) => {
+            params[item.name] = result[index + 1]
+          })
+          break
+        }
+      }
+
+      if (matchedRoute) {
+        this.currentView = matchedRoute.component
+        this.routeParams = params
+      }
+    }
+  }
+}
+// ...</code>
+	</div>
+	<p>Для эксперимента, сделаем особую ссылку с параметрами на Library, а в Library попытаемся их считать. В верху нашего <code>src/router.js</code></p>
+	<div class="code">
+		<code>const routes = [
+  // ...
+  {path: '/test/:param', name: 'test', component: 'library'} // А может это уже было добавлено в прошлом уроке?
+]</code>
+	</div>
+	<p>Делаем ссылку внутри <code>src/components/home.vue</code></p>
+	<div class="code"><code>&lt;a href="javascript:;" @click.prevent="router.go('test', {param: 123})">Test link&lt;/a></code></div>
+	<p>А внутри <code>src/components/library.vue</code>:</p>
+	<div class="code"><code>&lt;!-- Используем $data для доступа к raw объекту, без навешанных сеттеров-геттеров Vue --><br>&lt;pre>{{ router.$data.routeParams }}&lt;/pre></code></div>
+	<p>отобразим параметры, которые пришли из router. Теперь можем и поиграться с нашими ссылками. Обращаем внимание на то, что ссылки в браузере меняются. Однако, стоит нам обновить страницу используя F5 (кнопку обновить), мы, вне зависимости от того, где находились, снова придем на главную. К тому же, если в браузере нажать кнопку назад, мы также не вернемся на предыдущую страницу. Давайте же исправим это.</p>
+	<p>Снова идем в наш <code>src/router.js</code>:</p>
+	<div class="code">
+		<code>const router = new Vue({
+  data: {/*...*/},
+
+  computed: {
+    apiConnected: function() {
+      return ZeroApi.connected
+    }
+  },
+
+  watch: {
+    apiConnected: function(val) {
+      this.onConnect(val)
+    }
+  },
+
+  created: function() {
+    this.onConnect(this.apiConnected)
+  }
+
+  methods: {
+    // ...
+    // Как только ZeroFrame связался с ZeroNet сервером, мы определяем текущий
+    // URL, переходим на нужную страницу, а так же подписываемся на событие
+    // которое означает, что пользователь нажал кнопку назад в браузере.
+    onConnect: function(isConnected) {
+      if (!isConnected) {
+        return
+      }
+
+      this.route(this.getUrl(base.href))
+
+      ZeroApi.api().subscribe('wrapperPopState', (msg) => {
+        this.route(this.getUrl(msg.params.href))
+      })
+    },
+
+    getUrl: function(fullUrl) {
+      let url
+      if (fullUrl.indexOf('?') === -1) {
+        url = ''
+      } else {
+        url = fullUrl.replace(/.*?\?/, "")
+      }
+      return url
+    }
+  }
+})</code>
+	</div>
+	<p>Теперь можно не только поиграть с сылками, но и с кнопками "Назад" и "Обновить".</p>
+	<h2>В качестве бонуса</h2>
+	<p>Очень не хватает возможности нажать на ссылку правой кнопкой и нажать что-то вроде "Открыть в новой вкладке", такое же поведение есть при нажатии на среднюю кнопку мыши (колесико), такое же поведение есть при нажатии на ссылку обычным кликом с зажатым ctrl.</p>
+	<p>На самом деле, для этого нужно сделать две вещи:</p>
+	<ul>
+		<li>Подставить в <code>&#60;a href=""></code> настоящую ссылку
+		<li>Изменить <code>@click</code> обработчик, чтобы передать событие браузера в метод <code>go</code>, чтобы мы могли определить, нажата ли кнопка ctrl
+	</ul>
+	<p>В последний раз в этом уроке перейдем в <code>src/router.js</code> и добавим туда следующее:</p>
+	<div class="code">
+		<code>const router = new Vue({
+  data: {/*...*/},
+  // ...
+  methods: {
+    // ...
+    go: function(to, params={}, event) {
+      // Если зажат ctrl или meta (насколько я знаю, это так работает в Mac-ах
+      // работаем так, как обычно работает браузер
+      if (event &amp;&amp; (event.ctrlKey || event.metaKey)) return
+      // Отменяем дефолтное поведение (переход по ссылке)
+      if (event) event.preventDefault()
+
+      // Весь остальной код метода
+      // ...
+    },
+    // ...
+    // Данный метод вернет нам полный URL, включая часть с 
+    // http://127.0.0.1:43110/&lt;zite_address>/?/&lt;url_to_route>
+    url: function(for_route, params = {}) {
+      const url = this.relativeUrl(for_route, params)
+      const absoluteUrl = base.href.split(/[?#]/)[0] + '?' + url;
+      return absoluteUrl
+    }
+  }
+})</code>
+	</div>
+	<p>Теперь нам нужно пройтись по всем местам, где есть ссылки и поменять их на что-то вроде:</p>
+	<div class="code"><code>&lt;a :href="router.url('test', {param: 123})" @click="router.go('test', {param: 123}, $event)">Test link&lt;/a></code></div>
+	<p>Т.е. меняем <code>@click.prevent="router.go(...)"</code> на <code>@click="router.go(..., $event)"</code>, а так же изменить значение <code>href</code>, сделав его привязанным <code>:href="router.url(...)"</code>. Все, теперь можно открывать ссылки в новой вкладке, так, как будто перед нами самый обычный сайт.</p>
+	<p>На текущий момент, разработка зайта ведется по адресу <u>http://localhost:43110/1JMNrd9FD19AhWVukYJ2gdxAiK2ohczwk5/</u>, там уже реализовано какое-то подобие плеера, однако оно сразу начинает проигрывать, будьте внимательны.</p>
+	<p><b>Внимание, вопрос!</b> Рассказывать ли в следующем уроке о создании плеера, учитывая, что там нет ничего, что связанно с ZeroNet и взаимодействием с ZeroFrame API?</p>
+</section>
+	
+<hr><p>Комментарии:</p>
+	
+<section class="com">
+	<div>
+		<p><b>slashnight:</b> <tt>(Jun 12, 2017)</tt><br>Плеер не очень интересен, интереснее было бы про вещи связанные с ZeroNet.</p>
+	</div>
+	<div>
+		<p><b>gomzik:</b> <tt>(Jun 12, 2017)</tt><br><em><b>slashnight:</b> Плеер не очень интересен...</em><br>Спасибо, тогда пока не пишу, буду дальше работать над приложением, напишу как сделаю еще что-либо связанное с ZeroNet</p>
+	</div>
+	<div>
+		<p><b>korolariya:</b> <tt>(Feb 15, 2019)</tt><br>кул, нужно будет как нить попробовать</p>
+	</div>
+</section>
+	
+<p class="dr">Jun 06, 2017 / GomZik's Blog</p>
+	
+</article>		
+		
+</body>
+</html>

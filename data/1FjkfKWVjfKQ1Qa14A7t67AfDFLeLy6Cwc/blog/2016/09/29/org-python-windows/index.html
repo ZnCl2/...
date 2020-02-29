@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>解决 Emacs 的 Python 交互执行环境在 windows 下无法显示中文的问题 - 科学君的不科学博客</title>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+  <meta name="author" content="Liu233w" />
+  <meta name="description" content="&lt;Add description here&gt;" />
+  <meta name="keywords" content="emacs, org, windows" />
+  <style>
+   #ds-thread #ds-reset .ds-comment-body p {color: #ffffff;}
+   #ds-thread #ds-reset .ds-comment-body p a {color: #ff0;}
+   #ds-thread #ds-reset .ds-comment-body p a:hover {color: #0ff;}
+   #disqus_thread a {color: #00ffff;}
+  </style>
+  <link rel="stylesheet" href="http://liu233w.github.io/media/css/main.css" type="text/css"/>
+  <link rel="stylesheet" href="http://liu233w.github.io/media/css/comment.css" type="text/css"/>
+  <link rel="Shortcut Icon" href="https://raw.githubusercontent.com/Liu233w/liu233w.github.io/source/avatar.jpg" type="image/x-icon">
+</head>
+
+  <body><div class="container">
+<div>
+  <header class="masthead">
+    <h1 class="masthead-title"><a href="http://liu233w.github.io/">科学君的不科学博客</a></h1>
+    <p>by 不科学的科学君</p>
+    <nav class="site-nav">
+      <div class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z" fill="#ffff00"/>
+          <path d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z" fill="#ffff00"/>
+          <path d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z" fill="#ffff00"/>
+        </svg>
+      </div>
+      <ul class="trigger">
+        <li><a href="http://liu233w.github.io/所有文章/">所有文章</a></li>
+        <li><a href="http://liu233w.github.io/tags/">按标签索引</a></li>
+        <li><a href="http://liu233w.github.io/acm/">Acm</a></li>
+        <li><a href="http://liu233w.github.io/blog/">Blog</a></li>
+        <li><a href="http://liu233w.github.io/about/">About</a></li>
+        <li><a href="https://github.com/liu233w/liu233w.github.io">Github</a></li>
+        <li><a href="http://liu233w.github.io/rss.xml">RSS</a></li>
+      </ul>
+    </nav>
+    <form method="get" id="searchform" action="http://www.google.com/search">
+      <input type="text" class="field" name="q" id="s" placeholder="Search">
+      <input type="hidden" name="as_sitesearch" value="liu233w.github.io">
+    </form>
+    <img id="avatarid" class="avatar" src="https://raw.githubusercontent.com/Liu233w/liu233w.github.io/source/avatar.jpg" />
+  </header>
+</div>
+
+<div>
+<div class="post">
+<h1 class="title">解决 Emacs 的 Python 交互执行环境在 windows 下无法显示中文的问题</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgba7e07d">问题描述</a></li>
+<li><a href="#org42a0bd3">解决方案</a></li>
+<li><a href="#orge09fb74">org-babel 的问题</a></li>
+<li><a href="#org502fd63">TIPS</a></li>
+<li><a href="#org422e4dd">16/9/30 更新</a></li>
+<li><a href="#orgcb4bb8c">16/10/12 更新</a></li>
+<li><a href="#orgde460e4">16/12/5 更新</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgba7e07d" class="outline-2">
+<h2 id="orgba7e07d">问题描述</h2>
+<div class="outline-text-2" id="text-orgba7e07d">
+<p>
+我把 Emacs 默认的编码改成了 utf-8，代码为：
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #2aa198;">(</span>set-language-environment <span style="color: #2aa198;">"chinese-GBK"</span><span style="color: #2aa198;">)</span>
+<span style="color: #2aa198;">(</span>prefer-coding-system 'utf-8<span style="color: #2aa198;">)</span>
+</pre>
+</div>
+
+<p>
+由于 windows 中的 shell 默认只支持中文的 gbk 编码，强制修改全部的编码会导致乱码，所以用这种方法可以得到一个“prefer”的编码系统，在 shell 里面就不会乱码了。但是如果在 shell-mode 下的
+python 的交互环境中输入中文却会得到异常，并且交互编程时显示的中文会变成像
+<code>\320\320\315\352\261\317</code> 这样的编码形式。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org42a0bd3" class="outline-2">
+<h2 id="org42a0bd3">解决方案</h2>
+<div class="outline-text-2" id="text-org42a0bd3">
+<p>
+本来这就是改一下编码就能解决的问题，理论上可以把上面代码第二行的 utf-8 改成 <code>gbk</code> 就可以了。但是我为了保持文件的兼容性，没法采用这样的配置。只好把 terminal 的编码单独改成 gbk，在上面的代码下面加上这几行即可：
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">when</span> <span style="color: #b58900;">(</span>spacemacs/system-is-mswindows<span style="color: #b58900;">)</span>
+  <span style="color: #586e75;">;; </span><span style="color: #586e75;">from http://paxinla.github.io/2015/07/12/Windows%E4%B8%8BEmacs%E7%9A%84shell-mode%E4%B9%B1%E7%A0%81%E8%A7%A3%E5%86%B3/</span>
+  <span style="color: #586e75;">;; </span><span style="color: #586e75;">&#35299;&#20915; Shell Mode(cmd) &#19979;&#20013;&#25991;&#20081;&#30721;&#38382;&#39064;</span>
+  <span style="color: #b58900;">(</span>set-terminal-coding-system 'gbk<span style="color: #b58900;">)</span>
+  <span style="color: #b58900;">(</span>modify-coding-system-alist 'process <span style="color: #2aa198;">"*"</span> 'gbk<span style="color: #b58900;">)</span>
+  <span style="color: #b58900;">(</span><span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">liu233w/windows-shell-mode-coding</span> <span style="color: #268bd2;">()</span>
+    <span style="color: #268bd2;">(</span>set-buffer-file-coding-system 'gbk<span style="color: #268bd2;">)</span>
+    <span style="color: #268bd2;">(</span>set-buffer-process-coding-system 'gbk 'gbk<span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span>
+  <span style="color: #b58900;">(</span>add-hook 'shell-mode-hook #'liu233w/windows-shell-mode-coding<span style="color: #b58900;">)</span>
+  <span style="color: #b58900;">(</span>add-hook 'inferior-python-mode-hook #'liu233w/windows-shell-mode-coding<span style="color: #b58900;">)</span>
+  <span style="color: #2aa198;">)</span>
+</pre>
+</div>
+
+<p>
+注意那个 <code>inferior-python-mode-hook</code> ，如果你还有别的交互环境出现了这种问题，可以把相应的 hook
+加上这个函数。
+</p>
+
+<p>
+这下无论是交互环境还是 shell 都不会出问题了。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orge09fb74" class="outline-2">
+<h2 id="orge09fb74">org-babel 的问题</h2>
+<div class="outline-text-2" id="text-orge09fb74">
+<p>
+由于我们将进程编码改的与文件编码不同了，使用 org-babel 的时候返回的内容会在行末多出来一个
+<code>^M</code> ，我们还需要用别的代码来处理这个问题。这里的 <code>remove-dos-eol</code> 是我从子龙山人的配置里抄过来的。
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">liu233w/remove-dos-eol</span> <span style="color: #b58900;">()</span>
+  <span style="color: #2aa198;">"Replace DOS eolns CR LF with Unix eolns CR"</span>
+  <span style="color: #b58900;">(</span><span style="color: #859900; font-weight: bold;">interactive</span><span style="color: #b58900;">)</span>
+  <span style="color: #b58900;">(</span>goto-char <span style="color: #268bd2;">(</span>point-min<span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span>
+  <span style="color: #b58900;">(</span><span style="color: #859900; font-weight: bold;">while</span> <span style="color: #268bd2;">(</span>search-forward <span style="color: #2aa198;">"\r"</span> nil t<span style="color: #268bd2;">)</span> <span style="color: #268bd2;">(</span>replace-match <span style="color: #2aa198;">""</span><span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span><span style="color: #2aa198;">)</span>
+
+<span style="color: #586e75;">;; </span><span style="color: #586e75;">&#22914;&#26524;&#26159; windows&#65292;&#21017;&#33258;&#21160;&#22788;&#29702; org-babel-eval &#30340;&#36820;&#22238;&#20540;&#65292;&#38450;&#27490;&#20351;&#29992; gbk &#32534;&#30721;&#30340;</span>
+<span style="color: #586e75;">;; </span><span style="color: #586e75;">cmd &#36820;&#22238;&#20540;&#34892;&#26411;&#31526;&#21495;&#19981;&#21305;&#37197;</span>
+<span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">with-eval-after-load</span> 'ob-python
+  <span style="color: #b58900;">(</span><span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">liu233w/fix-org-babel-execute:prog</span> <span style="color: #268bd2;">(</span>string<span style="color: #268bd2;">)</span>
+    <span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">with-temp-buffer</span>
+      <span style="color: #586e75;">;; </span><span style="color: #586e75;">(message (format "debug %s" string))</span>
+      <span style="color: #6c71c4;">(</span>insert string<span style="color: #6c71c4;">)</span>
+      <span style="color: #6c71c4;">(</span>liu233w/remove-dos-eol<span style="color: #6c71c4;">)</span>
+      <span style="color: #6c71c4;">(</span>buffer-string<span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span>
+  <span style="color: #b58900;">(</span>advice-add #'org-babel-execute:python <span style="color: #839496; font-weight: bold;">:filter-return</span>
+              #'liu233w/fix-org-babel-execute:prog<span style="color: #b58900;">)</span><span style="color: #2aa198;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org502fd63" class="outline-2">
+<h2 id="org502fd63">TIPS</h2>
+<div class="outline-text-2" id="text-org502fd63">
+<ul class="org-ul">
+<li>org-bable 为每种语言单独创建的文件中有一个 <code>org-babel-execute:语言名</code> 函数，用来执行当前的代码块，这个函数返回一个字符串，即执行的结果。</li>
+<li><code>with-temp-buffer</code> 宏可以创建一个临时的 buffer，在执行完 body 之后会将其删除。</li>
+<li><code>advice-add</code> 函数的 <code>:filter-return</code> 标签可以将某个函数的返回值在返回调用处之前交给指定的函数处理。</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org422e4dd" class="outline-2">
+<h2 id="org422e4dd">16/9/30 更新</h2>
+<div class="outline-text-2" id="text-org422e4dd">
+<p>
+今天发现如果需要使用 yapf 的话还需要再加一个 advice
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #2aa198;">(</span>advice-add #'py-yapf-buffer <span style="color: #839496; font-weight: bold;">:after</span> #'liu233w/remove-dos-eol<span style="color: #2aa198;">)</span>
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgcb4bb8c" class="outline-2">
+<h2 id="orgcb4bb8c">16/10/12 更新</h2>
+<div class="outline-text-2" id="text-orgcb4bb8c">
+<p>
+发现了更加精简的方法，把下面的代码放进 config 中即可：
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #2aa198;">(</span>set-language-environment <span style="color: #2aa198;">"UTF-8"</span><span style="color: #2aa198;">)</span>
+<span style="color: #2aa198;">(</span>prefer-coding-system 'utf-8<span style="color: #2aa198;">)</span>
+<span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">when</span> <span style="color: #b58900;">(</span>spacemacs/system-is-mswindows<span style="color: #b58900;">)</span>
+  <span style="color: #b58900;">(</span>set-language-environment <span style="color: #2aa198;">"chinese-gbk"</span><span style="color: #b58900;">)</span>
+  <span style="color: #b58900;">(</span>set-default 'process-coding-system-alist
+               '<span style="color: #268bd2;">(</span><span style="color: #6c71c4;">(</span><span style="color: #2aa198;">"[pP][lL][iI][nN][kK]"</span> gbk-dos . gbk-dos<span style="color: #6c71c4;">)</span>
+                 <span style="color: #6c71c4;">(</span><span style="color: #2aa198;">"[cC][mM][dD][pP][rR][oO][xX][yY]"</span> gbk-dos . gbk-dos<span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span>
+  <span style="color: #b58900;">(</span><span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">liu233w//python-encode-in-org-babel-execute</span> <span style="color: #268bd2;">(</span>func body params<span style="color: #268bd2;">)</span>
+    <span style="color: #2aa198;">"org-babel &#25191;&#34892;&#20195;&#30721;&#26102;&#19981;&#20250;&#33258;&#21160;&#32534;&#30721;&#25991;&#20214;&#65292;&#36825;&#37324;&#36890;&#36807;&#21160;&#24577;&#20316;&#29992;&#22495;&#35206;&#30422;&#40664;&#35748;&#36873;&#39033;&#26469;&#32534;&#30721;&#25991;&#20214;&#12290;"</span>
+    <span style="color: #586e75;">;; </span><span style="color: #586e75;">&#27492;&#38382;&#39064;&#30340;&#35814;&#32454;&#20449;&#24687;&#35831;&#21442;&#32771;&#65306;https://github.com/Liu233w/.spacemacs.d/issues/6</span>
+    <span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">let</span> <span style="color: #6c71c4;">(</span><span style="color: #859900;">(</span>coding-system-for-write 'utf-8<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span>
+      <span style="color: #6c71c4;">(</span>funcall func body params<span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span>
+  <span style="color: #b58900;">(</span>advice-add #'org-babel-execute:python <span style="color: #839496; font-weight: bold;">:around</span>
+              #'liu233w//python-encode-in-org-babel-execute<span style="color: #b58900;">)</span><span style="color: #2aa198;">)</span>
+</pre>
+</div>
+
+<p>
+这段代码的说明参见：<a href="https://github.com/Liu233w/.spacemacs.d/issues/6">https://github.com/Liu233w/.spacemacs.d/issues/6</a>
+今后如果还有 babel 的语言出现类似的问题的话，只需要用 <code>function-add</code> 来用这个函数修改对应的 <code>org-babel-execute</code> 函数即可。
+</p>
+
+<p>
+TIPS:
+</p>
+<ul class="org-ul">
+<li><code>edebug</code> 可以 debug elisp, 参见
+<a href="https://www.gnu.org/software/emacs/manual/html_node/elisp/Edebug.html">https://www.gnu.org/software/emacs/manual/html_node/elisp/Edebug.html</a></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgde460e4" class="outline-2">
+<h2 id="orgde460e4">16/12/5 更新</h2>
+<div class="outline-text-2" id="text-orgde460e4">
+<p>
+其实上面的代码还是有问题的，今天终于把这个问题彻底解决了，代码如下：
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #586e75;">;; </span><span style="color: #586e75;">&#35774;&#32622;&#32534;&#30721;</span>
+<span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">cond</span>
+ <span style="color: #b58900;">(</span><span style="color: #268bd2;">(</span>eq system-type 'windows-nt<span style="color: #268bd2;">)</span>          <span style="color: #586e75;">; </span><span style="color: #586e75;">&#25110;&#32773; (spacemacs/system-is-mswindows)</span>
+  <span style="color: #586e75;">;;</span>
+  <span style="color: #268bd2;">(</span>set-language-environment <span style="color: #2aa198;">"chinese-gbk"</span><span style="color: #268bd2;">)</span>
+  <span style="color: #268bd2;">(</span>prefer-coding-system 'utf-8<span style="color: #268bd2;">)</span>
+  <span style="color: #268bd2;">(</span>set-terminal-coding-system 'gbk<span style="color: #268bd2;">)</span>
+  <span style="color: #586e75;">;;</span>
+  <span style="color: #268bd2;">(</span>modify-coding-system-alist 'process <span style="color: #2aa198;">"*"</span> 'gbk<span style="color: #268bd2;">)</span>
+  <span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">liu233w/windows-shell-mode-coding</span> <span style="color: #6c71c4;">()</span>
+    <span style="color: #6c71c4;">(</span>set-buffer-file-coding-system 'gbk<span style="color: #6c71c4;">)</span>
+    <span style="color: #6c71c4;">(</span>set-buffer-process-coding-system 'gbk 'gbk<span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span>
+  <span style="color: #268bd2;">(</span>add-hook 'shell-mode-hook #'liu233w/windows-shell-mode-coding<span style="color: #268bd2;">)</span>
+  <span style="color: #268bd2;">(</span>add-hook 'inferior-python-mode-hook #'liu233w/windows-shell-mode-coding<span style="color: #268bd2;">)</span>
+  <span style="color: #586e75;">;;</span>
+  <span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">liu233w//python-encode-in-org-babel-execute</span> <span style="color: #6c71c4;">(</span>func body params<span style="color: #6c71c4;">)</span>
+    <span style="color: #2aa198;">"org-babel &#25191;&#34892;&#20195;&#30721;&#26102;&#19981;&#20250;&#33258;&#21160;&#32534;&#30721;&#25991;&#20214;&#65292;&#36825;&#37324;&#36890;&#36807;&#21160;&#24577;&#20316;&#29992;&#22495;&#35206;</span>
+<span style="color: #2aa198;">&#30422;&#40664;&#35748;&#36873;&#39033;&#26469;&#32534;&#30721;&#25991;&#20214;&#12290;"</span>
+    <span style="color: #586e75;">;; </span><span style="color: #586e75;">&#27492;&#38382;&#39064;&#30340;&#35814;&#32454;&#20449;&#24687;&#35831;&#21442;&#32771;&#65306;https://github.com/Liu233w/.spacemacs.d/issues/6</span>
+    <span style="color: #6c71c4;">(</span><span style="color: #859900; font-weight: bold;">let</span> <span style="color: #859900;">(</span><span style="color: #b58900;">(</span>coding-system-for-write 'utf-8<span style="color: #b58900;">)</span><span style="color: #859900;">)</span>
+      <span style="color: #859900;">(</span>funcall func body params<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span>
+  <span style="color: #268bd2;">(</span>advice-add #'org-babel-execute:python <span style="color: #839496; font-weight: bold;">:around</span>
+              #'liu233w//python-encode-in-org-babel-execute<span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span>
+ <span style="color: #586e75;">;; </span><span style="color: #586e75;">--</span>
+ <span style="color: #b58900;">(</span>t
+  <span style="color: #268bd2;">(</span>set-language-environment <span style="color: #2aa198;">"UTF-8"</span><span style="color: #268bd2;">)</span>
+  <span style="color: #268bd2;">(</span>prefer-coding-system 'utf-8<span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span><span style="color: #2aa198;">)</span>
+</pre>
+</div>
+
+<ol class="org-ol">
+<li><code>set-language-environment</code> 和 <code>prefer-coding-system</code> 的部分设置会互相覆盖，所以顺序很重要。</li>
+<li>经试验发现（因为我也不知道原理），这里的修改 process 部分的编码和之前的那个
+<a href="#orgcb4bb8c">简化版</a> 产生的效果还是不一样的，这段代码更好一些。</li>
+<li>不再需要 <code>remove-dos-eol</code> 了。</li>
+<li>不再需要修改 yapf 的设置了。</li>
+<li>不会导致别的地方产生乱码（至少我测试到的是这样）</li>
+</ol>
+
+<p>
+我所有的修改记录都保存在 <a href="https://github.com/Liu233w/.spacemacs.d/issues/6">https://github.com/Liu233w/.spacemacs.d/issues/6</a> 和
+<a href="https://github.com/Liu233w/.spacemacs.d/issues/8">https://github.com/Liu233w/.spacemacs.d/issues/8</a> 里面了。
+</p>
+</div>
+</div>
+
+</div>
+</div>
+<div>
+        <div class="post-meta">
+            <span title="发布日期" class="post-info">2016-09-29</span>
+            <span title="最后修改日期" class="post-info">2016-12-05</span>
+            <span title="标签" class="post-info">:<a href="http://liu233w.github.io/tags/emacs">emacs</a> : <a href="http://liu233w.github.io/tags/org">org</a> : <a href="http://liu233w.github.io/tags/windows">windows</a>:</span>
+            <span title="作者" class="post-info"><a href="mailto:wwwlsmcom &lt;at&gt; outlook &lt;dot&gt; com">Liu233w</a></span>
+        </div>
+    <script src="http://liu233w.github.io/media/js/jquery-2.1.3.min.js"></script>
+        <section>
+            <h1>Comments</h1>
+            <div id="comment-wrap">
+                    <a class="disqus_label">使用 Disqus 评论</a>
+                    <a class="ds-label">使用多说评论</a>
+    </ul>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+         //var disqus_developer = 1;
+         var preempt_signal=false;
+         var disqus_identifier = "/blog/2016/09/29/org-python-windows/";
+         var disqus_url = "http://liu233w.github.io/blog/2016/09/29/org-python-windows/";
+         var disqus_shortname = 'liu233w';
+         /* * * DON'T EDIT BELOW THIS LINE * * */
+         (function() {
+             var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+             dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+             $('#disqus_thread').css('display','none');
+         })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        <div class="ds-thread"></div>
+        <script type="text/javascript">
+         var duoshuoQuery = {short_name:'liu233w'};
+         (function() {
+             var ds = document.createElement('script');
+             ds.type = 'text/javascript';ds.async = true;
+             ds.src = 'http://static.duoshuo.com/embed.js';
+             ds.charset = 'UTF-8';
+             (document.getElementsByTagName('head')[0]
+           || document.getElementsByTagName('body')[0]).appendChild(ds);
+             $('.ds-thread').css('display','block');
+         })();
+        </script>
+    <script>
+     /* comments */
+     var ego_disqus_thread=$('#disqus_thread');
+     var ego_ds_label=$('.ds-thread');
+     $('.disqus_label').click(function(){
+         ego_disqus_thread.show();
+         ego_ds_label.hide();
+     });
+     $('.ds-label').click(function(){
+         ego_disqus_thread.hide();
+         ego_ds_label.show();
+     });
+    </script>
+        </section>
+    <script src="http://liu233w.github.io/media/js/main.js"></script>
+    <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.x(<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+            Copyright &copy; 2014 - <span id="footerYear"></span> <a href="mailto:wwwlsmcom &lt;at&gt; outlook &lt;dot&gt; com">Liu233w</a>
+            &nbsp;&nbsp;-&nbsp;&nbsp;
+            Powered by <a href="https://github.com/emacs-china/ego" target="_blank">EGO</a><br/>
+            <a href="http://creativecommons.org/licenses/by-sa/3.0/" rel="license"><img src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" style="border-width:0" alt="Creative Commons License" class="center"></a>
+            <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+    </div>
+            </div>
+            <script type="text/javascript"
+                    src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG">
+            </script>
+            <script type="text/x-mathjax-config">
+             MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "AMS"} } });
+            </script>
+</div>
+
+  </div></body>
+</html>

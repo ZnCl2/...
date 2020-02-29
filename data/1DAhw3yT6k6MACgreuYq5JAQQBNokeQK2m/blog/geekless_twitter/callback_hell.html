@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>callback hell vs coffee script</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<link rel="stylesheet" href="../../css/global.css">
+</head>
+
+<body>
+	
+<header>
+  <a href="../../index.html"><img src="../../img/logo.png" width="55"></a><br>ChronCache	
+</header>
+	
+<nav>
+	<hr>
+  <p><a href="../../blog.html">архив</a> <tt>|</tt> <a href="../../help.html">помощь</a> <tt>|</tt> <a href="/1Q9LVNLD1ghusGxpiwjYnVjPsxD5xGTGc7/donate/index.html">донат</a></p>
+	<hr>
+</nav>
+
+<article>
+	
+<acide><p>Это резервная страница от 14.05.2019 / <a href="/1ysjnZzsz5YYXhTNBxELnY4ftz42QupMg/?Post:31">оригинал</a></p></acide>
+
+<section>
+	<h1>callback hell vs coffee script</h1>
+	<p>С некоторых пор открыл для себя прелести использования <code>jQuery.Deferred()</code> в синтаксисе CoffeeScript. Такой пример, который в голом JS выглядел бы как «ехал function через function» с уровнями вложенности, уходящими за правый край окна:</p>
+	<div class="code">
+		<code>some_func: ->
+    return $.Deferred().resolve()
+    .then => $.Deferred (d) =>
+        async_call1 some_params, (data1) =>
+            result1 = some_processing(data1)
+            d.resolve(result1)
+    .then (result1) => $.Deferred (d) =>
+        async_call2 foobar(result1), (data2) =>
+            result2 = some_processing(result1, data2)
+            d.resolve(result2)
+    .then (result2) => $.Deferred (d) =>
+        async_call3 foobar(result2), (data3) =>
+            result3 = some_processing(result2, data3)
+            d.resolve(result3)
+    .then (result3) => $.Deferred (d) =>
+        async_call4 foobar(result3), (data4) =>
+            result4 = some_processing(result3, data4)
+            d.resolve(result4)
+    .promise()</code>
+	</div>
+	<p>Если вы смотрите на <code>.then (result1)</code> и не понимаете, что происходит — скобки парсятся как относящиеся к аргументам лямбды <code>=></code>, а уже потом сама лямбда — как аргумент метода <code>.then()</code>.</p>
+	<p><code>Deferred</code> облегчает задачу, но в классическом синтаксисе JS писать код в стиле <code>function() { return function() { return function() { ...</code> приятного мало, так что на JS такой код я бы разбил на мелкие именованные функции. В реальном коде то, что я условно обозначил как <code>foobar()</code> и <code>some_processing()</code>, может занимать десятки строк кода, что окончательно превратит код в месиво. В CoffeeScript просто выкидываем весь синтаксис на помойку вместе с лишними именованными функциями и пишем только то, что реально должен делать код.</p><p>Еще пример:</p>
+	<div class="code">
+		<code>some_func: ->
+    data1 = null
+    data2 = null
+    data3 = null
+
+    return $.Deferred().resolve()
+    .then => $.Deferred (d) =>
+        async_call1 some_params, (_data1) =>
+            data1 = _data1
+            d.resolve()
+    .then => $.Deferred (d) =>
+        async_call2 some_params, (_data2) =>
+            data2 = _data2
+            d.resolve()
+    .then => $.Deferred (d) =>
+        async_call3 some_params, (_data3) =>
+            data3 = _data3
+            d.resolve()
+    .then => $.Deferred (d) =>
+        d.resolve(some_processing(data1, data2, data3))
+    .promise()</code>
+	</div>
+	<p>Если придираться, это неправильный код. В таком виде, как тут, все асинхронные запросы могут быть выполнены параллельно, так что мы теряем время на последовательной обработке. Но я просто пишу в единообразном стиле, пока недостаток параллелизма не сказывается на производительности программы. Определённо тут не хватает такого же последовательного синтаксиса для <code>jQuery.when()</code>. Я еще раз просмотрел документацию на jQuery, но обнаружил только старый добрый <code>.when()</code>. Кажется, пора написать аддон к jQuery, делающий возможным что-то типа:</p>
+	<div class="code">
+		<code>some_func: ->
+    data1 = null
+    data2 = null
+    data3 = null
+
+    return $.Deferred().resolve()
+    .in_parallel_with => $.Deferred (d) =>
+        async_call1 some_params, (_data1) =>
+            data1 = _data1
+            d.resolve()
+    .in_parallel_with => $.Deferred (d) =>
+        async_call2 some_params, (_data2) =>
+            data2 = _data2
+            d.resolve()
+    .in_parallel_with => $.Deferred (d) =>
+        async_call3 some_params, (_data3) =>
+            data3 = _data3
+            d.resolve()
+    .then => $.Deferred (d) =>
+        d.resolve(some_processing(data1, data2, data3))
+    .promise()</code>
+	</div>
+	<p>Еще одна особенность — допустим в вызываемой асинхронной функции по какому-то недоразумению не предусмотрели таймаута. Тогда вы берёте и делаете таймаут вручную:</p>
+	<div class="code">
+		<code>...
+...
+.then => $.Deferred (d) =>
+    async_call some_params, (data) =>
+        d.resolve(data)
+    setTimeout (=>
+        d.resolve(null)
+    ), 5000
+...
+...</code>
+	</div>
+	<p>Это работает как ожидается, но выглядит немного не по фен-шую. Не спрашивайте, что тут случилось с синтаксисом аргументов <code>setTimeout()</code> — это же CoffeeScript. Но тут очень хочется написать еще один двустрочный аддон к jQuery, который уберёт это безобразие с экрана. Как-то так:</p>
+	<div class="code">
+		<code>...
+...
+.then => $.Deferred (d) =>
+    async_call some_params, (data) =>
+        d.resolve(data)
+    d.resolveOnTimeout 5000, => null
+...
+...</code>
+	</div><p>К сожалению, такой метод тоже не предусмотрен из коробки.</p>
+	<p><b>P.S.</b><br>И да, я знаю, что писать с использованием jQuery в 2018-м году — признак ретарда. Я конченный ретард, если кто не в курсе.</p>
+</section>	
+	
+<hr><p>Комментарии:</p>
+	
+<section class="com">
+	<div>
+		<p><b>x86128:</b> <tt>(Oct 13, 2018)</tt><br>Как мне кажется, ведь не обязательно именно так писать код (то есть переносить вредные привычки из классического JS в современный).<br>Глядя на эту простую логику вы по сути запускаете в первом случае последовательно пачку асинхронных функций, а во втором - параллельно, но дожидаетесь всех. Для этих типичных задач были разработанные давно несколько библиотек. Самая приятная на мой вкус, это async - вся эта "мошна" превратится в однострочник (практически).</p>
+	</div>
+	<div>
+		<p><b>geekless:</b> <tt>(Oct 13, 2018)</tt><br><em><b>x86128:</b> (то есть переносить вредные привычки из классического JS в современный)</em><br>Это надо сесть и переписать кучу кода на современный JS, а мне лень. Там по историческим причинам все на Coffee 1-й версии, даже не 2-й. Ну и потом еще пару движков хочу поковырять, тоже на Coffee.</p>
+		<p>В оригинале всё это было лесенкой, потому что весь движок вырос из демки без рефакторинга.</p>
+	</div>
+	<div>
+		<p><b>x86128:</b> <tt>(Oct 13, 2018)</tt><br>Все мы рабы legacy</p>
+	</div>
+</section>
+	
+<p class="dr">Sep 01, 2018 / Geekless.Twitter</p>
+	
+</article>		
+		
+</body>
+</html>

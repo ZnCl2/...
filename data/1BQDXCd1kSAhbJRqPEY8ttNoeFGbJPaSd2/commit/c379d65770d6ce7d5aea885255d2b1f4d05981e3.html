@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>add titles to pages, summary for commit messages, filename for files - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/c379d65770d6ce7d5aea885255d2b1f4d05981e3.html">c379d65770d6ce7d5aea885255d2b1f4d05981e3</a>
+<b>parent</b> <a href="../commit/78c29a1de25a88b92858d785772315a537cd4035.html">78c29a1de25a88b92858d785772315a537cd4035</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Tue Mar  1 19:14:00 +0100
+
+add titles to pages, summary for commit messages, filename for files
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">stagit.c</a></td><td> | </td><td class="num">15</td><td><span class="i">+++++++++</span><span class="d">------</span></td></tr>
+</table>1 file changed, 9 insertions(+), 6 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/stagit.c.html">stagit.c</a> b/<a href="../file/stagit.c.html">stagit.c</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -235,12 +235,15 @@ printtimeshort(FILE *fp, const git_time *intime)
+</a> }
+ 
+ int
+<a href="#h0-0-3" id="h0-0-3" class="d">-writeheader(FILE *fp)
+</a><a href="#h0-0-4" id="h0-0-4" class="i">+writeheader(FILE *fp, const char *title)
+</a> {
+ 	fputs(&quot;&lt;!DOCTYPE html&gt;\n&quot;
+ 		&quot;&lt;html dir=\&quot;ltr\&quot; lang=\&quot;en\&quot;&gt;\n&lt;head&gt;\n&quot;
+ 		&quot;&lt;meta http-equiv=\&quot;Content-Type\&quot; content=\&quot;text/html; charset=UTF-8\&quot; /&gt;\n&quot;
+ 		&quot;&lt;meta http-equiv=\&quot;Content-Language\&quot; content=\&quot;en\&quot; /&gt;\n&lt;title&gt;&quot;, fp);
+<a href="#h0-0-10" id="h0-0-10" class="i">+	xmlencode(fp, title, strlen(title));
+</a><a href="#h0-0-11" id="h0-0-11" class="i">+	if (title[0] &amp;&amp; stripped_name[0])
+</a><a href="#h0-0-12" id="h0-0-12" class="i">+		fputs(&quot; - &quot;, fp);
+</a> 	xmlencode(fp, stripped_name, strlen(stripped_name));
+ 	if (description[0])
+ 		fputs(&quot; - &quot;, fp);
+<a href="#h0-1" id="h0-1" class="h">@@ -478,7 +481,7 @@ writelog(FILE *fp, const git_oid *oid)
+</a> 		/* check if file exists if so skip it */
+ 		if (access(path, F_OK)) {
+ 			fpfile = efopen(path, &quot;w&quot;);
+<a href="#h0-1-3" id="h0-1-3" class="d">-			writeheader(fpfile);
+</a><a href="#h0-1-4" id="h0-1-4" class="i">+			writeheader(fpfile, ci-&gt;summary);
+</a> 			fputs(&quot;&lt;pre&gt;&quot;, fpfile);
+ 			printshowfile(fpfile, ci);
+ 			fputs(&quot;&lt;/pre&gt;\n&quot;, fpfile);
+<a href="#h0-2" id="h0-2" class="h">@@ -603,7 +606,7 @@ writeblob(git_object *obj, const char *fpath, const char *filename, git_off_t fi
+</a> 	relpath = tmp;
+ 
+ 	fp = efopen(fpath, &quot;w&quot;);
+<a href="#h0-2-3" id="h0-2-3" class="d">-	writeheader(fp);
+</a><a href="#h0-2-4" id="h0-2-4" class="i">+	writeheader(fp, filename);
+</a> 	fputs(&quot;&lt;p&gt; &quot;, fp);
+ 	xmlencode(fp, filename, strlen(filename));
+ 	fprintf(fp, &quot; (%juB)&quot;, (uintmax_t)filesize);
+<a href="#h0-3" id="h0-3" class="h">@@ -961,7 +964,7 @@ main(int argc, char *argv[])
+</a> 	/* log for HEAD */
+ 	fp = efopen(&quot;log.html&quot;, &quot;w&quot;);
+ 	relpath = &quot;&quot;;
+<a href="#h0-3-3" id="h0-3-3" class="d">-	writeheader(fp);
+</a><a href="#h0-3-4" id="h0-3-4" class="i">+	writeheader(fp, &quot;Log&quot;);
+</a> 	mkdir(&quot;commit&quot;, 0755);
+ 	writelog(fp, head);
+ 	writefooter(fp);
+<a href="#h0-4" id="h0-4" class="h">@@ -969,14 +972,14 @@ main(int argc, char *argv[])
+</a> 
+ 	/* files for HEAD */
+ 	fp = efopen(&quot;files.html&quot;, &quot;w&quot;);
+<a href="#h0-4-3" id="h0-4-3" class="d">-	writeheader(fp);
+</a><a href="#h0-4-4" id="h0-4-4" class="i">+	writeheader(fp, &quot;Files&quot;);
+</a> 	writefiles(fp, head, &quot;HEAD&quot;);
+ 	writefooter(fp);
+ 	fclose(fp);
+ 
+ 	/* summary page with branches and tags */
+ 	fp = efopen(&quot;refs.html&quot;, &quot;w&quot;);
+<a href="#h0-4-11" id="h0-4-11" class="d">-	writeheader(fp);
+</a><a href="#h0-4-12" id="h0-4-12" class="i">+	writeheader(fp, &quot;Refs&quot;);
+</a> 	writerefs(fp);
+ 	writefooter(fp);
+ 	fclose(fp);
+</pre>
+</div>
+</body>
+</html>

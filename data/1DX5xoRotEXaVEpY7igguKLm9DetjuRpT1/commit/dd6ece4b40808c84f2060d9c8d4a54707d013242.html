@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Fix for broken 127.0.0.1 links, Publish queues not handled on server-side - 0git - 0git - a list of git repositories on ZeroNet
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="0git.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>0git</h1><span class="desc">0git - a list of git repositories on ZeroNet
+</span></td></tr><tr class="url"><td></td><td>git clone <a href="http://127.0.0.1:43110/0git.bit/0git.git">http://127.0.0.1:43110/0git.bit/0git.git</a></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.md.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/dd6ece4b40808c84f2060d9c8d4a54707d013242.html">dd6ece4b40808c84f2060d9c8d4a54707d013242</a>
+<b>parent</b> <a href="../commit/55c950fc6cec7ff79a57f02630daf16b615540e4.html">55c950fc6cec7ff79a57f02630daf16b615540e4</a>
+<b>Author:</b> HelloZeroNet &lt;<a href="mailto:hello@noloop.me">hello@noloop.me</a>&gt;
+<b>Date:</b>   Sun Apr 26 01:18:17 +0200
+
+Fix for broken 127.0.0.1 links, Publish queues not handled on server-side
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">js/ZeroTalk.coffee</a></td><td> | </td><td class="num">8</td><td><span class="i">++++</span><span class="d">----</span></td></tr>
+<tr><td><a href="#h1">js/all.js</a></td><td> | </td><td class="num">7</td><td><span class="i">+</span><span class="d">------</span></td></tr>
+<tr><td><a href="#h2">js/utils/Text.coffee</a></td><td> | </td><td class="num">2</td><td><span class="i">+</span><span class="d">-</span></td></tr>
+</table>3 files changed, 6 insertions(+), 11 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/js/ZeroTalk.coffee.html">js/ZeroTalk.coffee</a> b/<a href="../file/js/ZeroTalk.coffee.html">js/ZeroTalk.coffee</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -166,10 +166,10 @@ class ZeroTalk extends ZeroFrame
+</a> 
+ 
+ 	writePublish: (inner_path, data, cb) -&gt;
+<a href="#h0-0-3" id="h0-0-3" class="d">-		if @publishing
+</a><a href="#h0-0-4" id="h0-0-4" class="d">-			@cmd &quot;wrapperNotification&quot;, [&quot;error&quot;, &quot;Publishing in progress, please wait until its finished.&quot;]
+</a><a href="#h0-0-5" id="h0-0-5" class="d">-			cb(false)
+</a><a href="#h0-0-6" id="h0-0-6" class="d">-			return false
+</a><a href="#h0-0-7" id="h0-0-7" class="i">+		#if @publishing
+</a><a href="#h0-0-8" id="h0-0-8" class="i">+		#	@cmd &quot;wrapperNotification&quot;, [&quot;error&quot;, &quot;Publishing in progress, please wait until its finished.&quot;]
+</a><a href="#h0-0-9" id="h0-0-9" class="i">+		#	cb(false)
+</a><a href="#h0-0-10" id="h0-0-10" class="i">+		#	return false
+</a> 		@publishing = true
+ 		@cmd &quot;fileWrite&quot;, [inner_path, data], (res) =&gt;
+ 			if res != &quot;ok&quot; # fileWrite failed
+<b>diff --git a/<a id="h1" href="../file/js/all.js.html">js/all.js</a> b/<a href="../file/js/all.js.html">js/all.js</a></b>
+<a href="#h1-0" id="h1-0" class="h">@@ -761,7 +761,7 @@ jQuery.extend( jQuery.easing,
+</a>       if (window.is_proxy) {
+         return text.replace(/href=&quot;http:\/\/(127.0.0.1|localhost):43110/g, &apos;href=&quot;http://zero&apos;);
+       } else {
+<a href="#h1-0-3" id="h1-0-3" class="d">-        return text.replace(/href=&quot;http:\/\/(127.0.0.1|localhost):43110/g, &apos;&apos;);
+</a><a href="#h1-0-4" id="h1-0-4" class="i">+        return text.replace(/href=&quot;http:\/\/(127.0.0.1|localhost):43110/g, &apos;href=&quot;&apos;);
+</a>       }
+     };
+ 
+<a href="#h1-1" id="h1-1" class="h">@@ -2334,11 +2334,6 @@ jQuery.extend( jQuery.easing,
+</a>     };
+ 
+     ZeroTalk.prototype.writePublish = function(inner_path, data, cb) {
+<a href="#h1-1-3" id="h1-1-3" class="d">-      if (this.publishing) {
+</a><a href="#h1-1-4" id="h1-1-4" class="d">-        this.cmd(&quot;wrapperNotification&quot;, [&quot;error&quot;, &quot;Publishing in progress, please wait until its finished.&quot;]);
+</a><a href="#h1-1-5" id="h1-1-5" class="d">-        cb(false);
+</a><a href="#h1-1-6" id="h1-1-6" class="d">-        return false;
+</a><a href="#h1-1-7" id="h1-1-7" class="d">-      }
+</a>       this.publishing = true;
+       return this.cmd(&quot;fileWrite&quot;, [inner_path, data], (function(_this) {
+         return function(res) {
+<b>diff --git a/<a id="h2" href="../file/js/utils/Text.coffee.html">js/utils/Text.coffee</a> b/<a href="../file/js/utils/Text.coffee.html">js/utils/Text.coffee</a></b>
+<a href="#h2-0" id="h2-0" class="h">@@ -28,7 +28,7 @@ class Text
+</a> 		if window.is_proxy
+ 			return text.replace(/href=&quot;http:\/\/(127.0.0.1|localhost):43110/g, &apos;href=&quot;http://zero&apos;)
+ 		else
+<a href="#h2-0-3" id="h2-0-3" class="d">-			return text.replace(/href=&quot;http:\/\/(127.0.0.1|localhost):43110/g, &apos;&apos;)
+</a><a href="#h2-0-4" id="h2-0-4" class="i">+			return text.replace(/href=&quot;http:\/\/(127.0.0.1|localhost):43110/g, &apos;href=&quot;&apos;)
+</a> 
+ 
+ 	# Convert a single link to relative
+</pre>
+</div>
+</body>
+</html>

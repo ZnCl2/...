@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>make diffstat files an anchor (jump to delta) - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/c6e8f9fd809cc16960022c344b42be77229a70c6.html">c6e8f9fd809cc16960022c344b42be77229a70c6</a>
+<b>parent</b> <a href="../commit/543582034eed3faf6120de321354f36ec8a2c0b4.html">543582034eed3faf6120de321354f36ec8a2c0b4</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Fri May  6 11:49:25 +0200
+
+make diffstat files an anchor (jump to delta)
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">stagit.c</a></td><td> | </td><td class="num">8</td><td><span class="i">++++</span><span class="d">----</span></td></tr>
+</table>1 file changed, 4 insertions(+), 4 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/stagit.c.html">stagit.c</a> b/<a href="../file/stagit.c.html">stagit.c</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -462,7 +462,7 @@ printshowfile(FILE *fp, struct commitinfo *ci)
+</a> 	fputs(&quot;&lt;b&gt;Diffstat:&lt;/b&gt;\n&lt;table&gt;&quot;, fp);
+ 	for (i = 0; i &lt; ci-&gt;ndeltas; i++) {
+ 		delta = git_patch_get_delta(ci-&gt;deltas[i]-&gt;patch);
+<a href="#h0-0-3" id="h0-0-3" class="d">-		fputs(&quot;&lt;tr&gt;&lt;td&gt;&quot;, fp);
+</a><a href="#h0-0-4" id="h0-0-4" class="i">+		fprintf(fp, &quot;&lt;tr&gt;&lt;td&gt;&lt;a href=\&quot;#h%zu\&quot;&gt;&quot;, i);
+</a> 		xmlencode(fp, delta-&gt;old_file.path, strlen(delta-&gt;old_file.path));
+ 		if (strcmp(delta-&gt;old_file.path, delta-&gt;new_file.path)) {
+ 			fputs(&quot; -&amp;gt; &quot;, fp);
+<a href="#h0-1" id="h0-1" class="h">@@ -482,7 +482,7 @@ printshowfile(FILE *fp, struct commitinfo *ci)
+</a> 		memset(&amp;linestr, &apos;+&apos;, add);
+ 		memset(&amp;linestr[add], &apos;-&apos;, del);
+ 
+<a href="#h0-1-3" id="h0-1-3" class="d">-		fprintf(fp, &quot;&lt;/td&gt;&lt;td&gt; | &lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;%zu&lt;/td&gt;&lt;td&gt;&lt;span class=\&quot;i\&quot;&gt;&quot;,
+</a><a href="#h0-1-4" id="h0-1-4" class="i">+		fprintf(fp, &quot;&lt;/a&gt;&lt;/td&gt;&lt;td&gt; | &lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;%zu&lt;/td&gt;&lt;td&gt;&lt;span class=\&quot;i\&quot;&gt;&quot;,
+</a> 		        ci-&gt;deltas[i]-&gt;addcount + ci-&gt;deltas[i]-&gt;delcount);
+ 		fwrite(&amp;linestr, 1, add, fp);
+ 		fputs(&quot;&lt;/span&gt;&lt;span class=\&quot;d\&quot;&gt;&quot;, fp);
+<a href="#h0-2" id="h0-2" class="h">@@ -499,8 +499,8 @@ printshowfile(FILE *fp, struct commitinfo *ci)
+</a> 	for (i = 0; i &lt; ci-&gt;ndeltas; i++) {
+ 		patch = ci-&gt;deltas[i]-&gt;patch;
+ 		delta = git_patch_get_delta(patch);
+<a href="#h0-2-3" id="h0-2-3" class="d">-		fprintf(fp, &quot;&lt;b&gt;diff --git a/&lt;a href=\&quot;%sfile/%s.html\&quot;&gt;%s&lt;/a&gt; b/&lt;a href=\&quot;%sfile/%s.html\&quot;&gt;%s&lt;/a&gt;&lt;/b&gt;\n&quot;,
+</a><a href="#h0-2-4" id="h0-2-4" class="d">-			relpath, delta-&gt;old_file.path, delta-&gt;old_file.path,
+</a><a href="#h0-2-5" id="h0-2-5" class="i">+		fprintf(fp, &quot;&lt;b&gt;diff --git a/&lt;a id=\&quot;h%zu\&quot; href=\&quot;%sfile/%s.html\&quot;&gt;%s&lt;/a&gt; b/&lt;a href=\&quot;%sfile/%s.html\&quot;&gt;%s&lt;/a&gt;&lt;/b&gt;\n&quot;,
+</a><a href="#h0-2-6" id="h0-2-6" class="i">+			i, relpath, delta-&gt;old_file.path, delta-&gt;old_file.path,
+</a> 			relpath, delta-&gt;new_file.path, delta-&gt;new_file.path);
+ 
+ 		/* check binary data */
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,315 @@
+<html>
+<script src="jquery.min.js"></script>
+<link rel="stylesheet" type="text/css" href="glitch.css">
+<link rel="stylesheet" type="text/css" href="index.css">
+<link rel="stylesheet" type="text/css" href="calculator.css">
+<div id="overlay"></div>
+<div id="overlay2"></div>
+
+<audio loop autoplay>
+  <source src="calculator.ogg" type="audio/ogg">
+</audio>
+<body>
+	<a href="./" target="_top">Stats</a>
+	<br><br>
+	<div id="main" align="center">
+		<span id='countdown' class='displayval'></span><br>
+		<span id='unlinkdate' class='displayval'></span><br>
+		<h2>Calculator</h2>
+		<b><span class="glitch gan" data-text="mirgatns">Migrants</span>: </b><span id='migrants' class='displayvalgood'></span>+<span id='queue' class='displayvalgood'></span><br>
+
+		<b><span class="glitch gan2" data-text="rAuoar">Aurora</span>: </b><span id='auroradisplay' class='displayvalgood'><span id='aurora'></span> k.nHa</span><br>
+ 		<b>Original time of <span class="glitch gan3" data-text="nuilnk">unlink</span>: </b><span id='originalunlink' class='displayvalwarn'></span><br>
+		<b>Time of <span class="glitch gan5" data-text="unlink">unlink</span> with queue: </b><span id='queueunlink' class='displayval'></span><br><br>
+		<form novalidate>
+		Slots: <input id="userslots" class="sdin displayvalgood" type="number" min="0" max="20" step="50" val="0"/>/<span id='maxslots' class='displayvalgood'></span> (<span id='slots' class='displayvalgood'></span> used for time)<br>
+		Days: <input id="userdays" class="sdin displayvalgood" type="number" min="0" max="518" val="0"/><span id='days' class='displayvalgood'></span>/<span id='maxdays' class='displayvalgood'></span>
+	</form>
+
+		<br>
+		Created by <span class="glitch gan5" data-text="1948">4189</span>
+	</div>
+</body>
+
+
+<script>
+var absolute_slots = 31000;
+var original_migrants = 3000;
+var slot_cost = 1728; //~28.8 minutes
+var original_unlink = 1498921200; //07/01/2017 @ 3:00pm (UTC)
+var original_unlink_date = new Date(original_unlink * 1000)
+//Old Unlink Date with 3000 migrants
+var extra_slots = absolute_slots - original_migrants;
+var old_unlink = original_unlink + (slot_cost * extra_slots);
+var old_unlink_date = new Date(old_unlink * 1000)
+$("#originalunlink").html(original_unlink_date.toUTCString())
+$("#oldunlink").html(old_unlink_date.toUTCString())
+
+
+var current_migrants = 4969;
+var cancelled_registrants = 0;
+var queue = 0;
+var new_migrants = 1969;		
+//New Unlink Date
+var absolute_slots_left = absolute_slots - current_migrants;
+var new_unlink = original_unlink + (slot_cost * absolute_slots_left);
+var new_unlink_date = new Date(new_unlink * 1000);
+
+//New Unlink Date w/ Calculator
+var userslots = 0;
+var userdays = 0;
+var absolute_slots_left_calc = absolute_slots - current_migrants - userslots;
+var new_unlink_calc = original_unlink + (slot_cost * absolute_slots_left_calc);
+var new_unlink_date_calc = new Date(new_unlink_calc * 1000)
+var estimate_unlink_calc = original_unlink + (slot_cost * absolute_slots_left_calc);
+var estimate_unlink_date_calc = new Date(estimate_unlink_calc * 1000);
+
+//Queue Unlink Date
+var estimate_unlink = original_unlink + (slot_cost * absolute_slots_left);
+var estimate_unlink_date = new Date(estimate_unlink * 1000);
+
+//Amount of time taken by extra slots
+var slot_time_used = 0;
+//Elapsed Time since Original Unlink
+var time_used = 0;
+var countdown = 0;
+//Slot Calculations
+var slots_usedby_time = 0;
+var slots_left = absolute_slots_left;
+var slots_left_calc = absolute_slots_left_calc;
+var aurora_left = 3000000;
+var aurora_left_calc = 3000000;
+var aurora_usage = 46936150.218;
+
+
+
+function days(s) {
+	var d = (s/86400).toFixed(5);
+	return d;
+}
+
+
+function secondsTimeSpanToHMS(s) {
+	var d = Math.floor(s/86400); //Get whole days
+	s -= d*86400;
+    var h = Math.floor(s/3600); //Get whole hours
+    s -= h*3600;
+    var m = Math.floor(s/60); //Get remaining minutes
+    s -= m*60;
+    return d+"d "+h+"h "+(m < 10 ? '0'+m : m)+"m "+Math.floor(s < 10 ? '0'+s : s)+"s"; //zero padding on minutes and seconds
+}
+
+secondsTimeSpanToHMS(125);
+
+function GetRegistrants() {
+				$.ajax({
+					type: "GET",
+					url: "https://ex.systemspace.network/api/status.php",
+					//data:{url:"https://systemspace.link/api/status.php"},
+					async:true,
+					dataType: 'json',
+					crossDomain:true,
+					success: function(data, status, xhr)
+					{
+						data = data['data'];
+						current_migrants = data['migrants'];
+						cancelled_registrants = data['unregistrations'];
+						queue = data['queue_length'];
+					}
+				})
+
+				new_migrants = current_migrants - original_migrants;
+
+				
+				//New Unlink Date
+				absolute_slots_left = absolute_slots - current_migrants;
+				new_unlink = original_unlink + (slot_cost * absolute_slots_left);
+				new_unlink_date = new Date(new_unlink * 1000)
+
+
+				//Estimate Unlink Date with Queued Registrants
+				estimate_unlink = original_unlink + (slot_cost * (absolute_slots_left-queue));
+				estimate_unlink_date = new Date(estimate_unlink * 1000)
+
+				
+
+				//Amount of time taken by extra slots
+				slot_time_used = slot_cost * new_migrants;
+
+
+				//Elapsed Time since Original Unlink
+				var now_datetime = new Date().getTime();
+				var now = now_datetime/1000;
+				time_used = now - original_unlink_date.getTime()/1000;
+				countdown = new_unlink_date.getTime()/1000 - now;
+
+				//Slot Calculations
+				slots_usedby_time = Math.ceil(time_used/slot_cost);
+				slots_left = absolute_slots_left - slots_usedby_time;
+				
+
+
+				aurora_left = ((new_unlink_date.getTime()-now_datetime) * 1185611831116156 / Math.pow(2, 64)).toFixed(2);
+			//});
+		}
+var mode
+$("#userdays").bind('keydown input', function(){
+	userdays = $("#userdays").val();
+	absolute_slots_left_calc = absolute_slots - current_migrants;
+	$("#userslots").val(absolute_slots_left_calc - slots_usedby_time  - (userdays*50))
+	absolute_slots_left_calc = absolute_slots - current_migrants - userslots;
+});
+$("#userslots").bind('keydown input', function(){
+    userslots = $("#userslots").val();
+	absolute_slots_left_calc = absolute_slots - current_migrants - userslots;
+	new_unlink_calc = original_unlink + (slot_cost * absolute_slots_left_calc);
+	new_unlink_date_calc = new Date(new_unlink_calc * 1000)
+	countdown_calc = new_unlink_date_calc.getTime()/1000 - now;
+	slots_left_calc = absolute_slots_left_calc - slots_usedby_time;
+	var now_datetime = new Date().getTime();
+	var now = now_datetime/1000;
+	countdown_calc = new_unlink_date_calc.getTime()/1000 - now;
+	daycount_calc = days(countdown_calc);
+	$("#userdays").val(daycount_calc);
+});
+
+var olduserslots = 0;
+var daycount_calc = 0;
+var daycount = 0;
+$("#userslots").val(0)
+function display()
+{
+	var now_datetime = new Date().getTime();
+	var now = now_datetime/1000;
+	countdown = new_unlink_date.getTime()/1000 - now;
+	countdown_calc = new_unlink_date_calc.getTime()/1000 - now;
+
+	userdays = $("#userdays").val();
+	userslots = $("#userslots").val();
+	daycount_calc = days(countdown_calc);
+	daycount = days(countdown);
+
+	absolute_slots_left_calc = absolute_slots - current_migrants - userslots;
+	new_unlink_calc = original_unlink + (slot_cost * absolute_slots_left_calc);
+	new_unlink_date_calc = new Date(new_unlink_calc * 1000)
+	countdown_calc = new_unlink_date_calc.getTime()/1000 - now;
+	slots_left_calc = absolute_slots_left_calc - slots_usedby_time;
+	var now_datetime = new Date().getTime();
+	var now = now_datetime/1000;
+	countdown_calc = new_unlink_date_calc.getTime()/1000 - now;
+	daycount_calc = days(countdown_calc);
+	$("#userdays").val(Math.floor(daycount_calc));
+	estimate_unlink_calc = original_unlink + (slot_cost * (absolute_slots_left_calc-queue));
+	estimate_unlink_date_calc = new Date(estimate_unlink_calc * 1000)
+	aurora_left_calc = ((new_unlink_date_calc.getTime()-now_datetime) * 1185611831116156 / Math.pow(2, 64)).toFixed(2);
+
+	userslots = $("#userslots").val()
+	$("#days").html(daycount_calc.toString().replace(/(\d+)\./, "."));
+	$("#maxdays").html(daycount);
+	$("#maxslots").html(slots_left);
+	$("#userslots").attr("max",slots_left);
+	$("#userdays").attr("max",daycount);
+
+	$("#slots").html(slots_left_calc);
+
+	
+
+	//Display
+	time_used = now - original_unlink_date.getTime()/1000;
+	
+
+	if(countdown_calc <= 604800) //1week left
+	{
+		$( "#countdown" ).removeClass("displayval");
+		$( "#countdown" ).addClass("displayvalwarn");
+		$( "#days" ).removeClass("displayval");
+		$( "#days" ).addClass("displayvalwarn");
+		$( "#userdays" ).removeClass("displayval");
+		$( "#userdays" ).addClass("displayvalwarn");
+	}else
+	{
+		$( "#countdown" ).addClass("displayval");
+		$( "#countdown" ).removeClass("displayvalwarn");
+		$( "#days" ).addClass("displayval");
+		$( "#days" ).removeClass("displayvalwarn");
+		$( "#userdays" ).addClass("displayval");
+		$( "#userdays" ).removeClass("displayvalwarn");
+	}
+	if(aurora_left_calc <= 50000)
+	{
+		$( "#auroradisplay" ).removeClass("displayvalgood");
+		$( "#auroradisplay" ).removeClass("displayval");
+		$( "#auroradisplay" ).addClass("displayvalwarn");
+	}
+	else if(aurora_left_calc <= 1000000)
+	{
+		$( "#auroradisplay" ).removeClass("displayvalgood");
+		$( "#auroradisplay" ).addClass("displayval");
+		$( "#auroradisplay" ).removeClass("displayvalwarn");
+	}else
+	{
+		$( "#auroradisplay" ).addClass("displayvalgood");
+		$( "#auroradisplay" ).removeClass("displayval");
+		$( "#auroradisplay" ).removeClass("displayvalwarn");
+	}
+	if(slots_left_calc <= 5000)
+	{
+		$( "#slots" ).removeClass("displayvalgood");
+		$( "#slots" ).removeClass("displayval");
+		$( "#slots" ).addClass("displayvalwarn");
+		$( "#userslots" ).removeClass("displayvalgood");
+		$( "#userslots" ).removeClass("displayval");
+		$( "#userslots" ).addClass("displayvalwarn");
+	}
+	else if(slots_left_calc <= 15000)
+	{
+		$( "#slots" ).removeClass("displayvalgood");
+		$( "#slots" ).addClass("displayval");
+		$( "#slots" ).removeClass("displayvalwarn");
+		$( "#userslots" ).removeClass("displayvalgood");
+		$( "#userslots" ).addClass("displayval");
+		$( "#userslots" ).removeClass("displayvalwarn");
+	}else
+	{
+		$( "#slots" ).addClass("displayvalgood");
+		$( "#slots" ).removeClass("displayval");
+		$( "#slots" ).removeClass("displayvalwarn");
+		$( "#userslots" ).addClass("displayvalgood");
+		$( "#userslots" ).removeClass("displayval");
+		$( "#userslots" ).removeClass("displayvalwarn");
+	}
+	if(queue >= slots_left*0.75)
+	{
+		$( "#queue" ).removeClass("displayvalgood");
+		$( "#queue" ).removeClass("displayval");
+		$( "#queue" ).addClass("displayvalwarn");
+	}
+	else if(queue >= slots_left/2)
+	{
+		$( "#queue" ).removeClass("displayvalgood");
+		$( "#queue" ).addClass("displayval");
+		$( "#queue" ).removeClass("displayvalwarn");
+	}else
+	{
+		$( "#queue" ).addClass("displayvalgood");
+		$( "#queue" ).removeClass("displayval");
+		$( "#queue" ).removeClass("displayvalwarn");
+	}
+	
+	
+	$("#countdown").html(secondsTimeSpanToHMS(countdown_calc));
+	$("#unlinkdate").html(new_unlink_date_calc.toUTCString());
+	$("#queueunlink").html(estimate_unlink_date_calc.toUTCString());
+	$("#migrants").html(Math.floor(current_migrants)+Math.floor(userslots));
+	$("#queue").html(queue);
+	$("#aurora").html(aurora_left_calc);
+}
+setInterval(function(){
+				GetRegistrants();
+			}, 500);
+setInterval(function(){
+				display();
+			}, 100);
+</script>
+
+</html>

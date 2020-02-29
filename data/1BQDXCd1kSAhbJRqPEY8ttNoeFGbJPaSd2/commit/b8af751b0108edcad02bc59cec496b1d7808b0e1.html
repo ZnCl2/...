@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Fix null pointer access for submodules in writefilestree - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/b8af751b0108edcad02bc59cec496b1d7808b0e1.html">b8af751b0108edcad02bc59cec496b1d7808b0e1</a>
+<b>parent</b> <a href="../commit/375d41dcce94106460f1b3855ebb295ccb138593.html">375d41dcce94106460f1b3855ebb295ccb138593</a>
+<b>Author:</b> Quentin Rameau &lt;<a href="mailto:quinq@fifth.space">quinq@fifth.space</a>&gt;
+<b>Date:</b>   Fri Apr 29 14:01:45 +0200
+
+Fix null pointer access for submodules in writefilestree
+
+Do not try to set a link to submodules from bare repo as we can&apos;t get
+the actual url.
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">stagit.c</a></td><td> | </td><td class="num">17</td><td><span class="i">+++++++++++</span><span class="d">------</span></td></tr>
+</table>1 file changed, 11 insertions(+), 6 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/stagit.c.html">stagit.c</a> b/<a href="../file/stagit.c.html">stagit.c</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -709,13 +709,18 @@ writefilestree(FILE *fp, git_tree *tree, const char *branch, const char *path)
+</a> 				fprintf(fp, &quot;%juB&quot;, (uintmax_t)filesize);
+ 			fputs(&quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;, fp);
+ 		} else if (git_submodule_lookup(&amp;module, repo, entryname) == 0) {
+<a href="#h0-0-3" id="h0-0-3" class="d">-			moduleurl = git_submodule_url(module);
+</a><a href="#h0-0-4" id="h0-0-4" class="d">-			fprintf(fp, &quot;&lt;tr&gt;&lt;td&gt;m---------&lt;/td&gt;&lt;td&gt;&lt;a class=\&quot;module\&quot; href=\&quot;%s\&quot;&gt;&quot;,
+</a><a href="#h0-0-5" id="h0-0-5" class="d">-				moduleurl);
+</a><a href="#h0-0-6" id="h0-0-6" class="i">+			fputs(&quot;&lt;tr&gt;&lt;td&gt;m---------&lt;/td&gt;&lt;td&gt;&quot;, fp);
+</a><a href="#h0-0-7" id="h0-0-7" class="i">+			if ((moduleurl = git_submodule_url(module))) {
+</a><a href="#h0-0-8" id="h0-0-8" class="i">+				fprintf(fp, &quot;&lt;a class=\&quot;module\&quot; href=\&quot;%s\&quot;&gt;&quot;,
+</a><a href="#h0-0-9" id="h0-0-9" class="i">+				        moduleurl);
+</a><a href="#h0-0-10" id="h0-0-10" class="i">+			}
+</a> 			xmlencode(fp, entrypath, strlen(entrypath));
+<a href="#h0-0-12" id="h0-0-12" class="d">-			fputs(&quot; @&quot;, fp);
+</a><a href="#h0-0-13" id="h0-0-13" class="d">-			xmlencode(fp, moduleurl, strlen(moduleurl));
+</a><a href="#h0-0-14" id="h0-0-14" class="d">-			fprintf(fp, &quot;&lt;/a&gt;&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;0%c&quot;,
+</a><a href="#h0-0-15" id="h0-0-15" class="i">+			if (moduleurl) {
+</a><a href="#h0-0-16" id="h0-0-16" class="i">+				fputs(&quot; @&quot;, fp);
+</a><a href="#h0-0-17" id="h0-0-17" class="i">+				xmlencode(fp, moduleurl, strlen(moduleurl));
+</a><a href="#h0-0-18" id="h0-0-18" class="i">+				fputs(&quot;&lt;/a&gt;&quot;, fp);
+</a><a href="#h0-0-19" id="h0-0-19" class="i">+			}
+</a><a href="#h0-0-20" id="h0-0-20" class="i">+			fprintf(fp, &quot;&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;0%c&quot;,
+</a> 				showlinecount ? &apos;L&apos; : &apos;B&apos;);
+ 			git_submodule_free(module);
+ 			fputs(&quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;, fp);
+</pre>
+</div>
+</body>
+</html>

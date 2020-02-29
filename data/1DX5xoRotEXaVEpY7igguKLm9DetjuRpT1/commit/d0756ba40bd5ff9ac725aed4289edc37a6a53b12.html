@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>thread sort after 100ms idle, also sort by topic creation date, update topic visit date on new comment, colored usernames, limit reload rate to 500ms - 0git - 0git - a list of git repositories on ZeroNet
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="0git.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>0git</h1><span class="desc">0git - a list of git repositories on ZeroNet
+</span></td></tr><tr class="url"><td></td><td>git clone <a href="http://127.0.0.1:43110/0git.bit/0git.git">http://127.0.0.1:43110/0git.bit/0git.git</a></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.md.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/d0756ba40bd5ff9ac725aed4289edc37a6a53b12.html">d0756ba40bd5ff9ac725aed4289edc37a6a53b12</a>
+<b>parent</b> <a href="../commit/191361983aae4b57aea067e2708996b56001f740.html">191361983aae4b57aea067e2708996b56001f740</a>
+<b>Author:</b> HelloZeroNet &lt;<a href="mailto:hello@noloop.me">hello@noloop.me</a>&gt;
+<b>Date:</b>   Thu Feb 26 01:47:04 +0100
+
+thread sort after 100ms idle, also sort by topic creation date, update topic visit date on new comment, colored usernames, limit reload rate to 500ms
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">content.json</a></td><td> | </td><td class="num">30</td><td><span class="i">+++++++++++++++</span><span class="d">---------------</span></td></tr>
+<tr><td><a href="#h1">js/ZeroTalk.coffee</a></td><td> | </td><td class="num">68</td><td><span class="i">+++++++++++++++++++++++++++++++++++++++++++++++++++</span><span class="d">-----------------</span></td></tr>
+<tr><td><a href="#h2">js/all.js</a></td><td> | </td><td class="num">122</td><td><span class="i">+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++</span><span class="d">------------------</span></td></tr>
+<tr><td><a href="#h3">js/lib/LimitRate.coffee</a></td><td> | </td><td class="num">7</td><td><span class="i">+++++++</span><span class="d"></span></td></tr>
+</table>4 files changed, 168 insertions(+), 59 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/content.json.html">content.json</a> b/<a href="../file/content.json.html">content.json</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -4,9 +4,9 @@
+</a>   &quot;description&quot;: &quot;Decentralized forum demo&quot;, 
+   &quot;files&quot;: {
+     &quot;css/all.css&quot;: {
+<a href="#h0-0-3" id="h0-0-3" class="d">-      &quot;sha1&quot;: &quot;ef27f742845b6096434ea7aca7a03254918e565e&quot;, 
+</a><a href="#h0-0-4" id="h0-0-4" class="d">-      &quot;sha512&quot;: &quot;cd6f1928bd41c63fce1944af68a4a21a46bae49adc9dfe998aacc06d4a0d0d33&quot;, 
+</a><a href="#h0-0-5" id="h0-0-5" class="d">-      &quot;size&quot;: 143757
+</a><a href="#h0-0-6" id="h0-0-6" class="i">+      &quot;sha1&quot;: &quot;c76ae52f1cd57383b1e1877db5e910116e5c9bb1&quot;, 
+</a><a href="#h0-0-7" id="h0-0-7" class="i">+      &quot;sha512&quot;: &quot;808cd96cedfcabb3e15a7697adb72336dfdcee255b732dcc1e4b5ca74946f8b3&quot;, 
+</a><a href="#h0-0-8" id="h0-0-8" class="i">+      &quot;size&quot;: 144206
+</a>     }, 
+     &quot;img/loading.gif&quot;: {
+       &quot;sha1&quot;: &quot;a669dbd8a577f6957656fc88ba4960b93fcd23d9&quot;, 
+<a href="#h0-1" id="h0-1" class="h">@@ -14,17 +14,17 @@
+</a>       &quot;size&quot;: 723
+     }, 
+     &quot;index.html&quot;: {
+<a href="#h0-1-3" id="h0-1-3" class="d">-      &quot;sha1&quot;: &quot;761d1a040e618f1345ad1474a87222b0bc782a04&quot;, 
+</a><a href="#h0-1-4" id="h0-1-4" class="d">-      &quot;sha512&quot;: &quot;f9ef3e024651c7d7825159d405aeaff407615a281798ad182e9d43f0e59dc581&quot;, 
+</a><a href="#h0-1-5" id="h0-1-5" class="d">-      &quot;size&quot;: 4626
+</a><a href="#h0-1-6" id="h0-1-6" class="i">+      &quot;sha1&quot;: &quot;4d4845aabe3badf09fbabc7a4ed4513f527fa624&quot;, 
+</a><a href="#h0-1-7" id="h0-1-7" class="i">+      &quot;sha512&quot;: &quot;4fd418533d81c2f58e021dd4703cac54717ad1aaa80a03172f7f6e5577e82124&quot;, 
+</a><a href="#h0-1-8" id="h0-1-8" class="i">+      &quot;size&quot;: 4668
+</a>     }, 
+     &quot;js/all.js&quot;: {
+<a href="#h0-1-11" id="h0-1-11" class="d">-      &quot;sha1&quot;: &quot;cae36ebe57e25c18672a0d83b6a4eb7f417066bc&quot;, 
+</a><a href="#h0-1-12" id="h0-1-12" class="d">-      &quot;sha512&quot;: &quot;1c6ccb36b95516d96bc683734660f425418d72c733502e11a4aae6e5f8b169dd&quot;, 
+</a><a href="#h0-1-13" id="h0-1-13" class="d">-      &quot;size&quot;: 201644
+</a><a href="#h0-1-14" id="h0-1-14" class="i">+      &quot;sha1&quot;: &quot;b09dfa9fccd3a44f94d726c62509972f6b9a73dd&quot;, 
+</a><a href="#h0-1-15" id="h0-1-15" class="i">+      &quot;sha512&quot;: &quot;57fdb291741cc163eb53cbd3ba5cd233f291ea8f58efc2ea0372497eaa796190&quot;, 
+</a><a href="#h0-1-16" id="h0-1-16" class="i">+      &quot;size&quot;: 204536
+</a>     }
+   }, 
+<a href="#h0-1-19" id="h0-1-19" class="d">-  &quot;ignore&quot;: &quot;((js|css)/(?!all.(js|css))|data/users/.*|publisher/.*)&quot;, 
+</a><a href="#h0-1-20" id="h0-1-20" class="i">+  &quot;ignore&quot;: &quot;((js|css)/(?!all.(js|css))|data/users/.*)&quot;, 
+</a>   &quot;includes&quot;: {
+     &quot;data/users/content.json&quot;: {
+       &quot;signers&quot;: [
+<a href="#h0-2" id="h0-2" class="h">@@ -33,17 +33,17 @@
+</a>       &quot;signers_required&quot;: 1
+     }
+   }, 
+<a href="#h0-2-3" id="h0-2-3" class="d">-  &quot;modified&quot;: 1423701695.871, 
+</a><a href="#h0-2-4" id="h0-2-4" class="i">+  &quot;modified&quot;: 1424538722.421, 
+</a>   &quot;sign&quot;: [
+<a href="#h0-2-6" id="h0-2-6" class="d">-    100554475417050765712274863869416670559528521683345544177713567213277469164292, 
+</a><a href="#h0-2-7" id="h0-2-7" class="d">-    59245740357478470247264859817543978227131821683553174328878845575009338206041
+</a><a href="#h0-2-8" id="h0-2-8" class="i">+    28115098796321225525469683774674563020683626206006934530558881859210766320163, 
+</a><a href="#h0-2-9" id="h0-2-9" class="i">+    85669531735706364241730694951554730240181994225982173396151007166538171566242
+</a>   ], 
+   &quot;signers_sign&quot;: &quot;HKNDz9IUHcBc/l2Jm2Bl70XQDL9HYHhJ2hUdg8AMyunACLgxyXBr7EW1/ME4hGkaFZSFmIxlInmxH+BrMVXbnLw=&quot;, 
+   &quot;signs&quot;: {
+<a href="#h0-2-13" id="h0-2-13" class="d">-    &quot;1TaLk3zM7ZRskJvrh3ZNCDVGXvkJusPKQ&quot;: &quot;HNC+vtoQDtugFiw1CYJNL/djCcKENpTxdeiucgznTBmOX0MCdmFQN5FvuxmTuIbZ5LV2KIpTDPo3cuIEt9eIHV8=&quot;
+</a><a href="#h0-2-14" id="h0-2-14" class="i">+    &quot;1TaLk3zM7ZRskJvrh3ZNCDVGXvkJusPKQ&quot;: &quot;HFmfecFh0MtVJJ+M9jWbyYQaDqqE4s4UK5ePyJ0ER0NBac8+ln9sy3N8iGrHKT+0LKq8xpbzaXV6nGUqPcqfRu4=&quot;
+</a>   }, 
+   &quot;signs_required&quot;: 1, 
+   &quot;title&quot;: &quot;ZeroTalk&quot;, 
+   &quot;viewport&quot;: &quot;width=device-width, initial-scale=1.0&quot;, 
+<a href="#h0-2-19" id="h0-2-19" class="d">-  &quot;zeronet_version&quot;: &quot;0.2.0&quot;
+</a><a href="#h0-2-20" id="h0-2-20" class="i">+  &quot;zeronet_version&quot;: &quot;0.2.3&quot;
+</a> } 
+\ No newline at end of file
+<b>diff --git a/<a id="h1" href="../file/js/ZeroTalk.coffee.html">js/ZeroTalk.coffee</a> b/<a href="../file/js/ZeroTalk.coffee.html">js/ZeroTalk.coffee</a></b>
+<a href="#h1-0" id="h1-0" class="h">@@ -11,6 +11,8 @@ class ZeroTalk extends ZeroFrame
+</a> 
+ 		@user_max_size = null # Max total file size allowed to user
+ 
+<a href="#h1-0-3" id="h1-0-3" class="i">+		@thread_sorter = null
+</a><a href="#h1-0-4" id="h1-0-4" class="i">+
+</a> 		# Autoexpand
+ 		for textarea in $(&quot;textarea&quot;)
+ 			@autoExpand $(textarea)
+<a href="#h1-1" id="h1-1" class="h">@@ -109,8 +111,9 @@ class ZeroTalk extends ZeroFrame
+</a> 			$(&quot;body&quot;).css({&quot;overflow&quot;: &quot;auto&quot;, &quot;height&quot;: &quot;auto&quot;}) # Auto height body
+ 
+ 			# Hide loading
+<a href="#h1-1-3" id="h1-1-3" class="d">-			if parseInt($(&quot;.topics-loading&quot;).css(&quot;top&quot;)) == 0 # Loading visible, animate it
+</a><a href="#h1-1-4" id="h1-1-4" class="d">-				$(&quot;.topics-loading&quot;).css(&quot;top&quot;, &quot;-30px&quot;).removeLater()
+</a><a href="#h1-1-5" id="h1-1-5" class="i">+
+</a><a href="#h1-1-6" id="h1-1-6" class="i">+			if parseInt($(&quot;.topics-loading&quot;).css(&quot;top&quot;)) &gt; -30 # Loading visible, animate it
+</a><a href="#h1-1-7" id="h1-1-7" class="i">+				$(&quot;.topics-loading&quot;).css(&quot;top&quot;, &quot;-30px&quot;)
+</a> 			else
+ 				$(&quot;.topics-loading&quot;).remove()
+ 
+<a href="#h1-2" id="h1-2" class="h">@@ -118,7 +121,14 @@ class ZeroTalk extends ZeroFrame
+</a> 
+ 			@addInlineEditors()
+ 
+<a href="#h1-2-3" id="h1-2-3" class="d">-			@loadTopicsStat(type)
+</a><a href="#h1-2-4" id="h1-2-4" class="i">+			if @site_info.tasks == 0 # No tasks active, sort it now
+</a><a href="#h1-2-5" id="h1-2-5" class="i">+				@loadTopicsStat(type)
+</a><a href="#h1-2-6" id="h1-2-6" class="i">+			else # Workers active, wait 100ms before sort
+</a><a href="#h1-2-7" id="h1-2-7" class="i">+				clearInterval(@thread_sorter)
+</a><a href="#h1-2-8" id="h1-2-8" class="i">+				@thread_sorter = setTimeout (=&gt;
+</a><a href="#h1-2-9" id="h1-2-9" class="i">+					@loadTopicsStat(type)
+</a><a href="#h1-2-10" id="h1-2-10" class="i">+				), 100
+</a><a href="#h1-2-11" id="h1-2-11" class="i">+
+</a> 
+ 			if cb then cb()
+ 
+<a href="#h1-3" id="h1-3" class="h">@@ -131,6 +141,12 @@ class ZeroTalk extends ZeroFrame
+</a> 			stats = []
+ 			# Analyze user data files
+ 			for user in users
+<a href="#h1-3-3" id="h1-3-3" class="i">+				for topic in user.topics
+</a><a href="#h1-3-4" id="h1-3-4" class="i">+					user_id = @user_id_db[user.inner_path]
+</a><a href="#h1-3-5" id="h1-3-5" class="i">+					topic_address = &quot;#{topic.topic_id}_#{user_id}&quot;
+</a><a href="#h1-3-6" id="h1-3-6" class="i">+					if not stats[topic_address]?
+</a><a href="#h1-3-7" id="h1-3-7" class="i">+						stats[topic_address] = {&quot;comments&quot;: 0, &quot;last&quot;: {&quot;added&quot;: topic.added}}
+</a><a href="#h1-3-8" id="h1-3-8" class="i">+
+</a> 				for topic_address, comments of user[&quot;comments&quot;]
+ 					topic_address = topic_address.replace(&quot;@&quot;, &quot;_&quot;)
+ 					for comment in comments
+<a href="#h1-4" id="h1-4" class="h">@@ -143,8 +159,9 @@ class ZeroTalk extends ZeroFrame
+</a> 
+ 			# Set html elements
+ 			for topic_address, stat of stats
+<a href="#h1-4-3" id="h1-4-3" class="d">-				$(&quot;#topic_#{topic_address} .comment-num&quot;).text &quot;#{stat.comments} comment&quot;
+</a><a href="#h1-4-4" id="h1-4-4" class="d">-				$(&quot;#topic_#{topic_address} .added&quot;).text &quot;last &quot;+@formatSince(stat[&quot;last&quot;][&quot;added&quot;])
+</a><a href="#h1-4-5" id="h1-4-5" class="i">+				if stat.comments &gt; 0
+</a><a href="#h1-4-6" id="h1-4-6" class="i">+					$(&quot;#topic_#{topic_address} .comment-num&quot;).text &quot;#{stat.comments} comment&quot;
+</a><a href="#h1-4-7" id="h1-4-7" class="i">+					$(&quot;#topic_#{topic_address} .added&quot;).text &quot;last &quot;+@formatSince(stat[&quot;last&quot;][&quot;added&quot;])
+</a> 
+ 
+ 			# Sort topics
+<a href="#h1-5" id="h1-5" class="h">@@ -174,9 +191,6 @@ class ZeroTalk extends ZeroFrame
+</a> 		@loadTopic()
+ 		@loadComments(&quot;noanim&quot;)
+ 
+<a href="#h1-5-3" id="h1-5-3" class="d">-		@local_storage[&quot;topic.#{topic_id}_#{topic_user_id}.visited&quot;] = @timestamp()
+</a><a href="#h1-5-4" id="h1-5-4" class="d">-		@cmd &quot;wrapperSetLocalStorage&quot;, @local_storage
+</a><a href="#h1-5-5" id="h1-5-5" class="d">-
+</a> 		$(&quot;.comment-new .button-submit&quot;).on &quot;click&quot;, =&gt;
+ 			if @user_name_db[@site_info.auth_address] # Check if user exits
+ 				@buttonComment()
+<a href="#h1-6" id="h1-6" class="h">@@ -201,6 +215,11 @@ class ZeroTalk extends ZeroFrame
+</a> 
+ 	loadComments: (type=&quot;normal&quot;, cb=false) -&gt;
+ 		topic_address = @topic_id+&quot;@&quot;+@topic_user_id
+<a href="#h1-6-3" id="h1-6-3" class="i">+
+</a><a href="#h1-6-4" id="h1-6-4" class="i">+		# Update visited info
+</a><a href="#h1-6-5" id="h1-6-5" class="i">+		@local_storage[&quot;topic.#{@topic_id}_#{@topic_user_id}.visited&quot;] = @timestamp()
+</a><a href="#h1-6-6" id="h1-6-6" class="i">+		@cmd &quot;wrapperSetLocalStorage&quot;, @local_storage
+</a><a href="#h1-6-7" id="h1-6-7" class="i">+
+</a> 		# Load comments
+ 		@cmd &quot;fileQuery&quot;, [&quot;data/users/*/data.json&quot;, &quot;comments.#{topic_address}&quot;], (comments) =&gt;
+ 			comments.sort (a, b) -&gt; # Sort by date desc
+<a href="#h1-7" id="h1-7" class="h">@@ -235,7 +254,7 @@ class ZeroTalk extends ZeroFrame
+</a> 
+ 		# Get links in body
+ 		body = topic.body
+<a href="#h1-7-3" id="h1-7-3" class="d">-		match = topic.body.match /http[s]{0,1}:\/\/[^&quot;&apos; $]+/
+</a><a href="#h1-7-4" id="h1-7-4" class="i">+		match = topic.body.match /http[s]{0,1}:\/\/[^&quot;&apos;, $]+/
+</a> 		if match # Link type topic
+ 			if type != &quot;full&quot; then body = body.replace /http[s]{0,1}:\/\/[^&quot;&apos; $]+/g, &quot;&quot; # Remove links
+ 			$(&quot;.image .icon&quot;, elem).removeClass(&quot;icon-topic-chat&quot;).addClass(&quot;icon-topic-link&quot;)
+<a href="#h1-8" id="h1-8" class="h">@@ -250,7 +269,8 @@ class ZeroTalk extends ZeroFrame
+</a> 		else
+ 			$(&quot;.body&quot;, elem).text body
+ 
+<a href="#h1-8-3" id="h1-8-3" class="d">-		$(&quot;.username&quot;, elem).text(@user_name_db[topic.inner_path])
+</a><a href="#h1-8-4" id="h1-8-4" class="i">+		username = @user_name_db[topic.inner_path]
+</a><a href="#h1-8-5" id="h1-8-5" class="i">+		$(&quot;.username&quot;, elem).text(username)
+</a> 		$(&quot;.added&quot;, elem).text @formatSince(topic.added)
+ 
+ 		# My topic
+<a href="#h1-9" id="h1-9" class="h">@@ -260,13 +280,25 @@ class ZeroTalk extends ZeroFrame
+</a> 			$(&quot;.body&quot;, elem).attr(&quot;data-editable&quot;, &quot;body&quot;).data(&quot;content&quot;, topic.body)
+ 
+ 
+<a href="#h1-9-3" id="h1-9-3" class="i">+	textToColor: (text) =&gt;
+</a><a href="#h1-9-4" id="h1-9-4" class="i">+		hash = 0
+</a><a href="#h1-9-5" id="h1-9-5" class="i">+		for i in [0..text.length-1]
+</a><a href="#h1-9-6" id="h1-9-6" class="i">+			hash = text.charCodeAt(i) + ((hash &lt;&lt; 5) - hash)
+</a><a href="#h1-9-7" id="h1-9-7" class="i">+		color = &apos;#&apos;
+</a><a href="#h1-9-8" id="h1-9-8" class="i">+		return &quot;hsl(&quot; + (hash % 360) + &quot;,30%,50%)&quot;;
+</a><a href="#h1-9-9" id="h1-9-9" class="i">+		for i in [0..2]
+</a><a href="#h1-9-10" id="h1-9-10" class="i">+			value = (hash &gt;&gt; (i * 8)) &amp; 0xFF
+</a><a href="#h1-9-11" id="h1-9-11" class="i">+			color += (&apos;00&apos; + value.toString(16)).substr(-2)
+</a><a href="#h1-9-12" id="h1-9-12" class="i">+		return color
+</a><a href="#h1-9-13" id="h1-9-13" class="i">+
+</a> 
+ 	# Update elem based on data of comment dict
+ 	applyCommentData: (elem, comment) -&gt;
+ 		username = @user_name_db[comment.inner_path]
+ 		$(&quot;.body&quot;, elem).html(marked(comment.body, {&quot;sanitize&quot;: true}))
+<a href="#h1-9-19" id="h1-9-19" class="d">-		$(&quot;.username&quot;, elem).text(username)
+</a><a href="#h1-9-20" id="h1-9-20" class="i">+		$(&quot;.username&quot;, elem).text(username).css(&quot;color&quot;: @textToColor(username))
+</a> 		$(&quot;.added&quot;, elem).text @formatSince(comment.added)
+<a href="#h1-9-22" id="h1-9-22" class="i">+		# elem.css(&quot;border-left&quot;, &quot;2px solid #{@textToColor(username)}&quot;)
+</a> 
+ 
+ 		# My comment
+<a href="#h1-10" id="h1-10" class="h">@@ -377,7 +409,7 @@ class ZeroTalk extends ZeroFrame
+</a> 				$(&quot;.button.signup&quot;).removeClass(&quot;loading&quot;) 
+ 
+ 			$(&quot;.head-user.registered&quot;).css(&quot;display&quot;, &quot;&quot;)
+<a href="#h1-10-3" id="h1-10-3" class="d">-			$(&quot;.username-my&quot;).text(user_name)
+</a><a href="#h1-10-4" id="h1-10-4" class="i">+			$(&quot;.username-my&quot;).text(user_name).css(&quot;color&quot;, @textToColor(user_name))
+</a> 			@cmd &quot;fileGet&quot;, [&quot;data/users/#{address}/content.json&quot;], (content) =&gt;
+ 				content = JSON.parse(content)
+ 				sum = 0
+<a href="#h1-11" id="h1-11" class="h">@@ -546,11 +578,13 @@ class ZeroTalk extends ZeroFrame
+</a> 		if res.params.event and res.params.event[0] == &quot;file_done&quot; and res.params.event[1] == &quot;data/users/content.json&quot; # New user
+ 			@loadUserDb() # Reload userdb
+ 		if res.params.event and res.params.event[0] == &quot;file_done&quot; and res.params.event[1].match /.*users.*data.json$/  # Data changed
+<a href="#h1-11-3" id="h1-11-3" class="d">-			if $(&quot;body&quot;).hasClass(&quot;page-topic&quot;)
+</a><a href="#h1-11-4" id="h1-11-4" class="d">-				@loadTopic()
+</a><a href="#h1-11-5" id="h1-11-5" class="d">-				@loadComments()
+</a><a href="#h1-11-6" id="h1-11-6" class="d">-			if $(&quot;body&quot;).hasClass(&quot;page-main&quot;)
+</a><a href="#h1-11-7" id="h1-11-7" class="d">-				@loadTopics()
+</a><a href="#h1-11-8" id="h1-11-8" class="i">+			LimitRate (=&gt;
+</a><a href="#h1-11-9" id="h1-11-9" class="i">+				if $(&quot;body&quot;).hasClass(&quot;page-topic&quot;)
+</a><a href="#h1-11-10" id="h1-11-10" class="i">+					@loadTopic()
+</a><a href="#h1-11-11" id="h1-11-11" class="i">+					@loadComments()
+</a><a href="#h1-11-12" id="h1-11-12" class="i">+				if $(&quot;body&quot;).hasClass(&quot;page-main&quot;)
+</a><a href="#h1-11-13" id="h1-11-13" class="i">+					@loadTopics()
+</a><a href="#h1-11-14" id="h1-11-14" class="i">+			), 500
+</a> 
+ 
+ 
+<b>diff --git a/<a id="h2" href="../file/js/all.js.html">js/all.js</a> b/<a href="../file/js/all.js.html">js/all.js</a></b>
+<a href="#h2-0" id="h2-0" class="h">@@ -10,6 +10,27 @@
+</a> 
+ 
+ 
+<a href="#h2-0-3" id="h2-0-3" class="i">+/* ---- data/1TaLk3zM7ZRskJvrh3ZNCDVGXvkJusPKQ/js/lib/LimitRate.coffee ---- */
+</a><a href="#h2-0-4" id="h2-0-4" class="i">+
+</a><a href="#h2-0-5" id="h2-0-5" class="i">+
+</a><a href="#h2-0-6" id="h2-0-6" class="i">+(function() {
+</a><a href="#h2-0-7" id="h2-0-7" class="i">+  var limits;
+</a><a href="#h2-0-8" id="h2-0-8" class="i">+
+</a><a href="#h2-0-9" id="h2-0-9" class="i">+  limits = {};
+</a><a href="#h2-0-10" id="h2-0-10" class="i">+
+</a><a href="#h2-0-11" id="h2-0-11" class="i">+  window.LimitRate = function(fn, interval) {
+</a><a href="#h2-0-12" id="h2-0-12" class="i">+    if (!limits[fn]) {
+</a><a href="#h2-0-13" id="h2-0-13" class="i">+      return limits[fn] = setTimeout((function() {
+</a><a href="#h2-0-14" id="h2-0-14" class="i">+        fn();
+</a><a href="#h2-0-15" id="h2-0-15" class="i">+        return delete limits[fn];
+</a><a href="#h2-0-16" id="h2-0-16" class="i">+      }), interval);
+</a><a href="#h2-0-17" id="h2-0-17" class="i">+    }
+</a><a href="#h2-0-18" id="h2-0-18" class="i">+  };
+</a><a href="#h2-0-19" id="h2-0-19" class="i">+
+</a><a href="#h2-0-20" id="h2-0-20" class="i">+}).call(this);
+</a><a href="#h2-0-21" id="h2-0-21" class="i">+
+</a><a href="#h2-0-22" id="h2-0-22" class="i">+
+</a><a href="#h2-0-23" id="h2-0-23" class="i">+
+</a> /* ---- data/1TaLk3zM7ZRskJvrh3ZNCDVGXvkJusPKQ/js/lib/ZeroFrame.coffee ---- */
+ 
+ 
+<a href="#h2-1" id="h2-1" class="h">@@ -1070,6 +1091,7 @@ jQuery.extend( jQuery.easing,
+</a>       this.saveContent = __bind(this.saveContent, this);
+       this.getObject = __bind(this.getObject, this);
+       this.getContent = __bind(this.getContent, this);
+<a href="#h2-1-3" id="h2-1-3" class="i">+      this.textToColor = __bind(this.textToColor, this);
+</a>       this.loadTopicsStat = __bind(this.loadTopicsStat, this);
+       this.onOpenWebsocket = __bind(this.onOpenWebsocket, this);
+       return ZeroTalk.__super__.constructor.apply(this, arguments);
+<a href="#h2-2" id="h2-2" class="h">@@ -1085,6 +1107,7 @@ jQuery.extend( jQuery.easing,
+</a>       this.user_address_db = {};
+       this.user_name_db = {};
+       this.user_max_size = null;
+<a href="#h2-2-3" id="h2-2-3" class="i">+      this.thread_sorter = null;
+</a>       _ref = $(&quot;textarea&quot;);
+       for (_i = 0, _len = _ref.length; _i &lt; _len; _i++) {
+         textarea = _ref[_i];
+<a href="#h2-3" id="h2-3" class="h">@@ -1212,14 +1235,21 @@ jQuery.extend( jQuery.easing,
+</a>             &quot;overflow&quot;: &quot;auto&quot;,
+             &quot;height&quot;: &quot;auto&quot;
+           });
+<a href="#h2-3-3" id="h2-3-3" class="d">-          if (parseInt($(&quot;.topics-loading&quot;).css(&quot;top&quot;)) === 0) {
+</a><a href="#h2-3-4" id="h2-3-4" class="d">-            $(&quot;.topics-loading&quot;).css(&quot;top&quot;, &quot;-30px&quot;).removeLater();
+</a><a href="#h2-3-5" id="h2-3-5" class="i">+          if (parseInt($(&quot;.topics-loading&quot;).css(&quot;top&quot;)) &gt; -30) {
+</a><a href="#h2-3-6" id="h2-3-6" class="i">+            $(&quot;.topics-loading&quot;).css(&quot;top&quot;, &quot;-30px&quot;);
+</a>           } else {
+             $(&quot;.topics-loading&quot;).remove();
+           }
+           _this.log(&quot;Topics loaded in&quot;, (+(new Date)) - s);
+           _this.addInlineEditors();
+<a href="#h2-3-12" id="h2-3-12" class="d">-          _this.loadTopicsStat(type);
+</a><a href="#h2-3-13" id="h2-3-13" class="i">+          if (_this.site_info.tasks === 0) {
+</a><a href="#h2-3-14" id="h2-3-14" class="i">+            _this.loadTopicsStat(type);
+</a><a href="#h2-3-15" id="h2-3-15" class="i">+          } else {
+</a><a href="#h2-3-16" id="h2-3-16" class="i">+            clearInterval(_this.thread_sorter);
+</a><a href="#h2-3-17" id="h2-3-17" class="i">+            _this.thread_sorter = setTimeout((function() {
+</a><a href="#h2-3-18" id="h2-3-18" class="i">+              return _this.loadTopicsStat(type);
+</a><a href="#h2-3-19" id="h2-3-19" class="i">+            }), 100);
+</a><a href="#h2-3-20" id="h2-3-20" class="i">+          }
+</a>           if (cb) {
+             return cb();
+           }
+<a href="#h2-4" id="h2-4" class="h">@@ -1235,17 +1265,31 @@ jQuery.extend( jQuery.easing,
+</a>       s = +(new Date);
+       return this.cmd(&quot;fileQuery&quot;, [&quot;data/users/*/data.json&quot;, &quot;&quot;], (function(_this) {
+         return function(users) {
+<a href="#h2-4-3" id="h2-4-3" class="d">-          var comment, comments, elem, last, stat, stats, topic, topic_address, topics, user, visited, _i, _j, _k, _len, _len1, _len2, _ref;
+</a><a href="#h2-4-4" id="h2-4-4" class="i">+          var comment, comments, elem, last, stat, stats, topic, topic_address, topics, user, user_id, visited, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1;
+</a>           $(&quot;.topics&quot;).css(&quot;opacity&quot;, 1);
+           stats = [];
+           for (_i = 0, _len = users.length; _i &lt; _len; _i++) {
+             user = users[_i];
+<a href="#h2-4-9" id="h2-4-9" class="d">-            _ref = user[&quot;comments&quot;];
+</a><a href="#h2-4-10" id="h2-4-10" class="d">-            for (topic_address in _ref) {
+</a><a href="#h2-4-11" id="h2-4-11" class="d">-              comments = _ref[topic_address];
+</a><a href="#h2-4-12" id="h2-4-12" class="i">+            _ref = user.topics;
+</a><a href="#h2-4-13" id="h2-4-13" class="i">+            for (_j = 0, _len1 = _ref.length; _j &lt; _len1; _j++) {
+</a><a href="#h2-4-14" id="h2-4-14" class="i">+              topic = _ref[_j];
+</a><a href="#h2-4-15" id="h2-4-15" class="i">+              user_id = _this.user_id_db[user.inner_path];
+</a><a href="#h2-4-16" id="h2-4-16" class="i">+              topic_address = topic.topic_id + &quot;_&quot; + user_id;
+</a><a href="#h2-4-17" id="h2-4-17" class="i">+              if (stats[topic_address] == null) {
+</a><a href="#h2-4-18" id="h2-4-18" class="i">+                stats[topic_address] = {
+</a><a href="#h2-4-19" id="h2-4-19" class="i">+                  &quot;comments&quot;: 0,
+</a><a href="#h2-4-20" id="h2-4-20" class="i">+                  &quot;last&quot;: {
+</a><a href="#h2-4-21" id="h2-4-21" class="i">+                    &quot;added&quot;: topic.added
+</a><a href="#h2-4-22" id="h2-4-22" class="i">+                  }
+</a><a href="#h2-4-23" id="h2-4-23" class="i">+                };
+</a><a href="#h2-4-24" id="h2-4-24" class="i">+              }
+</a><a href="#h2-4-25" id="h2-4-25" class="i">+            }
+</a><a href="#h2-4-26" id="h2-4-26" class="i">+            _ref1 = user[&quot;comments&quot;];
+</a><a href="#h2-4-27" id="h2-4-27" class="i">+            for (topic_address in _ref1) {
+</a><a href="#h2-4-28" id="h2-4-28" class="i">+              comments = _ref1[topic_address];
+</a>               topic_address = topic_address.replace(&quot;@&quot;, &quot;_&quot;);
+<a href="#h2-4-30" id="h2-4-30" class="d">-              for (_j = 0, _len1 = comments.length; _j &lt; _len1; _j++) {
+</a><a href="#h2-4-31" id="h2-4-31" class="d">-                comment = comments[_j];
+</a><a href="#h2-4-32" id="h2-4-32" class="i">+              for (_k = 0, _len2 = comments.length; _k &lt; _len2; _k++) {
+</a><a href="#h2-4-33" id="h2-4-33" class="i">+                comment = comments[_k];
+</a>                 if (stats[topic_address] == null) {
+                   stats[topic_address] = {
+                     &quot;comments&quot;: 0,
+<a href="#h2-5" id="h2-5" class="h">@@ -1263,8 +1307,10 @@ jQuery.extend( jQuery.easing,
+</a>           }
+           for (topic_address in stats) {
+             stat = stats[topic_address];
+<a href="#h2-5-3" id="h2-5-3" class="d">-            $(&quot;#topic_&quot; + topic_address + &quot; .comment-num&quot;).text(stat.comments + &quot; comment&quot;);
+</a><a href="#h2-5-4" id="h2-5-4" class="d">-            $(&quot;#topic_&quot; + topic_address + &quot; .added&quot;).text(&quot;last &quot; + _this.formatSince(stat[&quot;last&quot;][&quot;added&quot;]));
+</a><a href="#h2-5-5" id="h2-5-5" class="i">+            if (stat.comments &gt; 0) {
+</a><a href="#h2-5-6" id="h2-5-6" class="i">+              $(&quot;#topic_&quot; + topic_address + &quot; .comment-num&quot;).text(stat.comments + &quot; comment&quot;);
+</a><a href="#h2-5-7" id="h2-5-7" class="i">+              $(&quot;#topic_&quot; + topic_address + &quot; .added&quot;).text(&quot;last &quot; + _this.formatSince(stat[&quot;last&quot;][&quot;added&quot;]));
+</a><a href="#h2-5-8" id="h2-5-8" class="i">+            }
+</a>           }
+           topics = (function() {
+             var _results;
+<a href="#h2-6" id="h2-6" class="h">@@ -1278,8 +1324,8 @@ jQuery.extend( jQuery.easing,
+</a>           topics.sort(function(a, b) {
+             return a[1] - b[1];
+           });
+<a href="#h2-6-3" id="h2-6-3" class="d">-          for (_k = 0, _len2 = topics.length; _k &lt; _len2; _k++) {
+</a><a href="#h2-6-4" id="h2-6-4" class="d">-            topic = topics[_k];
+</a><a href="#h2-6-5" id="h2-6-5" class="i">+          for (_l = 0, _len3 = topics.length; _l &lt; _len3; _l++) {
+</a><a href="#h2-6-6" id="h2-6-6" class="i">+            topic = topics[_l];
+</a>             topic_address = topic[0];
+             elem = $(&quot;#topic_&quot; + topic_address);
+             elem.prependTo(&quot;.topics&quot;);
+<a href="#h2-7" id="h2-7" class="h">@@ -1300,8 +1346,6 @@ jQuery.extend( jQuery.easing,
+</a>       this.topic_user_id = topic_user_id;
+       this.loadTopic();
+       this.loadComments(&quot;noanim&quot;);
+<a href="#h2-7-3" id="h2-7-3" class="d">-      this.local_storage[&quot;topic.&quot; + topic_id + &quot;_&quot; + topic_user_id + &quot;.visited&quot;] = this.timestamp();
+</a><a href="#h2-7-4" id="h2-7-4" class="d">-      this.cmd(&quot;wrapperSetLocalStorage&quot;, this.local_storage);
+</a>       return $(&quot;.comment-new .button-submit&quot;).on(&quot;click&quot;, (function(_this) {
+         return function() {
+           if (_this.user_name_db[_this.site_info.auth_address]) {
+<a href="#h2-8" id="h2-8" class="h">@@ -1343,6 +1387,8 @@ jQuery.extend( jQuery.easing,
+</a>         cb = false;
+       }
+       topic_address = this.topic_id + &quot;@&quot; + this.topic_user_id;
+<a href="#h2-8-3" id="h2-8-3" class="i">+      this.local_storage[&quot;topic.&quot; + this.topic_id + &quot;_&quot; + this.topic_user_id + &quot;.visited&quot;] = this.timestamp();
+</a><a href="#h2-8-4" id="h2-8-4" class="i">+      this.cmd(&quot;wrapperSetLocalStorage&quot;, this.local_storage);
+</a>       return this.cmd(&quot;fileQuery&quot;, [&quot;data/users/*/data.json&quot;, &quot;comments.&quot; + topic_address], (function(_this) {
+         return function(comments) {
+           var comment, comment_address, elem, _i, _len;
+<a href="#h2-9" id="h2-9" class="h">@@ -1375,7 +1421,7 @@ jQuery.extend( jQuery.easing,
+</a>     };
+ 
+     ZeroTalk.prototype.applyTopicData = function(elem, topic, type) {
+<a href="#h2-9-3" id="h2-9-3" class="d">-      var body, match, title_hash, user_id;
+</a><a href="#h2-9-4" id="h2-9-4" class="i">+      var body, match, title_hash, user_id, username;
+</a>       if (type == null) {
+         type = &quot;normal&quot;;
+       }
+<a href="#h2-10" id="h2-10" class="h">@@ -1384,7 +1430,7 @@ jQuery.extend( jQuery.easing,
+</a>       $(&quot;.title .title-link&quot;, elem).text(topic.title);
+       $(&quot;.title .title-link, a.image, .comment-num&quot;, elem).attr(&quot;href&quot;, &quot;?Topic:&quot; + topic.topic_id + &quot;@&quot; + user_id + &quot;/&quot; + title_hash);
+       body = topic.body;
+<a href="#h2-10-3" id="h2-10-3" class="d">-      match = topic.body.match(/http[s]{0,1}:\/\/[^&quot;&apos; $]+/);
+</a><a href="#h2-10-4" id="h2-10-4" class="i">+      match = topic.body.match(/http[s]{0,1}:\/\/[^&quot;&apos;, $]+/);
+</a>       if (match) {
+         if (type !== &quot;full&quot;) {
+           body = body.replace(/http[s]{0,1}:\/\/[^&quot;&apos; $]+/g, &quot;&quot;);
+<a href="#h2-11" id="h2-11" class="h">@@ -1403,7 +1449,8 @@ jQuery.extend( jQuery.easing,
+</a>       } else {
+         $(&quot;.body&quot;, elem).text(body);
+       }
+<a href="#h2-11-3" id="h2-11-3" class="d">-      $(&quot;.username&quot;, elem).text(this.user_name_db[topic.inner_path]);
+</a><a href="#h2-11-4" id="h2-11-4" class="i">+      username = this.user_name_db[topic.inner_path];
+</a><a href="#h2-11-5" id="h2-11-5" class="i">+      $(&quot;.username&quot;, elem).text(username);
+</a>       $(&quot;.added&quot;, elem).text(this.formatSince(topic.added));
+       if (topic.inner_path === this.site_info.auth_address) {
+         $(elem).attr(&quot;data-object&quot;, &quot;Topic:&quot; + topic.topic_id + &quot;@&quot; + user_id).attr(&quot;data-deletable&quot;, &quot;yes&quot;);
+<a href="#h2-12" id="h2-12" class="h">@@ -1412,13 +1459,30 @@ jQuery.extend( jQuery.easing,
+</a>       }
+     };
+ 
+<a href="#h2-12-3" id="h2-12-3" class="i">+    ZeroTalk.prototype.textToColor = function(text) {
+</a><a href="#h2-12-4" id="h2-12-4" class="i">+      var color, hash, i, value, _i, _j, _ref;
+</a><a href="#h2-12-5" id="h2-12-5" class="i">+      hash = 0;
+</a><a href="#h2-12-6" id="h2-12-6" class="i">+      for (i = _i = 0, _ref = text.length - 1; 0 &lt;= _ref ? _i &lt;= _ref : _i &gt;= _ref; i = 0 &lt;= _ref ? ++_i : --_i) {
+</a><a href="#h2-12-7" id="h2-12-7" class="i">+        hash = text.charCodeAt(i) + ((hash &lt;&lt; 5) - hash);
+</a><a href="#h2-12-8" id="h2-12-8" class="i">+      }
+</a><a href="#h2-12-9" id="h2-12-9" class="i">+      color = &apos;#&apos;;
+</a><a href="#h2-12-10" id="h2-12-10" class="i">+      return &quot;hsl(&quot; + (hash % 360) + &quot;,30%,50%)&quot;;
+</a><a href="#h2-12-11" id="h2-12-11" class="i">+      for (i = _j = 0; _j &lt;= 2; i = ++_j) {
+</a><a href="#h2-12-12" id="h2-12-12" class="i">+        value = (hash &gt;&gt; (i * 8)) &amp; 0xFF;
+</a><a href="#h2-12-13" id="h2-12-13" class="i">+        color += (&apos;00&apos; + value.toString(16)).substr(-2);
+</a><a href="#h2-12-14" id="h2-12-14" class="i">+      }
+</a><a href="#h2-12-15" id="h2-12-15" class="i">+      return color;
+</a><a href="#h2-12-16" id="h2-12-16" class="i">+    };
+</a><a href="#h2-12-17" id="h2-12-17" class="i">+
+</a>     ZeroTalk.prototype.applyCommentData = function(elem, comment) {
+       var comment_id, topic_address, user_id, username;
+       username = this.user_name_db[comment.inner_path];
+       $(&quot;.body&quot;, elem).html(marked(comment.body, {
+         &quot;sanitize&quot;: true
+       }));
+<a href="#h2-12-24" id="h2-12-24" class="d">-      $(&quot;.username&quot;, elem).text(username);
+</a><a href="#h2-12-25" id="h2-12-25" class="i">+      $(&quot;.username&quot;, elem).text(username).css({
+</a><a href="#h2-12-26" id="h2-12-26" class="i">+        &quot;color&quot;: this.textToColor(username)
+</a><a href="#h2-12-27" id="h2-12-27" class="i">+      });
+</a>       $(&quot;.added&quot;, elem).text(this.formatSince(comment.added));
+       if (comment.inner_path === this.site_info.auth_address) {
+         user_id = this.user_id_db[comment.inner_path];
+<a href="#h2-13" id="h2-13" class="h">@@ -1601,7 +1665,7 @@ jQuery.extend( jQuery.easing,
+</a>           $(&quot;.button.signup&quot;).removeClass(&quot;loading&quot;);
+         }
+         $(&quot;.head-user.registered&quot;).css(&quot;display&quot;, &quot;&quot;);
+<a href="#h2-13-3" id="h2-13-3" class="d">-        $(&quot;.username-my&quot;).text(user_name);
+</a><a href="#h2-13-4" id="h2-13-4" class="i">+        $(&quot;.username-my&quot;).text(user_name).css(&quot;color&quot;, this.textToColor(user_name));
+</a>         return this.cmd(&quot;fileGet&quot;, [&quot;data/users/&quot; + address + &quot;/content.json&quot;], (function(_this) {
+           return function(content) {
+             var details, relative_path, sum, _ref;
+<a href="#h2-14" id="h2-14" class="h">@@ -1817,13 +1881,17 @@ jQuery.extend( jQuery.easing,
+</a>         this.loadUserDb();
+       }
+       if (res.params.event &amp;&amp; res.params.event[0] === &quot;file_done&quot; &amp;&amp; res.params.event[1].match(/.*users.*data.json$/)) {
+<a href="#h2-14-3" id="h2-14-3" class="d">-        if ($(&quot;body&quot;).hasClass(&quot;page-topic&quot;)) {
+</a><a href="#h2-14-4" id="h2-14-4" class="d">-          this.loadTopic();
+</a><a href="#h2-14-5" id="h2-14-5" class="d">-          this.loadComments();
+</a><a href="#h2-14-6" id="h2-14-6" class="d">-        }
+</a><a href="#h2-14-7" id="h2-14-7" class="d">-        if ($(&quot;body&quot;).hasClass(&quot;page-main&quot;)) {
+</a><a href="#h2-14-8" id="h2-14-8" class="d">-          return this.loadTopics();
+</a><a href="#h2-14-9" id="h2-14-9" class="d">-        }
+</a><a href="#h2-14-10" id="h2-14-10" class="i">+        return LimitRate(((function(_this) {
+</a><a href="#h2-14-11" id="h2-14-11" class="i">+          return function() {
+</a><a href="#h2-14-12" id="h2-14-12" class="i">+            if ($(&quot;body&quot;).hasClass(&quot;page-topic&quot;)) {
+</a><a href="#h2-14-13" id="h2-14-13" class="i">+              _this.loadTopic();
+</a><a href="#h2-14-14" id="h2-14-14" class="i">+              _this.loadComments();
+</a><a href="#h2-14-15" id="h2-14-15" class="i">+            }
+</a><a href="#h2-14-16" id="h2-14-16" class="i">+            if ($(&quot;body&quot;).hasClass(&quot;page-main&quot;)) {
+</a><a href="#h2-14-17" id="h2-14-17" class="i">+              return _this.loadTopics();
+</a><a href="#h2-14-18" id="h2-14-18" class="i">+            }
+</a><a href="#h2-14-19" id="h2-14-19" class="i">+          };
+</a><a href="#h2-14-20" id="h2-14-20" class="i">+        })(this)), 500);
+</a>       }
+     };
+ 
+<b>diff --git a/<a id="h3" href="../file/js/lib/LimitRate.coffee.html">js/lib/LimitRate.coffee</a> b/<a href="../file/js/lib/LimitRate.coffee.html">js/lib/LimitRate.coffee</a></b>
+<a href="#h3-0" id="h3-0" class="h">@@ -0,0 +1,7 @@
+</a><a href="#h3-0-0" id="h3-0-0" class="i">+limits = {}
+</a><a href="#h3-0-1" id="h3-0-1" class="i">+window.LimitRate = (fn, interval) -&gt;
+</a><a href="#h3-0-2" id="h3-0-2" class="i">+	if not limits[fn]
+</a><a href="#h3-0-3" id="h3-0-3" class="i">+		limits[fn] = setTimeout (-&gt;
+</a><a href="#h3-0-4" id="h3-0-4" class="i">+			fn()
+</a><a href="#h3-0-5" id="h3-0-5" class="i">+			delete limits[fn]
+</a><a href="#h3-0-6" id="h3-0-6" class="i">+		), interval
+</a></pre>
+</div>
+</body>
+</html>

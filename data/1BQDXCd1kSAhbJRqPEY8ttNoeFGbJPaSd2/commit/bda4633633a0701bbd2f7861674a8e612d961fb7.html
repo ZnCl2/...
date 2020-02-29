@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>improvements: - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/bda4633633a0701bbd2f7861674a8e612d961fb7.html">bda4633633a0701bbd2f7861674a8e612d961fb7</a>
+<b>parent</b> <a href="../commit/5734f7aca10abefa680497a5cb0bdaf538b6476a.html">5734f7aca10abefa680497a5cb0bdaf538b6476a</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Sat Dec  5 00:37:31 +0100
+
+improvements:
+
+- nicer file list.
+- relative urls, dont use base href.
+- add link to plain files, files should be checked out in &quot;file&quot; dir.
+- strip .git from bare repos.
+- simplify part of commit per file, just link to commit + file anchor (WIP).
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">urmoms</a></td><td> | </td><td class="num">74</td><td><span class="i">++++++++++++++++++++++++++++++++</span><span class="d">------------------------------------------</span></td></tr>
+</table>1 file changed, 32 insertions(+), 42 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/urmoms.html">urmoms</a> b/<a href="../file/urmoms.html">urmoms</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -16,18 +16,17 @@ header() {
+</a> &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot; /&gt;
+ &lt;meta http-equiv=&quot;Content-Language&quot; content=&quot;en&quot; /&gt;
+ &lt;title&gt;${name} - ${description}&lt;/title&gt;
+<a href="#h0-0-3" id="h0-0-3" class="d">-&lt;base href=&quot;${baseurl}&quot; /&gt;
+</a> &lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;style.css&quot; /&gt;
+ &lt;/head&gt;
+ &lt;body&gt;
+ &lt;center&gt;
+<a href="#h0-0-8" id="h0-0-8" class="d">-&lt;h1&gt;&lt;img src=&quot;logo.png&quot; alt=&quot;&quot; /&gt; ${name}&lt;/h1&gt;
+</a><a href="#h0-0-9" id="h0-0-9" class="i">+&lt;h1&gt;&lt;img src=&quot;${relpath}logo.png&quot; alt=&quot;&quot; /&gt; ${name}&lt;/h1&gt;
+</a> &lt;span class=&quot;desc&quot;&gt;${description}&lt;/span&gt;&lt;br/&gt;
+<a href="#h0-0-11" id="h0-0-11" class="d">-&lt;a href=&quot;log.html&quot;&gt;Log&lt;/a&gt; |
+</a><a href="#h0-0-12" id="h0-0-12" class="d">-&lt;a href=&quot;files.html&quot;&gt;Files&lt;/a&gt; |
+</a><a href="#h0-0-13" id="h0-0-13" class="d">-&lt;a href=&quot;stats.html&quot;&gt;Stats&lt;/a&gt; |
+</a><a href="#h0-0-14" id="h0-0-14" class="d">-&lt;a href=&quot;readme.html&quot;&gt;README&lt;/a&gt; |
+</a><a href="#h0-0-15" id="h0-0-15" class="d">-&lt;a href=&quot;license.html&quot;&gt;LICENSE&lt;/a&gt;
+</a><a href="#h0-0-16" id="h0-0-16" class="i">+&lt;a href=&quot;${relpath}log.html&quot;&gt;Log&lt;/a&gt; |
+</a><a href="#h0-0-17" id="h0-0-17" class="i">+&lt;a href=&quot;${relpath}files.html&quot;&gt;Files&lt;/a&gt; |
+</a><a href="#h0-0-18" id="h0-0-18" class="i">+&lt;a href=&quot;${relpath}stats.html&quot;&gt;Stats&lt;/a&gt; |
+</a><a href="#h0-0-19" id="h0-0-19" class="i">+&lt;a href=&quot;${relpath}readme.html&quot;&gt;README&lt;/a&gt; |
+</a><a href="#h0-0-20" id="h0-0-20" class="i">+&lt;a href=&quot;${relpath}license.html&quot;&gt;LICENSE&lt;/a&gt;
+</a> &lt;/center&gt;
+ &lt;hr/&gt;
+ &lt;pre&gt;
+<a href="#h0-1" id="h0-1" class="h">@@ -37,8 +36,6 @@ header() {
+</a> footer() {
+ 	cat &lt;&lt;!__EOF__
+ &lt;/pre&gt;
+<a href="#h0-1-3" id="h0-1-3" class="d">-&lt;hr/&gt;
+</a><a href="#h0-1-4" id="h0-1-4" class="d">-&lt;i&gt;&lt;center&gt;Powered by urmoms vibrator&lt;/center&gt;&lt;/i&gt;
+</a> &lt;/body&gt;
+ &lt;/html&gt;
+ !__EOF__
+<a href="#h0-2" id="h0-2" class="h">@@ -56,58 +53,49 @@ mkdir -p &quot;${htmldir}&quot;
+</a> # repodir must be a directory to go to.
+ cd &quot;$1&quot; || usage
+ 
+<a href="#h0-2-3" id="h0-2-3" class="d">-# project name
+</a><a href="#h0-2-4" id="h0-2-4" class="d">-# TODO: if bare repo just remove .git suffix?
+</a><a href="#h0-2-5" id="h0-2-5" class="d">-name=$(basename &quot;$(pwd)&quot;)
+</a><a href="#h0-2-6" id="h0-2-6" class="i">+# default index page (symlink).
+</a><a href="#h0-2-7" id="h0-2-7" class="i">+indexpage=&quot;log.html&quot;
+</a><a href="#h0-2-8" id="h0-2-8" class="i">+
+</a><a href="#h0-2-9" id="h0-2-9" class="i">+# project name, if bare repo remove .git suffix.
+</a><a href="#h0-2-10" id="h0-2-10" class="i">+name=$(basename &quot;$(pwd)&quot; &quot;.git&quot;)
+</a> 
+ # read .git/description.
+ description=&quot;&quot;
+ test -f &quot;.git/description&quot; &amp;&amp; description=&quot;$(cat &apos;.git/description&apos;)&quot;
+ 
+<a href="#h0-2-16" id="h0-2-16" class="d">-# TODO: make configurable.
+</a><a href="#h0-2-17" id="h0-2-17" class="d">-baseurl=&quot;http://cow.codemadness.org/gitlog/&quot;
+</a><a href="#h0-2-18" id="h0-2-18" class="d">-
+</a><a href="#h0-2-19" id="h0-2-19" class="d">-indexpage=&quot;log.html&quot;
+</a><a href="#h0-2-20" id="h0-2-20" class="d">-
+</a><a href="#h0-2-21" id="h0-2-21" class="d">-firstcommit=$(git log | grep &apos;^commit &apos; | tail -n 1 | cut -f 2 -d &apos; &apos;)
+</a><a href="#h0-2-22" id="h0-2-22" class="d">-
+</a><a href="#h0-2-23" id="h0-2-23" class="d">-# make log per file.
+</a><a href="#h0-2-24" id="h0-2-24" class="d">-# TODO: just link to commit/commit? save some space and time?
+</a><a href="#h0-2-25" id="h0-2-25" class="d">-git ls-tree -r --name-only master | while read -r file; do
+</a><a href="#h0-2-26" id="h0-2-26" class="d">-	test -e &quot;${htmldir}/file/${file}.html&quot; &amp;&amp; continue
+</a><a href="#h0-2-27" id="h0-2-27" class="d">-
+</a><a href="#h0-2-28" id="h0-2-28" class="d">-	d=$(dirname &quot;${file}&quot;)
+</a><a href="#h0-2-29" id="h0-2-29" class="d">-	mkdir -p &quot;${htmldir}/file/${d}&quot;
+</a><a href="#h0-2-30" id="h0-2-30" class="d">-
+</a><a href="#h0-2-31" id="h0-2-31" class="d">-	header &gt; &quot;${htmldir}/file/${file}.html&quot;
+</a><a href="#h0-2-32" id="h0-2-32" class="d">-	git show &quot;${firstcommit}&quot;...master &quot;${file}&quot; | \
+</a><a href="#h0-2-33" id="h0-2-33" class="d">-		sed -E &apos;s@^commit (.*)$@commit &lt;a href=&quot;commit/\1.html&quot;&gt;\1&lt;/a&gt;@g&apos; &gt;&gt; &quot;${htmldir}/file/${file}.html&quot;
+</a><a href="#h0-2-34" id="h0-2-34" class="d">-	footer &gt;&gt; &quot;${htmldir}/file/${file}.html&quot;
+</a><a href="#h0-2-35" id="h0-2-35" class="d">-done
+</a><a href="#h0-2-36" id="h0-2-36" class="d">-
+</a><a href="#h0-2-37" id="h0-2-37" class="d">-# make log with all commits.
+</a><a href="#h0-2-38" id="h0-2-38" class="d">-header &gt; &quot;${htmldir}/log.html&quot;
+</a><a href="#h0-2-39" id="h0-2-39" class="d">-printf &apos;&lt;table border=&quot;0&quot;&gt;&apos; &gt;&gt; &quot;${htmldir}/log.html&quot;
+</a><a href="#h0-2-40" id="h0-2-40" class="d">-git log --pretty=&apos;&lt;tr&gt;&lt;td align=&quot;right&quot;&gt;%cD&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;commit/%H.html&quot;&gt;%H&lt;/a&gt;&lt;/td&gt;&lt;td&gt;%an&lt;/td&gt;&lt;td&gt;%s&lt;/td&gt;&lt;/tr&gt;&apos; &gt;&gt; &quot;${htmldir}/log.html&quot;
+</a><a href="#h0-2-41" id="h0-2-41" class="d">-printf &apos;&lt;/table&gt;&apos; &gt;&gt; &quot;${htmldir}/log.html&quot;
+</a><a href="#h0-2-42" id="h0-2-42" class="d">-footer &gt;&gt; &quot;${htmldir}/log.html&quot;
+</a><a href="#h0-2-43" id="h0-2-43" class="d">-
+</a> # make diff for each commit (all files).
+<a href="#h0-2-45" id="h0-2-45" class="i">+relpath=&quot;../&quot;
+</a> mkdir -p &quot;${htmldir}/commit&quot;
+ git log --pretty=&apos;%H&apos; | while read -r commit; do
+ 	test -e &quot;${htmldir}/commit/${commit}.html&quot; &amp;&amp; continue
+<a href="#h0-2-49" id="h0-2-49" class="i">+
+</a> 	header &gt; &quot;${htmldir}/commit/${commit}.html&quot;
+<a href="#h0-2-51" id="h0-2-51" class="d">-	git show &quot;${commit}&quot; &gt;&gt; &quot;${htmldir}/commit/${commit}.html&quot;
+</a><a href="#h0-2-52" id="h0-2-52" class="i">+	git show --pretty=full &quot;${commit}&quot; | \
+</a><a href="#h0-2-53" id="h0-2-53" class="i">+		sed -E &apos;s@^commit (.*)$@commit &lt;a href=&quot;&apos;${relpath}&apos;commit/\1.html&quot;&gt;\1&lt;/a&gt;@g&apos; &gt;&gt; &quot;${htmldir}/commit/${commit}.html&quot;
+</a> 	footer &gt;&gt; &quot;${htmldir}/commit/${commit}.html&quot;
+ done 
+ 
+<a href="#h0-2-57" id="h0-2-57" class="i">+# make log with all commits.
+</a><a href="#h0-2-58" id="h0-2-58" class="i">+relpath=&quot;&quot;
+</a><a href="#h0-2-59" id="h0-2-59" class="i">+header &gt; &quot;${htmldir}/log.html&quot;
+</a><a href="#h0-2-60" id="h0-2-60" class="i">+printf &apos;&lt;table border=&quot;0&quot;&gt;&apos; &gt;&gt; &quot;${htmldir}/log.html&quot;
+</a><a href="#h0-2-61" id="h0-2-61" class="i">+git log --pretty=&apos;&lt;tr&gt;&lt;td align=&quot;right&quot;&gt;%cr&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;&apos;${relpath}&apos;commit/%H.html&quot;&gt;%H&lt;/a&gt;&lt;/td&gt;&lt;td&gt;%an&lt;/td&gt;&lt;td&gt;%s&lt;/td&gt;&lt;/tr&gt;&apos; &gt;&gt; &quot;${htmldir}/log.html&quot;
+</a><a href="#h0-2-62" id="h0-2-62" class="i">+printf &apos;&lt;/table&gt;&apos; &gt;&gt; &quot;${htmldir}/log.html&quot;
+</a><a href="#h0-2-63" id="h0-2-63" class="i">+footer &gt;&gt; &quot;${htmldir}/log.html&quot;
+</a><a href="#h0-2-64" id="h0-2-64" class="i">+
+</a> # make index with file links.
+<a href="#h0-2-66" id="h0-2-66" class="i">+relpath=&quot;&quot;
+</a> header &gt;&gt; &quot;${htmldir}/files.html&quot;
+<a href="#h0-2-68" id="h0-2-68" class="d">-git ls-tree -r master | sed -E &apos;s@	(.*)$@	&lt;a href=&quot;file/\1.html&quot;&gt;\1&lt;/a&gt;@g&apos; &gt;&gt; &quot;${htmldir}/files.html&quot;
+</a><a href="#h0-2-69" id="h0-2-69" class="i">+printf &apos;&lt;table&gt;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Mode&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;Name&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;Size&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;&apos; &gt;&gt; &quot;${htmldir}/files.html&quot;
+</a><a href="#h0-2-70" id="h0-2-70" class="i">+git ls-tree -r -l master | while read -r mode type object size file; do
+</a><a href="#h0-2-71" id="h0-2-71" class="i">+	git log -1 --pretty=&apos;&lt;tr&gt;&lt;td&gt;&apos;${mode}&apos;&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;&apos;${relpath}&apos;commit/%H.html#file-&apos;${file}&apos;&quot;&gt;&apos;${file}&apos;&lt;/a&gt;&lt;/td&gt;&lt;td&gt;&apos;${size}&apos;&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;file/&apos;${file}&apos;&quot;&gt;[plain]&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;&apos; &quot;${file}&quot;
+</a><a href="#h0-2-72" id="h0-2-72" class="i">+done &gt;&gt; &quot;${htmldir}/files.html&quot;
+</a><a href="#h0-2-73" id="h0-2-73" class="i">+printf &apos;&lt;/table&gt;&apos; &gt;&gt; &quot;${htmldir}/files.html&quot;
+</a> footer &gt;&gt; &quot;${htmldir}/files.html&quot;
+ 
+ # readme page
+ # find README file.
+<a href="#h0-2-78" id="h0-2-78" class="i">+relpath=&quot;&quot;
+</a> readme=&quot;&quot;
+ for f in README README.md readme.md; do
+ 	test -e &quot;${f}&quot; &amp;&amp; readme=&quot;${f}&quot;
+<a href="#h0-3" id="h0-3" class="h">@@ -123,6 +111,7 @@ footer &gt;&gt; &quot;${htmldir}/readme.html&quot;
+</a> 
+ # license page
+ # find LICENSE file.
+<a href="#h0-3-3" id="h0-3-3" class="i">+relpath=&quot;&quot;
+</a> license=&quot;&quot;
+ for f in LICENSE LICENSE.md; do
+ 	test -e &quot;${f}&quot; &amp;&amp; license=&quot;${f}&quot;
+<a href="#h0-4" id="h0-4" class="h">@@ -137,6 +126,7 @@ fi
+</a> footer &gt;&gt; &quot;${htmldir}/license.html&quot;
+ 
+ # stats (authors).
+<a href="#h0-4-3" id="h0-4-3" class="i">+relpath=&quot;&quot;
+</a> header &gt; &quot;${htmldir}/stats.html&quot;
+ git shortlog -n -s &gt;&gt; &quot;${htmldir}/stats.html&quot;
+ footer &gt;&gt; &quot;${htmldir}/stats.html&quot;
+</pre>
+</div>
+</body>
+</html>

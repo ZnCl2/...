@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+	<link rel="shortcut icon" type="image/png" href="/favicon.png"/>
+	<script type="text/javascript" src="js/ZeroFrame.js"></script>
+    <script src="js/plyr.js"></script>
+	<link rel="stylesheet" href="plyr.css" />
+</head>
+<body>
+		<div style="width:100%; height: 500px">
+				<video id="plyr-video" poster="shot.jpg" playsinline crossorigin
+				data-plyr-config='{ "title": "Example Title"}'>
+				<source src="view/video.mp4" type="video/mp4">
+				  <source src="/path/to/video.webm" type="video/webm">
+				  <!-- Captions are optional -->
+				</video>
+				<!-- create plyr -->
+				<script>
+	  
+				  class Page extends ZeroFrame {
+					  setSiteInfo(site_info) {
+						  var out = document.getElementById("plyr-video")
+						  out.innerHTML =
+							  "Page address: " + site_info.address +
+							  "<br>- Peers: " + site_info.peers +
+							  "<br>- Size: " + site_info.settings.size +
+							  "<br>- Modified: " + (new Date(site_info.content.modified*1000))
+					  }
+				  
+					  onOpenWebsocket() {
+						  this.cmd("siteInfo", [], function(site_info) {
+							  page.setSiteInfo(site_info)
+						  })
+					  }
+				  
+					  onRequest(cmd, message) {
+						  if (cmd == "setSiteInfo")
+							  this.setSiteInfo(message.params)
+						  else
+							  this.log("Unknown incoming message:", cmd)
+					  }
+				  }
+				  //page = new Page()
+				  //page.cmd("corsPermission", "1C6pzLZyt28GdcFZMcGcZKQWuRV79WPNaL")
+				  //page.cmd("fileGet", "view/vid.mp4.vtt", function(data) { console.log("RSO") })
+				  </script>
+	  <script>
+		  var player = new Plyr("#plyr-video",{
+		  autoplay:false,
+		  showPosterOnEnd: true, 
+		  controls:['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'fullscreen'],
+		  previewThumbnails:{ enabled: true, src: 'view/vid.mp4.vtt' }
+		  });
+		  
+		  (function(){
+		  if (typeof window.plyr !== "undefined" && typeof window.plyr.setup === "function") {
+			  //const player = plyr.setup('#plyr-video', {showPosterOnEnd: true, controls:['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'fullscreen']});
+			  
+		  }
+		  });
+		  </script>
+		  <!-- create plyr ends here -->
+	  
+		  </div>
+
+</body>
+</html>

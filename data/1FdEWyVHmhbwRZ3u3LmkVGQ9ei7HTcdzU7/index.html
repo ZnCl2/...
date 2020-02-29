@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="2333">
+    <meta name="author" content="cxg2014">
+    <link rel="icon" href="favicon.ico">
+
+    <title>Movie Online</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="dashboard.css" rel="stylesheet">
+
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]>
+    <script src="js/ie8-responsive-file-warning.js"></script><![endif]-->
+    <script src="js/ie-emulation-modes-warning.js"></script>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style>
+        .mainContainer {
+            display: block;
+            width: 1024px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .centeredVideo {
+            display: block;
+            width: 100%;
+            height: 576px;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: auto;
+        }
+
+        .controls {
+            display: block;
+            width: 100%;
+            text-align: left;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+
+<body onload="onload()">
+
+<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Movie Online</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="#">首页</a></li>
+                <li><a href="#">设置</a></li>
+                <li><a href="https://github.com/cxgreat2014/IPFS_MovieOnline" target="_blank">GitHub</a></li>
+                <li><a href="#">帮助</a></li>
+            </ul>
+            <form class="navbar-form navbar-right">
+                <input type="text" class="form-control" placeholder="Search...">
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+            <ul class="nav nav-sidebar">
+                <li class="active"><a href="#">首页</a></li>
+            </ul>
+            <div id="treeview"></div>
+        </div>
+    </div>
+    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+        <div style="margin: 20px; padding: 10px; color: #fff; background: #ff4444;display: none;" id="ipfsNotice">
+            看起来你的电脑上并没有在运行IPFS哦~. 但也还好啦，这里将会从
+            <a style="color:#ffffff;font-weight:bold" href="https://gateway.ipfs.io/ipfs/">公共代理</a> 请求数据，
+            不过会慢一点就是了。。<br/>当然，你也可以从
+            <a style="color:#ffffff;font-weight:bold" href="https://ipfs.io/">这里下载IPFS</a>，它是完全免费的
+        </div>
+        <h1 class="page-header">在线影院</h1>
+
+        <div class="row placeholders">
+            <div class="mainContainer">
+                <video id="videoElement" class="centeredVideo" controls autoplay width="1024" height="576">
+                    Your browser is too old which doesn't support HTML5 video.
+                </video>
+                <br>
+                <div class="controls">
+                    <button class='haveipfs' onclick="pin()" style="display: none;">Pin this video</button>
+                    <button class='haveipfs' onclick="pinProj()" style="display: none;">Pin this Project(6.48G)</button>
+                    <button class='haveipfs-notcomplete' onclick="resolve()" style="display: none;">Resolve</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="js/jquery.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/bootstrap-treeview.js"></script>
+<script type="text/javascript">
+    var host;
+    var api = 'http://localhost:5001/api/v0/';
+
+    var videoHash;
+    $(function () {
+        console.log('isSupported: ' + flvjs.isSupported());
+        $.ajax({
+            url: "filelist.json", success: function (data) {
+                var tree = $('#treeview');
+                tree.treeview({
+                    bootstrap2: false,
+                    showTags: true,
+                    levels: 5,
+                    data: data,
+                    onNodeSelected: loadMovie
+                });
+                tree.treeview('collapseAll', {silent: true});
+            }
+        });
+    });
+
+    //noinspection JSCheckFunctionSignatures
+    function loadMovie(event, data) {
+        videoHash = $('#treeview').treeview('getParent', data).href + '/' + data.href;
+        $('.page-header').text(data.href.replace('.mp4', ''));
+        playVideo();
+    }
+
+    function pin() {
+        var url = api + 'pin/add?arg=' + videoHash + '&recursive=true';
+        window.open(url, '_blank');
+    }
+
+    function pinProj() {
+        var url = api + 'pin/add?arg=QmNbs8stghYQMSTiC28aonneZHAk2dTJmMehJLJWR3xY7u&recursive=true';
+        window.open(url, '_blank');
+    }
+
+    function resolve(peer) {
+        // peer like /ip4/192.99.57.55/tcp/4001/ipfs/QmbMFoDwwZz8ZPj7PGrkC6VwmSBiMLzUbcQbhifC1XhkWD
+        var url = api + 'swarm/connect?arg=' + peer;
+        window.open(url, '_blank');
+    }
+
+    function onload() {
+        $.ajax({
+            url: 'http://localhost:8080/ipfs/QmPEjPkZTzCoMRQDMPr8k3vaeDWbEUma9AJ96H4pnHLv4H?date=' + new Date(),
+            success: function () {
+                host = 'http://localhost:8080/ipfs/';
+                $(".haveipfs").css('display', '');
+                playDefault();
+            },
+            error: function () {
+                $("#ipfsNotice").css('display', '');
+                host = 'https://gateway.ipfs.io/ipfs/';
+                playDefault();
+            }
+        });
+    }
+
+    function playDefault() {
+        if (window.location.hash != "") {
+            videoHash = window.location.hash;
+        } else {
+            videoHash = 'QmTKZgRNwDNZwHtJSjCp6r5FYefzpULfy37JvMt9DwvXse/video.mp4';
+        }
+        playVideo();
+    }
+    $('.form-control').bind('keypress', function (event) {
+        if (event.keyCode == "13") {
+            event.preventDefault();
+            var queryString = $(this).val();
+            console.log("Search:" + queryString);
+
+            $('#treeview').treeview('search', [queryString, {
+                ignoreCase: true,     // case insensitive
+                exactMatch: false,    // like or equals
+                revealResults: true  // reveal matching nodes
+            }]);
+        }
+    });
+    var flvPlayer;
+    var videoElement = document.getElementById('videoElement');
+    function unloadVideo() {
+        if (typeof flvPlayer !== "undefined") {
+            if (flvPlayer != null) {
+                flvPlayer.unload();
+                flvPlayer.detachMediaElement();
+                flvPlayer.destroy();
+                //noinspection JSUnusedAssignment
+                flvPlayer = null;
+            }
+        }
+    }
+    function playVideo() {
+        unloadVideo();
+        flvPlayer = flvjs.createPlayer({
+            type: 'mp4',
+            url: host + videoHash,
+            enableWorker: false,
+            lazyLoadMaxDuration: 3 * 60,
+            seekType: 'range'
+        });
+        //noinspection JSCheckFunctionSignatures
+        flvPlayer.attachMediaElement(videoElement);
+        flvPlayer.load();
+        flvPlayer.play();
+    }
+    function playurl() {
+        unloadVideo();
+        flvPlayer = flvjs.createPlayer({
+            type: 'flv',
+            url: 'optional/test.flv',
+            enableWorker: false,
+            lazyLoadMaxDuration: 3 * 60,
+            seekType: 'range'
+        });
+        //noinspection JSCheckFunctionSignatures
+        flvPlayer.attachMediaElement(videoElement);
+        flvPlayer.load();
+        flvPlayer.play();
+    }
+</script>
+<script src="js/flv.js"></script>
+<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+<script src="js/ie10-viewport-bug-workaround.js"></script>
+</body>
+</html>

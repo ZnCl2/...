@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>用 C++11 的 lambda 实现简易闭包 - 科学君的不科学博客</title>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+  <meta name="author" content="Liu233w" />
+  <meta name="keywords" content="c++, lambda, clojure" />
+  <style>
+   #ds-thread #ds-reset .ds-comment-body p {color: #ffffff;}
+   #ds-thread #ds-reset .ds-comment-body p a {color: #ff0;}
+   #ds-thread #ds-reset .ds-comment-body p a:hover {color: #0ff;}
+   #disqus_thread a {color: #00ffff;}
+  </style>
+  <link rel="stylesheet" href="http://liu233w.github.io/media/css/main.css" type="text/css"/>
+  <link rel="stylesheet" href="http://liu233w.github.io/media/css/comment.css" type="text/css"/>
+  <link rel="Shortcut Icon" href="https://raw.githubusercontent.com/Liu233w/liu233w.github.io/source/avatar.jpg" type="image/x-icon">
+</head>
+
+  <body><div class="container">
+<div>
+  <header class="masthead">
+    <h1 class="masthead-title"><a href="http://liu233w.github.io/">科学君的不科学博客</a></h1>
+    <p>by 不科学的科学君</p>
+    <nav class="site-nav">
+      <div class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z" fill="#ffff00"/>
+          <path d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z" fill="#ffff00"/>
+          <path d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z" fill="#ffff00"/>
+        </svg>
+      </div>
+      <ul class="trigger">
+        <li><a href="http://liu233w.github.io/所有文章/">所有文章</a></li>
+        <li><a href="http://liu233w.github.io/tags/">按标签索引</a></li>
+        <li><a href="http://liu233w.github.io/acm/">Acm</a></li>
+        <li><a href="http://liu233w.github.io/blog/">Blog</a></li>
+        <li><a href="http://liu233w.github.io/about/">About</a></li>
+        <li><a href="https://github.com/liu233w/liu233w.github.io">Github</a></li>
+        <li><a href="http://liu233w.github.io/rss.xml">RSS</a></li>
+      </ul>
+    </nav>
+    <form method="get" id="searchform" action="http://www.google.com/search">
+      <input type="text" class="field" name="q" id="s" placeholder="Search">
+      <input type="hidden" name="as_sitesearch" value="liu233w.github.io">
+    </form>
+    <img id="avatarid" class="avatar" src="https://raw.githubusercontent.com/Liu233w/liu233w.github.io/source/avatar.jpg" />
+  </header>
+</div>
+
+<div>
+<div class="post">
+<h1 class="title">用 C++11 的 lambda 实现简易闭包</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org6ee39c3">原先的博文</a></li>
+<li><a href="#orgaac17d5">当天更新</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org6ee39c3" class="outline-2">
+<h2 id="org6ee39c3">原先的博文</h2>
+<div class="outline-text-2" id="text-org6ee39c3">
+<p>
+今天突然想到可以用 lambda 实现一个类似函数式编程当中的累加器的东西，我首先想到的是如下的代码：
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #859900; font-weight: bold;">auto</span> <span style="color: #268bd2;">func</span> = <span style="color: #2aa198;">[](</span><span style="color: #b58900;">int</span> <span style="color: #268bd2;">beg</span><span style="color: #2aa198;">)</span>
+<span style="color: #2aa198;">{</span>
+    <span style="color: #859900; font-weight: bold;">return</span> <span style="color: #b58900;">[</span>&amp;<span style="color: #b58900;">]()</span> <span style="color: #b58900;">{</span><span style="color: #859900; font-weight: bold;">return</span> ++beg;<span style="color: #b58900;">}</span>;
+<span style="color: #2aa198;">}</span>;
+
+<span style="color: #859900; font-weight: bold;">auto</span> <span style="color: #268bd2;">f1</span>=func<span style="color: #2aa198;">(</span><span style="color: #6c71c4;">0</span><span style="color: #2aa198;">)</span>;
+
+cout &lt;&lt; f1<span style="color: #2aa198;">()</span> &lt;&lt;<span style="color: #2aa198;">" "</span>&lt;&lt;f1<span style="color: #2aa198;">()</span>&lt;&lt;endl;
+</pre>
+</div>
+<p>
+但是这段代码输出的是乱码！因为 c++的 lambda 没有闭包功能，我们返回的函数只能保存捕获的值或引用。这里我们传递给 func 函数的 beg 参数在它返回 lambda 之后就被销毁了，而它返回的函数会在
+beg 被销毁之后调用。因此我们访问的 beg 就是未定义的内存了。
+</p>
+
+<p>
+那怎么解决这个问题呢？用指针保存！
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #859900; font-weight: bold;">auto</span> <span style="color: #268bd2;">func</span> = <span style="color: #2aa198;">[](</span><span style="color: #b58900;">int</span> <span style="color: #268bd2;">beg</span><span style="color: #2aa198;">)</span>
+<span style="color: #2aa198;">{</span>
+    <span style="color: #b58900;">int</span> *<span style="color: #268bd2;">a</span> = <span style="color: #859900; font-weight: bold;">new</span> <span style="color: #b58900;">int</span><span style="color: #b58900;">(</span>beg<span style="color: #b58900;">)</span>;
+    <span style="color: #859900; font-weight: bold;">return</span> <span style="color: #b58900;">[</span>=<span style="color: #b58900;">]()</span> <span style="color: #b58900;">{</span><span style="color: #859900; font-weight: bold;">return</span> ++*a;<span style="color: #b58900;">}</span>;
+<span style="color: #2aa198;">}</span>;
+
+<span style="color: #859900; font-weight: bold;">auto</span> <span style="color: #268bd2;">f1</span> = func<span style="color: #2aa198;">(</span><span style="color: #6c71c4;">0</span><span style="color: #2aa198;">)</span>;
+
+cout &lt;&lt; f1<span style="color: #2aa198;">()</span> &lt;&lt; <span style="color: #2aa198;">" "</span> &lt;&lt; f1<span style="color: #2aa198;">()</span> &lt;&lt; endl;
+</pre>
+</div>
+<p>
+我们在 func 函数里面定义了一个指针，然后把指针按值传递给返回的 lambda（注意那个 <code>&amp;</code>
+被改成了 <code>=</code> ）。这样保存的值就不会在 func 函数超出作用域之后被销毁了，可以在外部正常访问。同时我们可以生成任意数量的累加器，比如 f2 f3 等等，每个累加器的初始值都可以是不同的，而且相互独立。
+</p>
+
+<p>
+但是这种写法仍然有两个问题：
+</p>
+<ol class="org-ol">
+<li>指针 a 没有办法被销毁，在函数结束后变成了野指针。这个问题我会在下文解决。</li>
+<li>上个程序的输出是“2 1”，就好像先运行了 <code>*a==2</code> 的情况，后运行了 <code>*a==1</code> 的情况一样。我不知道为什么会这样，但是如果把两个函数调用放到两个 cout 的语句中，输出就是“1 2”，正常了。我把这个问题放到了<a href="https://www.zhihu.com/question/48510152"> 知乎</a> 上，希望有人可以给我解答。</li>
+</ol>
+
+<p>
+现在我们来解决野指针的问题，这是我的代码：
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #859900; font-weight: bold;">auto</span> <span style="color: #268bd2;">func</span> = <span style="color: #2aa198;">[](</span><span style="color: #b58900;">int</span> <span style="color: #268bd2;">beg</span><span style="color: #2aa198;">)</span>
+<span style="color: #2aa198;">{</span>
+    <span style="color: #b58900;">int</span> *<span style="color: #268bd2;">a</span> = <span style="color: #859900; font-weight: bold;">new</span> <span style="color: #b58900;">int</span><span style="color: #b58900;">(</span>beg<span style="color: #b58900;">)</span>;
+    <span style="color: #859900; font-weight: bold;">return</span> make_pair<span style="color: #b58900;">(</span><span style="color: #268bd2;">[</span>=<span style="color: #268bd2;">]()</span> -&gt;<span style="color: #b58900;">int</span> <span style="color: #268bd2;">{</span><span style="color: #859900; font-weight: bold;">return</span> ++*a;<span style="color: #268bd2;">}</span>, shared_ptr<span style="color: #268bd2;">&lt;</span><span style="color: #b58900;">int</span><span style="color: #268bd2;">&gt;(</span>a<span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span>;
+<span style="color: #2aa198;">}</span>;
+
+<span style="color: #859900; font-weight: bold;">auto</span> <span style="color: #268bd2;">f1</span> = func<span style="color: #2aa198;">(</span><span style="color: #6c71c4;">0</span><span style="color: #2aa198;">)</span>;
+
+cout &lt;&lt; f1.first<span style="color: #2aa198;">()</span> &lt;&lt; <span style="color: #2aa198;">" "</span> &lt;&lt; f1.first<span style="color: #2aa198;">()</span> &lt;&lt; endl;
+</pre>
+</div>
+<p>
+这里我们把指针放到了一个 shared_ptr 里面，然后把这个智能指针和函数打包到了一个 pair 里面。
+func 函数返回了 pair，如果我们想要调用累加器函数，就必须要写成 <code>f1.first()</code> 了。现在，指针的生命周期和 lambda 的生命周期绑定到了一起，如果我们复制了 lambda 函数，智能指针也会一起被复制。只有在所有的 pair 被销毁之后（这时候也没法访问 lambda 函数了），指针才会被销毁。
+</p>
+
+<p>
+我们可以把上一个代码包装一下，做成一个可以接受任意数量的参数的闭包。
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #268bd2;">#define</span> <span style="color: #268bd2;">comma</span> ,
+<span style="color: #268bd2;">#define</span> <span style="color: #268bd2;">clojure</span><span style="color: #2aa198;">(</span><span style="color: #268bd2;">arg</span>, <span style="color: #268bd2;">v</span>, <span style="color: #268bd2;">init_v</span>, <span style="color: #268bd2;">f</span><span style="color: #2aa198;">)</span> <span style="color: #2aa198;">[]</span> arg \
+<span style="color: #2aa198;">{</span>\
+    <span style="color: #859900; font-weight: bold;">struct</span> <span style="color: #b58900;">str</span> \
+    <span style="color: #b58900;">v</span> *<span style="color: #268bd2;">s</span> = <span style="color: #859900; font-weight: bold;">new</span> <span style="color: #b58900;">str</span> init_v ; \
+    <span style="color: #859900; font-weight: bold;">return</span> <span style="color: #268bd2; font-weight: bold;">std</span>::make_pair<span style="color: #b58900;">(</span><span style="color: #268bd2;">[</span>=<span style="color: #268bd2;">]()</span>f, <span style="color: #268bd2; font-weight: bold;">std</span>::shared_ptr<span style="color: #268bd2;">&lt;</span><span style="color: #b58900;">str</span><span style="color: #268bd2;">&gt;(</span>s<span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span>; \
+<span style="color: #2aa198;">}</span>
+
+<span style="color: #859900; font-weight: bold;">auto</span> <span style="color: #268bd2;">func</span> = clojure<span style="color: #2aa198;">(</span><span style="color: #b58900;">(</span><span style="color: #b58900;">int</span> <span style="color: #268bd2;">beg</span>, <span style="color: #b58900;">int</span> <span style="color: #268bd2;">end</span><span style="color: #b58900;">)</span>, <span style="color: #b58900;">{</span> <span style="color: #b58900;">int</span> <span style="color: #268bd2;">a</span>; <span style="color: #b58900;">int</span> <span style="color: #268bd2;">b</span>; <span style="color: #b58900;">}</span>,
+    <span style="color: #b58900;">{</span>beg <span style="color: #b58900;">comma</span> <span style="color: #268bd2;">end</span><span style="color: #b58900;">}</span>, <span style="color: #b58900;">{</span> <span style="color: #859900; font-weight: bold;">return</span> <span style="color: #268bd2;">(</span>++s-&gt;a<span style="color: #268bd2;">)</span> + s-&gt;b; <span style="color: #b58900;">}</span><span style="color: #2aa198;">)</span>;
+
+<span style="color: #859900; font-weight: bold;">auto</span> <span style="color: #268bd2;">f1</span> = func<span style="color: #2aa198;">(</span><span style="color: #6c71c4;">0</span>,<span style="color: #6c71c4;">1</span><span style="color: #2aa198;">)</span>;
+
+cout &lt;&lt; f1.first<span style="color: #2aa198;">()</span> &lt;&lt; <span style="color: #2aa198;">" "</span>
+     &lt;&lt; f1.first<span style="color: #2aa198;">()</span> &lt;&lt; endl;
+</pre>
+</div>
+<p>
+clojure 是一个宏（我承认我被 lisp 给玩坏了_(:зゝ∠)_）。我们把多个参数放到了一个 struct
+里面，就可以保存多个变量了。宏的参数：
+</p>
+<dl class="org-dl">
+<dt>第一个参数，arg</dt><dd>生成的“累加器的生成器”的形参（当然不一定非得是累加器），不管有几个参数都必须用一个括号包起来（没有参数就要一个空括号）。必须要写参数类型。</dd>
+<dt>第二个参数，v</dt><dd>struct 的 body，要用大括号包起来。要写参数类型，参数之间用分号隔开。</dd>
+<dt>第三个参数，init_v</dt><dd>给 struct 赋值的时候依次赋给 body 里面各个变量的值，需要用大括号包起来，多个参数时要在参数之间用关键字 comma 隔开。我这里用的是 c++11 里面 struct
+的大括号赋值法，如果在 struct 里面加上函数把它变成类的话，貌似就没法这么赋值了。</dd>
+<dt>第四个参数，f</dt><dd>返回的 lambda 的函数体，如果需要声明此 lambda 的返回值的话，可以把箭头的声明放在大括号前面。想要使用 struct 的变量，可以用 <code>s-&gt;v 中的变量名</code> 的方法来访问。</dd>
+</dl>
+
+<p>
+接下来我们试一下指针是否会被销毁。
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">"stdafx.h"</span>
+
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">iostream</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">memory</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">utility</span><span style="color: #2aa198;">&gt;</span>
+
+<span style="color: #859900; font-weight: bold;">using</span> <span style="color: #859900; font-weight: bold;">namespace</span> <span style="color: #268bd2; font-weight: bold;">std</span>;
+
+<span style="color: #268bd2;">#define</span> <span style="color: #268bd2;">comma</span> ,
+<span style="color: #268bd2;">#define</span> <span style="color: #268bd2;">clojure</span><span style="color: #2aa198;">(</span><span style="color: #268bd2;">arg</span>, <span style="color: #268bd2;">v</span>, <span style="color: #268bd2;">init_v</span>, <span style="color: #268bd2;">f</span><span style="color: #2aa198;">)</span> <span style="color: #2aa198;">[]</span> arg \
+<span style="color: #2aa198;">{</span>\
+    <span style="color: #859900; font-weight: bold;">struct</span> <span style="color: #b58900;">str</span> \
+    <span style="color: #b58900;">v</span> *<span style="color: #268bd2;">s</span> = <span style="color: #859900; font-weight: bold;">new</span> <span style="color: #b58900;">str</span> init_v ; \
+    <span style="color: #859900; font-weight: bold;">return</span> <span style="color: #268bd2; font-weight: bold;">std</span>::make_pair<span style="color: #b58900;">(</span><span style="color: #268bd2;">[</span>=<span style="color: #268bd2;">]()</span>f, <span style="color: #268bd2; font-weight: bold;">std</span>::shared_ptr<span style="color: #268bd2;">&lt;</span><span style="color: #b58900;">str</span><span style="color: #268bd2;">&gt;(</span>s<span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span>; \
+<span style="color: #2aa198;">}</span>
+
+<span style="color: #859900; font-weight: bold;">struct</span> <span style="color: #b58900;">test</span>
+<span style="color: #2aa198;">{</span>
+    ~<span style="color: #268bd2;">test</span><span style="color: #b58900;">()</span>
+    <span style="color: #b58900;">{</span>
+        cout &lt;&lt; <span style="color: #2aa198;">"I'm dead."</span> &lt;&lt; endl;
+    <span style="color: #b58900;">}</span>
+<span style="color: #2aa198;">}</span>;
+
+<span style="color: #b58900;">int</span> <span style="color: #268bd2;">main</span><span style="color: #2aa198;">()</span>
+<span style="color: #2aa198;">{</span>
+    <span style="color: #859900; font-weight: bold;">auto</span> <span style="color: #268bd2;">func</span> = clojure<span style="color: #b58900;">(</span><span style="color: #268bd2;">(</span><span style="color: #b58900;">int</span> <span style="color: #268bd2;">beg</span><span style="color: #268bd2;">)</span>, <span style="color: #268bd2;">{</span> <span style="color: #b58900;">int</span> <span style="color: #268bd2;">a</span>; <span style="color: #b58900;">test</span> <span style="color: #268bd2;">t</span>; <span style="color: #268bd2;">}</span>,
+        <span style="color: #268bd2;">{</span>beg <span style="color: #b58900;">comma</span> <span style="color: #268bd2;">test</span><span style="color: #6c71c4;">()</span><span style="color: #268bd2;">}</span>, <span style="color: #268bd2;">{</span> <span style="color: #859900; font-weight: bold;">return</span> ++<span style="color: #6c71c4;">(</span>s-&gt;a<span style="color: #6c71c4;">)</span>; <span style="color: #268bd2;">}</span><span style="color: #b58900;">)</span>;
+
+    <span style="color: #859900; font-weight: bold;">auto</span> <span style="color: #268bd2;">f1</span> = func<span style="color: #b58900;">(</span><span style="color: #6c71c4;">0</span><span style="color: #b58900;">)</span>;
+
+    cout &lt;&lt; f1.first<span style="color: #b58900;">()</span> &lt;&lt; <span style="color: #2aa198;">" "</span>
+         &lt;&lt; f1.first<span style="color: #b58900;">()</span> &lt;&lt; endl;
+
+
+    <span style="color: #859900; font-weight: bold;">return</span> <span style="color: #6c71c4;">0</span>;
+<span style="color: #2aa198;">}</span>
+</pre>
+</div>
+<p>
+这段程序是在 visual studio 2015 上编译运行的，结果是：
+</p>
+<p class="verse">
+I'm dead.
+2 1
+I'm dead.
+请按任意键继续. . .
+</p>
+<p>
+可以看到确实是删掉了。啊嘞Σ(⊙▽⊙"a 怎么销毁了两次？这下我就不明白了。以后再研究吧_(:зゝ∠)_
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgaac17d5" class="outline-2">
+<h2 id="orgaac17d5">当天更新</h2>
+<div class="outline-text-2" id="text-orgaac17d5">
+<p>
+输出 2 1 的原因我明白了，是求值顺序未定义，我居然忘了这么基础的知识点_(:зゝ∠)_。对于如下的代码，一个表达式中各个值的求值顺序是未定义的：
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #b58900;">int</span> <span style="color: #268bd2;">i</span> = <span style="color: #6c71c4;">0</span>;
+cout &lt;&lt; ++i &lt;&lt; <span style="color: #2aa198;">" "</span> &lt;&lt; ++i &lt;&lt; endl;
+</pre>
+</div>
+<p>
+我的编译器上输出是 <code>2 2</code> 。因为标准没有规定对于这两个 i 是从左到右求值、从右到左求值还是先全求值完再直接显示结果。
+</p>
+
+<p>
+至于显示销毁了两次的原因，第一次是因为我们在 func 函数中用 test 的默认构造函数生成了一个
+test 并将它复制给了指针中的结构体里的 test。这个语句结束之后第一个生成的 test 就被销毁了。
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #859900; font-weight: bold;">auto</span> <span style="color: #268bd2;">func</span> = clojure<span style="color: #2aa198;">(</span><span style="color: #b58900;">(</span><span style="color: #b58900;">int</span> <span style="color: #268bd2;">beg</span><span style="color: #b58900;">)</span>, <span style="color: #b58900;">{</span> <span style="color: #b58900;">int</span> <span style="color: #268bd2;">a</span>; <span style="color: #b58900;">test</span> <span style="color: #268bd2;">t</span>; <span style="color: #b58900;">}</span>,
+    <span style="color: #b58900;">{</span>beg<span style="color: #b58900;">}</span>, <span style="color: #b58900;">{</span> <span style="color: #859900; font-weight: bold;">return</span> ++<span style="color: #268bd2;">(</span>s-&gt;a<span style="color: #268bd2;">)</span>; <span style="color: #b58900;">}</span><span style="color: #2aa198;">)</span>;
+</pre>
+</div>
+<p>
+上面的是修改版的 func，删去了第二行的 <code>comma test()</code> ，就略去了复制赋值的环节，只会在 new
+对象的时候生成 test。现在 test 就只会销毁一次了。
+</p>
+
+<p>
+看来我对 c++掌握的还不够啊_(:зゝ∠)_
+</p>
+</div>
+</div>
+
+</div>
+</div>
+<div>
+        <div class="post-meta">
+            <span title="发布日期" class="post-info">2016-07-15</span>
+            <span title="最后修改日期" class="post-info">2016-09-06</span>
+            <span title="标签" class="post-info">:<a href="http://liu233w.github.io/tags/c++">c++</a> : <a href="http://liu233w.github.io/tags/lambda">lambda</a> : <a href="http://liu233w.github.io/tags/clojure">clojure</a>:</span>
+            <span title="作者" class="post-info"><a href="mailto:wwwlsmcom &lt;at&gt; outlook &lt;dot&gt; com">Liu233w</a></span>
+        </div>
+    <script src="http://liu233w.github.io/media/js/jquery-2.1.3.min.js"></script>
+        <section>
+            <h1>Comments</h1>
+            <div id="comment-wrap">
+                    <a class="disqus_label">使用 Disqus 评论</a>
+                    <a class="ds-label">使用多说评论</a>
+    </ul>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+         //var disqus_developer = 1;
+         var preempt_signal=false;
+         var disqus_identifier = "/blog/2016/07/15/cpp-clojure/";
+         var disqus_url = "http://liu233w.github.io/blog/2016/07/15/cpp-clojure/";
+         var disqus_shortname = 'liu233w';
+         /* * * DON'T EDIT BELOW THIS LINE * * */
+         (function() {
+             var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+             dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+             $('#disqus_thread').css('display','none');
+         })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        <div class="ds-thread"></div>
+        <script type="text/javascript">
+         var duoshuoQuery = {short_name:'liu233w'};
+         (function() {
+             var ds = document.createElement('script');
+             ds.type = 'text/javascript';ds.async = true;
+             ds.src = 'http://static.duoshuo.com/embed.js';
+             ds.charset = 'UTF-8';
+             (document.getElementsByTagName('head')[0]
+           || document.getElementsByTagName('body')[0]).appendChild(ds);
+             $('.ds-thread').css('display','block');
+         })();
+        </script>
+    <script>
+     /* comments */
+     var ego_disqus_thread=$('#disqus_thread');
+     var ego_ds_label=$('.ds-thread');
+     $('.disqus_label').click(function(){
+         ego_disqus_thread.show();
+         ego_ds_label.hide();
+     });
+     $('.ds-label').click(function(){
+         ego_disqus_thread.hide();
+         ego_ds_label.show();
+     });
+    </script>
+        </section>
+    <script src="http://liu233w.github.io/media/js/main.js"></script>
+    <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.x(<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+            Copyright &copy; 2014 - <span id="footerYear"></span> <a href="mailto:wwwlsmcom &lt;at&gt; outlook &lt;dot&gt; com">Liu233w</a>
+            &nbsp;&nbsp;-&nbsp;&nbsp;
+            Powered by <a href="https://github.com/emacs-china/ego" target="_blank">EGO</a><br/>
+            <a href="http://creativecommons.org/licenses/by-sa/3.0/" rel="license"><img src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" style="border-width:0" alt="Creative Commons License" class="center"></a>
+            <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+    </div>
+            </div>
+            <script type="text/javascript"
+                    src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG">
+            </script>
+            <script type="text/x-mathjax-config">
+             MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "AMS"} } });
+            </script>
+</div>
+
+  </div></body>
+</html>

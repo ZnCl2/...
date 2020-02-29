@@ -1,0 +1,149 @@
+<HTML>
+<HEAD>
+<TITLE>Cyphernomicon 8.10:  Cryptanalysis of Remailer Networks</TITLE>
+</HEAD>
+<BODY>
+<A HREF="../cyphernomicon.contents.html">Cyphernomicon Top</A>
+<HR>
+<B>Cyphernomicon 8.10</B>
+<H2><A HREF="../8.html"> Anonymity, Digital Mixes, and Remailers:</A><BR>  Cryptanalysis of Remailer Networks</H2>
+<HR>
+<PRE>
+   8.10.1. The Need for More Detailed Analysis of Mixes and Remailers
+           + "Have remailer systems been adequately cryptanalyzed?"
+             - Not in my opinion, no. Few calculations have been done,
+                just mostly some estimates about how much "confusion" has
+                been created by the remailer nodes.
+             - But thinking that a lot of complication and messiness
+                makes a strong crypto system is a basic mistake...sort of
+                like thinking an Enigma rotor machine makes a good cipher
+                system, by today's standards, just because millions of
+                combinations of pathways through the rotor system are
+                possible. Not so.
+           + Deducing Patterns in Traffic and Deducing Nyms
+             - The main lesson of mathematical cryptology has been that
+                seemingly random things can actually be shown to have
+                structure. This is what cryptanalysis is all about.
+             - The same situation applies to "seemingly random" message
+                traffic, in digital mixes, telephone networks, etc.
+                "Cryptanalysis of remailers" is of course possible,
+                depending on the underlying model. (Actually, it's always
+                possible, it just may not yield anything, as with
+                cryptanalysis of ciphers.)
+             + on the time correlation in remailer cryptanalysis
+               - imagine Alice and Bob communicating through
+                  remailers...an observer, unable to follow specific
+                  messages through the remailers, could still notice
+                  pairwise correlations between messages sent and
+                  received by these two
+               + like time correlations between events, even if the
+                  intervening path or events are jumbled
+                 - e.g., if within a few hours of every submarine's
+                    departure from Holy Loch a call is placed to Moscow,
+                    one may make draw certain conclusions about who is a
+                    Russian spy, regardless of not knowing the
+                    intermediate paths
+                 - or, closer to home, correlating withdrawals from one
+                    bank to deposits in another, even if the intervening
+                    transfers are jumbled
+               + just because it seems "random" does not mean it is
+                 - Scott Collins speculates that a "dynamic Markov
+                    compressor" could discern or uncover the non-
+                    randomness in remailer uses
+           - Cryptanalysis of remailers has been woefully lacking. A
+              huge fraction of posts about remailer improvements make
+              hand-waving arguments about the need for more traffic,
+              longer delays, etc. (I'm not pointing fingers, as I make
+              the same informal, qualitative comments, too. What is
+              needed is a rigorous analysis of remailer security.)
+           - We really don't have any good estimates of overall security
+              as a function of number of messages circulating, the
+              latency ( number of stored messages before resending), the
+              number of remailer hops, etc. This is not cryptographically
+              "exciting" work, but it's still needed. There has not been
+              much focus in the academic community on digital mixes or
+              remailers, probably because David Chaum's 1981 paper on
+              "Untraceable E-Mail" covered most of the theoretically
+              interesting material. That, and the lack of commercial
+              products or wide usage.
+           + Time correlations may reveal patterns that individual
+              messages lack. That is, repeated communicatin between Alice
+              and Bob, even if done through remailers and even if time
+              delays/dwell times are built-in, may reveal nonrandom
+              correlations in sent/received messages.
+             - Scott Collins speculates that a dynamic Markov compressor
+                applied to the traffic would have reveal such
+                correlations. (The application of such tests to digital
+                cash and other such systems would be useful to look at.)
+             - Another often overlooked weakness is that many people
+                send test messages to themselves, a point noted by Phil
+                Karn: "Another way that people often let themselves be
+                caught is that they inevitably send a test message to
+                themselves right before the forged message in question.
+                This shows up clearly in the sending system's sendmail
+                logs. It's a point to consider with remailer chains too,
+                if you don't trust the last machine on the chain." [P.K.,
+                1994-09-06]
+           + What's needed:
+             - aggreement on some terminology (this doesn't require
+                consensus, just a clearly written paper to de facto
+                establish the terminology)
+             - a formula relating degree of untraceability to the major
+                factors that go into remailers: packet size and
+                quantization, latency (# of messages), remailer policies,
+                timing, etc.
+             - Also, analysis of how deliberate probes or attacks might
+                be mounted to deduce remailer patterns (e.g., Fred always
+                remails to Josh and Suzy and rarely to Zeke).
+           - I think this combinatorial analysis would be a nice little
+              monograph for someone to write.
+   8.10.2. A much-needed thing. Hal Finney has posted some calculations
+            (circa 1994-08-08), but more work is sorely needed.
+   8.10.3. In particular, we should be skeptical of hand-waving analyses
+            of the "it sure looks complicated to follow the traffic"
+            sort. People think that by adding "messy" tricks, such as
+            MIRVing messages, that security is increased. Maybe it is,
+            maybe it isn't. But it needs formal analysis before claims
+            can be confidantly believed.
+   8.10.4. Remailers and entropy
+           - What's the measure of "mixing" that goes on in a mix, or
+              remailer?
+           - Hand=waving about entropy and reordering may not be too
+              useful.
+           + Going back to Shannon's concept of entropy as measuring the
+              degree of uncertainty...
+             + trying to "guess" or "predict' where a message leaving
+                one node will exit the system
+               - not having clear entrance and exit points adds to the
+                  difficulty, somewhat analogously to having a password
+                  of unknown length (an attacker can't just try all 10-
+                  character passwords, as he has no idea of the length)
+               - the advantages of every node being a remailer, of
+                  having no clearly identified sources and sinks
+           + This predictability may depend on a _series_ of messages
+              sent between Alice and Bob...how?
+             - it seems there may be links to Persi Diaconis' work on
+                "perfect shuffles" (a problem which seemed easy, but
+                which eluded solving until recently...should give us
+                comfort that our inability to tackle the real meat of
+                this issue is not too surprising
+   8.10.5. Scott Collins believes that remailer networks can be
+            cryptanalyzed roughly the same way as pseudorandom number
+            generators are analyzed, e.g., with dynamic Markov
+            compressors (DNCs). (I'm more skeptical: if each remailer is
+            using an information-theoretically secure RNG to reorder the
+            messages, and if all messages are the same size and (of
+            course) are encypted with information-theoretically secure
+            (OTP) ciphers, then it seems to me that the remailing would
+            itself be information-theoretically secure.)
+ 
+</PRE>
+</BODY>
+<HR>
+Next Page: <A HREF="8.11.html">8.11  Dining Cryptographers</A>
+ <BR>
+Previous Page: <A HREF="8.9.html">8.9  Legal Issues with Remailers</A>
+
+<P>By Tim May, see <A HREF="../20.html">README</A>
+<P>HTML by Jonathan Rochkind
+</HTML>

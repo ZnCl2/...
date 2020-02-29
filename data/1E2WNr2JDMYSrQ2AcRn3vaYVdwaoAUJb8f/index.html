@@ -1,0 +1,187 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>翻墙大杀器</title>
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<style type="text/css">
+#main {
+	margin: 80px 20px 80px 20px;
+}
+
+#title {
+	font-size: 24px;
+}
+
+#prompt {
+	margin-top: 60px;
+}
+
+#pkey {
+	margin-top: 20px;
+	text-align: center;
+	width: 80%;
+	font-family: Georgia, "Times New Roman", Times, serif;
+}
+
+#alert {
+	margin-top: 30px;
+	width: 80%;
+	display: none;
+}
+
+#open {
+	margin-top: 30px;
+	width: 180px;
+}
+
+#node {
+	margin-top: 30px;
+	width: 80%;
+	display: none;
+}
+
+#download {
+	margin-top: 160px;
+	width: 80%;
+}
+
+#copyright {
+	margin-top: 60px;
+	width: 80%;
+	font-family: Georgia, "Times New Roman", Times, serif;
+}
+</style>
+</head>
+<body>
+<div align="center" id="main">
+  <div  id="title">
+    翻墙大杀器
+  </div>
+  <div id="prompt">
+    请输入密钥
+  </div>
+  <div>
+    <input name="pkey" type="text" id="pkey" class="form-control">
+  </div>
+  <div >
+    <button class="form-control button btn-primary" id="open" name="open">打开锦囊</button>
+  </div>
+  <div id="alert" class="alert alert-warning" role="alert">
+  </div>
+  <div>
+    <pre id="node" class="alert alert-success" role="alert"></pre>
+  </div>
+  <div id="download">
+    <p> <a href="file/GFW.Press.apk" class="btn btn-outline-primary btn-sm" role="button">安卓版</a> <a href="file/GFW.Press.msi" class="btn btn-outline-secondary btn-sm"  role="button">电脑版</a> <a href="file/GFW.Press.ios.ipa" class="btn btn-outline-success btn-sm" role="button">苹果手机版</a> <a href="file/gfw.press.zip" class="btn btn-outline-danger btn-sm"  role="button">苹果电脑版</a> <a href="file/GFW.Press.exe" class="btn btn-outline-warning btn-sm" role="button">菜鸟版</a> </p>
+    <p> <a href="blog.html" class="btn btn-outline-info btn-sm" role="button">使用帮助</a> <a href="https://gfw.press/user/" target="_blank" class="btn btn-outline-info btn-sm" role="button">申请密钥</a></p>
+  </div>
+  <div id="copyright">
+    &copy; 2017 GFW.Press
+  </div>
+</div>
+<script src="js/jquery-3.2.1.min.js"></script> 
+<script src="js/popper.min.js"></script> 
+<script src="js/bootstrap.min.js"></script> 
+<script src="js/cryptojs/components/core.js"></script> 
+<script src="js/cryptojs/components/md5.js"></script> 
+<script src="js/cryptojs/components/evpkdf.js"></script> 
+<script src="js/cryptojs/components/enc-base64.js"></script> 
+<script src="js/cryptojs/components/cipher-core.js"></script> 
+<script src="js/cryptojs/components/aes.js"></script> 
+<script src="js/cryptojs/components/hmac.js"></script> 
+<script src="js/cryptojs/components/sha1.js"></script> 
+<script src="js/cryptojs/components/sha256.js"></script> 
+<script type="text/javascript">
+		
+	$(document).ready(function(e) {  			
+			
+			$("#open").click(function(e) {
+				
+				var pkey = $.trim($("#pkey").val());
+				
+				if (pkey == '') {
+										
+					$("#alert").text('请输入密钥').show();
+					
+					$("#pkey").focus();
+					
+					$("#node").hide();
+					
+					return false;
+					
+				}
+				
+				var regex = '^[A-Z0-9]{33}$';
+				
+				if (!pkey.match(regex)) {
+					
+					$("#alert").text('密钥错误！正确的密钥包含33个大写字母或数字').show();
+					
+					$("#pkey").focus();
+					
+					$("#node").hide();
+					
+					return false;
+					
+				}				
+				
+				var md5 = CryptoJS.MD5(pkey + "\nGFW.Press").toString(CryptoJS.enc.Hex);
+				
+				$.ajax({type: "GET", url: "node/" + md5 + ".jsonp?r=" + Math.random(), dataType: "jsonp",	 jsonpCallback: 'callback', crossDomain:true,
+					
+								success: function(encrypted) {
+									
+									var decrypted = CryptoJS.AES.decrypt(encrypted.data, pkey + "\nGFW.Press");
+									
+									var info = decrypted.toString(CryptoJS.enc.Utf8);
+									
+									if (info == null || info == '') {
+										
+										$("#alert").text('密钥错误！请使用正确的密钥').show();
+										
+										$("#pkey").focus();
+										
+										$("#node").hide();
+										
+										return false;
+										
+									} else {
+										
+										$("#open").prop("disabled", true);																						
+										
+										setTimeout('$("#open").prop("disabled", false)', 4000);
+									
+										$("#alert").hide();
+										
+										$("#node").hide();
+										
+										$("#node").text(info);
+										
+										$("#node").show(2000);
+										
+										return true;																			
+										
+									}
+									
+								},
+								
+								error: function(req, textStatus , err) {
+									
+									$("#alert").text('锦囊尚未到达，请稍候重试，可能需要等待几分钟或几十分钟').show();
+									
+									$("#node").hide();
+									
+									return false;
+									
+								}
+						
+				});								
+								
+			});
+	
+	});		
+
+</script>
+</body>
+</html>

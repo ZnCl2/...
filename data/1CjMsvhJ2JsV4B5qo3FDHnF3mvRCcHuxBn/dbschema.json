@@ -1,0 +1,180 @@
+{
+  "db_name": "Horizon",
+  "db_file": "data/Horizon.db",
+  "version": 2,
+  "maps": {
+    "data_main.json": {
+      "to_table": [
+        "main"
+      ]
+    },
+    "data_keywords.json": {
+      "to_table": [
+        "keywords"
+      ]
+    },
+    "data_phrases.json": {
+      "to_table": [
+        "phrases"
+      ]
+    },
+    "data_relationship.json": {
+      "to_table": [
+        "relationship"
+      ]
+    },
+    "users/.+/data.json": {
+      "to_table": [
+        "search_zite",
+        "main_spider"
+      ]
+    },
+    "users/.+/content.json": {
+      "to_keyvalue": [
+        "cert_user_id"
+      ]
+    }
+  },
+  "tables": {
+    "search_zite": {
+      "cols": [
+        [
+          "header",
+          "TEXT NOT NULL"
+        ],
+        [
+          "site_address",
+          "TEXT NOT NULL"
+        ],
+        [
+          "site_type",
+          "TEXT NOT NULL"
+        ],
+        [
+          "date_added",
+          "INTEGER NOT NULL"
+        ],
+        [
+          "json_id",
+          "INTEGER REFERENCES json (json_id) NOT NULL"
+        ]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX key_search_zite ON search_zite(json_id, site_address)"
+      ],
+      "schema_changed": 4
+    },
+    "main_spider": {
+      "cols": [
+        [
+          "header",
+          "TEXT NOT NULL"
+        ],
+        [
+          "site_address",
+          "TEXT NOT NULL"
+        ],
+        [
+          "date_added",
+          "INTEGER NOT NULL"
+        ],
+        [
+          "json_id",
+          "INTEGER REFERENCES json (json_id) NOT NULL"
+        ]
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX key_main_spider ON main_spider(json_id, site_address)"
+      ],
+      "schema_changed": 3
+    },
+    "main": {
+      "cols": [
+        [
+          "id",
+          "INT"
+        ],
+        [
+          "url",
+          "VARCHAR(700)"
+        ],
+        [
+          "imgcount",
+          "INT"
+        ],
+        [
+          "title",
+          "VARCHAR(90)"
+        ],
+        [
+          "state",
+          "INT"
+        ],
+        [
+          "priority",
+          "INT"
+        ],
+        ["json_id", "INTEGER REFERENCES json (json_id)"]
+      ],
+      "indexes": [
+        "CREATE INDEX main_key ON main(json_id)",
+        "CREATE UNIQUE INDEX key_main ON main(id)"
+      ],
+      "schema_changed": 2
+    },
+    "keywords": {
+      "cols": [
+        [
+          "pageid",
+          "INT"
+        ],
+        [
+          "keyword",
+          "VARCHAR(150)"
+        ],
+        ["json_id", "INTEGER REFERENCES json (json_id)"]
+      ],
+      "indexes": [
+        "CREATE INDEX kwkey ON keywords(json_id)",
+        "CREATE UNIQUE INDEX key_keywords ON keywords(pageid)"
+      ],
+      "schema_changed": 1
+    },
+    "phrases": {
+      "cols": [
+        [
+          "pageid",
+          "INT"
+        ],
+        [
+          "phrase",
+          "VARCHAR(250)"
+        ],
+        ["json_id", "INTEGER REFERENCES json (json_id)"]
+      ],
+      "indexes": [
+        "CREATE INDEX phrkey ON phrases(json_id)",
+        "CREATE UNIQUE INDEX key_phrases ON phrases(pageid)"
+      ],
+      "schema_changed": 1
+    },
+    "relationship": {
+      "cols": [
+        [
+          "parent",
+          "INT"
+        ],
+        [
+          "sub",
+          "INT"
+        ],
+        ["json_id", "INTEGER REFERENCES json (json_id)"]
+      ],
+      "indexes": [
+        "CREATE INDEX relationship_key ON relationship(json_id)",
+        "CREATE UNIQUE INDEX key_relationship ON relationship(parent,sub)"
+      ],
+      "schema_changed": 1
+    }
+  }
+}

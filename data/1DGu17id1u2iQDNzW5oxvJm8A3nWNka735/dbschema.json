@@ -1,0 +1,42 @@
+{
+    "db_name": "merger",
+    "db_file": "merged-ZeroGraph/ZeroGraph.db",
+    "version": 3,
+    "maps": {
+        ".+/data/users/.+/content.json": {
+            "to_json_table": ["cert_user_id"]
+        },
+        ".+/data/users/.+/data.json": {
+            "to_table": [ "objects" ]
+        }
+    },
+    "tables": {
+        "json": {
+            "cols": [
+                ["json_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+                ["site", "TEXT"],
+                ["directory", "TEXT"],
+                ["file_name", "TEXT"],
+                ["cert_user_id", "TEXT"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX path ON json(directory, site, file_name)"],
+            "schema_changed": 2
+        },
+        "objects": {
+            "cols": [
+                ["title", "text"],
+                ["type", "text"],
+                ["url", "text"],
+                ["description", "text"],
+                ["zite_name", "text"],
+                ["locale", "text"],
+                ["date_added", "integer"],
+                ["json_id", "integer references json(json_id)"]
+            ],
+            "indexes": [
+                "CREATE UNIQUE INDEX post_id ON objects(json_id, date_added)"
+            ],
+            "schema_changed": 3
+        }
+    }
+}

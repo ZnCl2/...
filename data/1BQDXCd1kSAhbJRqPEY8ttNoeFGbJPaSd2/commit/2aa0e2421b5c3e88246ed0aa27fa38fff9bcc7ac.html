@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Remove hardcoded right-align - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/2aa0e2421b5c3e88246ed0aa27fa38fff9bcc7ac.html">2aa0e2421b5c3e88246ed0aa27fa38fff9bcc7ac</a>
+<b>parent</b> <a href="../commit/66e007efd305fa68cc32e112fc4cd36bdd86e88b.html">66e007efd305fa68cc32e112fc4cd36bdd86e88b</a>
+<b>Author:</b> FRIGN &lt;<a href="mailto:dev@frign.de">dev@frign.de</a>&gt;
+<b>Date:</b>   Tue Dec  8 00:34:32 +0100
+
+Remove hardcoded right-align
+
+Dramatically reduces the filesize. There also was no reason to have
+the aligns.
+It now is even easier to read how many lines have changed in the commits
+and given the table doesn&apos;t expand itself over the size of its entries,
+we&apos;re cool anyway.
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">urmoms.c</a></td><td> | </td><td class="num">16</td><td><span class="i">++++++++</span><span class="d">--------</span></td></tr>
+</table>1 file changed, 8 insertions(+), 8 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/urmoms.c.html">urmoms.c</a> b/<a href="../file/urmoms.c.html">urmoms.c</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -370,15 +370,15 @@ writelog(FILE *fp)
+</a> 	git_revwalk_push_head(w);
+ 
+ 	/* TODO: also make &quot;expanded&quot; log ? (with message body) */
+<a href="#h0-0-3" id="h0-0-3" class="d">-	fputs(&quot;&lt;table&gt;&lt;thead&gt;\n&lt;tr&gt;&lt;td align=\&quot;right\&quot;&gt;Age&lt;/td&gt;&lt;td&gt;Commit message&lt;/td&gt;&lt;td&gt;Author&lt;/td&gt;&quot;
+</a><a href="#h0-0-4" id="h0-0-4" class="d">-	      &quot;&lt;td align=\&quot;right\&quot;&gt;Files&lt;/td&gt;&lt;td align=\&quot;right\&quot;&gt;+&lt;/td&gt;&lt;td align=\&quot;right\&quot;&gt;-&lt;/td&gt;&lt;/tr&gt;\n&lt;/thead&gt;&lt;tbody&gt;\n&quot;, fp);
+</a><a href="#h0-0-5" id="h0-0-5" class="i">+	fputs(&quot;&lt;table&gt;&lt;thead&gt;\n&lt;tr&gt;&lt;td&gt;Age&lt;/td&gt;&lt;td&gt;Commit message&lt;/td&gt;&lt;td&gt;Author&lt;/td&gt;&quot;
+</a><a href="#h0-0-6" id="h0-0-6" class="i">+	      &quot;&lt;td&gt;Files&lt;/td&gt;&lt;td&gt;+&lt;/td&gt;&lt;td&gt;-&lt;/td&gt;&lt;/tr&gt;\n&lt;/thead&gt;&lt;tbody&gt;\n&quot;, fp);
+</a> 	while (!git_revwalk_next(&amp;id, w)) {
+ 		relpath = &quot;&quot;;
+ 
+ 		if (!(ci = commitinfo_getbyoid(&amp;id)))
+ 			break;
+ 
+<a href="#h0-0-13" id="h0-0-13" class="d">-		fputs(&quot;&lt;tr&gt;&lt;td align=\&quot;right\&quot;&gt;&quot;, fp);
+</a><a href="#h0-0-14" id="h0-0-14" class="i">+		fputs(&quot;&lt;tr&gt;&lt;td&gt;&quot;, fp);
+</a> 		if (ci-&gt;author)
+ 			printtimeshort(fp, &amp;(ci-&gt;author-&gt;when));
+ 		fputs(&quot;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+<a href="#h0-1" id="h0-1" class="h">@@ -395,11 +395,11 @@ writelog(FILE *fp)
+</a> 		fputs(&quot;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+ 		if (ci-&gt;author)
+ 			xmlencode(fp, ci-&gt;author-&gt;name, strlen(ci-&gt;author-&gt;name));
+<a href="#h0-1-3" id="h0-1-3" class="d">-		fputs(&quot;&lt;/td&gt;&lt;td align=\&quot;right\&quot;&gt;&quot;, fp);
+</a><a href="#h0-1-4" id="h0-1-4" class="i">+		fputs(&quot;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+</a> 		fprintf(fp, &quot;%zu&quot;, ci-&gt;filecount);
+<a href="#h0-1-6" id="h0-1-6" class="d">-		fputs(&quot;&lt;/td&gt;&lt;td align=\&quot;right\&quot;&gt;&quot;, fp);
+</a><a href="#h0-1-7" id="h0-1-7" class="i">+		fputs(&quot;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+</a> 		fprintf(fp, &quot;+%zu&quot;, ci-&gt;addcount);
+<a href="#h0-1-9" id="h0-1-9" class="d">-		fputs(&quot;&lt;/td&gt;&lt;td align=\&quot;right\&quot;&gt;&quot;, fp);
+</a><a href="#h0-1-10" id="h0-1-10" class="i">+		fputs(&quot;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+</a> 		fprintf(fp, &quot;-%zu&quot;, ci-&gt;delcount);
+ 		fputs(&quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;, fp);
+ 
+<a href="#h0-2" id="h0-2" class="h">@@ -512,7 +512,7 @@ writefiles(FILE *fp)
+</a> 	size_t count, i;
+ 
+ 	fputs(&quot;&lt;table&gt;&lt;thead&gt;\n&quot;
+<a href="#h0-2-3" id="h0-2-3" class="d">-	      &quot;&lt;tr&gt;&lt;td&gt;Mode&lt;/td&gt;&lt;td&gt;Name&lt;/td&gt;&lt;td align=\&quot;right\&quot;&gt;Size&lt;/td&gt;&lt;/tr&gt;\n&quot;
+</a><a href="#h0-2-4" id="h0-2-4" class="i">+	      &quot;&lt;tr&gt;&lt;td&gt;Mode&lt;/td&gt;&lt;td&gt;Name&lt;/td&gt;&lt;td&gt;Size&lt;/td&gt;&lt;/tr&gt;\n&quot;
+</a> 	      &quot;&lt;/thead&gt;&lt;tbody&gt;\n&quot;, fp);
+ 
+ 	git_repository_index(&amp;index, repo);
+<a href="#h0-3" id="h0-3" class="h">@@ -526,7 +526,7 @@ writefiles(FILE *fp)
+</a> 		xmlencode(fp, entry-&gt;path, strlen(entry-&gt;path));
+ 		fputs(&quot;\&quot;&gt;&quot;, fp);
+ 		xmlencode(fp, entry-&gt;path, strlen(entry-&gt;path));
+<a href="#h0-3-3" id="h0-3-3" class="d">-		fputs(&quot;&lt;/a&gt;&lt;/td&gt;&lt;td align=\&quot;right\&quot;&gt;&quot;, fp);
+</a><a href="#h0-3-4" id="h0-3-4" class="i">+		fputs(&quot;&lt;/a&gt;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+</a> 		fprintf(fp, &quot;%&quot; PRIu64, entry-&gt;file_size);
+ 		fputs(&quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;, fp);
+ 	}
+</pre>
+</div>
+</body>
+</html>

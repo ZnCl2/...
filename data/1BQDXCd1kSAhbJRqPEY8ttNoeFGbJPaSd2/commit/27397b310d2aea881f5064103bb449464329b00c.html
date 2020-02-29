@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Write blobs to files/ - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/27397b310d2aea881f5064103bb449464329b00c.html">27397b310d2aea881f5064103bb449464329b00c</a>
+<b>parent</b> <a href="../commit/43a7d4dc2ce288119e15232f2312e19c820d98c4.html">43a7d4dc2ce288119e15232f2312e19c820d98c4</a>
+<b>Author:</b> Eivind Uggedal &lt;<a href="mailto:eivind@uggedal.com">eivind@uggedal.com</a>&gt;
+<b>Date:</b>   Wed Dec  9 22:46:00 +0000
+
+Write blobs to files/
+
+This is work in progress:
+
+- relpath is broken under files/
+- mkdirp was stolen from sbase
+- strlcpy wrapper might be needed
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">urmoms.c</a></td><td> | </td><td class="num">101</td><td><span class="i">+++++++++++++++++++++++++++++++++++++++++++++++++++</span><span class="d">----------------------------</span></td></tr>
+</table>1 file changed, 65 insertions(+), 36 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/urmoms.c.html">urmoms.c</a> b/<a href="../file/urmoms.c.html">urmoms.c</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -1,6 +1,7 @@
+</a> #include &lt;sys/stat.h&gt;
+ 
+ #include &lt;err.h&gt;
+<a href="#h0-0-3" id="h0-0-3" class="i">+#include &lt;errno.h&gt;
+</a> #include &lt;inttypes.h&gt;
+ #include &lt;libgen.h&gt;
+ #include &lt;limits.h&gt;
+<a href="#h0-1" id="h0-1" class="h">@@ -123,9 +124,9 @@ writeheader(FILE *fp)
+</a> 	fprintf(fp, &quot;&lt;a href=\&quot;%slog.html\&quot;&gt;Log&lt;/a&gt; | &quot;, relpath);
+ 	fprintf(fp, &quot;&lt;a href=\&quot;%sfiles.html\&quot;&gt;Files&lt;/a&gt;&quot;, relpath);
+ 	if (hasreadme)
+<a href="#h0-1-3" id="h0-1-3" class="d">-		fprintf(fp, &quot; | &lt;a href=\&quot;%sreadme.html\&quot;&gt;README&lt;/a&gt;&quot;, relpath);
+</a><a href="#h0-1-4" id="h0-1-4" class="i">+		fprintf(fp, &quot; | &lt;a href=\&quot;%sfile/README.html\&quot;&gt;README&lt;/a&gt;&quot;, relpath);
+</a> 	if (haslicense)
+<a href="#h0-1-6" id="h0-1-6" class="d">-		fprintf(fp, &quot; | &lt;a href=\&quot;%slicense.html\&quot;&gt;LICENSE&lt;/a&gt;&quot;, relpath);
+</a><a href="#h0-1-7" id="h0-1-7" class="i">+		fprintf(fp, &quot; | &lt;a href=\&quot;%sfile/LICENSE.html\&quot;&gt;LICENSE&lt;/a&gt;&quot;, relpath);
+</a> 	fputs(&quot;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;\n&lt;hr/&gt;&lt;div id=\&quot;content\&quot;&gt;\n&quot;, fp);
+ 
+ 	return 0;
+<a href="#h0-2" id="h0-2" class="h">@@ -187,6 +188,25 @@ xbasename(const char *path)
+</a> 	return b;
+ }
+ 
+<a href="#h0-2-3" id="h0-2-3" class="i">+int
+</a><a href="#h0-2-4" id="h0-2-4" class="i">+mkdirp(const char *path)
+</a><a href="#h0-2-5" id="h0-2-5" class="i">+{
+</a><a href="#h0-2-6" id="h0-2-6" class="i">+	char tmp[PATH_MAX], *p;
+</a><a href="#h0-2-7" id="h0-2-7" class="i">+
+</a><a href="#h0-2-8" id="h0-2-8" class="i">+	strlcpy(tmp, path, sizeof(tmp)); /* TODO: bring in libutil? */
+</a><a href="#h0-2-9" id="h0-2-9" class="i">+	for (p = tmp + (tmp[0] == &apos;/&apos;); *p; p++) {
+</a><a href="#h0-2-10" id="h0-2-10" class="i">+		if (*p != &apos;/&apos;)
+</a><a href="#h0-2-11" id="h0-2-11" class="i">+			continue;
+</a><a href="#h0-2-12" id="h0-2-12" class="i">+		*p = &apos;\0&apos;;
+</a><a href="#h0-2-13" id="h0-2-13" class="i">+		if (mkdir(tmp, S_IRWXU | S_IRWXG | S_IRWXO) &lt; 0 &amp;&amp; errno != EEXIST)
+</a><a href="#h0-2-14" id="h0-2-14" class="i">+			return -1;
+</a><a href="#h0-2-15" id="h0-2-15" class="i">+		*p = &apos;/&apos;;
+</a><a href="#h0-2-16" id="h0-2-16" class="i">+	}
+</a><a href="#h0-2-17" id="h0-2-17" class="i">+	if (mkdir(tmp, S_IRWXU | S_IRWXG | S_IRWXO) &lt; 0 &amp;&amp; errno != EEXIST)
+</a><a href="#h0-2-18" id="h0-2-18" class="i">+		return -1;
+</a><a href="#h0-2-19" id="h0-2-19" class="i">+	return 0;
+</a><a href="#h0-2-20" id="h0-2-20" class="i">+}
+</a><a href="#h0-2-21" id="h0-2-21" class="i">+
+</a> void
+ printtimeformat(FILE *fp, const git_time *intime, const char *fmt)
+ {
+<a href="#h0-3" id="h0-3" class="h">@@ -311,7 +331,7 @@ printshowfile(struct commitinfo *ci)
+</a> 		}
+ 
+ 		delta = git_patch_get_delta(patch);
+<a href="#h0-3-3" id="h0-3-3" class="d">-		fprintf(fp, &quot;&lt;b&gt;diff --git a/&lt;a href=\&quot;%sfile/%s\&quot;&gt;%s&lt;/a&gt; b/&lt;a href=\&quot;%sfile/%s\&quot;&gt;%s&lt;/a&gt;&lt;/b&gt;\n&quot;,
+</a><a href="#h0-3-4" id="h0-3-4" class="i">+		fprintf(fp, &quot;&lt;b&gt;diff --git a/&lt;a href=\&quot;%sfile/%s.html\&quot;&gt;%s&lt;/a&gt; b/&lt;a href=\&quot;%sfile/%s.html\&quot;&gt;%s&lt;/a&gt;&lt;/b&gt;\n&quot;,
+</a> 			relpath, delta-&gt;old_file.path, delta-&gt;old_file.path,
+ 			relpath, delta-&gt;new_file.path, delta-&gt;new_file.path);
+ 
+<a href="#h0-4" id="h0-4" class="h">@@ -509,6 +529,39 @@ writeatom(FILE *fp)
+</a> }
+ 
+ int
+<a href="#h0-4-3" id="h0-4-3" class="i">+writeblob(const char *path)
+</a><a href="#h0-4-4" id="h0-4-4" class="i">+{
+</a><a href="#h0-4-5" id="h0-4-5" class="i">+	char htmlpath[PATH_MAX];
+</a><a href="#h0-4-6" id="h0-4-6" class="i">+	char refpath[PATH_MAX];
+</a><a href="#h0-4-7" id="h0-4-7" class="i">+	char *relp;
+</a><a href="#h0-4-8" id="h0-4-8" class="i">+	git_object *obj = NULL;
+</a><a href="#h0-4-9" id="h0-4-9" class="i">+	FILE *fp;
+</a><a href="#h0-4-10" id="h0-4-10" class="i">+
+</a><a href="#h0-4-11" id="h0-4-11" class="i">+	snprintf(htmlpath, sizeof(htmlpath), &quot;file/%s.html&quot;, path);
+</a><a href="#h0-4-12" id="h0-4-12" class="i">+	snprintf(refpath, sizeof(refpath), &quot;HEAD:%s&quot;, path);
+</a><a href="#h0-4-13" id="h0-4-13" class="i">+
+</a><a href="#h0-4-14" id="h0-4-14" class="i">+	if (git_revparse_single(&amp;obj, repo, refpath))
+</a><a href="#h0-4-15" id="h0-4-15" class="i">+		return 1; /* TODO: handle error */
+</a><a href="#h0-4-16" id="h0-4-16" class="i">+
+</a><a href="#h0-4-17" id="h0-4-17" class="i">+	mkdirp(dirname(htmlpath));
+</a><a href="#h0-4-18" id="h0-4-18" class="i">+
+</a><a href="#h0-4-19" id="h0-4-19" class="i">+	relpath = &quot;../&quot;; /* TODO: dynamic relpath based on number of /&apos;s */
+</a><a href="#h0-4-20" id="h0-4-20" class="i">+
+</a><a href="#h0-4-21" id="h0-4-21" class="i">+	fp = efopen(htmlpath, &quot;w+b&quot;);
+</a><a href="#h0-4-22" id="h0-4-22" class="i">+	writeheader(fp);
+</a><a href="#h0-4-23" id="h0-4-23" class="i">+	fputs(&quot;&lt;pre&gt;\n&quot;, fp);
+</a><a href="#h0-4-24" id="h0-4-24" class="i">+	writeblobhtml(fp, (git_blob *)obj);
+</a><a href="#h0-4-25" id="h0-4-25" class="i">+	if (ferror(fp))
+</a><a href="#h0-4-26" id="h0-4-26" class="i">+		err(1, &quot;fwrite&quot;);
+</a><a href="#h0-4-27" id="h0-4-27" class="i">+	git_object_free(obj);
+</a><a href="#h0-4-28" id="h0-4-28" class="i">+	fputs(&quot;&lt;/pre&gt;\n&quot;, fp);
+</a><a href="#h0-4-29" id="h0-4-29" class="i">+	writefooter(fp);
+</a><a href="#h0-4-30" id="h0-4-30" class="i">+	fclose(fp);
+</a><a href="#h0-4-31" id="h0-4-31" class="i">+	relpath = &quot;&quot;;
+</a><a href="#h0-4-32" id="h0-4-32" class="i">+	return 0;
+</a><a href="#h0-4-33" id="h0-4-33" class="i">+}
+</a><a href="#h0-4-34" id="h0-4-34" class="i">+
+</a><a href="#h0-4-35" id="h0-4-35" class="i">+int
+</a> writefiles(FILE *fp)
+ {
+ 	const git_index_entry *entry;
+<a href="#h0-5" id="h0-5" class="h">@@ -524,15 +577,18 @@ writefiles(FILE *fp)
+</a> 
+ 	for (i = 0; i &lt; count; i++) {
+ 		entry = git_index_get_byindex(index, i);
+<a href="#h0-5-3" id="h0-5-3" class="i">+
+</a> 		fputs(&quot;&lt;tr&gt;&lt;td&gt;&quot;, fp);
+ 		fprintf(fp, &quot;%u&quot;, entry-&gt;mode); /* TODO: fancy print, like: &quot;-rw-r--r--&quot; */
+ 		fprintf(fp, &quot;&lt;/td&gt;&lt;td&gt;&lt;a href=\&quot;%sfile/&quot;, relpath);
+ 		xmlencode(fp, entry-&gt;path, strlen(entry-&gt;path));
+<a href="#h0-5-8" id="h0-5-8" class="d">-		fputs(&quot;\&quot;&gt;&quot;, fp);
+</a><a href="#h0-5-9" id="h0-5-9" class="i">+		fputs(&quot;.html\&quot;&gt;&quot;, fp);
+</a> 		xmlencode(fp, entry-&gt;path, strlen(entry-&gt;path));
+ 		fputs(&quot;&lt;/a&gt;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+ 		fprintf(fp, &quot;%&quot; PRIu64, entry-&gt;file_size);
+ 		fputs(&quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;, fp);
+<a href="#h0-5-14" id="h0-5-14" class="i">+
+</a><a href="#h0-5-15" id="h0-5-15" class="i">+		writeblob(entry-&gt;path);
+</a> 	}
+ 
+ 	fputs(&quot;&lt;/tbody&gt;&lt;/table&gt;&quot;, fp);
+<a href="#h0-6" id="h0-6" class="h">@@ -543,7 +599,7 @@ writefiles(FILE *fp)
+</a> int
+ main(int argc, char *argv[])
+ {
+<a href="#h0-6-3" id="h0-6-3" class="d">-	git_object *obj_license = NULL, *obj_readme = NULL;
+</a><a href="#h0-6-4" id="h0-6-4" class="i">+	git_object *obj = NULL;
+</a> 	const git_error *e = NULL;
+ 	FILE *fp, *fpread;
+ 	char path[PATH_MAX], *p;
+<a href="#h0-7" id="h0-7" class="h">@@ -584,38 +640,11 @@ main(int argc, char *argv[])
+</a> 	}
+ 
+ 	/* check LICENSE */
+<a href="#h0-7-3" id="h0-7-3" class="d">-	haslicense = !git_revparse_single(&amp;obj_license, repo, &quot;HEAD:LICENSE&quot;);
+</a><a href="#h0-7-4" id="h0-7-4" class="i">+	haslicense = !git_revparse_single(&amp;obj, repo, &quot;HEAD:LICENSE&quot;);
+</a><a href="#h0-7-5" id="h0-7-5" class="i">+	git_object_free(obj);
+</a> 	/* check README */
+<a href="#h0-7-7" id="h0-7-7" class="d">-	hasreadme = !git_revparse_single(&amp;obj_readme, repo, &quot;HEAD:README&quot;);
+</a><a href="#h0-7-8" id="h0-7-8" class="d">-
+</a><a href="#h0-7-9" id="h0-7-9" class="d">-	/* read LICENSE */
+</a><a href="#h0-7-10" id="h0-7-10" class="d">-	if (haslicense) {
+</a><a href="#h0-7-11" id="h0-7-11" class="d">-		fp = efopen(&quot;license.html&quot;, &quot;w+b&quot;);
+</a><a href="#h0-7-12" id="h0-7-12" class="d">-		writeheader(fp);
+</a><a href="#h0-7-13" id="h0-7-13" class="d">-		fputs(&quot;&lt;pre&gt;\n&quot;, fp);
+</a><a href="#h0-7-14" id="h0-7-14" class="d">-		writeblobhtml(fp, (git_blob *)obj_license);
+</a><a href="#h0-7-15" id="h0-7-15" class="d">-		git_object_free(obj_license);
+</a><a href="#h0-7-16" id="h0-7-16" class="d">-		if (ferror(fp))
+</a><a href="#h0-7-17" id="h0-7-17" class="d">-			err(1, &quot;fwrite&quot;);
+</a><a href="#h0-7-18" id="h0-7-18" class="d">-		fputs(&quot;&lt;/pre&gt;\n&quot;, fp);
+</a><a href="#h0-7-19" id="h0-7-19" class="d">-		writefooter(fp);
+</a><a href="#h0-7-20" id="h0-7-20" class="d">-
+</a><a href="#h0-7-21" id="h0-7-21" class="d">-		fclose(fp);
+</a><a href="#h0-7-22" id="h0-7-22" class="d">-	}
+</a><a href="#h0-7-23" id="h0-7-23" class="d">-
+</a><a href="#h0-7-24" id="h0-7-24" class="d">-	/* read README */
+</a><a href="#h0-7-25" id="h0-7-25" class="d">-	if (hasreadme) {
+</a><a href="#h0-7-26" id="h0-7-26" class="d">-		fp = efopen(&quot;readme.html&quot;, &quot;w+b&quot;);
+</a><a href="#h0-7-27" id="h0-7-27" class="d">-		writeheader(fp);
+</a><a href="#h0-7-28" id="h0-7-28" class="d">-		fputs(&quot;&lt;pre&gt;\n&quot;, fp);
+</a><a href="#h0-7-29" id="h0-7-29" class="d">-		writeblobhtml(fp, (git_blob *)obj_readme);
+</a><a href="#h0-7-30" id="h0-7-30" class="d">-		git_object_free(obj_readme);
+</a><a href="#h0-7-31" id="h0-7-31" class="d">-		if (ferror(fp))
+</a><a href="#h0-7-32" id="h0-7-32" class="d">-			err(1, &quot;fwrite&quot;);
+</a><a href="#h0-7-33" id="h0-7-33" class="d">-		fputs(&quot;&lt;/pre&gt;\n&quot;, fp);
+</a><a href="#h0-7-34" id="h0-7-34" class="d">-		writefooter(fp);
+</a><a href="#h0-7-35" id="h0-7-35" class="d">-		fclose(fp);
+</a><a href="#h0-7-36" id="h0-7-36" class="d">-	}
+</a><a href="#h0-7-37" id="h0-7-37" class="i">+	hasreadme = !git_revparse_single(&amp;obj, repo, &quot;HEAD:README&quot;);
+</a><a href="#h0-7-38" id="h0-7-38" class="i">+	git_object_free(obj);
+</a> 
+ 	fp = efopen(&quot;log.html&quot;, &quot;w+b&quot;);
+ 	writeheader(fp);
+</pre>
+</div>
+</body>
+</html>

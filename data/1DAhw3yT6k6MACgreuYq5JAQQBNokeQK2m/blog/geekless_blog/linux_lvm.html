@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Загрузка кучи линуксов на LVM-томах</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<link rel="stylesheet" href="../../css/global.css">
+</head>
+
+<body>
+	
+<header>
+  <a href="../../index.html"><img src="../../img/logo.png" width="55"></a><br>ChronCache	
+</header>
+	
+<nav>
+	<hr>
+  <p><a href="../../blog.html">архив</a> <tt>|</tt> <a href="../../help.html">помощь</a> <tt>|</tt> <a href="/1Q9LVNLD1ghusGxpiwjYnVjPsxD5xGTGc7/donate/index.html">донат</a></p>
+	<hr>
+</nav>
+
+<article>
+	
+<acide><p>Это резервная страница от 06.04.2019 / <a href="/1BLoGBTid3NhGu8ts3fAfHJprnbrH3wfTV/?Post:36">оригинал</a></p></acide>
+
+<section>
+	<h1>Загрузка кучи линуксов на LVM-томах</h1>
+	<p>В одном из компьютеров разбивал диск на разделы еще под grub 1-й версии, который не умел работать с LVM. Из-за этого <code>/boot</code> всех линуксов пришлось вынести на отдельный раздел вне LVM. Получился такой усложненный конфиг:</p>
+	<div class="code">
+		<code>sda1 — boot &lt;- тут grub, который грузится через бутсектор
+sda2 — linuxboot &lt;- тут ядра линукса
+sda3 — LVM:
+    archlinux
+    voidlinux
+    debian</code>
+	</div>
+	<p>Монтировался <code>/boot</code> в каждой системе примерно так:</p>
+	<div class="code">
+		<code>/dev/disk/by-label/linuxboot      /mountpoints/linuxboot  ext4  defaults,noatime  0   1
+/mountpoints/linuxboot/voidlinux  /boot                   none  defaults,bind     0   0</code>
+	</div>
+	<p>Давно мигрировал на grub2, но сейчас наконец-то дошли руки переделать загрузку.</p>
+	<p>Вернул ядро системы на корневой раздел:</p>
+	<div class="code">
+		<code>mount -o bind / /tmp/tmp_root/
+rsync -aHAX /boot/ /tmp/tmp_root/boot/
+umount /boot/</code>
+	</div>
+	<p>Перегенерировал grub для корня:</p>
+	<div class="code">
+		<code>grub-install -v --no-bootsector --target i386-pc /dev/mapper/sm-sm_voidlinux</code>
+	</div>
+	<ul>
+		<li><code>--no-bootsector</code> — чтобы grub не пытался свой бутсектор никуда установить. Он не BIOS-ом у нас будет грузиться.
+		<li><code>--target i386-pc</code> — просто на всякий случай, чтобы с UEFI не попутал.
+		<li><code>/dev/mapper/sm-sm_voidlinux</code> — самое главное. Grub должен увидеть, что он на LVM, и сгенерировать <code>core.img</code>, пригодный для старта с LVM.
+	</ul>
+	<p>Теперь основная магия. Открываем конфиг того grub, который у нас живёт на загрузочном разделе и пишем:</p>
+	<div class="code">
+		<code>insmod lvm
+menuentry "Voidlinux" {
+    multiboot (lvm/sm-sm_voidlinux)/boot/grub/i386-pc/core.img
+}</code>
+	</div>
+	<p>Получается следующая последовательность загрузки:</p>
+	<ul>
+		<li>BIOS грузит бутсектор.
+		<li>Бутсектор грузит grub с sda1.
+		<li>Grub читает конфиг и показывает меню.
+		<li>Когда мы выбираем пункт Voidlinux, grub по протоколу multiboot грузит другой grub из образа core.img.
+		<li>Этот второй grub показывает нам меню, сгенерированное конкретной операционной системой. (Разные ядра, загрузка в fallback-режиме и т.п.)
+	</ul>
+	<p>Так можно установить и грузить любое количество Linux-ов внутри LVM без плясок с бубном.</p>
+</section>
+	
+<p class="dr">Jun 03, 2018 / Geekless.Blog</p>
+	
+</article>		
+		
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Fix future topics - 0git - 0git - a list of git repositories on ZeroNet
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="0git.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>0git</h1><span class="desc">0git - a list of git repositories on ZeroNet
+</span></td></tr><tr class="url"><td></td><td>git clone <a href="http://127.0.0.1:43110/0git.bit/0git.git">http://127.0.0.1:43110/0git.bit/0git.git</a></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.md.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/c4847d4c355ea69cb5c1986669f6572b6a6788e1.html">c4847d4c355ea69cb5c1986669f6572b6a6788e1</a>
+<b>parent</b> <a href="../commit/630f7de6c32cee47b0e8150d8e8632920c508694.html">630f7de6c32cee47b0e8150d8e8632920c508694</a>
+<b>Author:</b> HelloZeroNet &lt;<a href="mailto:hello@noloop.me">hello@noloop.me</a>&gt;
+<b>Date:</b>   Mon Apr 11 10:59:40 +0200
+
+Fix future topics
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">js/TopicList.coffee</a></td><td> | </td><td class="num">4</td><td><span class="i">+++</span><span class="d">-</span></td></tr>
+</table>1 file changed, 3 insertions(+), 1 deletion(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/js/TopicList.coffee.html">js/TopicList.coffee</a> b/<a href="../file/js/TopicList.coffee.html">js/TopicList.coffee</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -116,7 +116,7 @@ class TopicList extends Class
+</a> 		if @parent_topic_uri # Topic group listing
+ 			where = &quot;WHERE parent_topic_uri = &apos;#{@parent_topic_uri}&apos; OR row_topic_uri = &apos;#{@parent_topic_uri}&apos;&quot;
+ 		else # Main listing
+<a href="#h0-0-3" id="h0-0-3" class="d">-			where = &quot;WHERE topic.type IS NULL AND topic.parent_topic_uri IS NULL AND (comment.added &lt; #{Date.now()/1000+120} OR comment.added IS NULL)&quot;
+</a><a href="#h0-0-4" id="h0-0-4" class="i">+			where = &quot;WHERE topic.type IS NULL AND topic.parent_topic_uri IS NULL&quot;
+</a> 		last_elem = $(&quot;.topics-list .topic.template&quot;)
+ 
+ 		query = &quot;&quot;&quot;
+<a href="#h0-1" id="h0-1" class="h">@@ -135,6 +135,7 @@ class TopicList extends Class
+</a> 			LEFT JOIN comment ON (comment.topic_uri = row_topic_uri)
+ 			#{where}
+ 			GROUP BY topic.topic_id, topic.json_id
+<a href="#h0-1-3" id="h0-1-3" class="i">+			HAVING last_action &lt; #{Date.now()/1000+120}
+</a> 		&quot;&quot;&quot;
+ 
+ 		if not @parent_topic_uri # Union topic groups
+<a href="#h0-2" id="h0-2" class="h">@@ -160,6 +161,7 @@ class TopicList extends Class
+</a> 				LEFT JOIN comment ON (comment.topic_uri = row_topic_sub_uri)
+ 				WHERE topic.type = &quot;group&quot;
+ 				GROUP BY topic.topic_id
+<a href="#h0-2-3" id="h0-2-3" class="i">+				HAVING last_action &lt; #{Date.now()/1000+120}
+</a> 			&quot;&quot;&quot;
+ 
+ 		if not @list_all and not @parent_topic_uri
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,55 @@
+{
+	"db_name": "PlayAnime",
+	"db_file": "data/play.db",
+	"version": 2,
+	"maps": {
+		"movies_.*.json": {
+			"to_table": [
+				{"node": "titles", "table": "title", "key_col": "ann_id"}
+			]
+		},
+		"movie_data.json": {
+			"to_table": [
+				{"node": "title_data", "table": "title_data", "key_col": "ann_id"}
+			]
+		},
+		"movie_info_.*.json": {
+			"to_table": [
+				{"node": "title_info", "table": "title_info", "key_col": "ann_id"}
+			]
+		}
+	},
+	"tables": {
+		"title": {
+			"cols": [
+				["ann_id", "TEXT"],
+				["name", "TEXT"],
+				["alt_name", "TEXT"],
+				["data", "TEXT"],
+				["dl", "TEXT"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX title_key ON title(ann_id, json_id)"],
+			"schema_changed": 3
+		},
+		"title_data": {
+			"cols": [
+				["ann_id", "TEXT"],
+				["peers", "INTEGER"],
+				["added", "INTEGER"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX title_data_key ON title_data(ann_id, json_id)"],
+			"schema_changed": 3
+		},
+		"title_info": {
+			"cols": [
+				["ann_id", "TEXT"],
+				["summary", "TEXT"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX title_info_key ON title_info(ann_id, json_id)"],
+			"schema_changed": 2
+		}
+	}
+}

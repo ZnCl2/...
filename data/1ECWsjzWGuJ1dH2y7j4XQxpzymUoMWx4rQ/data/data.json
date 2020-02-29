@@ -1,0 +1,224 @@
+{
+	"title": "nolotus",
+	"description": "关注zeroblog，杂耍各种技术，自己心情小记，欢迎各位勾搭－》友情链接／技术探讨",
+	"links": "- [Source code](https://github.com/HelloZeroNet)",
+	"next_post_id": 82,
+	"demo": false,
+	"modified": 1466217642,
+	"post": [
+		{
+			"post_id": 81,
+			"title": "光源小记",
+			"date_published": 1466066031.405,
+			"body": "##spot圆柱形光源 \n单方向，可调整角度 光的距离 光的衰减 光的强度，会影响材料\n\n##point 点光源 \n全向光\n\n##hemisphere 半球光\n可做颜色渐变光\n\n## Directional lights \n方向光，单向，无限光源\n\n##全局光Directional lights \n仅影响颜色全局的。\n\n那么，问题来来，怎么弄出真实级别，至少半真实的局部光照\n\n"
+		},
+		{
+			"post_id": 79,
+			"title": "真实感图形学小记",
+			"date_published": 1465027244.789,
+			"body": "##颜色\n色调(Hue)、饱和度(Saturation)和亮度(Lightness)\n红色700绿色 546 蓝色 435.8\n##简单光照模型\n：用Phong模型显示出的物体像塑料，没有质感；环境光是常量，没有考虑物体之间相互的反射光；镜面反射的颜色是光源的颜色，与物体的材料无关；镜面反射的计算在入射角很大时会产生 失真等\n##阴影\n暂不理解\n##局部光照\n1. 局部光照明模型是基于入射光能量导出的光辐射模型，而简单光反射模型基于经验，显然前者更具有理论基础。\n2.局部光照明模型的反射项以实际物体表面的微平面理论为基础，反映表面的粗糙度对反射光强的影响，而简单光照模型只以(N*H)n近似，前者的模拟更精确。\n3.局部光照明模型的高光由Fresnel定律，根据材料的物理性质决定颜色，而简单光照模型只以高光颜色与材料无关。\n4.简单光照模型在入射角接近90o时会产生失真现象，而在局部光照明模型中可以很好的改进这一点。\n5.用简单光照模型生成的物体图象，看上去象塑料，显示不出磨亮的金属光泽，而在局部光照明模型中，反射光强的计算考虑了物体材质的影响，就可以模拟金属的光泽。\n##光透射（oh my god ，都是神啊，）\n1. 伪光透射，颜色调和\n2. 真投射？小弟不懂啊\n##纹理\n1. 伪纹理 太常见了，图片了，颜色了（球面，圆柱面），但是，由于纹理域是二维的，图形场景物体一般是三维的，这样在纹理映射的时候是一种非线性映射，在曲率变化很大的曲面区域就会产生纹理变形，极大的降低了图象的真实感，而且对于二维纹理映射，对于一些非正规拓扑表面，纹理连续性不能保证\n2. 3d纹理，坐标直接定义，\n##整体光照（）\n1. 光线跟踪（间接反射，间接折射）"
+		},
+		{
+			"post_id": 78,
+			"title": "写博客相关心得",
+			"date_published": 1464938713.922,
+			"body": "1. 检索系统很重要－》分类我一直认为够用了，原来标签化的管理给予了文章不同的维度，尤其你的文章内容交叉多种类别的情况下。无论访客寻找内容，还是自己二次更新\n\n2. 善用标签系统，别懒，对于wordpress等后台强大的好说，zeroblog二次修改就靠标签检索（我不喜欢很重的软件，例如不太需要wordpress那么强大的后台）"
+		},
+		{
+			"post_id": 77,
+			"title": "zeronet缺点",
+			"date_published": 1464938551.549,
+			"body": "1. 在笔记本建了博客，然后在台式电脑上使用私钥登录，\n2. 然后我在笔记本删除一篇文章，台式电脑就无法更新删除的内容，然而改变的内容却能够同步\n3. 如果没有登录的节点，删除内容，会同步删除\n4. 每一次台式电脑发布，动不动就要私钥\n5. 和各种代理冲突～\n"
+		},
+		{
+			"post_id": 76,
+			"title": "aframe小技巧",
+			"date_published": 1464937501.905,
+			"body": "```javascipt\nthis.pivot = new THREE.Object3D();\n      this.el.object3D.position.set(0, document.querySelector('#camera').object3D.getWorldPosition().y, -4);\n\n      this.el.sceneEl.object3D.add(this.pivot);\n      this.pivot.add(this.el.object3D);\n```\n\n当你开发一个3d插件的时候，尽量与镜头对焦来保证用户可以第一时间看到，而不是二次寻找，当然，在多个3d内容情况下，不同分案。\n以上代码新建一个3d对象（pivot－》焦点，并非整体），x为0，保证同一水平线，然后获取镜头y值保证在同一高度，－4拉开距离\n\n## 光标问题\n```javascript\ndocument.querySelector('#cursor').setAttribute('visible', true);\n```\n屏幕上有鼠标， vr应用可以隐藏光标，但是当进行细致交互时，我们需要给用户明确的操作位置，可以给出光标，下面的代码了给出对交互界面以及光标，要适时关闭\n\n##材质判定（其实没必要，但还是写）\n```javascript \nvar id = this.el.getAttribute('data-image-id');\n        id = '#img-photosphere-' + id;\n      if (document.querySelector('#photosphere').getAttribute('material').src != id) {\n\n          document.querySelector('#photosphere-menu').setAttribute('visible', false);\n          document.querySelector('#cursor').setAttribute('visible', false);\n          document.querySelector('#photosphere').setAttribute('material', 'src', id);\n\n        }\n```\n如果你需要更换材质，请记得，判定下和当前的id值是否相同（我会告诉你我demo就直接加载值，我才懒得判定）"
+		},
+		{
+			"post_id": 75,
+			"title": "图形学算法",
+			"date_published": 1464858878.327,
+			"body": "##线段\ndda算法\n中点画线法\nhttp://netclass.csu.edu.cn/NCourse/hep089/Chapter2/CG_Txt_2_001.htm\n##圆\n利用其八对称的特性，然后重点取值\n##多边形\n顶点表示\n点阵表示－面着色\n###区域填充\n四向 八向\n##裁剪\n完全萌比。同上的各种算法，数学数学，哎\n##锯齿\n"
+		},
+		{
+			"post_id": 74,
+			"title": "a-frame组件开发2",
+			"date_published": 1464838614.943,
+			"body": "注册组件\n\n```javascript\nAFRAME.registerComponent('positon',{\nschema: { type: 'vec3' },\n\nupdate: function( ) {\nvar object3D = this.el.object3D;\nvar data = this.data;\nobject3D.position.set(data.x, data.y,data.z);\n//\n});\n```\n\ndata？数据呗\n数据类型\nboolean\nint\nnumber\nselector\nsrc\nstring\nvec3\n\n你问我el啥意思？对entity的引用\n\n方法\ninti 初始化\nupdate 改变时\nremove \ntick\nplay\npause\n"
+		},
+		{
+			"post_id": 73,
+			"title": "a-frame组件开发小记",
+			"date_published": 1464837010.33,
+			"body": "默认：组合性的需要高于继承性\nentity固有属性：位置，旋转，缩放\n     默认值：0 0 0  缩放为1 1 1  \n    可对其添加形状，材料，光线等属性\n可通过dom进行查询（比那些封装的js库强太多）\n例如查询其属性，调用其方法\n\n例如\n .components.camera.camera\n.components.material.material\n.components.sound.paise();\n\n\n.object3D\n\n\n可对其添加状态\n.addEventListener\n.addState()\n.is() 判断\n\n.emit 暂不会\n\n.getAttribute 获得其属性\n.setAttribute 设置属性\nremove＋name移除"
+		},
+		{
+			"post_id": 71,
+			"title": "交流",
+			"date_published": 1464249142.225,
+			"body": "人与人的交流，\n宗教徒与宗教徒的交流\n哲学流派的交流\n技术流派的交流\n有句话好像说，神创造语言就是为了，我们不上巴别塔，\n或许如此吧。\n包括我自己，我们总是活在自己的巴别塔下，而这个巴别塔却不在地上。"
+		},
+		{
+			"post_id": 69,
+			"title": "webGL小记\t",
+			"date_published": 1464071312.688,
+			"body": "环境光\n点光源\n聚光灯，角度，衰减\n光源与材质相互影响\n方向光无衰减\n\n模型输出\n数据迁移\n点 面 ，缓存索引\n\n数据计算\n面的中心，\n面的法向量\n顶点法向量"
+		},
+		{
+			"post_id": 68,
+			"title": "人的小小情绪是可贵的吗",
+			"date_published": 1464058594.714,
+			"body": "一点点小小的开心，小小的悲伤，就像没有味道的微风吹过，\n工作，同事，朋友，或者身边那些至亲挚爱，或许对我而言，抵不过片刻的微风，\n可这微风终究抵不过其他，所幸，所喜，勿忘"
+		},
+		{
+			"post_id": 67,
+			"title": "vr设计注意事项",
+			"date_published": 1463994572.893,
+			"body": "场景－》静态资源－》活动对象（摄像机，等）－》场景物件－》交互事件\n\n：常用参数 30度初始化，2米适合单位"
+		},
+		{
+			"post_id": 66,
+			"title": "d3小记",
+			"date_published": 1463822589.747,
+			"body": "比例尺\ndomain \nrange\n线性比例尺\n序数比例尺子\n\n\n矩形 <rect>\n圆形 <circle>\n椭圆 <ellipse>\n线段 <line>\n折线 <polyline>\n多边形 <polygon>\n路径 <path>\n\n\nd3.svg.axis()：D3 中坐标轴的组件，能够在 SVG 中生成组成坐标轴的元素。\nscale()：指定比例尺。\norient()：指定刻度的朝向，bottom 表示在坐标轴的下方显示。\nticks()：指定刻度的数量。\n\n柱形图：\n选择集、数据绑定、比例尺、坐标轴"
+		},
+		{
+			"post_id": 62,
+			"title": "A-frame翻译",
+			"date_published": 1463562877.947,
+			"body": "右手坐标系\n移动单位：米\n旋转单位 ：度\n大拇指方向为正轴，手指卷曲为正方向\n纹理加载可用img id缓存\n交互方式：点击，凝视\n通过交互，调用动画"
+		},
+		{
+			"post_id": 60,
+			"title": "cardboard B 参数",
+			"date_published": 1463555611.549,
+			"body": "fov : 96.0\ndistortion :0.60\ndist2 : 1.00 0.00 0.00 0.00\nca corr :0.000\nvignette :100\noverlap :1.00"
+		},
+		{
+			"post_id": 59,
+			"title": "数组函数小记",
+			"date_published": 1463534318.093,
+			"body": "split生成间隔\n数组赋值为饮用\nindexof顺序查询 倒序查询\nprint调用tostring\nconcat 链接\nsplice 多个参数，起始 ，删除个数，添加元素，\npush 添加到尾巴\nunshift 添加到前面\npop删除末尾\nsort 排序 （数字默认为字符串）\nreverse 倒转排序\n迭代\nforeach（）操作\nevery（）全体判断\nsome（）部分判断\nreduce 叠加 例：reduce（add）=> sum concat\n"
+		},
+		{
+			"post_id": 56,
+			"title": "关于本博",
+			"date_published": 1463404955.493,
+			"body": "\n我会说：\n我这种渣渣程序员花了n多时间就想开发个zeronet＋blog＋社区？\n既然有这么好的现成东西，我就捡来研究了，\n本博长期致力于\n\n龟速研究zeronet源码，\n改善zeroblog不好的地方，先从样式，然后功能，一步步来\nzeronet与公网结合（我巴不得，全zeronet，这事从技术，和各种需求就不可能嘛，所以给一些原始博主尝试zeronet的机会，例如域名能访问到他的zeronet站点。目前我还不会，连zeronet的公共代理都一知半解）\n如果你与本博志同道合，欢迎共同进步，带我飞？双飞？都可以！！！\n此外不时插播本人其他生活，技术博文。"
+		},
+		{
+			"post_id": 54,
+			"title": "zeronet新建站点",
+			"date_published": 1463404665.897,
+			"body": "使用zeronet.py siteCreate 可以创建站点，请记住给出的私钥\n\n生成两个文件，content.json index.html\n前者用处多多，必备，后者默认入口（so，任何的静态站点，hexo生成的站点，也能放在zeronet）\n\n动态网站怎么办？请使用zeroframe api。请下载zeroframe.coffee才能使用。\n该api可以查询服务点／站点／用户的数据\n\n用户系统怎么破？使用zeroid。\n数据库怎么破，使用sqllite\n\njs 请放在js下 该目录下所有js文件都会合并为all.js\n\n任何一次的都需要签名 发布 同理适用\nzeronet.py siteSign [站点地址] --publish"
+		},
+		{
+			"post_id": 53,
+			"title": "zeronet目录",
+			"date_published": 1463404558.493,
+			"body": "zeronet为主目录\nzeronet/* 为各个插件，以及工作的py脚本\nzeronet/data/ 下为各个站点目录，目录名＝站点名\nzeronet/data/users.json作为你的唯一凭证，请备份，如需异地使用时请替换该文件\n\n（以下均为站点目录下）\ncontent.json 详情进》》\ndbschema.json 数据库设定，详情进》》\n/css img js 不解释\n/data 作为数据目录\n/data/data.json 作为数据库解析的后的json文件\n/data/users 作为你本人以及访客的数据\n"
+		},
+		{
+			"post_id": 52,
+			"title": "content.json",
+			"date_published": 1463404511.9,
+			"body": "通俗来说，就是一个站点的身份证\n包含了\n\n地址\n索引地址\n3 . 从哪儿克隆的\n该站点应该包含哪些文件（还记得10mb限制？通过设置可选文件来增加文件）\n修改时间\n签名，各种一对签名\n所支持的zeronet版本\n设置\n是否可克隆\n站点域名（仅供bit域名），描述，标题，背景颜色，viewport等\n文件大小限制，用户限制等"
+		},
+		{
+			"post_id": 51,
+			"title": "zeroblog缺点",
+			"date_published": 1463404204.033,
+			"body": "1. 原始的zeroblog 啥也没有，文章是全部输出，当我访问一个上万字博客的时候，哎，全是字，不想看都要拉半天。而且还不支持标签\n好在加强版博客，有按照时间归档，按照分类归档，可以上传图片。\n这群坑货，居然让我克隆默认不带标签系统的博客程序，\n如果你还没有博客，想建立并且需要标签系统（相信我，你会用到的），请访问该地址：http://127.0.0.1:43110/19k2nhubaYsDJNPHL6iNs3D2K9Mgj66P4R/\n然后clone 他，\n如果你已经克隆了不带标签系统的zeroblog，\n请复制以下文件到你的博客目录：\nindex.html js/all.js css/all.css dbschema.json 你可以在上述地址的目录\n\n2. 那么问题来了？有懂的说一下，如何升级zeroblog呢？每一次发布都自己修改？不能一键升级？\n3. 和代理软件冲突"
+		},
+		{
+			"post_id": 50,
+			"title": "友情链接",
+			"date_published": 1463402754.992,
+			"body": "[eroz](http://127.0.0.1:43110/eroz.bit/) 找到了加强版中文博客，还带文件上传亲"
+		}
+	],
+	"tag": [
+		{
+			"value": "zeronet开发",
+			"post_id": 52
+		},
+		{
+			"value": "zeronet开发",
+			"post_id": 53
+		},
+		{
+			"value": "zeronet开发",
+			"post_id": 54
+		},
+		{
+			"value": "关于本博",
+			"post_id": 56
+		},
+		{
+			"value": "友情链接",
+			"post_id": 50
+		},
+		{
+			"value": "webvr",
+			"post_id": 60
+		},
+		{
+			"value": "图形学",
+			"post_id": 75
+		},
+		{
+			"value": "webvr",
+			"post_id": 74
+		},
+		{
+			"value": "webvr",
+			"post_id": 73
+		},
+		{
+			"value": "杂记",
+			"post_id": 71
+		},
+		{
+			"value": "webvr",
+			"post_id": 69
+		},
+		{
+			"value": "杂记",
+			"post_id": 68
+		},
+		{
+			"value": "webvr",
+			"post_id": 67
+		},
+		{
+			"value": "webvr",
+			"post_id": 62
+		},
+		{
+			"value": "zeronet",
+			"post_id": 51
+		},
+		{
+			"value": "webvr",
+			"post_id": 76
+		},
+		{
+			"value": "aframe",
+			"post_id": 76
+		},
+		{
+			"value": "博客相关",
+			"post_id": 78
+		},
+		{
+			"value": "图形学",
+			"post_id": 79
+		},
+		{
+			"value": "webvr",
+			"post_id": 81
+		}
+	]
+}

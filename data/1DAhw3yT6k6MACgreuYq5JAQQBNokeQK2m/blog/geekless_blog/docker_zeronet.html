@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Враппер для управления нодами ZeroNet в докере</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<link rel="stylesheet" href="../../css/global.css">
+</head>
+
+<body>
+	
+<header>
+  <a href="../../index.html"><img src="../../img/logo.png" width="55"></a><br>ChronCache	
+</header>
+	
+<nav>
+	<hr>
+  <p><a href="../../blog.html">архив</a> <tt>|</tt> <a href="../../help.html">помощь</a> <tt>|</tt> <a href="/1Q9LVNLD1ghusGxpiwjYnVjPsxD5xGTGc7/donate/index.html">донат</a></p>
+	<hr>
+</nav>
+
+<article>
+	
+<acide><p>Это резервная страница от 25.03.2019 / <a href="/1BLoGBTid3NhGu8ts3fAfHJprnbrH3wfTV/?Post:15">оригинал</a></p></acide>
+
+<section>
+	<h1>Враппер для управления нодами ZeroNet в докере</h1>
+	<p><i>[There is also the <a href="/1BLoGBTid3NhGu8ts3fAfHJprnbrH3wfTV/?Post:16">English version</a>.]</i></p>
+	<p>Написал <a href="/1FEvdSRAqTEuGpc31s9ad7rPc4jqRpeWfG/">враппер для управления нодами ZeroNet в докере</a>. Для работы положите скрипт <a href="/1GitLiXB6t5r8vuU2zC6a8GYj9ME6HMQ4t/repo/file/?1FEvdSRAqTEuGpc31s9ad7rPc4jqRpeWfG/docker-zeronet@master">docker-zeronet</a> в любой каталог, присутствующий в переменной окружения <code>PATH</code>. Например, в <code>/usr/local/bin</code>.</p>
+	<p>В простейшем случае (одна нода, все настройки по умолчанию) вам понадобится пара команд:</p>
+	<p><code>docker-zeronet start</code> — для запуска ноды;<br><code>docker-zeronet stop</code> — для остановки.</p>
+	<p>Скрипт выкачивает <a href="https://hub.docker.com/r/nofish/zeronet/" target="_blank">официальный образ ZeroNet с hub.docker.com</a> и запускает его в максимально безопасном режиме: все соединения через Tor, порт 15441 недоступен для входящих соединений.</p>
+	<p>Вы можете запускать и останавливать любое количество нод, указывая разные имена нод при помощи ключа <code>-n</code>. Также при помощи ключа <code>-p</code> вам потребуется указать номера портов для web-интерфейса каждой ноды. Например:</p>
+	<div class="code">
+		<code>docker-zeronet -n node0 -p 43110 start
+docker-zeronet -n node1 -p 43111 start
+docker-zeronet -n node2 -p 43112 start</code>
+	</div>
+	<p>Каталог с данными каждой ноды хранится в <code>/var/zeronet/&#60;имя ноды></code>. Другой путь к каталогу можно указать ключем <code>-D</code>:</p>
+	<div class="code">
+		<code>docker-zeronet -n alice-node -p 43114 -D /home/alice/0net-data start</code>
+	</div>
+	<p>По умолчанию демон ZeroNet работает от имени root. Поэтому, если Alice из примера выше захочет вручную отредактировать данные и опубликовать изменения, её ждёт ошибка «Отказано в доступе». Чтобы это исправить, следует запускать демон с UID пользователя. Если Alice имеет UID 1000, команда запуска ноды будет выглядеть так:</p>
+	<div class="code">
+		<code>docker-zeronet -n alice-node -p 43114 -D /home/alice/0net-data -u 1000 start</code>
+	</div>
+	<p>Дополнительные параметры после слова start передаются демону ZeroNet, таким образом вы можете выполнить тонкую настройку ноды. Например, если в файле /home/alice/0net-data/trackers_file.txt содержится список трекеров, команда запуска может выглядеть так:</p>
+	<div class="code">
+		<code>docker-zeronet -n alice-node -p 43114 -D /home/alice/0net-data -u 1000 start --trackers_file /root/data/trackers_file.txt</code>
+	</div>
+	<p>(Примечание: каталог с данными внутри контейнера доступен по пути <code>/root/data/</code>, поэтому реальный путь к каталогу мы заменили на этот путь.)</p>
+	<p>Вы можете создать отдельные скрипты с параметрами запуска для каждой ноды и затем подключить их к системе инициализации вашего дистрибутива (systemd или иной).</p>
+	<p>Более полную справку обо всех возможностях враппера вы можете получить, запустив его с ключем <code>-h</code>.</p>
+</section>
+	
+<hr><p>Комментарии:</p>
+	
+<section class="com">
+	<div>
+		<p><b>ktotut:</b> <tt>(Feb 19, 2018)</tt><br>Шикарно, спасибо</p>
+	</div>
+	<div>
+		<p><b>trooper:</b> <tt>(Mar 04, 2018)</tt><br>мне вот интересно зачем вы его использовали?<br>несколько юзеров с одной ноды звучить неплохо<br>но несколько нод, не могу понять..</p>
+	</div>
+	<div>
+		<p><b>geekless:</b> <tt>(Mar 31, 2018)</tt><br><em><b>trooper:</b> мне вот интересно зачем вы его использовали?</em><br>Я использую в основном для экспериментов, но применения можно найти самые разные. Например, использование нескольких аккаунтов так намного удобнее — одну цифру в номере порта сменил в адресной строке, и вот ты уже в сети как другой ID. Или для повышения безопасности и анонимности: поднял временную ноду с хранилищем в tmpfs, поработал в ней, удалил.</p>
+	</div>
+</section>
+	
+<p class="dr">Feb 18, 2018 / Geekless.Blog</p>
+	
+</article>		
+		
+</body>
+</html>

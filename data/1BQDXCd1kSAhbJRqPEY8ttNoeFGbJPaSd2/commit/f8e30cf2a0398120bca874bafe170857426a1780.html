@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>improve stagit.1 documentation, reword and explain caching behaviour - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/f8e30cf2a0398120bca874bafe170857426a1780.html">f8e30cf2a0398120bca874bafe170857426a1780</a>
+<b>parent</b> <a href="../commit/2f8595e786809234d66d8abca519e39f6b1d701a.html">2f8595e786809234d66d8abca519e39f6b1d701a</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Sat May  7 14:33:36 +0200
+
+improve stagit.1 documentation, reword and explain caching behaviour
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">stagit.1</a></td><td> | </td><td class="num">25</td><td><span class="i">+++++++++++++++++</span><span class="d">--------</span></td></tr>
+</table>1 file changed, 17 insertions(+), 8 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/stagit.1.html">stagit.1</a> b/<a href="../file/stagit.1.html">stagit.1</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -22,8 +22,7 @@ the last commit. The
+</a> will store the last commit id and the entries in the HTML table. It is up
+ to the user to make sure the state of the
+ .Ar cachefile
+<a href="#h0-0-3" id="h0-0-3" class="d">-is in sync with the history of the repository, for example a
+</a><a href="#h0-0-4" id="h0-0-4" class="d">-git push \-\-force can screw this up.
+</a><a href="#h0-0-5" id="h0-0-5" class="i">+is in sync with the history of the repository.
+</a> .Pp
+ The following files will be written:
+ .Bl -tag -width Ds
+<a href="#h0-1" id="h0-1" class="h">@@ -38,20 +37,30 @@ each commit links to a page with a diff and diffstat of the commit.
+</a> Lists references of the repository such as branches and tags.
+ .El
+ .Pp
+<a href="#h0-1-3" id="h0-1-3" class="d">-For each file in HEAD a file will be written in the format:
+</a><a href="#h0-1-4" id="h0-1-4" class="i">+For each entry in HEAD a file will be written in the format:
+</a> file/filepath.html. This file will contain the textual data of the file
+<a href="#h0-1-6" id="h0-1-6" class="d">-prefixed by line numbers. The file will have the string &quot;binary file&quot;
+</a><a href="#h0-1-7" id="h0-1-7" class="i">+prefixed by line numbers. The file will have the string &quot;Binary file&quot;
+</a> if the data is considered to be non-textual.
+ .Pp
+ For each commit a file will be written in the format:
+<a href="#h0-1-11" id="h0-1-11" class="d">-commit/commitid.html . This file will contain the diff and diffstat of the
+</a><a href="#h0-1-12" id="h0-1-12" class="d">-commit. It will write the string &quot;binary files differ&quot; if the data is
+</a><a href="#h0-1-13" id="h0-1-13" class="d">-considered to be non-textual.
+</a><a href="#h0-1-14" id="h0-1-14" class="i">+commit/commitid.html. This file will contain the diff and diffstat of the
+</a><a href="#h0-1-15" id="h0-1-15" class="i">+commit. It will write the string &quot;Binary files differ&quot; if the data is
+</a><a href="#h0-1-16" id="h0-1-16" class="i">+considered to be non-textual. Too large diffs will be suppressed and a string
+</a><a href="#h0-1-17" id="h0-1-17" class="i">+&quot;Diff is too large, output suppressed&quot; will be written.
+</a><a href="#h0-1-18" id="h0-1-18" class="i">+.Pp
+</a><a href="#h0-1-19" id="h0-1-19" class="i">+When a commit HTML file exists it won&apos;t be overwritten again, note that if
+</a><a href="#h0-1-20" id="h0-1-20" class="i">+you&apos;ve changed
+</a><a href="#h0-1-21" id="h0-1-21" class="i">+.Nm
+</a><a href="#h0-1-22" id="h0-1-22" class="i">+or changed one of the metadata files of the repository it is recommended to
+</a><a href="#h0-1-23" id="h0-1-23" class="i">+recreate all the output files because it will contain old data. To do this
+</a><a href="#h0-1-24" id="h0-1-24" class="i">+remove the output directory and
+</a><a href="#h0-1-25" id="h0-1-25" class="i">+.Ar cachefile ,
+</a><a href="#h0-1-26" id="h0-1-26" class="i">+then recreate the files.
+</a> .Pp
+ The basename of the directory is used as the name. The suffix &quot;.git&quot; is
+ removed from the basename, this is commonly used for &quot;bare&quot; repos.
+ .Pp
+<a href="#h0-1-31" id="h0-1-31" class="d">-The content of the follow files specifies the meta data for each repository:
+</a><a href="#h0-1-32" id="h0-1-32" class="i">+The content of the follow files specifies the metadata for each repository:
+</a> .Bl -tag -width Ds
+ .It .git/description or description (bare repo).
+ description
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,41 @@
+{
+    "db_name": "zerodb",
+    "db_file": "data/zerodb.db",
+    "version": 2,
+    "maps": {
+        "users/.+/data.json": {
+            "to_table": ["databases"],
+            "to_keyvalue": ["next_database_id"]
+        },
+        "users/.+/content.json": {
+            "to_json_table": ["cert_user_id"],
+            "file_name": "data.json"
+        }
+    },
+    "tables": {
+        "json": {
+            "cols": [
+                ["json_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+                ["directory", "TEXT"],
+                ["file_name", "TEXT"],
+                ["cert_user_id", "TEXT"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX path ON json (directory, file_name)"],
+            "schema_changed": 3
+        },
+        "databases": {
+            "cols": [
+                ["database_id", "INTEGER"],
+                ["name", "TEXT"],
+                ["file", "TEXT"],
+                ["version", "INTEGER"],
+                ["tables", "TEXT"],
+                ["date_updated", "DATETIME"],
+                ["date_added", "DATETIME"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX database_key ON databases (json_id,database_id)"],
+            "schema_changed": 3
+        }
+    }
+}

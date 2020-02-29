@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>stagit-index.c - stagit - static git repository page generator
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">static git repository page generator
+</span></td></tr><tr class="url"><td></td><td>git clone <a href="http://127.0.0.1:43110/stagit.0git.bit/stagit.bit">http://127.0.0.1:43110/stagit.0git.bit/stagit.bit</a></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<p> stagit-index.c (5295B)</p><hr/><table id="blob"><tr><td class="num"><pre>
+<a href="#l1" id="l1">1</a>
+<a href="#l2" id="l2">2</a>
+<a href="#l3" id="l3">3</a>
+<a href="#l4" id="l4">4</a>
+<a href="#l5" id="l5">5</a>
+<a href="#l6" id="l6">6</a>
+<a href="#l7" id="l7">7</a>
+<a href="#l8" id="l8">8</a>
+<a href="#l9" id="l9">9</a>
+<a href="#l10" id="l10">10</a>
+<a href="#l11" id="l11">11</a>
+<a href="#l12" id="l12">12</a>
+<a href="#l13" id="l13">13</a>
+<a href="#l14" id="l14">14</a>
+<a href="#l15" id="l15">15</a>
+<a href="#l16" id="l16">16</a>
+<a href="#l17" id="l17">17</a>
+<a href="#l18" id="l18">18</a>
+<a href="#l19" id="l19">19</a>
+<a href="#l20" id="l20">20</a>
+<a href="#l21" id="l21">21</a>
+<a href="#l22" id="l22">22</a>
+<a href="#l23" id="l23">23</a>
+<a href="#l24" id="l24">24</a>
+<a href="#l25" id="l25">25</a>
+<a href="#l26" id="l26">26</a>
+<a href="#l27" id="l27">27</a>
+<a href="#l28" id="l28">28</a>
+<a href="#l29" id="l29">29</a>
+<a href="#l30" id="l30">30</a>
+<a href="#l31" id="l31">31</a>
+<a href="#l32" id="l32">32</a>
+<a href="#l33" id="l33">33</a>
+<a href="#l34" id="l34">34</a>
+<a href="#l35" id="l35">35</a>
+<a href="#l36" id="l36">36</a>
+<a href="#l37" id="l37">37</a>
+<a href="#l38" id="l38">38</a>
+<a href="#l39" id="l39">39</a>
+<a href="#l40" id="l40">40</a>
+<a href="#l41" id="l41">41</a>
+<a href="#l42" id="l42">42</a>
+<a href="#l43" id="l43">43</a>
+<a href="#l44" id="l44">44</a>
+<a href="#l45" id="l45">45</a>
+<a href="#l46" id="l46">46</a>
+<a href="#l47" id="l47">47</a>
+<a href="#l48" id="l48">48</a>
+<a href="#l49" id="l49">49</a>
+<a href="#l50" id="l50">50</a>
+<a href="#l51" id="l51">51</a>
+<a href="#l52" id="l52">52</a>
+<a href="#l53" id="l53">53</a>
+<a href="#l54" id="l54">54</a>
+<a href="#l55" id="l55">55</a>
+<a href="#l56" id="l56">56</a>
+<a href="#l57" id="l57">57</a>
+<a href="#l58" id="l58">58</a>
+<a href="#l59" id="l59">59</a>
+<a href="#l60" id="l60">60</a>
+<a href="#l61" id="l61">61</a>
+<a href="#l62" id="l62">62</a>
+<a href="#l63" id="l63">63</a>
+<a href="#l64" id="l64">64</a>
+<a href="#l65" id="l65">65</a>
+<a href="#l66" id="l66">66</a>
+<a href="#l67" id="l67">67</a>
+<a href="#l68" id="l68">68</a>
+<a href="#l69" id="l69">69</a>
+<a href="#l70" id="l70">70</a>
+<a href="#l71" id="l71">71</a>
+<a href="#l72" id="l72">72</a>
+<a href="#l73" id="l73">73</a>
+<a href="#l74" id="l74">74</a>
+<a href="#l75" id="l75">75</a>
+<a href="#l76" id="l76">76</a>
+<a href="#l77" id="l77">77</a>
+<a href="#l78" id="l78">78</a>
+<a href="#l79" id="l79">79</a>
+<a href="#l80" id="l80">80</a>
+<a href="#l81" id="l81">81</a>
+<a href="#l82" id="l82">82</a>
+<a href="#l83" id="l83">83</a>
+<a href="#l84" id="l84">84</a>
+<a href="#l85" id="l85">85</a>
+<a href="#l86" id="l86">86</a>
+<a href="#l87" id="l87">87</a>
+<a href="#l88" id="l88">88</a>
+<a href="#l89" id="l89">89</a>
+<a href="#l90" id="l90">90</a>
+<a href="#l91" id="l91">91</a>
+<a href="#l92" id="l92">92</a>
+<a href="#l93" id="l93">93</a>
+<a href="#l94" id="l94">94</a>
+<a href="#l95" id="l95">95</a>
+<a href="#l96" id="l96">96</a>
+<a href="#l97" id="l97">97</a>
+<a href="#l98" id="l98">98</a>
+<a href="#l99" id="l99">99</a>
+<a href="#l100" id="l100">100</a>
+<a href="#l101" id="l101">101</a>
+<a href="#l102" id="l102">102</a>
+<a href="#l103" id="l103">103</a>
+<a href="#l104" id="l104">104</a>
+<a href="#l105" id="l105">105</a>
+<a href="#l106" id="l106">106</a>
+<a href="#l107" id="l107">107</a>
+<a href="#l108" id="l108">108</a>
+<a href="#l109" id="l109">109</a>
+<a href="#l110" id="l110">110</a>
+<a href="#l111" id="l111">111</a>
+<a href="#l112" id="l112">112</a>
+<a href="#l113" id="l113">113</a>
+<a href="#l114" id="l114">114</a>
+<a href="#l115" id="l115">115</a>
+<a href="#l116" id="l116">116</a>
+<a href="#l117" id="l117">117</a>
+<a href="#l118" id="l118">118</a>
+<a href="#l119" id="l119">119</a>
+<a href="#l120" id="l120">120</a>
+<a href="#l121" id="l121">121</a>
+<a href="#l122" id="l122">122</a>
+<a href="#l123" id="l123">123</a>
+<a href="#l124" id="l124">124</a>
+<a href="#l125" id="l125">125</a>
+<a href="#l126" id="l126">126</a>
+<a href="#l127" id="l127">127</a>
+<a href="#l128" id="l128">128</a>
+<a href="#l129" id="l129">129</a>
+<a href="#l130" id="l130">130</a>
+<a href="#l131" id="l131">131</a>
+<a href="#l132" id="l132">132</a>
+<a href="#l133" id="l133">133</a>
+<a href="#l134" id="l134">134</a>
+<a href="#l135" id="l135">135</a>
+<a href="#l136" id="l136">136</a>
+<a href="#l137" id="l137">137</a>
+<a href="#l138" id="l138">138</a>
+<a href="#l139" id="l139">139</a>
+<a href="#l140" id="l140">140</a>
+<a href="#l141" id="l141">141</a>
+<a href="#l142" id="l142">142</a>
+<a href="#l143" id="l143">143</a>
+<a href="#l144" id="l144">144</a>
+<a href="#l145" id="l145">145</a>
+<a href="#l146" id="l146">146</a>
+<a href="#l147" id="l147">147</a>
+<a href="#l148" id="l148">148</a>
+<a href="#l149" id="l149">149</a>
+<a href="#l150" id="l150">150</a>
+<a href="#l151" id="l151">151</a>
+<a href="#l152" id="l152">152</a>
+<a href="#l153" id="l153">153</a>
+<a href="#l154" id="l154">154</a>
+<a href="#l155" id="l155">155</a>
+<a href="#l156" id="l156">156</a>
+<a href="#l157" id="l157">157</a>
+<a href="#l158" id="l158">158</a>
+<a href="#l159" id="l159">159</a>
+<a href="#l160" id="l160">160</a>
+<a href="#l161" id="l161">161</a>
+<a href="#l162" id="l162">162</a>
+<a href="#l163" id="l163">163</a>
+<a href="#l164" id="l164">164</a>
+<a href="#l165" id="l165">165</a>
+<a href="#l166" id="l166">166</a>
+<a href="#l167" id="l167">167</a>
+<a href="#l168" id="l168">168</a>
+<a href="#l169" id="l169">169</a>
+<a href="#l170" id="l170">170</a>
+<a href="#l171" id="l171">171</a>
+<a href="#l172" id="l172">172</a>
+<a href="#l173" id="l173">173</a>
+<a href="#l174" id="l174">174</a>
+<a href="#l175" id="l175">175</a>
+<a href="#l176" id="l176">176</a>
+<a href="#l177" id="l177">177</a>
+<a href="#l178" id="l178">178</a>
+<a href="#l179" id="l179">179</a>
+<a href="#l180" id="l180">180</a>
+<a href="#l181" id="l181">181</a>
+<a href="#l182" id="l182">182</a>
+<a href="#l183" id="l183">183</a>
+<a href="#l184" id="l184">184</a>
+<a href="#l185" id="l185">185</a>
+<a href="#l186" id="l186">186</a>
+<a href="#l187" id="l187">187</a>
+<a href="#l188" id="l188">188</a>
+<a href="#l189" id="l189">189</a>
+<a href="#l190" id="l190">190</a>
+<a href="#l191" id="l191">191</a>
+<a href="#l192" id="l192">192</a>
+<a href="#l193" id="l193">193</a>
+<a href="#l194" id="l194">194</a>
+<a href="#l195" id="l195">195</a>
+<a href="#l196" id="l196">196</a>
+<a href="#l197" id="l197">197</a>
+<a href="#l198" id="l198">198</a>
+<a href="#l199" id="l199">199</a>
+<a href="#l200" id="l200">200</a>
+<a href="#l201" id="l201">201</a>
+<a href="#l202" id="l202">202</a>
+<a href="#l203" id="l203">203</a>
+<a href="#l204" id="l204">204</a>
+<a href="#l205" id="l205">205</a>
+<a href="#l206" id="l206">206</a>
+<a href="#l207" id="l207">207</a>
+<a href="#l208" id="l208">208</a>
+<a href="#l209" id="l209">209</a>
+<a href="#l210" id="l210">210</a>
+<a href="#l211" id="l211">211</a>
+<a href="#l212" id="l212">212</a>
+<a href="#l213" id="l213">213</a>
+<a href="#l214" id="l214">214</a>
+<a href="#l215" id="l215">215</a>
+<a href="#l216" id="l216">216</a>
+<a href="#l217" id="l217">217</a>
+<a href="#l218" id="l218">218</a>
+<a href="#l219" id="l219">219</a>
+<a href="#l220" id="l220">220</a>
+<a href="#l221" id="l221">221</a>
+<a href="#l222" id="l222">222</a>
+<a href="#l223" id="l223">223</a>
+<a href="#l224" id="l224">224</a>
+<a href="#l225" id="l225">225</a>
+<a href="#l226" id="l226">226</a>
+<a href="#l227" id="l227">227</a>
+</pre></td><td><pre>
+#include &lt;sys/stat.h&gt;
+
+#include &lt;err.h&gt;
+#include &lt;errno.h&gt;
+#include &lt;inttypes.h&gt;
+#include &lt;limits.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;unistd.h&gt;
+
+#include &lt;git2.h&gt;
+
+#include &quot;compat.h&quot;
+
+static git_repository *repo;
+
+static const char *relpath = &quot;&quot;;
+static const char *repodir;
+
+static char description[255] = &quot;Repositories&quot;;
+static char *name = &quot;&quot;;
+static char owner[255];
+
+#ifndef USE_PLEDGE
+int
+pledge(const char *promises, const char *paths[])
+{
+        return 0;
+}
+#endif
+
+void
+joinpath(char *buf, size_t bufsiz, const char *path, const char *path2)
+{
+	int r;
+
+	r = snprintf(buf, bufsiz, &quot;%s%s%s&quot;,
+		path, path[0] &amp;&amp; path[strlen(path) - 1] != &apos;/&apos; ? &quot;/&quot; : &quot;&quot;, path2);
+	if (r == -1 || (size_t)r &gt;= bufsiz)
+		errx(1, &quot;path truncated: &apos;%s%s%s&apos;&quot;,
+			path, path[0] &amp;&amp; path[strlen(path) - 1] != &apos;/&apos; ? &quot;/&quot; : &quot;&quot;, path2);
+}
+
+/* Escape characters below as HTML 2.0 / XML 1.0. */
+void
+xmlencode(FILE *fp, const char *s, size_t len)
+{
+	size_t i;
+
+	for (i = 0; *s &amp;&amp; i &lt; len; s++, i++) {
+		switch(*s) {
+		case &apos;&lt;&apos;:  fputs(&quot;&amp;lt;&quot;,   fp); break;
+		case &apos;&gt;&apos;:  fputs(&quot;&amp;gt;&quot;,   fp); break;
+		case &apos;\&apos;&apos;: fputs(&quot;&amp;apos;&quot;, fp); break;
+		case &apos;&amp;&apos;:  fputs(&quot;&amp;amp;&quot;,  fp); break;
+		case &apos;&quot;&apos;:  fputs(&quot;&amp;quot;&quot;, fp); break;
+		default:   fputc(*s, fp);
+		}
+	}
+}
+
+void
+printtimeshort(FILE *fp, const git_time *intime)
+{
+	struct tm *intm;
+	time_t t;
+	char out[32];
+
+	t = (time_t)intime-&gt;time;
+	if (!(intm = gmtime(&amp;t)))
+		return;
+	strftime(out, sizeof(out), &quot;%Y-%m-%d %H:%M&quot;, intm);
+	fputs(out, fp);
+}
+
+void
+writeheader(FILE *fp)
+{
+	fputs(&quot;&lt;!DOCTYPE html&gt;\n&quot;
+		&quot;&lt;html dir=\&quot;ltr\&quot; lang=\&quot;en\&quot;&gt;\n&lt;head&gt;\n&quot;
+		&quot;&lt;meta http-equiv=\&quot;Content-Type\&quot; content=\&quot;text/html; charset=UTF-8\&quot; /&gt;\n&quot;
+		&quot;&lt;meta http-equiv=\&quot;Content-Language\&quot; content=\&quot;en\&quot; /&gt;\n&lt;title&gt;&quot;, fp);
+	xmlencode(fp, description, strlen(description));
+	fprintf(fp, &quot;&lt;/title&gt;\n&lt;link rel=\&quot;icon\&quot; type=\&quot;image/png\&quot; href=\&quot;%sfavicon.png\&quot; /&gt;\n&quot;, relpath);
+	fprintf(fp, &quot;&lt;link rel=\&quot;stylesheet\&quot; type=\&quot;text/css\&quot; href=\&quot;%sstyle.css\&quot; /&gt;\n&quot;, relpath);
+	fputs(&quot;&lt;/head&gt;\n&lt;body&gt;\n&quot;, fp);
+	fprintf(fp, &quot;&lt;table&gt;\n&lt;tr&gt;&lt;td&gt;&lt;img src=\&quot;%slogo.png\&quot; alt=\&quot;\&quot; width=\&quot;32\&quot; height=\&quot;32\&quot; /&gt;&lt;/td&gt;\n&quot;
+	        &quot;&lt;td&gt;&lt;h1&gt;%s&lt;/h1&gt;&lt;span class=\&quot;desc\&quot;&gt;%s&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;\n&quot;,
+		relpath, name, description);
+	fputs(&quot;&lt;/td&gt;&lt;/tr&gt;\n&lt;/table&gt;\n&lt;hr/&gt;\n&lt;div id=\&quot;content\&quot;&gt;\n&quot;
+	      &quot;&lt;table id=\&quot;index\&quot;&gt;&lt;thead&gt;\n&quot;
+	      &quot;&lt;tr&gt;&lt;td&gt;Name&lt;/td&gt;&lt;td&gt;Description&lt;/td&gt;&lt;td&gt;Owner&lt;/td&gt;&lt;td&gt;Last commit&lt;/td&gt;&lt;/tr&gt;&quot;
+	      &quot;&lt;/thead&gt;&lt;tbody&gt;\n&quot;, fp);
+}
+
+void
+writefooter(FILE *fp)
+{
+	fputs(&quot;&lt;/tbody&gt;\n&lt;/table&gt;\n&lt;/div&gt;\n&lt;/body&gt;\n&lt;/html&gt;\n&quot;, fp);
+}
+
+int
+writelog(FILE *fp)
+{
+	git_commit *commit = NULL;
+	const git_signature *author;
+	git_revwalk *w = NULL;
+	git_oid id;
+	char *stripped_name = NULL, *p;
+	int ret = 0;
+
+	git_revwalk_new(&amp;w, repo);
+	git_revwalk_push_head(w);
+	git_revwalk_sorting(w, GIT_SORT_TIME);
+	git_revwalk_simplify_first_parent(w);
+
+	if (git_revwalk_next(&amp;id, w) ||
+	    git_commit_lookup(&amp;commit, repo, &amp;id)) {
+		ret = -1;
+		goto err;
+	}
+
+	author = git_commit_author(commit);
+
+	/* strip .git suffix */
+	if (!(stripped_name = strdup(name)))
+		err(1, &quot;strdup&quot;);
+	if ((p = strrchr(stripped_name, &apos;.&apos;)))
+		if (!strcmp(p, &quot;.git&quot;))
+			*p = &apos;\0&apos;;
+
+	fputs(&quot;&lt;tr&gt;&lt;td&gt;&lt;a href=\&quot;&quot;, fp);
+	xmlencode(fp, stripped_name, strlen(stripped_name));
+	fputs(&quot;/log.html\&quot;&gt;&quot;, fp);
+	xmlencode(fp, stripped_name, strlen(stripped_name));
+	fputs(&quot;&lt;/a&gt;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+	xmlencode(fp, description, strlen(description));
+	fputs(&quot;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+	xmlencode(fp, owner, strlen(owner));
+	fputs(&quot;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+	if (author)
+		printtimeshort(fp, &amp;(author-&gt;when));
+	fputs(&quot;&lt;/td&gt;&lt;/tr&gt;&quot;, fp);
+
+	git_commit_free(commit);
+err:
+	git_revwalk_free(w);
+	free(stripped_name);
+
+	return ret;
+}
+
+int
+main(int argc, char *argv[])
+{
+	const git_error *e = NULL;
+	FILE *fp;
+	char path[PATH_MAX], repodirabs[PATH_MAX + 1];
+	int i, ret = 0;
+
+	if (pledge(&quot;stdio rpath&quot;, NULL) == -1)
+		err(1, &quot;pledge&quot;);
+
+	if (argc &lt; 2) {
+		fprintf(stderr, &quot;%s [repodir...]\n&quot;, argv[0]);
+		return 1;
+	}
+	git_libgit2_init();
+
+	writeheader(stdout);
+
+	for (i = 1; i &lt; argc; i++) {
+		repodir = argv[i];
+		if (!realpath(repodir, repodirabs))
+			err(1, &quot;realpath&quot;);
+
+		if (git_repository_open_ext(&amp;repo, repodir,
+		    GIT_REPOSITORY_OPEN_NO_SEARCH, NULL)) {
+			e = giterr_last();
+			fprintf(stderr, &quot;%s: %s\n&quot;, argv[0], e-&gt;message);
+			ret = 1;
+			continue;
+		}
+
+		/* use directory name as name */
+		if ((name = strrchr(repodirabs, &apos;/&apos;)))
+			name++;
+		else
+			name = &quot;&quot;;
+
+		/* read description or .git/description */
+		joinpath(path, sizeof(path), repodir, &quot;description&quot;);
+		if (!(fp = fopen(path, &quot;r&quot;))) {
+			joinpath(path, sizeof(path), repodir, &quot;.git/description&quot;);
+			fp = fopen(path, &quot;r&quot;);
+		}
+		description[0] = &apos;\0&apos;;
+		if (fp) {
+			if (!fgets(description, sizeof(description), fp))
+				description[0] = &apos;\0&apos;;
+			fclose(fp);
+		}
+
+		/* read owner or .git/owner */
+		joinpath(path, sizeof(path), repodir, &quot;owner&quot;);
+		if (!(fp = fopen(path, &quot;r&quot;))) {
+			joinpath(path, sizeof(path), repodir, &quot;.git/owner&quot;);
+			fp = fopen(path, &quot;r&quot;);
+		}
+		owner[0] = &apos;\0&apos;;
+		if (fp) {
+			if (!fgets(owner, sizeof(owner), fp))
+				owner[0] = &apos;\0&apos;;
+			owner[strcspn(owner, &quot;\n&quot;)] = &apos;\0&apos;;
+			fclose(fp);
+		}
+		writelog(stdout);
+	}
+	writefooter(stdout);
+
+	/* cleanup */
+	git_repository_free(repo);
+	git_libgit2_shutdown();
+
+	return ret;
+}
+</pre></td></tr></table>
+</div>
+</body>
+</html>

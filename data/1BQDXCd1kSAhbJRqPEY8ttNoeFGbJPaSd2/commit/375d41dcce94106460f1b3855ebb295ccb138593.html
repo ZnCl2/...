@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>tweak style of showing submodules - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/375d41dcce94106460f1b3855ebb295ccb138593.html">375d41dcce94106460f1b3855ebb295ccb138593</a>
+<b>parent</b> <a href="../commit/571076b419daec91efb5e5d39dd17066e43805bc.html">571076b419daec91efb5e5d39dd17066e43805bc</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Fri Apr 29 12:32:36 +0200
+
+tweak style of showing submodules
+
+this will make it look similar to cgit. show mode as &quot;m---------&quot;
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">stagit.c</a></td><td> | </td><td class="num">10</td><td><span class="i">++++++</span><span class="d">----</span></td></tr>
+</table>1 file changed, 6 insertions(+), 4 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/stagit.c.html">stagit.c</a> b/<a href="../file/stagit.c.html">stagit.c</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -654,7 +654,7 @@ writefilestree(FILE *fp, git_tree *tree, const char *branch, const char *path)
+</a> {
+ 	const git_tree_entry *entry = NULL;
+ 	git_submodule *module = NULL;
+<a href="#h0-0-3" id="h0-0-3" class="d">-	const char *entryname;
+</a><a href="#h0-0-4" id="h0-0-4" class="i">+	const char *entryname, *moduleurl;
+</a> 	char filepath[PATH_MAX], entrypath[PATH_MAX];
+ 	git_object *obj = NULL;
+ 	git_off_t filesize;
+<a href="#h0-1" id="h0-1" class="h">@@ -709,10 +709,12 @@ writefilestree(FILE *fp, git_tree *tree, const char *branch, const char *path)
+</a> 				fprintf(fp, &quot;%juB&quot;, (uintmax_t)filesize);
+ 			fputs(&quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;, fp);
+ 		} else if (git_submodule_lookup(&amp;module, repo, entryname) == 0) {
+<a href="#h0-1-3" id="h0-1-3" class="d">-
+</a><a href="#h0-1-4" id="h0-1-4" class="d">-			fprintf(fp, &quot;&lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;a class=\&quot;module\&quot; href=\&quot;%s\&quot;&gt;@&quot;,
+</a><a href="#h0-1-5" id="h0-1-5" class="d">-				git_submodule_url(module));
+</a><a href="#h0-1-6" id="h0-1-6" class="i">+			moduleurl = git_submodule_url(module);
+</a><a href="#h0-1-7" id="h0-1-7" class="i">+			fprintf(fp, &quot;&lt;tr&gt;&lt;td&gt;m---------&lt;/td&gt;&lt;td&gt;&lt;a class=\&quot;module\&quot; href=\&quot;%s\&quot;&gt;&quot;,
+</a><a href="#h0-1-8" id="h0-1-8" class="i">+				moduleurl);
+</a> 			xmlencode(fp, entrypath, strlen(entrypath));
+<a href="#h0-1-10" id="h0-1-10" class="i">+			fputs(&quot; @&quot;, fp);
+</a><a href="#h0-1-11" id="h0-1-11" class="i">+			xmlencode(fp, moduleurl, strlen(moduleurl));
+</a> 			fprintf(fp, &quot;&lt;/a&gt;&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;0%c&quot;,
+ 				showlinecount ? &apos;L&apos; : &apos;B&apos;);
+ 			git_submodule_free(module);
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,96 @@
+{
+	"db_name": "zeropub",
+	"db_file": "data/zeropub.db",
+	"version": 2,
+	"maps": {
+		"books_.*.json": {
+			"to_table": [{
+				"node": "books",
+				"table": "books",
+				"key_col": "id"
+			}]
+		},
+		"authors.json": {
+			"to_table": [{
+				"node": "authors",
+				"table": "authors",
+				"key_col": "id"
+			}]
+		},
+        "descriptions/descriptions_.*.json":{
+          "to_table": [{
+            "node": "books",
+            "table": "descriptions",
+            "key_col": "id"
+          }]
+        },
+        "users/.+/content.json": {
+            "to_json_table": [ "cert_auth_type", "cert_user_id", "modified" ]
+            ,"file_name": "data.json"
+        },
+        "users/.+/data.json": {
+          "to_table": [ "likes" ], "to_keyvalue": ["created", "updated"]
+        }
+	},
+	"tables": {
+      "likes":{
+        "cols":[
+          ["id","INTEGER"],
+          ["type","TEXT"],
+          ["d","DATETIME"],
+          ["json_id", "INTEGER REFERENCES json (json_id)"]
+        ],
+        "indexes":[],
+        "schema_changed":4
+      },
+      "json": {
+        "cols": [
+            ["json_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+            ["directory", "TEXT"],
+            ["file_name", "TEXT"],
+            ["cert_auth_type", "TEXT"],
+            ["cert_user_id", "TEXT"],
+            ["modified","INTEGER"]
+        ],
+        "indexes": ["CREATE UNIQUE INDEX path ON json(directory, file_name)"],
+        "schema_changed": 6
+      },
+
+		"books": {
+			"cols": [
+				["id", "INTEGER"],
+				["title", "TEXT"],
+				["language", "TEXT"],
+				["pic", "TEXT"],
+				["year", "INTEGER"],
+				["updated", "INTEGER"],
+				["magnet", "TEXT"],
+				["authors", "TEXT"],
+				["img_shard", "INTEGER"],
+                                ["img_delta", "INTEGER"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX books_key ON books(id, json_id)", "CREATE INDEX books_title ON books(title)"],
+			"schema_changed": 6
+		},
+		"descriptions": {
+			"cols": [
+				["id", "INTEGER"],
+				["description", "TEXT"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX descriptions_key ON descriptions(id, json_id)"],
+			"schema_changed": 1
+		},
+		"authors": {
+			"cols": [
+				["id", "INTEGER"],
+				["name", "TEXT"],
+				["pic", "TEXT"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX authors_key ON authors(id, json_id)"],
+			"schema_changed": 1
+		}
+	}
+}

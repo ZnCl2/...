@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>fix path join &apos;/&apos; - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/fc60d78d8917fb930227ecc53936c9216e6298c2.html">fc60d78d8917fb930227ecc53936c9216e6298c2</a>
+<b>parent</b> <a href="../commit/c13c4119501291e5c276d4d1217491b16a2a7ff9.html">c13c4119501291e5c276d4d1217491b16a2a7ff9</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Sun May  1 14:38:57 +0200
+
+fix path join &apos;/&apos;
+
+add joinpath() function to handle this.
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">stagit-index.c</a></td><td> | </td><td class="num">42</td><td><span class="i">+++++++++++++++++++</span><span class="d">-----------------------</span></td></tr>
+<tr><td><a href="#h1">stagit.c</a></td><td> | </td><td class="num">39</td><td><span class="i">++++++++++++++++++</span><span class="d">---------------------</span></td></tr>
+</table>2 files changed, 37 insertions(+), 44 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/stagit-index.c.html">stagit-index.c</a> b/<a href="../file/stagit-index.c.html">stagit-index.c</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -140,13 +140,25 @@ err:
+</a> 	return ret;
+ }
+ 
+<a href="#h0-0-3" id="h0-0-3" class="i">+void
+</a><a href="#h0-0-4" id="h0-0-4" class="i">+joinpath(char *buf, size_t bufsiz, const char *path, const char *path2)
+</a><a href="#h0-0-5" id="h0-0-5" class="i">+{
+</a><a href="#h0-0-6" id="h0-0-6" class="i">+	int r;
+</a><a href="#h0-0-7" id="h0-0-7" class="i">+
+</a><a href="#h0-0-8" id="h0-0-8" class="i">+	r = snprintf(buf, bufsiz, &quot;%s%s%s&quot;,
+</a><a href="#h0-0-9" id="h0-0-9" class="i">+		repodir, path[0] &amp;&amp; path[strlen(path) - 1] != &apos;/&apos; ? &quot;/&quot; : &quot;&quot;, path2);
+</a><a href="#h0-0-10" id="h0-0-10" class="i">+	if (r == -1 || (size_t)r &gt;= bufsiz)
+</a><a href="#h0-0-11" id="h0-0-11" class="i">+		errx(1, &quot;path truncated: &apos;%s%s%s&apos;&quot;,
+</a><a href="#h0-0-12" id="h0-0-12" class="i">+			path, path[0] &amp;&amp; path[strlen(path) - 1] != &apos;/&apos; ? &quot;/&quot; : &quot;&quot;, path2);
+</a><a href="#h0-0-13" id="h0-0-13" class="i">+}
+</a><a href="#h0-0-14" id="h0-0-14" class="i">+
+</a> int
+ main(int argc, char *argv[])
+ {
+ 	const git_error *e = NULL;
+ 	FILE *fp;
+ 	char path[PATH_MAX], repodirabs[PATH_MAX + 1];
+<a href="#h0-0-21" id="h0-0-21" class="d">-	int i, r, ret = 0;
+</a><a href="#h0-0-22" id="h0-0-22" class="i">+	int i, ret = 0;
+</a> 
+ 	if (argc &lt; 2) {
+ 		fprintf(stderr, &quot;%s [repodir...]\n&quot;, argv[0]);
+<a href="#h0-1" id="h0-1" class="h">@@ -176,20 +188,12 @@ main(int argc, char *argv[])
+</a> 			name = &quot;&quot;;
+ 
+ 		/* read description or .git/description */
+<a href="#h0-1-3" id="h0-1-3" class="d">-		description[0] = &apos;\0&apos;;
+</a><a href="#h0-1-4" id="h0-1-4" class="d">-		r = snprintf(path, sizeof(path), &quot;%s%s%s&quot;,
+</a><a href="#h0-1-5" id="h0-1-5" class="d">-			repodir, repodir[strlen(repodir)] == &apos;/&apos; ? &quot;&quot; : &quot;/&quot;, &quot;description&quot;);
+</a><a href="#h0-1-6" id="h0-1-6" class="d">-		if (r == -1 || (size_t)r &gt;= sizeof(path))
+</a><a href="#h0-1-7" id="h0-1-7" class="d">-			errx(1, &quot;path truncated: &apos;%s%s%s&apos;&quot;,
+</a><a href="#h0-1-8" id="h0-1-8" class="d">-			        repodir, repodir[strlen(repodir)] == &apos;/&apos; ? &quot;&quot; : &quot;/&quot;, &quot;description&quot;);
+</a><a href="#h0-1-9" id="h0-1-9" class="i">+		joinpath(path, sizeof(path), repodir, &quot;description&quot;);
+</a> 		if (!(fp = fopen(path, &quot;r&quot;))) {
+<a href="#h0-1-11" id="h0-1-11" class="d">-			r = snprintf(path, sizeof(path), &quot;%s%s%s&quot;,
+</a><a href="#h0-1-12" id="h0-1-12" class="d">-				repodir, repodir[strlen(repodir)] == &apos;/&apos; ? &quot;&quot; : &quot;/&quot;, &quot;.git/description&quot;);
+</a><a href="#h0-1-13" id="h0-1-13" class="d">-			if (r == -1 || (size_t)r &gt;= sizeof(path))
+</a><a href="#h0-1-14" id="h0-1-14" class="d">-				errx(1, &quot;path truncated: &apos;%s%s%s&apos;&quot;,
+</a><a href="#h0-1-15" id="h0-1-15" class="d">-				        repodir, repodir[strlen(repodir)] == &apos;/&apos; ? &quot;&quot; : &quot;/&quot;, &quot;.git/description&quot;);
+</a><a href="#h0-1-16" id="h0-1-16" class="i">+			joinpath(path, sizeof(path), repodir, &quot;.git/description&quot;);
+</a> 			fp = fopen(path, &quot;r&quot;);
+ 		}
+<a href="#h0-1-19" id="h0-1-19" class="i">+		description[0] = &apos;\0&apos;;
+</a> 		if (fp) {
+ 			if (!fgets(description, sizeof(description), fp))
+ 				description[0] = &apos;\0&apos;;
+<a href="#h0-2" id="h0-2" class="h">@@ -197,20 +201,12 @@ main(int argc, char *argv[])
+</a> 		}
+ 
+ 		/* read owner or .git/owner */
+<a href="#h0-2-3" id="h0-2-3" class="d">-		owner[0] = &apos;\0&apos;;
+</a><a href="#h0-2-4" id="h0-2-4" class="d">-		r = snprintf(path, sizeof(path), &quot;%s%s%s&quot;,
+</a><a href="#h0-2-5" id="h0-2-5" class="d">-			repodir, repodir[strlen(repodir)] == &apos;/&apos; ? &quot;&quot; : &quot;/&quot;, &quot;owner&quot;);
+</a><a href="#h0-2-6" id="h0-2-6" class="d">-		if (r == -1 || (size_t)r &gt;= sizeof(path))
+</a><a href="#h0-2-7" id="h0-2-7" class="d">-			errx(1, &quot;path truncated: &apos;%s%s%s&apos;&quot;,
+</a><a href="#h0-2-8" id="h0-2-8" class="d">-			        repodir, repodir[strlen(repodir)] == &apos;/&apos; ? &quot;&quot; : &quot;/&quot;, &quot;owner&quot;);
+</a><a href="#h0-2-9" id="h0-2-9" class="i">+		joinpath(path, sizeof(path), repodir, &quot;owner&quot;);
+</a> 		if (!(fp = fopen(path, &quot;r&quot;))) {
+<a href="#h0-2-11" id="h0-2-11" class="d">-			r = snprintf(path, sizeof(path), &quot;%s%s%s&quot;,
+</a><a href="#h0-2-12" id="h0-2-12" class="d">-				repodir, repodir[strlen(repodir)] == &apos;/&apos; ? &quot;&quot; : &quot;/&quot;, &quot;.git/owner&quot;);
+</a><a href="#h0-2-13" id="h0-2-13" class="d">-			if (r == -1 || (size_t)r &gt;= sizeof(path))
+</a><a href="#h0-2-14" id="h0-2-14" class="d">-				errx(1, &quot;path truncated: &apos;%s%s%s&apos;&quot;,
+</a><a href="#h0-2-15" id="h0-2-15" class="d">-				        repodir, repodir[strlen(repodir)] == &apos;/&apos; ? &quot;&quot; : &quot;/&quot;, &quot;.git/owner&quot;);
+</a><a href="#h0-2-16" id="h0-2-16" class="i">+			joinpath(path, sizeof(path), repodir, &quot;.git/owner&quot;);
+</a> 			fp = fopen(path, &quot;r&quot;);
+ 		}
+<a href="#h0-2-19" id="h0-2-19" class="i">+		owner[0] = &apos;\0&apos;;
+</a> 		if (fp) {
+ 			if (!fgets(owner, sizeof(owner), fp))
+ 				owner[0] = &apos;\0&apos;;
+<b>diff --git a/<a id="h1" href="../file/stagit.c.html">stagit.c</a> b/<a href="../file/stagit.c.html">stagit.c</a></b>
+<a href="#h1-0" id="h1-0" class="h">@@ -970,6 +970,18 @@ err:
+</a> 	return 0;
+ }
+ 
+<a href="#h1-0-3" id="h1-0-3" class="i">+void
+</a><a href="#h1-0-4" id="h1-0-4" class="i">+joinpath(char *buf, size_t bufsiz, const char *path, const char *path2)
+</a><a href="#h1-0-5" id="h1-0-5" class="i">+{
+</a><a href="#h1-0-6" id="h1-0-6" class="i">+	int r;
+</a><a href="#h1-0-7" id="h1-0-7" class="i">+
+</a><a href="#h1-0-8" id="h1-0-8" class="i">+	r = snprintf(buf, bufsiz, &quot;%s%s%s&quot;,
+</a><a href="#h1-0-9" id="h1-0-9" class="i">+		repodir, path[0] &amp;&amp; path[strlen(path) - 1] != &apos;/&apos; ? &quot;/&quot; : &quot;&quot;, path2);
+</a><a href="#h1-0-10" id="h1-0-10" class="i">+	if (r == -1 || (size_t)r &gt;= bufsiz)
+</a><a href="#h1-0-11" id="h1-0-11" class="i">+		errx(1, &quot;path truncated: &apos;%s%s%s&apos;&quot;,
+</a><a href="#h1-0-12" id="h1-0-12" class="i">+			path, path[0] &amp;&amp; path[strlen(path) - 1] != &apos;/&apos; ? &quot;/&quot; : &quot;&quot;, path2);
+</a><a href="#h1-0-13" id="h1-0-13" class="i">+}
+</a><a href="#h1-0-14" id="h1-0-14" class="i">+
+</a> int
+ main(int argc, char *argv[])
+ {
+<a href="#h1-1" id="h1-1" class="h">@@ -978,13 +990,14 @@ main(int argc, char *argv[])
+</a> 	const git_error *e = NULL;
+ 	FILE *fp, *fpread;
+ 	char path[PATH_MAX], repodirabs[PATH_MAX + 1], *p;
+<a href="#h1-1-3" id="h1-1-3" class="d">-	int r, status;
+</a><a href="#h1-1-4" id="h1-1-4" class="i">+	int status;
+</a> 
+ 	if (argc != 2) {
+ 		fprintf(stderr, &quot;%s &lt;repodir&gt;\n&quot;, argv[0]);
+ 		return 1;
+ 	}
+ 	repodir = argv[1];
+<a href="#h1-1-11" id="h1-1-11" class="i">+
+</a> 	if (!realpath(repodir, repodirabs))
+ 		err(1, &quot;realpath&quot;);
+ 
+<a href="#h1-2" id="h1-2" class="h">@@ -1017,17 +1030,9 @@ main(int argc, char *argv[])
+</a> 			*p = &apos;\0&apos;;
+ 
+ 	/* read description or .git/description */
+<a href="#h1-2-3" id="h1-2-3" class="d">-	r = snprintf(path, sizeof(path), &quot;%s%s%s&quot;,
+</a><a href="#h1-2-4" id="h1-2-4" class="d">-		repodir, repodir[strlen(repodir)] == &apos;/&apos; ? &quot;&quot; : &quot;/&quot;, &quot;description&quot;);
+</a><a href="#h1-2-5" id="h1-2-5" class="d">-	if (r == -1 || (size_t)r &gt;= sizeof(path))
+</a><a href="#h1-2-6" id="h1-2-6" class="d">-		errx(1, &quot;path truncated: &apos;%s%s%s&apos;&quot;,
+</a><a href="#h1-2-7" id="h1-2-7" class="d">-	                repodir, repodir[strlen(repodir)] == &apos;/&apos; ? &quot;&quot; : &quot;/&quot;, &quot;description&quot;);
+</a><a href="#h1-2-8" id="h1-2-8" class="i">+	joinpath(path, sizeof(path), repodir, &quot;description&quot;);
+</a> 	if (!(fpread = fopen(path, &quot;r&quot;))) {
+<a href="#h1-2-10" id="h1-2-10" class="d">-		r = snprintf(path, sizeof(path), &quot;%s%s%s&quot;,
+</a><a href="#h1-2-11" id="h1-2-11" class="d">-			repodir, repodir[strlen(repodir)] == &apos;/&apos; ? &quot;&quot; : &quot;/&quot;, &quot;.git/description&quot;);
+</a><a href="#h1-2-12" id="h1-2-12" class="d">-		if (r == -1 || (size_t)r &gt;= sizeof(path))
+</a><a href="#h1-2-13" id="h1-2-13" class="d">-			errx(1, &quot;path truncated: &apos;%s%s%s&apos;&quot;,
+</a><a href="#h1-2-14" id="h1-2-14" class="d">-		                repodir, repodir[strlen(repodir)] == &apos;/&apos; ? &quot;&quot; : &quot;/&quot;, &quot;.git/description&quot;);
+</a><a href="#h1-2-15" id="h1-2-15" class="i">+		joinpath(path, sizeof(path), repodir, &quot;.git/description&quot;);
+</a> 		fpread = fopen(path, &quot;r&quot;);
+ 	}
+ 	if (fpread) {
+<a href="#h1-3" id="h1-3" class="h">@@ -1037,17 +1042,9 @@ main(int argc, char *argv[])
+</a> 	}
+ 
+ 	/* read url or .git/url */
+<a href="#h1-3-3" id="h1-3-3" class="d">-	r = snprintf(path, sizeof(path), &quot;%s%s%s&quot;,
+</a><a href="#h1-3-4" id="h1-3-4" class="d">-		repodir, repodir[strlen(repodir)] == &apos;/&apos; ? &quot;&quot; : &quot;/&quot;, &quot;url&quot;);
+</a><a href="#h1-3-5" id="h1-3-5" class="d">-	if (r == -1 || (size_t)r &gt;= sizeof(path))
+</a><a href="#h1-3-6" id="h1-3-6" class="d">-		errx(1, &quot;path truncated: &apos;%s%s%s&apos;&quot;,
+</a><a href="#h1-3-7" id="h1-3-7" class="d">-		        repodir, repodir[strlen(repodir)] == &apos;/&apos; ? &quot;&quot; : &quot;/&quot;, &quot;url&quot;);
+</a><a href="#h1-3-8" id="h1-3-8" class="i">+	joinpath(path, sizeof(path), repodir, &quot;url&quot;);
+</a> 	if (!(fpread = fopen(path, &quot;r&quot;))) {
+<a href="#h1-3-10" id="h1-3-10" class="d">-		r = snprintf(path, sizeof(path), &quot;%s%s%s&quot;,
+</a><a href="#h1-3-11" id="h1-3-11" class="d">-			repodir, repodir[strlen(repodir)] == &apos;/&apos; ? &quot;&quot; : &quot;/&quot;, &quot;.git/url&quot;);
+</a><a href="#h1-3-12" id="h1-3-12" class="d">-		if (r == -1 || (size_t)r &gt;= sizeof(path))
+</a><a href="#h1-3-13" id="h1-3-13" class="d">-			errx(1, &quot;path truncated: &apos;%s%s%s&apos;&quot;,
+</a><a href="#h1-3-14" id="h1-3-14" class="d">-			        repodir, repodir[strlen(repodir)] == &apos;/&apos; ? &quot;&quot; : &quot;/&quot;, &quot;.git/url&quot;);
+</a><a href="#h1-3-15" id="h1-3-15" class="i">+		joinpath(path, sizeof(path), repodir, &quot;.git/url&quot;);
+</a> 		fpread = fopen(path, &quot;r&quot;);
+ 	}
+ 	if (fpread) {
+</pre>
+</div>
+</body>
+</html>

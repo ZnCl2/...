@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+	<title>New ZeroNet site!</title>
+	<meta charset="utf-8">
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<base href="" target="_top" id="base">
+	<script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+</head>
+<body>
+	<button onclick="selectUser()">Log In</button>
+	<div id="out"></div>
+
+	<hr>
+	<input id="title" type="text" placeholder="Title"><br>
+	<select id="type" onchange="typeOnChange(this)">
+		<option value="zite">Zite</option>
+		<option value="article">Article</option>
+		<!--<option value="profile">Profile</option>-->
+	</select><br>
+	<input id="url" type="text" placeholder="Url"><br>
+	<input id="zitename" type="text" placeholder="Zite Name"><br>
+	<input id="locale" type="text" placeholder="Locale (ex: en_US)"><br>
+	<textarea id="description" placeholder="Description"></textarea><br>
+	<div id="ziteDiv" style="display: none;">
+		<input id="ziteCreator" type="text" placeholder="Creator"><br>
+	</div>
+	<div id="articleDiv" style="display: none;">
+		<input id="articleAuthor" type="text" placeholder="Author"><br>
+	</div>
+	<button onclick="addObject()">Add Object</button>
+	<div id="objecturl"></div>
+
+	<hr>
+
+	<input id="sharelink" type="text" placeholder="ZeroGraph Share Link (ex: zerograph://auth_address/date)" style="min-width: 450px;"><br>
+	<button onclick="getObject()">Get Object</button>
+	<div id="object" style="margin-top: 5px; margin-bottom: 5px;"></div>
+
+	<hr>
+
+	<script type="text/javascript" src="js/ZeroFrame.js"></script>
+	<script type="text/javascript" src="js/ZeroGraph.js"></script>
+	<script>
+		var ziteDiv = document.getElementById("ziteDiv");
+		var articleDiv = document.getElementById("articleDiv");
+		var objectUrlDiv = document.getElementById("objecturl");
+
+		class Page extends ZeroFrame {
+			setSiteInfo(site_info) {
+				//var out = document.getElementById("out")
+				/*out.innerHTML =
+					"Page address: " + site_info.address +
+					"<br>- Peers: " + site_info.peers +
+					"<br>- Size: " + site_info.settings.size +
+					"<br>- Modified: " + (new Date(site_info.content.modified*1000))*/
+			}
+
+			onOpenWebsocket() {
+				var that = this;
+				this.cmd("siteInfo", [], function(site_info) {
+					page.setSiteInfo(site_info);
+					that.site_info = site_info;
+					if (that.site_info.cert_user_id) {
+						document.getElementById('out').innerHTML = that.site_info.cert_user_id;
+					}
+
+					//that.cmd("mergerSiteAdd", ["1Q5gKHs3v6GBJRisQCJVCqXeoyii31mqCs"]);
+					/*that.cmd("mergerSiteList", [false], (merger_sites) => {
+						console.log(merger_sites);
+						if (merger_sites["1Q5gKHs3v6GBJRisQCJVCqXeoyii31mqCs"]) {
+							console.log("ZeroGraph already downloaded.");
+							return;
+						}
+						that.cmd("mergerSiteAdd", ["1Q5gKHs3v6GBJRisQCJVCqXeoyii31mqCs"], cb);
+					});
+					requestPermission("Merger:ZeroGraph", () => {
+						that.mergerAllowed = true;
+						var e = document.getElementById('type');
+						if (e.value == "zite") {
+							ziteDiv.style.display = "block";
+						} else if (e.value == "article") {
+							articleDiv.style.display = "block";
+						}
+					});*/
+
+					ZeroGraph.addMerger(() => {
+					    ZeroGraph.requestPermission(site_info, () => {
+					    	ZeroGraph.getAllObjects((objects) => {
+					    		console.log(objects);
+					    	});
+					    });
+					});
+				});
+			}
+
+			selectUser(f = null) {
+				this.cmd("certSelect", {accepted_domains: ["zeroid.bit", "kaffie.bit", "cryptoid.bit"]}, () => {
+				    if (f != null && typeof f == 'function') f();
+				});
+				return false;
+			}
+
+			onRequest(cmd, message) {
+				if (cmd == "setSiteInfo") {
+					this.setSiteInfo(message.params)
+					this.site_info = message.params;
+					if (this.site_info.cert_user_id) {
+						document.getElementById('out').innerHTML = this.site_info.cert_user_id;
+					}
+				} else
+					this.log("Unknown incoming message:", cmd)
+			}
+
+			getObjects() {
+
+			}
+		}
+		page = new Page();
+		var ZeroGraph = ZeroGraph(page, "info");
+
+
+		function requestPermission(permission, callback) {
+		    page.cmd("siteInfo", [], function(siteInfo) {
+		        // Already have permission
+		        console.log(siteInfo.settings.permissions);
+		        if(siteInfo.settings.permissions.indexOf(permission) > -1) {
+		        	console.log("Already given permission!");
+		            callback();
+		            return;
+		        }
+		        
+		        page.cmd("wrapperPermissionAdd", [permission], callback);
+		    });
+		}
+
+		function typeOnChange(e) {
+			ziteDiv.style.display = "none";
+			articleDiv.style.display = "none";
+
+			if (e.value == "zite") {
+				ziteDiv.style.display = "block";
+			} else if (e.value == "article") {
+				articleDiv.style.display = "block";
+			}
+		}
+
+		function addObject() {
+			if (!page.site_info.cert_user_id) {
+				page.cmd("wrapperNotification", ["error", "Must be logged in to add to ZeroGraph."]);
+				return;
+			}
+			var type = document.getElementById('type').value;
+			var title = document.getElementById('title').value;
+			var url = document.getElementById('url').value;
+			var zitename = document.getElementById('zitename').value;
+			var description = document.getElementById('description').value;
+			var locale = document.getElementById('locale').value;
+
+			var type_object = null;
+
+			var ziteCreator = "";
+			var articleAuthor = "";
+			if (type == "zite") {
+				ziteCreator = document.getElementById('ziteCreator').value;
+			} else if (type == "article") {
+				articleAuthor = document.getElementById('articleAuthor').value;
+			}
+			
+			if (type == "" || title == "" || url == "" || zitename == "" || locale == "") {
+				console.log("Error. Required fields not entered!");
+				return;
+			}
+			if (ziteCreator == "" && articleAuthor == "") {
+				console.log("Error. Required type-specific fields not entered!");
+				return;
+			}
+
+			if (type == "zite") {
+				type_object = ZeroGraph.createZiteTypeObject(ziteCreator);
+			} else if (type == "article") {
+				type_object = ZeroGraph.createArticleTypeObject(articleAuthor);
+			}
+
+			//page.postObject(title, json_type, url, zitename, description, locale);
+			ZeroGraph.postObject(page.site_info.cert_user_id, page.site_info.auth_address, title, type_object, url, zitename, description, locale, (object_share_link) => {
+				console.log("ZeroGraph Share Link: " + object_share_link);
+				objectUrlDiv.innerHTML = "ZeroGraph Share Link: " + object_share_link;
+			}); // TODO: json_type_object
+		}
+
+		function selectUser() {
+			return page.selectUser();
+		}
+
+		function getObject() {
+			var object_share_link = document.getElementById('sharelink').value;
+			var objectDiv = document.getElementById('object');
+
+			ZeroGraph.getObject(object_share_link, (object) => {
+				objectDiv.innerHTML = `
+					<p><strong>${object.zite_name}: <a href="/${object.url}">${object.title}</a></strong></p>
+					<p>${object.type}: <em>${object.url}</em><br>
+						${object.description}
+					</p>
+					`;
+			});
+		}
+	</script>
+
+</body>
+</html>

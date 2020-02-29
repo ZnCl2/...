@@ -1,0 +1,39 @@
+<link rel="stylesheet" type="text/css" href="inc/template/column-header/index.css">
+
+<div class="column column-{{size}}" id="column-{{page}}-{{section}}-header">
+	<div class="column-content">
+		<if condition="Object.keys(Pages.pages[page].sections[section].partitions).length">
+			<then>
+				<div class="column-header" id="column_{{page}}_{{section}}_header_content">
+					<div class="column-header-section" id="column_{{page}}_{{section}}_header_section">
+						{{Pages.pages[page].sections[section].header}}
+					</div>
+
+					<div id="column-{{section}}-dropdown" class="column-header-dropdown">
+						<div value="show_">all</div>
+						<for each="Pages.pages[page].sections[section].partitions" as="partition">
+							<div value="show_{{partition.key}}">{{partition.value.header}}</div>
+						</for>
+
+						<if condition="_isAdmin">
+							<then>
+								<for each="Pages.pages[page].sections[section].partitions" as="partition">
+									<div value="add_{{partition.key}}" class="dropdown-link">Add {{partition.value.singular}}</div>
+								</for>
+							</then>
+						</if>
+					</div>
+				</div>
+			</then>
+			<else>
+				<a class="column-header" id="column_{{page}}_{{section}}_header_content" href="?/{{page}}/add/{{section}}">
+					<div class="column-header-section">
+						Add {{Pages.pages[page].sections[section].singular}}
+					</div>
+				</a>
+			</else>
+		</if>
+	</div>
+</div>
+
+<script type="text/javascript" src="inc/template/column-header/index.js"></script>

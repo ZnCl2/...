@@ -1,0 +1,137 @@
+<html>
+<head>
+ <title>ZeroSites Search</title>
+ <meta charset="utf-8">
+ <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+ <base href="" target="_top" id="base">
+ <script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+ <script src="sql.js"></script>
+ <script src="jquery-3.1.0.min.js"></script>
+<script type="text/javascript" src="js/ZeroFrame.js"></script>
+<script src="base64-binary.js"></script>
+</head>
+<body>
+
+<a href="index.html">File</a>
+ <a href="video.html">Video</a>
+ <a href="music.html">Music</a>
+ Site
+ <a href="talk.html">Talk</a>
+<br>
+
+<span id="count">0</span> sites and counting<br>
+<input type = "search" class = "searchbox" name = "search_input" id = "sr" placeholder = "Search..." required x-webkit-speech results = "10" autosave = "search_input" title = "Search Zeronet" role = "search" autofocus autocomplete = "true" tab-index = "1"/></input>
+<button onclick="search()">Search</button>
+<div id="out"></div>
+
+<script>
+
+class Page extends ZeroFrame
+{
+  onRequest(cmd, message) {
+    if (cmd == "setSiteInfo")
+      this.siteinfo = message.params;
+    else
+      this.log("Unknown incoming message:", cmd)
+  }
+}
+var db = null
+var searchterm = "hellozeronet";
+var page = new Page();
+var count = 0;
+//1uPLoaDwKzP6MCGoVzw48r4pxawRBdmQc - zeroupload
+//18Pfr2oswXvD352BbJvo59gZ3GbdbipSzh - kopykate big
+//1MQveQ3RPpimXX2wjW2geAGkNJ1GdXkvJ3 - zerolstn
+page.cmd("siteInfo", [], (function(page) {
+  return function(site_info) {
+            page.siteinfo = site_info
+            console.log(page)
+            if(page.siteinfo.settings.permissions.indexOf("Cors:1SiTEs2D3rCBxeMoLHXei2UYqFcxctdwB") < 0)
+            {
+              page.cmd("corsPermission", "1SiTEs2D3rCBxeMoLHXei2UYqFcxctdwB", function()
+                {
+                   page.cmd("fileGet",
+                   {
+                      "inner_path": 'cors-1SiTEs2D3rCBxeMoLHXei2UYqFcxctdwB/data/users/zerosites.db',
+                      "format": 'base64'
+                    }, function(data) {
+                    var uInt8Array = new Uint8Array(Base64Binary.decodeArrayBuffer(data));
+                    db = new SQL.Database(uInt8Array);
+                    //fetchfromdb(searchterm)
+                    var cnt = db.exec('SELECT count(*) FROM site');
+                    count = cnt[0].values[0][0];
+                    document.getElementById("count").innerHTML = count
+                    });
+                });
+            }else
+            {
+              page.cmd("fileGet",
+                 {
+                    "inner_path": 'cors-1SiTEs2D3rCBxeMoLHXei2UYqFcxctdwB/data/users/zerosites.db',
+                    "format": 'base64'
+                  }, function(data) {
+                  var uInt8Array = new Uint8Array(Base64Binary.decodeArrayBuffer(data));
+                  db = new SQL.Database(uInt8Array);
+                  //fetchfromdb(searchterm)
+                    var cnt = db.exec('SELECT count(*) FROM site');
+                    count = cnt[0].values[0][0];
+                    document.getElementById("count").innerHTML = count
+                  });
+            }
+        }
+})(page));
+
+function fetchfromdb(query)
+{
+	limit = 400;
+	if(db == null)
+	{
+		searchterm = query;
+		return;
+	}
+
+	document.getElementById('out').innerHTML = "Query: "+query+"<br>";
+
+	query = query.toLowerCase()
+
+	//query = query.replace(/\./g, '')
+	//var users = db.exec('SELECT json_id, directory, cert_user_id FROM json');
+	//ZeroUP query
+	var files = db.exec(
+    'SELECT title, address, date_added, description FROM site WHERE title LIKE \'%'+query+'%\' OR address LIKE \'%'+query+'%\' OR description LIKE \'%'+query+'%\' ORDER BY date_added desc');
+
+
+	//console.log(files[0].values)
+
+	var user = new Array();
+
+	document.getElementById('out').innerHTML += files[0].values.length+" results<br>"
+
+	for(i = 0; i < files[0].values.length; i++)
+	{
+		if(i > limit)
+			break;
+		file = files[0].values[i];
+		dllink = "http://127.0.0.1:43110/"+file[1];
+		filedate = new Date(file[2]*1000);
+    description = file[3]
+
+		document.getElementById('out').innerHTML += i+". <a href='"+dllink+"'>"+file[0]+"</a><br>" + file[3]+ "<br><br>";
+	}
+
+	if(files[0].values.length >= limit)
+		document.getElementById('out').innerHTML += ">"+limit+" results not displayed."
+}
+function search()
+{
+	fetchfromdb($("#sr").val())
+}
+document.getElementById('sr').onkeydown = function(e){
+   if(e.keyCode == 13){
+     search();
+   }
+};
+</script>
+
+</body>
+</html>

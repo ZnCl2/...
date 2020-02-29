@@ -1,0 +1,28 @@
+{
+	"title": "工科葡萄糖",
+	"description": "科技雜談\n沒有適當的教育\n科技變成強大的武器",
+	"links": "---\n\n[本站目錄](http://192.168.1.5:43110/1FgYjLKPp15Zr83gnmSrBQy6sJ9p1ti3Yi/?Post:2:[%E7%9B%AE%E9%8C%84]+%E6%9C%AC%E7%AB%99%E6%96%87%E7%AB%A0%E7%9B%AE%E9%8C%84)\n\n* * *\n\n**寫信給我**\n\n*   [ZeroMail](http://127.0.0.1:43110/Mail.ZeroNetwork.bit/?to=hybridglucose)\n*   [i2p](mailto:HybridGlucose@mail.i2p)",
+	"next_post_id": 4,
+	"demo": false,
+	"modified": 1545884092,
+	"post": [
+		{
+			"post_id": 3,
+			"title": "[Zeronet] 我自己的站點架設教學",
+			"date_published": 1545844140,
+			"body": "簡單來說，你總要有機器可以處理站點問題，當然能夠隨時在線上是件好事，但是如果以一般桌機的話是不太容易做到的，像是耗電，效能分配等等，雖然 Zeronet 不是很耗效能，但是開著一台 PC 還是比較吃電力的，所以我自己是用一台 <span class=\"module__title__link\">Raspberry Pi 2B 作為站點，效能來說，我上面還有放一個 I2P 的服務（單純給自己用）跟 Tor，看起來是沒有大問題，只是要處理編譯問題（ArchLinux ARM 裡沒有提供這兩個包）</span>，剩下就不是大問題了。\n\n再來因為自己有網域，所以希望可以把這些服務綁在網域上，但 **並不推薦這樣做** ，因為是具有個人識別問題的東西，所以預設也是只給本機做使用，只是我打開給區域網路可以使用，這邊主要講如果 Zeronet要給內部網路要怎樣設定。\n\n* * *\n\n## 前提\n\n### 系統\n\n*   <span class=\"module__title__link\">Raspberry Pi 2B</span> （任何 SoC都可以，看常用 Distor ARM 系統有沒有支援即可）\n\n*   <span class=\"module__title__link\">ArchLinux ARM</span>（有編譯好的系統）\n\n*   <span class=\"module__title__link\">MicroSD 一張（大小自己決定）</span>\n\n該安裝的就安裝，有問題可以先參考官方說明文件，如果不能排除也沒有後續，Zeronet應該沒有大問題，如果沒有辦法取得初始節點也不在這裡討論範圍內，請自行翻牆。\n\n安裝完畢，可以正常執行後，才開始後續教學內容。\n\n根據自己的 Zeronet Configture File ，稍微找一下，如果用官方 bin 包應該是在 `zeronet.py` 同級目錄下。這裡以 ArchLinux 為例，在 `/etc/zeronet.conf` ，打開後會長這樣：\n\n```\n[global]\nfileserver_port = 18950\ndata_dir = /var/lib/zeronet\nlog_dir = /var/log/zeronet\n```\n\n應該跟這樣差不了多少，詳細參數都可以參考官方手冊設定。這裡說明我達成了哪些步驟：\n\n1.  讓本機以外可以使用\n\n2.  可以使用網址連線\n\n3.  設定使用密碼\n\n4.  設定 Tor 連線（可選）\n\n### 第一點最重要，設定綁定的 IP 設成其他 IP\n\n預設為 `127.0.0.1`，所以在設定檔加入 `ui_ip = $ip` ，例如 `ui_ip = 192.168.1.100`，然後重開，先確定在區域網路內可以用這組 IP 進行連線。確定在 log 內可以看見這段訊息：\n\n```\n[03:09:23] Ui.UiServer --------------------------------------\n[03:09:23] Ui.UiServer Web interface: http://192.168.1.100:43110/\n[03:09:23] Ui.UiServer --------------------------------------\n```\n\n如果想要在所有界面上都可以使用 Zeronet ，或者設定上出問題，可以設定成 `ui_ip = *` 試試看是否可以排除問題。\n\n### 第二步，使用網址進行連線。\n\n首先要確定：\n\n*   你有自己的網域\n\n*   如果有防火牆記得打通（AP分享器等等亦同，做好 Port Forwarding）\n\n*   DNS Record 要設定好（如果是動態 IP 可以設定好 DDNS 服務自動更新）\n\n然後就可以開始了。\n正常連線之後，再次打開 `zeronet.conf`，加入以下參數：\n\n```\nui_host =\n aaa.example.com:43110\n 192.168.1.100:43110\n```\n\n`aaa.example.com` 為你自己的網域，可以設定子網域專屬給 Zeronet 使用，**Port Number** 要記得加，不然會出錯。\n然後一樣存檔，重啟服務。確定 DNS Record 等等都沒有設定錯，應該是可以連線進來的，如果出現 `Invalid host:aaa.example.com`，那就是設定沒設好，看看是不是格式有錯。\n\n### 第三步，設定密碼驗證\n\n如果打算讓外網可以連進來的話，其實很建議使用密碼做保護（一般情況就是打開可以直接使用），如果只是自己家裡才能存取（或是利用 VPN 連回家裡網路），就不需要設定密碼，當然如果是公用電腦想要設定也可以，反正不影響。\n\n在目錄內可以找到 `plugins/disabled-UiPassword`，將它改名為 `plugins/UiPassword`（可以用複製或者直接更改資料夾名稱，我習慣用複製的），接著打開 `zeronet.conf` 加入這行 `ui_password =` 例如 `ui_password = thisIsPassword` ，保存後重開服務，如果沒有問題會看見詢問密碼畫面，輸入正確後就可以使用 Zeronet 了。\n\n_附註_：如果不使用後資料夾刪除或更名即可，且注意 `zeronet.conf` 內 `ui_password =` 行需要刪除或註解掉，否則在開啟時會顯示找不到這項參數而無法正常運作。\n\n### 第四步，增加 Tor 支援（可選步驟）\n\nZeronet 支援與 Tor 節點進行連線，所以可以加入 Tor 的使用，不過預設只與 Tor 用戶使用 Tor 連線，一般用戶走表層網路，當然可以改用全流量走 Tor，設定內的一個選項而已。\n\n請確認：\n\n*   Tor 可正常運作\n\n*   不建議用 GUI 管理，直接使用系統服務開啟\n\n一樣打開 `zeronet.conf` ，貼上這兩行：\n\n```\ntor_controller = 127.0.0.1:9051\ntor_proxy = 127.0.0.1:9050\n```\n\n然後找到 Tor 的設定檔，一般位於 `/etc/tor/torrc`，然後加入以下幾行：\n\n```\nControlPort 9051\nDataDirectoryGroupReadable 1\nCookieAuthentication 1\nCookieAuthFileGroupReadable 1\nCookieAuthFile /var/lib/tor-auth/control_auth_cookie\n```\n\n關於 `CookieAuthFile /var/lib/tor-auth/control_auth_cookie` 你可能會看到不同種得寫法，反正就是不要與其他服務重複到就好，其他無所謂。\n然後啟動 Tor 服務，再重啟 Zeronet 服務，應該就會看到 Hello Zeronet 的右上角`Tor：可用` 了。\n\n所以最後看起來會像這樣：\n\n```\n[global]\nfileserver_port = 18950\ndata_dir = /var/lib/zeronet\nlog_dir = /var/log/zeronet\n\nui_ip = 192.168.1.100\nui_password = thisIsPassword\n\nui_host =\n aaa.example.com:43110\n 192.168.1.100:43110\n\ntor_controller = 127.0.0.1:9051\ntor_proxy = 127.0.0.1:9050\n```\n\n## 結語\n\n大致上是這樣，Zeronet 官方文件寫很爛，很多東西都要自己試出來，真是有夠麻煩的。\n如果有錯再跟我說，可能是筆誤，因為我自己這樣是可以完成的，網路問題對於能夠出現在這裡的各位應該是不太會出現啦，我覺得。\n\n**_再次提醒：請不要輕易讓自己的機器暴露在網際網路上，除非有十足把握可以抵禦攻擊等等，情況允許還是以 VPN 代替為妙。_**"
+		},
+		{
+			"post_id": 2,
+			"title": "[目錄] 本站文章目錄",
+			"date_published": 1545752753.236,
+			"body": "* * *\n\n### [雜談]\n\n1.  [折騰好幾天，終於可以好好寫東西了](http://192.168.1.5:43110/1FgYjLKPp15Zr83gnmSrBQy6sJ9p1ti3Yi/?Post:1:[雜談]+折騰好幾天，終於可以好好寫東西了)\n\n### [教學]\n\n1.  [[Zeronet] 我自己的站點架設教學](http://192.168.1.5:43110/1FgYjLKPp15Zr83gnmSrBQy6sJ9p1ti3Yi/?Post:3:[Zeronet]+%E6%88%91%E8%87%AA%E5%B7%B1%E7%9A%84%E7%AB%99%E9%BB%9E%E6%9E%B6%E8%A8%AD%E6%95%99%E5%AD%B8)"
+		},
+		{
+			"post_id": 1,
+			"title": "[雜談] 折騰好幾天，終於可以好好寫東西了",
+			"date_published": 1545669420,
+			"body": "Zeronet 真的有很多問題存在，光是易用性就是一個大問題了，雖然表面上 i10n 好像做的很好，實際上來看就是亂七八糟。\n\n這點在 ZeroBlog 上就非常明顯，雖然內建很多語言檔，但是並沒有一個英文版本的語言檔可以做參考，這點我思考很久，直到剛剛才醒悟。\n\n---\n\n點開語言檔會發現很有趣的，每一種語言檔翻譯程度都不相同，原因後續會解釋，總之我著手開始翻譯正體中文的檔案，用簡體中文做範本。改完後沒有什麼大問題，就是缺了一點詞彙跟翻譯不夠完善，然後開始修改，遇到滿多問題的，像是：\n\n*   找不到哪些詞彙需要/可以翻譯\n\n*   翻譯後沒有正確顯示上去\n\n*   翻譯後網站運作不正常\n\n第一點就是我說的沒有範本檔案可以，那是因為 Zeronet 上的語言檔 _似乎_ 都是以 _替代_ 的方式在做翻譯，所以會導致第二點跟第三點的問題，因為文字不匹配，所以不會替換上去（包含空格也是），然後因為詞彙重複的問題，所以可能會造成 DOM 被取代的問題，可以參考我在 [Github 上發的 issuse](https://github.com/HelloZeroNet/ZeroBlog/issues/68)。\n\n最誇張也是卡最久的地方在我翻譯「Post」這個詞，似乎會把 _objectType_ 這個物件的名稱取代掉，所以導致刪除文章時會沒有辦法執行，看起來還是不要管 Zeronet 上 i10n 的問題好了。"
+		}
+	]
+}

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>simplify time format - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/c5c6741b0a7cc41f1f7976c47d7f41320d57508c.html">c5c6741b0a7cc41f1f7976c47d7f41320d57508c</a>
+<b>parent</b> <a href="../commit/b1ad5e2633477117f122c95bf39d65a179fb4f2d.html">b1ad5e2633477117f122c95bf39d65a179fb4f2d</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Mon Dec  7 23:22:18 +0100
+
+simplify time format
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">urmoms.c</a></td><td> | </td><td class="num">53</td><td><span class="i">+++++++++++++++</span><span class="d">--------------------------------------</span></td></tr>
+</table>1 file changed, 15 insertions(+), 38 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/urmoms.c.html">urmoms.c</a> b/<a href="../file/urmoms.c.html">urmoms.c</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -48,7 +48,6 @@ commitinfo_free(struct commitinfo *ci)
+</a> 	if (!ci)
+ 		return;
+ 
+<a href="#h0-0-3" id="h0-0-3" class="d">-	/* TODO: print error ? */
+</a> 	git_diff_stats_free(ci-&gt;stats);
+ 	git_diff_free(ci-&gt;diff);
+ 	git_commit_free(ci-&gt;commit);
+<a href="#h0-1" id="h0-1" class="h">@@ -188,56 +187,34 @@ xbasename(const char *path)
+</a> }
+ 
+ void
+<a href="#h0-1-3" id="h0-1-3" class="d">-printtimez(FILE *fp, const git_time *intime)
+</a><a href="#h0-1-4" id="h0-1-4" class="i">+printtimeformat(FILE *fp, const git_time *intime, const char *fmt)
+</a> {
+ 	struct tm *intm;
+ 	time_t t;
+<a href="#h0-1-8" id="h0-1-8" class="d">-	int offset, hours, minutes;
+</a><a href="#h0-1-9" id="h0-1-9" class="d">-	char sign, out[32];
+</a><a href="#h0-1-10" id="h0-1-10" class="d">-
+</a><a href="#h0-1-11" id="h0-1-11" class="d">-	offset = intime-&gt;offset;
+</a><a href="#h0-1-12" id="h0-1-12" class="d">-	if (offset &lt; 0) {
+</a><a href="#h0-1-13" id="h0-1-13" class="d">-		sign = &apos;-&apos;;
+</a><a href="#h0-1-14" id="h0-1-14" class="d">-		offset = -offset;
+</a><a href="#h0-1-15" id="h0-1-15" class="d">-	} else {
+</a><a href="#h0-1-16" id="h0-1-16" class="d">-		sign = &apos;+&apos;;
+</a><a href="#h0-1-17" id="h0-1-17" class="d">-	}
+</a><a href="#h0-1-18" id="h0-1-18" class="d">-
+</a><a href="#h0-1-19" id="h0-1-19" class="d">-	hours = offset / 60;
+</a><a href="#h0-1-20" id="h0-1-20" class="d">-	minutes = offset % 60;
+</a><a href="#h0-1-21" id="h0-1-21" class="i">+	char out[32];
+</a> 
+ 	t = (time_t) intime-&gt;time + (intime-&gt;offset * 60);
+<a href="#h0-1-24" id="h0-1-24" class="d">-
+</a> 	intm = gmtime(&amp;t);
+<a href="#h0-1-26" id="h0-1-26" class="d">-	strftime(out, sizeof(out), &quot;%Y-%m-%dT%H:%M:%SZ&quot;, intm);
+</a><a href="#h0-1-27" id="h0-1-27" class="i">+	strftime(out, sizeof(out), fmt, intm);
+</a> 	fputs(out, fp);
+ }
+ 
+ void
+<a href="#h0-1-32" id="h0-1-32" class="d">-printtime(FILE *fp, const git_time *intime)
+</a><a href="#h0-1-33" id="h0-1-33" class="i">+printtimez(FILE *fp, const git_time *intime)
+</a> {
+<a href="#h0-1-35" id="h0-1-35" class="d">-	struct tm *intm;
+</a><a href="#h0-1-36" id="h0-1-36" class="d">-	time_t t;
+</a><a href="#h0-1-37" id="h0-1-37" class="d">-	int offset, hours, minutes;
+</a><a href="#h0-1-38" id="h0-1-38" class="d">-	char sign, out[32];
+</a><a href="#h0-1-39" id="h0-1-39" class="d">-
+</a><a href="#h0-1-40" id="h0-1-40" class="d">-	offset = intime-&gt;offset;
+</a><a href="#h0-1-41" id="h0-1-41" class="d">-	if (offset &lt; 0) {
+</a><a href="#h0-1-42" id="h0-1-42" class="d">-		sign = &apos;-&apos;;
+</a><a href="#h0-1-43" id="h0-1-43" class="d">-		offset = -offset;
+</a><a href="#h0-1-44" id="h0-1-44" class="d">-	} else {
+</a><a href="#h0-1-45" id="h0-1-45" class="d">-		sign = &apos;+&apos;;
+</a><a href="#h0-1-46" id="h0-1-46" class="d">-	}
+</a><a href="#h0-1-47" id="h0-1-47" class="d">-
+</a><a href="#h0-1-48" id="h0-1-48" class="d">-	hours = offset / 60;
+</a><a href="#h0-1-49" id="h0-1-49" class="d">-	minutes = offset % 60;
+</a><a href="#h0-1-50" id="h0-1-50" class="d">-
+</a><a href="#h0-1-51" id="h0-1-51" class="d">-	t = (time_t) intime-&gt;time + (intime-&gt;offset * 60);
+</a><a href="#h0-1-52" id="h0-1-52" class="i">+	printtimeformat(fp, intime, &quot;%Y-%m-%dT%H:%M:%SZ&quot;);
+</a><a href="#h0-1-53" id="h0-1-53" class="i">+}
+</a> 
+<a href="#h0-1-55" id="h0-1-55" class="d">-	intm = gmtime(&amp;t);
+</a><a href="#h0-1-56" id="h0-1-56" class="d">-	strftime(out, sizeof(out), &quot;%a %b %e %T %Y&quot;, intm);
+</a><a href="#h0-1-57" id="h0-1-57" class="i">+void
+</a><a href="#h0-1-58" id="h0-1-58" class="i">+printtime(FILE *fp, const git_time *intime)
+</a><a href="#h0-1-59" id="h0-1-59" class="i">+{
+</a><a href="#h0-1-60" id="h0-1-60" class="i">+	printtimeformat(fp, intime, &quot;%a %b %e %T %Y&quot;);
+</a><a href="#h0-1-61" id="h0-1-61" class="i">+}
+</a> 
+<a href="#h0-1-63" id="h0-1-63" class="d">-	fprintf(fp, &quot;%s %c%02d%02d&quot;, out, sign, hours, minutes);
+</a><a href="#h0-1-64" id="h0-1-64" class="i">+void
+</a><a href="#h0-1-65" id="h0-1-65" class="i">+printtimeshort(FILE *fp, const git_time *intime)
+</a><a href="#h0-1-66" id="h0-1-66" class="i">+{
+</a><a href="#h0-1-67" id="h0-1-67" class="i">+	printtimeformat(fp, intime, &quot;%Y-%m-%d %H:%M&quot;);
+</a> }
+ 
+ void
+</pre>
+</div>
+</body>
+</html>

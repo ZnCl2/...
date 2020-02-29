@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Пишем свой зайт с нуля: свой простейший роутер</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<link rel="stylesheet" href="../../css/global.css">
+</head>
+
+<body>
+	
+<header>
+  <a href="../../index.html"><img src="../../img/logo.png" width="55"></a><br>ChronCache	
+</header>
+	
+<nav>
+	<hr>
+  <p><a href="../../blog.html">архив</a> <tt>|</tt> <a href="../../help.html">помощь</a> <tt>|</tt> <a href="/1Q9LVNLD1ghusGxpiwjYnVjPsxD5xGTGc7/donate/index.html">донат</a></p>
+	<hr>
+</nav>
+
+<article>
+	
+<acide><p>Это резервная страница от 05.03.2019 / <a href="/1CpGZyfbUBBV5uXUoY653wVoqZFRojbEzd/?Post:16">оригинал</a></p></acide>
+
+<section>
+	<h1>Пишем свой зайт с нуля: свой простейший роутер</h1>
+	<p>Мы собираемся писать довольно большое приложение. В планах конечно же будет сам проигрыватель, возможность добавить музыку в общую базу, обязательно хочу добавить функцию "Моя библиотека", куда и будут попадать любимые треки пользователя. Любой плеер так же должен иметь возможность управлять плейлистами. Ну и конечно же, мы должны иметь возможность дать ссылку на трек другому пользователю ZeroNet. В общем без роутера нам не обойтись. Как я уже упоминал, Vue-router нам не подходит из-за специфики работы ZeroNet. В этой статье мы и попробуем решить проблему раутинга своими силами.</p>
+	<p>Для того, чтобы сделать свой набросок роутера, я изучал как делает раутинг в своих проектах Nofish, а так же изучал, как именно работает стандартный роутер Vue-router. Попробуем собрать это все воедино. Но сначала небольшая подготовка. Сделаем два небольших компонента, чтобы тестировать наш роутер. Пусть они будут называться Home, где в планах мы сделаем что-то для открытия новой музыки (может быть для начала - последние поступления в базе) и Library, где, как уже было отмечено выше, пользователь будет управлять своей музыкой (все по взрослому, да :)). Пока они будут максимально простыми и пустыми, к ним мы обязательно вернемся в более поздних статьях.</p>
+	<p>Итак, создаем файл <code>src/components/home.vue</code> с простым содержимым:</p>
+	<div class="code">
+		<code>&lt;template>
+  &lt;div>
+    &lt;h1>Home&lt;/h1>
+  &lt;/div>
+&lt;/template>
+
+&lt;style scoped>
+&lt;/style>
+
+&lt;script>
+export default {
+  data: () => {
+    return {}
+  }
+}
+&lt;/script></code>
+	</div>
+	<p>Добавим его вместо нашего Hello, world'a в <code>src/components/app.vue</code>:</p>
+	<div class="code">
+		<code>&lt;template>
+  &lt;div>
+    &lt;home>&lt;/home>
+  &lt;/div>
+&lt;/template>
+
+&lt;style scoped>
+&lt;/style>
+
+&lt;script>
+import Vue from 'vue'
+import ZeroApi from 'zero_api.js'
+
+import Home from './home.vue'
+
+export default {
+  data: () => {
+    return {
+      api: ZeroApi
+    }
+  },
+
+  components: {
+    Home
+  }
+}
+&lt;/script></code>
+	</div>
+	<p>Обновив страницу, увидим надпись большими буквами <b>Home</b>.</p>
+	<p>Теперь проделаем тоже самое с компонентом Library, <code>src/components/library.vue</code>:</p>
+	<div class="code">
+		<code>&lt;template>
+  &lt;div>
+    &lt;h1>Library&lt;/h1>
+  &lt;/div>
+&lt;/template>
+
+&lt;style scoped>
+&lt;/style>
+
+&lt;script>
+export default {
+  data: () => {
+    return {}
+  }
+}
+&lt;/script></code>
+	</div>
+	<p>И также можем добавить его в наш <code>src/components/app.vue</code>:</p>
+	<div class="code">
+		<code>&lt;...>
+&lt;home>&lt;/home>
+&lt;library>&lt;/library>
+&lt;...>
+&lt;script>
+&lt;...>
+import Library from './library.js'
+&lt;...>
+components: {
+  Home, Library
+}
+&lt;...></code>
+	</div>
+	<p>Итак, теперь у нас есть два компонента, между которыми мы хотели бы переключаться, приступим же к роутеру. Для начала установим <code>path-to-regexp</code>, который используется для парсинга путей в Vue-router, дабы не заниматься какими-то непонятными парсингами. В терминале, в корне проекта набираем:</p>
+	<code>npm install --save path-to-regexp</code>
+	<p>Сделаем набросок нашего роутера, создаем <code>src/router.js</code></p>
+	<div class="code">
+		<code>const routes = [
+  {path: '', name: 'home', component: 'home'},
+  {path: '/my', name: 'library', component: 'library'},
+  {path: '/test/:param', name: 'test', component: 'library'} // Это для тестирования параметризованных урлов.
+]
+
+const router = new Vue({
+  data: {
+    currentView: 'home', // Имя компонента, которое активно на текущий момент
+    routes
+  }
+})
+
+export default router</code>
+	</div>
+	<p>Это лишь набросок, а не работающий роутер, пробуем так сказать идти сверху, как бы мы им пользовались.</p>
+	<p>Давайте теперь заставим наш App выводить лишь активный компонент. Добавим router в секцию data нашего приложения</p>
+	<div class="code">
+		<code>// ...
+import router from 'router.js'
+//...
+export default {
+  data: () => {
+    return {//...
+      router
+    }
+  }
+}</code>
+	</div>
+	<p>и заменим в темплейте приложения наши два новых компонента на такую конструкцию</p>
+	<div class="code">
+		<code>&lt;!-- ... -->
+&lt;!-- &lt;home>&lt;/home>
+&lt;/library>&lt;/library> -->
+&lt;keep-alive>
+  &lt;component :is="router.currentView">&lt;/component>
+&lt;/keep-alive>
+&lt;!-- ... --></code>
+	</div>
+	<p>Обновив страницу увидим лишь Home и более ничего. Попробуем сделать ссылку на Library. Идем в <code>src/components/home.vue</code> и проделаем такие вещи (представим, что наш роутер уже работает):</p>
+	<div class="code">
+		<code>&lt;template>
+  &lt;div>
+    &lt;h1>Home&lt;/h1>
+    &lt;a href="javascript:;" @click.prevent="router.go('library')">Library&lt;/a>
+  &lt;/div>
+&lt;/template>
+
+&lt;style scoped>
+&lt;/style>
+
+&lt;script>
+import router from 'router'
+
+export default {
+  data: () => {
+    return {
+      router
+    }
+  }
+}
+&lt;/script></code>
+	</div>
+	<p>Конечно же, работать сейчас ничего не будет, но давайте попробуем сделать что-то простое, чтобы заработало! Возвращаемся в <code>router.js</code> и пробуем заимплементировать метод go</p>
+	<div class="code">
+		<code>// ...
+const router = new Vue({
+  data: { /*...*/ },
+  methods: {
+    go: function(to) {
+      const matchedRoute = this.routes.find(x => x.name === to)
+      if (matchedRoute !== undefined) {
+        this.currentView = matchedRoute.component
+      }
+    }
+  }
+})
+// ...</code>
+	</div>
+	<p>Вот таким вот простым способом мы уже добавили интерактивность в наш зайт. Для тестов сделаем обратную ссылку из Library на Home (справитесь без вставки кода?) и можем уже обновить страницу и поиграться с этими переходами от Home к Library и обратно.</p>
+	<p>Однако надо отметить, нам этого совсем недостаточно. Во-первых, мы бы хотели менять URL в адресной строке, в зависимости от того, где мы находимся. Во вторых, часто необходима возможность использовать параметризованные переходы. Например, когда мы открываем страницу какой-то группы, не важно, какая именно группа выбрана, компонент будет один и тот же, но будет он выводить разные списки альбомов, разную картинку артиста и тому подобное. Очевидно, наш роутер совсем еще детский и надо что-то с этим делать. Текста уже вышло как-то много, так что я думаю, мы это все исправим уже в следующей статье.</p>
+</section>
+	
+<hr><p>Комментарии:</p>
+	
+<section class="com">
+	<div>
+		<p><b>zalex:</b> <tt>(May 29, 2017)</tt><br>Вот бы ещё ссылку на демку этого чуда :D<br>Если пропустил ссылку - ткните меня, пожалуйста,</p>
+	</div>
+	<div>
+		<p><b>gomzik:</b> <tt>(May 29, 2017)</tt><br><em><b>zalex:</b> Вот бы ещё ссылку на демку...</em><br>Не пропустил, я не давал, потому что код уже вперед ушел, ну да ладно, вот оно <u>http://127.0.0.1:43110/1JMNrd9FD19AhWVukYJ2gdxAiK2ohczwk5/</u></p>
+		<p>Не уверен правда, что мой нат позволит забрать его, надо будет на сервачок перекинуть</p>
+	</div>
+</section>
+	
+<p class="dr">May 28, 2017 / GomZik's Blog</p>
+	
+</article>		
+		
+</body>
+</html>

@@ -1,0 +1,63 @@
+{
+	"db_name": "Skatter",
+	"db_file": "data/users/skatter.db",
+	"version": 2,
+	"maps": {
+		".+/data.json": {
+			"to_table": [
+				{"node": "channels", "table": "channels"},
+				{"node": "channel_vote", "table": "channel_vote", "key_col": "channel_uri", "val_col": "vote"},
+				{"node": "videos", "table": "videos", "key_col": "channel_uri"},
+				{"node": "video_vote", "table": "video_vote", "key_col": "video_uri", "val_col": "vote"}
+			],
+			"to_keyvalue": ["next_video_id", "next_channel_id"]
+		},
+		".+/content.json": {
+			"to_keyvalue": [ "cert_user_id" ]
+		}
+	},
+	"tables": {
+		"channels": {
+			"cols": [
+				["channel_id", "INTEGER"], 
+				["title", "TEXT"],
+				["body", "TEXT"],
+				["type", "TEXT"],
+				["parent_channel_uri", "TEXT"],
+				["added", "DATETIME"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX channel_key ON channels(channel_id, json_id)"],
+			"schema_changed": 1
+		},
+		"videos": {
+			"cols": [
+				["video_id", "INTEGER"], 
+				["body", "TEXT"],
+				["channel_uri", "TEXT"],
+				["added", "DATETIME"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE INDEX channel_uri ON videos(channel_uri)", "CREATE UNIQUE INDEX video_key ON videos(json_id, video_id)"],
+			"schema_changed": 1
+		},
+		"video_vote": {
+			"cols": [
+				["video_uri", "TEXT"],
+				["vote", "INTEGER"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX video_vote_key ON video_vote(video_uri, json_id)", "CREATE INDEX video_vote_uri ON video_vote(video_uri)"],
+			"schema_changed": 1
+		},
+		"channel_vote": {
+			"cols": [
+				["channel_uri", "TEXT"],
+				["vote", "INTEGER"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": ["CREATE UNIQUE INDEX channel_vote_channel_key ON channel_vote(channel_uri, json_id)", "CREATE INDEX channel_vote_uri ON channel_vote(channel_uri)"],
+			"schema_changed": 1
+		}
+	}
+}

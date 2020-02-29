@@ -1,0 +1,137 @@
+
+<!DOCTYPE html>
+
+<html>
+<head>
+  <link rel="stylesheet" href="hbt.css" />
+  <title>_hot_buttered_toast_</title>
+  <script type="text/javascript" src="js/ZeroFrame.js"></script>
+  <script>
+    var hbt_database;
+    var hbt_good;
+
+    class HBT1 extends ZeroFrame {
+
+     onOpenWebsocket() {
+       //document.getElementById("testing").innerHTML += " onOpenWebsocket "
+       this.cmd("wrapperSetTitle", "_hot_buttered_toast_");
+       this.cmd("siteInfo", {}, (function(_this) {
+         return function(site_info) {
+           _this.cmd("fileGet", "torrents.json", function(data) {
+               hbt_database = JSON.parse(data);
+           });
+           // Testing 1
+           _this.cmd("fileGet", "good.json", function(data) {
+              hbt_good = JSON.parse(data);
+           });
+           _this.cmd("siteInfo", [], function(site_info) {
+       			page.setSiteInfo(site_info)
+       		 });
+           var site_stuff;
+           site_stuff = "Peers: " + site_info.peers + " | Last updated: " + (new Date(site_info.content.modified*1000))
+           document.getElementById("peers").innerHTML = site_stuff;
+
+           return;
+         };
+       })(this));
+     }
+
+     search_torrent_db () {
+       var result = "";
+       var table_body = "";
+       var table_header = "<table style='width:90%' border='1'><tr><th>Name</th><th>Size</th><th>Seeders</th><th>Leechers</th><th>Download</th></tr>";
+       var table_footer = "</table>";
+
+       var searchTerm = document.getElementById("hbt_search_results").value.toLowerCase();
+       //document.getElementById("testing").innerHTML += searchTerm
+       var search_array = searchTerm.split(" ");
+       //document.getElementById("testing").innerHTML += search_array
+       var search_statement = ''
+       search_statement = "SELECT * FROM torrents where LOWER(name) like '%"
+       for (var ii=0; ii < search_array.length; ii++) {
+         if (ii == 0) {
+            search_statement += search_array[ii] + "%'"
+         } else {
+            search_statement += " and LOWER(name) like '%" + search_array[ii] + "%'"
+         }
+         //document.getElementById("testing").innerHTML += search_array[ii]
+       }
+       //document.getElementById("testing").innerHTML += search_statement
+       this.cmd("dbQuery", [search_statement], (returned_torrents) => {
+         if (returned_torrents.length != 0) {
+           for (var i=0; i < returned_torrents.length; i++) {
+             result += "<tr><td>" + returned_torrents[i].name + "</td><td>" + returned_torrents[i].size + "</td><td>" + returned_torrents[i].seeders + "</td><td>" + returned_torrents[i].leechers + "</td><td align=center><a href=\"magnet:?xt=urn:btih:" + returned_torrents[i].hash + "\" target=_parent><img src='toaster_dl.jpg'></a></td></tr>";
+           }
+           table_body = table_header + result + table_footer;
+           document.getElementById("hbt_text").innerHTML = table_body;
+         }
+         else {
+           document.getElementById("hbt_text").innerHTML = "<center><b><br> _no_results_found_ </b></center>";
+         }
+       })
+     }
+
+    test_hbt1_display(){
+      document.getElementById("testing").innerHTML = "Display Test";
+    }
+
+    }
+
+    function show_everything_good() {
+      // What's good?
+      var result = "";
+      var table_body = "";
+      var table_header = "<table style='width:90%' border='1'><tr><th>Name</th><th>Size</th><th>Seeders</th><th>Leechers</th><th>Download</th></tr>";
+      var table_footer = "</table>";
+
+      for (var i in hbt_good.good) {
+        result += "<tr><td>" + hbt_good.good[i].name + "</td><td>" + hbt_good.good[i].size + "</td><td>" + hbt_good.good[i].seeders + "</td><td>" + hbt_good.good[i].leechers + "</td><td align=center><a href=\"magnet:?xt=urn:btih:" + hbt_good.good[i].hash + "\" target=_parent><img src='toaster_dl.jpg'></a></td></tr>";
+      }
+      table_body = table_header + result + table_footer;
+      document.getElementById("hbt_text").innerHTML = table_body;
+    }
+
+    new_hbt = new HBT1();
+
+  </script>
+</head>
+
+<body>
+
+<center>
+<div>
+    <span id="hbt_logo">_hot_buttered_toast_</span>
+    <br>
+    <span id="small_text">_all_the_torrents_fit_to_scrape_</span>
+    <br>
+    <input id="hbt_search_results" onKeyDown="if(event.keyCode==13) return new_hbt.search_torrent_db();" style='width: 300px;' placeholder="_search_torrents_">
+    <br>
+</div>
+</center>
+
+<center>
+<div id="searching"></div>
+<div id="testing"></div>
+<div id="new_message"> <b><i><span id="small_text">*** Search now working! ***</span></i></b></div>
+<div id="hbt_text"></div>
+</center>
+
+</body>
+<foot>
+  <center>
+    <br>
+    <span id="small_text"><a href="#" onclick="show_everything_good()">What's good?</a></span>
+
+    <!-- <span id="small_text"><input type="button" value="DB Test" onclick="return new_hbt.test_hbt1_display()"></span> -->
+
+    <br>
+    <!-- <span id="small_text">This site will improve as I do.  Don't hold your breath.</span> -->
+    <span id="small_text">Kill the headlights, and put it in neutral.</span>
+    <br>
+    <span id="small_text"><a href="/dev/null" color="brown">Complaints</a> | Praise and money: BM-2cWk9B8oCDGhGRzEjePjGzmrFEiyNcMdmW</span>
+    <br>
+    <span id="small_text"><center><div id="peers"></div></center></span>
+
+  </center>
+</foot>
+</html>

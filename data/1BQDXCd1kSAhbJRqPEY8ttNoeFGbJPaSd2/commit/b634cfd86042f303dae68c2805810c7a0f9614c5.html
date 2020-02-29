@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Simplify diff markup - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/b634cfd86042f303dae68c2805810c7a0f9614c5.html">b634cfd86042f303dae68c2805810c7a0f9614c5</a>
+<b>parent</b> <a href="../commit/1363b8b51e4e2e75e56cdc022eb1ab50d15dd84d.html">1363b8b51e4e2e75e56cdc022eb1ab50d15dd84d</a>
+<b>Author:</b> Eivind Uggedal &lt;<a href="mailto:eivind@uggedal.com">eivind@uggedal.com</a>&gt;
+<b>Date:</b>   Wed Dec  9 09:43:20 +0000
+
+Simplify diff markup
+
+Remove &lt;span&gt; for inserted/deleted lines and use
+the &lt;a&gt; for coloring.
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">style.css</a></td><td> | </td><td class="num">10</td><td><span class="i">+++</span><span class="d">-------</span></td></tr>
+<tr><td><a href="#h1">urmoms.c</a></td><td> | </td><td class="num">6</td><td><span class="i">+++</span><span class="d">---</span></td></tr>
+</table>2 files changed, 6 insertions(+), 10 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/style.css.html">style.css</a> b/<a href="../file/style.css.html">style.css</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -50,18 +50,14 @@ pre .h {
+</a> 	color: darkcyan;
+ }
+ 
+<a href="#h0-0-3" id="h0-0-3" class="d">-pre .i {
+</a><a href="#h0-0-4" id="h0-0-4" class="i">+pre a.i {
+</a> 	color: green;
+ }
+ 
+<a href="#h0-0-8" id="h0-0-8" class="d">-pre .d {
+</a><a href="#h0-0-9" id="h0-0-9" class="i">+pre a.d {
+</a> 	color: red;
+ }
+ 
+<a href="#h0-0-13" id="h0-0-13" class="d">-pre span a {
+</a><a href="#h0-0-14" id="h0-0-14" class="d">-	color: inherit;
+</a><a href="#h0-0-15" id="h0-0-15" class="d">-}
+</a><a href="#h0-0-16" id="h0-0-16" class="d">-
+</a><a href="#h0-0-17" id="h0-0-17" class="d">-pre span a:hover {
+</a><a href="#h0-0-18" id="h0-0-18" class="i">+pre a.i:hover, pre a.d:hover {
+</a> 	text-decoration: none;
+ }
+<b>diff --git a/<a id="h1" href="../file/urmoms.c.html">urmoms.c</a> b/<a href="../file/urmoms.c.html">urmoms.c</a></b>
+<a href="#h1-0" id="h1-0" class="h">@@ -333,16 +333,16 @@ printshowfile(struct commitinfo *ci)
+</a> 				if (git_patch_get_line_in_hunk(&amp;line, patch, j, k))
+ 					break;
+ 				if (line-&gt;old_lineno == -1)
+<a href="#h1-0-3" id="h1-0-3" class="d">-					fprintf(fp, &quot;&lt;span class=\&quot;i\&quot;&gt;&lt;a href=\&quot;#h%zu-%zu\&quot; id=\&quot;h%zu-%zu\&quot;&gt;+&quot;,
+</a><a href="#h1-0-4" id="h1-0-4" class="i">+					fprintf(fp, &quot;&lt;a href=\&quot;#h%zu-%zu\&quot; id=\&quot;h%zu-%zu\&quot; class=\&quot;i\&quot;&gt;+&quot;,
+</a> 						j, k, j, k);
+ 				else if (line-&gt;new_lineno == -1)
+<a href="#h1-0-7" id="h1-0-7" class="d">-					fprintf(fp, &quot;&lt;span class=\&quot;d\&quot;&gt;&lt;a href=\&quot;#h%zu-%zu\&quot; id=\&quot;h%zu-%zu\&quot;&gt;-&quot;,
+</a><a href="#h1-0-8" id="h1-0-8" class="i">+					fprintf(fp, &quot;&lt;a href=\&quot;#h%zu-%zu\&quot; id=\&quot;h%zu-%zu\&quot; class=\&quot;d\&quot;&gt;-&quot;,
+</a> 						j, k, j, k);
+ 				else
+ 					fputc(&apos; &apos;, fp);
+ 				xmlencode(fp, line-&gt;content, line-&gt;content_len);
+ 				if (line-&gt;old_lineno == -1 || line-&gt;new_lineno == -1)
+<a href="#h1-0-14" id="h1-0-14" class="d">-					fputs(&quot;&lt;/a&gt;&lt;/span&gt;&quot;, fp);
+</a><a href="#h1-0-15" id="h1-0-15" class="i">+					fputs(&quot;&lt;/a&gt;&quot;, fp);
+</a> 			}
+ 		}
+ 		git_patch_free(patch);
+</pre>
+</div>
+</body>
+</html>

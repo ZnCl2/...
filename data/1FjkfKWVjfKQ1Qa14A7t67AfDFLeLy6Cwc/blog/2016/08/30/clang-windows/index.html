@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>在 windows 下使用 clang（不需要重新编译） - 科学君的不科学博客</title>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+  <meta name="author" content="Liu233w" />
+  <meta name="description" content="&lt;Add description here&gt;" />
+  <meta name="keywords" content="clang, LLVM, emacs" />
+  <style>
+   #ds-thread #ds-reset .ds-comment-body p {color: #ffffff;}
+   #ds-thread #ds-reset .ds-comment-body p a {color: #ff0;}
+   #ds-thread #ds-reset .ds-comment-body p a:hover {color: #0ff;}
+   #disqus_thread a {color: #00ffff;}
+  </style>
+  <link rel="stylesheet" href="http://liu233w.github.io/media/css/main.css" type="text/css"/>
+  <link rel="stylesheet" href="http://liu233w.github.io/media/css/comment.css" type="text/css"/>
+  <link rel="Shortcut Icon" href="https://raw.githubusercontent.com/Liu233w/liu233w.github.io/source/avatar.jpg" type="image/x-icon">
+</head>
+
+  <body><div class="container">
+<div>
+  <header class="masthead">
+    <h1 class="masthead-title"><a href="http://liu233w.github.io/">科学君的不科学博客</a></h1>
+    <p>by 不科学的科学君</p>
+    <nav class="site-nav">
+      <div class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z" fill="#ffff00"/>
+          <path d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z" fill="#ffff00"/>
+          <path d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z" fill="#ffff00"/>
+        </svg>
+      </div>
+      <ul class="trigger">
+        <li><a href="http://liu233w.github.io/所有文章/">所有文章</a></li>
+        <li><a href="http://liu233w.github.io/tags/">按标签索引</a></li>
+        <li><a href="http://liu233w.github.io/acm/">Acm</a></li>
+        <li><a href="http://liu233w.github.io/blog/">Blog</a></li>
+        <li><a href="http://liu233w.github.io/about/">About</a></li>
+        <li><a href="https://github.com/liu233w/liu233w.github.io">Github</a></li>
+        <li><a href="http://liu233w.github.io/rss.xml">RSS</a></li>
+      </ul>
+    </nav>
+    <form method="get" id="searchform" action="http://www.google.com/search">
+      <input type="text" class="field" name="q" id="s" placeholder="Search">
+      <input type="hidden" name="as_sitesearch" value="liu233w.github.io">
+    </form>
+    <img id="avatarid" class="avatar" src="https://raw.githubusercontent.com/Liu233w/liu233w.github.io/source/avatar.jpg" />
+  </header>
+</div>
+
+<div>
+<div class="post">
+<h1 class="title">在 windows 下使用 clang（不需要重新编译）</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org2747800">需求</a></li>
+<li><a href="#org58bc552">如何让 clang 使用 visual studio 2015 的头文件和链接器而不重新编译 clang</a></li>
+<li><a href="#org5d2155a">如何让 clang 使用 MinGW64 的头文件和链接器而不重新编译 clang</a></li>
+<li><a href="#org6dea94b">如何让 emacs 里面的 company-clang 正常工作</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org2747800" class="outline-2">
+<h2 id="org2747800">需求</h2>
+<div class="outline-text-2" id="text-org2747800">
+<p>
+官方网站中的 clang 是使用 Visual Studio 编译的，默认会使用 Visual Studio 的头文件和链接器，但是如果想要使用 gcc 的头文件或者链接器怎么办？其他的教程大多数要求我们重新编译 clang，而实际上我们不需要重新编译就可以使用 gcc 的头文件和链接器。在 clang 中，控制这些的是一个命令行选项： <code>--target</code> 。在这篇博文中，我将介绍如下的内容：
+</p>
+<ol class="org-ol">
+<li>如何让 clang 使用 visual studio 2015 的头文件和链接器而不重新编译 clang</li>
+<li>如何让 clang 使用 MinGW64 的头文件和链接器而不重新编译 clang</li>
+<li>如何让 emacs 里面的 company-clang 正常工作。</li>
+</ol>
+
+<p>
+注意，我的 clang 是 64 位版的 v3.8.1，如果你用的是 32 位版或者别的版本，请参考我的教程做一些修改。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org58bc552" class="outline-2">
+<h2 id="org58bc552">如何让 clang 使用 visual studio 2015 的头文件和链接器而不重新编译 clang</h2>
+<div class="outline-text-2" id="text-org58bc552">
+<p>
+如果我们直接使用官方编译版的 clang（我的是 v3.8.1）来编译文件，一般会得到如下的错误：
+</p>
+<pre class="example">
+d:\Sources\cpp&gt;clang 2.cpp
+In file included from 2.cpp:1:
+In file included from c:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\cstdio:5:
+In file included from c:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\yvals.h:8:
+c:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\crtdefs.h:10:10: fatal error:
+      'corecrt.h' file not found
+#include &lt;corecrt.h&gt;
+         ^
+1 error generated.
+</pre>
+
+<p>
+虽然 clang 会默认使用 msvc 的头文件，但是路径不全，有一些头文件仍然找不到。根据<a href="https://www.zhihu.com/question/36659299">https://www.zhihu.com/question/36659299</a> 中的回答，我们可以新建一个 bat 文件，输入：
+</p>
+<div class="org-src-container">
+<pre class="src src-sh">call <span style="color: #2aa198;">"%VS140COMNTOOLS%..\..\VC\vcvarsall.bat"</span>
+<span style="color: #839496; font-weight: bold;">set</span> <span style="color: #268bd2;">PATH</span>=%~dp0bin;%PATH%
+cmd /k
+</pre>
+</div>
+<p>
+然后在打开这个文件弹出的窗口中使用 clang 编译程序。文件第一行调用的 bat 会自动将 msvc 的头文件目录加进环境变量中，这样 clang 就可以找到头文件了。注意这个环境变量是临时的，只有在打开的这一个命令提示符窗口才有效。
+</p>
+
+<p>
+但是有一些用户（比如我）在编译的的时候会产生另一个奇怪的错误：
+</p>
+<pre class="example">
+d:\Sources\cpp&gt;clang 2.cpp
+2-fa894b.o : error LNK2019: 无法解析的外部符号 __acrt_iob_func，该符号在函数 printf 中被引用
+2-fa894b.o : error LNK2019: 无法解析的外部符号 __stdio_common_vfprintf，该符号在函数 _vfprintf_l 中被引用
+LINK : error LNK2001: 无法解析的外部符号 mainCRTStartup
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\LIB\libcmt.lib : warning LNK4272:库计算机类型“X86”与目标计算机类型“x64”冲突
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\LIB\libcpmt.lib : warning LNK4272:库计算机类型“X86”与目标计算机类型“x64”冲突
+a.exe : fatal error LNK1120: 3 个无法解析的外部命令
+clang.exe: error: linker command failed with exit code 1120 (use -v to see invocation)
+</pre>
+<p>
+这就是 target 出错而导致的问题。
+</p>
+
+<p>
+看一下 clang 的版本：
+</p>
+<pre class="example">
+d:\Sources\cpp&gt;clang --version
+clang version 3.8.1 (branches/release_38)
+Target: x86_64-pc-windows-msvc
+Thread model: posix
+InstalledDir: c:\Software\LLVM\bin
+</pre>
+<p>
+这是官方编译版 clang 安装后的默认版本，可以看到其中的 target 信息是 <code>x86_64-pc-windows-msvc</code> ，这个 target 表示生成的程序类型，最后的 msvc 表示 clang 会使用 msvc 的头文件和链接器，而前面的 <code>x86_64</code> 表示将使用 64 位的编译器来生成 64 位的程序。但是我的
+visual studio 默认安装出来的是 32 位版，target 有误，编译的时候自然会报错了。
+</p>
+
+<p>
+其实正确的编译命令是这样： <code>clang --target=i686-w64-windows-msvc 2.cpp</code> ，使用 target 参数来指定生成方式，前面的 <code>i686</code> 表示使用 32 位的编译器来生成 64 位的程序。这下就可以正常生成而不出错了。
+</p>
+
+<p>
+实际上，你可以直接使用开始菜单里面 visual studio 提供的命令行，它会自动配置好目标，在编译的时候就不需要指定 target 了，如下图所示：
+<img src="http://liu233w.github.io/assets/blog/2016/08/30/clang-windows/16-8-30.png" alt="16-8-30.png" />
+</p>
+
+<p>
+有时候在编译的时候会弹出一些 char 和 string 的错误，这个我也不知道该怎么解决，出现这种情况建议你改用 MinGW64。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org5d2155a" class="outline-2">
+<h2 id="org5d2155a">如何让 clang 使用 MinGW64 的头文件和链接器而不重新编译 clang</h2>
+<div class="outline-text-2" id="text-org5d2155a">
+<p>
+这里我还是建议使用 64 位的 clang 和 gcc 的，因为我只测试了这一种组合。这么做不仅不会有上文中提到的 char 的问题，而且也不需要启用额外的环境，还可以和 emacs 配合。
+</p>
+
+<p>
+上一节我说明了 target 的用法，其实 target 也是可以指定使用 gcc 编译的，指令如下： <code>--target=x86_64-w64-windows-gnu</code> 。
+</p>
+
+<p>
+我用的是 mingw64，所以就采用 x86_64 的参数了。在使用的时候还需要指定 include 参数来告诉 clang 头文件的位置。可以用一个 bat 来编译：
+</p>
+<div class="org-src-container">
+<pre class="src src-sh">clang -I c:/Software/MinGW64/mingw64/include/ -I c:/Software/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/6.2.0/include -I c:/Software/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++ -I c:/Software/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward -I c:/Software/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/mingw32 -I c:/Software/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed --target=x86_64-w64-windows-gnu  %1 %2 %3 %4 %5 %6 %7 %8 %9 -lstdc++ -lsupc++
+</pre>
+</div>
+<p>
+将上述 bat 命名为 myclang.bat 然后放到 clang 所在目录即可。你可能需要更改一下 mingw 的目录位置。编译的时候只需 <code>myclang 1.cpp</code> 即可。
+</p>
+
+<p>
+其实还可以用环境变量来保存 include 目录，更多内容可以参考：<a href="http://blog.csdn.net/gocad/article/details/42297829">http://blog.csdn.net/gocad/article/details/42297829</a>。但是这么做的话最后还是需要一个脚本来指定 target。如果 target 也可以放在环境变量里面就好了。我在知乎上提了这个问题，虽然目前还没有有用的回答：<a href="https://www.zhihu.com/question/50031506">https://www.zhihu.com/question/50031506</a>
+</p>
+
+<p>
+用 bat 脚本也有一个坏处：在输入参数的时候等号会被隔成两个参数，比如 <code>myclang 2.cpp --std=c++11</code> ，最后一个参数会被分成两个，这是 cmd 的原因。你可以在这个参数的两边加上双引号来解决这个问题，但是上面的 bat 最多只能传递 9 个参数的问题就解决不了了。
+</p>
+
+<p>
+或者也可以用 powershell，新建一个 <code>myclang.ps1</code> ：
+</p>
+<div class="org-src-container">
+<pre class="src src-sh">clang --target=x86_64-w64-windows-gnu -I c:/Software/MinGW64/mingw64/include/ -I c:/Software/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/6.2.0/include -I c:/Software/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++ -I c:/Software/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward -I c:/Software/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/mingw32 -I c:/Software/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed  $<span style="color: #268bd2;">args</span> -lstdc++ -lsupc++
+</pre>
+</div>
+<p>
+这么做的话只能在 powershell 里面调用这个脚本，调用方式和 bat 的一样，支持任意多的参数，而且参数不会被等号分开。注意调用的时候不要加后缀名 ps1。
+</p>
+
+<p>
+我还写了一个同样功能的 python3 脚本，调用的方式和 powershell 的一样，需要加上后缀名 <code>.py</code> ，好处是可以在任何地方调用：
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #859900; font-weight: bold;">import</span> sys
+<span style="color: #859900; font-weight: bold;">import</span> subprocess
+
+<span style="color: #268bd2;">cmd</span> = <span style="color: #2aa198;">"clang -I c:/Software/MinGW64/mingw64/include/ -I c:/Software/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/6.2.0/include -I c:/Software/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++ -I c:/Software/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward -I c:/Software/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/mingw32 -I c:/Software/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed --target=x86_64-w64-windows-gnu"</span>
+
+
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">main</span><span style="color: #2aa198;">(</span>args<span style="color: #2aa198;">)</span>:
+    <span style="color: #268bd2;">res</span> = cmd
+    <span style="color: #859900; font-weight: bold;">for</span> a <span style="color: #859900; font-weight: bold;">in</span> args:
+        <span style="color: #268bd2;">res</span> += <span style="color: #2aa198;">" "</span> + a
+    <span style="color: #268bd2;">res</span> += <span style="color: #2aa198;">" -lstdc++ -lsupc++"</span>
+    <span style="color: #268bd2;">p</span> = subprocess.Popen<span style="color: #2aa198;">(</span>res<span style="color: #2aa198;">)</span>
+    <span style="color: #268bd2;">stdout</span>, <span style="color: #268bd2;">stderr</span> = p.communicate<span style="color: #2aa198;">()</span>
+    <span style="color: #859900; font-weight: bold;">if</span> stdout != <span style="color: #268bd2; font-weight: bold;">None</span>:
+        <span style="color: #859900; font-weight: bold;">print</span><span style="color: #2aa198;">(</span>stdout<span style="color: #2aa198;">)</span>
+    <span style="color: #859900; font-weight: bold;">if</span> stderr != <span style="color: #268bd2; font-weight: bold;">None</span>:
+        <span style="color: #859900; font-weight: bold;">print</span><span style="color: #2aa198;">(</span>stderr, <span style="color: #839496; font-weight: bold;">file</span>=sys.stderr<span style="color: #2aa198;">)</span>
+    sys.<span style="color: #268bd2; font-weight: bold;">exit</span><span style="color: #2aa198;">(</span>p.returncode<span style="color: #2aa198;">)</span>
+    <span style="color: #586e75;"># </span><span style="color: #586e75;">print(res)</span>
+
+
+<span style="color: #859900; font-weight: bold;">if</span> <span style="color: #839496; font-weight: bold;">__name__</span> == <span style="color: #2aa198;">'__main__'</span>:
+    main<span style="color: #2aa198;">(</span>sys.argv<span style="color: #b58900;">[</span><span style="color: #6c71c4;">1</span>:<span style="color: #b58900;">]</span><span style="color: #2aa198;">)</span>
+</pre>
+</div>
+
+<p>
+总结一下，现在可以轻松用 myclang 命令来编译 cpp 文件了，就像在 Linux 底下使用 clang 一样简单。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6dea94b" class="outline-2">
+<h2 id="org6dea94b">如何让 emacs 里面的 company-clang 正常工作</h2>
+<div class="outline-text-2" id="text-org6dea94b">
+<p>
+如果你使用的是 spacemacs 里面的 c-c++ layer，那这是很好办的。参见：<a href="http://spacemacs.org/layers/+lang/c-c++/README.html#orgheadline2">http://spacemacs.org/layers/+lang/c-c++/README.html#orgheadline2</a>
+只需要在项目的根目录下面建立一个文件 <code>.company_clang</code> ，然后把之前的参数放进去即可，比如：
+</p>
+<div class="org-src-container">
+<pre class="src src-sh">--target=x86_64-w64-windows-gnu
+-I c:/Software/MinGW64/mingw64/include/
+-I c:/Software/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/6.2.0/include
+-I c:/Software/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++
+-I c:/Software/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward
+-I c:/Software/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/mingw32
+-I c:/Software/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed
+</pre>
+</div>
+
+<p>
+如果你没有使用 spacemacs 或者不想再每个项目中都单独配置选项的话，可以使用以下的代码：
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #586e75;">;; </span><span style="color: #586e75;">&#35774;&#32622; windows &#24213;&#19979;&#30340; company-clang</span>
+<span style="color: #586e75;">;; </span><span style="color: #586e75;">&#31995;&#32479;&#20013;&#24517;&#39035;&#35201;&#26377; mingw64&#65292;&#35831;&#33258;&#34892;&#26356;&#25913;&#20854;&#30446;&#24405;&#20301;&#32622;</span>
+<span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">when</span> <span style="color: #b58900;">(</span>spacemacs/system-is-mswindows<span style="color: #b58900;">)</span>
+  <span style="color: #b58900;">(</span><span style="color: #859900; font-weight: bold;">with-eval-after-load</span> 'company-clang
+    <span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">require</span> '<span style="color: #268bd2; font-weight: bold;">nadvice</span><span style="color: #268bd2;">)</span>
+    <span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">defconst</span> <span style="color: #268bd2;">liu233w//company-clang-additional-clang-args-before</span>
+      <span style="color: #6c71c4;">(</span>replace-regexp-in-string <span style="color: #2aa198;">"\n"</span> <span style="color: #2aa198;">" "</span>
+                                <span style="color: #2aa198;">"--target=x86_64-w64-windows-gnu</span>
+<span style="color: #2aa198;">-I c:/Software/MinGW64/mingw64/include/</span>
+<span style="color: #2aa198;">-I c:/Software/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/6.2.0/include</span>
+<span style="color: #2aa198;">-I c:/Software/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++</span>
+<span style="color: #2aa198;">-I c:/Software/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward</span>
+<span style="color: #2aa198;">-I c:/Software/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/mingw32</span>
+<span style="color: #2aa198;">-I c:/Software/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"</span><span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span>
+    <span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">defconst</span> <span style="color: #268bd2;">liu233w//company-clang-additional-clang-args-after</span>
+      <span style="color: #2aa198;">"-lstdc++ -lsupc++"</span><span style="color: #268bd2;">)</span>
+    <span style="color: #268bd2;">(</span>advice-add 'company-clang--build-complete-args
+                <span style="color: #839496; font-weight: bold;">:filter-return</span>
+                #'<span style="color: #6c71c4;">(</span>lambda <span style="color: #859900;">(</span>args<span style="color: #859900;">)</span>
+                    <span style="color: #859900;">(</span>append
+                     <span style="color: #b58900;">(</span>list liu233w//company-clang-additional-clang-args-before<span style="color: #b58900;">)</span>
+                     args
+                     <span style="color: #b58900;">(</span>list liu233w//company-clang-additional-clang-args-after<span style="color: #b58900;">)</span><span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span><span style="color: #2aa198;">)</span>
+</pre>
+</div>
+<p>
+company-clang 使用一个函数 <code>company-clang--build-complete-args</code> 来生成传递给 clang 的额外参数，生成出来的是一个列表。稍后这个参数会被 company 用来调用 clang。这里我使用一个 advice 来在这个函数的返回值中另加入几项。
+</p>
+</div>
+</div>
+
+</div>
+</div>
+<div>
+        <div class="post-meta">
+            <span title="发布日期" class="post-info">2016-08-30</span>
+            <span title="最后修改日期" class="post-info">2016-09-06</span>
+            <span title="标签" class="post-info">:<a href="http://liu233w.github.io/tags/clang">clang</a> : <a href="http://liu233w.github.io/tags/llvm">LLVM</a> : <a href="http://liu233w.github.io/tags/emacs">emacs</a>:</span>
+            <span title="作者" class="post-info"><a href="mailto:wwwlsmcom &lt;at&gt; outlook &lt;dot&gt; com">Liu233w</a></span>
+        </div>
+    <script src="http://liu233w.github.io/media/js/jquery-2.1.3.min.js"></script>
+        <section>
+            <h1>Comments</h1>
+            <div id="comment-wrap">
+                    <a class="disqus_label">使用 Disqus 评论</a>
+                    <a class="ds-label">使用多说评论</a>
+    </ul>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+         //var disqus_developer = 1;
+         var preempt_signal=false;
+         var disqus_identifier = "/blog/2016/08/30/clang-windows/";
+         var disqus_url = "http://liu233w.github.io/blog/2016/08/30/clang-windows/";
+         var disqus_shortname = 'liu233w';
+         /* * * DON'T EDIT BELOW THIS LINE * * */
+         (function() {
+             var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+             dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+             $('#disqus_thread').css('display','none');
+         })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        <div class="ds-thread"></div>
+        <script type="text/javascript">
+         var duoshuoQuery = {short_name:'liu233w'};
+         (function() {
+             var ds = document.createElement('script');
+             ds.type = 'text/javascript';ds.async = true;
+             ds.src = 'http://static.duoshuo.com/embed.js';
+             ds.charset = 'UTF-8';
+             (document.getElementsByTagName('head')[0]
+           || document.getElementsByTagName('body')[0]).appendChild(ds);
+             $('.ds-thread').css('display','block');
+         })();
+        </script>
+    <script>
+     /* comments */
+     var ego_disqus_thread=$('#disqus_thread');
+     var ego_ds_label=$('.ds-thread');
+     $('.disqus_label').click(function(){
+         ego_disqus_thread.show();
+         ego_ds_label.hide();
+     });
+     $('.ds-label').click(function(){
+         ego_disqus_thread.hide();
+         ego_ds_label.show();
+     });
+    </script>
+        </section>
+    <script src="http://liu233w.github.io/media/js/main.js"></script>
+    <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.x(<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+            Copyright &copy; 2014 - <span id="footerYear"></span> <a href="mailto:wwwlsmcom &lt;at&gt; outlook &lt;dot&gt; com">Liu233w</a>
+            &nbsp;&nbsp;-&nbsp;&nbsp;
+            Powered by <a href="https://github.com/emacs-china/ego" target="_blank">EGO</a><br/>
+            <a href="http://creativecommons.org/licenses/by-sa/3.0/" rel="license"><img src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" style="border-width:0" alt="Creative Commons License" class="center"></a>
+            <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+    </div>
+            </div>
+            <script type="text/javascript"
+                    src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG">
+            </script>
+            <script type="text/x-mathjax-config">
+             MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "AMS"} } });
+            </script>
+</div>
+
+  </div></body>
+</html>

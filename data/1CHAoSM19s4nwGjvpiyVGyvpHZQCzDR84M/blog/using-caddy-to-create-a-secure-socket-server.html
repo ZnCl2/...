@@ -1,0 +1,68 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>Kevin Froman's blog - Using Caddy To Create a Secure Socket Server</title>
+  <meta name='description' content='Kevin Froman's blog on security, programming, and other musings'>
+  <meta name='author' content='Kevin Froman'>
+  <link rel='icon' type='image/x-icon' href='/favicon.ico'>
+  <link rel='stylesheet' href='theme.css'>
+  <script src="https://widget.battleforthenet.com/widget.js" integrity="sha384-OzmvdVOIBjM9YAUmPdrxpGclC0fg2bTYlwv12prMWoF1y4osMdsZ1UvH1ufTqAQ3" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="wrapper">
+    <h1 id='siteTitle'><a href='index.html'>Kevin Froman's blog</a></h1>
+    
+<div id='myIntro' class='center'>Blog on security, programming, & other musings</div>
+    <div id='mainContent'><h2 id='postTitle'>Using Caddy To Create a Secure Socket Server</h2>
+        <div id='postDate' class='center'>2017-04-25</div><h2>Why?</h2>
+<p>Telnet wasn't all bad. Simple socket servers are handy for debugging or remote access purposes, but sadly telnet is insecure, having no encryption. SSH is a viable alternative, but it is a little bloated and is different on various platforms.</p>
+<p>So what to do?</p>
+<h2>Use Caddy!</h2>
+<p>Caddy is a small but powerful server written in Go. It works by chaining 'middlewares' (plugins). It is mainly a web server, but it can also serve basic TCP using the 'net' plugin.</p>
+<p>In this short guide, I will explain how to setup a basic secure socket server using Caddy. The server works on Linux but any OS with openssl can connect.</p>
+<h2>Setup the server</h2>
+<h3>Dependencies</h3>
+<p>For the server you will need:</p>
+<ul>
+<li><a href="https://caddyserver.com/">Caddy</a> with the net plugin.</li>
+<li><a href="https://cr.yp.to/ucspi-tcp.html">ucspi-tcp</a></li>
+<li>Python, or any standard i/o program.</li>
+</ul>
+<h3>Caddy</h3>
+<p>The 'caddyfile' just has these 4 lines:</p>
+<pre>proxy :1337 :1338 {
+host example.com
+ tls
+}</pre>
+
+<p>'tls' can also be 'tls self_signed' for testing purposes or to not rely on a certificate authority (even SSH does not rely on a CA by default)</p>
+<p>Start Caddy by doing $ ./caddy -conf='caddyfile' -type='net'</p>
+<h3>Python Script</h3>
+<p>Our Python server script will require 0 net code. Simple I/O example:</p>
+<pre>
+#!/usr/bin/python
+print('Hello World!')
+print('Enter your name:')
+user = input(">")
+print("Nice to meet you \"" + user + "\"")
+</pre>
+
+<h3>tcpserver</h3>
+<p>Caddy will be a tls proxy to our simple tcpserver (part of ucspi-tcp) which will serve our Python script.</p>
+<p>Run tcpserver by doing $ tcpserver 127.0.0.1 1338 ./server.py</p>
+<h2>Connect to the server</h2>
+<p>Any client with openssl (or similar) can connect. For openssl, do $ openssl s_client -connect example.com:1337</p>
+<p>-quiet can be specified to reduce openssl information output.</p>
+<h2>Conclusion</h2>
+<p>Caddy + tcpserver is a good telnet replacement for when one just wants to provide a standard i/o program over a secure network connection without ssh.</p>
+<p>Netcat can be used instead of tcpserver, but netcat only supports 1 connection at a time.</p>
+<p>This setup is more secure than telnet, but there is likely to be some issues such as in openssl, Caddy, or tcpserver. Security sensitive scripts should be secured with some type of authentication.</p><div class="center" style="margin-bottom: -25%; margin-top: 2em; border-radius: 5px; padding: 5px;"><span>Written by anonymous</span><br><br></div>
+    </div>
+  </div>
+  <div id="footer">
+    <footer>Powered by TinyGen<div id='socialLinks'><a class="socialLink" href="https://twitter.com/@beardog108"><img src="../images/twitter.png" alt="TWITTER"></a><a class="socialLink" href="https://github.com/beardog108"><img src="../images/github.png" alt="GITHUB"></a><a class="socialLink" href="beardog@firemail.cc"><img src="../images/email.png" alt="EMAIL"></a><a class="socialLink" href="https://keybase.io/beardog"><img src="../images/keybase.png" alt="KEYBASE"></a><a class="socialLink" href="feed.rss"><img src="../images/feed.png" alt="RSS feed"></a></div></footer>
+  </div>
+</body>
+</html>

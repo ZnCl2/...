@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Генерация уникальной аватарки блога</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<link rel="stylesheet" href="../../css/global.css">
+</head>
+
+<body>
+	
+<header>
+  <a href="../../index.html"><img src="../../img/logo.png" width="55"></a><br>ChronCache	
+</header>
+	
+<nav>
+	<hr>
+  <p><a href="../../blog.html">архив</a> <tt>|</tt> <a href="../../help.html">помощь</a> <tt>|</tt> <a href="/1Q9LVNLD1ghusGxpiwjYnVjPsxD5xGTGc7/donate/index.html">донат</a></p>
+	<hr>
+</nav>
+
+<article>
+	
+<acide><p>Это резервная страница от 29.03.2019 / <a href="/1BLoGBTid3NhGu8ts3fAfHJprnbrH3wfTV/?Post:28">оригинал</a></p></acide>
+
+<section>
+	<h1>Генерация уникальной аватарки блога (Identicon) — Хьюстон, у нас проблема</h1>
+	<p>Как все наверное заметили, движок ZeroBlog для каждого блога отображает уникальную картинку-аватарку в левой панели. Эта картинка генерируется из адреса сайта, так что на каждой клонированной копии блога она разная.</p>
+	<p>Для создания этой картинки используется библиотека <a href="https://github.com/stewartlord/identicon.js" target="_blank">github.com/stewartlord/identicon.js</a>. И если вы откроете <a href="https://rawgit.com/stewartlord/identicon.js/master/demo.html" target="_blank">примеры генерируемых изображений</a>, то увидите, что изображения отличаются не только паттерном, но и цветом.</p><p>А если мы <a href="/16iQBM3knDTDuNeLdAexKAUNLbE1nYeAc9/">походим</a> <a href="/18i1Ra9wePfmwhMCyhmLXXShxcSha5YAns/">по</a> <a href="/1AdhUSJLmpUE7Aq5nPBkUuxgcWaUfqtS84/">разным</a> <a href="/1EiMAqhd6sMjPG2tznkkGXxhdwFBDdeqT9/">блогам</a>, то заметим, что изображения почти не отличаются цветами.</p>
+	<p>Это баг в коде ZeroBlog.</p>
+	<p>Дело в том, что библиотека <i>Identicon</i> ожидает получить строку, которую можно интерпретировать как шестнадцатиричное число. Разработчик ZeroBlog не обратил внимание на эту особенность, а, может быть, она была недостаточно четко описана в документации библиотеки. В качестве строки для генерации картинки ZeroBlog передаёт в библиотеку адрес сайта без преобразований. Понятно, что шансы воспринять её как корректное число достаточно малы.</p>
+	<p>Более детально, вот что происходит:</p>
+	<p>Библитека берёт несколько последних символов строки и пытается использовать их как 16-ричное число — обозначающее тон картинки. Если этому фрагменту повезло начинаться с [0-9a-fA-F], то мы получаем на выходе число от 0 до 15. Если не повезло, то мы получаем NaN — Not a Number. Теоретически мы можем получить число больше 15, если корректные символы попадутся два или более раза подряд. Но шансы на это достаточно невысоки.</p>
+	<p>Вот пример, как это работает:</p>
+	<table border="1" class="marcen center font-size-0-9">
+		<tr>
+			<th>Адрес</th>
+			<th>Число</th>
+			<th>Результат</th>
+		</tr>
+		<tr>
+			<td>1MaQ4W5D6G52TpBfPACU9k9QcB1<b>DxvHZ5v</b></td>
+			<td>13</td>
+			<td><img width="70" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEYAAABGAQMAAABL4HDHAAAABlBMVEXYjIzw8PCUVhPsAAAALUlEQVQoz2P4DwV/GIhnNbCDEL1ZPxjqwahmxLAggN4sYIgDaWjY05VFYkoEAMAwUoDPh113AAAAAElFTkSuQmCC"></td>
+		</tr>
+		<tr>
+			<td>1BLoGBTid3NhGu8ts3fAfHJprnb<b>rH3wfTV</b></td>
+			<td>NaN</td>
+			<td><img width="70" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEYAAABGAQMAAABL4HDHAAAABlBMVEXw8PDYAIwZM02vAAAAJUlEQVQoz2NgIBmw/2+AkvRm/f/BUP9/IFhgQH9WAwSNEBbJAACYTTQIDQ4yoQAAAABJRU5ErkJggg=="></td>
+		</tr>
+	</table>
+	<p>Я в размышлениях, что теперь с этим делать.</p>
+	<p>Можно добавить конвертирование адреса в 16-ричную запись перед вызовом <i>Identicon</i>, но тогда потеряется обратная совместимость создаваемых паттернов с оригинальным ZeroBlog.</p>
+	<p>Можно исправить нашу копию библиотеки <i>Identicon</i>, чтобы она получала код цвета иным способом, тогда паттерны останутся те же.</p>
+	<p>А можно вообще забить на совместимость и использовать более крутой генератор аватарок, например <a href="https://jdenticon.com/" target="_blank">этот</a>.</p>
+</section>	
+	
+<hr><p>Комментарии:</p>
+	
+<section class="com">
+	<div>
+		<p><b>calmaquesse:</b> <tt>(May 07, 2018)</tt><br>Пишите багрепорт Nofish, он в ZeroMe доступен. Либо в его же блог в комментарии.</p>
+	</div>
+	<div>
+		<p><b>x86128:</b> <tt>(May 07, 2018)</tt><br>Тоже кажется, что надо в общий репозитарий это запостить.</p>
+		<p>А вот интересно, получается так, что если обновится мэйнстримовая версия блога/чата (любого другого компонента ZeroNet) и т.д. то это надо ручками все свои блоги патчить?</p>
+	</div>
+	<div>
+		<p><b>geekless:</b> <tt>(May 07, 2018)</tt><br><em><b>x86128:</b> ... это надо ручками все свои блоги патчить?</em><br>Upgrade code в меню сайта на главной ZeroHello.</p>
+	</div>
+	<div>
+		<p><b>geekless:</b> <tt>(May 07, 2018)</tt><br><em><b>calmaquesse:</b> Пишите багрепорт Nofish</em><br>Лень.</p>
+		<p>Да и что его дёргать, у него всё время на движок ZN уходит.</p>
+	</div>
+	<div>
+		<p><b>calmaquesse:</b> <tt>(May 07, 2018)</tt><br><em><b>geekless:</b> Лень...</em><br>Вы это хотите самостоятельно пофиксить и залить в репозиторий?</p>
+	</div>
+	<div>
+		<p><b>geekless:</b> <tt>(May 07, 2018)</tt><br><em><b>calmaquesse:</b> ... и залить в репозиторий?</em><br>В свой.</p>
+	</div>
+	<div>
+		<p><b>calmaquesse:</b> <tt>(May 07, 2018)</tt><br><em><b>geekless:</b> В свой.</em><br>Но проблема же на уровне движка самого Зеронета. Значит, надо делать коммит прямо туда, или я ошибаюсь?</p>
+	</div>
+	<div>
+		<p><b>geekless:</b> <tt>(May 07, 2018)</tt><br><em><b>calmaquesse:</b> Но проблема же на уровне движка самого Зеронета...</em><br>На уровне движка блога.</p>
+		<p>Кстати, было бы неплохо ввести identicon + что-то типа humanhash или tripcodes на уровне движка сети для человеко-читабельной идентификации криптографичеких идентификаторов. Но пока сильной необходимости в этом нет.</p>
+	</div>
+	<div>
+		<p><b>gitcenter:</b> <tt>(May 07, 2018)</tt><br>Pull request же быстро сделать?</p>
+	</div>
+</section>
+	
+<p class="dr">May 07, 2018 / Geekless.Blog</p>
+	
+</article>		
+		
+</body>
+</html>

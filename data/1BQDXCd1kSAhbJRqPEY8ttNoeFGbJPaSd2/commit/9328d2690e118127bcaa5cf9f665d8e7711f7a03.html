@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>code cleanup - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/9328d2690e118127bcaa5cf9f665d8e7711f7a03.html">9328d2690e118127bcaa5cf9f665d8e7711f7a03</a>
+<b>parent</b> <a href="../commit/069f105725677ce2784d3d0def156c3115c9e330.html">069f105725677ce2784d3d0def156c3115c9e330</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Tue May  3 20:18:37 +0200
+
+code cleanup
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">stagit-index.c</a></td><td> | </td><td class="num">8</td><td><span class="i">+++</span><span class="d">-----</span></td></tr>
+<tr><td><a href="#h1">stagit.c</a></td><td> | </td><td class="num">61</td><td><span class="i">++++++++++++++++++</span><span class="d">-------------------------------------------</span></td></tr>
+</table>2 files changed, 21 insertions(+), 48 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/stagit-index.c.html">stagit-index.c</a> b/<a href="../file/stagit-index.c.html">stagit-index.c</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -62,7 +62,7 @@ printtimeshort(FILE *fp, const git_time *intime)
+</a> 	fputs(out, fp);
+ }
+ 
+<a href="#h0-0-3" id="h0-0-3" class="d">-int
+</a><a href="#h0-0-4" id="h0-0-4" class="i">+void
+</a> writeheader(FILE *fp)
+ {
+ 	fputs(&quot;&lt;!DOCTYPE html&gt;\n&quot;
+<a href="#h0-1" id="h0-1" class="h">@@ -80,14 +80,12 @@ writeheader(FILE *fp)
+</a> 	      &quot;&lt;table id=\&quot;index\&quot;&gt;&lt;thead&gt;\n&quot;
+ 	      &quot;&lt;tr&gt;&lt;td&gt;Name&lt;/td&gt;&lt;td&gt;Description&lt;/td&gt;&lt;td&gt;Owner&lt;/td&gt;&lt;td&gt;Last commit&lt;/td&gt;&lt;/tr&gt;&quot;
+ 	      &quot;&lt;/thead&gt;&lt;tbody&gt;\n&quot;, fp);
+<a href="#h0-1-3" id="h0-1-3" class="d">-
+</a><a href="#h0-1-4" id="h0-1-4" class="d">-	return 0;
+</a> }
+ 
+<a href="#h0-1-7" id="h0-1-7" class="d">-int
+</a><a href="#h0-1-8" id="h0-1-8" class="i">+void
+</a> writefooter(FILE *fp)
+ {
+<a href="#h0-1-11" id="h0-1-11" class="d">-	return !fputs(&quot;&lt;/tbody&gt;\n&lt;/table&gt;\n&lt;/div&gt;\n&lt;/body&gt;\n&lt;/html&gt;\n&quot;, fp);
+</a><a href="#h0-1-12" id="h0-1-12" class="i">+	fputs(&quot;&lt;/tbody&gt;\n&lt;/table&gt;\n&lt;/div&gt;\n&lt;/body&gt;\n&lt;/html&gt;\n&quot;, fp);
+</a> }
+ 
+ int
+<b>diff --git a/<a id="h1" href="../file/stagit.c.html">stagit.c</a> b/<a href="../file/stagit.c.html">stagit.c</a></b>
+<a href="#h1-0" id="h1-0" class="h">@@ -57,7 +57,7 @@ static const char *relpath = &quot;&quot;;
+</a> static const char *repodir;
+ 
+ static char *name = &quot;&quot;;
+<a href="#h1-0-3" id="h1-0-3" class="d">-static char *stripped_name;
+</a><a href="#h1-0-4" id="h1-0-4" class="i">+static char *strippedname;
+</a> static char description[255];
+ static char cloneurl[1024];
+ static int haslicense, hasreadme, hassubmodules;
+<a href="#h1-1" id="h1-1" class="h">@@ -246,27 +246,6 @@ xmlencode(FILE *fp, const char *s, size_t len)
+</a> 	}
+ }
+ 
+<a href="#h1-1-3" id="h1-1-3" class="d">-/* Some implementations of dirname(3) return a pointer to a static
+</a><a href="#h1-1-4" id="h1-1-4" class="d">- * internal buffer (OpenBSD). Others modify the contents of `path` (POSIX).
+</a><a href="#h1-1-5" id="h1-1-5" class="d">- * This is a wrapper function that is compatible with both versions.
+</a><a href="#h1-1-6" id="h1-1-6" class="d">- * The program will error out if dirname(3) failed, this can only happen
+</a><a href="#h1-1-7" id="h1-1-7" class="d">- * with the OpenBSD version. */
+</a><a href="#h1-1-8" id="h1-1-8" class="d">-char *
+</a><a href="#h1-1-9" id="h1-1-9" class="d">-xdirname(const char *path)
+</a><a href="#h1-1-10" id="h1-1-10" class="d">-{
+</a><a href="#h1-1-11" id="h1-1-11" class="d">-	char *p, *b;
+</a><a href="#h1-1-12" id="h1-1-12" class="d">-
+</a><a href="#h1-1-13" id="h1-1-13" class="d">-	if (!(p = strdup(path)))
+</a><a href="#h1-1-14" id="h1-1-14" class="d">-		err(1, &quot;strdup&quot;);
+</a><a href="#h1-1-15" id="h1-1-15" class="d">-	if (!(b = dirname(p)))
+</a><a href="#h1-1-16" id="h1-1-16" class="d">-		err(1, &quot;dirname&quot;);
+</a><a href="#h1-1-17" id="h1-1-17" class="d">-	if (!(b = strdup(b)))
+</a><a href="#h1-1-18" id="h1-1-18" class="d">-		err(1, &quot;strdup&quot;);
+</a><a href="#h1-1-19" id="h1-1-19" class="d">-	free(p);
+</a><a href="#h1-1-20" id="h1-1-20" class="d">-
+</a><a href="#h1-1-21" id="h1-1-21" class="d">-	return b;
+</a><a href="#h1-1-22" id="h1-1-22" class="d">-}
+</a><a href="#h1-1-23" id="h1-1-23" class="d">-
+</a> int
+ mkdirp(const char *path)
+ {
+<a href="#h1-2" id="h1-2" class="h">@@ -335,7 +314,7 @@ printtimeshort(FILE *fp, const git_time *intime)
+</a> 	fputs(out, fp);
+ }
+ 
+<a href="#h1-2-3" id="h1-2-3" class="d">-int
+</a><a href="#h1-2-4" id="h1-2-4" class="i">+void
+</a> writeheader(FILE *fp, const char *title)
+ {
+ 	fputs(&quot;&lt;!DOCTYPE html&gt;\n&quot;
+<a href="#h1-3" id="h1-3" class="h">@@ -343,9 +322,9 @@ writeheader(FILE *fp, const char *title)
+</a> 		&quot;&lt;meta http-equiv=\&quot;Content-Type\&quot; content=\&quot;text/html; charset=UTF-8\&quot; /&gt;\n&quot;
+ 		&quot;&lt;meta http-equiv=\&quot;Content-Language\&quot; content=\&quot;en\&quot; /&gt;\n&lt;title&gt;&quot;, fp);
+ 	xmlencode(fp, title, strlen(title));
+<a href="#h1-3-3" id="h1-3-3" class="d">-	if (title[0] &amp;&amp; stripped_name[0])
+</a><a href="#h1-3-4" id="h1-3-4" class="i">+	if (title[0] &amp;&amp; strippedname[0])
+</a> 		fputs(&quot; - &quot;, fp);
+<a href="#h1-3-6" id="h1-3-6" class="d">-	xmlencode(fp, stripped_name, strlen(stripped_name));
+</a><a href="#h1-3-7" id="h1-3-7" class="i">+	xmlencode(fp, strippedname, strlen(strippedname));
+</a> 	if (description[0])
+ 		fputs(&quot; - &quot;, fp);
+ 	xmlencode(fp, description, strlen(description));
+<a href="#h1-4" id="h1-4" class="h">@@ -357,7 +336,7 @@ writeheader(FILE *fp, const char *title)
+</a> 	fprintf(fp, &quot;&lt;a href=\&quot;../%s\&quot;&gt;&lt;img src=\&quot;%slogo.png\&quot; alt=\&quot;\&quot; width=\&quot;32\&quot; height=\&quot;32\&quot; /&gt;&lt;/a&gt;&quot;,
+ 	        relpath, relpath);
+ 	fputs(&quot;&lt;/td&gt;&lt;td&gt;&lt;h1&gt;&quot;, fp);
+<a href="#h1-4-3" id="h1-4-3" class="d">-	xmlencode(fp, stripped_name, strlen(stripped_name));
+</a><a href="#h1-4-4" id="h1-4-4" class="i">+	xmlencode(fp, strippedname, strlen(strippedname));
+</a> 	fputs(&quot;&lt;/h1&gt;&lt;span class=\&quot;desc\&quot;&gt;&quot;, fp);
+ 	xmlencode(fp, description, strlen(description));
+ 	fputs(&quot;&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&quot;, fp);
+<a href="#h1-5" id="h1-5" class="h">@@ -379,14 +358,12 @@ writeheader(FILE *fp, const char *title)
+</a> 	if (haslicense)
+ 		fprintf(fp, &quot; | &lt;a href=\&quot;%sfile/LICENSE.html\&quot;&gt;LICENSE&lt;/a&gt;&quot;, relpath);
+ 	fputs(&quot;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;\n&lt;hr/&gt;\n&lt;div id=\&quot;content\&quot;&gt;\n&quot;, fp);
+<a href="#h1-5-3" id="h1-5-3" class="d">-
+</a><a href="#h1-5-4" id="h1-5-4" class="d">-	return 0;
+</a> }
+ 
+<a href="#h1-5-7" id="h1-5-7" class="d">-int
+</a><a href="#h1-5-8" id="h1-5-8" class="i">+void
+</a> writefooter(FILE *fp)
+ {
+<a href="#h1-5-11" id="h1-5-11" class="d">-	return !fputs(&quot;&lt;/div&gt;\n&lt;/body&gt;\n&lt;/html&gt;\n&quot;, fp);
+</a><a href="#h1-5-12" id="h1-5-12" class="i">+	fputs(&quot;&lt;/div&gt;\n&lt;/body&gt;\n&lt;/html&gt;\n&quot;, fp);
+</a> }
+ 
+ int
+<a href="#h1-6" id="h1-6" class="h">@@ -693,7 +670,7 @@ writeatom(FILE *fp)
+</a> 
+ 	fputs(&quot;&lt;?xml version=\&quot;1.0\&quot; encoding=\&quot;UTF-8\&quot;?&gt;\n&quot;
+ 	      &quot;&lt;feed xmlns=\&quot;http://www.w3.org/2005/Atom\&quot;&gt;\n&lt;title&gt;&quot;, fp);
+<a href="#h1-6-3" id="h1-6-3" class="d">-	xmlencode(fp, stripped_name, strlen(stripped_name));
+</a><a href="#h1-6-4" id="h1-6-4" class="i">+	xmlencode(fp, strippedname, strlen(strippedname));
+</a> 	fputs(&quot;, branch HEAD&lt;/title&gt;\n&lt;subtitle&gt;&quot;, fp);
+ 	xmlencode(fp, description, strlen(description));
+ 	fputs(&quot;&lt;/subtitle&gt;\n&quot;, fp);
+<a href="#h1-7" id="h1-7" class="h">@@ -724,15 +701,14 @@ writeblob(git_object *obj, const char *fpath, const char *filename, git_off_t fi
+</a> 	int lc = 0;
+ 	FILE *fp;
+ 
+<a href="#h1-7-3" id="h1-7-3" class="d">-	d = xdirname(fpath);
+</a><a href="#h1-7-4" id="h1-7-4" class="d">-	if (mkdirp(d)) {
+</a><a href="#h1-7-5" id="h1-7-5" class="d">-		free(d);
+</a><a href="#h1-7-6" id="h1-7-6" class="i">+	if (strlcpy(tmp, fpath, sizeof(tmp)) &gt;= sizeof(tmp))
+</a><a href="#h1-7-7" id="h1-7-7" class="i">+		errx(1, &quot;path truncated: &apos;%s&apos;&quot;, fpath);
+</a><a href="#h1-7-8" id="h1-7-8" class="i">+	if (!(d = dirname(tmp)))
+</a><a href="#h1-7-9" id="h1-7-9" class="i">+		err(1, &quot;dirname&quot;);
+</a><a href="#h1-7-10" id="h1-7-10" class="i">+	if (mkdirp(d))
+</a> 		return -1;
+<a href="#h1-7-12" id="h1-7-12" class="d">-	}
+</a><a href="#h1-7-13" id="h1-7-13" class="d">-	free(d);
+</a> 
+<a href="#h1-7-15" id="h1-7-15" class="d">-	p = fpath;
+</a><a href="#h1-7-16" id="h1-7-16" class="d">-	while (*p) {
+</a><a href="#h1-7-17" id="h1-7-17" class="i">+	for (p = fpath; *p; p++) {
+</a> 		if (*p == &apos;/&apos; &amp;&amp; strlcat(tmp, &quot;../&quot;, sizeof(tmp)) &gt;= sizeof(tmp))
+ 			errx(1, &quot;path truncated: &apos;../%s&apos;&quot;, tmp);
+ 		p++;
+<a href="#h1-8" id="h1-8" class="h">@@ -1087,9 +1063,9 @@ main(int argc, char *argv[])
+</a> 		name = &quot;&quot;;
+ 
+ 	/* strip .git suffix */
+<a href="#h1-8-3" id="h1-8-3" class="d">-	if (!(stripped_name = strdup(name)))
+</a><a href="#h1-8-4" id="h1-8-4" class="i">+	if (!(strippedname = strdup(name)))
+</a> 		err(1, &quot;strdup&quot;);
+<a href="#h1-8-6" id="h1-8-6" class="d">-	if ((p = strrchr(stripped_name, &apos;.&apos;)))
+</a><a href="#h1-8-7" id="h1-8-7" class="i">+	if ((p = strrchr(strippedname, &apos;.&apos;)))
+</a> 		if (!strcmp(p, &quot;.git&quot;))
+ 			*p = &apos;\0&apos;;
+ 
+<a href="#h1-9" id="h1-9" class="h">@@ -1162,9 +1138,8 @@ main(int argc, char *argv[])
+</a> 				n = fread(buf, 1, sizeof(buf), rcachefp);
+ 				if (ferror(rcachefp))
+ 					err(1, &quot;fread&quot;);
+<a href="#h1-9-3" id="h1-9-3" class="d">-				if (fwrite(buf, 1, n, fp) != n)
+</a><a href="#h1-9-4" id="h1-9-4" class="d">-					err(1, &quot;fwrite&quot;);
+</a><a href="#h1-9-5" id="h1-9-5" class="d">-				if (fwrite(buf, 1, n, wcachefp) != n)
+</a><a href="#h1-9-6" id="h1-9-6" class="i">+				if (fwrite(buf, 1, n, fp) != n ||
+</a><a href="#h1-9-7" id="h1-9-7" class="i">+				    fwrite(buf, 1, n, wcachefp) != n)
+</a> 					err(1, &quot;fwrite&quot;);
+ 			}
+ 			fclose(rcachefp);
+</pre>
+</div>
+</body>
+</html>

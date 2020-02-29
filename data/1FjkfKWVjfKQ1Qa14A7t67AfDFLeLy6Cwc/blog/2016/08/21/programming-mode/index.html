@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>写了一个 emacs package：number-lock.el - 科学君的不科学博客</title>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+  <meta name="author" content="Liu233w" />
+  <meta name="keywords" content="emacs, emacs package" />
+  <style>
+   #ds-thread #ds-reset .ds-comment-body p {color: #ffffff;}
+   #ds-thread #ds-reset .ds-comment-body p a {color: #ff0;}
+   #ds-thread #ds-reset .ds-comment-body p a:hover {color: #0ff;}
+   #disqus_thread a {color: #00ffff;}
+  </style>
+  <link rel="stylesheet" href="http://liu233w.github.io/media/css/main.css" type="text/css"/>
+  <link rel="stylesheet" href="http://liu233w.github.io/media/css/comment.css" type="text/css"/>
+  <link rel="Shortcut Icon" href="https://raw.githubusercontent.com/Liu233w/liu233w.github.io/source/avatar.jpg" type="image/x-icon">
+</head>
+
+  <body><div class="container">
+<div>
+  <header class="masthead">
+    <h1 class="masthead-title"><a href="http://liu233w.github.io/">科学君的不科学博客</a></h1>
+    <p>by 不科学的科学君</p>
+    <nav class="site-nav">
+      <div class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z" fill="#ffff00"/>
+          <path d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z" fill="#ffff00"/>
+          <path d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z" fill="#ffff00"/>
+        </svg>
+      </div>
+      <ul class="trigger">
+        <li><a href="http://liu233w.github.io/所有文章/">所有文章</a></li>
+        <li><a href="http://liu233w.github.io/tags/">按标签索引</a></li>
+        <li><a href="http://liu233w.github.io/acm/">Acm</a></li>
+        <li><a href="http://liu233w.github.io/blog/">Blog</a></li>
+        <li><a href="http://liu233w.github.io/about/">About</a></li>
+        <li><a href="https://github.com/liu233w/liu233w.github.io">Github</a></li>
+        <li><a href="http://liu233w.github.io/rss.xml">RSS</a></li>
+      </ul>
+    </nav>
+    <form method="get" id="searchform" action="http://www.google.com/search">
+      <input type="text" class="field" name="q" id="s" placeholder="Search">
+      <input type="hidden" name="as_sitesearch" value="liu233w.github.io">
+    </form>
+    <img id="avatarid" class="avatar" src="https://raw.githubusercontent.com/Liu233w/liu233w.github.io/source/avatar.jpg" />
+  </header>
+</div>
+
+<div>
+<div class="post">
+<h1 class="title">写了一个 emacs package：number-lock.el</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org7b06ccb">项目简介</a></li>
+<li><a href="#orge3e9a0b">另一种实现方式</a></li>
+<li><a href="#org8c1f3e8">16/8/30 更新</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org7b06ccb" class="outline-2">
+<h2 id="org7b06ccb">项目简介</h2>
+<div class="outline-text-2" id="text-org7b06ccb">
+<p>
+项目地址：<a href="https://github.com/Liu233w/number-lock.el">https://github.com/Liu233w/number-lock.el</a>
+</p>
+
+<p>
+这个 package 的主要功能与我的另一个脚本：<a href="https://github.com/Liu233w/CapsLocKeys.ahk">CapsLocKeys.ahk</a> 中的一个功能类似，可以把键盘上方的数字键替换成对应的符号，也就是说按下数字的时候会输入数字上方的符号，而 <code>shift+数字</code> 则是数字本身。这个在写程序的时候非常有用。
+</p>
+
+<p>
+但是那个脚本不能判断应用程序目前的状态，我只想在 evil 的 insert state 里面启用替换的功能，而在其他模式底下关闭，而且在带有数字键的快捷键（比如 <code>C-x 0</code> ）里面我也不想启用替换，所以只好写一个 emacs 的插件来替换按键了。
+</p>
+
+<p>
+这个 package 定义了一个输入法：number-lock，只要用 <code>set-input-method</code> 把输入法设置成这个，然后就可以用 <code>C-\</code> 来启用替换了。每个 buffer 的状态都是独立的，并且只有在 buffer 的 insert-state 中才会开启，其他时候无论是在组合键还是在 minibuffer
+中都不会启动。而且，如果有一些 package 在单个按键上绑定了函数，比如说 <code>paredit</code>
+就在 <code>)</code> 上绑定了 <code>paredit-close-round</code> ，在按下右括号的时候可以把光标跳到最近的右括号的外面，在使用了本 package 之后按下 <code>0</code> 之后可以调用这个函数，而不是仅仅
+insert 一个 <code>)</code> 。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orge3e9a0b" class="outline-2">
+<h2 id="orge3e9a0b">另一种实现方式</h2>
+<div class="outline-text-2" id="text-orge3e9a0b">
+<p>
+我是不用 emacs 里面的输入法的，所以这种实现方式对我没有什么影响，但使用内置输入法的同学可能会不方便一些。其实一开始我不是使用这种方法，而是使用
+<a href="https://www.emacswiki.org/emacs/Evil">Emacs-Wiki</a>上的方法 ，用 <code>key-translation-map</code> 来替换按键的，但是会产生一些奇怪的 bug，<a href="https://github.com/Liu233w/programming-mode.el/blob/key-translate-mode/programming-mode.el">我把</a>原来的代码保存在了另一个分支里面 ，如果有大神能帮我看看就好了_(:зゝ∠)_
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8c1f3e8" class="outline-2">
+<h2 id="org8c1f3e8">16/8/30 更新</h2>
+<div class="outline-text-2" id="text-org8c1f3e8">
+<p>
+我的 package 已经正式登陆 melpa 了，只需要 <code>M-x package-install RET number-lock RET</code>
+即可安装。
+</p>
+
+<p>
+另外，melpa 上刚刚登陆了另一个和我的类似的插件： <a href="https://github.com/wbolster/evil-swap-keys">evil-swap-keys</a> ，这个插件是用
+<code>key-translation-map</code> 做到的，没有我之前实现中的 bug，并且很易于定制。如果你还在 emacs 中使用别的输入法的话，这个 package 或许是一个不错的选择。
+</p>
+</div>
+</div>
+
+</div>
+</div>
+<div>
+        <div class="post-meta">
+            <span title="发布日期" class="post-info">2016-08-21</span>
+            <span title="最后修改日期" class="post-info">2016-09-06</span>
+            <span title="标签" class="post-info">:<a href="http://liu233w.github.io/tags/emacs">emacs</a> : <a href="http://liu233w.github.io/tags/emacs-package">emacs package</a>:</span>
+            <span title="作者" class="post-info"><a href="mailto:wwwlsmcom &lt;at&gt; outlook &lt;dot&gt; com">Liu233w</a></span>
+        </div>
+    <script src="http://liu233w.github.io/media/js/jquery-2.1.3.min.js"></script>
+        <section>
+            <h1>Comments</h1>
+            <div id="comment-wrap">
+                    <a class="disqus_label">使用 Disqus 评论</a>
+                    <a class="ds-label">使用多说评论</a>
+    </ul>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+         //var disqus_developer = 1;
+         var preempt_signal=false;
+         var disqus_identifier = "/blog/2016/08/21/programming-mode/";
+         var disqus_url = "http://liu233w.github.io/blog/2016/08/21/programming-mode/";
+         var disqus_shortname = 'liu233w';
+         /* * * DON'T EDIT BELOW THIS LINE * * */
+         (function() {
+             var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+             dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+             $('#disqus_thread').css('display','none');
+         })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        <div class="ds-thread"></div>
+        <script type="text/javascript">
+         var duoshuoQuery = {short_name:'liu233w'};
+         (function() {
+             var ds = document.createElement('script');
+             ds.type = 'text/javascript';ds.async = true;
+             ds.src = 'http://static.duoshuo.com/embed.js';
+             ds.charset = 'UTF-8';
+             (document.getElementsByTagName('head')[0]
+           || document.getElementsByTagName('body')[0]).appendChild(ds);
+             $('.ds-thread').css('display','block');
+         })();
+        </script>
+    <script>
+     /* comments */
+     var ego_disqus_thread=$('#disqus_thread');
+     var ego_ds_label=$('.ds-thread');
+     $('.disqus_label').click(function(){
+         ego_disqus_thread.show();
+         ego_ds_label.hide();
+     });
+     $('.ds-label').click(function(){
+         ego_disqus_thread.hide();
+         ego_ds_label.show();
+     });
+    </script>
+        </section>
+    <script src="http://liu233w.github.io/media/js/main.js"></script>
+    <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.x(<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+            Copyright &copy; 2014 - <span id="footerYear"></span> <a href="mailto:wwwlsmcom &lt;at&gt; outlook &lt;dot&gt; com">Liu233w</a>
+            &nbsp;&nbsp;-&nbsp;&nbsp;
+            Powered by <a href="https://github.com/emacs-china/ego" target="_blank">EGO</a><br/>
+            <a href="http://creativecommons.org/licenses/by-sa/3.0/" rel="license"><img src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" style="border-width:0" alt="Creative Commons License" class="center"></a>
+            <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+    </div>
+            </div>
+            <script type="text/javascript"
+                    src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG">
+            </script>
+            <script type="text/x-mathjax-config">
+             MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "AMS"} } });
+            </script>
+</div>
+
+  </div></body>
+</html>

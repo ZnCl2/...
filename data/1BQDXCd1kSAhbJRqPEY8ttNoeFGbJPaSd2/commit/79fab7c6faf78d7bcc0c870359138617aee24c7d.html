@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>replace file size with line count for text files - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/79fab7c6faf78d7bcc0c870359138617aee24c7d.html">79fab7c6faf78d7bcc0c870359138617aee24c7d</a>
+<b>parent</b> <a href="../commit/50dccf0e3ba06bcd732ac5c38c8b326cebc6c097.html">50dccf0e3ba06bcd732ac5c38c8b326cebc6c097</a>
+<b>Author:</b> Quentin Rameau &lt;<a href="mailto:quinq@fifth.space">quinq@fifth.space</a>&gt;
+<b>Date:</b>   Sun Jan 10 00:47:22 +0100
+
+replace file size with line count for text files
+
+Keep the number of line when writing text blobs and print it in the
+index file tree instead of the size. Still print the size otherwise.
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">config.def.h</a></td><td> | </td><td class="num">1</td><td><span class="i">+</span><span class="d"></span></td></tr>
+<tr><td><a href="#h1">stagit.c</a></td><td> | </td><td class="num">25</td><td><span class="i">++++++++++++++++</span><span class="d">---------</span></td></tr>
+</table>2 files changed, 17 insertions(+), 9 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/config.def.h.html">config.def.h</a> b/<a href="../file/config.def.h.html">config.def.h</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -1,2 +1,3 @@
+</a> /* See LICENSE file for copyright and license details. */
+ static const unsigned summarylen = 70; /* summary length in the log */
+<a href="#h0-0-2" id="h0-0-2" class="i">+static const int showlinecount   = 1;  /* display line count or file size in file tree index */
+</a><b>diff --git a/<a id="h1" href="../file/stagit.c.html">stagit.c</a> b/<a href="../file/stagit.c.html">stagit.c</a></b>
+<a href="#h1-0" id="h1-0" class="h">@@ -282,11 +282,11 @@ writefooter(FILE *fp)
+</a> 	return !fputs(&quot;&lt;/div&gt;\n&lt;/body&gt;\n&lt;/html&gt;\n&quot;, fp);
+ }
+ 
+<a href="#h1-0-3" id="h1-0-3" class="d">-void
+</a><a href="#h1-0-4" id="h1-0-4" class="i">+int
+</a> writeblobhtml(FILE *fp, const git_blob *blob)
+ {
+ 	off_t i;
+<a href="#h1-0-8" id="h1-0-8" class="d">-	size_t n = 1;
+</a><a href="#h1-0-9" id="h1-0-9" class="i">+	size_t n = 0;
+</a> 	char *nfmt = &quot;&lt;a href=\&quot;#l%d\&quot; id=\&quot;l%d\&quot;&gt;%d&lt;/a&gt;\n&quot;;
+ 	const char *s = git_blob_rawcontent(blob);
+ 	git_off_t len = git_blob_rawsize(blob);
+<a href="#h1-1" id="h1-1" class="h">@@ -294,6 +294,7 @@ writeblobhtml(FILE *fp, const git_blob *blob)
+</a> 	fputs(&quot;&lt;table id=\&quot;blob\&quot;&gt;&lt;tr&gt;&lt;td class=\&quot;num\&quot;&gt;&lt;pre&gt;\n&quot;, fp);
+ 
+ 	if (len) {
+<a href="#h1-1-3" id="h1-1-3" class="i">+		n++;
+</a> 		fprintf(fp, nfmt, n, n, n);
+ 		for (i = 0; i &lt; len - 1; i++) {
+ 			if (s[i] == &apos;\n&apos;) {
+<a href="#h1-2" id="h1-2" class="h">@@ -306,6 +307,8 @@ writeblobhtml(FILE *fp, const git_blob *blob)
+</a> 	fputs(&quot;&lt;/pre&gt;&lt;/td&gt;&lt;td&gt;&lt;pre&gt;\n&quot;, fp);
+ 	xmlencode(fp, s, (size_t)len);
+ 	fputs(&quot;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;\n&quot;, fp);
+<a href="#h1-2-3" id="h1-2-3" class="i">+
+</a><a href="#h1-2-4" id="h1-2-4" class="i">+	return n;
+</a> }
+ 
+ void
+<a href="#h1-3" id="h1-3" class="h">@@ -573,12 +576,13 @@ writeblob(git_object *obj, const char *fpath, const char *filename, git_off_t fi
+</a> 	char tmp[PATH_MAX] = &quot;&quot;;
+ 	char *d;
+ 	const char *p;
+<a href="#h1-3-3" id="h1-3-3" class="i">+	int lc = 0;
+</a> 	FILE *fp;
+ 
+ 	d = xdirname(fpath);
+ 	if (mkdirp(d)) {
+ 		free(d);
+<a href="#h1-3-9" id="h1-3-9" class="d">-		return 1;
+</a><a href="#h1-3-10" id="h1-3-10" class="i">+		return -1;
+</a> 	}
+ 	free(d);
+ 
+<a href="#h1-4" id="h1-4" class="h">@@ -600,7 +604,7 @@ writeblob(git_object *obj, const char *fpath, const char *filename, git_off_t fi
+</a> 	if (git_blob_is_binary((git_blob *)obj)) {
+ 		fputs(&quot;&lt;p&gt;Binary file&lt;/p&gt;\n&quot;, fp);
+ 	} else {
+<a href="#h1-4-3" id="h1-4-3" class="d">-		writeblobhtml(fp, (git_blob *)obj);
+</a><a href="#h1-4-4" id="h1-4-4" class="i">+		lc = writeblobhtml(fp, (git_blob *)obj);
+</a> 		if (ferror(fp))
+ 			err(1, &quot;fwrite&quot;);
+ 	}
+<a href="#h1-5" id="h1-5" class="h">@@ -609,7 +613,7 @@ writeblob(git_object *obj, const char *fpath, const char *filename, git_off_t fi
+</a> 
+ 	relpath = &quot;&quot;;
+ 
+<a href="#h1-5-3" id="h1-5-3" class="d">-	return 0;
+</a><a href="#h1-5-4" id="h1-5-4" class="i">+	return lc;
+</a> }
+ 
+ const char *
+<a href="#h1-6" id="h1-6" class="h">@@ -663,7 +667,7 @@ writefilestree(FILE *fp, git_tree *tree, const char *branch, const char *path)
+</a> 	git_object *obj = NULL;
+ 	git_off_t filesize;
+ 	size_t count, i;
+<a href="#h1-6-3" id="h1-6-3" class="d">-	int ret;
+</a><a href="#h1-6-4" id="h1-6-4" class="i">+	int lc, ret;
+</a> 
+ 	count = git_tree_entrycount(tree);
+ 	for (i = 0; i &lt; count; i++) {
+<a href="#h1-7" id="h1-7" class="h">@@ -694,15 +698,18 @@ writefilestree(FILE *fp, git_tree *tree, const char *branch, const char *path)
+</a> 			         filename);
+ 		filesize = git_blob_rawsize((git_blob *)obj);
+ 
+<a href="#h1-7-3" id="h1-7-3" class="i">+		lc = writeblob(obj, filepath, filename, filesize);
+</a><a href="#h1-7-4" id="h1-7-4" class="i">+
+</a> 		fputs(&quot;&lt;tr&gt;&lt;td&gt;&quot;, fp);
+ 		fputs(filemode(git_tree_entry_filemode(entry)), fp);
+ 		fprintf(fp, &quot;&lt;/td&gt;&lt;td&gt;&lt;a href=\&quot;%s%s\&quot;&gt;&quot;, relpath, filepath);
+ 		xmlencode(fp, filename, strlen(filename));
+ 		fputs(&quot;&lt;/a&gt;&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;&quot;, fp);
+<a href="#h1-7-10" id="h1-7-10" class="d">-		fprintf(fp, &quot;%ju&quot;, (uintmax_t)filesize);
+</a><a href="#h1-7-11" id="h1-7-11" class="i">+		if (showlinecount &amp;&amp; lc &gt; 0)
+</a><a href="#h1-7-12" id="h1-7-12" class="i">+			fprintf(fp, &quot;%dL&quot;, lc);
+</a><a href="#h1-7-13" id="h1-7-13" class="i">+		else
+</a><a href="#h1-7-14" id="h1-7-14" class="i">+			fprintf(fp, &quot;%jub&quot;, (uintmax_t)filesize);
+</a> 		fputs(&quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;, fp);
+<a href="#h1-7-16" id="h1-7-16" class="d">-
+</a><a href="#h1-7-17" id="h1-7-17" class="d">-		writeblob(obj, filepath, filename, filesize);
+</a> 	}
+ 
+ 	return 0;
+</pre>
+</div>
+</body>
+</html>

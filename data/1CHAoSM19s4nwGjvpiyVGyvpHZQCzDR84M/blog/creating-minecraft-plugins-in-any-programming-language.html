@@ -1,0 +1,64 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>Kevin Froman's blog - Creating Minecraft Plugins In Any Programming Language</title>
+  <meta name='description' content='Kevin Froman's blog on security, programming, and other musings'>
+  <meta name='author' content='Kevin Froman'>
+  <link rel='icon' type='image/x-icon' href='/favicon.ico'>
+  <link rel='stylesheet' href='theme.css'>
+  <script src="https://widget.battleforthenet.com/widget.js" integrity="sha384-OzmvdVOIBjM9YAUmPdrxpGclC0fg2bTYlwv12prMWoF1y4osMdsZ1UvH1ufTqAQ3" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="wrapper">
+    <h1 id='siteTitle'><a href='index.html'>Kevin Froman's blog</a></h1>
+    
+<div id='myIntro' class='center'>Blog on security, programming, & other musings</div>
+    <div id='mainContent'><h2 id='postTitle'>Creating Minecraft Plugins In Any Programming Language</h2>
+        <div id='postDate' class='center'>2017-07-04</div><p>This is a bit of a different post from what I usually write about, but hopefully those who are interested in programming, Linux, or Minecraft will enjoy it.</p>
+<p>Despite being a building game, Minecraft is often praised for its circuitry features and mods that allow people to learn and apply computer science principles while having fun in the game.</p>
+<p>One thing that is often overlooked, is what can be done using only the vanilla game and external programs.</p>
+<p><img alt="minecraft screenshot" src="./images/minecraft-forest.jpg" /></p>
+<p>In this post, I will describe a simple method of creating "plugins" using almost any programming language for a Minecraft server/world, including a proof of concept script written in Python.</p>
+<p>Unfortunately, this method likely only works on <a href="https://en.wikipedia.org/wiki/Posix">POSIX</a> compliant systems (so Linux, Mac, *BSD, etc) and not Windows. If anyone knows how one would go about this method or a similar one on Windows, let me know.</p>
+<h2>Goals</h2>
+<p>I had a few goals in mind when I started this project, which I successfully accomplished:</p>
+<ul>
+<li>Full compatibility with an unmodified vanilla jar (files such as world data do not count as the jar)</li>
+<li>Reasonable resource consumption</li>
+<li>Comparable stability to Craftbukkit style plugins and redstone</li>
+<li>No client modifications</li>
+</ul>
+<h2>Anatomy of a Minecraft server</h2>
+<p>The vanilla server jar is a single file that runs continually as a daemon. If run with the 'nogui' argument or without a GUI, it outputs information and accepts commands via a simple command line interface.</p>
+<p>Traditionally, this has just been used by admins to ban players and as a log system.</p>
+<h2>POSIX to the rescue</h2>
+<p>POSIX systems benefit from a well defined standard for various system functions such as consoles and standard i/o.</p>
+<p>I realized that since the server accepts consistent i/o, it wouldn't be too difficult to automate a server. I initially thought GNU Screen would be a good choice, but unfortunately GNU Screen has some bugs and quirks that made me instead choose tmux.</p>
+<p>Tmux was also a good choice since the <a href="https://en.wikipedia.org/wiki/Python_(programming_language)">Python</a> programming language has a solid <a href="https://github.com/tony/libtmux/">Tmux API</a> available.</p>
+<p>So that was it. I now had a good API for sending automated commands to the server. For parsing data back from the server, I opted to pipe the console to a text file for easier development, but the tmux API can read from tmux as well.</p>
+<h2>Parsing server output</h2>
+<p>Minecraft server output is consistent, starting with the current time, such as <code>[02:45:06] [Server thread/INFO]: Preparing level "world"</code></p>
+<h3>Custom commands</h3>
+<p>Due to the consistent log, it was easy to implement a "command" system in chat. Unfortunately this had to be done with "."'s instead of slashes.</p>
+<h2>Limited log data</h2>
+<p>A limited amount of information is logged in the server console, so for more complex information such as player inventories, health, entity information, and other data, I used a Python <a href="https://github.com/twoolie/NBT">NBT</a> API to extract information from the server.</p>
+<p>Sadly, if you update player NBT information while they are still online, changes are not reflected in game. As far as I know, the player needs to be offline for manually modified NBT information to be seen in game. (The NBT can still be <em>indirectly</em> modified using commands in game)</p>
+<h2>Possibilities</h2>
+<p><strong>❓</strong></p>
+<p>This method of writing plugins is obviously not as powerful as Java modifications or servers implemented from scratch, however some surprising things can be accomplished, such as a virtual currency system, communication to and from a web application, custom commands for teleports, 'home setting', land protection, "McMMO" recreation (a popular Java plugin for rpg-style stats and abilities), and potentially even multi-world teleportation (which I have not tested and believe it would require some network-level hacks).</p>
+<p>Perhaps one of the best parts, "plugins" using this method will rarely break between Minecraft versions, allowing communities to instantly switch to the latest version on release date, or even snapshots (which rarely get traditional plugin support).</p>
+<h2>Compatible programming languages</h2>
+<p><img alt="programming languages" src="./images/langs.png" /></p>
+<p>Any programming language that can interface with tmux or possibly Screen (if you can get past the annoying screen related bugs) can be used to write "plugins" with this method. No longer is server plugin creation restricted to Java or whatever your server software supports.</p>
+<h2>Proof of concept</h2>
+<p>I have published a proof of concept (and unfinished/buggy) "plugin" written in Python, under the name <a href="https://github.com/beardog108/pyckaxe">Pyckaxe on Github</a>.</p>
+<p><img alt="Python programming language logo" src="./images/python.png" /></p><div class="center" style="margin-bottom: -25%; margin-top: 2em; border-radius: 5px; padding: 5px;"><span>Written by anonymous</span><br><br></div>
+    </div>
+  </div>
+  <div id="footer">
+    <footer>Powered by TinyGen<div id='socialLinks'><a class="socialLink" href="https://twitter.com/@beardog108"><img src="../images/twitter.png" alt="TWITTER"></a><a class="socialLink" href="https://github.com/beardog108"><img src="../images/github.png" alt="GITHUB"></a><a class="socialLink" href="beardog@firemail.cc"><img src="../images/email.png" alt="EMAIL"></a><a class="socialLink" href="https://keybase.io/beardog"><img src="../images/keybase.png" alt="KEYBASE"></a><a class="socialLink" href="feed.rss"><img src="../images/feed.png" alt="RSS feed"></a></div></footer>
+  </div>
+</body>
+</html>

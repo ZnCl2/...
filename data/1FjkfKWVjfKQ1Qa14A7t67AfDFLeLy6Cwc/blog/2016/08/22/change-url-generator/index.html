@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>使用 org 的文件名作为 EGO 生成的 URL - 科学君的不科学博客</title>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+  <meta name="author" content="Liu233w" />
+  <meta name="description" content="&lt;Add description here&gt;" />
+  <meta name="keywords" content="emacs, EGO" />
+  <style>
+   #ds-thread #ds-reset .ds-comment-body p {color: #ffffff;}
+   #ds-thread #ds-reset .ds-comment-body p a {color: #ff0;}
+   #ds-thread #ds-reset .ds-comment-body p a:hover {color: #0ff;}
+   #disqus_thread a {color: #00ffff;}
+  </style>
+  <link rel="stylesheet" href="http://liu233w.github.io/media/css/main.css" type="text/css"/>
+  <link rel="stylesheet" href="http://liu233w.github.io/media/css/comment.css" type="text/css"/>
+  <link rel="Shortcut Icon" href="https://raw.githubusercontent.com/Liu233w/liu233w.github.io/source/avatar.jpg" type="image/x-icon">
+</head>
+
+  <body><div class="container">
+<div>
+  <header class="masthead">
+    <h1 class="masthead-title"><a href="http://liu233w.github.io/">科学君的不科学博客</a></h1>
+    <p>by 不科学的科学君</p>
+    <nav class="site-nav">
+      <div class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z" fill="#ffff00"/>
+          <path d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z" fill="#ffff00"/>
+          <path d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z" fill="#ffff00"/>
+        </svg>
+      </div>
+      <ul class="trigger">
+        <li><a href="http://liu233w.github.io/所有文章/">所有文章</a></li>
+        <li><a href="http://liu233w.github.io/tags/">按标签索引</a></li>
+        <li><a href="http://liu233w.github.io/acm/">Acm</a></li>
+        <li><a href="http://liu233w.github.io/blog/">Blog</a></li>
+        <li><a href="http://liu233w.github.io/about/">About</a></li>
+        <li><a href="https://github.com/liu233w/liu233w.github.io">Github</a></li>
+        <li><a href="http://liu233w.github.io/rss.xml">RSS</a></li>
+      </ul>
+    </nav>
+    <form method="get" id="searchform" action="http://www.google.com/search">
+      <input type="text" class="field" name="q" id="s" placeholder="Search">
+      <input type="hidden" name="as_sitesearch" value="liu233w.github.io">
+    </form>
+    <img id="avatarid" class="avatar" src="https://raw.githubusercontent.com/Liu233w/liu233w.github.io/source/avatar.jpg" />
+  </header>
+</div>
+
+<div>
+<div class="post">
+<h1 class="title">使用 org 的文件名作为 EGO 生成的 URL</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgcf8306f">概述</a></li>
+<li><a href="#org43dfea6">改进方法</a></li>
+<li><a href="#org5d1424b">原理</a></li>
+<li><a href="#org1fcb319">16/8/23 更新</a></li>
+<li><a href="#org48f7a64">16/8/24 更新</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgcf8306f" class="outline-2">
+<h2 id="orgcf8306f">概述</h2>
+<div class="outline-text-2" id="text-orgcf8306f">
+<p>
+EOG 默认是使用文章的标题来生成 URL 的，这么做的坏处有二：
+</p>
+<ol class="org-ol">
+<li>如果文章的标题里面有汉字，生成的 URL 因为编码的原因会变的特别长，不美观。</li>
+<li>只要更改了文章的标题，URL 就会随之而改变，以后就不好找了。而且 disqus 和多说也会把修改标题之后的文章当成新的文章。</li>
+</ol>
+
+<p>
+我修改了 EGO 生成 URL 的策略，现在我的博客就是使用 hack 之后的 EGO 来生成的。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org43dfea6" class="outline-2">
+<h2 id="org43dfea6">改进方法</h2>
+<div class="outline-text-2" id="text-org43dfea6">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">liu233w//ego--generate-uri</span> <span style="color: #b58900;">(</span>default-uri-template creation-date title<span style="color: #b58900;">)</span>
+  <span style="color: #2aa198;">"&#31867;&#20284;&#20110;`</span><span style="color: #268bd2; font-weight: bold;">ego--generate-uri</span><span style="color: #2aa198;">'&#65292;&#21482;&#19981;&#36807;&#35835;&#21462; org &#30340;&#25991;&#20214;&#21517;&#20316;&#20026; title"</span>
+  <span style="color: #b58900;">(</span><span style="color: #859900; font-weight: bold;">let</span> <span style="color: #268bd2;">(</span><span style="color: #6c71c4;">(</span>uri-template <span style="color: #859900;">(</span><span style="color: #859900; font-weight: bold;">or</span> <span style="color: #b58900;">(</span>ego--read-org-option <span style="color: #2aa198;">"URI"</span><span style="color: #b58900;">)</span>
+                          default-uri-template<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span>
+        <span style="color: #6c71c4;">(</span>date-list <span style="color: #859900;">(</span>split-string <span style="color: #b58900;">(</span><span style="color: #859900; font-weight: bold;">if</span> creation-date
+                                     <span style="color: #268bd2;">(</span>ego--fix-timestamp-string creation-date<span style="color: #268bd2;">)</span>
+                                   <span style="color: #268bd2;">(</span>format-time-string <span style="color: #2aa198;">"%Y-%m-%d"</span><span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span>
+                                 <span style="color: #2aa198;">"-"</span><span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span>
+        <span style="color: #6c71c4;">(</span>encoded-title <span style="color: #859900;">(</span>ego--encode-string-to-url
+                        <span style="color: #586e75;">;; </span><span style="color: #586e75;">&#33719;&#21462; buffer &#30340;&#25991;&#20214;&#21517;</span>
+                        <span style="color: #b58900;">(</span>replace-regexp-in-string <span style="color: #2aa198;">"^.*/</span><span style="color: #859900; font-weight: bold;">\\</span><span style="color: #b58900; font-weight: bold;">|</span><span style="color: #2aa198;">\\.org$"</span> <span style="color: #2aa198;">""</span> <span style="color: #268bd2;">(</span>buffer-file-name<span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span><span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span>
+    <span style="color: #268bd2;">(</span>format-spec uri-template `<span style="color: #6c71c4;">(</span><span style="color: #859900;">(</span>?y . ,<span style="color: #b58900;">(</span>car date-list<span style="color: #b58900;">)</span><span style="color: #859900;">)</span>
+                                <span style="color: #859900;">(</span>?m . ,<span style="color: #b58900;">(</span>cadr date-list<span style="color: #b58900;">)</span><span style="color: #859900;">)</span>
+                                <span style="color: #859900;">(</span>?d . ,<span style="color: #b58900;">(</span>cl-caddr date-list<span style="color: #b58900;">)</span><span style="color: #859900;">)</span>
+                                <span style="color: #859900;">(</span>?t . ,encoded-title<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span><span style="color: #2aa198;">)</span>
+</pre>
+</div>
+
+<p>
+如果你不介意直接覆盖函数的话，可以把函数名换成 <code>ego--generate-uri</code> ，这样 EGO 的默认函数就被覆盖了。如果你不想这么做，可以修改 <code>ego--category-config-alist</code> 中的 <code>:uri-generator</code> ，如我的代码所示：
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">setf</span> ego--category-config-alist
+            '<span style="color: #b58900;">(</span><span style="color: #268bd2;">(</span><span style="color: #2aa198;">"blog"</span>
+               <span style="color: #839496; font-weight: bold;">:show-meta</span> t
+               <span style="color: #839496; font-weight: bold;">:show-comment</span> t
+               <span style="color: #586e75;">;; </span><span style="color: #586e75;">&#23558; org &#30340;&#25991;&#20214;&#21517;&#24403;&#20570; uri&#65292;&#21442;&#32771;&#20989;&#25968;</span>
+               <span style="color: #839496; font-weight: bold;">:uri-generator</span> liu233w//ego--generate-uri
+               <span style="color: #839496; font-weight: bold;">:uri-template</span> <span style="color: #2aa198;">"/blog/%y/%m/%d/%t/"</span>
+               <span style="color: #839496; font-weight: bold;">:sort-by</span> <span style="color: #839496; font-weight: bold;">:date</span>     <span style="color: #586e75;">;; </span><span style="color: #586e75;">how to sort the posts</span>
+               <span style="color: #839496; font-weight: bold;">:category-index</span> t<span style="color: #268bd2;">)</span> <span style="color: #586e75;">;; </span><span style="color: #586e75;">generate category index or not</span>
+              <span style="color: #268bd2;">(</span><span style="color: #2aa198;">"acm"</span>
+               <span style="color: #839496; font-weight: bold;">:show-meta</span> t
+               <span style="color: #839496; font-weight: bold;">:show-comment</span> t
+               <span style="color: #586e75;">;; </span><span style="color: #586e75;">&#23558; org &#30340;&#25991;&#20214;&#21517;&#24403;&#20570; uri&#65292;&#21442;&#32771;&#20989;&#25968;</span>
+               <span style="color: #839496; font-weight: bold;">:uri-generator</span> liu233w//ego--generate-uri
+               <span style="color: #839496; font-weight: bold;">:uri-template</span> <span style="color: #2aa198;">"/acm/%y/%m/%d/%t/"</span>
+               <span style="color: #839496; font-weight: bold;">:sort-by</span> <span style="color: #839496; font-weight: bold;">:date</span>     <span style="color: #586e75;">;; </span><span style="color: #586e75;">how to sort the posts</span>
+               <span style="color: #839496; font-weight: bold;">:category-index</span> t<span style="color: #268bd2;">)</span>
+              <span style="color: #268bd2;">(</span><span style="color: #2aa198;">"index"</span>
+               <span style="color: #839496; font-weight: bold;">:show-meta</span> nil
+               <span style="color: #839496; font-weight: bold;">:show-comment</span> nil
+               <span style="color: #839496; font-weight: bold;">:uri-generator</span> ego--generate-uri
+               <span style="color: #839496; font-weight: bold;">:uri-template</span> <span style="color: #2aa198;">"/"</span>
+               <span style="color: #839496; font-weight: bold;">:sort-by</span> <span style="color: #839496; font-weight: bold;">:date</span>
+               <span style="color: #839496; font-weight: bold;">:category-index</span> nil<span style="color: #268bd2;">)</span>
+              <span style="color: #268bd2;">(</span><span style="color: #2aa198;">"about"</span>
+               <span style="color: #839496; font-weight: bold;">:show-meta</span> nil
+               <span style="color: #839496; font-weight: bold;">:show-comment</span> nil
+               <span style="color: #839496; font-weight: bold;">:uri-generator</span> ego--generate-uri
+               <span style="color: #839496; font-weight: bold;">:uri-template</span> <span style="color: #2aa198;">"/about/"</span>
+               <span style="color: #839496; font-weight: bold;">:sort-by</span> <span style="color: #839496; font-weight: bold;">:date</span>
+               <span style="color: #839496; font-weight: bold;">:category-index</span> nil<span style="color: #268bd2;">)</span>
+              <span style="color: #b58900;">)</span><span style="color: #2aa198;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org5d1424b" class="outline-2">
+<h2 id="org5d1424b">原理</h2>
+<div class="outline-text-2" id="text-org5d1424b">
+<p>
+相比于原来的函数，我只是把 let 中的参数 <code>title</code> 换成了
+<code>(replace-regexp-in-string "^.*/\\|\\.org$" "" (buffer-file-name))</code>
+而已。因为这个函数会在每一个打开的 buffer 中运行，所以可以通过 <code>buffer-file-name</code>
+来获取当前 org 文件的路径，然后用正则表达式把多余的内容删掉，只保留文件名即可。
+</p>
+
+<p>
+表达式的效果：
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #2aa198;">(</span>replace-regexp-in-string <span style="color: #2aa198;">"^.*/</span><span style="color: #859900; font-weight: bold;">\\</span><span style="color: #b58900; font-weight: bold;">|</span><span style="color: #2aa198;">\\.org$"</span> <span style="color: #2aa198;">""</span>
+                          <span style="color: #2aa198;">"d:/TOTALCMD/tools/emacs/home/documents/blog/blog/change-url-generator.org"</span><span style="color: #2aa198;">)</span>
+</pre>
+</div>
+
+<pre class="example">
+change-url-generator
+</pre>
+
+<p>
+比较神奇的是 emacs 的正则表达式居然是把转义之后的 <code>|</code> 符号当做分支符号，而没有转义的是符号本身，这跟其他的正则表达式实现不一样啊。
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #2aa198;">(</span>replace-regexp-in-string <span style="color: #2aa198;">"ab|c"</span> <span style="color: #2aa198;">"dd"</span> <span style="color: #2aa198;">"ab|c"</span><span style="color: #2aa198;">)</span>
+</pre>
+</div>
+
+<pre class="example">
+dd
+</pre>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #2aa198;">(</span>replace-regexp-in-string <span style="color: #2aa198;">"ab</span><span style="color: #859900; font-weight: bold;">\\</span><span style="color: #b58900; font-weight: bold;">|</span><span style="color: #2aa198;">c"</span> <span style="color: #2aa198;">"dd"</span> <span style="color: #2aa198;">"ab|c"</span><span style="color: #2aa198;">)</span>
+</pre>
+</div>
+
+<pre class="example">
+dd|dd
+</pre>
+
+<p>
+貌似括号也是这样的。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1fcb319" class="outline-2">
+<h2 id="org1fcb319">16/8/23 更新</h2>
+<div class="outline-text-2" id="text-org1fcb319">
+<p>
+作者根据<a href="https://github.com/emacs-china/EGO/issues/85">我的 issue</a> 修改了这个函数，现在 EGO 可以在 URL 里面添加一个 <code>%f</code> 的模板来表示文件名了。也就是说可以把 URL 改成 <code>/blog/%y/%m/%d/%f/</code> 来在生成的时候使用文件名作为 URI。但是由于每一篇文章里面都有元数据的 URL，我就必须修改每一篇文章了。而且文章的模板没有相应的做出改变，
+<code>ego--insert-options-template</code> 和 <code>ego-new-post</code> 也没有改，目前使用这种方法还比较麻烦。我暂时还不会修改自己的配置，等到这两个函数完善之后再说吧。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org48f7a64" class="outline-2">
+<h2 id="org48f7a64">16/8/24 更新</h2>
+<div class="outline-text-2" id="text-org48f7a64">
+<p>
+找到了新的办法：用 nadvice.el 修改 <code>ego--insert-options-template</code> 即可。请确保以下的代码在 EGO 加载之后运行。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">require</span> '<span style="color: #268bd2; font-weight: bold;">nadvice</span><span style="color: #2aa198;">)</span>
+<span style="color: #586e75;">;; </span><span style="color: #586e75;">&#25913;&#21464;&#40664;&#35748;&#30340;&#20803;&#25968;&#25454;&#27169;&#26495;&#65292;&#20351;&#25554;&#20837;&#30340; URL &#20026; "category/%y/%m/%d/%f/"</span>
+<span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">org-config//advice-of-ego--insert-options-template</span> <span style="color: #b58900;">(</span>args<span style="color: #b58900;">)</span>
+  <span style="color: #b58900;">(</span><span style="color: #859900; font-weight: bold;">setf</span> <span style="color: #268bd2;">(</span>second args<span style="color: #268bd2;">)</span>
+        <span style="color: #268bd2;">(</span>replace-regexp-in-string <span style="color: #2aa198;">"%t/ Or .*$"</span> <span style="color: #2aa198;">"%f/"</span>
+                                  <span style="color: #6c71c4;">(</span>second args<span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span>
+  args<span style="color: #2aa198;">)</span>
+
+<span style="color: #2aa198;">(</span>advice-add 'ego--insert-options-template <span style="color: #839496; font-weight: bold;">:filter-args</span>
+            'org-config//advice-of-ego--insert-options-template
+            <span style="color: #2aa198;">)</span>
+</pre>
+</div>
+
+<p>
+<code>nadvice.el</code> 是一个 emacs 内置的新 package，与 defadvice 类似，它可以改变某个函数的默认行为。 <code>ego-new-post</code> 会调用 <code>ego--insert-options-template</code> 来插入
+org 文件的元数据。 <code>advice-added</code> 函数通过参数 <code>:filter-args</code> 将我的自定义函数套在了原来函数的外面，传递给原函数的参数要经过我的函数的处理才能真正传递给它。
+</p>
+
+<p>
+如果你在新建文章的时候使用了默认生成的模板（调用 <code>ego-new-post</code> 函数的最后回答 yes），传递给 <code>ego--insert-options-template</code> 的第二个参数（URL 模板）默认会是
+<code>/your-category/%y/%m/%d/%t/ Or /your-category/%t/</code> ，我的函数将通过正则表达式把它替换成 <code>/your-category/%y/%m/%d/%f/</code> ，默认使用文件名当做 URL，这样就不需要再手动修改了。如果你回答 no 来自己指定标题和 uri 的话，我的函数是不会影响的。
+</p>
+
+<p>
+现在就可以去掉原来自定义的 <code>ego--generate-uri</code> 函数，把原来 org 文件里面的 <code>%t</code> 替换成
+<code>%f</code> 了。上面的代码可比原来的修改少多了。
+</p>
+
+<p>
+至于批量替换，可以用 emacs 的 dired 来做。用 dired 标记所有需要替换的文件，然后按 <code>Q</code> ，就可以像在一个文件中替换文本那样替换所有文件中的文本了。
+</p>
+</div>
+</div>
+
+</div>
+</div>
+<div>
+        <div class="post-meta">
+            <span title="发布日期" class="post-info">2016-08-22</span>
+            <span title="最后修改日期" class="post-info">2016-09-06</span>
+            <span title="标签" class="post-info">:<a href="http://liu233w.github.io/tags/emacs">emacs</a> : <a href="http://liu233w.github.io/tags/ego">EGO</a>:</span>
+            <span title="作者" class="post-info"><a href="mailto:wwwlsmcom &lt;at&gt; outlook &lt;dot&gt; com">Liu233w</a></span>
+        </div>
+    <script src="http://liu233w.github.io/media/js/jquery-2.1.3.min.js"></script>
+        <section>
+            <h1>Comments</h1>
+            <div id="comment-wrap">
+                    <a class="disqus_label">使用 Disqus 评论</a>
+                    <a class="ds-label">使用多说评论</a>
+    </ul>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+         //var disqus_developer = 1;
+         var preempt_signal=false;
+         var disqus_identifier = "/blog/2016/08/22/change-url-generator/";
+         var disqus_url = "http://liu233w.github.io/blog/2016/08/22/change-url-generator/";
+         var disqus_shortname = 'liu233w';
+         /* * * DON'T EDIT BELOW THIS LINE * * */
+         (function() {
+             var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+             dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+             $('#disqus_thread').css('display','none');
+         })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        <div class="ds-thread"></div>
+        <script type="text/javascript">
+         var duoshuoQuery = {short_name:'liu233w'};
+         (function() {
+             var ds = document.createElement('script');
+             ds.type = 'text/javascript';ds.async = true;
+             ds.src = 'http://static.duoshuo.com/embed.js';
+             ds.charset = 'UTF-8';
+             (document.getElementsByTagName('head')[0]
+           || document.getElementsByTagName('body')[0]).appendChild(ds);
+             $('.ds-thread').css('display','block');
+         })();
+        </script>
+    <script>
+     /* comments */
+     var ego_disqus_thread=$('#disqus_thread');
+     var ego_ds_label=$('.ds-thread');
+     $('.disqus_label').click(function(){
+         ego_disqus_thread.show();
+         ego_ds_label.hide();
+     });
+     $('.ds-label').click(function(){
+         ego_disqus_thread.hide();
+         ego_ds_label.show();
+     });
+    </script>
+        </section>
+    <script src="http://liu233w.github.io/media/js/main.js"></script>
+    <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.x(<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+            Copyright &copy; 2014 - <span id="footerYear"></span> <a href="mailto:wwwlsmcom &lt;at&gt; outlook &lt;dot&gt; com">Liu233w</a>
+            &nbsp;&nbsp;-&nbsp;&nbsp;
+            Powered by <a href="https://github.com/emacs-china/ego" target="_blank">EGO</a><br/>
+            <a href="http://creativecommons.org/licenses/by-sa/3.0/" rel="license"><img src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" style="border-width:0" alt="Creative Commons License" class="center"></a>
+            <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+    </div>
+            </div>
+            <script type="text/javascript"
+                    src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG">
+            </script>
+            <script type="text/x-mathjax-config">
+             MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "AMS"} } });
+            </script>
+</div>
+
+  </div></body>
+</html>

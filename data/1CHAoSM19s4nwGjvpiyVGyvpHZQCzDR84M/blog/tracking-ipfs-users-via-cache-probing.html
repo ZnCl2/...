@@ -1,0 +1,63 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>Kevin Froman's blog - Tracking Ipfs Users Via Cache Probing</title>
+  <meta name='description' content='Kevin Froman's blog on security, programming, and other musings'>
+  <meta name='author' content='Kevin Froman'>
+  <link rel='icon' type='image/x-icon' href='/favicon.ico'>
+  <link rel='stylesheet' href='theme.css'>
+  <script src="https://widget.battleforthenet.com/widget.js" integrity="sha384-OzmvdVOIBjM9YAUmPdrxpGclC0fg2bTYlwv12prMWoF1y4osMdsZ1UvH1ufTqAQ3" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="wrapper">
+    <h1 id='siteTitle'><a href='index.html'>Kevin Froman's blog</a></h1>
+    
+<div id='myIntro' class='center'>Blog on security, programming, & other musings</div>
+    <div id='mainContent'><h2 id='postTitle'>Tracking Ipfs Users Via Cache Probing</h2>
+        <div id='postDate' class='center'>2017-04-06</div><h2>Introduction</h2>
+<p><a href="https://ipfs.io/">IPFS</a> is a distributed file system network that uses hashes to lookup, verify, and track content.</p>
+<p><img alt="ipfs logo" src="./images/ipfs-logo.png" /></p>
+<p>The IPFS reference client has an HTTP gateway on localhost for accessing files (such as HTML) via the network.</p>
+<p>These files are stored in the IPFS cache for an indefinite period of time to make the available offline and to others who would request them.</p>
+<p>This gateway also has a very liberal <a href="https://enable-cors.org">CORS</a> header, making content readable to other browser origins.</p>
+<p>Sadly, this file permanence system comes at a cost. Websites on or off IPFS can test if any given file is in a node without giving any initial indication that they are doing so.</p>
+<h2>Probing the cache</h2>
+<p>Similar to my attacks on <a href="stealing-your-I2P-email.html">I2P</a>, IPFS also has to deal with web vulnerabilities, because of its webui and gateway system.</p>
+<p>By requesting a hash from the user's local gateway and tracking the time it takes to load, I can see if they have that file in their cache or not.</p>
+<h2>Caveats</h2>
+<p>This form of testing is far from perfect, there are factors that could result in incorrect results:</p>
+<ul>
+<li>
+<p>Slow machine/disk</p>
+</li>
+<li>
+<p>Large files may be more difficult to detect</p>
+</li>
+<li>
+<p>If multiple sites did this, they could hurt each other by requesting (and therefore polluting) the same data.</p>
+</li>
+</ul>
+<h2>Supercookies 🍪</h2>
+<p>IPFS can also be used as a type of supercookie with 99-100% accuracy. </p>
+<p>An attacker would pre-compute tracking files on their node and assign them to IPFS users by making their clients request &amp; cache them. </p>
+<p>These files could then use <a href="https://en.wikipedia.org/wiki/Cache_manifest_in_HTML5">application cache</a> or service workers to make the cookie available if the IPFS node goes down.</p>
+<p>In reality, since IPFS is not that popular to begin with &amp; browsers are already easy to fingerprint, IPFS being installed (combined with other browser data) would be enough to uniquely identify a user.</p>
+<h2>Mitigation</h2>
+<p>The cache &amp; supercookie 'attack' could be mitigated by requiring some sort of authentication to interact with the gateway.</p>
+<p>Unless a system like that is added, user's will have to do 'ipfs repo gc' and/or shutdown their node to protect themselves.</p>
+<p>Noscript's "application boundaries enforcer" should provide some protection as well.</p>
+<h1>Other Attacks</h1>
+<p>There are a couple other IPFS attacks I haven't seen discussed much, but I don't really feel need their own posts.</p>
+<h2>Webui Clickjacking</h2>
+<p>The IPFS webui does not return 'x-frame-options', meaning the user's IPFS node ID (&amp; system username) can be exfiltrated using frame splicing, and their config maliciously changed via pastejacking.</p>
+<h2>Stealing cookies</h2>
+<p>Since all IPFS files are served on the same origin (the gateway address), files have access to each others cookies, local/session storage, and other data. Do not store any sensitive data in IPFS sites.</p><div class="center" style="margin-bottom: -25%; margin-top: 2em; border-radius: 5px; padding: 5px;"><span>Written by anonymous</span><br><br></div>
+    </div>
+  </div>
+  <div id="footer">
+    <footer>Powered by TinyGen<div id='socialLinks'><a class="socialLink" href="https://twitter.com/@beardog108"><img src="../images/twitter.png" alt="TWITTER"></a><a class="socialLink" href="https://github.com/beardog108"><img src="../images/github.png" alt="GITHUB"></a><a class="socialLink" href="beardog@firemail.cc"><img src="../images/email.png" alt="EMAIL"></a><a class="socialLink" href="https://keybase.io/beardog"><img src="../images/keybase.png" alt="KEYBASE"></a><a class="socialLink" href="feed.rss"><img src="../images/feed.png" alt="RSS feed"></a></div></footer>
+  </div>
+</body>
+</html>

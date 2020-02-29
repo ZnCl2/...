@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Important Zites</title>
+    <meta charset="utf-8">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="zite,zites,important,krixano,list,category,search,filter">
+    <base href="" target="_top" id="base">
+    <script>
+        base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")
+    </script>
+
+    <style>
+        .table tbody th,
+        .table thead tr>th:first-child {
+            text-align: center;
+        }
+        
+        #zite_num,
+        #cat_num,
+        #zites_table {
+            visibility: hidden;
+        }
+        html, body, section, table {
+            background: #f8f8f8 !important;
+        }
+    </style>
+
+    <script src="js/navToggle.js"></script>
+    <link rel="stylesheet" href="css/bulma.css" />
+    <link rel="stylesheet" href="css/main.css" />
+</head>
+
+<body>
+    <nav class="nav has-shadow">
+        <div class="container">
+            <div class="nav-left">
+                <!-- This "nav-toggle" hamburger menu is only visible on mobile -->
+                <!-- You need JavaScript to toggle the "is-active" class on "nav-menu" -->
+                <span id="nav-toggle" class="nav-toggle">
+    				<span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+                <a href="./" class="nav-item" style="font-weight: bold;">Important Zites</a>
+                <span class="nav-item"><code id="zite_num" class="tag is-light">0</code> <code id="cat_num" class="tag is-light">0</code></span>
+            </div>
+
+
+            <!-- This "nav-menu" is hidden on mobile -->
+            <!-- Add the modifier "is-active" to display it on mobile -->
+            <div id="nav-menu" class="nav-right nav-menu">
+                <a href="./" class="nav-item is-active">Home</a>
+                <a href="request.html" class="nav-item">Requests</a>
+                <a href="about.html" class="nav-item">About</a>
+                <span class="nav-item"><a href="#Select+user" id="select_user" class="button is-info" onclick='return page.selectUser()'>Select user</a></span>
+            </div>
+        </div>
+    </nav>
+
+    <section class="section">
+        <div class="columns">
+            <div class="column is-2 is-offset-1">
+                <aside class="menu">
+                    <input class="input" id="search" name="search" type="search" placeholder="Search" onkeyup="search();" onchange="search();" onkeypress="if (event.keyCode == 13) loadFirstZite()" autofocus="autofocus" />
+                    <p class="menu-label">Categories</p>
+                    <ul class="menu-list" id="categories_list">
+                        <li><a id="allTab" onclick="tabClick('all', this); return false;">All</a></li>
+                        <!--<li><a onclick="tabClick('info', this); return false;">Info</a></li>-->
+                    </ul>
+                </aside>
+            </div>
+            <div class="column is-8">
+                <div class="notification is-info" style="margin-right: 50px; margin-left: 70px;">
+					<p>There is a New and Improved version of this zite with user-added zites, a fast relevance-based search with pagination, and a more modern (material) and mobile friendly design. You can visit it at <a href="/1MiS3ud9JogSQpd1QVmM6ETHRmk5RgJn6E">/1MiS3ud9JogSQpd1QVmM6ETHRmk5RgJn6E</a></a></p>
+				</div>
+                <!-- TODO -->
+                <table id="zites_table" class="table is-narrow is-striped" style="margin-left: 10px; margin-right: 10px;">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody id="zites_list">
+                        <!--<tr class="social">
+							<th><a href="/mail.zeroverse.bit/">ZeroVerse Mail</a></th>
+							<td>Mail for ZeroVerse <code class="category" style="font-style: italic;">SOCIAL</code></td>
+						</tr>-->
+                        <!-- Abandoned Project -->
+                        <!--<tr class="books">
+							<th><a href="/1DszUR6XLMLztoPZ4q9v7Ym6916HrnUSqz">ZeroManga</a></th>
+							<td>Download mangas</td>
+						</tr>-->
+                        <!--<tr>
+							<th><a href="#">ZeroNews</a></th>
+							<td>One of the first News zites on ZeroNet</td>
+						</tr>-->
+                        <!--<tr class="other">
+							<th><a href="/1HPgDoReCFtE9qy71hnp55ksBVvV1gHJLQ">id@ZeroVerse</a></th>
+							<td>User authorization provider <code class="category" style="font-style: italic;">OTHER</code></td>
+						</tr>-->
+                        <!-- Abandoned Project -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <span style="text-align: center">
+				<small>NOTE: This zite is still a work-in-progress.</small><br>
+				<small>Zite created on April 12th, 2017 by <a href="/Me.ZeroNetwork.bit/?Profile/12h51ug6CcntU2aiBjhP8Ns2e5VypbWWtv/12gAes6NzDS9E2q6Q1UXrpUdbPS6nvuBPu/krixano@zeroid.bit">krixano@zeroid.bit</a> (Christian Seibold)</small><br>
+				<small><a href="https://github.com/krixano/ImportantZites">Github Link</a></small>
+			</span>
+        </div>
+    </footer>
+
+    <script type="text/javascript" src="js/ZeroFrame.js"></script>
+    <script type="text/javascript" src="js/gsap/TweenLite.min.js"></script>
+    <script type="text/javascript" src="js/gsap/plugins/CSSPlugin.min.js"></script>
+
+    <script>
+        var allZites;
+        var categoriesList;
+        class ZeroChat extends ZeroFrame {
+            onOpenWebsocket() {
+                this.cmd("siteInfo", {}, (site_info) => {
+                    if (site_info.cert_user_id)
+                        document.getElementById("select_user").innerText = site_info.cert_user_id;
+
+                    this.site_info = site_info;
+                    this.loadCategories(function() {
+                        page.loadZites(function() {
+                            allZites = document.querySelectorAll("#zites_list > tr");
+                            tabClick('all', document.getElementById('allTab'));
+                        })
+                    });
+                });
+            }
+
+            selectUser() {
+                this.cmd("certSelect", {
+                    accepted_domains: ["zeroid.bit", "kaffie.bit", "cryptoid.bit"]
+                })
+                return false;
+            }
+
+            onRequest(cmd, message) {
+                if (cmd == "setSiteInfo") {
+                    // Save site info data to allow access it later
+                    this.site_info = message.params;
+                    if (message.params.cert_user_id)
+                        document.getElementById("select_user").innerHTML = message.params.cert_user_id;
+                    else if (!message.params.cert_user_id) {
+                        document.getElementById("select_user").innerHTML = "Select user";
+                    }
+                    if (message.params.event && message.params.event[0] == "file_done") {
+                        this.loadZites();
+                        allZites = document.querySelectorAll("#zites_list > tr");
+                    }
+                }
+            }
+
+            loadZites(cb) {
+                var zites_list = document.getElementById("zites_list");
+                var zites_table = document.getElementById("zites_table");
+                var zite_indicator = document.getElementById('zite_num');
+
+                TweenLite.set(zites_table, {
+                    autoAlpha: 0
+                });
+                TweenLite.set(zite_indicator, {
+                    autoAlpha: 0
+                });
+
+                zites_list.innerHTML = "";
+
+                page.cmd("dbQuery", ["SELECT * FROM zites"], (zites) => {
+                    zite_indicator.innerHTML = zites.length + " zites";
+
+                    for (var x in zites) {
+                        var zite = zites[x];
+                        zites_list.innerHTML +=
+                            "<tr class='cat-" + zite.category + "'><th><a href='/" + zite.address + "'>" +
+                            zite.title + "</a></th><td>" + zite.description +
+                            " <code class='category' style='font-style: italic;'>" +
+                            zite.category.toUpperCase() + "</code></td></tr>";
+                    }
+
+                    if (typeof cb === "function")
+                        cb();
+
+                    TweenLite.to(zites_table, 3, {
+                        autoAlpha: 2
+                    });
+                    TweenLite.to(zite_indicator, 3, {
+                        autoAlpha: 2
+                    });
+                });
+            }
+
+            getCategoriesList(cb) {
+                if (categoriesList) {
+                    if (typeof cb === "function")
+                        cb(categoriesList);
+                } else {
+                    page.cmd("dbQuery", ["SELECT * FROM categories"], (cats) => {
+                        categoriesList = cats;
+                        if (typeof cb === "function")
+                            cb(cats);
+                    })
+                }
+            }
+
+            loadCategories(cb) {
+                var cats_list = document.getElementById("categories_list");
+                var cats_indicator = document.getElementById('cat_num');
+
+                TweenLite.set(cats_indicator, {
+                    autoAlpha: 0
+                });
+
+                page.getCategoriesList(function(cats) {
+                    cats_indicator.innerHTML = cats.length + " categories";
+
+                    for (var x in cats) {
+                        var cat = cats[x];
+                        cats_list.innerHTML += '<li><a onclick="tabClick(\'' +
+                            cat.name + '\', this); return false;">' +
+                            cat.name[0].toUpperCase() + cat.name.substring(1) + '</a></li>';
+                    }
+
+                    if (typeof cb === "function")
+                        cb();
+
+                    TweenLite.to(cats_indicator, 3, {
+                        autoAlpha: 2
+                    });
+                })
+            }
+        }
+
+        page = new ZeroChat();
+
+        var previousCategory;
+        var currentCategory;
+        var previousActiveTab;
+
+        function search(s) {
+            if (currentCategory == "all") {
+                var ziteList = allZites;
+            } else {
+                var ziteList = document.querySelectorAll(".cat-" + currentCategory);
+            }
+            var s = (s || document.getElementById("search").value).trim()
+
+            if (s && ziteList) {
+                var anystrue = false
+                for (var x in ziteList) {
+                    var y = ziteList[x]
+
+                    if (!y || typeof y !== "object")
+                        continue
+
+                    if (y.innerText) {
+                        var searchables = y.innerText.split("\t")
+                        if (searchables && searchables[1]) {
+                            searchables[2] = searchables[1].substr(0, searchables[1].lastIndexOf(" "))
+                            searchables[3] = searchables[1].substr(searchables[1].lastIndexOf(" ") + 1)
+                        }
+                    }
+
+                    // if (previousCategory === searchables[3].toLowerCase() || previousCategory === "all")
+                    //     y.style.display = ""
+
+                    var strue = false
+                    for (var x2 in searchables) {
+                        if (x2 === 1)
+                            continue
+
+                        var y2 = searchables[x2]
+                        if (y2.match(new RegExp(s, "gmi"))) {
+                            strue = true
+                            anystrue = true
+                        }
+                    }
+
+                    // console.log(y, strue, searchables)
+
+                    if (!strue && s)
+                        y.style.display = "none"
+                    else
+                        y.style.display = ""
+                }
+
+                // Show "No match"-Message
+                if (!anystrue)
+                    console.log("No match")
+            } else if (ziteList) {
+                for (var x in ziteList) {
+                    var y = ziteList[x]
+
+                    if (!y || typeof y !== "object")
+                        continue
+
+                    y.style.display = ""
+                }
+            }
+
+            // "<tr class='cat-" + zite.category + "'><th><a href='/" + zite.address + "'>" +
+            // zite.title + "</a></th><td>" + zite.description +
+            // " <code class='category' style='font-style: italic;'>" +
+            // zite.category.toUpperCase() + "</code></td></tr>";
+        }
+
+        function loadFirstZite() {
+            var ziteList;
+            if (currentCategory == "all") {
+                ziteList = allZites;
+            } else {
+                ziteList = document.querySelectorAll(".cat-" + currentCategory);
+            }
+            var zite;
+
+            // Go through all zites in list until one is visible, then set it to the zite variable
+            for (var i = 0; i < ziteList.length; i++) {
+                if (ziteList[i].style.display != "none") {
+                    zite = ziteList[i];
+                    break;
+                }
+            }
+
+            if (zite) {
+                var link = zite.firstChild.firstChild.href;
+                console.log("Opening " + link + " in new tab.");
+                page.cmd("wrapperOpenWindow", [link]);
+            }
+        }
+
+        function tabClick(id, tabElem) {
+            // Don't do anything, including animations, when clicking on a tab that's already selected.
+            if (previousCategory == id) {
+                return;
+            }
+            currentCategory = id;
+            TweenLite.set(document.getElementById('zites_table'), {
+                autoAlpha: 0
+            });
+            if (id == "all") {
+                // Show all divs except the previousCategory (because that one is already shown)
+                page.getCategoriesList(function(cats) {
+                    for (var x in cats) {
+                        var cat = cats[x];
+
+                        if (previousCategory != cat.name) {
+                            var s = document.querySelectorAll('.cat-' + cat.name);
+                            for (var x2 = 0; x2 < s.length; x2++) {
+                                s[x2].style.display = "";
+                            }
+                        }
+                    }
+
+                    var s_category = document.querySelectorAll('.category');
+                    for (var i = 0; i < s_category.length; i++) {
+                        s_category[i].style.display = "";
+                    }
+
+                    // NOTE(krixano): Database Query runs asynchronously, which means putting this outside of this callback function
+                    // would immediately run this code, and therefore change previousCategory before everything above is finished!
+                    TweenLite.to(document.getElementById('zites_table'), 1.0, {
+                        autoAlpha: 2
+                    });
+
+                    previousCategory = id;
+
+                    toggleClass(tabElem, "is-active");
+                    if (previousActiveTab) {
+                        toggleClass(previousActiveTab, "is-active");
+                    }
+
+                    previousActiveTab = tabElem;
+
+                    // Redo search results
+                    if (document.getElementById("search").value.trim() != "") {
+                        search();
+                    }
+                })
+
+                // if (previousCategory != "info") {
+                //     var s_info = document.querySelectorAll('.info');
+                //     for (var i = 0; i < s_info.length; i++) {
+                //         s_info[i].style.display = "";
+                //     }
+                // }
+            } else {
+                page.getCategoriesList(function(cats) {
+                    for (var x in cats) {
+                        var cat = cats[x];
+
+                        if (id != cat.name) {
+                            var s = document.querySelectorAll('.cat-' + cat.name);
+                            for (var x2 = 0; x2 < s.length; x2++) {
+                                s[x2].style.display = "none";
+                            }
+                        }
+                    }
+
+                    if (previousCategory != id && previousCategory != "all") {
+                        var selector = document.querySelectorAll('.cat-' + id);
+                        for (var i = 0; i < selector.length; i++) {
+                            selector[i].style.display = "";
+                        }
+                    }
+                    var s_category = document.querySelectorAll('.category');
+                    for (var i = 0; i < s_category.length; i++) {
+                        s_category[i].style.display = "none";
+                    }
+
+                    // NOTE(krixano): Database Query runs asynchronously, which means putting this outside of this callback function
+                    // would immediately run this code, and therefore change previousCategory before everything above is finished!
+                    TweenLite.to(document.getElementById('zites_table'), 1.0, {
+                        autoAlpha: 2
+                    });
+
+                    previousCategory = id;
+
+                    toggleClass(tabElem, "is-active");
+                    if (previousActiveTab) {
+                        toggleClass(previousActiveTab, "is-active");
+                    }
+
+                    previousActiveTab = tabElem;
+
+                    // Redo search results
+                    if (document.getElementById("search").value.trim() != "") {
+                        search();
+                    }
+                })
+
+                // if (id != "info") {
+                //     var s_info = document.querySelectorAll('.info');
+                //     for (var i = 0; i < s_info.length; i++) {
+                //         s_info[i].style.display = "none";
+                //     }
+                // }
+            }
+
+            return false;
+        }
+    </script>
+
+</body>
+
+</html>

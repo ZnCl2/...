@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>make printshowfile more generic and like other functions - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/5578784dda58fd79556bdc937e64f179d7ce5ea9.html">5578784dda58fd79556bdc937e64f179d7ce5ea9</a>
+<b>parent</b> <a href="../commit/ce535ae1afda4af825cc81af9b4f32a5dd09d73b.html">ce535ae1afda4af825cc81af9b4f32a5dd09d73b</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Tue Feb 23 20:37:17 +0100
+
+make printshowfile more generic and like other functions
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">TODO</a></td><td> | </td><td class="num">2</td><td><span class="i">++</span><span class="d"></span></td></tr>
+<tr><td><a href="#h1">stagit.c</a></td><td> | </td><td class="num">29</td><td><span class="i">++++++++++++++</span><span class="d">---------------</span></td></tr>
+</table>2 files changed, 16 insertions(+), 15 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/TODO.html">TODO</a> b/<a href="../file/TODO.html">TODO</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -1,3 +1,5 @@
+</a><a href="#h0-0-0" id="h0-0-0" class="i">+check path truncation? snprintf(), strlcpy.
+</a><a href="#h0-0-1" id="h0-0-1" class="i">+
+</a> performance:
+ - optimize git_diff_get_stats.
+ - speed up generating files.
+<b>diff --git a/<a id="h1" href="../file/stagit.c.html">stagit.c</a> b/<a href="../file/stagit.c.html">stagit.c</a></b>
+<a href="#h1-0" id="h1-0" class="h">@@ -340,7 +340,7 @@ printcommit(FILE *fp, struct commitinfo *ci)
+</a> }
+ 
+ void
+<a href="#h1-0-3" id="h1-0-3" class="d">-printshowfile(struct commitinfo *ci)
+</a><a href="#h1-0-4" id="h1-0-4" class="i">+printshowfile(FILE *fp, struct commitinfo *ci)
+</a> {
+ 	const git_diff_delta *delta;
+ 	const git_diff_hunk *hunk;
+<a href="#h1-1" id="h1-1" class="h">@@ -348,18 +348,8 @@ printshowfile(struct commitinfo *ci)
+</a> 	git_patch *patch;
+ 	git_buf statsbuf;
+ 	size_t ndeltas, nhunks, nhunklines;
+<a href="#h1-1-3" id="h1-1-3" class="d">-	FILE *fp;
+</a> 	size_t i, j, k;
+<a href="#h1-1-5" id="h1-1-5" class="d">-	char path[PATH_MAX];
+</a> 
+<a href="#h1-1-7" id="h1-1-7" class="d">-	snprintf(path, sizeof(path), &quot;commit/%s.html&quot;, ci-&gt;oid);
+</a><a href="#h1-1-8" id="h1-1-8" class="d">-	/* check if file exists if so skip it */
+</a><a href="#h1-1-9" id="h1-1-9" class="d">-	if (!access(path, F_OK))
+</a><a href="#h1-1-10" id="h1-1-10" class="d">-		return;
+</a><a href="#h1-1-11" id="h1-1-11" class="d">-
+</a><a href="#h1-1-12" id="h1-1-12" class="d">-	fp = efopen(path, &quot;w&quot;);
+</a><a href="#h1-1-13" id="h1-1-13" class="d">-	writeheader(fp);
+</a><a href="#h1-1-14" id="h1-1-14" class="d">-	fputs(&quot;&lt;pre&gt;&quot;, fp);
+</a> 	printcommit(fp, ci);
+ 
+ 	memset(&amp;statsbuf, 0, sizeof(statsbuf));
+<a href="#h1-2" id="h1-2" class="h">@@ -424,9 +414,6 @@ printshowfile(struct commitinfo *ci)
+</a> 	}
+ 	git_buf_free(&amp;statsbuf);
+ 
+<a href="#h1-2-3" id="h1-2-3" class="d">-	fputs(&quot;&lt;/pre&gt;\n&quot;, fp);
+</a><a href="#h1-2-4" id="h1-2-4" class="d">-	writefooter(fp);
+</a><a href="#h1-2-5" id="h1-2-5" class="d">-	fclose(fp);
+</a> 	return;
+ }
+ 
+<a href="#h1-3" id="h1-3" class="h">@@ -437,6 +424,8 @@ writelog(FILE *fp, const git_oid *oid)
+</a> 	git_revwalk *w = NULL;
+ 	git_oid id;
+ 	size_t len;
+<a href="#h1-3-3" id="h1-3-3" class="i">+	char path[PATH_MAX];
+</a><a href="#h1-3-4" id="h1-3-4" class="i">+	FILE *fpfile;
+</a> 
+ 	git_revwalk_new(&amp;w, repo);
+ 	git_revwalk_push(w, oid);
+<a href="#h1-4" id="h1-4" class="h">@@ -479,8 +468,18 @@ writelog(FILE *fp, const git_oid *oid)
+</a> 		fputs(&quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;, fp);
+ 
+ 		relpath = &quot;../&quot;;
+<a href="#h1-4-3" id="h1-4-3" class="d">-		printshowfile(ci);
+</a> 
+<a href="#h1-4-5" id="h1-4-5" class="i">+		snprintf(path, sizeof(path), &quot;commit/%s.html&quot;, ci-&gt;oid);
+</a><a href="#h1-4-6" id="h1-4-6" class="i">+		/* check if file exists if so skip it */
+</a><a href="#h1-4-7" id="h1-4-7" class="i">+		if (access(path, F_OK)) {
+</a><a href="#h1-4-8" id="h1-4-8" class="i">+			fpfile = efopen(path, &quot;w&quot;);
+</a><a href="#h1-4-9" id="h1-4-9" class="i">+			writeheader(fpfile);
+</a><a href="#h1-4-10" id="h1-4-10" class="i">+			fputs(&quot;&lt;pre&gt;&quot;, fpfile);
+</a><a href="#h1-4-11" id="h1-4-11" class="i">+			printshowfile(fpfile, ci);
+</a><a href="#h1-4-12" id="h1-4-12" class="i">+			fputs(&quot;&lt;/pre&gt;\n&quot;, fpfile);
+</a><a href="#h1-4-13" id="h1-4-13" class="i">+			writefooter(fpfile);
+</a><a href="#h1-4-14" id="h1-4-14" class="i">+			fclose(fpfile);
+</a><a href="#h1-4-15" id="h1-4-15" class="i">+		}
+</a> 		commitinfo_free(ci);
+ 	}
+ 	fputs(&quot;&lt;/tbody&gt;&lt;/table&gt;&quot;, fp);
+</pre>
+</div>
+</body>
+</html>

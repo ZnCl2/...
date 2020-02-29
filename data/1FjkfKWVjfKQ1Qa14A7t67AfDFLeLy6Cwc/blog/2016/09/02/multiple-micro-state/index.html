@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>在 spacemacs 生成 micro-state 的同时为每个命令生成对应的执行并进入 micro-state 的函数 - 科学君的不科学博客</title>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+  <meta name="author" content="Liu233w" />
+  <meta name="description" content="&lt;Add description here&gt;" />
+  <meta name="keywords" content="emacs, spacemacs" />
+  <style>
+   #ds-thread #ds-reset .ds-comment-body p {color: #ffffff;}
+   #ds-thread #ds-reset .ds-comment-body p a {color: #ff0;}
+   #ds-thread #ds-reset .ds-comment-body p a:hover {color: #0ff;}
+   #disqus_thread a {color: #00ffff;}
+  </style>
+  <link rel="stylesheet" href="http://liu233w.github.io/media/css/main.css" type="text/css"/>
+  <link rel="stylesheet" href="http://liu233w.github.io/media/css/comment.css" type="text/css"/>
+  <link rel="Shortcut Icon" href="https://raw.githubusercontent.com/Liu233w/liu233w.github.io/source/avatar.jpg" type="image/x-icon">
+</head>
+
+  <body><div class="container">
+<div>
+  <header class="masthead">
+    <h1 class="masthead-title"><a href="http://liu233w.github.io/">科学君的不科学博客</a></h1>
+    <p>by 不科学的科学君</p>
+    <nav class="site-nav">
+      <div class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z" fill="#ffff00"/>
+          <path d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z" fill="#ffff00"/>
+          <path d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z" fill="#ffff00"/>
+        </svg>
+      </div>
+      <ul class="trigger">
+        <li><a href="http://liu233w.github.io/所有文章/">所有文章</a></li>
+        <li><a href="http://liu233w.github.io/tags/">按标签索引</a></li>
+        <li><a href="http://liu233w.github.io/acm/">Acm</a></li>
+        <li><a href="http://liu233w.github.io/blog/">Blog</a></li>
+        <li><a href="http://liu233w.github.io/about/">About</a></li>
+        <li><a href="https://github.com/liu233w/liu233w.github.io">Github</a></li>
+        <li><a href="http://liu233w.github.io/rss.xml">RSS</a></li>
+      </ul>
+    </nav>
+    <form method="get" id="searchform" action="http://www.google.com/search">
+      <input type="text" class="field" name="q" id="s" placeholder="Search">
+      <input type="hidden" name="as_sitesearch" value="liu233w.github.io">
+    </form>
+    <img id="avatarid" class="avatar" src="https://raw.githubusercontent.com/Liu233w/liu233w.github.io/source/avatar.jpg" />
+  </header>
+</div>
+
+<div>
+<div class="post">
+<h1 class="title">在 spacemacs 生成 micro-state 的同时为每个命令生成对应的执行并进入 micro-state 的函数</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org4e55e4e">需求</a></li>
+<li><a href="#org0444c8d">我的实现</a></li>
+<li><a href="#orgde0c4d9">使用</a>
+<ul>
+<li><a href="#orgf510a8a">另一个宏</a></li>
+<li><a href="#orgc7ee563">示例 1</a></li>
+<li><a href="#org5fcebd1">示例 2</a></li>
+</ul>
+</li>
+<li><a href="#org2ee5a52">经验</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org4e55e4e" class="outline-2">
+<h2 id="org4e55e4e">需求</h2>
+<div class="outline-text-2" id="text-org4e55e4e">
+<p>
+spacemacs 有一个叫做 micro-state 的功能，宏 <code>spacemacs|define-micro-state</code> 可以生成一个 micro-state 和相应的函数。当调用函数进入 micro-state 的时候，可以暂时应用一个临时的键绑定。比如定义一个翻页的 micro-state，启动之后可以用 d u f b 来翻页，不需要按下 Ctrl。如果按下这四个按钮之外的按键，就会退出 micro-state 并执行那个按键原本的功能。
+</p>
+
+<p>
+这个 micro-state 还有另一个功能：可以指定一个在进入 micro-state 的时候求值的表达式。比如定义 micro-state 为四个翻页方式，设定在进入 micro-state 的同时求值
+<code>(evil-scroll-page-down 0)</code> ，然后把激活 micro-state 的函数绑定到 <code>C-f</code> 上。这样在按键翻页的时候只有第一次需要按 <code>C-f</code> ，之后只需要按 <code>f</code> 来翻页就可以了。
+</p>
+
+<p>
+但是这样做只能指定一个动作，如果我想在按下 <code>C-b</code> 的时候向上翻页并进入 micro-state，这就没有办法了。而且对于刚才的设置，我们是没法使用 <code>2 C-f</code> 这样的操作来向下翻两页的。在 <a href="https://emacs-china.org/t/ctrl/1039/20?u=liu233w">emacs-china 的一个帖子</a> 中提供了一个思路，就是定义一个函数，这个函数拥有 interactive
+和参数，会先调用原来的函数，然后激活 micro-state。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org0444c8d" class="outline-2">
+<h2 id="org0444c8d">我的实现</h2>
+<div class="outline-text-2" id="text-org0444c8d">
+<p>
+我定义了一个宏，可以自动完成上面所说的操作。代码在：
+<a href="https://github.com/Liu233w/.spacemacs.d/blob/master/libs/multiple-micro-state.el">https://github.com/Liu233w/.spacemacs.d/blob/master/libs/multiple-micro-state.el</a>
+</p>
+
+<p>
+宏的名字是 <code>mms|define-multiple-micro-state</code> ，使用方式与 <code>spacemacs|define-micro-state</code>
+相同。注意这个只能在 spacemacs 中使用，因为它使用了宏 <code>spacemacs|define-micro-state</code> 。
+</p>
+
+<p>
+在执行之后，会按照 <code>spacemacs|define-micro-state</code> 的命名方式生成一个 micro-state，并且给它定义了一个别名 <code>名称:micro-state</code> ，并且给定义中的每一个函数生成一个名为
+<code>名称:函数名-then-enter-micro-state</code> 的函数，这个函数不接受参数，有一个不接受参数的
+interactive 形式。调用之后会使用 <code>command-execute</code> 来执行原来的函数。
+</p>
+
+<p>
+同时，如果有一些使用 <code>evil-define-command</code> 定义的没法获取 interactive 命令的函数的话，这个函数会自动加上一个 interactive 命令。
+</p>
+
+<p>
+我的宏还支持一个额外的功能：自动生成文档。
+</p>
+
+<p>
+如果参数 <code>:doc</code> 的值是 auto 的话（不需要加单引号），宏将根据按键和调用的函数名自动生成文档，然后设置 <code>:use-minibuffer t</code> 的话，就可以把按键的提示放进 mini-buffer 了。
+</p>
+
+<p>
+另外，这个宏还有一个额外的选项 <code>:with-full-arguments</code> ，默认为 nil，如果设置为 t，则宏生成的函数将与原函数有相同的形参列表和 interactive 形式。同时，如果有一些使用
+<code>evil-define-command</code> 定义的没法获取 interactive 命令的函数的话，会自动加上一个
+interactive 命令。使用这个选项的宏在展开的时候必须确保原函数的定义已经完全加载，否则会报错。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgde0c4d9" class="outline-2">
+<h2 id="orgde0c4d9">使用</h2>
+<div class="outline-text-2" id="text-orgde0c4d9">
+</div><div id="outline-container-orgf510a8a" class="outline-3">
+<h3 id="orgf510a8a">另一个宏</h3>
+<div class="outline-text-3" id="text-orgf510a8a">
+<p>
+针对一些键绑定函数如 <code>define-key</code> 没法一次定义多个键绑定的问题，我定义了一个宏。
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">defmacro</span> <span style="color: #268bd2;">liu233w|bind-keys</span> <span style="color: #b58900;">(</span>binding-list <span style="color: #b58900;">&amp;rest</span> func-and-args<span style="color: #b58900;">)</span>
+  <span style="color: #2aa198;">"&#20174;&#21015;&#34920;&#33258;&#21160;&#29983;&#25104;&#22810;&#20010;&#38190;&#32465;&#23450;&#21629;&#20196;</span>
+<span style="color: #2aa198;">&#35821;&#27861;&#20026;&#65306;</span>
+<span style="color: #2aa198;">\(liu233w|bind-keys ((\"mn\" 'func1) (\"mp\" 'func2))</span>
+<span style="color: #2aa198;">                       define-key evil-visual-state-map)</span>
+<span style="color: #2aa198;">&#38190;&#32465;&#23450;&#20250;&#33258;&#21160;&#28155;&#21152;&#65292;&#19981;&#20250;&#33258;&#21160;&#35843;&#29992; kbd&#12290;&#36825;&#20010;&#23439;&#20250;&#29983;&#25104;&#22810;&#20010;&#38190;&#32465;&#23450;&#20989;&#25968;&#30340;&#35843;&#29992;&#65292;</span>
+<span style="color: #2aa198;">&#27599;&#27425;&#37117;&#20351;&#29992; binding-list &#20013;&#30340;&#19968;&#39033;&#65288;&#21435;&#25481;&#25324;&#21495;&#65289;&#25918;&#22312;&#20989;&#25968;&#35843;&#29992;&#30340;&#26368;&#21518;&#12290;</span>
+<span style="color: #2aa198;">&#38500;&#20102; binding-list &#20197;&#22806;&#65292;&#35831;&#20351;&#29992;&#21644;&#30452;&#25509;&#35843;&#29992;&#38190;&#32465;&#23450;&#20989;&#25968;&#26102;&#30456;&#21516;&#30340;&#35821;&#27861;"</span>
+  `<span style="color: #b58900;">(</span><span style="color: #859900; font-weight: bold;">progn</span>
+     ,@<span style="color: #268bd2;">(</span>mapcar #'<span style="color: #6c71c4;">(</span>lambda <span style="color: #859900;">(</span>item<span style="color: #859900;">)</span>
+                   <span style="color: #859900;">(</span>append func-and-args item<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span>
+               binding-list<span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span><span style="color: #2aa198;">)</span>
+</pre>
+</div>
+<p>
+这样绑定按键可以方便一些，并且支持多种键绑定函数。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgc7ee563" class="outline-3">
+<h3 id="orgc7ee563">示例 1</h3>
+<div class="outline-text-3" id="text-orgc7ee563">
+<p>
+绑定翻页键：
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #586e75;">;; </span><span style="color: #586e75;">&#19968;&#20010; micro-state&#65292;&#29992;&#26469;&#24555;&#36895;&#32763;&#39029;</span>
+<span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">mms|define-multiple-micro-state</span>
+ liu233w/view
+ <span style="color: #839496; font-weight: bold;">:use-minibuffer</span> t
+ <span style="color: #839496; font-weight: bold;">:doc</span> <span style="color: #2aa198;">"`d' scroll-down `u' scroll-up `f' scroll-page-down `b' scroll-page-up"</span>
+ <span style="color: #839496; font-weight: bold;">:bindings</span>
+ <span style="color: #b58900;">(</span><span style="color: #2aa198;">"d"</span> evil-scroll-down<span style="color: #b58900;">)</span>
+ <span style="color: #b58900;">(</span><span style="color: #2aa198;">"u"</span> evil-scroll-up<span style="color: #b58900;">)</span>
+ <span style="color: #b58900;">(</span><span style="color: #2aa198;">"f"</span> evil-scroll-page-down<span style="color: #b58900;">)</span>
+ <span style="color: #b58900;">(</span><span style="color: #2aa198;">"b"</span> evil-scroll-page-up<span style="color: #b58900;">)</span><span style="color: #2aa198;">)</span>
+
+<span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">liu233w|bind-keys</span>
+ <span style="color: #b58900;">(</span><span style="color: #268bd2;">(</span><span style="color: #6c71c4;">(</span>kbd <span style="color: #2aa198;">"C-f"</span><span style="color: #6c71c4;">)</span> 'liu233w/view:evil-scroll-page-down-then-enter-micro-state<span style="color: #268bd2;">)</span>
+  <span style="color: #268bd2;">(</span><span style="color: #6c71c4;">(</span>kbd <span style="color: #2aa198;">"C-b"</span><span style="color: #6c71c4;">)</span> 'liu233w/view:evil-scroll-page-up-then-enter-micro-state<span style="color: #268bd2;">)</span>
+  <span style="color: #268bd2;">(</span><span style="color: #6c71c4;">(</span>kbd <span style="color: #2aa198;">"C-u"</span><span style="color: #6c71c4;">)</span> 'liu233w/view:evil-scroll-up-then-enter-micro-state<span style="color: #268bd2;">)</span>
+  <span style="color: #268bd2;">(</span><span style="color: #6c71c4;">(</span>kbd <span style="color: #2aa198;">"C-d"</span><span style="color: #6c71c4;">)</span> 'liu233w/view:evil-scroll-down-then-enter-micro-state<span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span>
+ evil-global-set-key 'normal<span style="color: #2aa198;">)</span>
+</pre>
+</div>
+
+<p>
+翻页之后会自动进入 micro-state。并且这种定义对于原来的函数（ <code>evil-scroll-page-up</code> ）是没有影响的。
+</p>
+</div>
+</div>
+<div id="outline-container-org5fcebd1" class="outline-3">
+<h3 id="org5fcebd1">示例 2</h3>
+<div class="outline-text-3" id="text-org5fcebd1">
+<p>
+定义 evil-mc 的按键：
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">mms|define-multiple-micro-state</span>
+ liu233w/emc
+ <span style="color: #839496; font-weight: bold;">:doc</span> auto
+ <span style="color: #839496; font-weight: bold;">:use-minibuffer</span> t
+ <span style="color: #839496; font-weight: bold;">:with-full-arguments</span> t
+ <span style="color: #839496; font-weight: bold;">:bindings</span>
+ <span style="color: #b58900;">(</span><span style="color: #2aa198;">"n"</span> evil-mc-make-and-goto-next-match<span style="color: #b58900;">)</span>
+ <span style="color: #b58900;">(</span><span style="color: #2aa198;">"j"</span> evil-mc-skip-and-goto-next-match<span style="color: #b58900;">)</span>
+ <span style="color: #b58900;">(</span><span style="color: #2aa198;">"p"</span> evil-mc-make-and-goto-prev-match<span style="color: #b58900;">)</span>
+ <span style="color: #b58900;">(</span><span style="color: #2aa198;">"k"</span> evil-mc-skip-and-goto-prev-match<span style="color: #b58900;">)</span><span style="color: #2aa198;">)</span>
+
+<span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">liu233w|bind-keys</span>
+ <span style="color: #b58900;">(</span><span style="color: #268bd2;">(</span><span style="color: #6c71c4;">(</span>kbd <span style="color: #2aa198;">"mn"</span><span style="color: #6c71c4;">)</span> #'liu233w/emc:evil-mc-make-and-goto-next-match-then-enter-micro-state<span style="color: #268bd2;">)</span>
+  <span style="color: #268bd2;">(</span><span style="color: #6c71c4;">(</span>kbd <span style="color: #2aa198;">"mp"</span><span style="color: #6c71c4;">)</span> #'liu233w/emc:evil-mc-make-and-goto-prev-match-then-enter-micro-state<span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span>
+ define-key evil-visual-state-map<span style="color: #2aa198;">)</span>
+</pre>
+</div>
+
+<p>
+生成的文档是这样的：
+</p>
+<pre class="example">
+`n' evil-mc-make-and-goto-next-match  `j' evil-mc-skip-and-goto-next-match  `p' evil-mc-make-and-goto-prev-match  `k' evil-mc-skip-and-goto-prev-match
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org2ee5a52" class="outline-2">
+<h2 id="org2ee5a52">经验</h2>
+<div class="outline-text-2" id="text-org2ee5a52">
+<p>
+我在写这些代码的时候发现了一些好东西，在这里分享一下：
+</p>
+<ol class="org-ol">
+<li><code>defalias</code> 可以生成函数的别名，对这个别名使用 <code>advice-add</code> 的话只会把新函数绑定到别名上，原来的函数不受影响。</li>
+<li><code>interactive-form</code> 可以获得某个函数的 interactive 形式。</li>
+<li><code>intern</code> 可以从一个字符串生成一个 symbol。</li>
+<li><code>help-function-arglist</code> 可以获得某个函数的的参数列表。</li>
+<li><code>command-execute</code> 可以像执行命令一样执行一个 interactive 函数，调用的函数不需要保留参数信息， <code>command-execute</code> 会将要调用的函数需要的参数自行传递给它。</li>
+</ol>
+</div>
+</div>
+
+</div>
+</div>
+<div>
+        <div class="post-meta">
+            <span title="发布日期" class="post-info">2016-09-02</span>
+            <span title="最后修改日期" class="post-info">2017-01-06</span>
+            <span title="标签" class="post-info">:<a href="http://liu233w.github.io/tags/emacs">emacs</a> : <a href="http://liu233w.github.io/tags/spacemacs">spacemacs</a>:</span>
+            <span title="作者" class="post-info"><a href="mailto:wwwlsmcom &lt;at&gt; outlook &lt;dot&gt; com">Liu233w</a></span>
+        </div>
+    <script src="http://liu233w.github.io/media/js/jquery-2.1.3.min.js"></script>
+        <section>
+            <h1>Comments</h1>
+            <div id="comment-wrap">
+                    <a class="disqus_label">使用 Disqus 评论</a>
+                    <a class="ds-label">使用多说评论</a>
+    </ul>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+         //var disqus_developer = 1;
+         var preempt_signal=false;
+         var disqus_identifier = "/blog/2016/09/02/multiple-micro-state/";
+         var disqus_url = "http://liu233w.github.io/blog/2016/09/02/multiple-micro-state/";
+         var disqus_shortname = 'liu233w';
+         /* * * DON'T EDIT BELOW THIS LINE * * */
+         (function() {
+             var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+             dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+             $('#disqus_thread').css('display','none');
+         })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        <div class="ds-thread"></div>
+        <script type="text/javascript">
+         var duoshuoQuery = {short_name:'liu233w'};
+         (function() {
+             var ds = document.createElement('script');
+             ds.type = 'text/javascript';ds.async = true;
+             ds.src = 'http://static.duoshuo.com/embed.js';
+             ds.charset = 'UTF-8';
+             (document.getElementsByTagName('head')[0]
+           || document.getElementsByTagName('body')[0]).appendChild(ds);
+             $('.ds-thread').css('display','block');
+         })();
+        </script>
+    <script>
+     /* comments */
+     var ego_disqus_thread=$('#disqus_thread');
+     var ego_ds_label=$('.ds-thread');
+     $('.disqus_label').click(function(){
+         ego_disqus_thread.show();
+         ego_ds_label.hide();
+     });
+     $('.ds-label').click(function(){
+         ego_disqus_thread.hide();
+         ego_ds_label.show();
+     });
+    </script>
+        </section>
+    <script src="http://liu233w.github.io/media/js/main.js"></script>
+    <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.x(<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+            Copyright &copy; 2014 - <span id="footerYear"></span> <a href="mailto:wwwlsmcom &lt;at&gt; outlook &lt;dot&gt; com">Liu233w</a>
+            &nbsp;&nbsp;-&nbsp;&nbsp;
+            Powered by <a href="https://github.com/emacs-china/ego" target="_blank">EGO</a><br/>
+            <a href="http://creativecommons.org/licenses/by-sa/3.0/" rel="license"><img src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" style="border-width:0" alt="Creative Commons License" class="center"></a>
+            <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+    </div>
+            </div>
+            <script type="text/javascript"
+                    src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG">
+            </script>
+            <script type="text/x-mathjax-config">
+             MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "AMS"} } });
+            </script>
+</div>
+
+  </div></body>
+</html>

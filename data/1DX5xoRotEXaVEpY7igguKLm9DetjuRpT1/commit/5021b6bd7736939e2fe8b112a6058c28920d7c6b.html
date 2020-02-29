@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Dynamic follow button width - 0git - 0git - a list of git repositories on ZeroNet
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="0git.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>0git</h1><span class="desc">0git - a list of git repositories on ZeroNet
+</span></td></tr><tr class="url"><td></td><td>git clone <a href="http://127.0.0.1:43110/0git.bit/0git.git">http://127.0.0.1:43110/0git.bit/0git.git</a></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.md.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/5021b6bd7736939e2fe8b112a6058c28920d7c6b.html">5021b6bd7736939e2fe8b112a6058c28920d7c6b</a>
+<b>parent</b> <a href="../commit/38376e92f76ad820115bbe1d5fb493c1706fd5d7.html">38376e92f76ad820115bbe1d5fb493c1706fd5d7</a>
+<b>Author:</b> shortcutme &lt;<a href="mailto:hello@noloop.me">hello@noloop.me</a>&gt;
+<b>Date:</b>   Wed Nov 16 22:27:54 +0100
+
+Dynamic follow button width
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">css/Follow.css</a></td><td> | </td><td class="num">10</td><td><span class="i">+++++</span><span class="d">-----</span></td></tr>
+<tr><td><a href="#h1">js/utils/Follow.coffee</a></td><td> | </td><td class="num">8</td><td><span class="i">++++++++</span><span class="d"></span></td></tr>
+</table>2 files changed, 13 insertions(+), 5 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/css/Follow.css.html">css/Follow.css</a> b/<a href="../file/css/Follow.css.html">css/Follow.css</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -16,12 +16,12 @@
+</a> 	border-radius: 4px; border: 1px solid #E3E3E3; transition: all 0.3s; vertical-align: 170%; margin-left: 10px;
+ }
+ .feed-follow .text-follow, .feed-follow .text-following {
+<a href="#h0-0-3" id="h0-0-3" class="d">-	max-width: 0px; opacity: 0; overflow: hidden; display: inline-block; vertical-align: bottom;
+</a><a href="#h0-0-4" id="h0-0-4" class="d">-	transition: all 0.3s; white-space: nowrap; font-size: 14px; font-weight: normal; color: #666;
+</a><a href="#h0-0-5" id="h0-0-5" class="i">+	opacity: 0; overflow: hidden; display: inline-block; vertical-align: bottom;
+</a><a href="#h0-0-6" id="h0-0-6" class="i">+	transition: all 0.3s ease-in-out; white-space: nowrap; font-size: 14px; font-weight: normal; color: #666;
+</a> }
+<a href="#h0-0-8" id="h0-0-8" class="d">-.feed-follow .text-follow { max-width: 125px; opacity: 1 }
+</a><a href="#h0-0-9" id="h0-0-9" class="d">-.feed-follow.following .text-following { max-width: 60px; opacity: 1; /*color: #229A55;*/ }
+</a><a href="#h0-0-10" id="h0-0-10" class="d">-.feed-follow.following .text-follow { max-width: 0px; opacity: 0 }
+</a><a href="#h0-0-11" id="h0-0-11" class="i">+.feed-follow .text-follow { opacity: 1 }
+</a><a href="#h0-0-12" id="h0-0-12" class="i">+.feed-follow.following .text-following { opacity: 1 /*color: #229A55;*/ }
+</a><a href="#h0-0-13" id="h0-0-13" class="i">+.feed-follow.following .text-follow { opacity: 0 }
+</a> 
+ .feed-follow:hover { background-color: #FEFEFE; transition: none; border-color: #BBBBBB; color: black }
+ .feed-follow:active { border-color: #229A55 }
+<b>diff --git a/<a id="h1" href="../file/js/utils/Follow.coffee.html">js/utils/Follow.coffee</a> b/<a href="../file/js/utils/Follow.coffee.html">js/utils/Follow.coffee</a></b>
+<a href="#h1-0" id="h1-0" class="h">@@ -12,6 +12,10 @@ class Follow extends Class
+</a> 			else
+ 				Page.cmd &quot;wrapperNotification&quot;, [&quot;info&quot;, &quot;Please update your ZeroNet client to use this feature&quot;]
+ 			return false
+<a href="#h1-0-3" id="h1-0-3" class="i">+		@elem.css &quot;display&quot;, &quot;inline-block&quot;
+</a><a href="#h1-0-4" id="h1-0-4" class="i">+		@width_following = @elem.find(&quot;.text-following&quot;).width()
+</a><a href="#h1-0-5" id="h1-0-5" class="i">+		@width_follow = @elem.find(&quot;.text-follow&quot;).width()
+</a><a href="#h1-0-6" id="h1-0-6" class="i">+		@elem.css &quot;display&quot;, &quot;none&quot;
+</a> 
+ 	init: =&gt;
+ 		if not @feeds
+<a href="#h1-1" id="h1-1" class="h">@@ -54,8 +58,12 @@ class Follow extends Class
+</a> 	updateListitems: -&gt;
+ 		if @menu.elem.find(&quot;.selected&quot;).length &gt; 0
+ 			@elem.addClass &quot;following&quot;
+<a href="#h1-1-3" id="h1-1-3" class="i">+			@elem.find(&quot;.text-follow&quot;).width(0)
+</a><a href="#h1-1-4" id="h1-1-4" class="i">+			@elem.find(&quot;.text-following&quot;).width(@width_following+5)
+</a> 		else
+ 			@elem.removeClass &quot;following&quot;
+<a href="#h1-1-7" id="h1-1-7" class="i">+			@elem.find(&quot;.text-following&quot;).width(0)
+</a><a href="#h1-1-8" id="h1-1-8" class="i">+			@elem.find(&quot;.text-follow&quot;).width(@width_follow+5)
+</a> 
+ 
+ 	saveFeeds: -&gt;
+</pre>
+</div>
+</body>
+</html>

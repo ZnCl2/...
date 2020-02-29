@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>qemu + gdb — отладка 16-битного кода и хакинг gdb</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<link rel="stylesheet" href="../../css/global.css">
+</head>
+
+<body>
+	
+<header>
+  <a href="../../index.html"><img src="../../img/logo.png" width="55"></a><br>ChronCache	
+</header>
+	
+<nav>
+	<hr>
+  <p><a href="../../blog.html">архив</a> <tt>|</tt> <a href="../../help.html">помощь</a> <tt>|</tt> <a href="/1Q9LVNLD1ghusGxpiwjYnVjPsxD5xGTGc7/donate/index.html">донат</a></p>
+	<hr>
+</nav>
+
+<article>
+	
+<acide><p>Это резервная страница от 11.10.2019 / <a href="/1ysjnZzsz5YYXhTNBxELnY4ftz42QupMg/?Post:37">оригинал</a></p></acide>
+
+<section>
+	<h1>qemu + gdb — отладка 16-битного кода и хакинг gdb</h1>
+	<p>Допустим, вам нужно отладить низкоуровневый 16-разрядный код под x86. У вас есть qemu и gdb, и их можно использовать для удалённой отладки. После запуска qemu открывает сокет и ждёт подключение отладчика. gdb подключается туда и позволяет производить отладку так же просто, как если бы это был обычный пользовательский процесс. Учитывая возраст платформы x86 и возраст gdb, казалось бы, что может ли что-то пойти не так? Оказывается, еще как.</p>
+	<p>Запускаем qemu:</p>
+	<p><code>$ qemu-system-x86_64 -m 100 -fda image.img -s -S</code></p>
+	<p>Подключаемся через gdb. Видим вот такую порнографию вместо дизассемблированного кода:</p>
+	<div class="code">
+		<code>(gdb) target remote localhost:1234
+Remote debugging using localhost:1234
+warning: No executable has been specified and target does not support
+determining executable automatically.  Try using the "file" command.
+0x000000000000fff0 in ?? ()
+(gdb) break *0x7C00
+Breakpoint 1 at 0x7c00
+(gdb) c
+Continuing.
+
+Breakpoint 1, 0x0000000000007c00 in ?? ()
+(gdb) disas $pc+$cs*16,+1
+Dump of assembler code from 0x7c00 to 0x7c01:
+=> 0x0000000000007c00:    jmp    0x7c3e
+End of assembler dump.
+(gdb) disas 0x7c3e,+16
+Dump of assembler code from 0x7c3e to 0x7c4e:
+   0x0000000000007c3e:    (bad)  
+   0x0000000000007c3f:    rex.XB add %al,%r8b
+   0x0000000000007c42:    (bad)  
+   0x0000000000007c43:    mov    %esi,%cs:(%rsi)
+   0x0000000000007c46:    and    $0x16882e00,%eax
+   0x0000000000007c4b:    and    $0x0,%al
+   0x0000000000007c4d:    cmp    $0x80,%dl
+End of assembler dump.
+(gdb)</code>
+	</div>
+	<p>Ссылки по теме:</p>
+	<ul>
+		<li><a href="https://bugs.launchpad.net/qemu/+bug/1686170" target="_blank">[1]</a> — баг в багтрекере Убунты.
+		<li><a href="https://git.qemu.org/?p=qemu.git;a=commit;h=e3592bc9d841c397eeda87f0019fab94ff71004b" target="_blank">[2]</a> — попытка частичного workaround-а в сорцах qemu.
+		<li><a href="https://wiki.osdev.org/QEMU_and_GDB_in_long_mode#Workaround_1:_Reconnecting" target="_blank">[3]</a> — попытка workaround-а на wiki.osdev.org.
+	</ul>
+	<p>В чем на самом деле проблема? Она простая. Космические корабли бороздят, а gdb по-прежнему не умеет дизассемблировать кусок кода с произвольной системы команд или режима процессора.</p>
+	<p>Точнее говоря, дизассемблирующая библиотека замечательно это умеет. Но UI не даёт возможности пользователю переопределить архитектуру при вызове дизассемблера.</p>
+	<p>Теоретически, для текущего фрейма gdb умеет менять архитектуру на указанную где-то в отладочной информации. Но в нашем случае еще нет никакого фрейма, да и отладочной информации тоже не существует.</p>
+	<p>Если попробуем сменить архитектуру командой из мануала, получаем упс:</p>
+	<div class="code">
+		<code>(gdb) target remote localhost:1234
+Remote debugging using localhost:1234
+warning: No executable has been specified and target does not support
+determining executable automatically.  Try using the "file" command.
+0x000000000000fff0 in ?? ()
+(gdb) set architecture i8086
+warning: Selected architecture i8086 is not compatible with reported target architecture i386:x86-64
+warning: A handler for the OS ABI "GNU/Linux" is not built into this configuration
+of GDB.  Attempting to continue with the default i8086 settings.
+
+The target architecture is assumed to be i8086
+Remote 'g' packet reply is too long (expected 308 bytes, got 536 bytes): 0000000000000000000000000000000000000000000000006306000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f0ff0000000000000200000000f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000007f0300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000801f0000</code>
+	</div>
+	<p>Понятие <b>архитектура</b> используется в gdb двумя (как минимум) способами.</p>
+	<p>Первый, архитектура — это описание модели исполнителя: его регистров, режимов адресации, битности адресного пространства и т.п. Эти сведения необходимы непосредственно для отладки.</p>
+	<p>Второй, архитектура — это указание дизассемблеру, какую систему команд использовать для отображения кода в человекочитаемом виде.</p>
+	<p>Если немного подумать, достаточно очевидно, что эти понятия не связаны напрямую между собой. В ходе отладки нам может потребоваться дизассемблировать произвольный кусок кода от другого режима процессора или же кусок кода, имеющий вообще другую систему команд (например, от сопроцессора, GPU и т.п.) Или же, как в нашем случае, режим работы программы обратно совместим по модели регистров, но не обратно совместим по системе команд.</p>
+	<p>Когда мы вызываем <code>set architecture i8086</code>, gdb переопределяет архитектуры в обоих указанных смыслах.</p>
+	<p>Тут напрашивается переопределение системы команд для конкретно дизассемблера, чтобы можно было делать как-то так:</p>
+	<div class="code"><code>(gdb) disas /a:i8086 0x7c3e,+16</code></div>
+	<p>Или так:</p>
+	<div class="code">
+		<code>set disassembler-architecture i8086
+(gdb) disas 0x7c3e,+16</code>
+	</div>
+	<p>Я скачал сорцы gdb и, насколько я смог в них разобраться, реализовать это можно достаточно просто. Для теста я захардкодил переопределение архитектуры прямо в команду disassemble:</p>
+	<div class="code">
+		<code>diff --git a/gdb/cli/cli-cmds.c b/gdb/cli/cli-cmds.c
+index b871e476d3..36fe4a7fff 100644
+--- a/gdb/cli/cli-cmds.c
++++ b/gdb/cli/cli-cmds.c
+@@ -1199,7 +1199,7 @@ disassemble_current_function (gdb_disassembly_flags flags)
+ static void
+ disassemble_command (const char *arg, int from_tty)
+ {
+-  struct gdbarch *gdbarch = get_current_arch ();
++  struct gdbarch *gdbarch/* = get_current_arch ()*/;
+   CORE_ADDR low, high;
+   const char *name;
+   CORE_ADDR pc;
+@@ -1207,6 +1207,15 @@ disassemble_command (const char *arg, int from_tty)
+   const char *p;
+   const struct block *block = nullptr;
+
++
++  struct gdbarch_info info;
++
++  gdbarch_info_init (&amp;info);
++
++  info.bfd_arch_info = bfd_scan_arch ("i8086");
++
++  gdbarch = gdbarch_find_by_info (info);
++
+   p = arg;
+   name = NULL;
+   flags = 0;</code>
+	</div>
+	<p>Результат:</p>
+	<div class="code">
+		<code>(gdb) target remote localhost:1234
+Remote debugging using localhost:1234
+warning: No executable has been specified and target does not support
+determining executable automatically.  Try using the "file" command.
+0x000000000000fff0 in ?? ()
+(gdb) break *0x7C00
+Breakpoint 1 at 0x7c00
+(gdb) c
+Continuing.
+
+Breakpoint 1, 0x0000000000007c00 in ?? ()
+(gdb) disas 0x7c3e,+16
+warning: A handler for the OS ABI "GNU/Linux" is not built into this configuration
+of GDB.  Attempting to continue with the default i8086 settings.
+
+Dump of assembler code from 0x7c3e to 0x7c4e:
+   0x00007c3e:    ljmp   $0x7c0,$0x43
+   0x00007c43:    mov    %si,%cs:0x25
+   0x00007c48:    mov    %dl,%cs:0x24
+   0x00007c4d:    cmp    $0x80,%dl
+End of assembler dump.
+(gdb)</code>
+	</div>
+	<p>Нужно бы написать полноценный патч, парсящий аргументы команды и меняющий архитектуру на лету, но как обычно, нет времени. Пока что я так и использую отладчик с захардкоженной архитектурой.</p>
+</section>
+	
+<p class="dr">Oct 23, 2018 / Geekless.Twitter</p>
+	
+</article>		
+		
+</body>
+</html>

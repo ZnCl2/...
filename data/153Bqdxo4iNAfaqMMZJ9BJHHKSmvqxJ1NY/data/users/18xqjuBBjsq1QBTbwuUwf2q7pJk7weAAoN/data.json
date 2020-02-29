@@ -1,0 +1,701 @@
+{
+	"next_topic_id": 30,
+	"topic": [
+		{
+			"topic_id": 1579943206,
+			"title": "国内软件支持多少个发行版？",
+			"body": "",
+			"added": 1579943205,
+			"parent_topic_uri": "1571186422_1MvkYQf2rLUspQvPSo18pdJsujt2aXbXB9"
+		},
+		{
+			"topic_id": 1579946700,
+			"title": "Archlinux的灵魂──PKGBUILD、AUR 和 ABS",
+			"body": "原文已经不知道在哪, 看到的也是转发的, 转自Archlinux 的灵魂──PKGBUILD、AUR 和 ABS\n\n觉得看完对深入理解Arch很有帮助.文章很长, 耐心点看完, 肯定会有收获\n第一部分:PKGBUILD 和 makepkg\n其实，我使用 Archlinux 的时间并不是很长。可是，就是在这半年的时间内，我感觉我学到了很多的东西，对 GNU/Linux 有了更多的了解，也在这个过程中深深地爱上了 Archlinux 这个发行版。\n\n首先声明一下，我不是一个程序员，从来没有写过真正的 Code，顶多是写一点 scripts，或者做一些简单的网页什么的。和很多人一样，我对计算机的接触是从 DOS/Windows 开始的。\n\nWindows 的图形界面很容易学。可是时间长了，Windows 就会运行的越来越慢，我的硬盘上也就会有很多我根本不知道是什么的东西。而且，在 Windows 上很多东西都是设定好的，改变起来非常不容易。不要跟我提注册表，那个东西实在是让我一头雾水。\n\n还有，大部分 Windows 上的软件都不是自由软件。这意味着人们很难了解这些软件内部的情況，你可能在毫无察觉的情况下就中了病毒或木马。\n\n所以，为了能够完全了解和控制我每天工作生活要用的计算机，我开始学着使用 GNU/Linux。我一开始是用 Mandriva（那个时候还叫 Mandrake Linux）。后来是 Ubuntu（也包括其他一些 Debian 为基础的发行版）。\n\nWow！我一用上 Ubuntu 就有了完全不同的感觉。特别是非常好用的 apt-get，加上庞大的自由软件库，让我大开眼界。可是在使用 Ubuntu 一段时间以后，我发现这个平台实在和 Windows 非常相似。\n\nGnome 和 KDE 的界面都是在模仿 Windows。更糟糕的是，Ubuntu 会在一开始安装一些乱七八糟的东西，大大影响了我的电脑的运行速度。\n\n我需要一点一点把我不用的东西去掉，这个过程真的很不爽。我开始问自己为什么要放弃 Windows 呢？\n\nUbuntu 有一个很大很好的用户社区，很多问题都可以在讨论区得到解决。然而，Ubuntu 的用户完全要依赖 Maintainer。我就有过这样的经历，在发现一个 Bug 后得到很多其他人的确定，可是 Maintainer 迟迟不作修改。还有，也许有很多人都很想用一个比较新的软件，但是大家都要等到有人能够而且愿意作 Maintainer 之后，这个软件才会在 Repository 里出现。\n\n我或许能够在调试后自己从源代码编译，可是我要如何和别人分享我的成果呢？\n\n其实，各种 Linux 发行版在本质上没有什么不一样。大家使用的软件都是要从源代码编译生成可以运行的二进制码。如果没有 rpm、apt-get 或者 pacman，我们也是可以快乐生活的。只不过，我们的生活会变得麻烦一些。如果要从源码安装一个软件，我们通常是要做如下的步骤：wget http://somewhere.org/source/package.tar.gz（下载源代码）tar xvzf package.tar.gz （解压缩）cd package （进入源代码目录）./configure （设定）make （编译）make install （安装）\n\n如果我们要像这样安装一个两个软件是没有什么问题的。但是如果我们要对付成百上千的软件／类库的话，这样的土办法是行不通的。于是出现了不同的 Linux 发行版，他们之间的区别只是在于如何管理成百上千的软件，特别是不同软件／类库之间互相依存的关系，也就是 dependency 的问题。\n\n大多数 Linux 发行版都是以二进制包为基础的，这其中又分 Redhat（还有 SUSE、Fedora 等）、Debian（还有 Ubuntu、PCLinux 等）和 Slackware 阵营。为了解决管理大量软件包的问题，这些发行版采取了这样一个办法。他们找了一群大牛程序员来作 Maintainer，这些 Maintainer 负责把源代码编译成二进制码，加上一些控制信息（比如如何安装、dependency 等），然后一起打包放在服务器上。所以，最终用户根本不用接触源代码。如果你有兴趣的话，你可以抓一个 Debian 的 DEB 文件下来研究一下：wget http://somewhare.org/package.debar vx package.deb\n\n你会发现你多了三个文件：debian-binarycontrol.tar.gzdata.tar.gz\n\n然后再用 tar tzvf 命令看一看 control.tar.gz 和 data.tar.gz 里面有什么东东，你就明白神奇的 dpkg/apt-get 是怎么一回事情了。\n\n二进制包固然是很方便，但是这种办法有一个很大的问题。\n那就是最终用户受到 Maintainer 很大的控制。比如说，我们并不知道 Maintainer 在编译的过程中是如何设定的（./configure）。\n如果我们要用不同的设定，就要自己从源代码从头开始。另外，如果某一个 Maintainer 心术不正，在二进制包里面加了木马程序，我们这些最终用户是很难查觉的。\n还有，设想一下如果某一个 Maintainer 外出休假了，那么你的软件也就不能及时更新了。\n\n所以，也有一些发行版采取了完全不同的办法，这些发行版是以源代码为基础的。\nGentoo 就是其中的代表。如果你用过 Gentoo 你就会知道 ebuild 文件。\n你如果有兴趣，可以从 http://gentoo-package.com 抓一个 ebuild 文件研究一下。你会明白 Gentoo 的用户其实从 Gentoo 得到的只有这些 ebuild 文件，在每一个 ebuild 文件里包含了安装使用一个软件需要的所有信息（从哪里下载源代码、如何编译、如何安装还有 Dependency 的问题等）。\n之后，Gentoo 的用户用 emerge 命令按照 ebuild 文件的指示编译、安装一个软件。这样做的好处是，Gentoo 的用户可以一目了然地了解每一个软件的编译、安装的过程。如果需要的话，Gentoo 的用户可以修改 ebuild，按照自己的需要编译一个软件。\n\n我也用过 Gentoo。不过对于我这样的初学者，Gentoo 实在是太复杂了，有太多的参数要设定，ebuild 的编写也不是那么简单。还有，Gentoo 几乎不提供任何二进制包，所以绝大部分的软件都要从源代码编译，这是一个非常慢的过程。\n\n其实在大部分情况下，用户对一些软件的设定都是差不多的，没有必要让每一个 Gentoo 的用户都从头编译。所以，我需要找到一个发行版，既有 Debian 的易用性，又有 Gentoo 的灵活性。\n\n我因此找到了 Archlinux。那么 Archlinux 又是如何解决从源代码到二进制码的问题呢？\nArchlinux 使用了 makepkg 这样一个工具。makepkg 会按照 PKGBUILD 文件生成一个二进制包。有些时候，makepkg 还需要 install 文件（主要用来显示提示信息、备份用户设置等）和其他的配置文件。\n\n那么 PKGBUILD 是什么呢？\nPKGBUILD 和 Gentoo 的 ebuild 一样，包含了安装使用一个软件需要的所有信息。下面是 dwm（一个非常非常简捷、高效的窗口管理器）的 PKGBUILD 文件：\n\npkgname=dwm 软件名称\npkgver=4.7\n\npkgrel=1 版本信息\npkgdesc=\"A dynamic window manager for X\"\n\nurl=\"http://www.suckless.org/wiki/dwm\" 软件说明和网站\narch=('i686' 'x86_64') 适用平台\nlicense=('MIT') 版权\ndepends=('libx11') Dependency\n\ninstall=dwm.install install 文件\nsource=(http://www.suckless.org/download/$pkgname-$pkgver.tar.gz \\\n    config.h) 要下载的源文件\nmd5sums=('827b128514a3edb87e208e84fee0eb3f'\n         '395e9a25f65605c4891e74c644b91530') md5 验证码\n\nbuild() { cd $startdir/src/$pkgname-$pkgver\n\ncp ../config.h .\n\nmake X11INC=/usr/include/X11 X11LIB=/usr/lib/X11 || return 1 make PREFIX=/usr DESTDIR=$startdir/pkg install || return 1\n\ninstall -m644 -D LICENSE $startdir/pkg/usr/share/licenses/$pkgname/LICENSE && \\ install -m644 -D README $startdir/pkg/usr/share/doc/$pkgname/README } 编译的过程 \n我们可以注意到在“编译的过程”这个部分，很多代码都和我们在 shell 里编译的命令一样。对！Archlinux 不要求用户学习太多新的东西，PKGBUILD 很容易理解，因为里面都是基本的 shell 命令。\n\n好，我们把 PKGBUILD，dwm.install 和 config.h（dwm 比较特殊，config.h 包含所有的配置信息，所以要在编译之前提供。其他的软件大多依靠外部的配置文件，像是 .bashrc 等）放在一个新的目录里之后。我们执行：\n\n$ makepkg\n之后，你会发现这个目录里出现了一些新的东西，包括：dwm-4.7-1-x86_64.pkg.tar.gz dwm-4.7.tar.gz 两个文件，还有两个目录srcpkg\n\n通过比较这些文件、目录里的内容和 PKGBUILD，你就会明白 makepkg 到底做了些什么：\n\n根据 source 里的内容下载了源代码文件 dwm-4.7.tar.gz；\n通过 md5 验证码确定下载的源代码文件和 PKGBUILD 的作者使用的是一致的；\n把源代码文件解压缩到 ./src/pkgver （也就是 ./src/dwm-4.7）；\n按照 build() 里的内容编译源代码，并把编译好的内容放在 ./pkg 里；\n在 ./pkg 里加上其他的一些信息，包括 .PKGINFO 和 .INSTALL，也就是 dwm.install 的拷贝；\n把 ./pkg 里面的内容打包形成 dwm-4.7-1-x86_64.pkg.tar.gz。\n那么，我们有了一个 .pkg.tar.gz 这样一个二进制包之后，我们要如何安装呢？我们要使用这样一个命令：\n\n$ pacman -U dwm-4.7-1-x86_64.pkg.tar.gz\n这个命令又完成了那些事情呢？\n\n首先，二进制包被解压缩；\n按照 .INSTALL 的内容执行一定的命令；\n二进制包里面的内容会被拷贝到相应的目录（你注意到二进制包内的目录结构了吗？）；\n在 /var/lib/pacman/local 这个目录中建立 dwm-4.7-1 这样一个目录；\n这个目录里包含了四个文件 depends、desc、files 和 install;\ndepends 记录了 dependency，desc 是软件说明，files 记录了每一个安装到系统上的文件的路径，install 就是 .INSTALL 的拷贝。\n从这以后，pacman 正是通过检查 /var/lib/pacman/local 里的内容来管理软件包的。比如说，在执行 pacman -R dwm 的过程中，pacman 首先在 /var/lib/pacman/local 找到了 dwm-4.7-1 这个目录，然后根据 files 的内容删除已安装的内容。Dependency 也是通过 depends 计算的。\n\nOK！我已经解释了 PKGBUILD 的基本结构和 makepkg 的过程。\n\n基本上是两步：从 PKGBUILD 到 .pkg.tar.gz 包，再从二进制包安装到系统。这样一种办法有很多好处。首先，PKGBUILD 非常方便用户交流。我的一个 PKGBUILD 如果编译成功了，就可以给别人用。PKGBUILD 的内容一目了然，不但有助于学习，也再不用担心木马的问题了。\n\n另外，我通过一个小例子展现 Archlinux 的灵活性在哪里。比如，我要对 dwm 有自己的设置，也就是自己的 config.h，那我应该怎么做呢？我会做如下的事情：\n\n编辑 config.h，另存为 myconfig.h；\n编辑 PKGBUILD，把所有的 config.h 替换为 myconfig.h；\n把 pkgrel 变成 2。\n之后通过 makepkg，我会得到一个文件 dwm-4.7-2-x8664.pkg.tar.gz，这个和原来的 dwm-4.7-1-x8664.pkg.tar.gz 可以区别开。我可以安装 dwm-4.7-2-x8664.pkg.tar.gz，如果有问题我还可以通过 pacman -U dwm-4.7-1-x8664.pkg.tar.gz 来安装原来的二进制包。我还可以用同样的办法生成一系列的 .pkg.tar.gz 包，这在软件的安装调试过程中非常有用。\n\n好了，今天就讲到这里。有些人也许变得更疑惑了，因为在 TOY 的“打造完美的 Linux 桌面 — Arch Linux 2007.08-2”系列中并没有提到 PKGBUILD 的问题，所有的软件都是通过 pacman -S 来安装的。\n\n没关系，如果你理解了 makepkg 和 PKBGUILD，那么在我下一次谈到 AUR 和 ABS 之后，你就能完全明白了。\n\n实例:\n\n# Maintainer: Sven-Hendrik Haase <sh@lutzhaase.com>\n# Contributor: jepaan <jepaan at hotmail dot com>\n\npkgname=client\npkgver=1.0\npkgrel=1\npkgdesc=\"tools\"\narch=('i686' 'x86_64')\nlicense=('MIT')\ndepends=('qt4' )\nmakedepends=('qt4')\ninstall=${pkgname}.install\nurl=('')\nsource=(\"./${pkgname}-${pkgver}.tar.gz\")\nmd5sums=('SKIP')\n\nbuild() {\n    cd ${srcdir}/${pkgname}-${pkgver}\n    qmake-qt4\n    make\n}\n\npackage()  {\n    cd ${srcdir}/${pkgname}-${pkgver}\n    #make PREFIX=/usr DESTDIR=$pkgdir install\n    mkdir -p ${DESTDIR}${PREFIX}/bin\n    mkdir -p ${pkgdir}/usr/share/icons\n    mkdir -p ${pkgdir}/usr/share/applications\n    install -Dm755 client ${pkgdir}/usr/bin/client\n    install -Dm755 ${srcdir}/client_logo.png  ${pkgdir}/usr/share/icons/\n    install -Dm644 ${srcdir}/client.desktop ${pkgdir}/usr/share/applications/client.desktop\n}\n\npre_remove() {\n  pid=`ps -ef | grep client | grep -v grep | grep -v pacman | awk '{print $2}'`\n  if [ -n \"$pid\" ]; then\n    kill -9 \"$pid\"\n  fi\n}\n$ makepkg -p PKGBUILD_client  或 makepkg -f -p PKGBUILD_client\n第二部分：AUR 和 ABS\n我非常高兴看到我关于 PKGBUILD 和 Makepkg 的文章在 LinuxTOY 受到了欢迎。我想先针对一些读者的回复谈一点题外话。\n\n我先声明我一点也没有要诋毁 Debian 或 Gentoo 的意思，他们都是非常伟大的发行版，都有自己的特色。其实大多数的发行版都可以自己去定制，从而达到类似的目的。比如说，有的人提到 Gentoo 也有二进制包，比如像 Openoffice 这样的怪物。\n\n然而，我个人以为比较不同的发行版关键是要看它最核心的设计思想。比如说，Gentoo 根本就不是为了使用二进制包设计的。你要是都想用二进制包，就别费劲用 Gentoo 了。关于 Debian 阵营的发行版，我也想讲几句。正如一些朋友的回复所讲，DEB/apt-get 是非常好的管理工具，软件库也非常的大。\n\n我的笔记本现在还在用 elive，也是 Debian 的分支。我不喜欢 Debian 系列的发行版的原因不是它不能定制，而是他们非常依靠 Maintainer。我们可以自己做 DEB 包，然后呢？你的 DEB 包什么时候才能进入软件库呢？还有，只有你自己知道你的 DEB 是怎么做的，别人不能了解你编译打包的过程。Debian 本身打包的过程没有 Archlinux 的 PKGBUILD 来的简单明了。只要比较 Debian 的 Maintainer 手册和 Archlinux 的 Wiki 就可以看出这一点。\n\n选择什么样的发行版完全是要看个人需要。\n我选择 Archlinux，是因为它当初设计的时候就是要满足“KISS Rule”，也就是“Keep It Simple, Stupid”。或者说像爱因斯坦讲得：“Everything should be made as simple as possible, but no simpler”。Archlinux 的所有配置基本都是非常相似的脚本，加上简单灵活的 PKGBUILD 和 pacman，其实关于 Archlinux 本身真的没有太多新的东西要学习。大家有兴趣可以看看“Arch Compared To Other Distros”。\n\nArchlinux 实际上是强迫用户从零开始自己定制自己的系统，在这个过程中也就真正了解了 Linux 本身。\n\n好了，现在言归正传谈一谈 AUR 和 ABS。\n\nAUR 是指 Archlinux User-community Repository，也就是 Archlinux 用户社区的软件库。我们现在回忆一下在 Archlinux 中我们把源代码变成可以运行的二进制码需要哪些文件。我们需要：PKGBUILD，可能还有 .install 文件，加上一些补丁和必要的配置文件（像 dwm 的 config.h）。这样就足够了！当你成功使用 PKGBUILD 编译安装了一个新软件之后就可以通过 AUR 和其他的人分享你的成果了。具体的步骤是：\n\ntar -zcvf package.tar.gz package-dir 把 package-dir 中所有所需的文件打包（包括 PKGBUILD，.install，patch 和其他的 config 等）\n前往 http://aur.archlinux.org 选择\"Submit”（参照下图），并把你的 package.tar.gz 上传\nAUR 会自动根据你的 PKGBUILD 内容把你的 Package 加到 AUR 里来。就是这么简单！那么有人会问：“别的用户要如何使用 AUR 呢？”\n\n这个就更简单了，我们还是用一张截图来解释：\n\n首先下载“Tarball”（红色的圈圈），这个 Tarball 和你上传的内容是一样的，无非是 PKGBUILD 什么的；\ntar xvzf package.tar.gz 然后解压缩；\n然后的步骤你应该知道了，那就是 makepkg 还有 pacman -U。\n之后又要如何使用 ABS 呢？ABS 所作的事情无非是把所有 Repo 里的软件的 PKGBUILD 下载到你本地的硬盘中。这些 PKGBUILD 都放在了 /var/abs 中。你能通过 pacman 直接安装的二进制包其实也都是按照 ABS 的内容编译的。下面我还是用 dwm 的例子解释 ABS 的使用：\n\nsu\n$ cd /var/abs 你可以看到这个目录里有 core，extra，community 三个子目录，正如 abs.conf 中的设定；\n$ mkdir local 建立一个 local 目录，用来放你自己需要的软件的 PKGBUILD\n$ chown username:usergroup ./local makepkg 要以非 root 身份进行\n$ exit 退出 su\n$ cd local\n$ cp -r ../community/x11/dwm ./ 从 ABS 中拷贝 dwm 的内容\n$ cd dwm\n下面不用我说了，你在这个目录里可以看到三个文件 PKGBUILD、dwm.install、config.h。你于是可以用 makepkg 和 pacman -U 来按照自己喜欢的方式安装 dwm。\n\nOK，你实际已经清楚了解了 ABS 和 pacman 的关系，那么 AUR 又和 ABS 还有 pacman 有什么联系呢？说的直白一点，你上传到 AUR 的 PKGBUILD 要足够“有品”才能直接通过 pacman 使用。\n\n对于“有品”，我是这样定义的。\n你的 PKGBUILD 要有很多人用（很多人投票），没有恶意代码，没有太多的 Bug……而判定你的 PKGBUILD 够不够“有品”的人是一些叫作 TU（Trusted User）的人。这些人的工作是检查 AUR，关注那些特别受欢迎的 PKGBUILD。之后，他会仔细检查，确定这些 PKGBUILD 是不是安全。\n然后，他们会给这些 PKGBUILD 打上安全的标签，并且把这些 PKGBUILD 从 unsupported（我们上传的 PKGBUILD 一开始都是在 unsupported 中）移到 community 的 Repo 中。\n\n在 community repo 里面的 PKGBUILD 会提前编译好，如果你在 /etc/pacman.conf 中开了 community repo，你就可以直接使用这些软件的二进制包了。\n也许有一天，你当初上传的 PKGBUILD 变得特别重要，这个软件可能被移到 testing，extra 或者 core 的 repo 中。补充一点，testing repo 里面一般是需要测试，又准备放到 core 或者 extra 中的软件。\n\nArchlinux 就是这样，非常灵活。既有 pacman 这样好的二进制包管理工具，又有 ABS 和 AUR 这样方便的源代码服务。通过 ABS，你可以完全控制你自己的系统到底是如何建立的。\n如果在 pacman -Ss 的时候找不到一个软件，你可以到 AUR 去找，如果还是找不到，为什么不自己试着从源代码开始，写一个 PKGBUILD 然后放到 AUR 中和别人分享呢？\n\n说到这里，我希望我已经把 Archlinux 最核心的东西讲明白了。\n有些人说我的文章写得比 wiki 里的文章清楚。其实，我写的东西只是在順序上不一样。我是从 PKGBUILD 开始讲到 AUR 和 ABS，再到 pacman。\n这个順序和 Archlinux 实际的开发过程是一致的，所以逻辑上容易理解很多。如果你从 pacman 入手反过来读，你可能就完全错过了理解 Archlinux 核心概念的机会。\n\nTOY 会很快再写一篇关于 yaourt 的文章，yaourt 是一个把 pacman 和 AUR 结合起来的很好用的工具。\n有了 yaourt，你不需要去 AUR 网站也能在 shell 下直接取得 AUR 的 package，还方便了投票的过程。\n\n如果大家对某些问题感兴趣，可以留言告诉我，我会尽量把我了解的用这样比较容易理解的文章与大家交流。\n\n第三部分：Yaourt\n在这一部分中，我们将简单介绍 Yaourt 的安装和使用。此部分上接 PKGBUILD 和 makepkg、AUR 和 ABS。\n\n就一般情况而言，当 Archlinux 用户需要使用 AUR 中的包时，往往会执行到AUR 官方网站查找所需的包、下载该包的 Tarball 文件、在命令行下对 Tarball 文件解压、通过 makepkg 编译打包、最后使用 pacman 安装这样一个过程。\n\n仔细打量这个过程，你是否觉得稍微有些繁琐呢？有解决的方案吗？回答是肯定的。这就是我们今天将要介绍的主角──Yaourt。\n\nYaourt 简介\nYaourt 是一个由 Julien Mischkowitz 所编写的 Bash 脚本，它是将 Pacman 与 AUR 这两者相结合的绝佳工具。\n通过 Yaourt 安装 AUR 中的包十分方便，它不仅简化了上述繁琐的过程，而且把这一过程半自动化，使用者只需在它的交互模式中简单的回答几个问题即可。此外，Yaourt 支持将结果以鲜亮的颜色输出，非常抢眼。\n\n安装 Yaourt\n除了在 Archlinux 的 AUR 中可以找到 Yaourt 外，archlinuxfr 这个源中也包含 Yaourt。我们采用后者来安装 Yaourt。首先，将下列内容添加到 /etc/pacman.conf 文件：[archlinuxfr]Server = http://repo.archlinux.fr/i686\n\n如果你的系统是 64 位，那么可以使用：[archlinuxfr]Server = http://repo.archlinux.fr/x86_64\n\n接着，我们可以执行下面的命令来安装 Yaourt：\n\n$ pacman -Sy yaourt\n另外，我们将 aurvote 和 customizepkg 这两个包也装上，前者用于对喜欢的包投票，而后者是定制 PKGBUILD 所需的：\n\npacman -S aurvote customizepkg\n同时，你需要为 aurvote 建立一个配置文件 .aurvote (位于 ~/ 目录下)：user=你的 AUR 帐号pass=该帐号的密码\n\n如果你没有 AUR 帐号，可到 http://aur.archlinux.org/account.php注册一个。\n\nYaourt 实战\n为了说明 Yaourt 的使用，我们以一个实例来进行。譬如，我对 Phatch 这个批量图片处理程序非常喜欢，我希望在 Archlinux 中安装它。首先，我们来看一下，在 Archlinux 中是否存在 Phatch：\n\n$ yaourt phatch\nYaourt 在搜索后返回如下结果：1 aur/phatch 0.1.bzr435-1 Phatch is a simple to use cross-platform GUI Photo Batch Processor.==> Enter n° (separated by blanks, or a range) of packages to be installed Example: '1 6 7 8 9' or '1 6-9'==> ----------------------------------------------\n从该结果我们可以断定，Phatch 在 Archlinux 的 AUR 中。现在，我们只需按 1 就可以安装它了。\n\n在显示一些输出信息后，Yaourt 会让你作出第一个选择：\n\n是否编辑 PKGBUILD 文件。\n按 Y 回答并输入你喜欢的文本编辑器后，你可以针对 PKGBUILD 的内容进行修改。\n==> Edit the PKGBUILD (recommended) ? [Y/n] (\"A\" to abort)\n==> ----------------------------------------------\n然后，Yaourt 会询问是否继续编译。我们的回答当然是 Y。\n\n==> Continue the building of 'phatch'? [Y/n]\n==> ----------------------------------------------\n接着，Yaourt 询问是否安装已编译好的包，同样回答 Y 即可。\n\n==> Continue installing 'phatch'? [Y/n]\n==> [v]iew package contents [c]heck package with namcap\n==> ----------------------------------------------\n最后，Yaourt 将检查投票情况，并问你是否要投票，按 Y 选择投票，按 n 表示不投票。\n\n==> Checking for phatch's vote statusYou have already voted for phatch inclusion/keeping in [community]\n综观 Yaourt 的命令行选项，与 Pacman 非常相似。关于 Yaourt 的更加详细的用法，通过 man yaourt 可以获得参考。其实，除了从 AUR 安装包外，Yaourt 也可以从 Archlinux 的源安装包，此不赘述。\n\n参考：\nPKGUILD：https://wiki.archlinux.org/index.php/PKGBUILD_%28%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87%29\n\nABS：https://wiki.archlinux.org/index.php/Arch_Build_System_%28%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87%29\n\nArchlinux：https://linuxtoy.org/archives/archlinux-pkgbuild-aur-and-abs.html\n\npkg.tar.xz包:http://ftp.isoft.zhcn.cc/",
+			"added": 1579946698,
+			"parent_topic_uri": "1571186422_1MvkYQf2rLUspQvPSo18pdJsujt2aXbXB9"
+		},
+		{
+			"topic_id": 1580022456,
+			"title": "linux技术支持",
+			"body": "有使用问题可以问我",
+			"added": 1580022453,
+			"parent_topic_uri": "1577266958_1DcbdcgJk7mw465FGxYHMkz9zgyNgvpsWY"
+		},
+		{
+			"topic_id": 1580032848,
+			"title": "绝版软件收集",
+			"body": "",
+			"added": 1580032844,
+			"parent_topic_uri": "1571186422_1MvkYQf2rLUspQvPSo18pdJsujt2aXbXB9"
+		},
+		{
+			"topic_id": 1580172372,
+			"title": "2020年linux桌面现状",
+			"body": "snap、flatpak下载速度很慢\nappimage有的不能输入中文或功能不正常",
+			"added": 1580172612,
+			"parent_topic_uri": "1571186422_1MvkYQf2rLUspQvPSo18pdJsujt2aXbXB9"
+		},
+		{
+			"topic_id": 1580181804,
+			"title": "为什么现在还有人用dpkg安装deb?",
+			"body": "现在apt已经可以安装本地deb了",
+			"added": 1580181798,
+			"parent_topic_uri": "1571186422_1MvkYQf2rLUspQvPSo18pdJsujt2aXbXB9"
+		},
+		{
+			"topic_id": 1580285899,
+			"title": "过时的linux发行版有哪些?",
+			"body": "",
+			"added": 1580285892,
+			"parent_topic_uri": "1571186422_1MvkYQf2rLUspQvPSo18pdJsujt2aXbXB9"
+		},
+		{
+			"topic_id": 1580285977,
+			"title": "过时的操作系统有哪些？",
+			"body": "",
+			"added": 1580285969,
+			"parent_topic_uri": "1571186422_1MvkYQf2rLUspQvPSo18pdJsujt2aXbXB9"
+		},
+		{
+			"topic_id": 1580286100,
+			"title": "过时的软件有哪些？",
+			"body": "",
+			"added": 1580286090,
+			"parent_topic_uri": "1571186422_1MvkYQf2rLUspQvPSo18pdJsujt2aXbXB9"
+		},
+		{
+			"topic_id": 1580294366,
+			"title": "各个发行版是如何处理依赖问题的？",
+			"body": "",
+			"added": 1580294355,
+			"parent_topic_uri": "1571186422_1MvkYQf2rLUspQvPSo18pdJsujt2aXbXB9"
+		},
+		{
+			"topic_id": 1580297893,
+			"title": "使用slackware学会了什么？",
+			"body": "",
+			"added": 1580297881,
+			"parent_topic_uri": "1571186422_1MvkYQf2rLUspQvPSo18pdJsujt2aXbXB9"
+		},
+		{
+			"topic_id": 1580405776,
+			"title": "Nitrux –专注于便携式应用的精美Linux发行版",
+			"body": "Nitrux是基于Ubuntu的免费，美观，开放源代码发行版，专注于美观，用户效率和可移植通用应用格式。 目前，它在DistroWatch的每日热门排行榜中排名第76。\n\n它支持可移植的通用应用程序格式，包括AppImage和Snaps，并且基于最新的Ubuntu开发分支和最新的KDE Plasma桌面版本。\n\nNitrux的优美之处以及由此带来的用户体验非凡。 我使用该发行版已有大约一周的时间，就我而言，它已成为有史以来最漂亮的5个Linux发行版之一。 操作系统中的所有内容都可以通过流畅的动画，现代漂亮的默认字体以及正确排列的图标和设置选项而流畅运行。\n\nNitrux桌面环境\n\nNitrux使用构建在出色的KDE Plasma 5和Qt之上的自定义桌面来生产Nomad Desktop。 我们之前曾审查过DE，因此您可以在此处进行检查。\n\nNomad Desktop几乎是一个更酷的KDE Plasma桌面，因为它使用户可以更快地访问已安装的软件，网络设备，媒体控件以及其他选项，以及更加美观直观的UI。 它是开源的，在屏幕底部使用Latte-dock（默认情况下），在屏幕顶部使用面板，具有全局菜单和通知机制，类似于Windows 10。\n\n关于它的一件很酷的事情是它的通用搜索工具，它使您可以在空白的桌面上开始键入以查看文件和应用程序建议的列表。 更酷的是，您可以在桌面搜索中添加快捷方式，终端应用程序，书签等，这很容易，就可以转到“系统设置”->“搜索”->“Plasma Search。\n\nNitrux定制\n\nNitrux基于Ubuntu，因此您可以信任它的可定制性。 在系统设置中，您可以直接自定义工作区主题，字体，应用程序样式，动画，通知，软件更新程序等。\n\nNitrux附带了重要的应用程序，包括：\n\n    Dolphin – File manager\n    Chromium – Browser\n    Kate – Advanced text editor\n    Nomad Firewall\n    Spectacle – Screenshots\n    qpdfview – PDFs and eBooks\n    Babe – Music player\n    Ak – Archiving tool\n    LibreOffice – Office Suite\n    VLC – Video Player\n    Konsole – Terminal\n    Plasma Vaults, among other utility apps.\n\nNX软件中心\n\nNitrux主要与AppImages合作，因此其软件中心非常适合管理此类应用程序。 该中心是安全且易于使用的，因为您要做的就是浏览列出的应用程序，直到看到所需的内容或搜索所需的应用程序，然后单击“安装”按钮。\n\n注意事项\n\n     Nitrux不再与Snaps一起使用，因为开发人员删除了对它的支持，即Nitrux 1.0.6版于2017年11月25日发布。当前，软件中心仅支持AppImages。\n     但是，如果您想安装snapd或守护程序，则可以随意安装。\n     Nitrux仅支持x64系统，并且没有计划支持32位x86系统。\n     Nitrux使用APT，因此dpkg是其唯一的软件包管理器。 删除了pac-apt脚本（允许程序包管理器使用Pacman命令）以结束混乱，它给认为使用AUR或yaourt命令可以在Nitrux中使用的用户带来了困惑。",
+			"added": 1580406069,
+			"parent_topic_uri": "1571186422_1MvkYQf2rLUspQvPSo18pdJsujt2aXbXB9"
+		},
+		{
+			"topic_id": 1580467390,
+			"title": "ArchLinux从命令行查找包名称",
+			"body": "sudo pacman -S pkgfile\n\nsudo pkgfile --update\n\n[zhangshaojian@archlinux ~]$ pkgfile ssh-keygen\ncore/openssh\nextra/bash-completion\n\n参考：https://jingyan.baidu.com/article/60ccbceb4c1f0864cab19717.html",
+			"added": 1580467376,
+			"parent_topic_uri": "1571186422_1MvkYQf2rLUspQvPSo18pdJsujt2aXbXB9"
+		},
+		{
+			"topic_id": 1580478168,
+			"title": "普通人使用linux是什么感受？",
+			"body": "",
+			"added": 1580478153,
+			"parent_topic_uri": "1571186422_1MvkYQf2rLUspQvPSo18pdJsujt2aXbXB9"
+		},
+		{
+			"topic_id": 1580478781,
+			"title": "分享一下将 Linux 作为日常桌面环境使用的体验感受",
+			"body": "从 2017 年中旬开始，将自己个人电脑系统切换到了 openSUSE KDE，期间升级过两次台式机硬件，更换一次笔记本。\n\n总得来说，体验还是不错的，总结一下感受。\n\n    为什么要使用 Linux 桌面\n\n楼主属于大龄（ 85 后）还想抢救一下自己那种，接触 Windows 方面比较多，Linux / FreeBSD 这块只是折腾虚拟化、软路由有接触过。2017 年之前 Docker 已经开始火起来了，第一次听到 Docker 是 2015 年在 oschina 的线下技术分享会上面，不过当时 Docker 问题还是有不少的。但是，随着时间推移，相关配套生态完善之后，确实潜力巨大。\n\n个人判断 Docker 以后会很重要，所以 Linux 这块进度要加快。怎么办？直接强制切换到日常系统完事。\n\n虽然两年后的今天楼主因为其他原因仍然没机会进到有条件的公司就是了，这是后话了。\n\n    选择发行版\n\n最开始我是用的 CentOS，不过很快发现其实很难用。首先是动不动的编译安装。编译安装并不算是很大的问题，但是反复一次次编译，动不动就编译就真的很蠢了。\n\n还有个方法是用所谓的野包，那我不如直接 Debian/Ubuntu 好了，既然要换就先调研一下了。由于要使用桌面，所以 DE 是首先要选择的，再来根据 DE 来选择发行版就好了。恩，我个人选择了 KDE，然后自然就找到了 openSUSE。\n\n之后有思考这个问题：选择发行版是选择了什么？\n\n首先是包管理器，其次是社区生态，最后是 DE （如果是使用桌面环境，DE 的优先级要更高一些），选择 Linux 还有个好处是你可以按自己想要来组合这些。\n第 1 条附言  ·  155 天前\n\n~点预览点到提交上去了。~\n\n所以人最重要的还是要弄明白自己需要的是什么，至于推荐的话请牢记 ：彼之砒霜，吾之蜜糖。既然为了 Free 选择 Linux，什么 xx 必须 xx 就算了。\n\n    硬件\n\n台式机这块我是由 E3v2 + 独显，更换到 Dell M7040 i7-6700T ，最后是用的 AMD Ryzen 3 2400GE。笔记本目前用的是 HP Envy 13 i5-8250U 集显型号。\n\n除了 Ryzen 3 2400GE 开始等内核更新，以及主板厂家更新 BIOS 之后，没有遇到硬件方面的问题。不过，独显驱动这块确实有些折腾就是了。笔记本除了读卡器不能正常驱动之外其他都正常。触摸板之前休眠后无法唤醒，通过添加内核启动参数解决了。\n\n硬件支持除了内核支持之外，还需要看主板 BIOS 微码支持，这块只能等主板厂家更新跟进，所以买新架构的硬件还是先确认一下比较妥当。\n\n最后 ，AMD YES！\n\n    日常使用\n\nSteam + Lutris 基本解决游戏需求，但是国内毒瘤客户端就别想了，QQ 可以应 wine，但是我的选择是用手机 QQ。文档方面，没有高要求的排版需求，OpenOffice 输出成 PDF 就足够了，也会直接用 MarkDown 转成 PDF 发给其他人。\n\n网页浏览，多媒体播放都不是问题，遇到过 Chromium 硬解码造成系统直接死掉的情况，但是更新后都解决了，也可以用 FireFox。\n\n我主要是写一点 Python，操作一些数据库，远程管理下服务器，体验良好。\n\n唯一遇到的坑是 Windows 平台文件系统限制与 Linux 文件系统不一样，如果将 Linux 允许而 Windows 不允许的文件名提交到 Git ，那么 Windows 下面无法获取代码。\n\n    一点小小的经验\n\n如果你是在校学生，那么推荐和 Shell 一起学习。因为单纯学习一个操作系统其实很空洞，shell 也与 Linux 紧密关联。我个人是看的鸟哥入门，后面再来看的 Linux Command Line and Shell Scripting Bible。\n\n如果你是在职，那么推荐别把范围放太大，因为操作系统这块关联东西真的太多了，先确定好目标和 check list 之后再来开始吧。",
+			"added": 1580478765,
+			"parent_topic_uri": "1571186422_1MvkYQf2rLUspQvPSo18pdJsujt2aXbXB9"
+		},
+		{
+			"topic_id": 1580479938,
+			"title": "匿名上网的时候千万不要做的事情",
+			"body": "匿名上网的时候我想看看自己的网站是什么样子\n\n匿名上网的时候，最好不要访问与你的真实姓名或笔名有关联的个人网站\n\n原因如下：\n\n会有多少人访问你的个人网站？其中有90%是Tor用户，或仅仅你自己，或很少的一些人？\n\n这样的匿名性很弱。\n\n一旦你访问了自己的网站，你所使用的Tor回路便不安全了。\n\n出口节点知道有人访问了你那个访问量并不是很大的个人网站，\n\n很容易猜到那个人就是你自己。\n\n并且很容易假定接下来的连接都是由你的机器发起的。\n\n \n登陆你真实的脸书账号却还以为自己在匿名上网\n\n不要登陆个人脸书账号。不管其是否与你真实姓名相关联或仅仅是假名。\n\n你可能会添加了一些好友，而他们知道这个账号是你的。\n\n通过脸书社交网络可以猜到你是谁。\n\n没有万能的匿名上网解决方案。\n\n一些匿名上网软件可能会很好的隐藏你的IP地址/地理位置。\n\n但是脸书不需要你的IP地址/地理位置。\n\n他们已经知道你是谁，你有哪些朋友，你和谁发了什么私信等等。\n\n这些信息都会保存在脸书的服务器上。\n\n没有什么软件能够删除这些信息。\n\n只有脸书自己或黑客可以。\n\n所以一旦你登陆了自己的脸书账号，你仅仅是隐藏了地理位置而已。\n\n而不是匿名性。\n\n \n在使用Tor网络的时候，永远不要登陆你在其之外曾登陆过的账号\n\n要假定你在登陆一个网站的时候，网站服务器会记录你的登陆IP地址/地理位置，何时访问，及访问了哪些内容。\n\n同样要假定，每当你通过你的ISP(网络服务提供商)接入网络的时候，它会记录你的在线时间，所分配的IP地址，及流量信息。\n\n你的ISP同样会记录你连接了哪些IP地址，产生了多少流量，及你发送和接收了什么。\n\n(除非你的数据加密过，否则会看到你的明文信息。)\n\n下面这张表格可以让你对这些日志信息有个大概的了解。\n\nISP Log:\n\n \nName \tTime \tIP/location \ttraffic\nJohn Doe \t16 pm to 17 pm \t1.1.1.1 \t500 megabytes\n\n \n\nExtended ISP Log:\n\n \nName \tTime \tIP/location \ttraffic \tDestination \tContent\nJohn Doe \t16 pm to 17 pm \t1.1.1.1 \t1 megabytes \t16.00 pm to 16.10 pm: google.com (searched for thing one, thing two...) \t \nJohn Doe \t16 pm to 17 pm \t1.1.1.1 \t490 megabytes \t16.10 pm to 16.20 pm: youtube.com (view video 1, video 2, ...) \t \nJohn Doe \t16 pm to 17 pm \t1.1.1.1 \t9 megabytes \t16.20 pm to 16.30 pm: facebook.com (encrypted traffic) \t \n\n \n\nWebsite Log:\n\n \nTime \tIP/location \ttraffic \tContent \t  \t \n16.00 pm to 16.10 pm \t1.1.1.1 \t1 megabytes \tsearched for thing one, thing two... \t  \t \n\n \n\n你可以看到，网站和网络服务提供商在何时记录了什么样的日志信息，\n\n不需要福尔摩斯那样高超的推理能力就能知道你干了什么。\n\n哪怕你只搞砸了一次，使用了可以关联到你的非Tor网络的IP地址，\n\n那么你的整个账号就暴露了。\n\n \n不要登陆你的银行账户，支付宝，易趣，或其他重要的个人账户\n\n登陆与钱修改的支付宝，易趣或其他你名下的个人账户有一定的风险，\n\n欺骗预防系统认为这是一个可疑操作，从而冻结你的账户。\n\n因为一些黑客会使用Tor网络进行欺骗攻击。\n\n冻结账户应该不是你想要的结果。\n\n上面已经解释过，这也破坏了匿名性。\n\n这是伪匿名性，并且会带来隐患(访问了ISP屏蔽的网站)，暴露你的位置隐私。\n\n后面的章节会介绍真正的匿名性和伪匿名性的区别。\n\n很多时候你可以联系客服解锁你的账户，甚至让预防系统放过你的账户。\n\nWhonix的一个开发者adrelanos不反对使用Tor网络来保护你的位置隐私，\n\n但是你应该清楚上面所讲，会冒账户被冻结的风险，\n\n以及本页所提的其他一些警告。\n\n如果你清楚自己在做什么，请随意。\n\n \n不要使用免费的WIFI代替Tor\n\n你可能会觉得使用免费的WIFI会更快一些，并且和Tor一样的安全，\n\n因为IP地址不能和你的真实身份关联起来。\n\n但最好同时使用WIFI和Tor，而不是仅其一。\n\nIP地址的近似位置可以缩小到一个城市，区，甚至街道。\n\n即使你已经离开了，你仍然留下了所在城市及大体的位置信息，\n\n因为大多数人并不会只为了一个免费的WIFI而跨越大洲。\n\n虽然这不会破坏你的匿名性，但是却将嫌疑圈从全世界缩小到了一个很小的地区。\n\n这会大大的破坏你的匿名性。\n\n最好尽可能多的隐藏你的个人信息。\n\n \n避免Tor over Tor的情景\n\nWhonix规范中有讲。\n\n当使用透明代理的时候(Whonix系统中含有一个)，在客户机中开启的Tor会话很可能是通过了透明代理，\n\n这样便会产生Tor over Tor的情景。\n\n这会发生在向Whonix-Workstation虚拟机中安装Tor或在其中使用Tor Browser Bundle却没有修改浏览器所用代理的时候。\n\n这样做会带来未定义或潜在的不安全行为。\n\n理论上，你会得到6个中继而不是3个，但事实上并不能保证你会得到另外3个不同的中继节点——\n\n很可能你得到仍是前3个节点，也许顺序反过来或交叉顺序。\n\n目前还不清楚这样是否安全。这还没有经过广泛的讨论。\n\n你可以选择Tor网络的入口/出口节点，但是让Tor自己来进行路由选择可以获得更好的安全性。\n\n自定义入口/出口节点会破坏匿名性，目前还不知道为什么。\n\n总之，不建议使用Tor over Tor。\n\n \n端到端未加密的时候不要发送敏感数据\n\n在警告页已经解释过，Tor的出口节点会被监听或者发生中间人攻击。\n\n不想让第三方获取发送者和接收者之间的敏感数据，使用端到端加密是唯一方法。\n\n \n不要泄露你的身份信息\n\nIP地址并不是破坏匿名性的唯一方式，同样的，社会工程学也有巨大的危害。\n\n下面收集了一些避免匿名性泄露的建议：\n\n不要在昵称中包含个人信息。\n\n不要谈论个人信息，比如你家乡何处……\n\n不要提及你的性别，纹身，饰品或身体状况。\n\n不要提及你的职业，爱好，或你参加的活动。\n\n不要使用你用语言键盘上的特殊字符。\n\n匿名上网的时候不要在常规网站上发帖子。不要使用推特和脸书。这很容易进行互相关联。\n\n不要转发你脸书上的图片链接。图片名称包含你的个人信息。\n\n不要使用匿名和非匿名同时连接相同的地址。要交替开。\n\n时刻谨记网络聊天，论坛，邮件列表都是公开的。\n\n时刻谨记所谓的英雄只会出现在漫画书中。现实中不存在。\n\n如果匿名上网的时候需要使用个人信息，向上面所提到的要当做敏感信息加密处理。\n\n \n在Tor不好使的时候尝试使用桥\n\n \n不要同时使用不同账号\n\n这很容易进行互相关联。Whonix并不会帮你区分开不同账号的前后关系。\n\n见下述。\n\n \n使用完推特，脸书，谷歌等账号后及时退出\n\n严格限制登陆推特，脸书，谷歌和其他基于账号服务(如论坛等)的时间。\n\n在你读完留言或发完日志后立即登出。\n\n关闭Tor Browser，更换Tor回路，等一段时间回路变换后再重新打开Tor Browser。\n\n为了获得更好的安全性，可以使用Recommendation to use multiple VM Snapshots\n\n和/或use multiple Whonix-Workstations\n\n多个虚拟机快照和/或多个Whonix工作站。\n\n这是因为很多网站会集成“分享”，谷歌分析，广告等。\n\n因为你还在登陆中，所以这些插件会告诉网站你依然在访问该网站。\n\n同时注意上面提到的不要同时使用不同的账号。\n\n \n不要混淆匿名性的不同模式\n\n大致了解下匿名性的不同模式：\n模式(1)：用户匿名；接收端随意\n\n情景：匿名发帖/邮件/评论\n\n情景：检举\n\n你是匿名的。\n\n你的IP地址被隐藏。\n\n位置隐私：你的地理位置是保密的。\n模式(2)：用户知道接收者；都使用Tor网络\n\n情景：收发方互相知道彼此，并且都使用Tor网络。\n\n没有第三方知道他们互相通信了什么，甚至不知道他们在通信。\n\n你不是匿名的。\n\n你的IP地址被隐藏。\n\n位置隐私：你的地理位置是保密的。\n模式(3)：使用Tor网络但是密钥匿名；接收者随意\n\n情景：登陆真实用户名使用一些服务，邮件，脸书，推特等……\n\n很显然你不是匿名的。一旦你使用真实用户名登陆，网站立马就知道你是谁了。\n\n这种情况下Tor网络也无法保证你的匿名性。\n\n你的IP地址被隐藏。\n\n位置隐私：你的地理位置是保密的。\n模式(4)：密钥匿名；接收者随意\n\n情景：未使用Tor网络的正常浏览。\n\n你不是匿名的。\n\n你的IP地址泄露了。\n\n你的地理位置泄露了。\n结论\n\n混合使用模式(1)和模式(2)是不明智的。\n\n例如你在模式(1)下使用了一个即时聊天或邮件账号，那么在模式(2)的时候就不要使用相同的账号。\n\n前面有讲过为什么。\n\n使用相同Tor会话的时候混合模式也是不明智的，他们会使用相同的出口节点(身份信息很容易互相关联)。\n\n其他的模式组合也会很危险，并且带来个人信息或位置信息的泄露。\n\n \n如不是很清楚则不要自定义配置\n\n修改不联网应用程序的配置，通常是安全的。\n\n例如不再显示tip或隐藏菜单栏对匿名性通常没有影响。\n\n查阅Whonix的文档，看看你想修改的配置有没有列出或不建议修改的。尽量保持默认值。\n\n修改联网应用程序的配置，即使只修改界面相关的，也要非常谨慎。\n\n例如不建议移除Tor浏览器上的一个菜单栏或将其最大化。\n\n后者则可令人知道屏幕的大小，这便留下了浏览器的指纹特征。\n\n修改网络设置的时候要非常小心，并且很明确其所带来的影响。\n\n例如不要去尝试所谓的“Firefox调优”的建议。\n\n如果你确定当前的配置不是最优的，请提交修改方法，Tor浏览器的开发者在下一个版本中会为所有用户进行修改。\n\n \n不要同时使用普通网络和Tor网络\n\n同时使用普通浏览器和Tor浏览器，你会有混淆两者的使用且破坏匿名性的风险。\n\n同时使用普通网络和Tor网络非常的危险，不建议同时使用匿名方式和非匿名方式连接同一个服务器。\n\n下面会介绍原因。\n\n如果你真的不打算遵从本条建议，那么你至少也要使用两台不同的电脑，以免混淆浏览器的使用。\n\n \n不要同时使用匿名方式和非匿名方式连接同一个服务器\n\n强烈反对使用此方式连接远程服务器。也就是说，不要同时创建Tor连接和非Tor连接到同一个远程服务器。\n\n如此一来，你的网络连接最终便会暴露，你的网络连接就此泄露，对于敌人来说，将所有的报文片段联合分析，\n\n从而判断一个公网IP和Tor网络IP的对应关系并非难事，最终导致你身份的暴露。\n\n \n不要混淆匿名和假名\n\n本节介绍匿名和假名的区别。给一个词下定义是很困难的，因为这需要大多数人的认可。\n\n匿名连接：一个到目标服务器的连接，目标服务器无法确定原始IP和位置，也无法和某一个身份关联。\n\n假名连接：一个到目标服务器的连接，目标服务器无法确定原始IP和位置，但是能够和某一个身份进行关联。\n\n理想情况下，Tor网络，Tor浏览器(和潜在的操作系统，硬件，物理安全等)是完美的。\n\n例如用户访问一个新闻网站，该新闻网站或该新闻网站的ISP都无法确定此用户曾经是否访问过该网站。\n\n相反情况，不正确的使用软件，例如使用Firefox代替Tor安全的浏览器Tor Browser，网络连接的原始IP虽然被隐藏了，\n\n但是一个标识符(比如Cookies)便可以让这个连接变成假名连接。\n\n目标服务器会记录下如此日志信息“用户111222333444在日期c时间b看了电影a，在日期f时间e看了电影d。”。\n\n这些信息会用于分析。随着时间的累积，这些分析数据就变得越来越易于理解，降低了匿名性，\n\n也就是说，最坏情况是导致真实身份的暴露。\n\n一旦某人使用一个用户名登入了网站(论坛或邮箱)，依照定义此连接便不再是匿名的，而是假名的。\n\n原始的IP虽然是隐藏的，但是该连接可以和一个标识符相关联，也就是说，此情况下和一个账号名称关联。\n\n标识符可以用于保存日志的很多信息。\n\n用户什么时候写，何时登入登出，写了什么，向哪个用户发送了什么，IP地址(无用的，是Tor的出口节点)，浏览器指纹等。\n\n \n不要第一个发布你的链接\n\n你创建了一个匿名博客或隐藏服务？非常好。你的推特账号有很多的粉丝，有很大的普通网络群？非常好。\n\n要抵挡住诱惑，不要第一个将你的匿名项目昭告天下。\n\n最好严格分开各个账号的用途，减少马甲之间的交叉关联。\n\n当然有时候你已经这么做了，不过还是要非常小心。\n\n \n不要随意打开文件或链接\n\n某人在邮件中给你发了给pdf文档或pdf的链接？发送者的邮箱/账号/密码可能已经被盗用，pdf可能是伪装的木马感染你的系统。\n\n不要使用你被期望使用的工具去打开它。\n\n例如使用pdf阅读器查看pdf文档。如果文档可以公开，使用一个在线pdf阅读器。\n\n \n不要进行手机验证\n\n有些网站比如谷歌，脸书在你使用Tor登陆的时候会让你进行手机验证。除非你非常的聪明或有其他方法，否则千万不要。\n\n理由：\n\n你使用的手机号会记入日志。SIM卡通常是使用你真实姓名注册的。\n\n即使不是，接收一条短信息会暴露你的地理位置。\n\n即使你是匿名购买的SIM卡，并且在离你家很远的地方使用，也是有风险的。\n\n问题在于手机。\n\n每次手机接入移动网络的时候，服务商会记录SIM卡的序列号和手机的序列号。\n\n如果你的SIM卡是匿名购买的，但是手机却不是，那么你并没有获得匿名性，\n\n因为这两个序列号是互相关联的。\n\n如果你真的想进行手机验证，你需要在远离你家的地方，全新的手机，全新的SIM卡，\n\n并且在你使用完后立即关机，马上离开，立即烧毁手机和手机卡。\n\n你可以找一个提供在线接收短消息的服务。那样可以带来匿名性。\n\n但问题是，谷歌和脸书在进行验证的时候很可能将这些网站加入了黑名单。\n\n或者你可以找另外一个人帮你接收短消息，但这仅仅是将风险转嫁给另一个人\n\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n美博园---翻墙大全\n\nhttp://allinfa.com/whonix-v055-anonymous-operating-system.html\n\n\nWhonix-0.5.5：匿名的通用操作系统\n\nWhonix，即以前的TorBOX，是一个基于Virtual Box、Debian GNU/Linux和tor的匿名通用操作系统。美博园根据官方介绍翻译简介如下。据项目开发者adrelanos声称：Whonix的设计使IP和DNS的泄露变得不可能，即使是有root权限的恶意软件也不能发现用户真正的IP地址信息。这是因为Whonix是由两个虚拟机构成的，其中一个虚拟机只运行Tor，充当网关，称之为Whonix-Gateway；另一个虚拟机，称之为Whonix-Workstation，工作在一个完全隔离的网络上，连接全部经过Tor中转。Whonix目前处于alpha测试阶段。\n\n项目主页：http://sourceforge.net/projects/whonix/\n\n下载： whonix-0.5.5 2013-02-26 更新\n\nWhonix-Workstation.ova\n\nWhonix-Gateway.ova\n\n简要使用说明：\n\n1、下载上述两个文件，Whonix-Workstation.ova 有操作系统，比较大，有 1.3 GB\nWhonix-Gateway.ova 432.8 MB\n2、把上述二个文件导入 Virtual Box中\n运行 VirtualBox，“管理”——“导入虚拟电脑”，定位到下载的.ova文件就行了。\n3、启动 Whonix-Gateway.\n4、启动 Whonix-Workstation.",
+			"added": 1580479921,
+			"parent_topic_uri": "1571186422_1MvkYQf2rLUspQvPSo18pdJsujt2aXbXB9"
+		},
+		{
+			"topic_id": 1580480394,
+			"title": "linux初体验",
+			"body": "近日使用CentOS7搭建一个简单的基于UDP协议的云服务器，因此接触了linux操作系统。在大学那会儿，经常同学或者朋友提到这个操作系统，但是一直没有机会接触他，这次能够使用CentOS7操作系统进行简单服务器的搭建，于是想把使用过程中的一些技巧和感受写下来。（这是我第一次写博文，可能不会写的很好，请原谅。）\n\n　　一、首先，写一些操作技巧吧，主要是我在使用过程遇到的一些问题。（解决方法大多是从网上找的）\n\n　　1、vim中假死问题的解决，往往出现在切换窗口回来，发现vim对任何键都没有反应。按下 Ctrl + Q 解决，意思是”恢复向终端输出”；按下 Ctrl + S 进入“假死”，意思是“阻断向终端输出”。另：Ctrl + S 是 Windows 的文档保存快捷键，刚接触 Linux 会很容易造成这种情况。\n\n　　2、使用终端命令设置ubuntu屏幕分辨率，xrandr 查询ubuntu支持的分辨率，xrandr --size ****x**** 设置屏幕分辨率\n\n　　3、安装GCC命令，yum install gcc，yum install gcc-c++\n\n　　4、一些 linux 命令：\n\n　　　　pwd 显示工作路径\n\n　　　　mkdir dir1 创建dir1目录\n　　　　mkdir dir1 dir2同时创建两个目录\n　　　　mkdir -p /tmp/dir1/dir2 创建一个目录树\n　　　　rm -f file1 删除‘file1’\n　　　　rm -rf dir1 删除‘dir1’目录及其子目录\n\n　　\n\n　　二、将vim编辑器的tab属性从原来的8修改为4过程中的心酸。。。在百度上找了一些方法。。。大多都是说修改/etc/vimc文件，在文件的最后一行添加set ts=4，而且这个文件里面是工工整整的set 命令，然而我进入这个文件是却不是的。。。这是为什么呢！！！起先怎么都搞不明白。。。后来在《鸟哥的私房菜》中找到了正确的方法。。。鸟哥建议不要在root下修改vimrc文件（事实上我实验时，root下修改也没用！），鸟哥建议切换到普通用户下，使用~/.vimrc命令来做，具体界面如下：[dmtsai@study ~]$  vim ~./vim  。执行完之后进入一个空的文件，然后在这里面编辑set ts=4，保存推出之后tab属性就改成4了！",
+			"added": 1580480376,
+			"parent_topic_uri": "1571186422_1MvkYQf2rLUspQvPSo18pdJsujt2aXbXB9"
+		},
+		{
+			"topic_id": 1580480635,
+			"title": "安卓x86好用吗？",
+			"body": "",
+			"added": 1580480616,
+			"parent_topic_uri": "1571186422_1MvkYQf2rLUspQvPSo18pdJsujt2aXbXB9"
+		},
+		{
+			"topic_id": 1580483607,
+			"title": "怎么在手机上安装galgame？ 懒又查不到，身边大佬表示“有啊自己搜” 不考虑已经转好的apk，有没有模拟器可以玩电脑上的那种   实在不行apk也可以接受。。",
+			"body": "我个人是不支持在手机上推Gal的…还不如花几百块买个windows寨板来得实在…\n\n几种方式:\n\n1、ONS模拟器全家桶(原版，MINE，面包工坊)跑ONS移植版游戏(效果奇差全是BUG专门坑新，我6年前就参与过ONS移植我会乱说?)\n\n2、Kirikiroid2模拟器直接跑krkr2引擎做的PC版游戏(吃配置)，或者压缩过的krikiroid2专版\n\n3、PSP模拟器跑PSP上用的ISO镜像游戏(吃配置)\n\n4、Pymo模拟器跑一些比如《秋之回忆》的移植版游戏\n\n5、Ren'py移植的apk直装，比如《君与彼女与彼女之恋》这样的\n\n6、基于ONS优化修改的apk直装版，比如《Tiny Dungeon》系列\n\n7、原生安卓Gal，比如《我所希冀的未来》、《是谁爱上我》、《NOeSIS》系列(基本都是些同人作品)\n\n8、原生安卓文字类RPG，比如《To the moon》、《我在七年之后等你》、《她最后如是说》(这三作我觉得都非常不错，特别是《To the moon》已经是文字游戏里的翘楚了)\n\n1、2是目前应用最广的，但是我最推荐2、7、8种方案，也是相对容易效果很好的方案",
+			"added": 1580483587,
+			"parent_topic_uri": "1571186422_1MvkYQf2rLUspQvPSo18pdJsujt2aXbXB9"
+		},
+		{
+			"topic_id": 1580484667,
+			"title": "有哪些好玩的linux发行版？",
+			"body": "",
+			"added": 1580484646,
+			"parent_topic_uri": "1571186422_1MvkYQf2rLUspQvPSo18pdJsujt2aXbXB9"
+		},
+		{
+			"topic_id": 1580485239,
+			"title": "普通人为什么要使用linux?",
+			"body": "",
+			"added": 1580485217,
+			"parent_topic_uri": "1571186422_1MvkYQf2rLUspQvPSo18pdJsujt2aXbXB9"
+		},
+		{
+			"topic_id": 1580486268,
+			"title": "国内用户都使用什么linux发行版？",
+			"body": "",
+			"added": 1580486245,
+			"parent_topic_uri": "1571186422_1MvkYQf2rLUspQvPSo18pdJsujt2aXbXB9"
+		},
+		{
+			"topic_id": 1580490967,
+			"title": "怎么样才能表现的像一个linux专业用户？",
+			"body": "",
+			"added": 1580490943,
+			"parent_topic_uri": "1571186422_1MvkYQf2rLUspQvPSo18pdJsujt2aXbXB9"
+		},
+		{
+			"topic_id": 1580493032,
+			"title": "日常使用RHEL做桌面是什么体验？",
+			"body": "",
+			"added": 1580493007,
+			"parent_topic_uri": "1571186422_1MvkYQf2rLUspQvPSo18pdJsujt2aXbXB9"
+		},
+		{
+			"topic_id": 1580493634,
+			"title": "全局菜单和dock栏使用起来高效吗？",
+			"body": "",
+			"added": 1580493608,
+			"parent_topic_uri": "1571186422_1MvkYQf2rLUspQvPSo18pdJsujt2aXbXB9"
+		},
+		{
+			"topic_id": 1580496005,
+			"title": "社区发行版都做哪些事?",
+			"body": "需求收集\nBUG管理\n编译打包\n安全更新\n文档维护",
+			"added": 1580496053,
+			"parent_topic_uri": "1571186422_1MvkYQf2rLUspQvPSo18pdJsujt2aXbXB9"
+		},
+		{
+			"topic_id": 1580498726,
+			"title": "Linux高效使用的七个好习惯",
+			"body": "简 介\n\n刚开始使用Linux时你也许会感到不习惯，许多高手也都有这样的经历。毕竟，曾经他们也都是新手。但是现在Linux团体已经在为新用户提供有关指南，手册和基本的技术文档来使他们尽快上手方面做的相当出色。三年前我首次接触Linux，很多人通过论坛，在线聊天和电子邮件等帮助我，这些“企鹅”们真是相当热心。\n\n对此，我深感应该为无私帮助我的团体做一些力所能及的贡献，我应该给刚使用Linux的朋友写点什么。这里我编译了七个当我刚入门时别人告诉我的七个习惯。我相信如果你运用了这七个习惯，在你使用Linux时你会感觉更安全，便利，学到很多实用的东西，最终你会发现使用Linux也是那样的愉悦。 \n\n 1-不要以根用户登录 \n\n　　这是你首先应该注意和遵守的。以前我们可能已经习惯了Windows，我们一直以为权限越高越好，所以我们喜欢以管理员帐户登录。但是这也许是Windows经常被病毒骚扰和不安全的重要原因，现在太多人都在用根用户登录。 \n\n　　权限越高责任越大，拥有管理员权限你需要谨慎对待你所做的任何事情，但是错误还是不可避免。我记得我最先使用的是Suse Linux，有很多事项需要管理但是没有图像用户界面我不知道如何做，于是我天真的注销并登录到了根用户的图形界面。根用户图形界面的默认壁纸是一排排的高亮地雷。这些符号在我脑海里盘旋，我很小心没有终于没有做错什么。 \n\n　　那么以根用户登录有那些危险那？ \n　　1.你可以想象你在没有保护网的情况下打秋千，会不会感到害怕？这和你以根用户登录的道理是一样的，你会不经意间毁掉你的系统。 \n　　2.你可能会不小心运行恶意软件。通常在根用户模式下任何程序的启动都默认给予所有权限的。 \n　　3.如果你的系统有安全漏洞没有修补，你就可能被别人完全控制。 \n　　4.这是使用Unix的惯例，除非必须那么不要轻易在根用户下运行任何东西。如果一个不是自己触发的程序请求根用户权限，那么你就要小心了。 \n\n　　通常，我们不必登录根用户界面，下面是几条技巧： \n　　*使用“sudo”或“su”命令，并在你完成管理时退出 \n　　*如果你不知道如何使用命令行完成这些，你可以使用“gksu”或“kdesu”。比如，按 Alt+F2并打出“gksu nautilus”，并在你完成时马上结束程序。 \n\n 2-合理的命名你的文件 \n\n　　Linux环境下，你可以按照你的意愿命名文件，但是以下两点是不允许的：1）“/”是根目录专用的；2）不要使用无效字符。其它的在技术上都是可以的，但是为了避免以后的麻烦这里有几点经验你可以遵守： \n\n　　*经验上，只使用字母、数字、连接符（-）和下划线（_） \n　　*避免使用美元符（$），括弧和百分号（%）等特殊字符，这些字符对于shell有着特殊意义，可能会引起冲突 \n　　*避免使用空格，在终端上处理含有空格的文件是很愚蠢的。你可以用连接符或下划线来代替空格。 \n\n　　这些已经基本上成为我的习惯，并且我在使用Windows和MAC时也不自觉的遵守这些准则。 \n\n 3-将你的home目录放在一个独立的分区上 \n\n　　这样做会给你很大的灵活性。将home目录放在一个独立的分区上，可以在你重装系统甚至升级你的整个版本而不会丢失你的数据和个人设置。你可以在根目录下重新设置你所需要的而保留home分区。现在你可以将你需要的随意分类而不必担心的数据和个人设置，你可以随时使用它们。 \n\n　　如果碰巧在你安装系统之后才懂得这一点，不要失望。你可以按照Carthik在ubantu Blog上的一片名为“Move /home to it’s own partition”的指导道一步步的完成。\n\n  4-合理的灾难管理 \n\n　　Linux是比较强大和稳定的，但是任何系统都会崩溃。在你CTRL-ALT-DEL,重启之前，你应该学会如何处理你遇到的事故。你需要知道如何在不重启的情况下轻松恢复你的系统。我个人认为这种情况分为几个不同的层次，如果前一步不奏效的话请转向下一步： \n\n　　1.我将“强制关闭”程序放在我的任务栏上，如果哪个程序出现问题可以单击“强制关闭”图标并结束该程序 \n　　2.如果上一步不奏效，调用终端，用“ps -A”，记下那个出问题程序的进程号，结束它 \n　　3.使用“killall”命令，比如“killall firefox-bin” \n　　4.如果整个图形界面都冻结，你已经不可能调用终端，按CTRL-ALT-F1，这样可以转到另一个终端，这样你就可以使用步骤2和3来结束出问题的程序。 \n　　5.还不行的话，你可以使用CTRL-ALT-Backspace组合重启你的图形界面，但是要注意的是，这样会结束你正在运行的GUI程序。 \n　　6.调用CTRL-ALT-F1再使用CTRL+ALT+DEL这样不会立即重启你的系统，只是按照正常模式重启，所以是安全的（假定你想要重启并且CTRL-ALT-F1可用）。 \n　　7.如果这一切都不管用，也不用记着按强制重启按钮，尝试Raise a Skinny Elephant 。 \n\n 5-主动尝试 \n\n　　你可能对朋友给你设置设计的当前版本和配置很满意，这适合你。这很好，但是可能会有比这更好的。为什么不尝试下Linux和开源的灵活性和丰富性呢？不要害怕尝试不同的程序，图形管理和桌面。实验直到你找到最适合你的。你可以这样想，你现在居住在世界上最好的地方，但是环球旅行也不会有什么坏处的？或许说不定你还可以找到一个更好的居住地，就算不能，你旅行的时间也值得好好品味，你对其它国家，它们的人和风俗，思考方式了解的更多，最终说不定你会喜欢上这样的尝试。你尝试的任何新事物都会增加你的学识，一年左右的时间你将会对Linux和开源世界有一个很好的把握。 \n\n　　我个人曾尝试过至少10种分配方式，4种桌面和五种桌面管理。我最近的文章《 Etymology of A Distro》使我对更多的分配感兴趣，象Zenwalk, Foresight和 Sabayon等。朋友，主动尝试，这对你有好处。 \n\n　　在你尝试之前，你可以参考以下几点： \n\n　　*设置好你感觉最舒服的系统，因为你需要一个时刻工作的系统。这样你就可以按照下面的几点进行尝试 \n　　*你可以利用虚拟机来完成。安装一个Vmware或Virtualbox，用它们来做测试 \n　　*如果你不知道如何运用虚拟机，你可以设置一个独立分区来尝试 \n　　*最好的，你可以用一个设置好的PC，再有一个当作测试用。这样你就可以随心所欲的进行尝试 \n\n 6-熟悉使用你的命令行 \n\n　　虽然我不提倡你一定要学习命令行，有太多的文章一直强调学习命令行的重要性。这里我假设你已经知道他的重要性并且已经知道怎样用它处理一些简单的管理任务。你可以按照指导书和手册做相应的配置。但是不要一味的复制和粘贴。就是说，不止不加思考的执行命令许多有自由天性的人劝诫你要尽量深刻的理解每条命令行的含义，它能做什么。为什么手册上这样做的,而不是那样做？理解你所做步骤的基本原理。 \n\n　　过了一段时间你就会感觉你已经能很好的运用它了。最后你会发现它仅仅是种伪装的语言。每条命令可能只是一些词语的首字母，或一个单词的缩写。你希望你的狗理解“Spike fetch ball”这样的长句，为什么不尝试理解下“sudo mv /file1 /file2”那？ \n\n 7-为你的用武之地做些准备 \n\n　　我有过很多这样的经历，当有个朋友请求我在他的电脑上做些东西，但是由于他所选择的操作系统会出现糗事。有时候我有急事但是仅有的电脑有很挫的操作系统。不必痛苦，随身戴上你的linux系统，不管是存储在U盘或CD上。有相当多的linux版本很方便的，象Knoppix, DSL和 Puppy Linux等。很惭愧，事实上我自己还没用上这个习惯，我想我也需要言行一致。",
+			"added": 1580498698,
+			"parent_topic_uri": "1571186422_1MvkYQf2rLUspQvPSo18pdJsujt2aXbXB9"
+		},
+		{
+			"topic_id": 1580498891,
+			"title": "使用Linux要改掉几个的命令习惯",
+			"body": "根据我平时工作遇到坑简单总结了下面几条:\n\n1.  细心 如果你是刚刚接触linux 那么你最大的敌人就是自己（命令 文件 各种拼写错误会经常陪着你）\n\n2. 操作前备份 操作后检查  这里你最大的敌人:你以为你修改了 你以为你备份了 看看下面这个悲剧你就懂了 . 备份 备份 备份 检查 检查 检查！\n\n3. Linux下面严格区分大小写，而且所有符号用的默认是英文符号 这里你最大的敌人:大小写 中英文符号 等着你 \n\n4. 不要用rm 不要用rm 除非你确认某些文件或数据要被删除 这里你最大的敌人 小手抖一抖，数据都没有.\n\n5.危险参数少用 rm -r  ；sed -i   ；>（重定向符号）等等",
+			"added": 1580498862,
+			"parent_topic_uri": "1571186422_1MvkYQf2rLUspQvPSo18pdJsujt2aXbXB9"
+		}
+	],
+	"topic_vote": {},
+	"next_comment_id": 101,
+	"comment": {
+		"1577836120_1MityxAx6QVFTYWjzSJFc6nCX6eyT5W5yQ": [
+			{
+				"comment_id": 1,
+				"body": "> [fuoz@zeroid.bit](#comment_151_1FfatX3G2z43rV6nc1F3koYtn8tmD5EVb6): 视觉小说：命运石之门魔法使之夜 [...]\n\never17\n《从零开始》",
+				"added": 1579943838
+			},
+			{
+				"comment_id": 2,
+				"body": "zorinos 经常会卡住",
+				"added": 1579943781
+			},
+			{
+				"comment_id": 3,
+				"body": "被官方文档坑了，写的不明不白的",
+				"added": 1579944233
+			},
+			{
+				"comment_id": 5,
+				"body": "每天用linux文章熏陶别人",
+				"added": 1579946756
+			},
+			{
+				"comment_id": 6,
+				"body": "发行版元数据：\n内核版本\nglibc版本\n包管理器\n社区",
+				"added": 1579946979
+			},
+			{
+				"comment_id": 7,
+				"body": "字符界面——专注工作\n使用MacOS——专注工作\n\n闭口禅\nWine OS",
+				"added": 1579965810
+			},
+			{
+				"comment_id": 8,
+				"body": "nixos 虚拟机安装不了，guixsd不会用",
+				"added": 1579995477
+			},
+			{
+				"comment_id": 9,
+				"body": "linux比windows好玩的地方：\n下拉式终端\n可定制的桌面",
+				"added": 1579995695
+			},
+			{
+				"comment_id": 16,
+				"body": "持续不断的练习",
+				"added": 1580023306
+			},
+			{
+				"comment_id": 17,
+				"body": "ZeroNet 大法好，网站要手机号和邮箱太烦人了",
+				"added": 1580024837
+			},
+			{
+				"comment_id": 18,
+				"body": "- 世界充满了待解决的问题；\n\n- 一个问题不应该被解决两次；\n\n- 无聊和乏味的工作尽量少做；\n\n- 自由万岁；\n\n- 态度不能替代能力；",
+				"added": 1580027039
+			},
+			{
+				"comment_id": 19,
+				"body": "程序员 ---  DRY(Don't Repeat Yourself )原则 --- 脚本自动化",
+				"added": 1580027346
+			},
+			{
+				"comment_id": 21,
+				"body": "为什么360开发了很多Linux软件？\n3721之流最核心的技术不就是“没有需求就创造需求”么？",
+				"added": 1580031633
+			},
+			{
+				"comment_id": 22,
+				"body": "奶牛快传\n文 叔 叔",
+				"added": 1580033902
+			},
+			{
+				"comment_id": 23,
+				"body": "NixOS不能识别其他的系统，其他linux也识别不到NixOS",
+				"added": 1580035254
+			},
+			{
+				"comment_id": 26,
+				"body": "可能有一些支持安装 linux的PE",
+				"added": 1580095245
+			},
+			{
+				"comment_id": 27,
+				"body": "RSS 阅读器",
+				"added": 1580108040
+			},
+			{
+				"comment_id": 28,
+				"body": "应该让别人的生活因为有了我们的生存而更加美好——这个世界有太多的不公平，也许大家都曾受过欺骗和伤害，但仍然建议大家给亲人多些关怀，对陌生人多些善意和微笑，在保护好自己的前提上，在自己有能力的情况下让别人的生活因为有了我们的生存而更加美好！",
+				"added": 1580108347
+			},
+			{
+				"comment_id": 29,
+				"body": "最大的去中心化社区：ZeroNet（去中心化有社区？?)\n热爱分享",
+				"added": 1580108756
+			},
+			{
+				"comment_id": 30,
+				"body": "使用RetroShare，靠F2F保证资源的质量\n暗中交流",
+				"added": 1580109385
+			},
+			{
+				"comment_id": 49,
+				"body": "linux镜像下载太慢可以使用种子：\ndistrowatch\nlinuxtracker",
+				"added": 1580180866
+			},
+			{
+				"comment_id": 52,
+				"body": "美少女万华镜\n艹猫：巧克力与香子兰\n\n妹调教日记：姬月\n月姬\n穹\n\n沙耶之歌：沙耶\n媚肉之香：沙耶\n黄昏的禁忌之药：沙久耶\n\n秋之回忆\n水仙：绝望的回忆\n白色相簿2\n\n异度之刃2\n少女前线\n碧蓝航线\n闪乱神乐",
+				"added": 1580272631
+			},
+			{
+				"comment_id": 53,
+				"body": "玩系统经常会把电脑玩坏，严重时开机嘀嘀嘀响\n跑题才是最有意思的",
+				"added": 1580272667
+			},
+			{
+				"comment_id": 54,
+				"body": "ag：比grep、ack更快的递归搜索文件内容\ntig：字符模式下交互查看git项目，可以替代git命令\nmycli：MySQL客户端，支持语法高亮和命令补全，效果类似iPython，可以替代mysql命令\njq: json文件处理以及格式化显示，支持高亮，可以替换python -m json.tool\nshellcheck：shell脚本静态检查工具，能够识别语法错误以及不规范的写法。\nfzf：命令行下模糊搜索工具，能够交互式智能搜索并选取文件或者内容，配合终端ctrl-r历史命令搜索简直完美。\naxel：多线程下载工具，下载文件时可以替代curl、wget\ncloc：代码统计工具，能够统计代码的空行数、注释行、编程语言\ntmux：终端复用工具，替代screen、nohup。\nscript/scriptreplay: 终端会话录制。\nmultitail：多重 tail。通常你不止一个日志文件要监控，怎么办？终端软件里开多个 tab 太占地方，可以试试这个工具",
+				"added": 1580272692
+			},
+			{
+				"comment_id": 55,
+				"body": "窗口快速切换插件\n自动化脚本能做哪些事？\n下一件事要做什么？",
+				"added": 1580272710
+			},
+			{
+				"comment_id": 56,
+				"body": "slackware snapcraft\nslax moudle and appimage",
+				"added": 1580272734
+			},
+			{
+				"comment_id": 57,
+				"body": "不水贴了\n深信不疑\n戒定慧\nLinux折腾完毕了,没发现更多有特色的linux",
+				"added": 1580273261
+			},
+			{
+				"comment_id": 58,
+				"body": "Linux发行版的分类\n开箱即用\n轻量\n基于源码\n学习：slackwarwe、lfs\n基于容器： endless os 、Fedora Silverblue\n便携Linux\n微型linux\n维护: SystemRescueCd、super grub2 disk\n安全: Qubes OS\n匿名: tails\n黑客: kali\n可以硬盘安装的Linux",
+				"added": 1580273062
+			},
+			{
+				"comment_id": 59,
+				"body": "PureDarwin\nDarling能够Linux上运行macOS软件\n你对Linux桌面还有什么需求？",
+				"added": 1580272815
+			},
+			{
+				"comment_id": 60,
+				"body": "保证信息通畅\n特别的使用技巧",
+				"added": 1580272833
+			},
+			{
+				"comment_id": 62,
+				"body": "备用操作系统\n备用翻墙软件",
+				"added": 1580273860
+			},
+			{
+				"comment_id": 63,
+				"body": "http下载会出现下载失败禁止下载的情况，还是P2P下载好",
+				"added": 1580279878
+			},
+			{
+				"comment_id": 66,
+				"body": "软件诈尸了\n正在上古神器 plan9上发帖\nplan9和lisp一样简洁",
+				"added": 1580283736
+			},
+			{
+				"comment_id": 67,
+				"body": "ubuntu的教程很好，每个新版本都有换源教程\nslackware是原生linux，其他发行版不知道魔改了什么",
+				"added": 1580284553
+			},
+			{
+				"comment_id": 69,
+				"body": "整理分享自己所学会的东西\n人的生命只有现在，过去的已经过去了，未来的还没有到",
+				"added": 1580294491
+			},
+			{
+				"comment_id": 70,
+				"body": "学会了如何指挥自己的身体\n学会了独立生存\n安全的活下去\n做有用的事\n现在要做什么事",
+				"added": 1580294600
+			},
+			{
+				"comment_id": 71,
+				"body": "信息渠道\n社区",
+				"added": 1580294898
+			},
+			{
+				"comment_id": 72,
+				"body": "时间管理\n财务管理\n规划\n沉没成本",
+				"added": 1580295081
+			},
+			{
+				"comment_id": 73,
+				"body": "中国2185",
+				"added": 1580295835
+			},
+			{
+				"comment_id": 74,
+				"body": "世界除了windows还有别的操作系统\n使用linux的人是活在另一个世界的人",
+				"added": 1580295467
+			},
+			{
+				"comment_id": 75,
+				"body": "处理每天的事情",
+				"added": 1580296620
+			},
+			{
+				"comment_id": 78,
+				"body": "生活没有那么简单\n人就像是被蒙着眼推磨的驴子，生活就像一条鞭子；当鞭子抽到你背上时，你就只能一直往前走，虽然连你也不知道要走到什么时候为止，便一直这么坚持着。",
+				"added": 1580406401
+			},
+			{
+				"comment_id": 81,
+				"body": "打击黑作坊",
+				"added": 1580462614
+			},
+			{
+				"comment_id": 82,
+				"body": "靠信息赚钱",
+				"added": 1580462656
+			},
+			{
+				"comment_id": 83,
+				"body": "以前玩电脑是兴趣，现在玩电脑是为了钱",
+				"added": 1580462711
+			},
+			{
+				"comment_id": 84,
+				"body": "linux 入门都是从虚拟机开始的",
+				"added": 1580462773
+			},
+			{
+				"comment_id": 85,
+				"body": "BT 下载停留在了 99.8%，且已下载大于了文件大小[解决方法：强制重新校验]\n像windows那样对家人保持兼容性",
+				"added": 1580474144
+			},
+			{
+				"comment_id": 86,
+				"body": "开发出来一个系统，让用户自己去找软件，让用户自生自灭",
+				"added": 1580464463
+			},
+			{
+				"comment_id": 88,
+				"body": "终端的使用技巧：\n1 下拉式终端\n2 设置透明背景\n3 screen、tmux",
+				"added": 1580478386
+			},
+			{
+				"comment_id": 89,
+				"body": "startpage搜索引擎",
+				"added": 1580479983
+			},
+			{
+				"comment_id": 90,
+				"body": "OSx86是把苹果电脑出品的Mac OS X操作系统移植到非苹果电脑上的计划。此计划的构思始于2005年7月的苹果开发者大会，当时苹果宣布他们将把其个人电脑从PowerPC架构转向英特尔架构。\n此计划有一些广为人知的名字，比如Hackintosh或Hackint0sh。在中国大陆还有很多人形象的称其为“黑苹果”。\n苹果公司的软件协议并不允许将Mac OS X安装在一台没有苹果商标的硬件上。一些公司试图以此计划牟利，如Psystar和PearPC。然而，苹果宣称他们是用DMCA法案来保证其系统不被安装在非苹果电脑上的。2009年11月苹果公司赢得了对Psystar的诉讼。\n苹果根据Psystar盗版操作系统证据以及程序码的使用部分得到胜诉，就Mac OS X应用苹果电脑本身并不具备定义电脑硬件的各种条件，又因为Mac OS X操作系统以FreeBSD为架构，让跨平台应用留下灰色与伏笔。",
+				"added": 1580480697
+			},
+			{
+				"comment_id": 93,
+				"body": "全能U盘：集成veket、win7pe、MaxDOS工具箱、Slitaz及androidx86",
+				"added": 1580484051
+			},
+			{
+				"comment_id": 95,
+				"body": "为了重装系统后减少需要下载软件的时间，收集常用的appimage\n虚拟机开多了linux桌面卡死了，通过命令行救回来了",
+				"added": 1580487302
+			},
+			{
+				"comment_id": 97,
+				"body": "《笨兔兔的故事》\n《deepin集结号》",
+				"added": 1580492084
+			},
+			{
+				"comment_id": 99,
+				"body": "官方打包各种专业软件也是亮点，比如opencv，当然目的只是让fc用户测试，再卖给rhel用户",
+				"added": 1580493265
+			},
+			{
+				"comment_id": 100,
+				"body": "linux使用时间长了就习惯了",
+				"added": 1580498577
+			}
+		],
+		"1577266994_1DcbdcgJk7mw465FGxYHMkz9zgyNgvpsWY": [
+			{
+				"comment_id": 10,
+				"body": "xfce4 下拉式终端",
+				"added": 1579996654
+			},
+			{
+				"comment_id": 50,
+				"body": "多数发行版都会自动更新所有添加的源，包括第三方源，如redhat系、debian系、archlinux等，而Gentoo添加了第三方源（overlay）之后，更新时，需要用layman -S命令来单独更新全部overlay。\n\n现在，最新的portage管理器也终于支持用emerge命令来更新overlay了！",
+				"added": 1580407691
+			},
+			{
+				"comment_id": 61,
+				"body": "usbos-v3.0",
+				"added": 1580273555
+			},
+			{
+				"comment_id": 77,
+				"body": "Q：包管理器是什么时候开始运行的？\nA：安装系统时\n\nLinux便携化软件：\nhttps://portableapps.com\nhttps://portablelinuxgames.org/",
+				"added": 1580405423
+			},
+			{
+				"comment_id": 80,
+				"body": "我们都知道新人的确很菜，也喜欢抱怨，并且带有浓厚的Windows习惯，但既然在这里询问，我们就应该有责任帮助他们解决问题，而不是直接泼冷水、简单的否定或发表对解决问题没有任何帮助的帖子。乐于分享，以人为本，这正是Ubuntu的精神所在。",
+				"added": 1580424211
+			}
+		],
+		"1579165212_1FfatX3G2z43rV6nc1F3koYtn8tmD5EVb6": [
+			{
+				"comment_id": 11,
+				"body": "PCLinuxOS是一个完全开放的linux版本，经过PClinuxOS开发团队的不懈努力，正越来越受到广大 linux爱好者的关注。秉承“简单易用，安全无忧”的理念，PCLinuxOS逐步成长为一个稳定、成熟的版本。在没有大公司的帮助下，PCLinuxOS 的开发团队奇迹一般把这样一个平民Linux版本推动到Linux世界的巅峰，也让Linux的开源、自由精神绽放出极致的光彩。",
+				"added": 1580017987
+			},
+			{
+				"comment_id": 12,
+				"body": "社区发行版veket-20发布（linux-5.4.12内核）",
+				"added": 1580018876
+			},
+			{
+				"comment_id": 13,
+				"body": "Qubes OS是面向安全的、基于Fedora的桌面Linux发行，其主要理念是基于隔离的安全，而这靠轻量级的Xen虚拟机来实现隔离域。它旨在结合两个貌似矛盾的目标：如何使不同域之间的隔离尽可能强，这主要靠能够使可信代码尽量小的更灵巧的结构，以及如何使这种隔离尽可能无缝和容易。",
+				"added": 1580019707
+			},
+			{
+				"comment_id": 14,
+				"body": "emacs操作系统",
+				"added": 1580021578
+			},
+			{
+				"comment_id": 20,
+				"body": "ExTiX Deepin 20.1 基于 Deepin 15.11 (latest) with Skype, Spotify, Refracta Snapshot and kernel 5.5.0-rc3 :: Build 200101",
+				"added": 1580029368
+			},
+			{
+				"comment_id": 24,
+				"body": "维护工具：deepin live",
+				"added": 1580095110
+			},
+			{
+				"comment_id": 25,
+				"body": "360急救盘使用的是经过360安全中心修改定制的Puppy Linux系统。采用非Windows内核，有效防止Windows病毒的重复、交叉感染。界面风格简洁清新。不受原有操作系统限制，即使原系统崩溃、无法启动，急救盘系统也能帮用户拯救宝贵的数据。盘符排列及使用习惯与Windows一致，无需额外学习，打开就会使用！",
+				"added": 1580095181
+			},
+			{
+				"comment_id": 46,
+				"body": "CDlinux 是一种小型的迷你 GNU/Linux 发行版软件，其名称取自英文的 “CompactDistroLinux“。CDlinux 的体形小巧，功能却挺强大。",
+				"added": 1580178683
+			},
+			{
+				"comment_id": 76,
+				"body": "Endless OS 是一个免费，但不开源的 Linux 操作系统。Endless OS 使用从 GNOME 3 衍生出来的定制桌面环境来提供简洁和流水线化的用户体验，它还提供了许多免费应用程序，大部分都是开源的，包括基本的文字处理、表格处理、以及图片处理等，还有众多的儿童教育游戏、图书和教学影片。\n\nEndless OS 并不使用传统的 Linux 包管理系统，而是使用一份用 OSTree 管理的只读的根文件系统，应用程序套件则基于此之上。\n\n据悉，Endless OS 的大部分成员为目前最流行的开源桌面环境 —— GNOME 的核心开发者，而目前 GNOME 基金会主席 Nuritzi Sanchez 也是 Endless OS 的创始人之一，相信 Endless OS 对 GNOME 的支持应该会不错。",
+				"added": 1580405134
+			}
+		],
+		"1580022456_18xqjuBBjsq1QBTbwuUwf2q7pJk7weAAoN": [],
+		"1579834150_1FfatX3G2z43rV6nc1F3koYtn8tmD5EVb6": [
+			{
+				"comment_id": 31,
+				"body": "MindMaster是一款多平台思维导图软件,可用于Windows,Mac和Linux等桌面环境,也可以在线使用或在苹果,安卓等移动端上使用。",
+				"added": 1580172690
+			},
+			{
+				"comment_id": 32,
+				"body": "steam\nWPS、网易云音乐\n搜狗输入法、迅飞输入法\n360全家桶\nQQ for Linux v2.0.0-b1(1024)\n腾讯视频\n中望CAD Linux预装版\n百度网盘\n有道词典、米聊、skype\n福昕阅读器(PDF）\n坚果云、utools\n永中office",
+				"added": 1580174619
+			},
+			{
+				"comment_id": 33,
+				"body": "Foobar 2000\nFreeMind【思维导图】\nCherryTree\nmarkdown编辑器：Moeditor、Typora\n向日葵、TeamViewer\n深度截图\n",
+				"added": 1580174552
+			},
+			{
+				"comment_id": 34,
+				"body": "Mac 主题\nOh-my-zsh - 一个由社区驱动，优雅的 zsh 配置管理框架\n&nbsp;   \nHexChat - HexChat 是一款 IRC 客户端\nPidgin - 一款通用聊天客户端\nSystem Rescue CD - SystemRescueCd 是一款 Linux 系统急救盘，提供可启动的 CD-ROM 或 U 盘，用于管理系统在崩溃后修复系统和数据\nTimeshift - TimeShift 是一款系统还原工具，它用 rsync 和硬链接创建系统的增量快照。快照可以在一段时间后用于恢复，撤销快照生成以来所做的所有更改。快照可以手动生成或用定时任务自动生成\nConky - Conky 是 X 下一款免费，轻量的系统监视器，可以在你桌面显示任何类型的信息\nCalibre - 难以置信的丑但很强大的电子书管理和转换软件\n&nbsp;  \nSublime - 有史以来最好的编辑器之一\nVSCode - Visual Studio Code 是一款轻量但强大的代码编辑器，提供 Windows，OS X 以及 Linux 版本。它内置了 JavaScript，TypeScript 以及 Node.js 支持，并且对其它语言（C++，C#，Python，PHP）还有丰富的插件系统和运行环境\nPostgresql - PostgreSQL 是一款强大，开源的对象-关系型数据库系统",
+				"added": 1580175398
+			},
+			{
+				"comment_id": 35,
+				"body": "ONS模拟器\nkrkr模拟器\nmine模拟器\nexagear模拟器",
+				"added": 1580175072
+			},
+			{
+				"comment_id": 36,
+				"body": "minecraft我的世界",
+				"added": 1580175507
+			},
+			{
+				"comment_id": 37,
+				"body": "教育：\n\nMATLAB - MATLAB 平台专为剞劂工程和科学问题优化。MATLAB 让你的想法不仅仅停留在桌面。你可以在巨大的数据集上进行你的分析并按比例增加你的集群和云。\n\nScratch - 有了 Scratch，你可以编程你自己的互动故事，游戏，以及动画——并且在在线社区和其他人分享你的创造\n\nGoogle Earth - Google Earth 是一款虚拟地球，地图以及地理信息程序\n\nGPeriodic - GPeriodic 是一个 Linux 上的元素周期表应用",
+				"added": 1580175673
+			},
+			{
+				"comment_id": 38,
+				"body": "互联网：\n\nAnatine - 带有众多个性化的 twitter 桌面客户端。  \nBrave - Brave 是 macOS，Windows，Linux 平台上一款快速，优秀的桌面浏览器。  \nChrome - 一款流行的浏览器，有着无数插件和应用。\nChromium - Chromium 是一个开源浏览器项目，专注于为所有用户带来更安全、快速和稳定的 web 体验。  \nCorebird - corebird 是一款原生 gtk+ twitter 桌面客户端。  \nFirefox - 一款流行的浏览器，有着无数插件和应用。  \nMidori - 一款轻量级的免费浏览器，在低端机器上可以完美运行。  .\nOpera - Opera 浏览器是你畅游网络所需的一切。\nTor - Tor 是免费软件和一个开放网络，帮助你对抗流量分析（一种网络检测的方式，威胁个人自由与隐私）。\nVivaldi - 一款新兴的浏览器，有着许多的个性化配置。\nYandex - 快速方便的浏览器。\n办公\n\nGummi gtk2|gtk3 - 带有模板，拼写检查以及向导的简单 latex 编辑器。  \nCaligra Office - 提供满足办公，图形以及管理需要的综合应用套件。\nGnuCash - GnuCash 是一款自由的会计程序，实现了复式记账系统。它最初的目标是开发出与 Intuit, Inc. 的 Quicken 类似的功能，但它还有针对小企业会计的功能。  \nKMyMoney - KMyMoney 是 KDE 的一款个人金融管理器。它的操作类似 Microsoft Money 以及 Quicken。  \nLibreOffice - Linux 上的最佳办公套件。  \nLyX - 成熟的 LaTeX 渲染文档编辑器。",
+				"added": 1580175663
+			},
+			{
+				"comment_id": 39,
+				"body": "生产力：\n\nAlarm Clock - Alarm Clock 是一款全功能的 GNOME 或其它面板的闹钟。\nAutokey - 一款 Linux 桌面自动化工具，让你可以管理你的脚本和短语集合，并给它们分配缩写或者快捷键。\nBasket Note Pads - 这个多用途的笔记应用帮助你记下所有类型的笔记。  \nf.lux - 根据光线自动调节你的电脑屏屏幕显示\nRedshift - Redshift 根据你的周边调整你屏幕的色温。当你夜晚在屏幕前工作时，它也许能帮助你减少对眼睛的伤害\nPlank - Plank 注定要成为这个星球上最简洁的应用 dock\nWizNote - 一个跨平台云笔记客户端。  \nXmind - 脑图工具。\nZim - 一款图形化的文本编辑器，用来维护一系列的维基页面，对笔记和文档而言也很棒。资料以纯文本的形式保存，更便于版本管理",
+				"added": 1580175833
+			},
+			{
+				"comment_id": 40,
+				"body": "文件共享\n\naria2 - aria2 是一个轻量级的多协议以及多来源命令行下载工具。  \nCrossFTP - CrossFTP 让 FTP 相关的任务管理变得无比简单。\nD-lan - 一个免费的局域网文件分享软件。\nDeluge - Deluge 是一款轻量级，免费的跨平台 BT 客户端。\nDropbox - Dropbox 是一个免费的云存储服务，让你可以将照片，文档和视频带到任何地方并轻松分享。\nFilezilla - 免费的 FTP 解决方案  \nFlareget - 全功能，多线程下载管理器以及加速器。\nMeiga - 一个让你可以通过 web 共享你选定的本地文件夹的工具。  \nownCloud - ownCloud 的目标是不论在哪都能让你访问到你的文件。\nPushBullet - Pushbullet 将你的设备连接，让它们感觉像是一体的。\nqBittorent - qBittorrent 计划的目标是提提供一个 µTorrent 的自由软件替代方案。\nQuazaa - 一款跨平台的多重网络点对点（P2P）文件分享客户端。\nSpiderOak - 关注隐私的团队及商业实时协作。\nSyncthing - Syncthing 用开放，值得信赖，去中心化的方案取代专有的同步和云服务。\nTeamviewer - PC 远程控制/远程访问软件，对个人使用免费。\nTransmission - 简单，轻量级，多平台的 torrent 客户端。  \nuGet - Linux 下最好的下载管理器。  \nuTorrent - 优雅，高效的 torrent 下载。\nVuze - Bittorrent 点对点下载客户端，满足你的所有 torrent 下载需要。\n\n终端\n\nGnomeTerminal - Linux 世界广泛预装的终端模拟器。\nGuake - Guake 是 Gnome 下的一款顶部下拉式的终端。\nKonsole - KDE 桌面环境的最佳终端。\nRXVT-Unicode - rxvt-unicode 是著名的终端模拟器的一个分支。\nRXVT - 一款 X11 终端模拟器，流行的‘xterm’替代品。\nSakura - 简单但是强大，基于 libvte 的终端模拟器，支持 utf-8 并且通过 gtk+ 和 pango 库提供输入法。\nTerminator - 很明显 Linux 上最强大的终端模拟器是功能丰富的 Terminator（终结者）。\nTermit - 基于 vte 库的简单终端模拟器，可通过 Lua 扩展。\nXterm - Xterm 是一个 X 窗口系统的终端模拟器。它给不直接使用窗口系统的程序提供了 DEC VT102 和 Tektronix 4014 兼容终端。\nYakuake - 一款基于 KDE Konsole 技术的 Quake 风格的终端模拟器。\n\n\n实用工具\n\nActionaz - Ubuntu/Linux 下的任务自动化工具。\nBleach bit - BleachBit 快速释放磁盘空间并不知疲倦地守卫你的隐私。释放缓存，删除 cookie，清除互联网浏览历史，清理临时文件，删除日志，以及更多功能...\nBrasero - CD/DVD 烧录软件。\nCaffeine - 防止 ubuntu 自动睡眠。\nClonezilla - Clonezilla 是一款分区以及磁盘镜像/克隆程序，类似 True Image® 或 Norton Ghost®。\nConvertall - 全能单位换算。\nEasyStroke - Easystroke 是一个 X11 手势识别应用。\nEnpass - Enpass 安全地管理你的密码和重要信息，让你的生活更轻松。\nGD map - 可视化磁盘使用量的工具。\nGloobus-Preview - 它能给你提供文件的快速预览，类似 Sushi。  \nGnormalize - 音频转换工具。\nGParted - Ubuntu/Linux 磁盘分区工具。\nGRadio - Ubuntu linux 无线电广播软件。\nHandbrake - 视频转换工具。\nImageMagik - ImageMagick 是一套图片修改和处理的命令行工具。\nIndicator-SysMonitor - 一款可显示 cpu 温度，内存，网速，cpu 使用率，公网 IP 地址以及联网状态的应用指示器。  \nKeePassX - 跨平台密码管理器。KeePass 的移植成果。  \nKeePass - 专注于 Windows 的密码管理器，通过 Mono 提供一些跨平台支持。\nLastPass - 跨平台密码管理器。\nPeazip - 解压任何文件的工具。\nPowertop - 能源消耗诊断工具。\nPsensor - Linux 图形化硬件温度监视器。\nPulse Audio - 通过个性化的配置改善 Linux 的音频。\nRemarkable - Ubuntu/Linux 上最佳的 Markdown 编辑器。\nRemmina - 一款功能丰富的远程桌面应用，支持 Linux 以及其它 Unix。\nSushi - Sushi 是 GNOME 桌面文件管理器鹦鹉螺（Nautilus）的快速预览工具。  \nSynaptic - Synaptic 是一款图形化的 apt 包管理程序。\nSystemload - 在状态栏显示系统负载。\nTLP - 优化 Linux 下的电池表现。\nVariety - Variety 是一款开源的 Linux 壁纸更换软件，拥有众多功能，轻巧又易用。\nVirtualbox - VirtualBox 是一款通用的 x86 硬件虚拟机软件，面向服务器，桌面以及嵌入式。\nWallpaperChange - 自动更换你的壁纸。\nWorkrave - 一款帮助恢复以及防止重复性劳损的程序（RSI）。  \nXtreme Download Manager - 一款有着新鲜用户界面的下载管理器。\n\n视频\n\nBomi Player - 一款强大易用的多媒体播放器。\nCheese - Cheese 用你的摄像头拍照和录像，还能加上神奇的特效，让你能够和别人分享快乐。  \nKodi - 一款获得殊荣的免费开源（GPL）软件，支持视频，音乐，图片，游戏以及更多内容的媒体中心。\nMiro - 免费，开放的视频，音乐以及互联网电视应用；它从成千上万的资源中带来视频频道，并且还有比其它平台更丰富的免费高清资源。\nMPlayer - MPlayer 是一款支持多种系统和各种视频的视频播放器。\nMPV - 一款免费，开源，跨平台的媒体播放器。\nSMPlayer - 内置解码器的免费媒体播放器。可播放所有的音频和视频格式。\nSVP - SVP 让你可以使用帧插值在你的桌面电脑上观看任何视频，就像高端电视和投影仪支持的那样。\nVLC - VLC 是一个免费且开源的跨平台媒体播放器以及框架，可以播放大多数格式的多媒体文件以及 DVS，音频 CD，VCD，以及各种流媒体协议",
+				"added": 1580175913
+			},
+			{
+				"comment_id": 41,
+				"body": "桌面环境\n\nBudgie - Budgie 是一个面向现代用户思想设计的桌面环境，专注于简洁与优雅。\nCinammon - Cinnamon 努力提供一种传统的用户体验。Cinnamon 是一个 GNOME 3 的 fork。\nGNOME Flashback - GNOME Flashback 是 GNOME 3 的一个 shell，最初叫 GNOME fallback 模式。桌面的布局和底层技术都与 GNOME 2 相似。\nGnome - GNOME 桌面环境是一个有吸引力且直观的的桌面，同时有现代（GNOME）和经典（GNOME Classic）会话模式。  \nKDE Plasma - KDE Plasma 桌面环境是一个熟悉的工作环境。Plasma Desktop 提供现代桌面环境体验所需的所有工具，所以你可以从开始就充满生产力。\nLXDE - Lightweight X11 Desktop Environment （轻量化 X11 桌面环境）是一个快速且节能的桌面环境。\nLXQt - LXQt 是 LXDE 的 Qt 移植和即将到来的版本，轻量化的桌面环境。\nMate - Mate 用传统隐喻给 Linux 用户提供一个直观又有吸引力的桌面。MATE 是 GNOME 2 的一个 fork。  \nPantheon - Pantheon 是最初为发行版 elementary OS 创建的桌面环境，同时也是它的默认桌面环境。\nUnity - Unity 是 GNOME 的一个 shell，由 Canonical 为 Ubuntu 设计。\nXfce - Xfce 体现了模块化和可重用的传统 UNIX 哲学。",
+				"added": 1580175965
+			},
+			{
+				"comment_id": 42,
+				"body": "其它\n\nGrubCustomizer - Grub Customizer 是一个让你可以配置 GRUB2/BURG 设置和启动项的图形化界面",
+				"added": 1580175982
+			},
+			{
+				"comment_id": 43,
+				"body": "窗口合成管理器\n\nCompton - Compton 是一款独立的合成管理器，适合同没有原生提供合成功能的窗口管理器一同使用。\nXcompmgr - Xcompmgr 是一个简单的合成管理器，能够渲染下拉阴影，使用 transset 工具的话，还可以实现简单的窗口透明。  \n叠加式窗口管理器\n\n2bwm - 快速的浮动窗口管理，有两个特殊边界，基于 XCB 库，由 mcwm 衍生。\nBlackbox - 快速，轻量化的 X 窗口系统窗口管理器，没有那些烦人的库依赖。\nFluxbox - 基于 Blackbox 0.61.1 代码的 X 窗口管理器。\nOpenbox - 高度可配置，带有可扩展标准支持的下一代窗口管理器。\n平铺式窗口管理器\n\nBspwm - bspwm 是一个平铺式窗口管理器，将窗口以二叉树的叶结点的方式展现。\nHerbstluftwm - 使用 Xlib 和 Glib 的手工平铺式窗口管理器。\n动态窗口管理器\n\nawesome - 高度可配置，下一代 X 框架窗口管理器。\ndwm - X 动态窗口管理器。它以平铺，单片镜以及浮动布局的方式管理窗口。\ni3 - 完全重写的平铺式窗口管理器。\nspectrwm - X11 小型动态窗口管理器，很大程度上受了 xmonad 和 dwm 的启发。\nxmonad - 动态平铺式 X11 窗口管理器，用 Haskell 写就和配置",
+				"added": 1580176050
+			},
+			{
+				"comment_id": 44,
+				"body": "rime, dropbox",
+				"added": 1580176127
+			},
+			{
+				"comment_id": 45,
+				"body": "Beyond Compare是一套由Scooter Software推出的文件比较工具。主要用途是对比两个文件夹或者文件，并将差异以颜色标示。比较范围包括目录，文档内容等。",
+				"added": 1580178649
+			},
+			{
+				"comment_id": 47,
+				"body": "音频播放器 Deadbeef 1.8.1几天前发布，1.8系列的各种bug修复和性能改进。\n\nDeadbeef 1.8.1发布亮点：\n\n修复排序时的音频冻结\n修复了使用相对路径加载PLS播放列表时的错误消息\n删除了未维护的sndio插件\n在播放列表中添加了实验性子组支持\n添加了新的标题格式化函数$stripprefix和$swapprefix\n更新了重复和随机播放热键名称以匹配菜单\n修复状态栏中总播放时间的舍入错误\n添加了FLAC插件选项以忽略损坏的流错误\n修复了重新加载重播的信息\n修复了向APEv2标签写回放信息的问题\n还有许多其他bug修复，请参阅发行说明以获取详细信息",
+				"added": 1580179346
+			}
+		],
+		"1580172372_18xqjuBBjsq1QBTbwuUwf2q7pJk7weAAoN": [
+			{
+				"comment_id": 48,
+				"body": "snap、flatpak安装的软件用户体验好吗？",
+				"added": 1580180306
+			}
+		],
+		"1580181804_18xqjuBBjsq1QBTbwuUwf2q7pJk7weAAoN": [
+			{
+				"comment_id": 51,
+				"body": "yum也支持安装本地rpm\nDNF新一代的RPM软件包管理器",
+				"added": 1580182561
+			}
+		],
+		"1580286100_18xqjuBBjsq1QBTbwuUwf2q7pJk7weAAoN": [
+			{
+				"comment_id": 68,
+				"body": "百度搜索引擎（比谷歌差远了）",
+				"added": 1580286159
+			}
+		],
+		"1580478168_18xqjuBBjsq1QBTbwuUwf2q7pJk7weAAoN": [
+			{
+				"comment_id": 87,
+				"body": "如何退出vim？",
+				"added": 1580478180
+			}
+		],
+		"1580480635_18xqjuBBjsq1QBTbwuUwf2q7pJk7weAAoN": [
+			{
+				"comment_id": 91,
+				"body": "安卓x86安装：\n终端模拟器\nONS模拟器\nexagear\n",
+				"added": 1580483865
+			},
+			{
+				"comment_id": 94,
+				"body": "【教程】如何在普通电脑上安装Chrome OS?[不如买一个MacOS]",
+				"added": 1580484505
+			}
+		],
+		"1580485239_18xqjuBBjsq1QBTbwuUwf2q7pJk7weAAoN": [
+			{
+				"comment_id": 96,
+				"body": "1 免费\n2 爱国\n3 没有流氓广告\n4 安全不中毒\n5 电脑运行windows太卡\n6 不会强制自动更新\n7 占用空间小",
+				"added": 1580485493
+			}
+		],
+		"1580490967_18xqjuBBjsq1QBTbwuUwf2q7pJk7weAAoN": [
+			{
+				"comment_id": 98,
+				"body": "WM，DM ，包管理，Init 以及主要内核分支\n会软件打包",
+				"added": 1580494281
+			}
+		]
+	},
+	"comment_vote": {
+		"29_1FfatX3G2z43rV6nc1F3koYtn8tmD5EVb6": 1
+	}
+}

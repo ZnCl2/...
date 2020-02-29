@@ -1,0 +1,75 @@
+{
+    "db_name": "ZiteRequests",
+    "db_file": "data/ziterequests.db",
+    "version": 2,
+    "maps": {
+        "users/.+/data.json": {
+            "to_table": ["message"]
+        },
+        "users/.+/content.json": {
+            "to_json_table": ["cert_user_id"],
+            "file_name": "data.json"
+        },
+        "data.json": {
+            "to_table": [{
+                    "node": "categories",
+                    "table": "categories"
+                },
+                {
+                    "node": "zites",
+                    "table": "zites"
+                }
+            ]
+        }
+    },
+    "tables": {
+        "json": {
+            "cols": [
+                ["json_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+                ["directory", "TEXT"],
+                ["file_name", "TEXT"],
+                ["cert_user_id", "TEXT"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX path ON json(directory, file_name)"],
+            "schema_changed": 11
+        },
+        "message": {
+            "cols": [
+                ["message_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+                ["title", "TEXT"],
+                ["body", "TEXT NOT NULL"],
+                ["category", "TEXT"],
+                ["tags", "TEXT"],
+                ["request_type", "CHAR"],
+                ["removal_reason", "TEXT"],
+                ["status", "TEXT"],
+                ["date_added", "INTEGER NOT NULL"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX message_key ON message(json_id, message_id)", "CREATE INDEX midx1 ON message(request_type)"],
+            "schema_changed": 19
+        },
+        "zites": {
+            "cols": [
+                ["zite_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+                ["address", "TEXT UNIQUE"],
+                ["title", "TEXT NOT NULL"],
+                ["description", "TEXT"],
+                ["category", "TEXT NOT NULL"],
+                ["tags", "TEXT"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX zite_key ON zites(json_id, address)", "CREATE INDEX zidx1 ON zites(category, address)", "CREATE INDEX zite_address ON zites(address)", "CREATE INDEX zite_title ON zites(title)"],
+            "schema_changed": 22
+        },
+        "categories": {
+            "cols": [
+                ["category_id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+                ["name", "TEXT UNIQUE"],
+                ["json_id", "INTEGER REFERENCES json (json_id)"]
+            ],
+            "indexes": ["CREATE UNIQUE INDEX category_key ON categories(json_id, category_id)", "CREATE INDEX name ON categories(name)"],
+            "schema_changed": 14
+        }
+    }
+}

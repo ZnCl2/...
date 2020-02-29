@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>fix links when using chrome plugin - 0git - 0git - a list of git repositories on ZeroNet
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="0git.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>0git</h1><span class="desc">0git - a list of git repositories on ZeroNet
+</span></td></tr><tr class="url"><td></td><td>git clone <a href="http://127.0.0.1:43110/0git.bit/0git.git">http://127.0.0.1:43110/0git.bit/0git.git</a></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.md.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/55c950fc6cec7ff79a57f02630daf16b615540e4.html">55c950fc6cec7ff79a57f02630daf16b615540e4</a>
+<b>parent</b> <a href="../commit/3b233f379516ac77e95e0696c7dc9f6662857ef1.html">3b233f379516ac77e95e0696c7dc9f6662857ef1</a>
+<b>Author:</b> HelloZeroNet &lt;<a href="mailto:hello@noloop.me">hello@noloop.me</a>&gt;
+<b>Date:</b>   Wed Apr 22 12:13:03 +0200
+
+fix links when using chrome plugin
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">js/TopicList.coffee</a></td><td> | </td><td class="num">2</td><td><span class="i">+</span><span class="d">-</span></td></tr>
+<tr><td><a href="#h1">js/all.js</a></td><td> | </td><td class="num">27</td><td><span class="i">++++++++++++++++++++++</span><span class="d">-----</span></td></tr>
+<tr><td><a href="#h2">js/utils/Text.coffee</a></td><td> | </td><td class="num">23</td><td><span class="i">+++++++++++++++++</span><span class="d">------</span></td></tr>
+</table>3 files changed, 40 insertions(+), 12 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/js/TopicList.coffee.html">js/TopicList.coffee</a> b/<a href="../file/js/TopicList.coffee.html">js/TopicList.coffee</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -343,7 +343,7 @@ class TopicList extends Class
+</a> 			url = url_match[0]
+ 			if type != &quot;show&quot; then body = body.replace /http[s]{0,1}:\/\/[^&quot;&apos; $]+$/g, &quot;&quot; # Remove links from end
+ 			$(&quot;.image .icon&quot;, elem).removeClass(&quot;icon-topic-chat&quot;).addClass(&quot;icon-topic-link&quot;)
+<a href="#h0-0-3" id="h0-0-3" class="d">-			$(&quot;.link&quot;, elem).css(&quot;display&quot;, &quot;&quot;).attr &quot;href&quot;, url.replace(/http:\/\/(127.0.0.1|localhost):43110/, &quot;&quot;)
+</a><a href="#h0-0-4" id="h0-0-4" class="i">+			$(&quot;.link&quot;, elem).css(&quot;display&quot;, &quot;&quot;).attr &quot;href&quot;, Text.fixLink(url)
+</a> 			$(&quot;.link .link-url&quot;, elem).text(url)
+ 		else # Normal type topic
+ 			$(&quot;.image .icon&quot;, elem).removeClass(&quot;icon-topic-link&quot;).addClass(&quot;icon-topic-chat&quot;)
+<b>diff --git a/<a id="h1" href="../file/js/all.js.html">js/all.js</a> b/<a href="../file/js/all.js.html">js/all.js</a></b>
+<a href="#h1-0" id="h1-0" class="h">@@ -34,6 +34,7 @@
+</a>     });
+     setTimeout((function() {
+       var height;
+<a href="#h1-0-3" id="h1-0-3" class="i">+      elem.css(&quot;display&quot;, &quot;&quot;);
+</a>       height = elem.outerHeight();
+       elem.css({
+         &quot;height&quot;: 0,
+<a href="#h1-1" id="h1-1" class="h">@@ -753,11 +754,23 @@ jQuery.extend( jQuery.easing,
+</a>       options[&quot;breaks&quot;] = true;
+       options[&quot;renderer&quot;] = renderer;
+       text = marked(text, options);
+<a href="#h1-1-3" id="h1-1-3" class="d">-      return this.fixLinks(text);
+</a><a href="#h1-1-4" id="h1-1-4" class="i">+      return this.fixHtmlLinks(text);
+</a>     };
+ 
+<a href="#h1-1-7" id="h1-1-7" class="d">-    Text.prototype.fixLinks = function(text) {
+</a><a href="#h1-1-8" id="h1-1-8" class="d">-      return text.replace(/href=&quot;http:\/\/(127.0.0.1|localhost):43110/g, &apos;href=&quot;&apos;);
+</a><a href="#h1-1-9" id="h1-1-9" class="i">+    Text.prototype.fixHtmlLinks = function(text) {
+</a><a href="#h1-1-10" id="h1-1-10" class="i">+      if (window.is_proxy) {
+</a><a href="#h1-1-11" id="h1-1-11" class="i">+        return text.replace(/href=&quot;http:\/\/(127.0.0.1|localhost):43110/g, &apos;href=&quot;http://zero&apos;);
+</a><a href="#h1-1-12" id="h1-1-12" class="i">+      } else {
+</a><a href="#h1-1-13" id="h1-1-13" class="i">+        return text.replace(/href=&quot;http:\/\/(127.0.0.1|localhost):43110/g, &apos;&apos;);
+</a><a href="#h1-1-14" id="h1-1-14" class="i">+      }
+</a><a href="#h1-1-15" id="h1-1-15" class="i">+    };
+</a><a href="#h1-1-16" id="h1-1-16" class="i">+
+</a><a href="#h1-1-17" id="h1-1-17" class="i">+    Text.prototype.fixLink = function(link) {
+</a><a href="#h1-1-18" id="h1-1-18" class="i">+      if (window.is_proxy) {
+</a><a href="#h1-1-19" id="h1-1-19" class="i">+        return link.replace(/http:\/\/(127.0.0.1|localhost):43110/, &apos;http://zero&apos;);
+</a><a href="#h1-1-20" id="h1-1-20" class="i">+      } else {
+</a><a href="#h1-1-21" id="h1-1-21" class="i">+        return link.replace(/http:\/\/(127.0.0.1|localhost):43110/, &apos;&apos;);
+</a><a href="#h1-1-22" id="h1-1-22" class="i">+      }
+</a>     };
+ 
+     Text.prototype.toUrl = function(text) {
+<a href="#h1-2" id="h1-2" class="h">@@ -768,6 +781,8 @@ jQuery.extend( jQuery.easing,
+</a> 
+   })();
+ 
+<a href="#h1-2-3" id="h1-2-3" class="i">+  window.is_proxy = window.location.pathname === &quot;/&quot;;
+</a><a href="#h1-2-4" id="h1-2-4" class="i">+
+</a>   window.renderer = new Renderer();
+ 
+   window.Text = new Text();
+<a href="#h1-3" id="h1-3" class="h">@@ -775,6 +790,7 @@ jQuery.extend( jQuery.easing,
+</a> }).call(this);
+ 
+ 
+<a href="#h1-3-3" id="h1-3-3" class="i">+
+</a> /* ---- data/1TaLk3zM7ZRskJvrh3ZNCDVGXvkJusPKQ/js/utils/Time.coffee ---- */
+ 
+ 
+<a href="#h1-4" id="h1-4" class="h">@@ -1391,7 +1407,7 @@ jQuery.extend( jQuery.easing,
+</a>           body = body.replace(/http[s]{0,1}:\/\/[^&quot;&apos; $]+$/g, &quot;&quot;);
+         }
+         $(&quot;.image .icon&quot;, elem).removeClass(&quot;icon-topic-chat&quot;).addClass(&quot;icon-topic-link&quot;);
+<a href="#h1-4-3" id="h1-4-3" class="d">-        $(&quot;.link&quot;, elem).css(&quot;display&quot;, &quot;&quot;).attr(&quot;href&quot;, url.replace(/http:\/\/(127.0.0.1|localhost):43110/, &quot;&quot;));
+</a><a href="#h1-4-4" id="h1-4-4" class="i">+        $(&quot;.link&quot;, elem).css(&quot;display&quot;, &quot;&quot;).attr(&quot;href&quot;, Text.fixLink(url));
+</a>         $(&quot;.link .link-url&quot;, elem).text(url);
+       } else {
+         $(&quot;.image .icon&quot;, elem).removeClass(&quot;icon-topic-link&quot;).addClass(&quot;icon-topic-chat&quot;);
+<a href="#h1-5" id="h1-5" class="h">@@ -2429,4 +2445,4 @@ jQuery.extend( jQuery.easing,
+</a> 
+   window.Page = new ZeroTalk();
+ 
+<a href="#h1-5-3" id="h1-5-3" class="d">-}).call(this);
+</a><a href="#h1-5-4" id="h1-5-4" class="i">+}).call(this);</a><a href="#h1-5-5" id="h1-5-5" class="i">+
+\ No newline at end of file
+</a><b>diff --git a/<a id="h2" href="../file/js/utils/Text.coffee.html">js/utils/Text.coffee</a> b/<a href="../file/js/utils/Text.coffee.html">js/utils/Text.coffee</a></b>
+<a href="#h2-0" id="h2-0" class="h">@@ -20,16 +20,28 @@ class Text
+</a> 		options[&quot;breaks&quot;] = true
+ 		options[&quot;renderer&quot;] = renderer
+ 		text = marked(text, options)
+<a href="#h2-0-3" id="h2-0-3" class="d">-		return @fixLinks text
+</a><a href="#h2-0-4" id="h2-0-4" class="i">+		return @fixHtmlLinks text
+</a> 
+ 
+<a href="#h2-0-7" id="h2-0-7" class="d">-	# Convert zeronet links to relaitve
+</a><a href="#h2-0-8" id="h2-0-8" class="d">-	fixLinks: (text) -&gt;
+</a><a href="#h2-0-9" id="h2-0-9" class="d">-		return text.replace(/href=&quot;http:\/\/(127.0.0.1|localhost):43110/g, &apos;href=&quot;&apos;)
+</a><a href="#h2-0-10" id="h2-0-10" class="i">+	# Convert zeronet html links to relaitve
+</a><a href="#h2-0-11" id="h2-0-11" class="i">+	fixHtmlLinks: (text) -&gt;
+</a><a href="#h2-0-12" id="h2-0-12" class="i">+		if window.is_proxy
+</a><a href="#h2-0-13" id="h2-0-13" class="i">+			return text.replace(/href=&quot;http:\/\/(127.0.0.1|localhost):43110/g, &apos;href=&quot;http://zero&apos;)
+</a><a href="#h2-0-14" id="h2-0-14" class="i">+		else
+</a><a href="#h2-0-15" id="h2-0-15" class="i">+			return text.replace(/href=&quot;http:\/\/(127.0.0.1|localhost):43110/g, &apos;&apos;)
+</a><a href="#h2-0-16" id="h2-0-16" class="i">+
+</a><a href="#h2-0-17" id="h2-0-17" class="i">+
+</a><a href="#h2-0-18" id="h2-0-18" class="i">+	# Convert a single link to relative
+</a><a href="#h2-0-19" id="h2-0-19" class="i">+	fixLink: (link) -&gt;
+</a><a href="#h2-0-20" id="h2-0-20" class="i">+		if window.is_proxy
+</a><a href="#h2-0-21" id="h2-0-21" class="i">+			return link.replace(/http:\/\/(127.0.0.1|localhost):43110/, &apos;http://zero&apos;)
+</a><a href="#h2-0-22" id="h2-0-22" class="i">+		else
+</a><a href="#h2-0-23" id="h2-0-23" class="i">+			return link.replace(/http:\/\/(127.0.0.1|localhost):43110/, &apos;&apos;)
+</a> 
+ 
+ 	toUrl: (text) =&gt;
+ 		return text.replace(/[^A-Za-z0-9]/g, &quot;+&quot;).replace(/[+]+/g, &quot;+&quot;).replace(/[+]+$/, &quot;&quot;)
+ 
+<a href="#h2-0-29" id="h2-0-29" class="i">+window.is_proxy = (window.location.pathname == &quot;/&quot;)
+</a> window.renderer = new Renderer()
+<a href="#h2-0-31" id="h2-0-31" class="d">-window.Text = new Text()</a><a href="#h2-0-32" id="h2-0-32" class="d">-
+\ No newline at end of file
+</a><a href="#h2-0-33" id="h2-0-33" class="i">+window.Text = new Text()
+</a></pre>
+</div>
+</body>
+</html>

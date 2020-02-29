@@ -1,0 +1,88 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>Kevin Froman's blog - Pwning Qbittorrent With XSS</title>
+  <meta name='description' content='Kevin Froman's blog on security, programming, and other musings'>
+  <meta name='author' content='Kevin Froman'>
+  <link rel='icon' type='image/x-icon' href='/favicon.ico'>
+  <link rel='stylesheet' href='theme.css'>
+  <script src="https://widget.battleforthenet.com/widget.js" integrity="sha384-OzmvdVOIBjM9YAUmPdrxpGclC0fg2bTYlwv12prMWoF1y4osMdsZ1UvH1ufTqAQ3" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="wrapper">
+    <h1 id='siteTitle'><a href='index.html'>Kevin Froman's blog</a></h1>
+    
+<div id='myIntro' class='center'>Blog on security, programming, & other musings</div>
+    <div id='mainContent'><h2 id='postTitle'>Pwning Qbittorrent With XSS</h2>
+        <div id='postDate' class='center'>2017-03-06</div><h2>Introduction</h2>
+
+<p>qBittorrent and uTorrent are both popular torrent clients with fairly similar features. For example, both have an included web interface.</p>
+
+<p>This post will focus on qBittorrent, since it is open source &amp; has fixed the issues mentioned below.</p>
+
+<p><img alt="qbittorrent screenshot" src="./images/qbt1.png" /></p>
+
+<h2>Web exploits in native software</h2>
+
+<p>qBittorrent and uTorrent both have optional web management interfaces, which can be used to remotely control ones torrent client.</p>
+
+<p>Similar to I2P, these client's interfaces failed to implement traditional protections against browser based attacks, such as XSS.</p>
+
+<h2>Non escaped values</h2>
+
+<p>Most of the user/3rd party supplied fields in qBittorent's web UI were not escaped, meaning arbitrary HTML could be embedded into the user's client when rendering the page.</p>
+
+<p>In the case of qBittorrent, some of the non-escaped values included:</p>
+
+<ul>
+<li>Torrent names</li>
+<li>File names</li>
+<li>Peer names</li>
+<li>Tracker URLs</li>
+</ul>
+
+<p>Peer names are especially a threat, as they can be arbitrarily set by malicious peers, even on legitimate torrents.</p>
+
+<p><img alt="xss" src="./images/xss.jpg" /></p>
+
+<h2>XSS Impact</h2>
+
+<p>With the XSS an attacker could modify, add, and delete the user's torrents, modify the user's client settings, etc.</p>
+
+<p>While this doesn't sound too disastrous, qBittorrent has a setting 'run command on download completion', which is an option to execute system commands.</p>
+
+<p>This means an attacker could run a command to download additional malware and run it, <strong>gaining system level access to the qBittorrent machine</strong>.</p>
+
+<h2>Combining with Clickjacking</h2>
+
+<p>Since qBittorent does not return the 'x-frame-options' header, it is also <strong>vulnerable to <a href="https://en.wikipedia.org/wiki/Clickjacking">Clickjacking</a></strong> when the user is authenticated or has the 'bypass authentication for localhost' box checked.</p>
+
+<p>An attacker could use Clickjacking to modify the user's settings, specify a malicious torrent to download, exfiltrate data about what torrents the user has, etc.</p>
+
+<p>It can also be combined with the XSS attack to automatically trigger an XSS by putting it in an iframe and having the user visit a page with it.</p>
+
+<h2>Conclusion</h2>
+
+<p>Once again I have compromised a distributed network client via web issues. When developing software, always assume input is malicious, and know the environment you are working in (such as browsers).</p>
+
+<p>These issues (in qBittorrent) were assigned the following CVEs:</p>
+
+<ul>
+<li>
+<p><a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2017-6503">CVE-2017-6503</a></p>
+</li>
+<li>
+<p><a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2017-6504">CVE-2017-6504</a></p>
+</li>
+</ul>
+
+<p>I recommend for all qBittorrent users to update to the latest version, and for uTorrent users to stop using the web interface.</p><div class="center" style="margin-bottom: -25%; margin-top: 2em; border-radius: 5px; padding: 5px;"><span>Written by anonymous</span><br><br></div>
+    </div>
+  </div>
+  <div id="footer">
+    <footer>Powered by TinyGen<div id='socialLinks'><a class="socialLink" href="https://twitter.com/@beardog108"><img src="../images/twitter.png" alt="TWITTER"></a><a class="socialLink" href="https://github.com/beardog108"><img src="../images/github.png" alt="GITHUB"></a><a class="socialLink" href="beardog@firemail.cc"><img src="../images/email.png" alt="EMAIL"></a><a class="socialLink" href="https://keybase.io/beardog"><img src="../images/keybase.png" alt="KEYBASE"></a><a class="socialLink" href="feed.rss"><img src="../images/feed.png" alt="RSS feed"></a></div></footer>
+  </div>
+</body>
+</html>

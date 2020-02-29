@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>atom feed: use published for author commit date, updated for committer date - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/45ee6876d5027311d0ac81345c27b3ee6e8fd43d.html">45ee6876d5027311d0ac81345c27b3ee6e8fd43d</a>
+<b>parent</b> <a href="../commit/462ba66ee7e0ae16f41d4fff9c8540913c3941a9.html">462ba66ee7e0ae16f41d4fff9c8540913c3941a9</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Sun May  1 17:20:54 +0200
+
+atom feed: use published for author commit date, updated for committer date
+
+this is the same as cgit.
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">stagit.c</a></td><td> | </td><td class="num">9</td><td><span class="i">++++++++</span><span class="d">-</span></td></tr>
+</table>1 file changed, 8 insertions(+), 1 deletion(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/stagit.c.html">stagit.c</a> b/<a href="../file/stagit.c.html">stagit.c</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -29,6 +29,7 @@ struct commitinfo {
+</a> 	char parentoid[GIT_OID_HEXSZ + 1];
+ 
+ 	const git_signature *author;
+<a href="#h0-0-3" id="h0-0-3" class="i">+	const git_signature *committer;
+</a> 	const char          *summary;
+ 	const char          *msg;
+ 
+<a href="#h0-1" id="h0-1" class="h">@@ -169,6 +170,7 @@ commitinfo_getbyoid(const git_oid *id)
+</a> 	git_oid_tostr(ci-&gt;parentoid, sizeof(ci-&gt;parentoid), git_commit_parent_id(ci-&gt;commit, 0));
+ 
+ 	ci-&gt;author = git_commit_author(ci-&gt;commit);
+<a href="#h0-1-3" id="h0-1-3" class="i">+	ci-&gt;committer = git_commit_committer(ci-&gt;commit);
+</a> 	ci-&gt;summary = git_commit_summary(ci-&gt;commit);
+ 	ci-&gt;msg = git_commit_message(ci-&gt;commit);
+ 
+<a href="#h0-2" id="h0-2" class="h">@@ -613,8 +615,13 @@ printcommitatom(FILE *fp, struct commitinfo *ci)
+</a> 
+ 	fprintf(fp, &quot;&lt;id&gt;%s&lt;/id&gt;\n&quot;, ci-&gt;oid);
+ 	if (ci-&gt;author) {
+<a href="#h0-2-3" id="h0-2-3" class="d">-		fputs(&quot;&lt;updated&gt;&quot;, fp);
+</a><a href="#h0-2-4" id="h0-2-4" class="i">+		fputs(&quot;&lt;published&gt;&quot;, fp);
+</a> 		printtimez(fp, &amp;(ci-&gt;author-&gt;when));
+<a href="#h0-2-6" id="h0-2-6" class="i">+		fputs(&quot;&lt;/published&gt;\n&quot;, fp);
+</a><a href="#h0-2-7" id="h0-2-7" class="i">+	}
+</a><a href="#h0-2-8" id="h0-2-8" class="i">+	if (ci-&gt;committer) {
+</a><a href="#h0-2-9" id="h0-2-9" class="i">+		fputs(&quot;&lt;updated&gt;&quot;, fp);
+</a><a href="#h0-2-10" id="h0-2-10" class="i">+		printtimez(fp, &amp;(ci-&gt;committer-&gt;when));
+</a> 		fputs(&quot;&lt;/updated&gt;\n&quot;, fp);
+ 	}
+ 	if (ci-&gt;summary) {
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>fix file tree handling - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/502b95ce68ef3e08fb536a0d22c267dcd3e9c7fc.html">502b95ce68ef3e08fb536a0d22c267dcd3e9c7fc</a>
+<b>parent</b> <a href="../commit/9693d1d1a965006c14d43a8e73aa9cc4f512e75f.html">9693d1d1a965006c14d43a8e73aa9cc4f512e75f</a>
+<b>Author:</b> Quentin Rameau &lt;<a href="mailto:quinq@fifth.space">quinq@fifth.space</a>&gt;
+<b>Date:</b>   Mon Jan 18 12:47:25 +0100
+
+fix file tree handling
+
+Do not forget to keep previous path when recursing or we end up with
+filenames only.
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">stagit.c</a></td><td> | </td><td class="num">18</td><td><span class="i">++++++++++</span><span class="d">--------</span></td></tr>
+</table>1 file changed, 10 insertions(+), 8 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/stagit.c.html">stagit.c</a> b/<a href="../file/stagit.c.html">stagit.c</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -662,8 +662,8 @@ int
+</a> writefilestree(FILE *fp, git_tree *tree, const char *branch, const char *path)
+ {
+ 	const git_tree_entry *entry = NULL;
+<a href="#h0-0-3" id="h0-0-3" class="d">-	const char *filename;
+</a><a href="#h0-0-4" id="h0-0-4" class="d">-	char filepath[PATH_MAX];
+</a><a href="#h0-0-5" id="h0-0-5" class="i">+	const char *entryname;
+</a><a href="#h0-0-6" id="h0-0-6" class="i">+	char filepath[PATH_MAX], entrypath[PATH_MAX];
+</a> 	git_object *obj = NULL;
+ 	git_off_t filesize;
+ 	size_t count, i;
+<a href="#h0-1" id="h0-1" class="h">@@ -674,14 +674,16 @@ writefilestree(FILE *fp, git_tree *tree, const char *branch, const char *path)
+</a> 		if (!(entry = git_tree_entry_byindex(tree, i)) ||
+ 		    git_tree_entry_to_object(&amp;obj, repo, entry))
+ 			return -1;
+<a href="#h0-1-3" id="h0-1-3" class="d">-		filename = git_tree_entry_name(entry);
+</a><a href="#h0-1-4" id="h0-1-4" class="i">+		entryname = git_tree_entry_name(entry);
+</a><a href="#h0-1-5" id="h0-1-5" class="i">+		snprintf(entrypath, sizeof(entrypath), &quot;%s%s%s&quot;,
+</a><a href="#h0-1-6" id="h0-1-6" class="i">+			 path, path[0] ? &quot;/&quot; : &quot;&quot;, entryname);
+</a> 		switch (git_object_type(obj)) {
+ 		case GIT_OBJ_BLOB:
+ 			break;
+ 		case GIT_OBJ_TREE:
+ 			/* NOTE: recurses */
+ 			ret = writefilestree(fp, (git_tree *)obj, branch,
+<a href="#h0-1-13" id="h0-1-13" class="d">-			                     filename);
+</a><a href="#h0-1-14" id="h0-1-14" class="i">+			                     entrypath);
+</a> 			git_object_free(obj);
+ 			if (ret)
+ 				return ret;
+<a href="#h0-2" id="h0-2" class="h">@@ -692,18 +694,18 @@ writefilestree(FILE *fp, git_tree *tree, const char *branch, const char *path)
+</a> 		}
+ 		if (path[0])
+ 			snprintf(filepath, sizeof(filepath), &quot;file/%s/%s.html&quot;,
+<a href="#h0-2-3" id="h0-2-3" class="d">-			         path, filename);
+</a><a href="#h0-2-4" id="h0-2-4" class="i">+			         path, entryname);
+</a> 		else
+ 			snprintf(filepath, sizeof(filepath), &quot;file/%s.html&quot;,
+<a href="#h0-2-7" id="h0-2-7" class="d">-			         filename);
+</a><a href="#h0-2-8" id="h0-2-8" class="i">+			         entryname);
+</a> 		filesize = git_blob_rawsize((git_blob *)obj);
+ 
+<a href="#h0-2-11" id="h0-2-11" class="d">-		lc = writeblob(obj, filepath, filename, filesize);
+</a><a href="#h0-2-12" id="h0-2-12" class="i">+		lc = writeblob(obj, filepath, entryname, filesize);
+</a> 
+ 		fputs(&quot;&lt;tr&gt;&lt;td&gt;&quot;, fp);
+ 		fputs(filemode(git_tree_entry_filemode(entry)), fp);
+ 		fprintf(fp, &quot;&lt;/td&gt;&lt;td&gt;&lt;a href=\&quot;%s%s\&quot;&gt;&quot;, relpath, filepath);
+<a href="#h0-2-17" id="h0-2-17" class="d">-		xmlencode(fp, filename, strlen(filename));
+</a><a href="#h0-2-18" id="h0-2-18" class="i">+		xmlencode(fp, entrypath, strlen(entrypath));
+</a> 		fputs(&quot;&lt;/a&gt;&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;&quot;, fp);
+ 		if (showlinecount &amp;&amp; lc &gt; 0)
+ 			fprintf(fp, &quot;%dL&quot;, lc);
+</pre>
+</div>
+</body>
+</html>

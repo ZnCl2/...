@@ -1,0 +1,110 @@
+
+<!DOCTYPE html>
+
+<html>
+<head>
+ <title>New ZeroNet site!</title>
+ <meta charset="utf-8">
+ <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+ <base href="" target="_top" id="base">
+ <link href="assets/css/style.css" rel="stylesheet" type="text/css"/>
+ <script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+</head>
+<body id="body" style="background-color: black;">
+
+<pre class="logo">
+PPPPPPPPPPPPPPPPP   FFFFFFFFFFFFFFFFFFFFFF   SSSSSSSSSSSSSSS 
+P::::::::::::::::P  F::::::::::::::::::::F SS:::::::::::::::S
+P::::::PPPPPP:::::P F::::::::::::::::::::FS:::::SSSSSS::::::S
+PP:::::P     P:::::PFF::::::FFFFFFFFF::::FS:::::S     SSSSSSS
+  P::::P     P:::::P  F:::::F       FFFFFFS:::::S            
+  P::::P     P:::::P  F:::::F             S:::::S            
+  P::::PPPPPP:::::P   F::::::FFFFFFFFFF    S::::SSSS         
+  P:::::::::::::PP    F:::::::::::::::F     SS::::::SSSSS    
+  P::::PPPPPPPPP      F:::::::::::::::F       SSS::::::::SS  
+  P::::P              F::::::FFFFFFFFFF          SSSSSS::::S 
+  P::::P              F:::::F                         S:::::S
+  P::::P              F:::::F                         S:::::S
+PP::::::PP          FF:::::::FF           SSSSSSS     S:::::S
+P::::::::P          F::::::::FF           S::::::SSSSSS:::::S
+P::::::::P          F::::::::FF           S:::::::::::::::SS 
+PPPPPPPPPP          FFFFFFFFFFF            SSSSSSSSSSSSSSS
+</pre>
+
+<div class="site-info-container">
+	<h3>ZeroPolska test Serwer</h3>
+	<div id="out"></div>
+</div>
+
+<script type="text/javascript" src="js/ZeroFrame.js"></script>
+
+<script>
+
+class Page extends ZeroFrame {
+	setSiteInfo(site_info) {
+		var out = document.getElementById("out");
+		var query = ["SELECT count(*) FROM channel"];
+		/*this.cmd("fileGet",{"inner_path":"content.json"},function(data){
+			data = JSON.parse(data);
+			var array = [];
+			for (var i in data.files_optional){
+				if (i.split('/')[3] === 'data.json'){
+					array.push('python zeronet.py siteSign 1FckB2uVtNgV2zXkVNZXPfe5koYJdRpJBr 5KFoQ6dx1nSCSGCWU2AEeB8AJAZb1dY8bysMjAA8QXyn6hEGaTz --inner_path data/users/'+i.split('/')[2]+'/content.json');
+				}
+			}
+			var json_raw = unescape(encodeURIComponent(JSON.stringify(array, void 0, '\t')));
+			console.log(json_raw);
+		});*/
+		this.cmd("dbQuery", query ,function(ch_count){
+			var channel_count = ch_count[0]['count(*)'];
+			out.innerHTML = "<div>" +
+								"<ul>" +
+									"<li>" +
+										"<span class='key'>cluster name</span>" +
+										"<span class='val'>"+site_info.content.title+"</span>" +
+									"</li>" +
+									"<li>" +
+										"<span class='key'>cluster id</span>" +
+										"<span class='val'>"+site_info.address+"</span>" +
+									"</li>" +
+									"<li>" +
+										"<span class='key'>hosted channels</span>" +
+										"<span class='val'>"+channel_count+"</span>" +
+									"</li>" +
+									"<li>" +
+										"<span class='key'># peers</span>" +
+										"<span class='val'>"+site_info.settings.peers+"</span>" +
+									"</li>" +
+								"</ul>" +
+								"<ul>" +
+									"<li>" +
+										"<span class='key'>Uplink to ZeroPolska</span>" +
+										"<span class='val'><a style='color:white' href='/1GdYQgFtRAR9JymFP8VWSeJQzaSPJkZH2P'>1GdYQgFtRAR9JymFP8VWSeJQzaSPJkZH2P</a></span>"+
+									"</li>" +
+								"</ul>" +
+								"<div class='footer'>" +
+									"<a href='#' style='color:white'>a PDN merger site</a>" +
+								"</div>" +
+							"</div>";
+		});
+	}
+
+	onOpenWebsocket() {
+		this.cmd("siteInfo", [], function(site_info) {
+			page.setSiteInfo(site_info)
+		})
+	}
+
+	onRequest(cmd, message) {
+		if (cmd == "setSiteInfo")
+			this.setSiteInfo(message.params)
+		else
+			this.log("Unknown incoming message:", cmd)
+	}
+}
+page = new Page()
+
+</script>
+
+</body>
+</html>

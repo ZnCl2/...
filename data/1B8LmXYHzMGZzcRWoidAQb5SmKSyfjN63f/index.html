@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>ZeroTodos</title>
+    <link rel="stylesheet" href="style.css" media="screen" title="no title" charset="utf-8">
+  </head>
+  <body>
+    <div id="app" v-cloak>
+      <div id="top">
+        <span id="logo">ZeroTodos</span>
+        <a href="#Select+user" id="select-user" @click="selectUser" title="{{ cert_user_id || '' }}">{{ cert_user_id ? 'Logout' : 'Select user'}}</a>
+        <span id="data-usage"
+              v-show="cert_user_id && dataSizeMax && dataSize"
+              title="The space that your todo lists occupy, if you reach the maximum, try deleting completed tasks">
+          Using: {{ dataUsage || '' }}
+        </span>
+      </div>
+      <div id="dev-warning" v-show="!readNote">
+        <b>Select user</b> to login, click <b>Save</b> to save and publish any changes you made (only appears after you made changes).
+        <br /><br />
+        Your todos are encrypted using the encryption functionality provided by the ZeroNet API, using ECIES (Elliptic Curve Integrated Encryption Scheme). Nothing is 100% secure, developers can make mistakes, so use your own judgement on what data to enter, I can make no guarantees that your data is safe.
+        <span id="close-dev-warning" @click="readNote = true">X</span>
+      </div>
+      <div id="middle">
+        <div id="left">
+          <ul>
+      		<li v-for="todo in todos"
+              class="pointer"
+              transition="expand"
+              @click="todoClicked($index)"
+              @dblclick="editTodo(todo, $index)"
+              draggable="true"
+              :class="todoClasses($index)"
+              @dragstart="dragStart($event, $index, todo)"
+              @dragover.prevent="dragover = $index"
+              @drop.prevent="dropped(todo, $index)"
+              @dragend="endDrag">
+      		  <span v-show="editingTodo !== $index">
+              {{ todo.title }}
+              <span class="task-count">{{ taskCount(todo) || '' }}</span>
+            </span>
+            <span v-else>
+              <input class="edit-todo-input"
+                     type="text"
+                     v-model="editedTodo"
+                     @keyup.enter="editTodoDone(todo)"
+                     @keyup.esc="cancelEditingTodo(todo)"
+                     v-task-focus="editingTodo === $index" />
+            </span>
+      		</li>
+      	  </ul>
+          <div class="spacer-v"></div>
+          <div id="button-bar">
+            <div class="button-bar-button"
+                 @click="addNewTodo"
+                 title="Add new todo list"> + </div>
+            <div class="button-bar-button green"
+                 :class="{'pulsate': saving}"
+                 @click="saveUserData"
+                 v-show="cert_user_id && needsSaving"
+                 transition="appear"
+                 title="Save and publish changes">{{ saving ? 'Saving' : 'Save' }}</div>
+          </div>
+        </div>
+        <div id="right">
+      	  <ul>
+          <li style="display: flex;">
+            <input id="new-task-input" type="text" v-model="newTask" placeholder="Enter a new task here" @keyup.enter="addTask"/>
+          </li>
+      		<li v-for="task in todos[selected_todo].tasks"
+              @dblclick="editTask(task, $index)"
+              transition="expand"
+              draggable="true"
+              :class="taskClasses($index)"
+              @dragstart="dragStart($event, $index, task)"
+              @dragover.prevent="dragover = $index"
+              @drop.prevent="dropped(task, $index)"
+              @dragend="endDrag">
+            <div v-show="editingTask !== $index">
+        		  <input type="checkbox" v-model="task.checked" />
+              <span v-bind:class="{'task-done': task.checked}">{{ task.text }}</span>
+              <span class="delete-x" @click="deleteTask(task)">X</span>
+            </div>
+            <div v-else class="flex-edit">
+              <input class="edit-task-input"
+                     type="text"
+                     v-model="editedTask"
+                     @keyup.enter="editTaskDone(task)"
+                     @keyup.esc="cancelEditingTask(task)"
+                     v-task-focus="editingTask === $index" />
+              <button @click="cancelEditingTask(task)">Cancel</button>
+            </div>
+      		</li>
+      	  </ul>
+          <br />
+          <button class="black" @click="deleteTodo(selected_todo)">Delete this todo list</button>
+          <button class="black" @click="clearCompleted">Clear completed</button>
+        </div>
+      </div>
+      <div id="bottom" v-show="footer" transition="vanish">
+        If you have any problems or questions, feel free to send me a <a href="/Mail.ZeroNetwork.bit/?to=ekaterina">ZeroMail</a> or leave a comment on my <a href="/1Kp5xdjQyrPth5mEJsn6NDBKZxcaeYz86N">development blog</a>.
+      </div>
+    </div>
+    <script src="js/all.js"></script>
+  </body>
+</html>

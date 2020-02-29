@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>add example script to make repo index and files per dir - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/781beb4950b56cd39cb95fdba9eb8979f29283bc.html">781beb4950b56cd39cb95fdba9eb8979f29283bc</a>
+<b>parent</b> <a href="../commit/114899a22d975eca8406bb384a28539e5dea4cd0.html">114899a22d975eca8406bb384a28539e5dea4cd0</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Sat Dec 26 20:46:33 +0100
+
+add example script to make repo index and files per dir
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">example.sh</a></td><td> | </td><td class="num">37</td><td><span class="i">+++++++++++++++++++++++++++++++++++++</span><span class="d"></span></td></tr>
+</table>1 file changed, 37 insertions(+), 0 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/example.sh.html">example.sh</a> b/<a href="../file/example.sh.html">example.sh</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -0,0 +1,37 @@
+</a><a href="#h0-0-0" id="h0-0-0" class="i">+#!/bin/sh
+</a><a href="#h0-0-1" id="h0-0-1" class="i">+# - Makes index for repositories in a single directory.
+</a><a href="#h0-0-2" id="h0-0-2" class="i">+# - Makes static pages for each repository directory.
+</a><a href="#h0-0-3" id="h0-0-3" class="i">+#
+</a><a href="#h0-0-4" id="h0-0-4" class="i">+# NOTE, things to do manually (once):
+</a><a href="#h0-0-5" id="h0-0-5" class="i">+# - copy style.css, logo.png and favicon.png manually, a style.css example
+</a><a href="#h0-0-6" id="h0-0-6" class="i">+#   is included.
+</a><a href="#h0-0-7" id="h0-0-7" class="i">+# - write clone url, for example &quot;git://git.codemadness.org/dir&quot; to the &quot;url&quot;
+</a><a href="#h0-0-8" id="h0-0-8" class="i">+#   file for each repo.
+</a><a href="#h0-0-9" id="h0-0-9" class="i">+#
+</a><a href="#h0-0-10" id="h0-0-10" class="i">+# Usage:
+</a><a href="#h0-0-11" id="h0-0-11" class="i">+# - mkdir -p htmldir &amp;&amp; cd htmldir
+</a><a href="#h0-0-12" id="h0-0-12" class="i">+# - sh example.sh repo-dir
+</a><a href="#h0-0-13" id="h0-0-13" class="i">+
+</a><a href="#h0-0-14" id="h0-0-14" class="i">+set -e
+</a><a href="#h0-0-15" id="h0-0-15" class="i">+
+</a><a href="#h0-0-16" id="h0-0-16" class="i">+reposdir=&quot;/var/www/domains/git.codemadness.nl/home/src/&quot;
+</a><a href="#h0-0-17" id="h0-0-17" class="i">+curdir=$(pwd)
+</a><a href="#h0-0-18" id="h0-0-18" class="i">+
+</a><a href="#h0-0-19" id="h0-0-19" class="i">+# make index.
+</a><a href="#h0-0-20" id="h0-0-20" class="i">+cd &quot;${reposdir}&quot;
+</a><a href="#h0-0-21" id="h0-0-21" class="i">+find . -maxdepth 1 -type d | grep -v &quot;^.$&quot; | sort | xargs urmoms-index &gt; &quot;${curdir}/index.html&quot;
+</a><a href="#h0-0-22" id="h0-0-22" class="i">+
+</a><a href="#h0-0-23" id="h0-0-23" class="i">+# make files per repo.
+</a><a href="#h0-0-24" id="h0-0-24" class="i">+find . -maxdepth 1 -type d | grep -v &quot;^.$&quot; | sort | while read -r dir; do
+</a><a href="#h0-0-25" id="h0-0-25" class="i">+	cd &quot;${reposdir}&quot;
+</a><a href="#h0-0-26" id="h0-0-26" class="i">+	d=$(basename &quot;${dir}&quot;)
+</a><a href="#h0-0-27" id="h0-0-27" class="i">+
+</a><a href="#h0-0-28" id="h0-0-28" class="i">+	printf &quot;%s...&quot; &quot;${d}&quot;
+</a><a href="#h0-0-29" id="h0-0-29" class="i">+	cd &quot;${curdir}&quot;
+</a><a href="#h0-0-30" id="h0-0-30" class="i">+	
+</a><a href="#h0-0-31" id="h0-0-31" class="i">+	test -d &quot;${d}&quot; || mkdir -p &quot;${d}&quot;
+</a><a href="#h0-0-32" id="h0-0-32" class="i">+	cd &quot;${d}&quot;
+</a><a href="#h0-0-33" id="h0-0-33" class="i">+	urmoms &quot;${reposdir}${d}&quot;
+</a><a href="#h0-0-34" id="h0-0-34" class="i">+
+</a><a href="#h0-0-35" id="h0-0-35" class="i">+	printf &quot; done\n&quot;
+</a><a href="#h0-0-36" id="h0-0-36" class="i">+done
+</a></pre>
+</div>
+</body>
+</html>

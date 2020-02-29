@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>print file as table, add link - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/52151038885c99a2ddf6b259e6c29601bd7051ef.html">52151038885c99a2ddf6b259e6c29601bd7051ef</a>
+<b>parent</b> <a href="../commit/45d8d2f4303b0953f8267116eecde019d1ba1feb.html">45d8d2f4303b0953f8267116eecde019d1ba1feb</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Mon Dec  7 16:40:45 +0100
+
+print file as table, add link
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">urmoms.c</a></td><td> | </td><td class="num">14</td><td><span class="i">++++++++++++</span><span class="d">--</span></td></tr>
+</table>1 file changed, 12 insertions(+), 2 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/urmoms.c.html">urmoms.c</a> b/<a href="../file/urmoms.c.html">urmoms.c</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -503,11 +503,21 @@ writefiles(FILE *fp)
+</a> 	git_repository_index(&amp;index, repo);
+ 
+ 	count = git_index_entrycount(index);
+<a href="#h0-0-3" id="h0-0-3" class="i">+	fputs(&quot;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;td&gt;Mode&lt;/td&gt;&lt;td&gt;Name&lt;/td&gt;&lt;td&gt;Size&lt;/td&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&quot;, fp);
+</a><a href="#h0-0-4" id="h0-0-4" class="i">+
+</a> 	for (i = 0; i &lt; count; i++) {
+ 		entry = git_index_get_byindex(index, i);
+<a href="#h0-0-7" id="h0-0-7" class="d">-		fprintf(fp, &quot;name: %s, size: %&quot; PRIu64 &quot;, mode: %u\n&quot;,
+</a><a href="#h0-0-8" id="h0-0-8" class="d">-			entry-&gt;path, entry-&gt;file_size, entry-&gt;mode);
+</a><a href="#h0-0-9" id="h0-0-9" class="i">+		fputs(&quot;&lt;tr&gt;&lt;td&gt;&quot;, fp);
+</a><a href="#h0-0-10" id="h0-0-10" class="i">+		fprintf(fp, &quot;%u&quot;, entry-&gt;mode); /* TODO: fancy print, like: &quot;-rw-r--r--&quot; */
+</a><a href="#h0-0-11" id="h0-0-11" class="i">+		fprintf(fp, &quot;&lt;/td&gt;&lt;td&gt;&lt;a href=\&quot;%sfile/&quot;, relpath);
+</a><a href="#h0-0-12" id="h0-0-12" class="i">+		xmlencode(fp, entry-&gt;path, strlen(entry-&gt;path));
+</a><a href="#h0-0-13" id="h0-0-13" class="i">+		fputs(&quot;\&quot;&gt;&quot;, fp);
+</a><a href="#h0-0-14" id="h0-0-14" class="i">+		xmlencode(fp, entry-&gt;path, strlen(entry-&gt;path));
+</a><a href="#h0-0-15" id="h0-0-15" class="i">+		fputs(&quot;&lt;/a&gt;&lt;/td&gt;&lt;td align=\&quot;right\&quot;&gt;&quot;, fp);
+</a><a href="#h0-0-16" id="h0-0-16" class="i">+		fprintf(fp, &quot;%&quot; PRIu64, entry-&gt;file_size);
+</a><a href="#h0-0-17" id="h0-0-17" class="i">+		fputs(&quot;&lt;/td&gt;&lt;/tr&gt;&quot;, fp);
+</a> 	}
+<a href="#h0-0-19" id="h0-0-19" class="i">+	fputs(&quot;&lt;/tbody&gt;&lt;/table&gt;&quot;, fp);
+</a> 
+ 	return 0;
+ }
+</pre>
+</div>
+</body>
+</html>

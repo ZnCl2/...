@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>UVA-442 Matrix Chain Multiplication - 科学君的不科学博客</title>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+  <meta name="author" content="" />
+  <meta name="description" content="&lt;TODO: insert your description here&gt;" />
+  <meta name="keywords" content="acm" />
+  <style>
+   #ds-thread #ds-reset .ds-comment-body p {color: #ffffff;}
+   #ds-thread #ds-reset .ds-comment-body p a {color: #ff0;}
+   #ds-thread #ds-reset .ds-comment-body p a:hover {color: #0ff;}
+   #disqus_thread a {color: #00ffff;}
+  </style>
+  <link rel="stylesheet" href="http://liu233w.github.io/media/css/main.css" type="text/css"/>
+  <link rel="stylesheet" href="http://liu233w.github.io/media/css/comment.css" type="text/css"/>
+  <link rel="Shortcut Icon" href="https://raw.githubusercontent.com/Liu233w/liu233w.github.io/source/avatar.jpg" type="image/x-icon">
+</head>
+
+  <body><div class="container">
+<div>
+  <header class="masthead">
+    <h1 class="masthead-title"><a href="http://liu233w.github.io/">科学君的不科学博客</a></h1>
+    <p>by 不科学的科学君</p>
+    <nav class="site-nav">
+      <div class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z" fill="#ffff00"/>
+          <path d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z" fill="#ffff00"/>
+          <path d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z" fill="#ffff00"/>
+        </svg>
+      </div>
+      <ul class="trigger">
+        <li><a href="http://liu233w.github.io/所有文章/">所有文章</a></li>
+        <li><a href="http://liu233w.github.io/tags/">按标签索引</a></li>
+        <li><a href="http://liu233w.github.io/acm/">Acm</a></li>
+        <li><a href="http://liu233w.github.io/blog/">Blog</a></li>
+        <li><a href="http://liu233w.github.io/about/">About</a></li>
+        <li><a href="https://github.com/liu233w/liu233w.github.io">Github</a></li>
+        <li><a href="http://liu233w.github.io/rss.xml">RSS</a></li>
+      </ul>
+    </nav>
+    <form method="get" id="searchform" action="http://www.google.com/search">
+      <input type="text" class="field" name="q" id="s" placeholder="Search">
+      <input type="hidden" name="as_sitesearch" value="liu233w.github.io">
+    </form>
+    <img id="avatarid" class="avatar" src="https://raw.githubusercontent.com/Liu233w/liu233w.github.io/source/avatar.jpg" />
+  </header>
+</div>
+
+<div>
+<div class="post">
+<h1 class="title">UVA-442 Matrix Chain Multiplication</h1>
+
+<div id="outline-container-org021e8a5" class="outline-2">
+<h2 id="org021e8a5">题目：</h2>
+<div class="outline-text-2" id="text-org021e8a5">
+<p>
+Matrix Chain Multiplication
+</p>
+
+<p>
+Suppose you have to evaluate an expression like A*B*C*D*E where A,B,C,D and E are matrices. Since matrix multiplication is associative, the order in which multiplications are performed is arbitrary. However, the number of elementary multiplications needed strongly depends on the evaluation order you choose.
+</p>
+
+<p>
+For example, let A be a 50*10 matrix, B a 10*20 matrix and C a 20*5 matrix. There are two different strategies to compute A*B*C, namely (A*B)*C and A*(B*C).
+</p>
+
+<p>
+The first one takes 15000 elementary multiplications, but the second one only 3500.
+</p>
+
+<p>
+Your job is to write a program that determines the number of elementary multiplications needed for a given evaluation strategy.
+</p>
+
+<p>
+Input Specification
+</p>
+
+<p>
+Input consists of two parts: a list of matrices and a list of expressions.
+</p>
+
+<p>
+The first line of the input file contains one integer n ( tex2html_wrap_inline28 ), representing the number of matrices in the first part. The next n lines each contain one capital letter, specifying the name of the matrix, and two integers, specifying the number of rows and columns of the matrix.
+</p>
+
+<p>
+The second part of the input file strictly adheres to the following syntax (given in EBNF):
+</p>
+
+<p>
+SecondPart = Line { Line } &lt;EOF&gt;
+Line       = Expression &lt;CR&gt;
+Expression = Matrix | "(" Expression Expression ")"
+Matrix     = "A" | "B" | "C" | ... | "X" | "Y" | "Z"
+</p>
+
+<p>
+Output Specification
+</p>
+
+<p>
+For each expression found in the second part of the input file, print one line containing the word "error" if evaluation of the expression leads to an error due to non-matching matrices. Otherwise print one line containing the number of elementary multiplications needed to evaluate the expression in the way specified by the parentheses.
+</p>
+
+<p>
+Sample Input
+</p>
+
+<p>
+9
+A 50 10
+B 10 20
+C 20 5
+D 30 35
+E 35 15
+F 15 5
+G 5 10
+H 10 20
+I 20 25
+A
+B
+C
+(AA)
+(AB)
+(AC)
+(A(BC))
+((AB)C)
+(((((DE)F)G)H)I)
+(D(E(F(G(HI)))))
+((D(EF))((GH)I))
+</p>
+
+<p>
+Sample Output
+</p>
+
+<p>
+0
+0
+0
+error
+10000
+error
+3500
+15000
+40500
+47500
+15125
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgbf1f829" class="outline-2">
+<h2 id="orgbf1f829">代码：</h2>
+<div class="outline-text-2" id="text-orgbf1f829">
+<div class="org-src-container">
+<pre class="src src-c++"><span style="color: #586e75;">// </span><span style="color: #586e75;">oj.cpp : &#23450;&#20041;&#25511;&#21046;&#21488;&#24212;&#29992;&#31243;&#24207;&#30340;&#20837;&#21475;&#28857;&#12290;</span>
+<span style="color: #586e75;">//</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">iostream</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">utility</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">stack</span><span style="color: #2aa198;">&gt;</span>
+<span style="color: #268bd2;">#include</span> <span style="color: #2aa198;">&lt;</span><span style="color: #2aa198;">string</span><span style="color: #2aa198;">&gt;</span>
+
+<span style="color: #859900; font-weight: bold;">using</span> <span style="color: #859900; font-weight: bold;">namespace</span> <span style="color: #268bd2; font-weight: bold;">std</span>;
+
+<span style="color: #859900; font-weight: bold;">typedef</span> <span style="color: #b58900;">pair</span><span style="color: #2aa198;">&lt;</span><span style="color: #b58900;">int</span>, <span style="color: #b58900;">int</span><span style="color: #2aa198;">&gt;</span> <span style="color: #b58900;">P</span>;
+
+<span style="color: #b58900;">int</span> <span style="color: #268bd2;">res</span><span style="color: #2aa198;">(</span><span style="color: #b58900;">P</span> &amp;<span style="color: #268bd2;">out</span>, <span style="color: #b58900;">P</span> <span style="color: #268bd2;">a</span>, <span style="color: #b58900;">P</span> <span style="color: #268bd2;">b</span><span style="color: #2aa198;">)</span>
+<span style="color: #2aa198;">{</span>
+    <span style="color: #859900; font-weight: bold;">if</span> <span style="color: #b58900;">(</span>a.second != b.first<span style="color: #b58900;">)</span>
+        <span style="color: #859900; font-weight: bold;">return</span> -<span style="color: #6c71c4;">1</span>;
+    out.first = a.first;
+    out.second = b.second;
+
+    <span style="color: #859900; font-weight: bold;">return</span> a.first*a.second*b.second;
+<span style="color: #2aa198;">}</span>
+
+<span style="color: #b58900;">P</span> <span style="color: #268bd2;">L</span><span style="color: #2aa198;">[</span><span style="color: #6c71c4;">30</span><span style="color: #2aa198;">]</span>;
+
+<span style="color: #b58900;">int</span> <span style="color: #268bd2;">main</span><span style="color: #2aa198;">()</span>
+<span style="color: #2aa198;">{</span>
+    <span style="color: #268bd2; font-weight: bold;">ios</span>::sync_with_stdio<span style="color: #b58900;">(</span><span style="color: #268bd2; font-weight: bold;">false</span><span style="color: #b58900;">)</span>;
+    cin.tie<span style="color: #b58900;">()</span>;
+    <span style="color: #b58900;">int</span> <span style="color: #268bd2;">N</span>;
+    cin &gt;&gt; N;
+    <span style="color: #859900; font-weight: bold;">while</span> <span style="color: #b58900;">(</span>N--<span style="color: #b58900;">)</span>
+    <span style="color: #b58900;">{</span>
+        <span style="color: #b58900;">char</span> <span style="color: #268bd2;">name</span>;
+        cin &gt;&gt; name;
+        name -= <span style="color: #2aa198;">'A'</span>;
+        cin &gt;&gt; L<span style="color: #268bd2;">[</span>name<span style="color: #268bd2;">]</span>.first &gt;&gt; L<span style="color: #268bd2;">[</span>name<span style="color: #268bd2;">]</span>.second;
+    <span style="color: #b58900;">}</span>
+    <span style="color: #b58900;">string</span> <span style="color: #268bd2;">expre</span>;
+    getline<span style="color: #b58900;">(</span>cin, expre<span style="color: #b58900;">)</span>;
+    <span style="color: #859900; font-weight: bold;">while</span> <span style="color: #b58900;">(</span>getline<span style="color: #268bd2;">(</span>cin, expre<span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span>
+    <span style="color: #b58900;">{</span>
+        <span style="color: #b58900;">int</span> <span style="color: #268bd2;">r</span> = <span style="color: #6c71c4;">0</span>;
+        <span style="color: #b58900;">stack</span><span style="color: #268bd2;">&lt;</span><span style="color: #b58900;">P</span><span style="color: #268bd2;">&gt;</span> <span style="color: #268bd2;">S</span>;
+        <span style="color: #859900; font-weight: bold;">for</span> <span style="color: #268bd2;">(</span><span style="color: #b58900;">int</span> <span style="color: #268bd2;">i</span> = <span style="color: #6c71c4;">0</span>;i &lt; expre.size<span style="color: #6c71c4;">()</span>;++i<span style="color: #268bd2;">)</span>
+        <span style="color: #268bd2;">{</span>
+            <span style="color: #859900; font-weight: bold;">if</span> <span style="color: #6c71c4;">(</span>expre<span style="color: #859900;">[</span>i<span style="color: #859900;">]</span> == <span style="color: #2aa198;">'('</span><span style="color: #6c71c4;">)</span>
+                <span style="color: #859900; font-weight: bold;">continue</span>;
+            <span style="color: #859900; font-weight: bold;">if</span> <span style="color: #6c71c4;">(</span>expre<span style="color: #859900;">[</span>i<span style="color: #859900;">]</span> == <span style="color: #2aa198;">')'</span><span style="color: #6c71c4;">)</span>
+            <span style="color: #6c71c4;">{</span>
+                <span style="color: #b58900;">P</span> <span style="color: #268bd2;">b</span> = S.top<span style="color: #859900;">()</span>;
+                S.pop<span style="color: #859900;">()</span>;
+                <span style="color: #b58900;">P</span> <span style="color: #268bd2;">a</span> = S.top<span style="color: #859900;">()</span>;
+                S.pop<span style="color: #859900;">()</span>;
+                <span style="color: #b58900;">P</span> <span style="color: #268bd2;">c</span>;
+                <span style="color: #b58900;">int</span> <span style="color: #268bd2;">z</span> = res<span style="color: #859900;">(</span>c, a, b<span style="color: #859900;">)</span>;
+                <span style="color: #859900; font-weight: bold;">if</span> <span style="color: #859900;">(</span>z == -<span style="color: #6c71c4;">1</span><span style="color: #859900;">)</span>
+                <span style="color: #859900;">{</span>
+                    r = -<span style="color: #6c71c4;">1</span>;
+                    <span style="color: #859900; font-weight: bold;">break</span>;
+                <span style="color: #859900;">}</span>
+                r += z;
+                S.push<span style="color: #859900;">(</span>c<span style="color: #859900;">)</span>;
+                <span style="color: #859900; font-weight: bold;">continue</span>;
+            <span style="color: #6c71c4;">}</span>
+            S.push<span style="color: #6c71c4;">(</span>L<span style="color: #859900;">[</span>expre<span style="color: #b58900;">[</span>i<span style="color: #b58900;">]</span> - <span style="color: #2aa198;">'A'</span><span style="color: #859900;">]</span><span style="color: #6c71c4;">)</span>;
+        <span style="color: #268bd2;">}</span>
+        <span style="color: #859900; font-weight: bold;">if</span> <span style="color: #268bd2;">(</span>r == -<span style="color: #6c71c4;">1</span><span style="color: #268bd2;">)</span>
+            cout &lt;&lt; <span style="color: #2aa198;">"error"</span> &lt;&lt; endl;
+        <span style="color: #859900; font-weight: bold;">else</span>
+            cout &lt;&lt; r &lt;&lt; endl;
+    <span style="color: #b58900;">}</span>
+<span style="color: #2aa198;">}</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgd896fb9" class="outline-2">
+<h2 id="orgd896fb9">解析&amp;吐槽：</h2>
+<div class="outline-text-2" id="text-orgd896fb9">
+<p>
+一般看起来题目很长的都是水题。注意到底下的算式中每两个需要相乘的矩阵都会放在一个括号中，不会出现(ABC)这样的算式。因此，每遇到一个右括号就代表要将括号之前的两个矩阵进行矩阵乘法。我们可以使用一个栈来模拟这个过程：
+</p>
+<ul class="org-ul">
+<li>当前的字符是右括号 : 抛弃当前字符</li>
+<li>当前的字符是矩阵名称 : 将名称表示的矩阵压栈</li>
+<li>当前字符是右括号 : 弹出栈中的前两个矩阵，进行乘法运算，将结果压栈</li>
+</ul>
+
+<p>
+由此便可以模拟整个表达式的计算过程。我们可以用一个 pair 来表示矩阵的行数和列数，矩阵乘法的过程请参考《线性代数》。在前面的 res 函数中计算结果，如果遇到了没法相乘的矩阵就输出 error。这个函数可以计算结果矩阵的行数和列数并返回相乘的总次数。我们只需要将结果加起来就可以得到结果了。另外，如果表达式只有一个矩阵的话，表达式长度必为 1，直接输出结果 0。
+</p>
+</div>
+</div>
+
+</div>
+</div>
+<div>
+        <div class="post-meta">
+            <span title="发布日期" class="post-info">2016-04-28</span>
+            <span title="最后修改日期" class="post-info">2017-02-24</span>
+            <span title="标签" class="post-info">:<a href="http://liu233w.github.io/tags/acm">acm</a>:</span>
+            <span title="作者" class="post-info"><a href="mailto:wwwlsmcom &lt;at&gt; DESKTOP-1V4DLJV"></a></span>
+        </div>
+    <script src="http://liu233w.github.io/media/js/jquery-2.1.3.min.js"></script>
+        <section>
+            <h1>Comments</h1>
+            <div id="comment-wrap">
+                    <a class="disqus_label">使用 Disqus 评论</a>
+                    <a class="ds-label">使用多说评论</a>
+    </ul>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+         //var disqus_developer = 1;
+         var preempt_signal=false;
+         var disqus_identifier = "/blog/2016/04/28/uva-442";
+         var disqus_url = "http://liu233w.github.io/blog/2016/04/28/uva-442";
+         var disqus_shortname = 'liu233w';
+         /* * * DON'T EDIT BELOW THIS LINE * * */
+         (function() {
+             var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+             dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+             $('#disqus_thread').css('display','none');
+         })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        <div class="ds-thread"></div>
+        <script type="text/javascript">
+         var duoshuoQuery = {short_name:'liu233w'};
+         (function() {
+             var ds = document.createElement('script');
+             ds.type = 'text/javascript';ds.async = true;
+             ds.src = 'http://static.duoshuo.com/embed.js';
+             ds.charset = 'UTF-8';
+             (document.getElementsByTagName('head')[0]
+           || document.getElementsByTagName('body')[0]).appendChild(ds);
+             $('.ds-thread').css('display','block');
+         })();
+        </script>
+    <script>
+     /* comments */
+     var ego_disqus_thread=$('#disqus_thread');
+     var ego_ds_label=$('.ds-thread');
+     $('.disqus_label').click(function(){
+         ego_disqus_thread.show();
+         ego_ds_label.hide();
+     });
+     $('.ds-label').click(function(){
+         ego_disqus_thread.hide();
+         ego_ds_label.show();
+     });
+    </script>
+        </section>
+    <script src="http://liu233w.github.io/media/js/main.js"></script>
+    <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.x(<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+            Copyright &copy; 2014 - <span id="footerYear"></span> <a href="mailto:wwwlsmcom &lt;at&gt; DESKTOP-1V4DLJV"></a>
+            &nbsp;&nbsp;-&nbsp;&nbsp;
+            Powered by <a href="https://github.com/emacs-china/ego" target="_blank">EGO</a><br/>
+            <a href="http://creativecommons.org/licenses/by-sa/3.0/" rel="license"><img src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" style="border-width:0" alt="Creative Commons License" class="center"></a>
+            <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+    </div>
+            </div>
+            <script type="text/javascript"
+                    src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG">
+            </script>
+            <script type="text/x-mathjax-config">
+             MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "AMS"} } });
+            </script>
+</div>
+
+  </div></body>
+</html>

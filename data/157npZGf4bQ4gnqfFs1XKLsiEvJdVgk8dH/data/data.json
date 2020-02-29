@@ -1,0 +1,130 @@
+{
+	"title": "Today I Learned",
+	"description": "We constantly learn new things\nThis is @ks' repo to\nshare those learnings",
+	"links": "- [Table of contents](?Post:1)\n- [Want to learn](?Post:4)\n- [Colophon](?Post:2)\n- [FAQ](?Post:3)\n\n❦\n\n- [kappasigma.bit](/kappasigma.bit/)\n- [nulblog.bit](/nulblog.bit/)",
+	"next_post_id": 21,
+	"demo": false,
+	"modified": 1483189176,
+	"post": [
+		{
+			"post_id": 20,
+			"title": "[Python] Leap second poppycock",
+			"date_published": 1483188290.591,
+			"body": "So, tonight we're supposed to insert [an extra second 🡕](https://en.wikipedia.org/wiki/Leap_second) after 23:59:59 UTC, effectively giving us 23:59:60 before we reach midnight. It seems [Python](data/files/leapsectest.py \"Download leapsectest.py\") doesn't agree:\n```py\n#!/usr/bin/python3\n\nfrom datetime import (datetime, timedelta)\nfrom pytz import UTC\nfrom sys import stderr\n\ntry:\n    leap = datetime(2016, 12, 31, 23, 59, 60, tzinfo=UTC)\nexcept ValueError as error:\n    print(str(error), file=stderr)\n    leap = datetime(2016, 12, 31, 23, 59, 59, tzinfo=UTC)\n    leap += timedelta(seconds=1)\n\nprint('{:%FT%T%z}'.format(leap))\n\n# eof\n```\nLet's try:\n```markdown\n$ python3 leapsectest.py\nsecond must be in 0..59\n2017-01-01T00:00:00+0000\n```\nPoppycock! 😒\n"
+		},
+		{
+			"post_id": 19,
+			"title": "[Python] Not everything is an object",
+			"date_published": 1478124198.628,
+			"body": "Next time somebody tells you that everything in Python is an object, call bullshit:\n```py\n>>> [m for m in dir(7) if not m.startswith('__')]\n['bit_length',\n 'conjugate',\n 'denominator',\n 'from_bytes',\n 'imag',\n 'numerator',\n 'real',\n 'to_bytes']\n>>> 7.to_bytes(1, 'big')\n  File \"<stdin>\", line 1\n    7.to_bytes(1, 'big')\n             ^\nSyntaxError: invalid syntax\n>>> i = 7\n>>> i.to_bytes(1, 'big')\nb'\\x07'\n>>> \n```\n"
+		},
+		{
+			"post_id": 18,
+			"title": "IPv6 privacy extensions and systemd-networkd",
+			"date_published": 1472827263.689,
+			"body": "By default, `systemd-networkd` generates IPv6 addresses based on the interface's MAC address, which is undesirable. Here's how to have it generate dynamic addresses using SLAAC without disclosing MAC addresses.\n\nTo enable privacy extensions for all interfaces add the following to `sysctl`:\n```sh\n# /etc/sysctl.d/25-ipv6.conf\nnet.ipv6.conf.all.use_tempaddr=2\nnet.ipv6.conf.default.use_tempaddr=2\n```\nMy Raspberry Pi 2 uses `eth0` as its network interface and for some reason I need to explicitly mention `eth0` in said conf:\n```sh\nnet.ipv6.conf.eth0.use_tempaddr=2\n```\nThen instruct `systemd-networkd` to obey the kernel settings:\n```ini\n; /etc/systemd/network/enp3s0.network\n\n[Match]\nName=enp3s0\n\n[Network]\nDHCP=yes\n\nIPv6PrivacyExtensions=kernel\n```"
+		},
+		{
+			"post_id": 17,
+			"title": "Zeronet behind Caddy with TLS",
+			"date_published": 1472631147.969,
+			"body": "[Back in March](/kappasigma.bit/?Post:10) I couldn't seem to run [Caddy 🡕](https://caddyserver.com/) in front of Zeronet because of websocket troubles. Either Caddy has been improved since then or @keith­irwin [found the solution](/talk.zeronetwork.bit/?Topic:1_13G7h5b1e4Ch1vBfWvA4Nuttaqa8cf91W4). Either way, here's how:\n\n```markdown\nzero.example.net {\n  # Enable HSTS\n  header / Strict-Transport-Security \"max-age=31556926\"\n  tls {\n    key_type p384\n  }\n  proxy /          http://127.0.0.1:43110 {\n    transparent\n  }\n  proxy /Websocket http://127.0.0.1:43110 {\n    websocket\n  }\n  # We don't want the world to access our private instance\n  basicauth myUsername myPassword {\n    /\n  }\n}\n```\nAnd contrary to the documentation, it is unnecessary to disable HTTP/2 (something that would sadly affect _all_ domains served).\n\nWith this configuration Caddy will\n- obtain a certificate from [Let's Encrypt 🡕](https://letsencrypt.org/)\n- serve all requests to zero.example.net over TLS\n\nSo now I can access my Zeronet from everywhere.\n\n**Caveat:**\nCaddy doesn't seem to be quite stable here. Very often Caddy exits with this error:\n```markdown\nAug 31 10:15:06 home caddy[20251]: panic: not a Flusher\nAug 31 10:15:06 home caddy[20251]: goroutine 106 [running]:\nAug 31 10:15:06 home caddy[20251]: panic(0xcac000, 0xc420495e30)\nAug 31 10:15:06 home caddy[20251]:     /usr/local/go/src/runtime/panic.go:500 +0x1a1\nAug 31 10:15:06 home caddy[20251]: github.com/mholt/caddy/caddyhttp/httpserver.(*ResponseRecorder).Flush(0xc4205e54f0)\nAug 31 10:15:06 home caddy[20251]:     /tmp/custombuild_6580_159870072/src/github.com/mholt/caddy/caddyhttp/httpserver/recorder.go:87 +0xda\nAug 31 10:15:06 home caddy[20251]: github.com/mholt/caddy/caddyhttp/proxy.(*maxLatencyWriter).flushLoop(0xc420612540)\nAug 31 10:15:06 home caddy[20251]:     /tmp/custombuild_6580_159870072/src/github.com/mholt/caddy/caddyhttp/proxy/reverseproxy.go:378 +0x156\nAug 31 10:15:06 home caddy[20251]: created by github.com/mholt/caddy/caddyhttp/proxy.(*ReverseProxy).copyResponse\nAug 31 10:15:06 home caddy[20251]:     /tmp/custombuild_6580_159870072/src/github.com/mholt/caddy/caddyhttp/proxy/reverseproxy.go:247 +0x2e1\n```\nThe bug has been reported as [issue #1083 🡕](https://github.com/mholt/caddy/issues/1083).\n\n**Update:**\nThe solution is to _not_ enable QUIC.\n"
+		},
+		{
+			"post_id": 16,
+			"title": "[Misc] Plant nutrient deficiency chart",
+			"date_published": 1464006958.21,
+			"body": "![Plant nutrient deficiency chart](data/img/plant-nutrient-deficiency-chart.jpg)\n(Found on Twitter with no reference to the source.)"
+		},
+		{
+			"post_id": 15,
+			"title": "[Security] Enabling HSTS on Caddy",
+			"date_published": 1463911328.958,
+			"body": "Move from an **A** to an **A+** server rating on SSL Labs:\n```markdown\nexample.com {\n  header / \"Strict-Transport-Security\", \"max-age=31556926; includeSubDomains\"\n    ⋮\n}\n```\nFor long-running domains you can add a `preload` to the stanza:\n```markdown\nexample.com {\n  header / \"Strict-Transport-Security\", \"max-age=31556926; includeSubDomains; preload\"\n    ⋮\n}\n```\nThen add the domain to the [HSTS preload list 🡕](https://hstspreload.appspot.com/)\n### **See also**\n* [Caddy user guide: header directive 🡕](https://caddyserver.com/docs/header)\n* [HTTP Strict Transport Security 🡕](https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security)\n* [SSLLabs SSL Server Rating Guide 🡕](https://www.ssllabs.com/downloads/SSL_Server_Rating_Guide.pdf) (PDF)\n* [HSTS – a no-nonsense guide 🡕](https://www.steveworkman.com/performance/2016/hsts-a-no-nonsense-guide/)\n"
+		},
+		{
+			"post_id": 14,
+			"title": "[Misc] Easily confused glyphs",
+			"date_published": 1463558504.959,
+			"body": "Looking for a good coding font? Cat [this file](data/files/easily-confused-glyphs.txt) in your terminal.\n\n### Easily confused glyphs\n* b69B8Ø0Oo\n* 1Il|\n* ij\n* 5S\n* 2Z\n* 9gq\n* co\n* rn m\n* cl d\n* vv w\n* .,\n* :;\n* `'\n* ''\"\n* ' and ‘’ (curved/smart/curly single quotes)\n* \" and “” (curved/smart/curly double quotes)\n* ~-\n* – — (n-dash, m-dash)\n* {[()]}\n* u and µ (mu)\n* v and ν (nu)\n\n### Uppercase vs. lowercase letters\n* Ww\n* Xx\n* Zz\n* Vv\n* Uu\n* Cc\n* Ss\n\n### External link(s)\n* https://news.ycombinator.com/item?id=11718653\n"
+		},
+		{
+			"post_id": 13,
+			"title": "[Python] Anaconda cleanup",
+			"date_published": 1461946343.385,
+			"body": "```sh\n$ conda clean -tp   # t = tarballs, p = unused packages\n```\nCleaned out just short of 1 GB of disk space. "
+		},
+		{
+			"post_id": 12,
+			"title": "[Security] Generating new Diffie-Hellman groups",
+			"date_published": 1460476226.696,
+			"body": "```md\n$ ssh-keygen -G moduli-2048.candidates -b 2048\n$ ssh-keygen -T moduli-2048 -f moduli-2048.candidates\n```\nThen install the generated `moduli-2048` file as `/etc/ssh/moduli`.\n\n**Update**\nGenerating and verifying 2048, 3072, …, 8192 bits moduli will take _days_ (if not _weeks_).\n\n2 Ton Digital runs a [public DH parameter service 🡕](https://2ton.com.au/dhtool/#service) with a straight-forward API."
+		},
+		{
+			"post_id": 11,
+			"title": "[Security] TLS Interposer and Zeronet",
+			"date_published": 1460206989.384,
+			"body": "[TLS Interposer 🡕](https://netfuture.ch/tools/tls-interposer/) is not a new piece of software. However, I thought it would be interesting to  learn about Zeronet's choice of TLS ciphers with and without TLS Interposer.\n\n**Without TLS Interposer**\n\nGrabbing data from the [/Stats](/Stats) page I found that almost 9 out of 10 connections were using the ECDHE-RSA-AES128-GCM-SHA256 cipher suite that sports medium-high grade encryption and forward secrecy, while close to 1 out of 10 were using a cipher suite that doesn't support forward secrecy:\n\n```markdown\n     91 ECDHE-RSA-AES128-GCM-SHA256\n     12 AES128-GCM-SHA256\n      1 AES256-SHA\n```\n\n**With TLS Interposer**\n\nNext I installed the [TLS Interposer library 🡕](https://github.com/Netfuture/tlsinterposer) and started Zeronet with a few simple requirements:\n\n```sh\nexport LD_PRELOAD='/usr/local/lib/tlsinterposer.so'\nexport TLS_INTERPOSER_CIPHERS='kEECDH:kEDH:!aNULL:!eNULL:!EXPORT:!MEDIUM:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4:!SSLv3:!TLSv1'\nexport TLS_INTERPOSER_OPTIONS='+sorder'\npython2 zeronet.py\n```\nor, in common language:\n1. Mandatory ephemeral key agreement (“kEECDH:kEDH”)\n2. Use only high grade encryption (“!EXPORT:!MEDIUM:!LOW”)\n3. Drop obsolete protocols (“!SSLv3:!TLSv1”)\n4. Let me decide the cipher order (“+sorder”)\n\nThe results?\n\n```markdown\n    128 ECDHE-RSA-AES256-GCM-SHA384\n     12 tls-rsa\n```\nI frankly don't know what the `tls-rsa` thing stands for (if you do, please chime in below), but the rest of the connections have been  upgraded so that _all_ are using the ECDHE-RSA-AES256-GCM-SHA384 cipher suite, meaning AES256 encryption instead of AES128, and SHA384 hashing instead of SHA256, and of course forward secrecy.\n\nThe downside of all this is that if a peer doesn't support any of the protocols and ciphers you're offering, then no connection can be established.\n\nWith the restrictions I set on TLS_INTERPOSER_CIPHERS my Zeronet node now offers the following ciphers:\n```sh\n$ openssl ciphers -v \"${TLS_INTERPOSER_CIPHERS}\"\nECDHE-RSA-AES256-GCM-SHA384   TLSv1.2 Kx=ECDH Au=RSA   Enc=AESGCM(256) Mac=AEAD\nECDHE-ECDSA-AES256-GCM-SHA384 TLSv1.2 Kx=ECDH Au=ECDSA Enc=AESGCM(256) Mac=AEAD\nECDHE-RSA-AES256-SHA384       TLSv1.2 Kx=ECDH Au=RSA   Enc=AES(256)    Mac=SHA384\nECDHE-ECDSA-AES256-SHA384     TLSv1.2 Kx=ECDH Au=ECDSA Enc=AES(256)    Mac=SHA384\nECDHE-RSA-AES128-GCM-SHA256   TLSv1.2 Kx=ECDH Au=RSA   Enc=AESGCM(128) Mac=AEAD\nECDHE-ECDSA-AES128-GCM-SHA256 TLSv1.2 Kx=ECDH Au=ECDSA Enc=AESGCM(128) Mac=AEAD\nECDHE-RSA-AES128-SHA256       TLSv1.2 Kx=ECDH Au=RSA   Enc=AES(128)    Mac=SHA256\nECDHE-ECDSA-AES128-SHA256     TLSv1.2 Kx=ECDH Au=ECDSA Enc=AES(128)    Mac=SHA256\nDHE-RSA-AES256-GCM-SHA384     TLSv1.2 Kx=DH   Au=RSA   Enc=AESGCM(256) Mac=AEAD\nDHE-RSA-AES256-SHA256         TLSv1.2 Kx=DH   Au=RSA   Enc=AES(256)    Mac=SHA256\nDHE-RSA-AES128-GCM-SHA256     TLSv1.2 Kx=DH   Au=RSA   Enc=AESGCM(128) Mac=AEAD\nDHE-RSA-AES128-SHA256         TLSv1.2 Kx=DH   Au=RSA   Enc=AES(128)    Mac=SHA256\n$ # “Kx” = key exchange, “Au” = authentication, “Enc” = encryption\n```\nAm I being too restrictive?\n\n### **See also**\n* [OpenSSL cipher strings 🡕](https://www.openssl.org/docs/manmaster/apps/ciphers.html#CIPHER-STRINGS)"
+		},
+		{
+			"post_id": 10,
+			"title": "[Misc] Creating a vanity .onion address",
+			"date_published": 1459193558.251,
+			"body": "```sh\n$ git clone https://github.com/ReclaimYourPrivacy/eschalot\n$ cd eschalot\n$ make\n$ ./eschalot -p glass\n----------------------------------------------------------------\nglassr3cwpp4tdb3.onion\n-----BEGIN RSA PRIVATE KEY-----\nMIICXQIBAAKBgQDrtTY+t0kszMmy+UdKEnYON++ZKSGTL+C0FjHKvpoRQxPcNB84\noE/DOhARW68O0lSxnXAXVrCviwTlPyrj5vpSmbZJeuVVh5gM4FJY+kVcVRCb7T8j\nB3xJrzQtF2YRhIgQVttuVaOVyydaUGLh1ysvsKHFd6+tOpkZ8CBpqs5FgwIEAcrJ\nEwKBgDDYUr5Rjpacc3D8fW/jrwyRy4SPAoyJhroHItxt7c6KKLERQu4w6l1m7kKm\nlEMFq3/6lZsQW2gxwCZT8sBrwOhuLsSsxUYZc/9Xzu1Yxp8QOBc8nyl9dJKg1i6m\ndp1svaplrraWQ3PBpVelxkilge+hyJi5290E/fdbz9ry6FzbAkEA9ljaWdgtGbm2\nbDRpZ5yMpQTAFaGphrgR5rfvPtvjdP1e7SGGPkyW1pOiuueMyarqtkwfpuSAT+Eo\nuitLoN7xmwJBAPTxop06MJ290JdDqlr6z9QVQ8JSSobqGJbdpndjqW1x/q9YyoC2\nbRb6MGYISmZpMI9DikO99HIcNO9nUeEcDjkCQE0dzFxvcKlRm51zvxxBNtuAuk9F\nOp+NSIoUOneMwVVeluFBoTBO6djYJRGOmfVIM/+RS1Yt8Ga0El9roKFjLW0CQHWs\nHdqhEiOnfgv7isanlmKyFuKMqRXymiNQWtWNxAqZHmggOCPamffK1iNDDtb1+H8P\nBewVqhTLtGV90jajBXMCQQCdfGsNcMjzPGIT8oIYCM6WYti1bbsiUq/q11OjJhJJ\nK44hzPmDXpFwgtQjWbJanEV0jrYPD7L4aC7EoxGFGtlB\n-----END RSA PRIVATE KEY-----\n```\n\n### **Usage**\n```markdown\nUsage:\neschalot [-c] [-v] [-t count] ([-n] [-l min-max] -f filename) | (-r regex) | (-p prefix)\n  -v         : verbose mode - print extra information to STDERR\n  -c         : continue searching after the hash is found\n  -t count   : number of threads to spawn default is one)\n  -l min-max : look for prefixes that are from 'min' to 'max' characters long\n  -n         : Allow digits to be part of the prefix (affects wordlist mode only)\n  -f filename: name of the text file with a list of prefixes\n  -p prefix  : single prefix to look for (1-16 characters long)\n  -r regex   : search for a POSIX-style regular expression\n\nExamples:\n  eschalot -cvt4 -l8-12 -f wordlist.txt >> results.txt\n  eschalot -v -r '^test|^exam'\n  eschalot -ct5 -p test\n\n  base32 alphabet allows letters [a-z] and digits [2-7]\n  Regex pattern examples:\n    xxx           must contain 'xxx'\n    ^foo          must begin with 'foo'\n    bar$          must end with 'bar'\n    b[aoeiu]r     must have a vowel between 'b' and 'r'\n    '^ab|^cd'     must begin with 'ab' or 'cd'\n    [a-z]{16}     must contain letters only, no digits\n    ^dusk.*dawn$  must begin with 'dusk' and end with 'dawn'\n    [a-z2-7]{16}  any name - will succeed after one iteration\n```"
+		},
+		{
+			"post_id": 9,
+			"title": "[BOFH] Taming the log of PyBitmessage",
+			"date_published": 1459002745.53,
+			"body": "[PyBitmessage's 🡕](https://github.com/mailchuck/PyBitmessage) default logging is _extremely_ verbose and logs messages that are irrelevant to the casual user. The mailchuck fork v0.5.4 suggests you take a look at Python's [logging config documentation 🡕](https://docs.python.org/2/library/logging.config.html#logging.config.fileConfig), which I didn't find helpful, at all: PyBitmessage kept logging to `debug.log` even after I thought I had replaced all handlers with the NullHandler, and it also complained about missing sections, keys, handlers, formatters, and whatnot.\n\nLuckily, Peter Šurda came to the rescue with [two working logging.dat examples 🡕](https://bitmessage.org/forum/index.php/topic,4820.msg11163.html#msg11163) that I will copy here for the record:\n\n**Logging entirely disabled** (modified slightly from the original):\n```ini\n[loggers]\nkeys=root,syslog\n\n[handlers]\nkeys=syslog\n\n[formatters]\nkeys=syslog\n\n[logger_root]\nlevel=WARNING\nhandlers=syslog\n\n[logger_syslog]\nlevel=WARNING\nhandlers=syslog\nqualname=default\npropagate=0\n\n[handler_syslog]\nclass=logging.NullHandler\nformatter=syslog\nlevel=WARNING\nargs=()\n\n[formatter_syslog]\nformat=%(asctime)s %(threadName)s %(filename)s@%(lineno)d %(message)s\ndatefmt=%F %T\n```\n\n**Logging to remote syslog**:\n```ini\n[loggers]\nkeys=root,syslog\n\n[logger_root]\nlevel=NOTSET\nhandlers=syslog\n\n[logger_syslog]\nlevel=DEBUG\nhandlers=syslog\nqualname=default\npropagate=0\n\n[handlers]\nkeys=syslog\n\n[handler_syslog]\nclass=logging.SysLogHandler\nformatter=syslog\nlevel=DEBUG\nargs=(('10.0.0.123', handlers.SYSLOG_UDP_PORT), handlers.SysLogHandler.LOG_LOCAL7)\n\n[formatters]\nkeys=syslog\n\n[formatter_syslog]\nformat=%(asctime)s %(threadName)s %(filename)s@%(lineno)d %(message)s\ndatefmt=%b %d %H:%M:%S\n```\n[Download](data/files/logging.dat) the first `logging.dat` example, stick it in the same directory as your `keys.dat` file, then restart PyBitmessage."
+		},
+		{
+			"post_id": 8,
+			"title": "[CC] Mitigating Namecoin's 520 bytes limitation",
+			"date_published": 1458902994.543,
+			"body": "**Problem**\n\nYou have almost reached Namecoin's 520 bytes data limitation, but you would\nlike to also include, say, your NXT address, your Signal fingerprint and\nyour TOX id.\n\n**Solution**\n1. Trim your current `id/` record so that there's room for an `import` statement.\n2. Create an `idd/` (identity data) record with the data that won't fit in the `id/` record.\n\nSample `id/abcy` with `import` statement [1]:\n```json\n{\n  \"name\": \"Abe Cyprian\",\n  \"gender\": \"male\",\n  \"birthday\": \"1945/01/23\",\n  \"description\": \"Fortune favours the lucky\",\n  \"locality\": \"Abukko City\",\n  \"country\": \"XY\",\n  \"email\": \"abcy@example.net\",\n  \"gpg\": {\n    \"v\": \"pka1\",\n    \"fpr\": \"40352A7A5F88E7D294D4ABC7600A0B36221FD119\",\n    \"uri\": \"https://abcy.example.net/abcy-pubkey.asc\"\n  },\n  \"weblog\": \"https://blog.example.net/\",\n  \"bitmessage\": \"BM-NBUWTz8bYadwEbmx6eQZznsj1NeJtp9c\",\n  \"bitcoin\": \"1ABCYi8DHwj6MuTaogryeqeyym9gbHDu9Z\",\n  \"namecoin\": \"NABCYawDVg5xM5zrzjvCueuzzY51f5cjh1\",\n  \"import\": \"idd/abcy\"\n}\n```\n\nSample `idd/abcy` with extra information [2]:\n```json\n{\n  \"nxt\": {\n    \"alias\": \"abcy\",\n    \"account\": \"NXT-ABC7-7F92-SVFL-5QUWT\",\n    \"pubkey\": \"55f5b9fd65b0587193f1aecbfedb1d387e40f7e14d3b83c509b94e1db1da6515\"\n  },\n  \"signal\": \"0D08B1EDC6A1C0FDD30D210784ABC7AE2949D5F58768B18B9C2906724B4248595C2\",\n  \"tox\": \"0C834AE7634ABC78ECBB14A8119AED80C21FB703E97DA43F8FBD237BFFE9109A1A49E776D371\"\n}\n```\nSame method goes for extending a `d/` record with a `dd/` record (domain data).\n\n**Partly unsolved questions**\n\nCan `idd/` and `dd/` records in turn hold `import` statements? Or should multiple data records be included in the originating record as a list?\n```json\n{\n  \"import\": [\n    \"idd/2dac23e0-901b-4103-b991-5eec17e62747\",\n    \"idd/6aa006ef-a0ad-4d56-a266-aca65ac173ec\"\n  ]\n}\n```\nThe [Namecoin wiki 🡕](https://wiki.namecoin.org/) is not clear on this. Please chime in below if you have the answer – preferrably with a reference.\n\n**Update**: User qpm on #namecoin @ Freenode IRC says about the matter:\n> an idd/ name can import another idd/ name. Some clients impose a maximum depth of such import chains. Off the top of my head, I think a common depth limit is 5, but since this part of the spec isn't really finalized, it's possible that the depth limit will change at some point.\n\nand continues:\n\n> I think we intend to allow an import statement to contain a list, but I have no idea if current software supports that properly. Using a chain is probably going to be more reliable with current software.\n\n**Links**\n1. [id/abcy 🡕](https://namecha.in/name/id/abcy)\n2. [idd/abcy 🡕](https://namecha.in/name/idd/abcy)\n\n**See also**\n* [Authentication with NXT tokens](/kappasigma.bit/?Post:6)\n* [Authentication with Namecoin](/kappasigma.bit/?Post:26)"
+		},
+		{
+			"post_id": 7,
+			"title": "[Life] The origin of monsters",
+			"date_published": 1458831658.591,
+			"body": "“Every monster starts off as someone's baby.”\n&nbsp;&nbsp;&nbsp;&nbsp;~_Cameron_ in _Continuum_, S2E9"
+		},
+		{
+			"post_id": 6,
+			"title": "[Python] Finding the size of the terminal",
+			"date_published": 1458830141.165,
+			"body": "The [documentation 🡕](https://docs.python.org/3/library/os.html#querying-the size-of-a-terminal) suggests that `shutil.get_terminal_size()` be used:\n\n```py\n>>> import shutil\n>>> tsize = shutil.get_terminal_size()\n>>> tsize\nos.terminal_size(columns=191, lines=60)\n>>> tsize.columns\n191\n>>> tsize.lines\n60\n>>>\n```\n\n`shutil.get_terminal_size()` and `os.get_terminal_size()` both require Python 3.3+.\n\n`shutil.get_terminal_size()` examines the environment varables `LINES` and\n`COLUMNS`, and secondarily uses `os.get_terminal_size()` to find the size\nof `stdout`.\n\nIf you wish to take into account `stdin`, `stdout`, `stderr`, as well as\n`/dev/tty`, use something like [this](data/files/find_terminal_size.py):\n\n```py\n#!/usr/bin/python\n\"\"\"Based on https://stackoverflow.com/a/566752\"\"\"\n\nimport sys\nimport os\n\nfrom fcntl import ioctl\nfrom termios import TIOCGWINSZ\nfrom struct import unpack\n\n\ndef get_terminal_size():\n    \"\"\"Find the size of the terminal\"\"\"\n    def ioctl_gwinsz(fdsc):\n        \"\"\"…\"\"\"\n        try:\n            packed = ioctl(fdsc, TIOCGWINSZ, bytes(4))\n            rowcol = unpack('hh', packed)\n        except OSError:\n            # Hopefully, this is an\n            #     OSError: [Errno 25] Inappropriate ioctl for device\n            return\n        return rowcol\n    rowcol = ioctl_gwinsz(sys.stdin.fileno()) \\\n        or ioctl_gwinsz(sys.stdout.fileno()) \\\n        or ioctl_gwinsz(sys.stderr.fileno())\n    if rowcol is None:\n        try:\n            with open(os.ctermid(), 'r') as fptr:\n                rowcol = ioctl_gwinsz(fptr.fileno())\n        except OSError:\n            pass\n    if rowcol is None:\n        rowcol = (\n            os.environ.get('LINES', 25),\n            os.environ.get('COLUMNS', 80)\n        )\n    return map(int, rowcol)\n\nif __name__ == '__main__':\n    (LINES, COLUMNS) = get_terminal_size()\n    # Similar to the output from resize(1)\n    print('COLUMNS={}; export COLUMNS;'.format(COLUMNS))\n    print('LINES={}; export LINES;'.format(LINES))\n\n# eof\n```\n"
+		},
+		{
+			"post_id": 5,
+			"title": "[BOFH] Editing single iptables rules",
+			"date_published": 1458829091.139,
+			"body": "```sh\n$ sudo iptables-save > iptables.txt     # dump the current rules\n$ ${EDITOR} iptables.txt                # edit/remove relevant line(s)\n$ sudo iptables-restore < iptables.txt  # apply the updated rules list\n```\n"
+		},
+		{
+			"post_id": 4,
+			"title": "Want to learn",
+			"date_published": 1458824899.77,
+			"body": "1. Good use-case for Namecoin `poe/` record.\n2. How to see which protocol and cipher suite Chromium v50+ uses:\n    * In versions older than v50 Chromium would tell that the connection was encrypted using a modern/obsolete cipher suite, and then go on to show the TLS protocol and exact cipher suite.\n    * In v50+ we're just dumped into the frakking debugging console and shown no further info.  😒"
+		},
+		{
+			"post_id": 3,
+			"title": "Frequently asked questions",
+			"date_published": 1458824767.328,
+			"body": "None yet, but feel free to [drop me a line](/mail.zeronetwork.bit/?to=ks)."
+		},
+		{
+			"post_id": 2,
+			"title": "Colophon",
+			"date_published": 1458824732.432,
+			"body": "**Title**\n&nbsp;&nbsp;&nbsp;&nbsp;Today I Learned\n\n**Publisher**\n&nbsp;&nbsp;&nbsp;&nbsp;[id/kas](/itskas.bit/)\n\n**Editor**\n&nbsp;&nbsp;&nbsp;&nbsp;Idem\n\n**Language**\n&nbsp;&nbsp;&nbsp;&nbsp;English\n\n**Price**\n&nbsp;&nbsp;&nbsp;&nbsp;Gratis\n\n**URL**\n&nbsp;&nbsp;&nbsp;&nbsp;[todayilearned.bit](/todayilearned.bit/)\n\n**Character set**\n&nbsp;&nbsp;&nbsp;&nbsp;UTF-8\n\n**License**\n&nbsp;&nbsp;&nbsp;&nbsp;[CC BY-SA 4.0 🡕](https://creativecommons.org/licenses/by-sa/4.0/ \"Creative Commons Attribution-ShareAlike 4.0 International\")"
+		},
+		{
+			"post_id": 1,
+			"title": "Table of contents",
+			"date_published": 1458822896,
+			"body": "* [FAQ](?Post:3 \"Published on 2016-03-24 at 13:06 UTC\")\n* [Colophon](?Post:2 \"Published on 2016-03-24 at 13:06 UTC\")\n\n### BOFH\n* [Edit single iptables rules](?Post:5 \"Published on 2016-03-24 at 14:18 UTC\")\n* [IPv6 privacy extensions and systemd-networkd](?Post:18 \"Published on 2016-09-02 at 14:41 UTC\")\n* [Taming the log of PyBitmessage](?Post:9 \"Published on 2016-03-26 at 14:32 UTC\")\n\n### Cryptocurrency\n* [Mitigating Namecoin's 520 bytes limitation](?Post:8 \"Published on 2016-03-25 at 10:50 UTC\")\n\n### Life\n* [The origin of monsters](?Post:7 \"Published on 2016-03-24 at 15:01 UTC\")\n\n### Miscellaneous\n* [Creating a vanity .onion address](?Post:10 \"Published on 2016-03-28 at 19:33 UTC\")\n* [Easily confused glyphs](?Post:14 \"Published on 2016-05-18 at 08:02 UTC\")\n* [Plant nutrient deficiency chart](?Post:16 \"Published on 2016-05-23 at 12:36 UTC\")\n\n### Python\n* [Anaconda cleanup](?Post:13 \"Published on 2016-04-29 at 16:12 UTC\")\n* [Find the size of the terminal](?Post:6 \"Published on 2016-03-24 at 14:36 UTC\")\n* [Leap second poppycock](?Post:20 \"Published on 2016-12-31 at 12:45 UTC\")\n\n* [Not everything is an object](?Post:19 \"Published on 2016-11-02 at 22:03 UTC\")\n\n### Security\n* [Enabling HSTS on Caddy](?Post:15 \"Published on 2016-05-22 at 10:02 UTC\")\n* [Generating new Diffie-Hellman groups](?Post:12 \"Published on 2016-04-12 at 15:50 UTC\")\n* [TLS Interposer and Zeronet](?Post:11 \"Published on 2016-04-09 at 13:03 UTC\")\n* [Zeronet behind Caddy with TLS](?Post:17 \"Published on 2016-08-31 at 08:12 UTC\")\n"
+		}
+	]
+}

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Hello wasm-pack!</title>
+    <style>
+      body {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+      .slidecontainer {
+        float: right;
+      }
+      .widget-button {
+        height: 35px;
+      }
+    </style>
+    <script type="module">
+      import init, { Universe, wasm_memory } from "./wasm_game_of_life_universe.js";
+
+      const CELL_SIZE = 4; // px
+      const GRID_COLOR = "#CCCCCC";
+      const DEAD_COLOR = "#FFFFFF";
+      const ALIVE_COLOR = "#000000";
+
+      let exit = true;
+      let delay = 0;
+
+      let mousedown = false;
+      var lastcell = { row: null, col: null };
+
+      let width = 128;
+      let height = 108;
+      let universe;
+
+      const canvas = document.getElementById("game-of-life-canvas");
+      canvas.height = (CELL_SIZE + 1) * height + 1;
+      canvas.width = (CELL_SIZE + 1) * width + 1;
+
+      const ctx = canvas.getContext('2d');
+
+      async function run() {
+
+          await init();
+          universe = Universe.new(width, height);
+
+          drawGrid();
+          drawCells();
+
+          lastcell = { row: 11, col: 11 };
+          universe.toggle(lastcell.row, lastcell.col);
+          lastcell = { row: 13, col: 13 };
+          universe.toggle(lastcell.row, lastcell.col);
+          lastcell = { row: 10, col: 12 };
+          universe.toggle(lastcell.row, lastcell.col);
+          lastcell = { row: 10, col: 13 };
+          universe.toggle(lastcell.row, lastcell.col);
+          lastcell = { row: 10, col: 14 };
+          universe.toggle(lastcell.row, lastcell.col);
+          lastcell = { row: 14, col: 10 };
+          universe.toggle(lastcell.row, lastcell.col);
+          lastcell = { row: 13, col: 10 };
+          universe.toggle(lastcell.row, lastcell.col);
+          lastcell = { row: 12, col: 10 };
+          universe.toggle(lastcell.row, lastcell.col);
+          lastcell = { row: 14, col: 11 };
+          universe.toggle(lastcell.row, lastcell.col);
+          lastcell = { row: 14, col: 12 };
+          universe.toggle(lastcell.row, lastcell.col);
+          lastcell = { row: 11, col: 14 };
+          universe.toggle(lastcell.row, lastcell.col);
+          lastcell = { row: 12, col: 14 };
+          universe.toggle(lastcell.row, lastcell.col);
+          drawGrid();
+          drawCells();
+
+      }
+
+      document.onmousedown = function() { 
+          mousedown = true;
+      };
+      document.onmouseup = function() { 
+          mousedown = false;
+      };
+
+      canvas.addEventListener("mousedown", function (e) {
+          toggleCell(e);
+      }, false);
+      canvas.addEventListener("mousemove", function (e) {
+          let thiscell = getCell(e);
+          if (mousedown && (lastcell.row != thiscell.row || lastcell.col != thiscell.col)) {
+              toggleCell(e);
+          }
+      }, false);
+      canvas.addEventListener("mouseenter", function (e) {
+          if (mousedown) {
+              toggleCell(e);
+          }
+      }, false);
+
+      const random_button = document.getElementById("random-button");
+      random_button.onclick = function() { 
+          universe = Universe.new_random(width, height); 
+          drawGrid();
+          drawCells();
+      };
+
+      const clear_button = document.getElementById("clear-button");
+      clear_button.onclick = function() { 
+          universe = Universe.new(width, height); 
+          drawGrid();
+          drawCells();
+      };
+
+      const startstop_button = document.getElementById("startstop-button");
+      startstop_button.onclick = function() {
+          startstop();
+      };
+
+      const delay_slider = document.getElementById("delay-slider");
+      const delay_value = document.getElementById("delay-value");
+      delay_value.innerHTML = `${Math.round(delay_slider.value / 100) / 10}s`;
+
+      delay_slider.oninput = function() {
+          delay_value.innerHTML = `${Math.round(this.value / 100) / 10}s`;
+          delay = this.value;
+      }
+
+      const width_slider = document.getElementById("width-slider");
+      const width_value = document.getElementById("width-value");
+      width_value.innerHTML = `${width_slider.value}px`;
+
+      width_slider.oninput = function() {
+          width_value.innerHTML = `${this.value}px`;
+          width = parseInt(this.value);
+
+          universe.resize(width, height);
+          canvas.width = (CELL_SIZE + 1) * width + 1;
+
+          drawGrid();
+          drawCells();
+      }
+
+      const height_slider = document.getElementById("height-slider");
+      const height_value = document.getElementById("height-value");
+      height_value.innerHTML = `${height_slider.value}px`;
+
+      height_slider.oninput = function() {
+          height_value.innerHTML = `${this.value}px`;
+          height = parseInt(this.value);
+
+          universe.resize(width, height);
+          canvas.height = (CELL_SIZE + 1) * height + 1;
+
+          drawGrid();
+          drawCells();
+      }
+
+      const getCell = (e) => {
+          let x = e.clientX - canvas.offsetLeft;
+          let y = e.clientY - canvas.offsetTop;
+
+          let col = Math.floor((x - (CELL_SIZE + 1)) / (CELL_SIZE + 1));
+          let row = Math.floor((y - (CELL_SIZE + 1)) / (CELL_SIZE + 1));
+
+          return {row: row, col: col};
+      }
+
+      const toggleCell = (e) => {
+          lastcell = getCell(e);
+          universe.toggle(lastcell.row, lastcell.col);
+
+          drawGrid();
+          drawCells();
+      }
+
+      const drawGrid = () => {
+          ctx.beginPath();
+          ctx.strokeStyle = GRID_COLOR;
+
+          // Vertical lines.
+          for (let i = 0; i <= width; i++) {
+              ctx.moveTo(i * (CELL_SIZE + 1) + 1, 0);
+              ctx.lineTo(i * (CELL_SIZE + 1) + 1, (CELL_SIZE + 1) * height + 1);
+          }
+
+          // Horizontal lines.
+          for (let j = 0; j <= height; j++) {
+              ctx.moveTo(0,                           j * (CELL_SIZE + 1) + 1);
+              ctx.lineTo((CELL_SIZE + 1) * width + 1, j * (CELL_SIZE + 1) + 1);
+          }
+
+          ctx.stroke();
+      };
+
+      const getIndex = (row, column) => {
+          return row * width + column;
+      };
+
+      const bitIsSet = (n, arr) => {
+          const byte = Math.floor(n / 8);
+          const mask = 1 << (n % 8);
+          return (arr[byte] & mask) === mask;
+      };
+
+      const drawCells = () => {
+          const cellsPtr = universe.cells();
+          const cells = new Uint8Array(wasm_memory().buffer, cellsPtr, width * height / 8);
+
+          ctx.beginPath();
+
+          for (let row = 0; row < height; row++) {
+              for (let col = 0; col < width; col++) {
+                  const idx = getIndex(row, col);
+
+                  ctx.fillStyle = bitIsSet(idx, cells)
+                      ? ALIVE_COLOR
+                      : DEAD_COLOR;
+                  
+                  ctx.fillRect(
+                      col * (CELL_SIZE + 1) + 1,
+                      row * (CELL_SIZE + 1) + 1,
+                      CELL_SIZE,
+                      CELL_SIZE
+                  );
+              }
+          }
+
+          ctx.stroke();
+      };
+
+      const renderLoop = () => {
+          universe.tick();
+
+          drawGrid();
+          drawCells();
+
+          if (!exit) {
+              setTimeout(requestAnimationFrame, delay, renderLoop);
+          }
+      };
+
+      const startstop = () => {
+          if (exit == true) {
+              exit = false;
+
+              startstop_button.innerHTML = "Stop";
+              
+              requestAnimationFrame(renderLoop); 
+          } else {
+              exit = true;
+              startstop_button.innerHTML = "Start";
+          }
+      }
+
+      run();
+    </script>
+  </head>
+  <body>
+    <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
+    <div class="widget-panel">
+      <button id="startstop-button" type="button" class="widget-button">Start</button>
+      <button id="random-button" type="button" class="widget-button">Random</button>
+      <button id="clear-button" type="button" class="widget-button">Clear</button>
+      <div id="delay-container" class="slidecontainer">
+        <label for="delay-slider">Delay</label>
+        <input id="delay-slider" type="range" min="0" max="3000" value="10" class="slider"/>
+        <br/>
+        <span id="delay-value"></span>
+      </div>
+      <div id="width-container" class="slidecontainer">
+        <label for="width-slider">Width</label>
+        <input id="width-slider" type="range" min="1" max="256" value="64" class="slider"/>
+        <br/>
+        <span id="width-value"></span>
+      </div>
+      <div id="height-container" class="slidecontainer">
+        <label for="height-slider">Height</label>
+        <input id="height-slider" type="range" min="1" max="256" value="64" class="slider"/>
+        <br/>
+        <span id="height-value"></span>
+      </div>
+    </div>
+    <canvas id="game-of-life-canvas"></canvas>
+    <a class="conway" href="https://codeberg.org/jelemux/wasm-game-of-life">
+      Source Code: https://codeberg.org/jelemux/wasm-game-of-life
+    </a>
+  </body>
+</html>

@@ -1,0 +1,124 @@
+
+<!DOCTYPE html>
+
+<html>
+<head>
+ <title>New ZeroNet site!</title>
+ <meta charset="utf-8">
+ <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+ <base href="" target="_top" id="base">
+ <script>base.href = document.location.href.replace("/media", "").replace("index.html", "").replace(/[&?]wrapper=False/, "").replace(/[&?]wrapper_nonce=[A-Za-z0-9]+/, "")</script>
+
+ <style>
+
+body { background-color: white; }
+
+#problems td
+{
+  font-size:1em;
+  border:1px solid #eee;
+  padding:3px 7px 2px 7px;
+}
+#problems b { color: #3F51B5; }  
+#problems tr { background-color: #F9FAFD; }
+</style>
+ </head>
+
+<body>
+
+<center>
+	<table width="85%"> 
+		<tbody>
+			<tr align="center" class="hd" valign="top">
+				<th><a href="./">Home</a></th>
+				<th><a href="./discuss.html">Discuss</a></th>
+				<th><a href="./problem.html">Problem</a></th>
+				<th><a href="./submission.html">Submission</a></th>
+				<th><a href="#Select+user" id="select_user" onclick='return page.selectUser()'>Login</a></th>
+			</tr>
+		</tbody>
+	</table>
+</center>
+
+<center>
+<a href="./create.html" id="create">Create New Problem</a>
+</center>
+<table id="problems" align="center">
+
+</table>
+
+<script type="text/javascript" src="js/ZeroFrame.js"></script>
+
+<script>
+class ZeroChat extends ZeroFrame {
+
+	
+    loadProblems () {
+        this.cmd("dbQuery", ["SELECT * FROM problem"], (problems) => {
+			var dictAC={};	
+			for (var i=0; i < problems.length; i++) {
+				dictAC[problems[i].pub]=0;
+			}
+			this.cmd("dbQuery", ["SELECT * FROM submission"], (submissions) => {
+				document.getElementById("problems").innerHTML = ""  // Always start with empty messages
+				
+				for (var i=0; i < submissions.length; i++) {
+					if(submissions[i].result=="Accepted")
+						dictAC[submissions[i].pub]++;
+				}
+				problems.sort(function(a,b){
+					return dictAC[b.pub]-dictAC[a.pub];
+				});
+				for (var i=0; i < problems.length; i++) {
+					this.addProblem(problems[i].pub, problems[i].question)
+				}
+			})
+        })
+    }
+    first(s,c){
+		var ans="";
+		if(s.length>=c){
+			for(var i=0;i<c;i++){
+				ans+=s[i];
+			}
+		}else{
+			ans=s;
+			for(var i=s.length;i<c;i++){
+				ans+=" ";
+			}
+		}
+		return ans;
+	}
+    selectUser () {
+        this.cmd("certSelect", {accepted_domains: ["zeroid.bit"]})
+        return false
+    }
+    onRequest (cmd, message) {
+        if (cmd == "setSiteInfo") {
+            if (message.params.cert_user_id)
+                document.getElementById("select_user").innerHTML = message.params.cert_user_id
+            else
+                document.getElementById("select_user").innerHTML = "Login"
+            this.site_info = message.params  // Save site info data to allow access it later
+        }
+    }	
+    addProblem (pub, problem) {
+        var problem_escaped = problem.replace(/</g, "&lt;").replace(/>/g, "&gt;") 
+        document.getElementById("problems").innerHTML += "<tr><td><center><b>" + "<a href=\"./submit.html?pub="+pub+"\">" + this.first(pub,8)+"</a>" + "</b> </center></td><td> <center>" + this.first(problem_escaped,128) + "</center></td><tr>"
+    }
+
+    onOpenWebsocket () {
+        this.cmd("siteInfo", {}, (site_info) => {
+            if (site_info.cert_user_id)
+                document.getElementById("select_user").innerText = site_info.cert_user_id
+            this.site_info = site_info
+        })		
+    }
+}
+
+page = new ZeroChat()
+page.loadProblems()
+</script>
+</body>
+
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>consistency for messages for special-case in diffstat - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/2f8595e786809234d66d8abca519e39f6b1d701a.html">2f8595e786809234d66d8abca519e39f6b1d701a</a>
+<b>parent</b> <a href="../commit/f63edd593dfcaa84b30958d845fa85eaffc664b0.html">f63edd593dfcaa84b30958d845fa85eaffc664b0</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Sat May  7 14:29:39 +0200
+
+consistency for messages for special-case in diffstat
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">stagit.c</a></td><td> | </td><td class="num">8</td><td><span class="i">++++</span><span class="d">----</span></td></tr>
+</table>1 file changed, 4 insertions(+), 4 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/stagit.c.html">stagit.c</a> b/<a href="../file/stagit.c.html">stagit.c</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -125,7 +125,7 @@ commitinfo_getstats(struct commitinfo *ci)
+</a> 
+ 		delta = git_patch_get_delta(patch);
+ 
+<a href="#h0-0-3" id="h0-0-3" class="d">-		/* check binary data */
+</a><a href="#h0-0-4" id="h0-0-4" class="i">+		/* skip stats for binary data */
+</a> 		if (delta-&gt;flags &amp; GIT_DIFF_FLAG_BINARY)
+ 			continue;
+ 
+<a href="#h0-1" id="h0-1" class="h">@@ -453,7 +453,7 @@ printshowfile(FILE *fp, struct commitinfo *ci)
+</a> 	    ci-&gt;ndeltas   &gt; 1000   ||
+ 	    ci-&gt;addcount  &gt; 100000 ||
+ 	    ci-&gt;delcount  &gt; 100000) {
+<a href="#h0-1-3" id="h0-1-3" class="d">-		fprintf(fp, &quot;(diff is too large, output suppressed)&quot;);
+</a><a href="#h0-1-4" id="h0-1-4" class="i">+		fputs(&quot;Diff is too large, output suppressed.\n&quot;, fp);
+</a> 		return;
+ 	}
+ 
+<a href="#h0-2" id="h0-2" class="h">@@ -504,7 +504,7 @@ printshowfile(FILE *fp, struct commitinfo *ci)
+</a> 
+ 		/* check binary data */
+ 		if (delta-&gt;flags &amp; GIT_DIFF_FLAG_BINARY) {
+<a href="#h0-2-3" id="h0-2-3" class="d">-			fputs(&quot;Binary files differ\n&quot;, fp);
+</a><a href="#h0-2-4" id="h0-2-4" class="i">+			fputs(&quot;Binary files differ.\n&quot;, fp);
+</a> 			continue;
+ 		}
+ 
+<a href="#h0-3" id="h0-3" class="h">@@ -733,7 +733,7 @@ writeblob(git_object *obj, const char *fpath, const char *filename, git_off_t fi
+</a> 	fputs(&quot;&lt;/p&gt;&lt;hr/&gt;&quot;, fp);
+ 
+ 	if (git_blob_is_binary((git_blob *)obj)) {
+<a href="#h0-3-3" id="h0-3-3" class="d">-		fputs(&quot;&lt;p&gt;Binary file&lt;/p&gt;\n&quot;, fp);
+</a><a href="#h0-3-4" id="h0-3-4" class="i">+		fputs(&quot;&lt;p&gt;Binary file.&lt;/p&gt;\n&quot;, fp);
+</a> 	} else {
+ 		lc = writeblobhtml(fp, (git_blob *)obj);
+ 		if (ferror(fp))
+</pre>
+</div>
+</body>
+</html>

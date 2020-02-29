@@ -1,0 +1,74 @@
+{
+	"posts": [
+		{
+			"id": "9b2dcc3a-cfd4-4762-9778-f6ba48bc1e51",
+			"directory": "users/13E1NfoEM9eYfxk3mZQTLW5qYBekTp5W7v",
+			"uri": "pol",
+			"thread": "a1e4f73f-1350-4ca6-9923-314f99f90c35",
+			"body": ">>2d140da4-342e-44e0-b555-de33b88dbacd\n\nStill can't get the tor hidden service to work running Artix on a fresh install. Following this guide. \n\nI had it working on my last system, but I wanted to get rid of systemd.\n\nTor doesn't seem to be creating an auth cookie at all, nor can I get the daemon to load on boot.\n\nI get permission errors if I try to start the hidden service manually. If I'm doing this right, I'm new to OpenRC. I double-checked, and my user is in the tor group.\n\n~]$ /etc/init.d/tor start\nbash: /etc/init.d/tor: Permission denied\n\nand\n\nrc-service tor start\n * rc-service: Permission denied\n\n\nZeronet throws this error:\n\nTorManager Disabling Tor, because error while accessing Tor proxy at port 127.0.0.1:9050: No connection\n\n\nWhereas tor throws me a bunch of random permission errors, depending on what I'm trying to do.\n\nI also can't access zeronet from the actual tor browser itself either, but its working in other browsers. Yeah, I remembered to whitelist the zeronet port inside the tor browser.\n\nAny ideas? I've been digging through forum posts and scratching my head trying random things for a whole day now... This guide works great on my arch and debian boxes, maybe its something to do with me being a retard who doesn't know how to use OpenRC yet?\n\n",
+			"time": 1565252282795,
+			"files": "[]",
+			"last_edited": 1565253384285
+		},
+		{
+			"id": "f14b42f3-b35b-4254-8f0d-fc85f6524481",
+			"directory": "users/13E1NfoEM9eYfxk3mZQTLW5qYBekTp5W7v",
+			"uri": "pol",
+			"thread": "a1e4f73f-1350-4ca6-9923-314f99f90c35",
+			"body": ">>cd563e74-dc72-49df-b715-7f7be1e0f96b\nHonestly I've tried so many things, that I can't remember if I tried a manual install or not. I'll try again. I know that I tried the version in the arch repos, and both versions in the aur.\n\nThanks, I didn't think to check Zerotalk!",
+			"time": 1565253598018,
+			"files": "[]"
+		},
+		{
+			"id": "5a3b2b35-e7a9-4e16-9064-a1618349c87e",
+			"directory": "users/13E1NfoEM9eYfxk3mZQTLW5qYBekTp5W7v",
+			"uri": "pol",
+			"thread": "a1e4f73f-1350-4ca6-9923-314f99f90c35",
+			"body": ">>c098df4c-b258-4372-b8a1-50c6b890c676\nThe logs only show me that zeronet can't access any tor controller. \n\n>>7be604e9-a8fa-4754-baa5-fe9bc9e03d4e\nYep I added it to the proxy whitelist in the tor browser. Firefox doesn't need it to function.\n\n>try this:\n>sudo /etc/init.d/tor start\n>sudo rc-service tor start\n>sudo systemctl start tor\n>sudo systemctl start debian-tor\n\nAlready tried all those commands except the systemd ones, because I'm not running systemd. The first two throw permissions errors.\n\nAnd yeah I did all the /etc/tor/torrc edits (uncomments, and added arguments)\n\nJust installed it manually straight from the tor website, since my last post.. same thing.. Tried AUR's copy of tor again as well.\n\nZeronet itself is working fine.. The problem is I can't get the tor hidden service to run, nor can zeronet seem to communicate with tor while running the browser manually. ",
+			"time": 1565255853547,
+			"files": "[]",
+			"last_edited": 1565255898819
+		},
+		{
+			"id": "5606dbca-3255-489a-a8cc-6bb188f5c00a",
+			"directory": "users/13E1NfoEM9eYfxk3mZQTLW5qYBekTp5W7v",
+			"uri": "pol",
+			"thread": "a1e4f73f-1350-4ca6-9923-314f99f90c35",
+			"body": ">>5a3b2b35-e7a9-4e16-9064-a1618349c87e\n\nThe only thread on zerotalk about my error\n\n\"TorManager Tor controller connect error: IOError: [Errno 13] Permission denied: '/var/lib/tor/control_auth_cookie' in TorManager.py line 200\"\n\nTorManager Disabling Tor, because error while accessing Tor proxy at port 127.0.0.1:9050: No connection\n\n\nhad no solution :( just monkies saying that they rebooted one day and it magically worked.\n\nhttp://127.0.0.1:43110/Talk.ZeroNetwork.bit/?Topic:1546815090_1L4dZcDF2maSKHDy788yhxpYnBWnXadUtS\n^ thread\n\n\nFor whatever reason though, on this latest re-install of tor, it no longer throws the cookie auth failure, only this:\n\nTorManager Disabling Tor, because error while accessing Tor proxy at port 127.0.0.1:9050: No connection\n\nI already spent the last day going through every single thread that comes up on duck, about the tor hidden service not running, or the tor hidden service throwing permission errors. No solutions so far :(\n",
+			"time": 1565257160404,
+			"files": "[]",
+			"last_edited": 1565259975762
+		},
+		{
+			"id": "cd57f6de-7712-469e-9314-9524c384fba3",
+			"directory": "users/13E1NfoEM9eYfxk3mZQTLW5qYBekTp5W7v",
+			"uri": "pol",
+			"thread": "a1e4f73f-1350-4ca6-9923-314f99f90c35",
+			"body": ">>96ccefdf-8d1e-4e2c-90e4-77da54b187f3\nSorry, it is set to directory /var/lib/tor;\n\nI was lazy and copy/pasted from one of the posts on the zerotalk thread.. WHOOPS\n\nWhen I installed the Tor package, the /var/lib/tor directory did not have read permissions.\n\nI already chmod'ed group to read permissions (chmod 750) but it made no difference..\n\nsudo rc-service tor start\n * rc-service: Permission denied\n\n/etc/init.d/tor has read+write for owner, read access for group, and read access for other.",
+			"time": 1565260195459,
+			"files": "[]",
+			"last_edited": 1565260291964
+		},
+		{
+			"id": "b2e32952-74dd-42d0-8a54-d5c503549f1d",
+			"directory": "users/13E1NfoEM9eYfxk3mZQTLW5qYBekTp5W7v",
+			"uri": "pol",
+			"thread": "a1e4f73f-1350-4ca6-9923-314f99f90c35",
+			"body": ">>cd57f6de-7712-469e-9314-9524c384fba3\nPROBLEM SOLVED\n\nIf anyone has a similar issue to me, with tor hidden service permissions, all you need to do is run\n\nsudo chmod +x /etc/init.d/tor\n\nI have no idea why I never checked to see if it had execute permissions. I feel like a retard now :D",
+			"time": 1565260826641,
+			"files": "[]"
+		},
+		{
+			"id": "6a48f281-8049-479c-bcda-6a29414d0eb0",
+			"directory": "users/13E1NfoEM9eYfxk3mZQTLW5qYBekTp5W7v",
+			"uri": "pol",
+			"thread": "a1e4f73f-1350-4ca6-9923-314f99f90c35",
+			"body": ">>327574cc-74f6-4e27-a292-11da3a0de14f\n\nI'm currently using the version of Tor on AUR. I tried the pacman one too.\n\nOK, so its half-solved. I can execute the tor service from a terminal with \"sudo rc-service tor start\" but it does not initialize on boot. \n\nI've only been using OpenRC for like, two days.. Is there anything I need to do for it to load the service on boot, other than have an init script in init.d? \n\nEither way.. At least I can post from tor now. \n\nEDIT FOR OPENRC USERS:\n\"rc-update add tor\"\n\npacman/yaourt don't automatically add the daemon to openrc's init like it would with systemd. easy fix.",
+			"time": 1565261483212,
+			"files": "[]",
+			"last_edited": 1565262295536
+		}
+	],
+	"boards": [],
+	"modlogs": []
+}

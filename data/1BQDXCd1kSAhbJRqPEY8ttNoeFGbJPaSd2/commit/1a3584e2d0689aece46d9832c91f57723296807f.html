@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>cache support (-c option) - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/1a3584e2d0689aece46d9832c91f57723296807f.html">1a3584e2d0689aece46d9832c91f57723296807f</a>
+<b>parent</b> <a href="../commit/ede93fa7ee0af8e6e858981e1a7e5057646487ce.html">ede93fa7ee0af8e6e858981e1a7e5057646487ce</a>
+<b>Author:</b> Hiltjo Posthuma &lt;<a href="mailto:hiltjo@codemadness.org">hiltjo@codemadness.org</a>&gt;
+<b>Date:</b>   Sun May  1 17:54:14 +0200
+
+cache support (-c option)
+
+&quot;Optionally the -c cachefile option can be used to cache the entries of
+the log page up to the point of the last commit. The cachefile will store
+the last commit id and the entries in the HTML table.&quot;
+
+this caches the diffstat and commits, it is an expensive operation (twss).
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">stagit.1</a></td><td> | </td><td class="num">20</td><td><span class="i">+++++++++++++++++</span><span class="d">---</span></td></tr>
+<tr><td><a href="#h1">stagit.c</a></td><td> | </td><td class="num">151</td><td><span class="i">+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++</span><span class="d">--------------------</span></td></tr>
+</table>2 files changed, 130 insertions(+), 41 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/stagit.1.html">stagit.1</a> b/<a href="../file/stagit.1.html">stagit.1</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -1,4 +1,4 @@
+</a><a href="#h0-0-0" id="h0-0-0" class="d">-.Dd December 26, 2015
+</a><a href="#h0-0-1" id="h0-0-1" class="i">+.Dd May 1, 2016
+</a> .Dt STAGIT 1
+ .Os
+ .Sh NAME
+<a href="#h0-1" id="h0-1" class="h">@@ -6,12 +6,26 @@
+</a> .Nd static git page generator
+ .Sh SYNOPSIS
+ .Nm
+<a href="#h0-1-3" id="h0-1-3" class="d">-.Op Ar repodir
+</a><a href="#h0-1-4" id="h0-1-4" class="i">+.Op Fl c Ar cachefile
+</a><a href="#h0-1-5" id="h0-1-5" class="i">+.Ar repodir
+</a> .Sh DESCRIPTION
+ .Nm
+ writes HTML pages for the repository
+ .Ar repodir
+<a href="#h0-1-10" id="h0-1-10" class="d">-to the current directory. The following files will be written:
+</a><a href="#h0-1-11" id="h0-1-11" class="i">+to the current directory.
+</a><a href="#h0-1-12" id="h0-1-12" class="i">+.Pp
+</a><a href="#h0-1-13" id="h0-1-13" class="i">+Optionally the
+</a><a href="#h0-1-14" id="h0-1-14" class="i">+.Fl c Ar cachefile
+</a><a href="#h0-1-15" id="h0-1-15" class="i">+option can be used to cache the entries of the log page up to the point of
+</a><a href="#h0-1-16" id="h0-1-16" class="i">+the last commit. The
+</a><a href="#h0-1-17" id="h0-1-17" class="i">+.Ar cachefile
+</a><a href="#h0-1-18" id="h0-1-18" class="i">+will store the last commit id and the entries in the HTML table. It is up
+</a><a href="#h0-1-19" id="h0-1-19" class="i">+to the user to make sure the state of the
+</a><a href="#h0-1-20" id="h0-1-20" class="i">+.Ar cachefile
+</a><a href="#h0-1-21" id="h0-1-21" class="i">+is in sync with the history of the repository, for example a
+</a><a href="#h0-1-22" id="h0-1-22" class="i">+git push \-\-force can screw this up.
+</a><a href="#h0-1-23" id="h0-1-23" class="i">+.Pp
+</a><a href="#h0-1-24" id="h0-1-24" class="i">+The following files will be written:
+</a> .Bl -tag -width Ds
+ .It atom.xml
+ Atom XML feed
+<b>diff --git a/<a id="h1" href="../file/stagit.c.html">stagit.c</a> b/<a href="../file/stagit.c.html">stagit.c</a></b>
+<a href="#h1-0" id="h1-0" class="h">@@ -58,6 +58,12 @@ static char description[255];
+</a> static char cloneurl[1024];
+ static int haslicense, hasreadme, hassubmodules;
+ 
+<a href="#h1-0-3" id="h1-0-3" class="i">+/* cache */
+</a><a href="#h1-0-4" id="h1-0-4" class="i">+static git_oid lastoid;
+</a><a href="#h1-0-5" id="h1-0-5" class="i">+static char lastoidstr[GIT_OID_HEXSZ + 2]; /* id + newline + nul byte */
+</a><a href="#h1-0-6" id="h1-0-6" class="i">+static FILE *rcachefp, *wcachefp;
+</a><a href="#h1-0-7" id="h1-0-7" class="i">+static const char *cachefile;
+</a><a href="#h1-0-8" id="h1-0-8" class="i">+
+</a> void
+ deltainfo_free(struct deltainfo *di)
+ {
+<a href="#h1-1" id="h1-1" class="h">@@ -530,13 +536,43 @@ printshowfile(FILE *fp, struct commitinfo *ci)
+</a> 	}
+ }
+ 
+<a href="#h1-1-3" id="h1-1-3" class="i">+void
+</a><a href="#h1-1-4" id="h1-1-4" class="i">+writelogline(FILE *fp, struct commitinfo *ci)
+</a><a href="#h1-1-5" id="h1-1-5" class="i">+{
+</a><a href="#h1-1-6" id="h1-1-6" class="i">+	size_t len;
+</a><a href="#h1-1-7" id="h1-1-7" class="i">+
+</a><a href="#h1-1-8" id="h1-1-8" class="i">+	fputs(&quot;&lt;tr&gt;&lt;td&gt;&quot;, fp);
+</a><a href="#h1-1-9" id="h1-1-9" class="i">+	if (ci-&gt;author)
+</a><a href="#h1-1-10" id="h1-1-10" class="i">+		printtimeshort(fp, &amp;(ci-&gt;author-&gt;when));
+</a><a href="#h1-1-11" id="h1-1-11" class="i">+	fputs(&quot;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+</a><a href="#h1-1-12" id="h1-1-12" class="i">+	if (ci-&gt;summary) {
+</a><a href="#h1-1-13" id="h1-1-13" class="i">+		fprintf(fp, &quot;&lt;a href=\&quot;%scommit/%s.html\&quot;&gt;&quot;, relpath, ci-&gt;oid);
+</a><a href="#h1-1-14" id="h1-1-14" class="i">+		if ((len = strlen(ci-&gt;summary)) &gt; summarylen) {
+</a><a href="#h1-1-15" id="h1-1-15" class="i">+			xmlencode(fp, ci-&gt;summary, summarylen - 1);
+</a><a href="#h1-1-16" id="h1-1-16" class="i">+			fputs(&quot;…&quot;, fp);
+</a><a href="#h1-1-17" id="h1-1-17" class="i">+		} else {
+</a><a href="#h1-1-18" id="h1-1-18" class="i">+			xmlencode(fp, ci-&gt;summary, len);
+</a><a href="#h1-1-19" id="h1-1-19" class="i">+		}
+</a><a href="#h1-1-20" id="h1-1-20" class="i">+		fputs(&quot;&lt;/a&gt;&quot;, fp);
+</a><a href="#h1-1-21" id="h1-1-21" class="i">+	}
+</a><a href="#h1-1-22" id="h1-1-22" class="i">+	fputs(&quot;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+</a><a href="#h1-1-23" id="h1-1-23" class="i">+	if (ci-&gt;author)
+</a><a href="#h1-1-24" id="h1-1-24" class="i">+		xmlencode(fp, ci-&gt;author-&gt;name, strlen(ci-&gt;author-&gt;name));
+</a><a href="#h1-1-25" id="h1-1-25" class="i">+	fputs(&quot;&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;&quot;, fp);
+</a><a href="#h1-1-26" id="h1-1-26" class="i">+	fprintf(fp, &quot;%zu&quot;, ci-&gt;filecount);
+</a><a href="#h1-1-27" id="h1-1-27" class="i">+	fputs(&quot;&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;&quot;, fp);
+</a><a href="#h1-1-28" id="h1-1-28" class="i">+	fprintf(fp, &quot;+%zu&quot;, ci-&gt;addcount);
+</a><a href="#h1-1-29" id="h1-1-29" class="i">+	fputs(&quot;&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;&quot;, fp);
+</a><a href="#h1-1-30" id="h1-1-30" class="i">+	fprintf(fp, &quot;-%zu&quot;, ci-&gt;delcount);
+</a><a href="#h1-1-31" id="h1-1-31" class="i">+	fputs(&quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;, fp);
+</a><a href="#h1-1-32" id="h1-1-32" class="i">+}
+</a><a href="#h1-1-33" id="h1-1-33" class="i">+
+</a> int
+ writelog(FILE *fp, const git_oid *oid)
+ {
+ 	struct commitinfo *ci;
+ 	git_revwalk *w = NULL;
+ 	git_oid id;
+<a href="#h1-1-40" id="h1-1-40" class="d">-	size_t len;
+</a> 	char path[PATH_MAX];
+ 	FILE *fpfile;
+ 	int r;
+<a href="#h1-2" id="h1-2" class="h">@@ -546,40 +582,17 @@ writelog(FILE *fp, const git_oid *oid)
+</a> 	git_revwalk_sorting(w, GIT_SORT_TIME);
+ 	git_revwalk_simplify_first_parent(w);
+ 
+<a href="#h1-2-3" id="h1-2-3" class="d">-	fputs(&quot;&lt;table id=\&quot;log\&quot;&gt;&lt;thead&gt;\n&lt;tr&gt;&lt;td&gt;Date&lt;/td&gt;&lt;td&gt;Commit message&lt;/td&gt;&quot;
+</a><a href="#h1-2-4" id="h1-2-4" class="d">-		  &quot;&lt;td&gt;Author&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;Files&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;+&lt;/td&gt;&quot;
+</a><a href="#h1-2-5" id="h1-2-5" class="d">-		  &quot;&lt;td class=\&quot;num\&quot;&gt;-&lt;/td&gt;&lt;/tr&gt;\n&lt;/thead&gt;&lt;tbody&gt;\n&quot;, fp);
+</a><a href="#h1-2-6" id="h1-2-6" class="d">-
+</a> 	while (!git_revwalk_next(&amp;id, w)) {
+ 		relpath = &quot;&quot;;
+ 
+<a href="#h1-2-10" id="h1-2-10" class="i">+		if (cachefile &amp;&amp; !memcmp(&amp;id, &amp;lastoid, sizeof(id)))
+</a><a href="#h1-2-11" id="h1-2-11" class="i">+			break;
+</a> 		if (!(ci = commitinfo_getbyoid(&amp;id)))
+ 			break;
+ 
+<a href="#h1-2-15" id="h1-2-15" class="d">-		fputs(&quot;&lt;tr&gt;&lt;td&gt;&quot;, fp);
+</a><a href="#h1-2-16" id="h1-2-16" class="d">-		if (ci-&gt;author)
+</a><a href="#h1-2-17" id="h1-2-17" class="d">-			printtimeshort(fp, &amp;(ci-&gt;author-&gt;when));
+</a><a href="#h1-2-18" id="h1-2-18" class="d">-		fputs(&quot;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+</a><a href="#h1-2-19" id="h1-2-19" class="d">-		if (ci-&gt;summary) {
+</a><a href="#h1-2-20" id="h1-2-20" class="d">-			fprintf(fp, &quot;&lt;a href=\&quot;%scommit/%s.html\&quot;&gt;&quot;, relpath, ci-&gt;oid);
+</a><a href="#h1-2-21" id="h1-2-21" class="d">-			if ((len = strlen(ci-&gt;summary)) &gt; summarylen) {
+</a><a href="#h1-2-22" id="h1-2-22" class="d">-				xmlencode(fp, ci-&gt;summary, summarylen - 1);
+</a><a href="#h1-2-23" id="h1-2-23" class="d">-				fputs(&quot;…&quot;, fp);
+</a><a href="#h1-2-24" id="h1-2-24" class="d">-			} else {
+</a><a href="#h1-2-25" id="h1-2-25" class="d">-				xmlencode(fp, ci-&gt;summary, len);
+</a><a href="#h1-2-26" id="h1-2-26" class="d">-			}
+</a><a href="#h1-2-27" id="h1-2-27" class="d">-			fputs(&quot;&lt;/a&gt;&quot;, fp);
+</a><a href="#h1-2-28" id="h1-2-28" class="d">-		}
+</a><a href="#h1-2-29" id="h1-2-29" class="d">-		fputs(&quot;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+</a><a href="#h1-2-30" id="h1-2-30" class="d">-		if (ci-&gt;author)
+</a><a href="#h1-2-31" id="h1-2-31" class="d">-			xmlencode(fp, ci-&gt;author-&gt;name, strlen(ci-&gt;author-&gt;name));
+</a><a href="#h1-2-32" id="h1-2-32" class="d">-		fputs(&quot;&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;&quot;, fp);
+</a><a href="#h1-2-33" id="h1-2-33" class="d">-		fprintf(fp, &quot;%zu&quot;, ci-&gt;filecount);
+</a><a href="#h1-2-34" id="h1-2-34" class="d">-		fputs(&quot;&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;&quot;, fp);
+</a><a href="#h1-2-35" id="h1-2-35" class="d">-		fprintf(fp, &quot;+%zu&quot;, ci-&gt;addcount);
+</a><a href="#h1-2-36" id="h1-2-36" class="d">-		fputs(&quot;&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;&quot;, fp);
+</a><a href="#h1-2-37" id="h1-2-37" class="d">-		fprintf(fp, &quot;-%zu&quot;, ci-&gt;delcount);
+</a><a href="#h1-2-38" id="h1-2-38" class="d">-		fputs(&quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;, fp);
+</a><a href="#h1-2-39" id="h1-2-39" class="i">+		writelogline(fp, ci);
+</a><a href="#h1-2-40" id="h1-2-40" class="i">+		if (cachefile)
+</a><a href="#h1-2-41" id="h1-2-41" class="i">+			writelogline(wcachefp, ci);
+</a> 
+ 		relpath = &quot;../&quot;;
+ 
+<a href="#h1-3" id="h1-3" class="h">@@ -599,8 +612,6 @@ writelog(FILE *fp, const git_oid *oid)
+</a> 		}
+ 		commitinfo_free(ci);
+ 	}
+<a href="#h1-3-3" id="h1-3-3" class="d">-	fputs(&quot;&lt;/tbody&gt;&lt;/table&gt;&quot;, fp);
+</a><a href="#h1-3-4" id="h1-3-4" class="d">-
+</a> 	git_revwalk_free(w);
+ 
+ 	relpath = &quot;&quot;;
+<a href="#h1-4" id="h1-4" class="h">@@ -1005,6 +1016,13 @@ joinpath(char *buf, size_t bufsiz, const char *path, const char *path2)
+</a> 			path, path[0] &amp;&amp; path[strlen(path) - 1] != &apos;/&apos; ? &quot;/&quot; : &quot;&quot;, path2);
+ }
+ 
+<a href="#h1-4-3" id="h1-4-3" class="i">+void
+</a><a href="#h1-4-4" id="h1-4-4" class="i">+usage(char *argv0)
+</a><a href="#h1-4-5" id="h1-4-5" class="i">+{
+</a><a href="#h1-4-6" id="h1-4-6" class="i">+	fprintf(stderr, &quot;%s [-c cachefile] repodir\n&quot;, argv0);
+</a><a href="#h1-4-7" id="h1-4-7" class="i">+	exit(1);
+</a><a href="#h1-4-8" id="h1-4-8" class="i">+}
+</a><a href="#h1-4-9" id="h1-4-9" class="i">+
+</a> int
+ main(int argc, char *argv[])
+ {
+<a href="#h1-5" id="h1-5" class="h">@@ -1013,12 +1031,23 @@ main(int argc, char *argv[])
+</a> 	const git_error *e = NULL;
+ 	FILE *fp, *fpread;
+ 	char path[PATH_MAX], repodirabs[PATH_MAX + 1], *p;
+<a href="#h1-5-3" id="h1-5-3" class="d">-
+</a><a href="#h1-5-4" id="h1-5-4" class="d">-	if (argc != 2) {
+</a><a href="#h1-5-5" id="h1-5-5" class="d">-		fprintf(stderr, &quot;%s &lt;repodir&gt;\n&quot;, argv[0]);
+</a><a href="#h1-5-6" id="h1-5-6" class="d">-		return 1;
+</a><a href="#h1-5-7" id="h1-5-7" class="i">+	char tmppath[64] = &quot;cache.XXXXXXXXXXXX&quot;, buf[BUFSIZ];
+</a><a href="#h1-5-8" id="h1-5-8" class="i">+	size_t n;
+</a><a href="#h1-5-9" id="h1-5-9" class="i">+	int i, fd;
+</a><a href="#h1-5-10" id="h1-5-10" class="i">+
+</a><a href="#h1-5-11" id="h1-5-11" class="i">+	for (i = 1; i &lt; argc; i++) {
+</a><a href="#h1-5-12" id="h1-5-12" class="i">+		if (argv[i][0] != &apos;-&apos;) {
+</a><a href="#h1-5-13" id="h1-5-13" class="i">+			if (repodir)
+</a><a href="#h1-5-14" id="h1-5-14" class="i">+				usage(argv[0]);
+</a><a href="#h1-5-15" id="h1-5-15" class="i">+			repodir = argv[i];
+</a><a href="#h1-5-16" id="h1-5-16" class="i">+		} else if (argv[i][1] == &apos;c&apos;) {
+</a><a href="#h1-5-17" id="h1-5-17" class="i">+			if (i + 1 &gt;= argc)
+</a><a href="#h1-5-18" id="h1-5-18" class="i">+				usage(argv[0]);
+</a><a href="#h1-5-19" id="h1-5-19" class="i">+			cachefile = argv[++i];
+</a><a href="#h1-5-20" id="h1-5-20" class="i">+		}
+</a> 	}
+<a href="#h1-5-22" id="h1-5-22" class="d">-	repodir = argv[1];
+</a><a href="#h1-5-23" id="h1-5-23" class="i">+	if (!repodir)
+</a><a href="#h1-5-24" id="h1-5-24" class="i">+		usage(argv[0]);
+</a> 
+ 	if (!realpath(repodir, repodirabs))
+ 		err(1, &quot;realpath&quot;);
+<a href="#h1-6" id="h1-6" class="h">@@ -1088,9 +1117,51 @@ main(int argc, char *argv[])
+</a> 	/* log for HEAD */
+ 	fp = efopen(&quot;log.html&quot;, &quot;w&quot;);
+ 	relpath = &quot;&quot;;
+<a href="#h1-6-3" id="h1-6-3" class="d">-	writeheader(fp, &quot;Log&quot;);
+</a> 	mkdir(&quot;commit&quot;, 0755);
+<a href="#h1-6-5" id="h1-6-5" class="d">-	writelog(fp, head);
+</a><a href="#h1-6-6" id="h1-6-6" class="i">+	writeheader(fp, &quot;Log&quot;);
+</a><a href="#h1-6-7" id="h1-6-7" class="i">+	fputs(&quot;&lt;table id=\&quot;log\&quot;&gt;&lt;thead&gt;\n&lt;tr&gt;&lt;td&gt;Date&lt;/td&gt;&lt;td&gt;Commit message&lt;/td&gt;&quot;
+</a><a href="#h1-6-8" id="h1-6-8" class="i">+		  &quot;&lt;td&gt;Author&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;Files&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;+&lt;/td&gt;&quot;
+</a><a href="#h1-6-9" id="h1-6-9" class="i">+		  &quot;&lt;td class=\&quot;num\&quot;&gt;-&lt;/td&gt;&lt;/tr&gt;\n&lt;/thead&gt;&lt;tbody&gt;\n&quot;, fp);
+</a><a href="#h1-6-10" id="h1-6-10" class="i">+
+</a><a href="#h1-6-11" id="h1-6-11" class="i">+	if (cachefile) {
+</a><a href="#h1-6-12" id="h1-6-12" class="i">+		/* read from cache file (does not need to exist) */
+</a><a href="#h1-6-13" id="h1-6-13" class="i">+		if ((rcachefp = fopen(cachefile, &quot;r&quot;))) {
+</a><a href="#h1-6-14" id="h1-6-14" class="i">+			if (!fgets(lastoidstr, sizeof(lastoidstr), rcachefp))
+</a><a href="#h1-6-15" id="h1-6-15" class="i">+				errx(1, &quot;%s: no object id&quot;, cachefile);
+</a><a href="#h1-6-16" id="h1-6-16" class="i">+			if (git_oid_fromstr(&amp;lastoid, lastoidstr))
+</a><a href="#h1-6-17" id="h1-6-17" class="i">+				errx(1, &quot;%s: invalid object id&quot;, cachefile);
+</a><a href="#h1-6-18" id="h1-6-18" class="i">+		}
+</a><a href="#h1-6-19" id="h1-6-19" class="i">+
+</a><a href="#h1-6-20" id="h1-6-20" class="i">+		/* write log to (temporary) cache */
+</a><a href="#h1-6-21" id="h1-6-21" class="i">+		if ((fd = mkstemp(tmppath)) == -1)
+</a><a href="#h1-6-22" id="h1-6-22" class="i">+			err(1, &quot;mkstemp&quot;);
+</a><a href="#h1-6-23" id="h1-6-23" class="i">+		if (!(wcachefp = fdopen(fd, &quot;w&quot;)))
+</a><a href="#h1-6-24" id="h1-6-24" class="i">+			err(1, &quot;fdopen&quot;);
+</a><a href="#h1-6-25" id="h1-6-25" class="i">+		/* write last commit id (HEAD) */
+</a><a href="#h1-6-26" id="h1-6-26" class="i">+		git_oid_tostr(buf, sizeof(buf), head);
+</a><a href="#h1-6-27" id="h1-6-27" class="i">+		fprintf(wcachefp, &quot;%s\n&quot;, buf);
+</a><a href="#h1-6-28" id="h1-6-28" class="i">+
+</a><a href="#h1-6-29" id="h1-6-29" class="i">+		writelog(fp, head);
+</a><a href="#h1-6-30" id="h1-6-30" class="i">+
+</a><a href="#h1-6-31" id="h1-6-31" class="i">+		if (rcachefp) {
+</a><a href="#h1-6-32" id="h1-6-32" class="i">+			/* append previous log to log.html and the new cache */
+</a><a href="#h1-6-33" id="h1-6-33" class="i">+			while (!feof(rcachefp)) {
+</a><a href="#h1-6-34" id="h1-6-34" class="i">+				n = fread(buf, 1, sizeof(buf), rcachefp);
+</a><a href="#h1-6-35" id="h1-6-35" class="i">+				if (ferror(rcachefp))
+</a><a href="#h1-6-36" id="h1-6-36" class="i">+					err(1, &quot;fread&quot;);
+</a><a href="#h1-6-37" id="h1-6-37" class="i">+				if (fwrite(buf, 1, n, fp) != n)
+</a><a href="#h1-6-38" id="h1-6-38" class="i">+					err(1, &quot;fwrite&quot;);
+</a><a href="#h1-6-39" id="h1-6-39" class="i">+				if (fwrite(buf, 1, n, wcachefp) != n)
+</a><a href="#h1-6-40" id="h1-6-40" class="i">+					err(1, &quot;fwrite&quot;);
+</a><a href="#h1-6-41" id="h1-6-41" class="i">+			}
+</a><a href="#h1-6-42" id="h1-6-42" class="i">+			fclose(rcachefp);
+</a><a href="#h1-6-43" id="h1-6-43" class="i">+		}
+</a><a href="#h1-6-44" id="h1-6-44" class="i">+		fclose(wcachefp);
+</a><a href="#h1-6-45" id="h1-6-45" class="i">+	} else {
+</a><a href="#h1-6-46" id="h1-6-46" class="i">+		writelog(fp, head);
+</a><a href="#h1-6-47" id="h1-6-47" class="i">+	}
+</a><a href="#h1-6-48" id="h1-6-48" class="i">+
+</a><a href="#h1-6-49" id="h1-6-49" class="i">+	fputs(&quot;&lt;/tbody&gt;&lt;/table&gt;&quot;, fp);
+</a> 	writefooter(fp);
+ 	fclose(fp);
+ 
+<a href="#h1-7" id="h1-7" class="h">@@ -1113,6 +1184,10 @@ main(int argc, char *argv[])
+</a> 	writeatom(fp);
+ 	fclose(fp);
+ 
+<a href="#h1-7-3" id="h1-7-3" class="i">+	/* rename new cache file on success */
+</a><a href="#h1-7-4" id="h1-7-4" class="i">+	if (cachefile &amp;&amp; rename(tmppath, cachefile))
+</a><a href="#h1-7-5" id="h1-7-5" class="i">+		err(1, &quot;rename: &apos;%s&apos; to &apos;%s&apos;&quot;, tmppath, cachefile);
+</a><a href="#h1-7-6" id="h1-7-6" class="i">+
+</a> 	/* cleanup */
+ 	git_repository_free(repo);
+ 	git_libgit2_shutdown();
+</pre>
+</div>
+</body>
+</html>

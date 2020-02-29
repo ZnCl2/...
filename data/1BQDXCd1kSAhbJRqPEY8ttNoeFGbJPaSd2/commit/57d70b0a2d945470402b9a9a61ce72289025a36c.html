@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Right align numbers in tables - stagit - Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</title>
+<link rel="icon" type="image/png" href="../favicon.png" />
+<link rel="alternate" type="application/atom+xml" title="stagit.git Atom Feed" href="../atom.xml" />
+<link rel="stylesheet" type="text/css" href="../style.css" />
+</head>
+<body>
+<table><tr><td><a href="../../"><img src="../logo.png" alt="" width="32" height="32" /></a></td><td><h1>stagit</h1><span class="desc">Unnamed repository; edit this file &apos;description&apos; to name the repository.
+</span></td></tr><tr><td></td><td>
+<a href="../log.html">Log</a> | <a href="../files.html">Files</a> | <a href="../refs.html">Refs</a> | <a href="../file/README.html">README</a> | <a href="../file/LICENSE.html">LICENSE</a></td></tr></table>
+<hr/>
+<div id="content">
+<pre><b>commit</b> <a href="../commit/57d70b0a2d945470402b9a9a61ce72289025a36c.html">57d70b0a2d945470402b9a9a61ce72289025a36c</a>
+<b>parent</b> <a href="../commit/0a4451bc150154cfb0390f242860d4b66930e1bd.html">0a4451bc150154cfb0390f242860d4b66930e1bd</a>
+<b>Author:</b> Eivind Uggedal &lt;<a href="mailto:eivind@uggedal.com">eivind@uggedal.com</a>&gt;
+<b>Date:</b>   Thu Dec 10 22:35:39 +0000
+
+Right align numbers in tables
+
+<b>Diffstat:</b>
+<table><tr><td><a href="#h0">urmoms.c</a></td><td> | </td><td class="num">13</td><td><span class="i">+++++++</span><span class="d">------</span></td></tr>
+</table>1 file changed, 7 insertions(+), 6 deletions(-)
+<hr/><b>diff --git a/<a id="h0" href="../file/urmoms.c.html">urmoms.c</a> b/<a href="../file/urmoms.c.html">urmoms.c</a></b>
+<a href="#h0-0" id="h0-0" class="h">@@ -413,8 +413,9 @@ writelog(FILE *fp)
+</a> 	git_revwalk_simplify_first_parent(w);
+ 
+ 	/* TODO: also make &quot;expanded&quot; log ? (with message body) */
+<a href="#h0-0-3" id="h0-0-3" class="d">-	fputs(&quot;&lt;table id=\&quot;log\&quot;&gt;&lt;thead&gt;\n&lt;tr&gt;&lt;td&gt;Age&lt;/td&gt;&lt;td&gt;Commit message&lt;/td&gt;&lt;td&gt;Author&lt;/td&gt;&quot;
+</a><a href="#h0-0-4" id="h0-0-4" class="d">-	      &quot;&lt;td&gt;Files&lt;/td&gt;&lt;td&gt;+&lt;/td&gt;&lt;td&gt;-&lt;/td&gt;&lt;/tr&gt;\n&lt;/thead&gt;&lt;tbody&gt;\n&quot;, fp);
+</a><a href="#h0-0-5" id="h0-0-5" class="i">+	fputs(&quot;&lt;table id=\&quot;log\&quot;&gt;&lt;thead&gt;\n&lt;tr&gt;&lt;td&gt;Age&lt;/td&gt;&lt;td&gt;Commit message&lt;/td&gt;&quot;
+</a><a href="#h0-0-6" id="h0-0-6" class="i">+		  &quot;&lt;td&gt;Author&lt;/td&gt;&lt;td&gt;Files&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;+&lt;/td&gt;&quot;
+</a><a href="#h0-0-7" id="h0-0-7" class="i">+		  &quot;&lt;td class=\&quot;num\&quot;&gt;-&lt;/td&gt;&lt;/tr&gt;\n&lt;/thead&gt;&lt;tbody&gt;\n&quot;, fp);
+</a> 	while (!git_revwalk_next(&amp;id, w)) {
+ 		relpath = &quot;&quot;;
+ 
+<a href="#h0-1" id="h0-1" class="h">@@ -438,11 +439,11 @@ writelog(FILE *fp)
+</a> 		fputs(&quot;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+ 		if (ci-&gt;author)
+ 			xmlencode(fp, ci-&gt;author-&gt;name, strlen(ci-&gt;author-&gt;name));
+<a href="#h0-1-3" id="h0-1-3" class="d">-		fputs(&quot;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+</a><a href="#h0-1-4" id="h0-1-4" class="i">+		fputs(&quot;&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;&quot;, fp);
+</a> 		fprintf(fp, &quot;%zu&quot;, ci-&gt;filecount);
+<a href="#h0-1-6" id="h0-1-6" class="d">-		fputs(&quot;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+</a><a href="#h0-1-7" id="h0-1-7" class="i">+		fputs(&quot;&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;&quot;, fp);
+</a> 		fprintf(fp, &quot;+%zu&quot;, ci-&gt;addcount);
+<a href="#h0-1-9" id="h0-1-9" class="d">-		fputs(&quot;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+</a><a href="#h0-1-10" id="h0-1-10" class="i">+		fputs(&quot;&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;&quot;, fp);
+</a> 		fprintf(fp, &quot;-%zu&quot;, ci-&gt;delcount);
+ 		fputs(&quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;, fp);
+ 
+<a href="#h0-2" id="h0-2" class="h">@@ -610,7 +611,7 @@ writefiles(FILE *fp)
+</a> 		xmlencode(fp, entry-&gt;path, strlen(entry-&gt;path));
+ 		fputs(&quot;.html\&quot;&gt;&quot;, fp);
+ 		xmlencode(fp, entry-&gt;path, strlen(entry-&gt;path));
+<a href="#h0-2-3" id="h0-2-3" class="d">-		fputs(&quot;&lt;/a&gt;&lt;/td&gt;&lt;td&gt;&quot;, fp);
+</a><a href="#h0-2-4" id="h0-2-4" class="i">+		fputs(&quot;&lt;/a&gt;&lt;/td&gt;&lt;td class=\&quot;num\&quot;&gt;&quot;, fp);
+</a> 		fprintf(fp, &quot;%&quot; PRIu64, entry-&gt;file_size);
+ 		fputs(&quot;&lt;/td&gt;&lt;/tr&gt;\n&quot;, fp);
+ 
+</pre>
+</div>
+</body>
+</html>

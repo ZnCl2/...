@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Spacemacs 通过选择性开启 pangu-spacing 加快打开大文件的速度 - 科学君的不科学博客</title>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+  <meta name="author" content="Liu233w" />
+  <meta name="keywords" content="emacs, spacemacs" />
+  <style>
+   #ds-thread #ds-reset .ds-comment-body p {color: #ffffff;}
+   #ds-thread #ds-reset .ds-comment-body p a {color: #ff0;}
+   #ds-thread #ds-reset .ds-comment-body p a:hover {color: #0ff;}
+   #disqus_thread a {color: #00ffff;}
+  </style>
+  <link rel="stylesheet" href="http://liu233w.github.io/media/css/main.css" type="text/css"/>
+  <link rel="stylesheet" href="http://liu233w.github.io/media/css/comment.css" type="text/css"/>
+  <link rel="Shortcut Icon" href="https://raw.githubusercontent.com/Liu233w/liu233w.github.io/source/avatar.jpg" type="image/x-icon">
+</head>
+
+  <body><div class="container">
+<div>
+  <header class="masthead">
+    <h1 class="masthead-title"><a href="http://liu233w.github.io/">科学君的不科学博客</a></h1>
+    <p>by 不科学的科学君</p>
+    <nav class="site-nav">
+      <div class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z" fill="#ffff00"/>
+          <path d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z" fill="#ffff00"/>
+          <path d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z" fill="#ffff00"/>
+        </svg>
+      </div>
+      <ul class="trigger">
+        <li><a href="http://liu233w.github.io/所有文章/">所有文章</a></li>
+        <li><a href="http://liu233w.github.io/tags/">按标签索引</a></li>
+        <li><a href="http://liu233w.github.io/acm/">Acm</a></li>
+        <li><a href="http://liu233w.github.io/blog/">Blog</a></li>
+        <li><a href="http://liu233w.github.io/about/">About</a></li>
+        <li><a href="https://github.com/liu233w/liu233w.github.io">Github</a></li>
+        <li><a href="http://liu233w.github.io/rss.xml">RSS</a></li>
+      </ul>
+    </nav>
+    <form method="get" id="searchform" action="http://www.google.com/search">
+      <input type="text" class="field" name="q" id="s" placeholder="Search">
+      <input type="hidden" name="as_sitesearch" value="liu233w.github.io">
+    </form>
+    <img id="avatarid" class="avatar" src="https://raw.githubusercontent.com/Liu233w/liu233w.github.io/source/avatar.jpg" />
+  </header>
+</div>
+
+<div>
+<div class="post">
+<h1 class="title">Spacemacs 通过选择性开启 pangu-spacing 加快打开大文件的速度</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org6a75f91">概述</a></li>
+<li><a href="#org253cd2d">实验</a></li>
+<li><a href="#org444d83e">解决方法</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org6a75f91" class="outline-2">
+<h2 id="org6a75f91">概述</h2>
+<div class="outline-text-2" id="text-org6a75f91">
+<p>
+spacemacs 的 Chinese layer 中 pangu-spacing 是默认全局开启的，这个 package 会严重拖慢
+emacs 打开大文件或者在大文件中翻动页面的速度。如果使用类似
+<a href="https://github.com/zilongshanren/spacemacs-private/blob/develop/layers/zilongshanren-better-defaults/config.el#L132%5D%5D%0Ahttps://github.com/zilongshanren/spacemacs-private/blob/develop/layers/zilongshanren-better-defaults/config.el%23L132">子龙山人的配置</a>
+里面的在打开文件时检测大小并关闭行号和 pangu-spacing 的函数，在打开大文件的时候仍然极其卡顿，因为 emacs 会先调用 pangu-spacing 添加空格的函数，然后再调用 <code>find-file-hook</code>
+来关闭 pangu-spacing。
+</p>
+</div>
+</div>
+<div id="outline-container-org253cd2d" class="outline-2">
+<h2 id="org253cd2d">实验</h2>
+<div class="outline-text-2" id="text-org253cd2d">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">  <span style="color: #2aa198;">(</span>add-hook 'find-file-hook '<span style="color: #b58900;">(</span>lambda <span style="color: #268bd2;">()</span>
+                             <span style="color: #586e75;">;;</span><span style="color: #586e75;">&#27169;&#25311;&#36935;&#21040;&#22823;&#25991;&#20214;&#26102;&#20851;&#38381; pangu-spacing</span>
+                             <span style="color: #268bd2;">(</span>pangu-spacing-mode <span style="color: #6c71c4;">-1</span><span style="color: #268bd2;">)</span>
+                             <span style="color: #268bd2;">(</span>message <span style="color: #2aa198;">"find-file-mode-hook"</span><span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span><span style="color: #2aa198;">)</span>
+<span style="color: #2aa198;">(</span>add-hook 'pangu-spacing-mode-hook '<span style="color: #b58900;">(</span>lambda <span style="color: #268bd2;">()</span> <span style="color: #268bd2;">(</span>message <span style="color: #2aa198;">"pangu-spacing-mode"</span><span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span><span style="color: #2aa198;">)</span>
+</pre>
+</div>
+
+<p>
+message 中打开一个文件时的输出：
+</p>
+
+<p class="verse">
+find-file-mode-hook
+pangu-spacing-mode [4 times]
+</p>
+
+<p>
+虽然不知道为什么调用了好几次，但是 buffer 里面 pangu-spacing 确实是关闭的。这么做在打开大文件时仍然极其卡顿。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org444d83e" class="outline-2">
+<h2 id="org444d83e">解决方法</h2>
+<div class="outline-text-2" id="text-org444d83e">
+<p>
+覆盖 spacemacs 对 pangu-spacing 的默认配置。默认使其关闭，只有当我们确定 buffer 很小的时候才启动它。这个函数是我直接从 chinese-layer 里面复制的，只改动了一部分和加了一个 hook。
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">  <span style="color: #586e75;">;; </span><span style="color: #586e75;">&#22810;&#22823;&#30340; buffer &#25165;&#31639;&#26159;&#22823; buffer&#65292;&#22312; buffer-size &#36229;&#36807;&#27492;&#22823;&#23567;&#20043;&#21518;&#20250;&#37319;&#21462;&#19981;&#21516;&#30340;&#31574;&#30053;</span>
+<span style="color: #586e75;">;; </span><span style="color: #586e75;">&#26469;&#25552;&#39640;&#36816;&#34892;&#25928;&#29575;</span>
+<span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">defvar</span> <span style="color: #268bd2;">*large-buffer-threshold*</span> <span style="color: #6c71c4;">300000</span>
+  <span style="color: #2aa198;">"Buffer whose size beyond it will have a different behavior for the efficiency"</span><span style="color: #2aa198;">)</span>
+
+<span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">liu233w/init-pangu-spacing</span> <span style="color: #b58900;">()</span>
+  <span style="color: #2aa198;">"&#35206;&#30422; Chinese-layer &#20013;&#30340;&#35774;&#32622;&#12290;&#40664;&#35748;&#20851;&#38381; pangu-spacing&#65292;&#21482;&#26377;&#22312; buffer &#27604;&#36739;&#23567;&#30340;&#26102;&#20505;&#25165;&#21551;&#21160;&#65292;</span>
+<span style="color: #2aa198;">&#22914;&#26524;&#26159;&#21551;&#21160;&#20043;&#21518;&#20877;&#20851;&#38381;&#30340;&#35805;&#23601;&#24320;&#30340;&#22826;&#24930;&#20102;&#12290;"</span>
+  <span style="color: #b58900;">(</span><span style="color: #859900; font-weight: bold;">use-package</span> <span style="color: #268bd2; font-weight: bold;">pangu-spacing</span>
+    <span style="color: #839496; font-weight: bold;">:config</span>
+    <span style="color: #268bd2;">(</span>global-pangu-spacing-mode <span style="color: #6c71c4;">-1</span><span style="color: #268bd2;">)</span>
+    <span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">spacemacs|hide-lighter</span> pangu-spacing-mode<span style="color: #268bd2;">)</span>
+    <span style="color: #586e75;">;; </span><span style="color: #586e75;">Always insert `</span><span style="color: #268bd2; font-weight: bold;">real</span><span style="color: #586e75;">' space in org-mode.</span>
+    <span style="color: #268bd2;">(</span>add-hook 'org-mode-hook
+              '<span style="color: #6c71c4;">(</span>lambda <span style="color: #859900;">()</span>
+                 <span style="color: #859900;">(</span>set <span style="color: #b58900;">(</span>make-local-variable 'pangu-spacing-real-insert-separtor<span style="color: #b58900;">)</span> t<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span>
+
+    <span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">liu233w/enable-pangu-spacing-when-buffer-not-large</span> <span style="color: #6c71c4;">()</span>
+      <span style="color: #2aa198;">"when buffer is not large, turn on it"</span>
+      <span style="color: #6c71c4;">(</span><span style="color: #859900; font-weight: bold;">when</span> <span style="color: #859900;">(</span>&lt; <span style="color: #b58900;">(</span>buffer-size<span style="color: #b58900;">)</span> *large-buffer-threshold*<span style="color: #859900;">)</span>
+        <span style="color: #859900;">(</span>pangu-spacing-mode <span style="color: #6c71c4;">1</span><span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span>
+
+    <span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">dolist</span> <span style="color: #6c71c4;">(</span>i '<span style="color: #859900;">(</span>prog-mode-hook text-mode-hook<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span>
+      <span style="color: #6c71c4;">(</span>add-hook i 'liu233w/enable-pangu-spacing-when-buffer-not-large<span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span>
+    <span style="color: #b58900;">)</span><span style="color: #2aa198;">)</span>
+</pre>
+</div>
+<p>
+这么做之后打开大文件比原来流畅多了。
+</p>
+
+<p>
+我原来试过把配置放进 <code>post-init-pangu-spacing</code> 里面，但是不成功，默认pangu-spacing还是开启的，只好直接覆盖函数了。附上我原来的配置，希望大家能帮我找一下哪里有问题_(:зゝ∠)_
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #2aa198;">(</span><span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">liu233w/post-init-pangu-spacing</span> <span style="color: #b58900;">()</span>
+  <span style="color: #b58900;">(</span><span style="color: #859900; font-weight: bold;">with-eval-after-load</span> 'pangu-spacing-mode
+    <span style="color: #268bd2;">(</span>pangu-spacing-mode <span style="color: #6c71c4;">-1</span><span style="color: #268bd2;">)</span>
+
+    <span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">liu233w/enable-pangu-spacing-when-buffer-not-large</span> <span style="color: #6c71c4;">()</span>
+      <span style="color: #2aa198;">"when buffer is not large, turn on it"</span>
+      <span style="color: #6c71c4;">(</span><span style="color: #859900; font-weight: bold;">when</span> <span style="color: #859900;">(</span>&lt; <span style="color: #b58900;">(</span>buffer-size<span style="color: #b58900;">)</span> *large-buffer-threshold*<span style="color: #859900;">)</span>
+        <span style="color: #859900;">(</span>pangu-spacing-mode <span style="color: #6c71c4;">1</span><span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span>
+
+    <span style="color: #268bd2;">(</span><span style="color: #859900; font-weight: bold;">dolist</span> <span style="color: #6c71c4;">(</span>i '<span style="color: #859900;">(</span>prog-mode-hook text-mode-hook<span style="color: #859900;">)</span><span style="color: #6c71c4;">)</span>
+      <span style="color: #6c71c4;">(</span>add-hook i 'liu233w/enable-pangu-spacing-when-buffer-not-large<span style="color: #6c71c4;">)</span><span style="color: #268bd2;">)</span><span style="color: #b58900;">)</span><span style="color: #2aa198;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+<div>
+        <div class="post-meta">
+            <span title="发布日期" class="post-info">2016-07-24</span>
+            <span title="最后修改日期" class="post-info">2016-09-06</span>
+            <span title="标签" class="post-info">:<a href="http://liu233w.github.io/tags/emacs">emacs</a> : <a href="http://liu233w.github.io/tags/spacemacs">spacemacs</a>:</span>
+            <span title="作者" class="post-info"><a href="mailto:wwwlsmcom &lt;at&gt; outlook &lt;dot&gt; com">Liu233w</a></span>
+        </div>
+    <script src="http://liu233w.github.io/media/js/jquery-2.1.3.min.js"></script>
+        <section>
+            <h1>Comments</h1>
+            <div id="comment-wrap">
+                    <a class="disqus_label">使用 Disqus 评论</a>
+                    <a class="ds-label">使用多说评论</a>
+    </ul>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+         //var disqus_developer = 1;
+         var preempt_signal=false;
+         var disqus_identifier = "/blog/2016/07/24/pangu-spacing/";
+         var disqus_url = "http://liu233w.github.io/blog/2016/07/24/pangu-spacing/";
+         var disqus_shortname = 'liu233w';
+         /* * * DON'T EDIT BELOW THIS LINE * * */
+         (function() {
+             var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+             dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+             $('#disqus_thread').css('display','none');
+         })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        <div class="ds-thread"></div>
+        <script type="text/javascript">
+         var duoshuoQuery = {short_name:'liu233w'};
+         (function() {
+             var ds = document.createElement('script');
+             ds.type = 'text/javascript';ds.async = true;
+             ds.src = 'http://static.duoshuo.com/embed.js';
+             ds.charset = 'UTF-8';
+             (document.getElementsByTagName('head')[0]
+           || document.getElementsByTagName('body')[0]).appendChild(ds);
+             $('.ds-thread').css('display','block');
+         })();
+        </script>
+    <script>
+     /* comments */
+     var ego_disqus_thread=$('#disqus_thread');
+     var ego_ds_label=$('.ds-thread');
+     $('.disqus_label').click(function(){
+         ego_disqus_thread.show();
+         ego_ds_label.hide();
+     });
+     $('.ds-label').click(function(){
+         ego_disqus_thread.hide();
+         ego_ds_label.show();
+     });
+    </script>
+        </section>
+    <script src="http://liu233w.github.io/media/js/main.js"></script>
+    <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.x(<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+            Copyright &copy; 2014 - <span id="footerYear"></span> <a href="mailto:wwwlsmcom &lt;at&gt; outlook &lt;dot&gt; com">Liu233w</a>
+            &nbsp;&nbsp;-&nbsp;&nbsp;
+            Powered by <a href="https://github.com/emacs-china/ego" target="_blank">EGO</a><br/>
+            <a href="http://creativecommons.org/licenses/by-sa/3.0/" rel="license"><img src="http://i.creativecommons.org/l/by-sa/3.0/88x31.png" style="border-width:0" alt="Creative Commons License" class="center"></a>
+            <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+    </div>
+            </div>
+            <script type="text/javascript"
+                    src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG">
+            </script>
+            <script type="text/x-mathjax-config">
+             MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "AMS"} } });
+            </script>
+</div>
+
+  </div></body>
+</html>

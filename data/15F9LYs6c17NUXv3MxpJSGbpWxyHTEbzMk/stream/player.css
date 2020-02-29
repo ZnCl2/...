@@ -1,0 +1,232 @@
+body {
+	background-color: #eee;
+	font-family: "Segoe UI", sans-serif;
+}
+#player, div.NinjaBeatsMusicStreamer {
+	background-color: #fff;
+	color: #000;
+	
+	height: 16rem;
+	width: 64rem;
+	
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	position: absolute;
+	
+	box-shadow: 0px 0px 20px 1px #ccc;
+}
+#progressBar {
+    height: 0.25rem;
+    width: 0%;
+    background-color: #8f8;
+    transition: width 0.4s ease-in;
+	z-index: 1000;
+	position: relative;
+}
+#albumArt {
+	opacity: 0;
+	transition: opacity 0.75s ease-out;
+	z-index: -10;
+}
+#albumArtContainer {
+	float: left;
+	width: 16rem;
+	height: 16rem;
+	z-index: -10;
+	background-color: #000;
+	background: url('ninjabeats-logo2-anticopy-square.png') no-repeat;
+	background-size: contain;
+	cursor: pointer;
+}
+#tracks {
+	padding: 1rem;
+	padding-left: 0;
+	padding-bottom: 0;
+	float: left;
+	width: 46rem;
+	height: 12rem;
+	color: transparent;
+}
+#popoutButton {
+	float: right;
+	vertical-align: top;
+	color: #000;
+	
+	font-size: 1.25rem;
+	font-weight: 200;
+	margin: 0;
+}
+audio {
+	vertical-align: middle;
+	width: 100%;
+}
+#info {
+	padding: 0rem 1rem;
+	float: left;
+	width: 46rem;
+	height: 3rem;
+	font-size: 0.9rem;
+}
+#numPeersSplitter, #downloadedSplitter, #timeRemainingSplitter {
+	display: none;
+}
+#uploadSpeedSplitter {
+	display: inline-block;
+}
+#uploadSpeedGroup, #downloadSpeedGroup {
+	float: right;
+}
+#filename {
+	font-weight: 200;
+	color: #000;
+	padding-left: 1rem;
+	margin-top: 0;
+	font-size: 2.25rem;
+}
+#filename h2 {
+	font-size: 2.2rem;
+}
+#timeRemainingGroup {
+	margin-left: 1rem;
+}
+#loadingMsg {
+	display: inherit;
+	color: #000;
+	padding: 0 2rem;
+}
+#pageImgBackgroundEffect, #pageVidBackgroundEffect, #pageYTVidBackgroundEffect {
+	background-color: transparent;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 100%;
+	width: 100%;
+	background: transparent;
+	background-repeat: no-repeat;
+	background-size: cover;
+	filter: blur(15.625rem) opacity(0.5) brightness(1.25) saturate(1.10); /* 15.625rem = percieved 250px blur (scaled to the monitor's DPI) */
+	transition: opacity 3s ease-out 1s; /* when the opacity is changed, delay the transition for one second (to give time to render the image) and then perform a smooth ease-out curve of the opacity difference for the duration of 3 seconds */
+	opacity: 0;
+	z-index: -200;
+}
+#video {
+	display: none;
+	background-color: #000;
+	width: 0;
+}
+#article {
+    background-color: #fff;
+    border: 0px none transparent;
+    padding: 0px;
+    overflow: hidden;
+	width: 100%;
+	height: 75vh;
+	display: none;
+}
+
+/* Mobile and Tablet support */
+/* Smartphone or tablet in portrait orientation */
+@media only screen and (max-width: 768px) and (orientation:portrait) {
+	#player, div.NinjaBeatsMusicStreamer {
+		height: auto;
+		width: 100%;
+		
+		/* New code */
+		height: 100vh;
+	}
+	#tracks {
+		/* Old code that used fixed sizes relative to the scale factor */
+		/*
+		width: calc(100% - 12rem - 1rem); /* The width of the track container should fill the available screen width. 8rem is taken up by the albumArtContainer and 1rem is taken up by margins, so we deduct the albumArtContainer width and the margins from the total screen width to get our available screen width, and set the tracks container width to that.
+		height: 8rem; /* to match the albumArtContainer height, minus the height of the info strip just below */
+		
+		/* New code */
+		width: 100%;
+		height: 8rem;
+		padding: 0;
+	}
+	#track {
+		margin-top: 0; /* Free up some valuable screen real estate by removing un-necessary margins */
+	}
+	#albumArtContainer, img#albumArt {
+		/*height: 12rem;
+		width: 12rem; -  */
+		
+		/* New code */
+		height: auto;
+		width: 100%;
+	}
+	#filename {
+		/* Old code */
+		/*
+		font-size: 2.0rem !important; /* Use a slightly smaller font to free up some room */
+		
+		/* New code */
+		font-size: 7.5vw !important;
+		
+		margin-bottom: 0; /* Free up some valuable screen real estate by removing un-necessary margins */
+		padding-left: 0.75rem; /* Reduce the padding slightly */
+	}
+	#info {
+		width: auto;
+	}
+	#downloadedSplitter, #timeRemainingSplitter {
+		display: inline-block;
+	}
+	#numPeersSplitter {
+		display: none;
+	}
+	#uploadSpeedGroup, #downloadSpeedGroup {
+		float: none;
+	}
+	#uploadSpeedGroup {
+		display: inline-block;
+	}
+	#timeRemainingGroup {
+		margin-left: unset;
+	}
+	#pageVidBackgroundEffect {
+		filter: unset; /* To prevent stuttering, poor performance and/or battery drain on lower-powered portable devices such as low-end or mid-end phones, don't apply any GPU effects to each video frame */
+		opacity: 0 !important; /* Instead, hide the video but keep it playing without doing any filter effects on it, and show the static album-art-based filter effect */
+		display: none; /* Infact, don't do any rendering on the video at all - just play the audio */
+	}
+	#pageImgBackgroundEffect {
+		/* Old code */
+		opacity: 1 !important;
+		
+		/* New code */
+		filter: unset;
+		opacity: 0 !important;
+		display: none; /* Don't render the bg effect as it is invisible */
+	}
+}
+
+/* Smartphone or tablet in landscape orientation */
+@media only screen and (max-width: 1280px) and (orientation:landscape) {
+	#player, div.NinjaBeatsMusicStreamer {
+		height: auto;
+		width: 100%;
+	}
+	#tracks {
+		width: calc(100% - 16rem - 1rem); /* The width of the track container should fill the available screen width. 8rem is taken up by the albumArtContainer and 1rem is taken up by margins, so we deduct the albumArtContainer width and the margins from the total screen width to get our available screen width, and set the tracks container width to that. */
+		height: 12rem; /* to match the albumArtContainer height, minus the height of the info strip just below */
+	}
+	#track {
+		margin-top: 0; /* Free up some valuable screen real estate by removing un-necessary margins */
+	}
+	#info {
+		width: auto;
+	}
+	#pageVidBackgroundEffect {
+		filter: unset; /* To prevent stuttering, poor performance and/or battery drain on lower-powered portable devices such as low-end or mid-end phones, don't apply any GPU effects to each video frame */
+		opacity: 0 !important; /* Instead, hide the video but keep it playing without doing any filter effects on it, and show the static album-art-based filter effect */
+		display: none; /* Infact, don't do any rendering on the video at all - just play the audio */
+	}
+	#pageImgBackgroundEffect {
+		opacity: 1 !important;
+	}
+}
